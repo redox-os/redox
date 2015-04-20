@@ -1,5 +1,3 @@
-[map all loader.map]
-
 use16
 
 org 0x7C00
