@@ -35,8 +35,7 @@ interrupts:
 	cmp al, 0x20
 	je .ignore
 	
-	mov eax, [kernel_file + 0x18]
-	call eax
+	call [.callback]
 .ignore:
     mov al, [0x200000]
     
@@ -59,6 +58,8 @@ interrupts:
 .not_irq:
 	popad
 	iretd
+	
+.callback: dq .ignore
 
 idtr:
     dw (idt_end - idt) + 1

@@ -42,7 +42,7 @@ pub struct VBEModeInfo {
 	offscreenmemsize: u16
 }
 
-pub const FONTLOCATION: u32 = 0x300000;
+pub static mut FONT_LOCATION: u32 = 0x0;
 
 pub struct Display {
 	mode_info: *const VBEModeInfo
@@ -106,7 +106,9 @@ impl Display {
 
 	pub fn char(&self, point: Point, character: char, color: Color){
         unsafe{
-            self.char_bitmap(point, (*(FONTLOCATION as *const u32) + 16*(character as u32)) as *const u8, color);
+            if FONT_LOCATION > 0 {
+                self.char_bitmap(point, (FONT_LOCATION + 16*(character as u32)) as *const u8, color);
+            }
         }
 	}
 

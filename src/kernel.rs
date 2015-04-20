@@ -286,14 +286,11 @@ unsafe fn initialize(){
     
     d("Fonts\n");
     let unfs = UnFS::new(Disk::new());
-    let font_location = unfs.load("Font");
+    FONT_LOCATION = unfs.load("font.unicode.bin");
     
-    if font_location > 0 {
+    if FONT_LOCATION > 0 {
         d("Read font file\n");
-        *(FONTLOCATION as *mut u32) = font_location;
-        dh(FONTLOCATION);
-        d("\n");
-        dh(*(FONTLOCATION as *const u32));
+        dh(FONT_LOCATION);
         d("\n");
     }else{
         d("Did not find font file\n");
