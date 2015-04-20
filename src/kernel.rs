@@ -97,9 +97,8 @@ unsafe fn load_editor_file(filename: &'static str){
 unsafe fn process_keyboard_event(keyboard_event: KeyEvent){
     if keyboard_event.pressed {
         match keyboard_event.scancode {
-            0x3B => load_editor_file("Test"),
-            0x3C => load_editor_file("Test 2"),
-            0x3D => load_editor_file("Test 3"),
+            0x3B => load_editor_file("README.md"),
+            0x3C => load_editor_file("LICENSE.md"),
             _ => ()
         }
         
