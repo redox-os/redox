@@ -3,7 +3,7 @@ RUSTC=rustc
 NASM=nasm
 QEMU=qemu-system-i386
 
-all: harddrive.img
+all: harddrive.bin
 
 .SUFFIXES: .o .rs .asm
 
@@ -18,14 +18,14 @@ all: harddrive.img
 .asm.o:
 	$(NASM) -f elf32 -o $@ $<
 
-harddrive.img: loader.asm kernel.bin
-	$(NASM) -o $@ -l loader.lst -f bin $<
+harddrive.bin: loader.asm kernel.bin
+	$(NASM) -o $@ -f bin $<
 
 kernel.bin: linker.ld kernel.o
 	$(LD) -m elf_i386 -o $@ -T $^
 
-run: harddrive.img
+run: harddrive.bin
 	$(QEMU) -serial mon:stdio -sdl -hda $<
 
 clean:
-	rm -f *.bin *.o *.img *.lst *.map
+	rm -f *.bin *.o
