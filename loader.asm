@@ -245,6 +245,6 @@ align 512, db 0
 .end:
 
 test_file_three:
-incbin "LICENSE.txt"
+incbin "LICENSE.md"
 align 512, db 0
 .end:
