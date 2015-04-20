@@ -12,11 +12,14 @@ kernel.o: src/kernel.rs
 kernel.bin: src/linker.ld kernel.o
 	$(LD) -m elf_i386 -o $@ -T $^
 
-harddrive.bin: src/loader.asm kernel.bin
-	$(AS) -f bin -o $@ -isrc/ $<
+filesystem/filesystem.asm:
+	ls filesystem |  awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > filesystem/filesystem.asm
+
+harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
+	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
 
 run: harddrive.bin
 	$(QEMU) -serial mon:stdio -sdl -hda $<
 
 clean:
-	rm -f *.bin *.o
+	rm -f *.bin *.o filesystem/filesystem.asm

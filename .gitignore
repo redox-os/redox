@@ -1,2 +1,3 @@
 *.o
 *.bin
+filesystem/filesystem.asm
