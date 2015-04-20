@@ -10,11 +10,11 @@ SECTIONS {
 		*(.text*)
 	} >lowmem
 
-	.data: {
+	.data : {
 		*(.data*)
 	} >lowmem
 
-	.rodata: {
+	.rodata : {
 		*(.rodata*)
 	} >lowmem
 
