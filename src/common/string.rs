@@ -2,6 +2,7 @@ use core::iter::Iterator;
 use core::ops::Add;
 use core::ops::Drop;
 use core::slice;
+use core::slice::SliceExt;
 use core::str::StrExt;
 
 use common::debug::*;
@@ -23,6 +24,11 @@ impl String {
     // TODO FromStr trait
     pub fn from_str(s: &str) -> String {
         let length = s.chars().count() as u32;
+        
+        if length == 0 {
+            return String::new();
+        }
+        
         let data = alloc(length * 4);
     
         let mut i = 0;
@@ -37,10 +43,66 @@ impl String {
         dh(data);
         dl();
     
-        return String {
+        String {
             data: data as *const char,
             length: length
-        };
+        }
+    }
+    
+    pub fn from_slice(s: &[char]) -> String {
+        let length = s.len() as u32;
+        
+        if length == 0 {
+            return String::new();
+        }
+        
+        let data = alloc(length * 4);
+    
+        let mut i = 0;
+        for c in s {
+            unsafe {
+                *((data + i*4) as *mut char) = *c;
+            }
+            i += 1;
+        }
+        
+        d("Create ");
+        dh(data);
+        dl();
+    
+        String {
+            data: data as *const char,
+            length: length
+        }
+    }
+    
+    pub unsafe fn from_c_str(s: *const u8) -> String {
+        let mut length = 0;
+        loop {
+            if *(((s as u32) + length) as *const u8) == 0 {
+                break;
+            }
+            length += 1;
+        }
+        
+        if length == 0 {
+            return String::new();
+        }
+        
+        let data = alloc(length * 4);
+    
+        for i in 0..length {
+            *((data + i*4) as *mut char) = *(((s as u32) + i) as *const u8) as char;
+        }
+        
+        d("Create ");
+        dh(data);
+        dl();
+    
+        String {
+            data: data as *const char,
+            length: length
+        }
     }
     
     pub fn from_num_radix(num: u32, radix: u32) -> String {
@@ -76,10 +138,30 @@ impl String {
         dh(data);
         dl();
     
-        return String {
+        String {
             data: data as *const char,
             length: length
-        };
+        }
+    }
+    
+    pub fn from_char(c: char) -> String {
+        if c == '\0' {
+            return String::new();
+        }
+        
+        let data = alloc(4);
+        unsafe {
+            *(data as *mut char) = c;
+        }
+        
+        d("Create ");
+        dh(data);
+        dl();
+        
+        String {
+            data: data as *const char,
+            length: 1
+        }
     }
     
     pub fn from_num(num: u32) -> String {
@@ -98,7 +180,6 @@ impl String {
         }
         
         let length = j - i;
-        
         if length == 0 {
             return String::new();
         }
@@ -115,10 +196,10 @@ impl String {
         dh(data);
         dl();
     
-        return String {
+        String {
             data: data as *const char,
             length: length
-        };
+        }
     }
     
     pub fn len(&self) -> u32 {
@@ -128,7 +209,7 @@ impl String {
     // TODO: Str trait
     pub fn as_slice(&self) -> &[char] {
         unsafe {
-            return slice::from_raw_parts(self.data, self.length as usize);
+            slice::from_raw_parts(self.data, self.length as usize)
         }
     }
     
@@ -141,11 +222,14 @@ impl String {
 
 impl Drop for String {
     fn drop(&mut self){
-        d("Drop ");
-        dh(self.data as u32);
-        dl();
-        
+        if self.data as u32 > 0 {
+            d("Drop ");
+            dh(self.data as u32);
+            dl();
+        }
         unalloc(self.data as u32);
+        self.data = 0 as *const char;
+        self.length = 0;
     }
 }
 
@@ -153,6 +237,11 @@ impl Add for String {
     type Output = String;
     fn add(self, other: String) -> String {
         let length = self.length + other.length;
+        
+        if length == 0 {
+            return String::new();
+        }
+        
         let data = alloc(length * 4);
     
         let mut i = 0;
@@ -174,23 +263,30 @@ impl Add for String {
         dh(data);
         dl();
     
-        return String {
+        String {
             data: data as *const char,
             length: length
-        };
+        }
     }
 }
 
 impl Add<&'static str> for String {
     type Output = String;
     fn add(self, other: &'static str) -> String {
-        return self + String::from_str(other);
+        self + String::from_str(other)
+    }
+}
+
+impl Add<char> for String {
+    type Output = String;
+    fn add(self, other: char) -> String {
+        self + String::from_char(other)
     }
 }
 
 impl Add<u32> for String {
     type Output = String;
     fn add(self, other: u32) -> String {
-        return self + String::from_num(other);
+        self + String::from_num(other)
     }
 }
