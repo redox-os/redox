@@ -39,10 +39,6 @@ impl String {
             i += 1;
         }
         
-        d("Create ");
-        dh(data);
-        dl();
-    
         String {
             data: data as *const char,
             length: length
@@ -66,10 +62,6 @@ impl String {
             i += 1;
         }
         
-        d("Create ");
-        dh(data);
-        dl();
-    
         String {
             data: data as *const char,
             length: length
@@ -95,10 +87,6 @@ impl String {
             *((data + i*4) as *mut char) = *(((s as u32) + i) as *const u8) as char;
         }
         
-        d("Create ");
-        dh(data);
-        dl();
-    
         String {
             data: data as *const char,
             length: length
@@ -134,10 +122,6 @@ impl String {
             digit_num /= radix;
         }
         
-        d("Create ");
-        dh(data);
-        dl();
-    
         String {
             data: data as *const char,
             length: length
@@ -153,10 +137,6 @@ impl String {
         unsafe {
             *(data as *mut char) = c;
         }
-        
-        d("Create ");
-        dh(data);
-        dl();
         
         String {
             data: data as *const char,
@@ -192,10 +172,6 @@ impl String {
             }
         }
         
-        d("Create ");
-        dh(data);
-        dl();
-    
         String {
             data: data as *const char,
             length: length
@@ -214,19 +190,14 @@ impl String {
     }
     
     pub fn d(&self){
-        for character in self.as_slice() {
-            dc(*character);
+        for c_ptr in self.as_slice() {
+            dc(*c_ptr);
         }
     }
 }
 
 impl Drop for String {
     fn drop(&mut self){
-        if self.data as u32 > 0 {
-            d("Drop ");
-            dh(self.data as u32);
-            dl();
-        }
         unalloc(self.data as u32);
         self.data = 0 as *const char;
         self.length = 0;
@@ -257,11 +228,6 @@ impl Add for String {
             }
             i += 1;
         }
-        
-        
-        d("Create ");
-        dh(data);
-        dl();
     
         String {
             data: data as *const char,
