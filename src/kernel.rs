@@ -329,6 +329,7 @@ pub fn kernel() {
 	}else if interrupt == 33 {
 		unsafe{
 			let keyboard_event = keyboard_interrupt();
+			/*
 			d("Keyboard: ");
 			dc(keyboard_event.character);
 			d(", ");
@@ -338,7 +339,7 @@ pub fn kernel() {
 			}else{
                 d(", Released\n");
             }
-			
+			*/
 			process_keyboard_event(keyboard_event);
 			
 			draw();
