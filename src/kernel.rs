@@ -18,6 +18,7 @@ use drivers::mouse::*;
 
 use filesystems::unfs::*;
 
+use graphics::bmp::*;
 use graphics::color::*;
 use graphics::display::*;
 use graphics::point::*;
@@ -42,6 +43,7 @@ mod filesystems {
 }
 
 mod graphics {
+    pub mod bmp;
 	pub mod color;
 	pub mod display;
 	pub mod point;
@@ -50,9 +52,23 @@ mod graphics {
 }
 
 static mut keyboard_window: Window<'static> = Window{
-	point:Point{ x:100, y:100 },
-	size:Size { width:640, height:480 },
-	title:"Press a function key to load a file"
+	point: Point{ x:100, y:100 },
+	size: Size { width:640, height:480 },
+	title: "Press a function key to load a file",
+	shaded: false,
+	dragging: false,
+    last_mouse_point: Point {
+        x: 0,
+        y: 0
+    },
+    last_mouse_event: MouseEvent {
+        x: 0,
+        y: 0,
+        left_button: false,
+        right_button: false,
+        middle_button: false,
+        valid: false
+    }
 };
 
 static mut mouse_point: Point = Point {
@@ -94,11 +110,22 @@ unsafe fn load_editor_file(filename: &'static str){
     }
 }
 
+unsafe fn load_background(filename: &str){
+    let unfs = UnFS::new(Disk::new());
+    let background_data = unfs.load(filename);
+    background.drop();
+    background = BMP::new(background_data);
+    unalloc(background_data);
+}
+
 unsafe fn process_keyboard_event(keyboard_event: KeyEvent){
     if keyboard_event.pressed {
         match keyboard_event.scancode {
             0x3B => load_editor_file("README.md"),
             0x3C => load_editor_file("LICENSE.md"),
+            0x3D => load_background("bmw.bmp"),
+            0x3E => load_background("stonehenge.bmp"),
+            0x3F => load_background("tiger.bmp"),
             _ => ()
         }
         
@@ -118,10 +145,6 @@ unsafe fn process_keyboard_event(keyboard_event: KeyEvent){
     }
 }
 
-
-static mut dragging: bool = false;
-static mut drag_point: Point = Point { x:-1, y:-1 };
-static mut last_drag_point: Point = Point { x:-1, y:-1 };
 unsafe fn process_mouse_event(mouse_event: MouseEvent){
     let display = Display::new();
 
@@ -140,39 +163,26 @@ unsafe fn process_mouse_event(mouse_event: MouseEvent){
     if mouse_point.y >= display.size().height as i32 {
         mouse_point.y = display.size().height as i32 - 1;
     }
-
-    if mouse_event.left_button {
-        dragging = true;
-    }else{
-        dragging = false;
-    }
-
-    if dragging {
-        drag_point = mouse_point;
-        if last_drag_point.x >= keyboard_window.point.x
-            && last_drag_point.x < keyboard_window.point.x + keyboard_window.size.width as i32
-            && last_drag_point.y >= keyboard_window.point.y - 16
-            && last_drag_point.y < keyboard_window.point.y
-        {
-            keyboard_window.point.x += drag_point.x - last_drag_point.x;
-            keyboard_window.point.y += drag_point.y - last_drag_point.y;
-        }
-    }else{
-        drag_point = Point { x:-1, y:-1 };
-    }
-
-    last_drag_point = drag_point;
-
+    
+    keyboard_window.on_mouse(mouse_point, mouse_event);
 }
 
-
+static mut background: BMP = BMP { data: 0, size: Size { width: 0, height: 0 } };
 fn draw() {
-	let display = Display::new();
-	display.clear(Color::new(64, 64, 64));
-	display.rect(Point::new(0, 0), Size::new(display.size().width, 18), Color::new(0, 0, 0));
-	display.text(Point::new(display.size().width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
-
 	unsafe{
+        let display = Display::new();
+        display.clear(Color::new(64, 64, 64));
+        
+        // TODO: Improve speed!
+        for y in 0..background.size.height {
+            for x in 0..background.size.width {
+                display.pixel(Point::new((x + (display.size().width - background.size.width) / 2) as i32, (y + (display.size().height - background.size.height) / 2) as i32), background.pixel(Point::new(x as i32, y as i32)));
+            }
+        }
+        
+        display.rect(Point::new(0, 0), Size::new(display.size().width, 18), Color::new(0, 0, 0));
+        display.text(Point::new(display.size().width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
+
 		display.window(&keyboard_window);
 		
 		let mut row = 0;
@@ -204,9 +214,9 @@ fn draw() {
         }
 
 		display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
+		
+        display.copy();
 	}
-
-	display.copy();
 }
 
 fn mem_test(){
@@ -251,8 +261,10 @@ fn mem_test(){
 }
 
 fn str_test(){
-    let a = String::from_str("Test string\n") + String::from_str("Another string\n");
+    let a = String::new() + "Test string: " + 7357 + "\n" +
+            "Another string: 0x" + String::from_num_radix(0xDEADBEEF, 16) + "\n";
     a.d();
+    a.substr(13, 5).d();
 }
 
 unsafe fn initialize(){
@@ -276,13 +288,6 @@ unsafe fn initialize(){
     mouse_point.x = 16;
     mouse_point.y = 16;
     
-    d("Window Dragging\n");
-    dragging = false;
-    drag_point.x = -1;
-    drag_point.y = -1;
-    last_drag_point.x = -1;
-    last_drag_point.y = -1;
-    
     d("Fonts\n");
     let unfs = UnFS::new(Disk::new());
     FONT_LOCATION = unfs.load("font.unicode.bin");
@@ -294,6 +299,8 @@ unsafe fn initialize(){
     }else{
         d("Did not find font file\n");
     }
+    
+    background.drop();
 }
 
 const INTERRUPT_LOCATION: u32 = 0x200000;
