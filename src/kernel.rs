@@ -8,6 +8,8 @@
 
 extern crate core;
 
+use core::mem;
+
 use common::debug::*;
 use common::memory::*;
 use common::string::*;
@@ -76,32 +78,23 @@ static mut mouse_point: Point = Point {
 	y: 16
 };
 
+static mut edit_string: *mut String = 0 as *mut String;
+static mut edit_offset: u32 = 0;
+
 unsafe fn clear_editor(){
     keyboard_window.title = "Press a function key to load a file";
-    TEXT_BUFFER_OFFSET = 0;
-    for i in 0..TEXT_BUFFER_SIZE {
-        *((TEXT_BUFFER_LOCATION + i*4) as *mut char) = '\0';
-    }
+    *edit_string = String::new();
+    edit_offset = 0;
 }
 
-const TEXT_BUFFER_LOCATION: u32 = 0x180000;
-const TEXT_BUFFER_SIZE: u32 = 2000;
-static mut TEXT_BUFFER_OFFSET: u32 = 0x0;
 unsafe fn load_editor_file(filename: &'static str){
     clear_editor();
     let unfs = UnFS::new(Disk::new());
     let dest = unfs.load(filename);
     if dest > 0 {
-        TEXT_BUFFER_OFFSET = 0;
         keyboard_window.title = filename;
-        for i in 0..TEXT_BUFFER_SIZE {
-            let c = *((dest + i) as *const u8) as char;
-            *((TEXT_BUFFER_LOCATION + i*4) as *mut char) = c;
-            if c == '\0' {
-                TEXT_BUFFER_OFFSET = i;
-                break;
-            }
-        }
+        *edit_string = String::from_c_str(dest as *const u8);
+        edit_offset = (*edit_string).len();
         unalloc(dest);
     }else{
         d("Did not find '");
@@ -126,20 +119,25 @@ unsafe fn process_keyboard_event(keyboard_event: KeyEvent){
             0x3D => load_background("bmw.bmp"),
             0x3E => load_background("stonehenge.bmp"),
             0x3F => load_background("tiger.bmp"),
+            0x4B => if edit_offset > 0 {
+                        edit_offset -= 1;
+                    },
+            0x4D => if edit_offset < (*edit_string).len() {
+                        edit_offset += 1;
+                    },
             _ => ()
         }
         
         match keyboard_event.character {
             '\x00' => (),
-            '\x08' => if TEXT_BUFFER_OFFSET > 0 {
-                TEXT_BUFFER_OFFSET -= 1;
-                *((TEXT_BUFFER_LOCATION + TEXT_BUFFER_OFFSET * 4) as *mut char) = '\0';
+            '\x08' => if edit_offset > 0 {
+                *edit_string = (*edit_string).substr(0, edit_offset - 1) + (*edit_string).substr(edit_offset, (*edit_string).len() - edit_offset);
+                edit_offset -= 1;
             },
             '\x1B' => clear_editor(),
-            _ => if TEXT_BUFFER_OFFSET < TEXT_BUFFER_SIZE {
-                *((TEXT_BUFFER_LOCATION + TEXT_BUFFER_OFFSET * 4) as *mut char) = keyboard_event.character;
-                TEXT_BUFFER_OFFSET += 1;
-                *((TEXT_BUFFER_LOCATION + TEXT_BUFFER_OFFSET * 4) as *mut char) = '\0';
+            _ => {
+                *edit_string = (*edit_string).substr(0, edit_offset) + keyboard_event.character + (*edit_string).substr(edit_offset, (*edit_string).len() - edit_offset);
+                edit_offset += 1;
             }
         }
     }
@@ -185,13 +183,16 @@ fn draw() {
 
 		display.window(&keyboard_window);
 		
+		let mut offset = 0;
 		let mut row = 0;
 		let mut col = 0;
-        for i in 0..TEXT_BUFFER_SIZE {
-            let c = *((TEXT_BUFFER_LOCATION + i*4) as *const char);
-            if c == '\0' {
-                break;
-            }else if c == '\n' {
+        for c_ptr in (*edit_string).as_slice() {
+            if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
+                display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
+            }
+        
+            let c = *c_ptr;
+            if c == '\n' {
                 col = 0;
                 row += 1;
             }else if c == '\t' {
@@ -207,10 +208,12 @@ fn draw() {
                 col = 0;
                 row += 1;
             }
+            
+            offset += 1;
         }
         
-        if col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
-            display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(0, 0, 0));
+        if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
+            display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
         }
 
 		display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
@@ -276,6 +279,8 @@ unsafe fn initialize(){
     str_test();
 
     d("Text Buffer\n");
+    edit_string = alloc(mem::size_of::<String>() as u32) as *mut String;
+    *edit_string = String::new();
     clear_editor();
     
     d("Keyboard Status\n");
