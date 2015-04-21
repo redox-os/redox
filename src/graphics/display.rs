@@ -63,11 +63,29 @@ impl Display {
 
 	pub fn pixel(&self, point: Point, color: Color){
         unsafe{
-            if point.x >= 0 && point.x < (*self.mode_info).xresolution as i32 && point.y >= 0 &&  point.y < (*self.mode_info).yresolution as i32 {
-                let pixelptr: u32 = (OFFSCREENLOCATION as u32) + point.y as u32 * (*self.mode_info).bytesperscanline as u32 + point.x as u32 * 3;
-				*(pixelptr as *mut u8) = color.r;
-				*((pixelptr + 1) as *mut u8) = color.g;
-				*((pixelptr + 2) as *mut u8) = color.b;
+            if color.a > 0 {
+                if point.x >= 0 && point.x < (*self.mode_info).xresolution as i32 && point.y >= 0 &&  point.y < (*self.mode_info).yresolution as i32 {
+                    let pixelptr: u32 = (OFFSCREENLOCATION as u32) + point.y as u32 * (*self.mode_info).bytesperscanline as u32 + point.x as u32 * 3;
+                    if color.a == 255 {
+                        *(pixelptr as *mut u8) = color.r;
+                        *((pixelptr + 1) as *mut u8) = color.g;
+                        *((pixelptr + 2) as *mut u8) = color.b;
+                    }else{
+                        let r = color.r as u32;
+                        let g = color.g as u32;
+                        let b = color.b as u32;
+                        let a = color.a as u32;
+                        
+                        let o_r = *(pixelptr as *const u8) as u32;
+                        let o_g = *((pixelptr + 1) as *const u8) as u32;
+                        let o_b = *((pixelptr + 2) as *const u8) as u32;
+                        let o_a = 255 - a;
+                        
+                        *(pixelptr as *mut u8) = ((o_r * o_a + r * a)/255) as u8;
+                        *((pixelptr + 1) as *mut u8) = ((o_g * o_a + g * a)/255) as u8;
+                        *((pixelptr + 2) as *mut u8) = ((o_b * o_a + b * a)/255) as u8;
+                    }
+                }
 			}
 		}
 	}
@@ -133,14 +151,24 @@ impl Display {
     }
 
 	pub fn window(&self, window: &Window){
-		self.rect(Point::new(window.point.x - 2, window.point.y - 18), Size::new(window.size.width + 4, window.size.height + 16 + 4), Color::new(0, 0, 0));
-		self.rect(Point::new(window.point.x, window.point.y), Size::new(window.size.width, window.size.height), Color::new(128, 128, 128));
-		let mut cursor = Point::new(window.point.x, window.point.y - 16);
-		for character in window.title.chars() {
-			if cursor.x + 8 <= window.point.x + window.size.width as i32 {
-				self.char(cursor, character, Color::new(255, 255, 255));
-			}
-			cursor.x += 8;
+        let border_color = Color::new(0, 0, 0);
+        let title_color = Color::new(255, 255, 255);
+		self.rect(Point::new(window.point.x - 2, window.point.y - 18), Size::new(window.size.width + 4, 18), border_color);
+		
+        let mut cursor = Point::new(window.point.x, window.point.y - 16);
+        for character in window.title.chars() {
+            if cursor.x + 8 <= window.point.x + window.size.width as i32 {
+                self.char(cursor, character, title_color);
+            }
+            cursor.x += 8;
+        }
+		
+		if !window.shaded {
+            self.rect(Point::new(window.point.x - 2, window.point.y), Size::new(2, window.size.height), border_color);
+            self.rect(Point::new(window.point.x - 2, window.point.y + window.size.height as i32), Size::new(window.size.width + 4, 2), border_color);
+            self.rect(Point::new(window.point.x + window.size.width as i32, window.point.y), Size::new(2, window.size.height), border_color);
+            
+            self.rect(Point::new(window.point.x, window.point.y), Size::new(window.size.width, window.size.height), Color { r: 0, g: 0, b: 0, a:196 });
 		}
 	}
 
