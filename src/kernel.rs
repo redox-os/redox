@@ -13,6 +13,7 @@ use core::mem;
 use common::debug::*;
 use common::memory::*;
 use common::string::*;
+use common::vector::*;
 
 use drivers::disk::*;
 use drivers::keyboard::*;
@@ -32,6 +33,7 @@ mod common {
     pub mod memory;
 	pub mod pio;
 	pub mod string;
+	pub mod vector;
 }
 
 mod drivers {
@@ -55,9 +57,31 @@ mod graphics {
 
 static mut keyboard_window: Window<'static> = Window{
 	point: Point{ x:100, y:100 },
-	size: Size { width:640, height:480 },
+	size: Size { width:800, height:600 },
 	title: "Press a function key to load a file",
 	shaded: false,
+	focused: false,
+	dragging: false,
+    last_mouse_point: Point {
+        x: 0,
+        y: 0
+    },
+    last_mouse_event: MouseEvent {
+        x: 0,
+        y: 0,
+        left_button: false,
+        right_button: false,
+        middle_button: false,
+        valid: false
+    }
+};
+
+static mut image_window: Window<'static> = Window{
+	point: Point{ x:50, y:50 },
+	size: Size { width:800, height:600 },
+	title: "Press a function key to load an image",
+	shaded: false,
+	focused: false,
 	dragging: false,
     last_mouse_point: Point {
         x: 0,
@@ -103,10 +127,11 @@ unsafe fn load_editor_file(filename: &'static str){
     }
 }
 
-unsafe fn load_background(filename: &str){
+unsafe fn load_background(filename: &'static str){
     let unfs = UnFS::new(Disk::new());
     let background_data = unfs.load(filename);
     background.drop();
+    image_window.title = filename;
     background = BMP::new(background_data);
     unalloc(background_data);
 }
@@ -162,7 +187,24 @@ unsafe fn process_mouse_event(mouse_event: MouseEvent){
         mouse_point.y = display.size().height as i32 - 1;
     }
     
-    keyboard_window.on_mouse(mouse_point, mouse_event);
+    if keyboard_window.focused {
+        if ! keyboard_window.on_mouse(mouse_point, mouse_event) {
+            if image_window.on_mouse(mouse_point, mouse_event) {
+                keyboard_window.focused = false;
+                image_window.focused = true;
+            }
+        }
+    }else if image_window.focused {
+        if ! image_window.on_mouse(mouse_point, mouse_event) {
+            if keyboard_window.on_mouse(mouse_point, mouse_event) {
+                keyboard_window.focused = true;
+                image_window.focused = false;
+            }
+        }
+    }else{
+        keyboard_window.focused = true;
+        image_window.focused = false;
+    }
 }
 
 static mut background: BMP = BMP { data: 0, size: Size { width: 0, height: 0 } };
@@ -171,49 +213,68 @@ fn draw() {
         let display = Display::new();
         display.clear(Color::new(64, 64, 64));
         
-        // TODO: Improve speed!
-        for y in 0..background.size.height {
-            for x in 0..background.size.width {
-                display.pixel(Point::new((x + (display.size().width - background.size.width) / 2) as i32, (y + (display.size().height - background.size.height) / 2) as i32), background.pixel(Point::new(x as i32, y as i32)));
-            }
-        }
-        
         display.rect(Point::new(0, 0), Size::new(display.size().width, 18), Color::new(0, 0, 0));
         display.text(Point::new(display.size().width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
 
+        if ! image_window.focused {
+            display.window(&image_window);
+            // TODO: Improve speed!
+            if ! image_window.shaded {
+                for y in 0..background.size.height {
+                    for x in 0..background.size.width {
+                        display.pixel(Point::new(image_window.point.x + (x + (image_window.size.width - background.size.width) / 2) as i32, image_window.point.y + (y + (image_window.size.height - background.size.height) / 2) as i32), background.pixel(Point::new(x as i32, y as i32)));
+                    }
+                }
+            }
+        }
+        
 		display.window(&keyboard_window);
 		
-		let mut offset = 0;
-		let mut row = 0;
-		let mut col = 0;
-        for c_ptr in (*edit_string).as_slice() {
+		if ! keyboard_window.shaded {
+            let mut offset = 0;
+            let mut row = 0;
+            let mut col = 0;
+            for c_ptr in (*edit_string).as_slice() {
+                if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
+                    display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
+                }
+            
+                let c = *c_ptr;
+                if c == '\n' {
+                    col = 0;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    if col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
+                        let point = Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32);
+                        display.char(point, c, Color::new(255, 255, 255));
+                        col += 1;
+                    }
+                }
+                if col >= keyboard_window.size.width / 8 {
+                    col = 0;
+                    row += 1;
+                }
+                
+                offset += 1;
+            }
+            
             if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
                 display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
             }
-        
-            let c = *c_ptr;
-            if c == '\n' {
-                col = 0;
-                row += 1;
-            }else if c == '\t' {
-                col += 8 - col % 8;
-            }else{
-                if col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
-                    let point = Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32);
-                    display.char(point, c, Color::new(255, 255, 255));
-                    col += 1;
-                }
-            }
-            if col >= keyboard_window.size.width / 8 {
-                col = 0;
-                row += 1;
-            }
-            
-            offset += 1;
         }
         
-        if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
-            display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
+        if image_window.focused {
+            display.window(&image_window);
+            // TODO: Improve speed!
+            if ! image_window.shaded {
+                for y in 0..background.size.height {
+                    for x in 0..background.size.width {
+                        display.pixel(Point::new(image_window.point.x + (x + (image_window.size.width - background.size.width) / 2) as i32, image_window.point.y + (y + (image_window.size.height - background.size.height) / 2) as i32), background.pixel(Point::new(x as i32, y as i32)));
+                    }
+                }
+            }
         }
 
 		display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
@@ -268,6 +329,15 @@ fn str_test(){
             "Another string: 0x" + String::from_num_radix(0xDEADBEEF, 16) + "\n";
     a.d();
     a.substr(13, 5).d();
+    
+    let mut b = Vector::<u32>::new() + 12 + 3 + 5;
+    b = b + 2;
+    d("Numbers:\n");
+    for n_ptr in b.sub(1, 2).as_slice() {
+        dd(*n_ptr);
+        dl();
+    }
+    dl();
 }
 
 unsafe fn initialize(){

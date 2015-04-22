@@ -184,8 +184,12 @@ impl String {
     
     // TODO: Str trait
     pub fn as_slice(&self) -> &[char] {
-        unsafe {
-            slice::from_raw_parts(self.data, self.length as usize)
+        if self.data as u32 == 0 || self.length == 0 {
+            &[]
+        }else{
+            unsafe {
+                slice::from_raw_parts(self.data, self.length as usize)
+            }
         }
     }
     

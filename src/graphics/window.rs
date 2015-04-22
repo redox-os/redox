@@ -8,6 +8,7 @@ pub struct Window<'a> {
 	pub size: Size,
 	pub title: &'a str,
 	pub shaded: bool,
+	pub focused: bool,
 	pub dragging: bool,
 	pub last_mouse_point: Point,
 	pub last_mouse_event: MouseEvent
@@ -21,6 +22,7 @@ impl<'a> Window<'a> {
             size: size,
             title: title,
             shaded: false,
+            focused: false,
             dragging: false,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -34,7 +36,9 @@ impl<'a> Window<'a> {
         }
 	}
 	
-	pub fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent){
+	pub fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent) -> bool{
+        let mut caught = false;
+	
         if mouse_event.left_button
         {
             if !self.last_mouse_event.left_button
@@ -44,17 +48,34 @@ impl<'a> Window<'a> {
                 && mouse_point.y < self.point.y
             {
                 self.dragging = true;
+                caught = true;
             }
         }else{
             self.dragging = false;
+        }
+        
+        if mouse_event.right_button
+        {
+            if !self.last_mouse_event.right_button
+                && mouse_point.x >= self.point.x - 2
+                && mouse_point.x < self.point.x + self.size.width as i32 + 4
+                && mouse_point.y >= self.point.y - 18
+                && mouse_point.y < self.point.y
+            {
+                self.shaded = !self.shaded;
+                caught = true;
+            }
         }
 
         if self.dragging {
             self.point.x += mouse_point.x - self.last_mouse_point.x;
             self.point.y += mouse_point.y - self.last_mouse_point.y;
+            caught = true;
         }
 
         self.last_mouse_point = mouse_point;
         self.last_mouse_event = mouse_event;
+        
+        return caught;
 	}
 }
