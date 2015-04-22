@@ -19,6 +19,7 @@ pub const MOUSE_CURSOR: [u8; 16] = [
     0b00000000
 ];
 
+#[derive(Copy, Clone)]
 pub struct MouseEvent {
 	pub x: i32,
 	pub y: i32,
