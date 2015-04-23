@@ -1,5 +1,5 @@
 use core::marker::Copy;
-use core::mem;
+use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
 use core::slice;
@@ -9,7 +9,7 @@ use common::memory::*;
 
 pub struct Vector<T> {
     data: *const T,
-    length: u32
+    length: usize
 }
 
 impl <T: Copy> Vector<T> {
@@ -21,18 +21,18 @@ impl <T: Copy> Vector<T> {
     }
     
     pub fn from_slice(s: &[T]) -> Vector<T> {
-        let length = s.len() as u32;
+        let length = s.len();
         
         if length == 0 {
             return Vector::<T>::new();
         }
         
-        let data = alloc(length * (mem::size_of::<T>() as u32));
+        let data = alloc(length * (size_of::<T>()));
     
         let mut i = 0;
         for c in s {
             unsafe {
-                *((data + i*(mem::size_of::<T>() as u32)) as *mut T) = *c;
+                *((data + i*(size_of::<T>())) as *mut T) = *c;
             }
             i += 1;
         }
@@ -44,7 +44,7 @@ impl <T: Copy> Vector<T> {
     }
     
     pub fn from_value(value: T) -> Vector<T> {
-        let data = alloc(mem::size_of::<T>() as u32);
+        let data = alloc(size_of::<T>());
         
         unsafe {
             *(data as *mut T) = value;
@@ -56,7 +56,7 @@ impl <T: Copy> Vector<T> {
         }
     }
     
-    pub fn sub(&self, start: u32, len: u32) -> Vector<T> {
+    pub fn sub(&self, start: usize, len: usize) -> Vector<T> {
         let mut i = start;
         if i > self.len() {
             i = self.len();
@@ -72,11 +72,11 @@ impl <T: Copy> Vector<T> {
             return Vector::<T>::new();
         }
         
-        let data = alloc(length * (mem::size_of::<T>() as u32));
+        let data = alloc(length * size_of::<T>());
     
         for k in i..j {
             unsafe {
-                *((data + (k - i)*(mem::size_of::<T>() as u32)) as *mut T) = *(((self.data as u32) + k*(mem::size_of::<T>() as u32)) as *const T);
+                *((data + (k - i) * size_of::<T>()) as *mut T) = *(((self.data as usize) + k* size_of::<T>()) as *const T);
             }
         }
         
@@ -86,17 +86,17 @@ impl <T: Copy> Vector<T> {
         }
     }
     
-    pub fn len(&self) -> u32 {
+    pub fn len(&self) -> usize {
         self.length
     }
     
     // TODO: Str trait
     pub fn as_slice(&self) -> &[T] {
-        if self.data as u32 == 0 && self.length == 0 {
+        if self.data as usize == 0 && self.length == 0 {
             &[]
         }else{
             unsafe {
-                slice::from_raw_parts(self.data, self.length as usize)
+                slice::from_raw_parts(self.data, self.length)
             }
         }
     }
@@ -104,7 +104,7 @@ impl <T: Copy> Vector<T> {
 
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
-        unalloc(self.data as u32);
+        unalloc(self.data as usize);
         self.data = 0 as *const T;
         self.length = 0;
     }
@@ -119,18 +119,18 @@ impl <T: Copy> Add for Vector<T> {
             return Vector::<T>::new();
         }
         
-        let data = alloc(length * (mem::size_of::<T>() as u32));
+        let data = alloc(length * size_of::<T>());
     
         let mut i = 0;
         for c in self.as_slice() {
             unsafe {
-                *((data + i*(mem::size_of::<T>() as u32)) as *mut T) = *c;
+                *((data + i * size_of::<T>()) as *mut T) = *c;
             }
             i += 1;
         }
         for c in other.as_slice() {
             unsafe {
-                *((data + i*(mem::size_of::<T>() as u32)) as *mut T) = *c;
+                *((data + i * size_of::<T>()) as *mut T) = *c;
             }
             i += 1;
         }

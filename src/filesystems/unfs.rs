@@ -137,7 +137,7 @@ impl UnFS {
         ret
     }
 
-    pub unsafe fn load(&self, filename: &str) -> u32{
+    pub unsafe fn load(&self, filename: &str) -> usize{
         let node = self.node(filename);
         
         if node != ptr::null() && (*node).data_sector_list.address > 0 {
@@ -152,7 +152,7 @@ impl UnFS {
                 }
             }
             
-            let destination = alloc(size as u32);
+            let destination = alloc(size as usize);
             if destination > 0 {
                 for i in 0..1 {
                     if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{

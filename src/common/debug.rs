@@ -40,14 +40,14 @@ pub fn dbh(byte: u8){
     db(low);
 }
 
-pub fn dh(num: u32){
-    dbh((num >> 24) as u8);
-    dbh((num >> 16) as u8);
-    dbh((num >> 8) as u8);
-    dbh(num as u8);
+pub fn dh(num: usize){
+    if num >= 16 {
+        dh(num / 16);
+    }
+    dbh((num % 16) as u8);
 }
 
-pub fn dd(num: u32){
+pub fn dd(num: usize){
     if num >= 10 {
         dd(num / 10);
     }
