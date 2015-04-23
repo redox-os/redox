@@ -15,22 +15,22 @@ pub struct KeyboardStatus {
 
 impl KeyboardStatus {
 	fn evaluate(&mut self, scancode_packed: u8){
-		if scancode_packed == 0x2A as u8 {
+		if scancode_packed == 0x2A {
 			self.lshift = true;
-		} else if scancode_packed == 0xAA as u8 {
+		} else if scancode_packed == 0xAA {
 			self.lshift = false;
-		} else if scancode_packed == 0x36 as u8 {
+		} else if scancode_packed == 0x36 {
 			self.rshift = true;
-		} else if scancode_packed == 0xB6 as u8 {
+		} else if scancode_packed == 0xB6 {
 			self.rshift = false;
-		} else if scancode_packed == 0x3A as u8 {
+		} else if scancode_packed == 0x3A {
 			if !self.caps_lock {
 				self.caps_lock = true;
 				self.caps_lock_toggle = true;
 			}else{
 				self.caps_lock_toggle = false;
 			}
-		} else if scancode_packed == 0xBA as u8 {
+		} else if scancode_packed == 0xBA {
 			if self.caps_lock && !self.caps_lock_toggle {
 				self.caps_lock = false;
 			}
@@ -56,7 +56,7 @@ pub fn keyboard_interrupt() -> KeyEvent{
     }
 
 	let pressed;
-	if scancode_packed < 0x80 as u8 {
+	if scancode_packed < 0x80 {
 		pressed = true;
 	}else{
 		pressed = false;
@@ -70,14 +70,14 @@ pub fn keyboard_interrupt() -> KeyEvent{
 		shift = keyboard_status.is_shifted();
 	}
 
-	let scancode = (scancode_packed & 0x7F) as u8;
+	let scancode = scancode_packed & 0x7F;
 
 	KeyEvent { character:char_for_scancode(scancode, shift), scancode:scancode, pressed:pressed }
 }
 
 fn char_for_scancode(scancode: u8, shift: bool) -> char{
 	let mut character = '\x00';
-	if scancode < 58 as u8 {
+	if scancode < 58 {
         if shift {
             character = SCANCODES[scancode as usize][1];
         }else{
