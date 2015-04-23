@@ -2,6 +2,7 @@ use core::marker::Copy;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
+use core::result::Result;
 use core::slice;
 use core::slice::SliceExt;
 
@@ -53,6 +54,16 @@ impl <T: Copy> Vector<T> {
         Vector::<T> {
             data: data as *const T,
             length: 1
+        }
+    }
+    
+    pub fn get(&self, i: usize) -> Result<T, usize> {
+        if i >= self.len() {
+            return Result::Err(self.len());
+        }else{
+            unsafe{
+                return Result::Ok(*(((self.data as usize) + i * size_of::<T>()) as *const T));
+            }
         }
     }
     
