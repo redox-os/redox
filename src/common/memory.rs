@@ -1,25 +1,27 @@
+use core::mem::size_of;
+
 use common::debug::*;
 
-const ALLOCATE_ADDRESS: u32 = 0x1000000;
-const CLUSTER_COUNT: u32 = 64*1024; // 4 GiB
-const CLUSTER_SIZE: u32 = 64*1024; // Of 64 K chunks
+const ALLOCATE_ADDRESS: usize = 0x1000000;
+const CLUSTER_COUNT: usize = 64*1024; // 4 GiB
+const CLUSTER_SIZE: usize = 64*1024; // Of 64 K chunks
 
-unsafe fn cluster(number: u32) -> u32{
+unsafe fn cluster(number: usize) -> usize{
     if number < CLUSTER_COUNT {
-        return *((ALLOCATE_ADDRESS + number * 4) as *const u32);
+        return *((ALLOCATE_ADDRESS + number * size_of::<usize>()) as *const usize);
     }else{
         return 0;
     }
 }
 
-unsafe fn set_cluster(number: u32, address: u32){
+unsafe fn set_cluster(number: usize, address: usize){
     if number < CLUSTER_COUNT {
-        *((ALLOCATE_ADDRESS + number * 4) as *mut u32) = address;
+        *((ALLOCATE_ADDRESS + number * size_of::<usize>()) as *mut usize) = address;
     }
 }
 
-unsafe fn cluster_address(number: u32) -> u32{
-    return ALLOCATE_ADDRESS + CLUSTER_COUNT*4 + number*CLUSTER_SIZE;
+unsafe fn cluster_address(number: usize) -> usize{
+    return ALLOCATE_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number*CLUSTER_SIZE;
 }
 
 pub fn cluster_init(){
@@ -38,7 +40,7 @@ pub fn cluster_init(){
     }
 }
 
-pub fn alloc(size: u32) -> u32{
+pub fn alloc(size: usize) -> usize{
     unsafe{
         let mut number = 0;
         let mut count = 0;
@@ -67,7 +69,7 @@ pub fn alloc(size: u32) -> u32{
     }
 }
 
-pub fn unalloc(ptr: u32){
+pub fn unalloc(ptr: usize){
     unsafe{
         if ptr > 0 {
             for i in 0..CLUSTER_COUNT {

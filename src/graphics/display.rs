@@ -3,9 +3,8 @@ use core::str::StrExt;
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
-use graphics::window::*;
 
-const VBEMODEINFOLOCATION: u32 = 0x5200;
+const VBEMODEINFOLOCATION: usize = 0x5200;
 
 pub struct VBEModeInfo {
 	attributes: u16,
@@ -42,13 +41,13 @@ pub struct VBEModeInfo {
 	offscreenmemsize: u16
 }
 
-pub static mut FONT_LOCATION: u32 = 0x0;
+pub static mut FONT_LOCATION: usize = 0x0;
 
 pub struct Display {
 	mode_info: *const VBEModeInfo
 }
 
-const OFFSCREENLOCATION: u32 = 0x400000;
+const OFFSCREENLOCATION: usize = 0x400000;
 
 impl Display {
 	pub fn new() -> Display {
@@ -65,20 +64,20 @@ impl Display {
         unsafe{
             if color.a > 0 {
                 if point.x >= 0 && point.x < (*self.mode_info).xresolution as i32 && point.y >= 0 &&  point.y < (*self.mode_info).yresolution as i32 {
-                    let pixelptr: u32 = (OFFSCREENLOCATION as u32) + point.y as u32 * (*self.mode_info).bytesperscanline as u32 + point.x as u32 * 3;
+                    let pixelptr: usize = OFFSCREENLOCATION + point.y as usize * (*self.mode_info).bytesperscanline as usize + point.x as usize * 3;
                     if color.a == 255 {
                         *(pixelptr as *mut u8) = color.r;
                         *((pixelptr + 1) as *mut u8) = color.g;
                         *((pixelptr + 2) as *mut u8) = color.b;
                     }else{
-                        let r = color.r as u32;
-                        let g = color.g as u32;
-                        let b = color.b as u32;
-                        let a = color.a as u32;
+                        let r = color.r as usize;
+                        let g = color.g as usize;
+                        let b = color.b as usize;
+                        let a = color.a as usize;
                         
-                        let o_r = *(pixelptr as *const u8) as u32;
-                        let o_g = *((pixelptr + 1) as *const u8) as u32;
-                        let o_b = *((pixelptr + 2) as *const u8) as u32;
+                        let o_r = *(pixelptr as *const u8) as usize;
+                        let o_g = *((pixelptr + 1) as *const u8) as usize;
+                        let o_b = *((pixelptr + 2) as *const u8) as usize;
                         let o_a = 255 - a;
                         
                         *(pixelptr as *mut u8) = ((o_r * o_a + r * a)/255) as u8;
@@ -101,10 +100,10 @@ impl Display {
 	pub fn clear(&self, color:Color){
         unsafe {
             let mut i = 0;
-            while i < (*self.mode_info).yresolution as u32 * (*self.mode_info).bytesperscanline as u32 {
-				*(((OFFSCREENLOCATION as u32) + i) as *mut u8) = color.r;
-				*(((OFFSCREENLOCATION as u32) + i + 1) as *mut u8) = color.g;
-				*(((OFFSCREENLOCATION as u32) + i + 2) as *mut u8) = color.b;
+            while i < (*self.mode_info).yresolution as usize * (*self.mode_info).bytesperscanline as usize {
+				*((OFFSCREENLOCATION + i) as *mut u8) = color.r;
+				*((OFFSCREENLOCATION + i + 1) as *mut u8) = color.g;
+				*((OFFSCREENLOCATION + i + 2) as *mut u8) = color.b;
                 i += 3;
 			}
 		}
@@ -112,7 +111,7 @@ impl Display {
 
 	pub unsafe fn char_bitmap(&self, point: Point, bitmap_location: *const u8, color: Color){
         for row in 0..16 {
-            let row_data = *((bitmap_location as u32 + row) as *const u8);
+            let row_data = *((bitmap_location as usize + row) as *const u8);
             for col in 0..8 {
                 let pixel = (row_data >> (7 - col)) & 1;
                 if pixel > 0 {
@@ -125,7 +124,7 @@ impl Display {
 	pub fn char(&self, point: Point, character: char, color: Color){
         unsafe{
             if FONT_LOCATION > 0 {
-                self.char_bitmap(point, (FONT_LOCATION + 16*(character as u32)) as *const u8, color);
+                self.char_bitmap(point, (FONT_LOCATION + 16*(character as usize)) as *const u8, color);
             }
         }
 	}
@@ -140,8 +139,8 @@ impl Display {
 
     pub unsafe fn c_text(&self, point: Point, c_text: *const u8, color: Color){
         let mut cursor = Point::new(point.x, point.y);
-        for i in 0..((*self.mode_info).xresolution as u32 - point.x as u32)/8 {
-            let character = *((c_text as u32 + i) as *const u8);
+        for i in 0..((*self.mode_info).xresolution as usize - point.x as usize)/8 {
+            let character = *((c_text as usize + i) as *const u8);
             if character == 0 {
                 break;
             }
@@ -150,34 +149,12 @@ impl Display {
         }
     }
 
-	pub fn window(&self, window: &Window){
-        let border_color = Color::new(0, 0, 0);
-        let title_color = Color::new(255, 255, 255);
-		self.rect(Point::new(window.point.x - 2, window.point.y - 18), Size::new(window.size.width + 4, 18), border_color);
-		
-        let mut cursor = Point::new(window.point.x, window.point.y - 16);
-        for character in window.title.chars() {
-            if cursor.x + 8 <= window.point.x + window.size.width as i32 {
-                self.char(cursor, character, title_color);
-            }
-            cursor.x += 8;
-        }
-		
-		if !window.shaded {
-            self.rect(Point::new(window.point.x - 2, window.point.y), Size::new(2, window.size.height), border_color);
-            self.rect(Point::new(window.point.x - 2, window.point.y + window.size.height as i32), Size::new(window.size.width + 4, 2), border_color);
-            self.rect(Point::new(window.point.x + window.size.width as i32, window.point.y), Size::new(2, window.size.height), border_color);
-            
-            self.rect(Point::new(window.point.x, window.point.y), Size::new(window.size.width, window.size.height), Color { r: 0, g: 0, b: 0, a:196 });
-		}
-	}
-
 	pub fn copy(&self){
         unsafe{
             let mut i = 0;
-            while i < (*self.mode_info).yresolution as u32 * (*self.mode_info).bytesperscanline as u32 {
-                let data: u64 = *(((OFFSCREENLOCATION as u32) + i) as *const u64);
-                *((((*self.mode_info).physbaseptr as u32) + i) as *mut u64) = data;
+            while i < (*self.mode_info).yresolution as usize * (*self.mode_info).bytesperscanline as usize {
+                let data: u64 = *((OFFSCREENLOCATION + i) as *const u64);
+                *((((*self.mode_info).physbaseptr as usize) + i) as *mut u64) = data;
                 i += 8;
             }
 		}

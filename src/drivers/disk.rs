@@ -1,4 +1,3 @@
-use common::debug::*;
 use common::pio::*;
 
 //Status port bits
@@ -141,15 +140,7 @@ impl Disk {
     }
 
     //TODO: Make sure count is not zero!
-    pub unsafe fn read(&self, lba: u64, count: u16, destination: u32) -> u8{
-        /*
-        d("R: ");
-        dh(lba as u32);
-        d(", ");
-        dd(count as u32);
-        d("\n");
-        */
-
+    pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8{
         while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
         }
@@ -168,7 +159,7 @@ impl Disk {
             self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
             self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_PIO_EXT);
 
-            for sector in 0..count as u32 {
+            for sector in 0..count as usize {
                 let err = self.ide_poll(true);
                 if err > 0{
                     return err;
@@ -186,12 +177,6 @@ impl Disk {
 
     //TODO: Fix and make sure count is not zero!
     pub unsafe fn write(&self, lba: u64, count: u16, source: u32) -> u8{
-        d("W: ");
-        dh(lba as u32);
-        d(", ");
-        dd(count as u32);
-        d("\n");
-
         while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
         }
