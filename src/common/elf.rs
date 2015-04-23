@@ -40,9 +40,21 @@ impl ELF {
         if self.data > 0 {
             // TODO: Support 64-bit version
             let entry = *((self.data + 0x18) as *const u32);
-            if entry > 0 {
+            if entry >= 0xC0000000 && entry < 0xC0000000 + 1024*4096 {
+                // Setup 4 MB upper mem space to map to program
+                for i in 0..1024 {
+                    let virtual_address = 0xC0000000 + i*4096;
+                    let physical_address = self.data + i*4096 + 4096;
+                    set_page(virtual_address, physical_address/*extra 4096 to handle null segment*/);
+                }
+                
                 asm!("call $0\n"
-                    : : "{eax}"(self.data as u32 + entry) : : "intel");
+                    : : "{eax}"(entry) : : "intel");
+                
+                // Reset 4 MB upper mem space to identity
+                for i in 0..1024 {
+                    identity_page(0xC0000000 + i*4096);
+                }
             }else{
                 d("Empty ELF Entry\n");
             }

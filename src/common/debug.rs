@@ -41,10 +41,10 @@ pub fn dbh(byte: u8){
 }
 
 pub fn dh(num: usize){
-    if num >= 16 {
-        dh(num / 16);
+    if num >= 256 {
+        dh(num / 256);
     }
-    dbh((num % 16) as u8);
+    dbh((num % 256) as u8);
 }
 
 pub fn dd(num: usize){

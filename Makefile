@@ -15,7 +15,13 @@ kernel.o: src/kernel.rs
 kernel.bin: src/linker.ld kernel.o
 	$(LD) -m elf_i386 -o $@ -T $^
 
-filesystem/filesystem.asm:
+test.o: programs/test.rs
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $@ --emit obj $<
+
+filesystem/test.bin: programs/linker.ld test.o
+	$(LD) -m elf_i386 -o $@ -T $^
+
+filesystem/filesystem.asm: filesystem/test.bin
 	ls filesystem |  awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > filesystem/filesystem.asm
 
 harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
@@ -25,4 +31,4 @@ run: harddrive.bin
 	$(QEMU) -serial mon:stdio -sdl -hda $<
 
 clean:
-	rm -f *.bin *.o filesystem/filesystem.asm
+	rm -f *.bin *.o filesystem/test.bin filesystem/filesystem.asm

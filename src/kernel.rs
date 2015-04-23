@@ -8,6 +8,7 @@ extern crate core;
 use core::mem::size_of;
 
 use common::debug::*;
+use common::elf::*;
 use common::memory::*;
 use common::string::*;
 
@@ -254,10 +255,12 @@ unsafe fn initialize(){
     d(" bits");
     dl();
 
+    d("Paging\n");
+    page_init();
+    
     d("Clusters\n");
     cluster_init();
     
-
     d("Text Buffer\n");
     edit_string = alloc(size_of::<String>()) as *mut String;
     *edit_string = String::new();
@@ -285,6 +288,10 @@ unsafe fn initialize(){
     
     d("Background\n");
     background.drop();
+    
+    d("ELF\n");
+    let elf = ELF::new(unfs.load("test.bin"));
+    elf.run();
 }
 
 const INTERRUPT_LOCATION: *const u8 = 0x200000 as *const u8;
