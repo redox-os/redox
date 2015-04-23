@@ -288,14 +288,14 @@ unsafe fn initialize(){
     background.drop();
 }
 
-const INTERRUPT_LOCATION: usize = 0x200000;
+const INTERRUPT_LOCATION: *const u8 = 0x200000 as *const u8;
 
 #[start]
 #[no_mangle]
 pub fn kernel() {
 	let interrupt: u8;
 	unsafe {
-		interrupt = *(INTERRUPT_LOCATION as *const u8);
+		interrupt = *INTERRUPT_LOCATION;
 	}
 
 	if interrupt == 255 {

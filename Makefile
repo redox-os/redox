@@ -1,5 +1,8 @@
 RUSTC=rustc
-RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check -Z no-landing-pads -O -A dead-code
+RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
+	-O -Z no-landing-pads \
+	-A dead-code \
+	-W trivial-casts -W trivial-numeric-casts
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386

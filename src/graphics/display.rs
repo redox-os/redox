@@ -115,7 +115,7 @@ impl Display {
             for col in 0..8 {
                 let pixel = (row_data >> (7 - col)) & 1;
                 if pixel > 0 {
-                    self.pixel(Point::new(point.x + col as i32, point.y + row as i32), color);
+                    self.pixel(Point::new(point.x + col, point.y + row as i32), color);
                 }
             }
         }
