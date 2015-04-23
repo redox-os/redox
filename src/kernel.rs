@@ -1,10 +1,6 @@
 #![feature(asm)]
 #![feature(core)]
-#![feature(intrinsics)]
-#![feature(lang_items)]
 #![feature(no_std)]
-#![feature(start)]
-#![feature(unboxed_closures)]
 #![no_std]
 
 extern crate core;
@@ -30,6 +26,7 @@ use graphics::window::*;
 
 mod common {
     pub mod debug;
+    pub mod elf;
     pub mod memory;
 	pub mod pio;
 	pub mod string;
@@ -259,6 +256,7 @@ unsafe fn initialize(){
 
     d("Clusters\n");
     cluster_init();
+    
 
     d("Text Buffer\n");
     edit_string = alloc(size_of::<String>()) as *mut String;
@@ -277,7 +275,7 @@ unsafe fn initialize(){
     
     d("Fonts\n");
     let unfs = UnFS::new(Disk::new());
-    FONT_LOCATION = unfs.load("font.unicode.bin");
+    FONT_LOCATION = unfs.load("unifont.font");
     
     if FONT_LOCATION > 0 {
         d("Read font file\n");
@@ -285,12 +283,12 @@ unsafe fn initialize(){
         d("Did not find font file\n");
     }
     
+    d("Background\n");
     background.drop();
 }
 
 const INTERRUPT_LOCATION: *const u8 = 0x200000 as *const u8;
 
-#[start]
 #[no_mangle]
 pub fn kernel() {
 	let interrupt: u8;
