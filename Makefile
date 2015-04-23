@@ -12,13 +12,13 @@ all: harddrive.bin
 kernel.o: src/kernel.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $@ --emit obj $<
 
-kernel.bin: src/linker.ld kernel.o
+kernel.bin: src/kernel.ld kernel.o
 	$(LD) -m elf_i386 -o $@ -T $^
 
-test.o: programs/test.rs
+test.o: src/test.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $@ --emit obj $<
 
-filesystem/test.bin: programs/linker.ld test.o
+filesystem/test.bin: src/program.ld test.o
 	$(LD) -m elf_i386 -o $@ -T $^
 
 filesystem/filesystem.asm: filesystem/test.bin
