@@ -6,7 +6,6 @@ RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
-PROGRAMS=image_viewer text_editor
 
 all: harddrive.bin
 
