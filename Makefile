@@ -6,23 +6,22 @@ RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
+PROGRAMS=image_viewer text_editor
 
 all: harddrive.bin
 
-kernel.o: src/kernel.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $@ --emit obj $<
+kernel.bin: src/kernel.rs
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $<.o --emit obj $<
+	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $<.o
+	rm $<.o
 
-kernel.bin: src/kernel.ld kernel.o
-	$(LD) -m elf_i386 -o $@ -T $^
-
-test.o: src/test.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $@ --emit obj $<
-
-filesystem/test.bin: src/program.ld test.o
-	$(LD) -m elf_i386 -o $@ -T $^
+filesystem/%.bin: src/%.rs
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $<.o --emit obj $<
+	$(LD) -m elf_i386 -o $@ -T src/program.ld $<.o
+	rm $<.o
 
 filesystem/filesystem.asm: filesystem/test.bin
-	ls filesystem |  awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > filesystem/filesystem.asm
+	ls filesystem |  awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
@@ -31,4 +30,4 @@ run: harddrive.bin
 	$(QEMU) -serial mon:stdio -sdl -hda $<
 
 clean:
-	rm -f *.bin *.o filesystem/test.bin filesystem/filesystem.asm
+	rm -f *.bin filesystem/*.bin filesystem/filesystem.asm
