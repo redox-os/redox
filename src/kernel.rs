@@ -10,7 +10,6 @@ use core::mem::size_of;
 use common::debug::*;
 use common::elf::*;
 use common::memory::*;
-use common::string::*;
 
 use drivers::disk::*;
 use drivers::keyboard::*;
@@ -18,12 +17,12 @@ use drivers::mouse::*;
 
 use filesystems::unfs::*;
 
-use graphics::bmp::*;
 use graphics::color::*;
 use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
-use graphics::window::*;
+
+use programs::editor::*;
 
 mod common {
     pub mod debug;
@@ -53,115 +52,19 @@ mod graphics {
 	pub mod window;
 }
 
-static mut keyboard_window: Window = Window{
-	point: Point{ x:100, y:100 },
-	size: Size { width:800, height:600 },
-	title: "Press a function key to load a file",
-	shaded: false,
-	dragging: false,
-    last_mouse_point: Point {
-        x: 0,
-        y: 0
-    },
-    last_mouse_event: MouseEvent {
-        x: 0,
-        y: 0,
-        left_button: false,
-        right_button: false,
-        middle_button: false,
-        valid: false
-    }
-};
-
-static mut image_window: Window = Window{
-	point: Point{ x:50, y:50 },
-	size: Size { width:800, height:600 },
-	title: "Press a function key to load an image",
-	shaded: false,
-	dragging: false,
-    last_mouse_point: Point {
-        x: 0,
-        y: 0
-    },
-    last_mouse_event: MouseEvent {
-        x: 0,
-        y: 0,
-        left_button: false,
-        right_button: false,
-        middle_button: false,
-        valid: false
-    }
-};
+mod programs {
+    pub mod editor;
+}
 
 static mut mouse_point: Point = Point {
 	x: 16,
 	y: 16
 };
 
-static mut edit_string: *mut String = 0 as *mut String;
-static mut edit_offset: usize = 0;
+static mut editor: *mut Editor = 0 as *mut Editor;
 
-unsafe fn clear_editor(){
-    keyboard_window.title = "Press a function key to load a file";
-    *edit_string = String::new();
-    edit_offset = 0;
-}
-
-unsafe fn load_editor_file(filename: &'static str){
-    clear_editor();
-    let unfs = UnFS::new(Disk::new());
-    let dest = unfs.load(filename);
-    if dest > 0 {
-        keyboard_window.title = filename;
-        *edit_string = String::from_c_str(dest as *const u8);
-        edit_offset = (*edit_string).len();
-        unalloc(dest);
-    }else{
-        d("Did not find '");
-        d(filename);
-        d("'\n");
-    }
-}
-
-unsafe fn load_background(filename: &'static str){
-    let unfs = UnFS::new(Disk::new());
-    let background_data = unfs.load(filename);
-    background.drop();
-    image_window.title = filename;
-    background = BMP::new(background_data);
-    unalloc(background_data);
-}
-
-unsafe fn process_keyboard_event(keyboard_event: KeyEvent){
-    if keyboard_event.pressed {
-        match keyboard_event.scancode {
-            0x3B => load_editor_file("README.md"),
-            0x3C => load_editor_file("LICENSE.md"),
-            0x3D => load_background("bmw.bmp"),
-            0x3E => load_background("stonehenge.bmp"),
-            0x3F => load_background("tiger.bmp"),
-            0x4B => if edit_offset > 0 {
-                        edit_offset -= 1;
-                    },
-            0x4D => if edit_offset < (*edit_string).len() {
-                        edit_offset += 1;
-                    },
-            _ => ()
-        }
-        
-        match keyboard_event.character {
-            '\x00' => (),
-            '\x08' => if edit_offset > 0 {
-                *edit_string = (*edit_string).substr(0, edit_offset - 1) + (*edit_string).substr(edit_offset, (*edit_string).len() - edit_offset);
-                edit_offset -= 1;
-            },
-            '\x1B' => clear_editor(),
-            _ => {
-                *edit_string = (*edit_string).substr(0, edit_offset) + keyboard_event.character + (*edit_string).substr(edit_offset, (*edit_string).len() - edit_offset);
-                edit_offset += 1;
-            }
-        }
-    }
+unsafe fn process_keyboard_event(key_event: KeyEvent){
+    (*editor).on_key(key_event);
 }
 
 unsafe fn process_mouse_event(mouse_event: MouseEvent){
@@ -183,12 +86,9 @@ unsafe fn process_mouse_event(mouse_event: MouseEvent){
         mouse_point.y = display.size().height as i32 - 1;
     }
     
-    if ! keyboard_window.on_mouse(mouse_point, mouse_event) {
-        image_window.on_mouse(mouse_point, mouse_event);
-    }
+    (*editor).on_mouse(mouse_point, mouse_event);
 }
 
-static mut background: BMP = BMP { data: 0, size: Size { width: 0, height: 0 } };
 fn draw() {
 	unsafe{
         let display = Display::new();
@@ -197,52 +97,7 @@ fn draw() {
         display.rect(Point::new(0, 0), Size::new(display.size().width, 18), Color::new(0, 0, 0));
         display.text(Point::new(display.size().width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
 
-        image_window.draw(&display);
-        // TODO: Improve speed!
-        if ! image_window.shaded {
-            for y in 0..background.size.height {
-                for x in 0..background.size.width {
-                    display.pixel(Point::new(image_window.point.x + (x + (image_window.size.width - background.size.width) / 2) as i32, image_window.point.y + (y + (image_window.size.height - background.size.height) / 2) as i32), background.pixel(Point::new(x as i32, y as i32)));
-                }
-            }
-        }
-        
-		keyboard_window.draw(&display);
-		
-		if ! keyboard_window.shaded {
-            let mut offset = 0;
-            let mut row = 0;
-            let mut col = 0;
-            for c_ptr in (*edit_string).as_slice() {
-                if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
-                    display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
-                }
-            
-                let c = *c_ptr;
-                if c == '\n' {
-                    col = 0;
-                    row += 1;
-                }else if c == '\t' {
-                    col += 8 - col % 8;
-                }else{
-                    if col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
-                        let point = Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32);
-                        display.char(point, c, Color::new(255, 255, 255));
-                        col += 1;
-                    }
-                }
-                if col >= keyboard_window.size.width / 8 {
-                    col = 0;
-                    row += 1;
-                }
-                
-                offset += 1;
-            }
-            
-            if offset == edit_offset && col < keyboard_window.size.width / 8 && row < keyboard_window.size.height / 16 {
-                display.char(Point::new(keyboard_window.point.x + 8*col as i32, keyboard_window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
-            }
-        }
+        (*editor).draw(&display);
         
 		display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
 		
@@ -260,11 +115,6 @@ unsafe fn initialize(){
     
     d("Clusters\n");
     cluster_init();
-    
-    d("Text Buffer\n");
-    edit_string = alloc(size_of::<String>()) as *mut String;
-    *edit_string = String::new();
-    clear_editor();
     
     d("Keyboard Status\n");
     keyboard_status.lshift = false;
@@ -286,8 +136,9 @@ unsafe fn initialize(){
         d("Did not find font file\n");
     }
     
-    d("Background\n");
-    background.drop();
+    d("Editor\n");
+    editor = alloc(size_of::<Editor>()) as *mut Editor;
+    *editor = Editor::new();
     
     d("ELF\n");
     let elf = ELF::new(unfs.load("test.bin"));

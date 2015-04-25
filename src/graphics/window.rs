@@ -24,7 +24,7 @@ impl Window {
         let title_color = Color::new(255, 255, 255);
 		display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), border_color);
 		
-        let mut cursor = Point::new(self.point.x, self.point.y - 16);
+        let mut cursor = Point::new(self.point.x, self.point.y - 17);
         for character in self.title.chars() {
             if cursor.x + 8 <= self.point.x + self.size.width as i32 {
                 display.char(cursor, character, title_color);
