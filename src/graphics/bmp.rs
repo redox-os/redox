@@ -1,3 +1,5 @@
+use core::ops::Drop;
+
 use common::memory::*;
 
 use graphics::color::*;
@@ -10,7 +12,14 @@ pub struct BMP {
 }
 
 impl BMP {
-    pub unsafe fn new(file_data: usize) -> BMP {
+    pub unsafe fn new() -> BMP {
+        BMP {
+            data: 0,
+            size: Size { width: 0, height: 0}
+        }
+    }
+
+    pub unsafe fn from_data(file_data: usize) -> BMP {
         let data;
         let size;
         if file_data > 0
@@ -58,17 +67,6 @@ impl BMP {
         };
     }
     
-    pub fn drop(&mut self){
-        if self.data > 0 {
-            unalloc(self.data);
-            self.data = 0;
-            self.size = Size {
-                width: 0,
-                height: 0
-            };
-        }
-    }
-    
     pub unsafe fn pixel(&self, point: Point) -> Color {
         if point.x >= 0
             && point.x < self.size.width as i32
@@ -78,6 +76,19 @@ impl BMP {
             return *((self.data + (point.y as usize*self.size.width as usize + point.x as usize)*4) as *const Color);
         }else{
             return Color::new(0, 0, 0);
+        }
+    }
+}
+
+impl Drop for BMP {
+    fn drop(&mut self){
+        if self.data > 0 {
+            unalloc(self.data);
+            self.data = 0;
+            self.size = Size {
+                width: 0,
+                height: 0
+            };
         }
     }
 }
