@@ -17,7 +17,6 @@ pub struct Window {
 	pub last_mouse_event: MouseEvent
 }
 
-
 impl Window {	
 	pub fn draw(&self, display: &Display) {
         let border_color = Color::new(0, 0, 0);

@@ -1,6 +1,6 @@
-mouse:
 SECTION .text
-[BITS 64]
+[BITS 32]
+mouse:
 .init:
 	call .wait1
 	mov al, 0xA8
@@ -30,7 +30,7 @@ SECTION .text
 	ret
 	
 .wait0:
-	mov rcx, 100000
+	mov ecx, 100000
 .wait0lp:
 	in al, 0x64
 	test al, 1
@@ -39,7 +39,7 @@ SECTION .text
 	ret
 	
 .wait1:
-	mov rcx, 100000
+	mov ecx, 100000
 .wait1lp:
 	in al, 0x64
 	test al, 2
