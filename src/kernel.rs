@@ -110,6 +110,15 @@ unsafe fn initialize(){
     elf.run();
 }
 
+pub unsafe fn timestamp() -> u64 {
+    let low: u32;
+    let high: u32;
+    asm!("rdtsc"
+        : "={eax}"(low), "={edx}"(high) : : "intel");
+        
+    return low as u64;
+}
+
 const INTERRUPT: *mut u8 = 0x200000 as *mut u8;
 
 #[no_mangle]
@@ -131,7 +140,7 @@ pub unsafe fn kernel() {
         loop{
             asm!("cli");
             let interrupt = *INTERRUPT;
-            *INTERRUPT = 0;
+            *INTERRUPT = 255;
             
             let mut draw = false;
             match interrupt {
@@ -140,48 +149,52 @@ pub unsafe fn kernel() {
                 33 => {
                     let key_event = keyboard_interrupt();
                     
-                    d("KEY\n");
+                    d("KEY ");
+                    dc(key_event.character);
+                    dl();
                 
                     for program in programs.as_slice() {                                            
                         (*program).on_key(key_event);
                     }
-    
+                    
                     draw = true;
                 },
                 44 => {
                     let mouse_event = mouse_interrupt();
 
-                    if mouse_event.valid {
-                        d("MOUSE\n");
+                    if mouse_event.valid {                        
                         mouse_point.x += mouse_event.x;
                         if mouse_point.x < 0 {
                             mouse_point.x = 0;
                         }
-                        if mouse_point.x >= display.size().width as i32 {
-                            mouse_point.x = display.size().width as i32 - 1;
+                        if mouse_point.x >= display.size.width as i32 {
+                            mouse_point.x = display.size.width as i32 - 1;
                         }
 
                         mouse_point.y += mouse_event.y;
                         if mouse_point.y < 0 {
                             mouse_point.y = 0;
                         }
-                        if mouse_point.y >= display.size().height as i32 {
-                            mouse_point.y = display.size().height as i32 - 1;
+                        if mouse_point.y >= display.size.height as i32 {
+                            mouse_point.y = display.size.height as i32 - 1;
                         }
+                        
+                        d("MOUSE ");
+                        dd(mouse_point.x as usize);
+                        d(", ");
+                        dd(mouse_point.y as usize);
+                        dl();
                         
                         for program in programs.as_slice() {
                             if (*program).on_mouse(mouse_point, mouse_event) {
                                 break;
                             }
                         }
-                    
+                        
                         draw = true;
-                    }else{
-                        d("INVALID MOUSE\n");
                     }
                 },
                 255 => {
-                    d("INIT\n");
                     draw = true;
                 },
                 _ => {
@@ -192,19 +205,53 @@ pub unsafe fn kernel() {
             }
             
             if draw {
+                let t_clear = timestamp();
                 display.clear(Color::new(64, 64, 64));
-        
-                display.rect(Point::new(0, 0), Size::new(display.size().width, 18), Color::new(0, 0, 0));
-                display.text(Point::new(display.size().width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
-
                 
+                let t_rect = timestamp();
+                display.rect(Point::new(0, 0), Size::new(display.size.width, 18), Color::new(0, 0, 0));
+                
+                let t_text = timestamp();
+                display.text(Point::new(display.size.width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
+                
+                let t_prog = timestamp();
                 for program in programs.as_slice() {
                     (*program).draw(&display);
                 }
                 
+                let t_mouse = timestamp();
                 display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
                 
+                let t_copy = timestamp();
                 display.copy();
+                
+                let t_finish = timestamp();
+                
+                /*
+                d("Clear: ");
+                dd((t_rect - t_clear) as usize);
+                dl();
+                
+                d("Rect: ");
+                dd((t_text - t_rect) as usize);
+                dl();
+                
+                d("Text: ");
+                dd((t_prog - t_text) as usize);
+                dl();
+                
+                d("Prog: ");
+                dd((t_mouse - t_prog) as usize);
+                dl();
+                
+                d("Mouse: ");
+                dd((t_copy - t_mouse) as usize);
+                dl();
+                
+                d("Copy: ");
+                dd((t_finish - t_copy) as usize);
+                dl();
+                */
             }
             
             
@@ -216,8 +263,7 @@ pub unsafe fn kernel() {
                 outb(0x20, 0x20);
             }
             
-            asm!("sti\n
-                hlt");
+            asm!("sti\nhlt");
         }
 	}
 }
