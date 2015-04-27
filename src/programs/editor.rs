@@ -8,25 +8,25 @@ use drivers::mouse::*;
 
 use filesystems::unfs::*;
 
-use graphics::bmp::*;
 use graphics::color::*;
 use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
+use programs::program::*;
+
 pub struct Editor {
     window: Window,
     string: String,
-    offset: usize,
-    background: BMP
+    offset: usize
 }
 
 impl Editor {
     pub unsafe fn new() -> Editor {
         Editor {
             window: Window{
-                point: Point{ x:100, y:100 },
+                point: Point{ x:150, y:150 },
                 size: Size { width:800, height:600 },
                 title: "Press a function key to load a file",
                 shaded: false,
@@ -45,24 +45,38 @@ impl Editor {
                 }
             },
             string: String::new(),
-            offset: 0,
-            background: BMP::new()
+            offset: 0
         }
     }
     
-    pub unsafe fn draw(&self, display: &Display){
+    unsafe fn clear(&mut self){
+        self.window.title = "Press a function key to load a file";
+        self.string = String::new();
+        self.offset = 0;
+    }
+
+    unsafe fn load(&mut self, filename: &'static str){
+        self.clear();
+        let unfs = UnFS::new(Disk::new());
+        let dest = unfs.load(filename);
+        if dest > 0 {
+            self.window.title = filename;
+            self.string = String::from_c_str(dest as *const u8);
+            self.offset = self.string.len();
+            unalloc(dest);
+        }else{
+            d("Did not find '");
+            d(filename);
+            d("'\n");
+        }
+    }
+}
+
+impl Program for Editor {
+    unsafe fn draw(&self, display: &Display){
         self.window.draw(display);
 		
 		if ! self.window.shaded {
-            // TODO: Improve speed!
-            if ! self.window.shaded {
-                for y in 0..self.background.size.height {
-                    for x in 0..self.background.size.width {
-                        display.pixel(Point::new(self.window.point.x + (x + (self.window.size.width - self.background.size.width) / 2) as i32, self.window.point.y + (y + (self.window.size.height - self.background.size.height) / 2) as i32), self.background.pixel(Point::new(x as i32, y as i32)));
-                    }
-                }
-            }
-		
             let mut offset = 0;
             let mut row = 0;
             let mut col = 0;
@@ -98,14 +112,11 @@ impl Editor {
         }
     }
     
-    pub unsafe fn on_key(&mut self, key_event: KeyEvent){
+    unsafe fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x3B => self.load("README.md"),
                 0x3C => self.load("LICENSE.md"),
-                0x3D => self.load_background("bmw.bmp"),
-                0x3E => self.load_background("stonehenge.bmp"),
-                0x3F => self.load_background("tiger.bmp"),
                 0x4B => if self.offset > 0 {
                             self.offset -= 1;
                         },
@@ -121,10 +132,7 @@ impl Editor {
                     self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset -= 1;
                 },
-                '\x1B' => {
-                        self.clear();
-                        self.background = BMP::new()
-                },
+                '\x1B' => self.clear(),
                 _ => {
                     self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset += 1;
@@ -133,36 +141,7 @@ impl Editor {
         }
     }
     
-    pub unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent){
-        self.window.on_mouse(mouse_point, mouse_event);
-    }
-
-    unsafe fn clear(&mut self){
-        self.window.title = "Press a function key to load a file";
-        self.string = String::new();
-        self.offset = 0;
-    }
-
-    unsafe fn load(&mut self, filename: &'static str){
-        self.clear();
-        let unfs = UnFS::new(Disk::new());
-        let dest = unfs.load(filename);
-        if dest > 0 {
-            self.window.title = filename;
-            self.string = String::from_c_str(dest as *const u8);
-            self.offset = self.string.len();
-            unalloc(dest);
-        }else{
-            d("Did not find '");
-            d(filename);
-            d("'\n");
-        }
-    }
-    
-    unsafe fn load_background(&mut self, filename: &'static str){
-        let unfs = UnFS::new(Disk::new());
-        let background_data = unfs.load(filename);
-        self.background = BMP::from_data(background_data);
-        unalloc(background_data);
+    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent) -> bool{
+        return self.window.on_mouse(mouse_point, mouse_event);
     }
 }

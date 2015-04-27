@@ -1,3 +1,5 @@
+use core::cmp::min;
+use core::cmp::max;
 use core::str::StrExt;
 
 use graphics::color::*;
@@ -45,7 +47,10 @@ pub struct VBEModeInfo {
 pub static mut FONT_LOCATION: usize = 0x0;
 
 pub struct Display {
-	mode_info: VBEModeInfo
+	mode_info: VBEModeInfo,
+	bytesperrow: usize,
+	bytesperpixel: usize,
+	pub size: Size
 }
 
 const OFFSCREENLOCATION: usize = 0x400000;
@@ -53,47 +58,71 @@ const OFFSCREENLOCATION: usize = 0x400000;
 impl Display {
 	pub fn new() -> Display {
         unsafe{
-            Display { mode_info: *(VBEMODEINFOLOCATION as *const VBEModeInfo) }
+            let mode_info = *(VBEMODEINFOLOCATION as *const VBEModeInfo);
+            Display {
+                mode_info: mode_info,
+                bytesperrow: mode_info.bytesperscanline as usize,
+                bytesperpixel: mode_info.bitsperpixel as usize/8,
+                size: Size {
+                    width: mode_info.xresolution as u32,
+                    height: mode_info.yresolution as u32
+                }
+            }
         }
 	}
-
-	pub fn size(&self) -> Size {
-        Size { width: self.mode_info.xresolution as u32, height: self.mode_info.yresolution as u32 }
+	
+	#[inline(always)]
+	unsafe fn fast_pixel(pixel_ptr: usize, color: Color){
+        if color.a == 255 {
+            *(pixel_ptr as *mut u8) = color.r;
+            *((pixel_ptr + 1) as *mut u8) = color.g;
+            *((pixel_ptr + 2) as *mut u8) = color.b;
+        }else{
+            let r = color.r as usize;
+            let g = color.g as usize;
+            let b = color.b as usize;
+            let a = color.a as usize;
+            
+            let o_r = *(pixel_ptr as *const u8) as usize;
+            let o_g = *((pixel_ptr + 1) as *const u8) as usize;
+            let o_b = *((pixel_ptr + 2) as *const u8) as usize;
+            let o_a = 255 - a;
+            
+            *(pixel_ptr as *mut u8) = ((o_r * o_a + r * a)/255) as u8;
+            *((pixel_ptr + 1) as *mut u8) = ((o_g * o_a + g * a)/255) as u8;
+            *((pixel_ptr + 2) as *mut u8) = ((o_b * o_a + b * a)/255) as u8;
+        }
 	}
 
 	pub fn pixel(&self, point: Point, color: Color){
         unsafe{
             if color.a > 0 {
-                if point.x >= 0 && point.x < self.mode_info.xresolution as i32 && point.y >= 0 && point.y < self.mode_info.yresolution as i32 {
-                    let pixelptr: usize = OFFSCREENLOCATION + point.y as usize * self.mode_info.bytesperscanline as usize + point.x as usize * (self.mode_info.bitsperpixel as usize / 8);
-                    if color.a == 255 {
-                        *(pixelptr as *mut u8) = color.r;
-                        *((pixelptr + 1) as *mut u8) = color.g;
-                        *((pixelptr + 2) as *mut u8) = color.b;
-                    }else{
-                        let r = color.r as usize;
-                        let g = color.g as usize;
-                        let b = color.b as usize;
-                        let a = color.a as usize;
-                        
-                        let o_r = *(pixelptr as *const u8) as usize;
-                        let o_g = *((pixelptr + 1) as *const u8) as usize;
-                        let o_b = *((pixelptr + 2) as *const u8) as usize;
-                        let o_a = 255 - a;
-                        
-                        *(pixelptr as *mut u8) = ((o_r * o_a + r * a)/255) as u8;
-                        *((pixelptr + 1) as *mut u8) = ((o_g * o_a + g * a)/255) as u8;
-                        *((pixelptr + 2) as *mut u8) = ((o_b * o_a + b * a)/255) as u8;
-                    }
+                if point.x >= 0 && point.x < self.size.width as i32 && point.y >= 0 && point.y < self.size.height as i32 {
+                    let pixel_ptr: usize = OFFSCREENLOCATION + point.y as usize * self.bytesperrow + point.x as usize * self.bytesperpixel;
+                    
+                    Display::fast_pixel(pixel_ptr, color);
                 }
 			}
 		}
 	}
 
 	pub fn rect(&self, point: Point, size: Size, color: Color){
-		for y in point.y..point.y + size.height as i32 {
-			for x in point.x..point.x + size.width as i32 {
-				self.pixel(Point::new(x, y), color);
+        if color.a > 0 {
+            let start_y = max(0, min(self.size.height as i32 - 1, point.y)) as usize;
+            let end_y = max(0, min(self.size.height as i32 - 1, point.y + size.height as i32)) as usize;
+            
+            let start_x = max(0, min(self.size.width as i32 - 1, point.x)) as usize;
+            let end_x = max(0, min(self.size.width as i32 - 1, point.x + size.width as i32)) as usize;
+        
+            for y in start_y..end_y {
+                let row_ptr: usize = OFFSCREENLOCATION + y * self.bytesperrow;
+                for x in start_x..end_x {
+                    let pixel_ptr: usize = row_ptr + x * self.bytesperpixel;
+                
+                    unsafe{
+                        Display::fast_pixel(pixel_ptr, color);
+                    }
+                }
 			}
 		}
 	}

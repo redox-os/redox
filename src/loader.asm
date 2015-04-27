@@ -75,7 +75,13 @@ unfs_header:
 .end:
 
 startup:
+    ; a20
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+    
 	call vesa
+	
 	call initialize.fpu
 	call initialize.sse
 	call initialize.pic
@@ -88,6 +94,7 @@ startup:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
+	
     ; far jump to load CS with 32 bit segment
     jmp 0x08:protected_mode
 
@@ -105,19 +112,12 @@ protected_mode:
     mov ss, eax
     ; set up stack
     mov esp, 0x1FFFF0
-	
+    
     call mouse.init
     
     ;rust init
-	mov eax, [kernel_file + 0x18]
-	mov [interrupts.callback], eax
-    int 255
-    
-    ;rust will handle interrupts
-    sti
-.lp:
-	hlt
-    jmp .lp
+	mov [0x200000], byte 255
+	jmp [kernel_file + 0x18]
 
 gdtr:
     dw (gdt_end - gdt) + 1  ; size
@@ -131,14 +131,14 @@ gdt:
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b10011010   ; access byte - code
-    db 0x4f         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xcf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
     ; data entry
     dw 0xffff       ; limit 0:15
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b10010010   ; access byte - data
-    db 0x4f         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xcf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 gdt_end:
 
