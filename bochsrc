@@ -1,0 +1,7 @@
+ata0-master: type=disk, path="harddrive.bin", mode=flat
+boot: disk
+megs: 128
+
+magic_break: enabled=1
+display_library: x, options="gui_debug"
+
