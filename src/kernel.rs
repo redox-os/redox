@@ -205,27 +205,27 @@ pub unsafe fn kernel() {
             }
             
             if draw {
-                let t_clear = timestamp();
+                //let t_clear = timestamp();
                 display.clear(Color::new(64, 64, 64));
                 
-                let t_rect = timestamp();
+                //let t_rect = timestamp();
                 display.rect(Point::new(0, 0), Size::new(display.size.width, 18), Color::new(0, 0, 0));
                 
-                let t_text = timestamp();
+                //let t_text = timestamp();
                 display.text(Point::new(display.size.width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
                 
-                let t_prog = timestamp();
+                //let t_prog = timestamp();
                 for program in programs.as_slice() {
                     (*program).draw(&display);
                 }
                 
-                let t_mouse = timestamp();
+                //let t_mouse = timestamp();
                 display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
                 
-                let t_copy = timestamp();
+                //let t_copy = timestamp();
                 display.copy();
                 
-                let t_finish = timestamp();
+                //let t_finish = timestamp();
                 
                 /*
                 d("Clear: ");
