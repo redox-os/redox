@@ -12,6 +12,7 @@ use core::result::Result;
 
 use common::debug::*;
 use common::elf::*;
+use common::pio::*;
 use common::memory::*;
 use common::vector::*;
 
@@ -204,6 +205,15 @@ pub unsafe fn kernel() {
                 display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
                 
                 display.copy();
+            }
+            
+            
+            if interrupt >= 0x20 && interrupt < 0x30 {
+                if interrupt >= 0x28 {
+                    outb(0xA0, 0x20);
+                }
+                
+                outb(0x20, 0x20);
             }
             
             asm!("sti\n

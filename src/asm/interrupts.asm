@@ -29,26 +29,7 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-    push ax
-    
-    mov ah, [0x200000]
-
-    cmp ah, 0x20
-    jb .finish_handle
-    
-    cmp ah, 0x30
-    jae .finish_handle
-    
-    mov al, 0x20
-    out 0x20, al
-
-    cmp ah, byte 0x28
-    jb .finish_handle
-    
-    out 0xA0, al
-    
-.finish_handle:
-    pop ax
+    ; The kernel runs hlt and handles each IRQ individually, TODO: Syscalls
 	iretd
 
 idtr:
