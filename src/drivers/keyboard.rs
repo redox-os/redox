@@ -1,5 +1,6 @@
 use common::pio::*;
 
+#[derive(Copy, Clone)]
 pub struct KeyEvent {
 	pub character: char,
 	pub scancode: u8,
@@ -48,6 +49,13 @@ pub static mut keyboard_status: KeyboardStatus = KeyboardStatus {
     caps_lock: false,
     caps_lock_toggle: false
 };
+
+pub unsafe fn keyboard_init(){
+    keyboard_status.lshift = false;
+    keyboard_status.rshift = false;
+    keyboard_status.caps_lock = false;
+    keyboard_status.caps_lock_toggle = false;
+}
 
 pub fn keyboard_interrupt() -> KeyEvent{
 	let scancode_packed;

@@ -2,6 +2,7 @@ use core::marker::Copy;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
+use core::ptr;
 use core::result::Result;
 use core::slice;
 use core::slice::SliceExt;
@@ -9,18 +10,19 @@ use core::slice::SliceExt;
 use common::memory::*;
 
 pub struct Vector<T> {
-    data: *const T,
+    data: *mut T,
     length: usize
 }
 
-impl <T: Copy> Vector<T> {
+impl <T> Vector<T> {
     pub fn new() -> Vector<T> {
         Vector::<T> {
-            data: 0 as *const T,
+            data: 0 as *mut T,
             length: 0
         }
     }
     
+    /*
     pub fn from_slice(s: &[T]) -> Vector<T> {
         let length = s.len();
         
@@ -43,26 +45,27 @@ impl <T: Copy> Vector<T> {
             length: length
         }
     }
+    */
     
     pub fn from_value(value: T) -> Vector<T> {
         let data = alloc(size_of::<T>());
         
         unsafe {
-            *(data as *mut T) = value;
+            ptr::write(data as *mut T, value);
         }
         
         Vector::<T> {
-            data: data as *const T,
+            data: data as *mut T,
             length: 1
         }
     }
     
-    pub fn get(&self, i: usize) -> Result<T, usize> {
+    pub fn get(&self, i: usize) -> Result<&mut T, usize> {
         if i >= self.len() {
             return Result::Err(self.len());
         }else{
             unsafe{
-                return Result::Ok(*(((self.data as usize) + i * size_of::<T>()) as *const T));
+                return Result::Ok(&mut *(((self.data as usize) + i * size_of::<T>()) as *mut T));
             }
         }
     }
@@ -87,12 +90,12 @@ impl <T: Copy> Vector<T> {
     
         for k in i..j {
             unsafe {
-                *((data + (k - i) * size_of::<T>()) as *mut T) = *(((self.data as usize) + k* size_of::<T>()) as *const T);
+                ptr::write((data + (k - i) * size_of::<T>()) as *mut T, ptr::read(((self.data as usize) + k* size_of::<T>()) as *const T));
             }
         }
         
         Vector::<T> {
-            data: data as *const T,
+            data: data as *mut T,
             length: length
         }
     }
@@ -102,12 +105,12 @@ impl <T: Copy> Vector<T> {
     }
     
     // TODO: Str trait
-    pub fn as_slice(&self) -> &[T] {
+    pub fn as_slice(&self) -> &mut [T] {
         if self.data as usize == 0 && self.length == 0 {
-            &[]
+            &mut []
         }else{
             unsafe {
-                slice::from_raw_parts(self.data, self.length)
+                slice::from_raw_parts_mut(self.data, self.length)
             }
         }
     }
@@ -116,12 +119,12 @@ impl <T: Copy> Vector<T> {
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
         unalloc(self.data as usize);
-        self.data = 0 as *const T;
+        self.data = 0 as *mut T;
         self.length = 0;
     }
 }
 
-impl <T: Copy> Add for Vector<T> {
+impl <T> Add for Vector<T> {
     type Output = Vector<T>;
     fn add(self, other: Vector<T>) -> Vector<T> {
         let length = self.length + other.length;
@@ -132,28 +135,26 @@ impl <T: Copy> Add for Vector<T> {
         
         let data = alloc(length * size_of::<T>());
     
-        let mut i = 0;
-        for c in self.as_slice() {
+        for i in 0..self.len() {
             unsafe {
-                *((data + i * size_of::<T>()) as *mut T) = *c;
+                ptr::write((data + i * size_of::<T>()) as *mut T, ptr::read((self.data as usize + i * size_of::<T>()) as *const T));
             }
-            i += 1;
         }
-        for c in other.as_slice() {
+        
+        for i in 0..other.len() {
             unsafe {
-                *((data + i * size_of::<T>()) as *mut T) = *c;
+                ptr::write((data + (i + self.len()) * size_of::<T>()) as *mut T, ptr::read((other.data as usize + i * size_of::<T>()) as *const T));
             }
-            i += 1;
         }
     
         Vector::<T> {
-            data: data as *const T,
+            data: data as *mut T,
             length: length
         }
     }
 }
 
-impl <T: Copy> Add<T> for Vector<T> {
+impl <T> Add<T> for Vector<T> {
     type Output = Vector<T>;
     fn add(self, other: T) -> Vector<T> {
         self + Vector::<T>::from_value(other)

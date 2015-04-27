@@ -32,6 +32,11 @@ pub struct MouseEvent {
 static mut mouse_cycle: i32 = 0;
 static mut mouse_byte: [u8; 3] = [0, 0, 0];
 
+pub unsafe fn mouse_init(){
+    mouse_cycle = 0;
+    mouse_byte = [0, 0, 0]
+}
+
 pub fn mouse_interrupt() -> MouseEvent {
 	unsafe{
 		let mut x = 0;

@@ -29,37 +29,8 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-	pushad
-	
-	mov al, [0x200000]
-	cmp al, 0x20
-	je .ignore
-	
-	call [.callback]
-.ignore:
-    mov al, [0x200000]
-    
-    cmp al, 0x20
-    jb .not_irq
-    
-    cmp al, 0x30
-    jae .not_irq
-    
-    cmp al, 0x28
-    jb .not_slave
-    
-    mov dx, 0xA0
-    mov al, 0x20
-    out dx, al
-.not_slave:
-    mov dx, 0x20
-    mov al, 0x20
-    out dx, al
-.not_irq:
-	popad
+    ; The kernel runs hlt and handles each IRQ individually, TODO: Syscalls
 	iretd
-	
-.callback: dq .ignore
 
 idtr:
     dw (idt_end - idt) + 1
