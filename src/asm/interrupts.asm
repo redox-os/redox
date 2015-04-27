@@ -29,37 +29,27 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-	pushad
-	
-	mov al, [0x200000]
-	cmp al, 0x20
-	je .ignore
-	
-	call [.callback]
-.ignore:
-    mov al, [0x200000]
+    push ax
     
-    cmp al, 0x20
-    jb .not_irq
+    mov ah, [0x200000]
+
+    cmp ah, 0x20
+    jb .finish_handle
     
-    cmp al, 0x30
-    jae .not_irq
+    cmp ah, 0x30
+    jae .finish_handle
     
-    cmp al, 0x28
-    jb .not_slave
-    
-    mov dx, 0xA0
     mov al, 0x20
-    out dx, al
-.not_slave:
-    mov dx, 0x20
-    mov al, 0x20
-    out dx, al
-.not_irq:
-	popad
+    out 0x20, al
+
+    cmp ah, byte 0x28
+    jb .finish_handle
+    
+    out 0xA0, al
+    
+.finish_handle:
+    pop ax
 	iretd
-	
-.callback: dq .ignore
 
 idtr:
     dw (idt_end - idt) + 1

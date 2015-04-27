@@ -75,6 +75,11 @@ unfs_header:
 .end:
 
 startup:
+    ; a20
+    in al, 0x92
+    or al, 2
+    out 0x92, al
+
 	call vesa
 	call initialize.fpu
 	call initialize.sse
@@ -105,19 +110,12 @@ protected_mode:
     mov ss, eax
     ; set up stack
     mov esp, 0x1FFFF0
-	
+    
     call mouse.init
     
     ;rust init
-	mov eax, [kernel_file + 0x18]
-	mov [interrupts.callback], eax
-    int 255
-    
-    ;rust will handle interrupts
-    sti
-.lp:
-	hlt
-    jmp .lp
+	mov [0x200000], byte 255
+	jmp [kernel_file + 0x18]
 
 gdtr:
     dw (gdt_end - gdt) + 1  ; size
