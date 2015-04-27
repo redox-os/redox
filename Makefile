@@ -29,4 +29,4 @@ run: harddrive.bin
 	$(QEMU) -serial mon:stdio -sdl -hda $<
 
 clean:
-	rm -f *.bin filesystem/*.bin filesystem/filesystem.asm
+	rm -f *.bin *.vmdk filesystem/*.bin filesystem/filesystem.asm

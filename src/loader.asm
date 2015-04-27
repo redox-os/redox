@@ -79,8 +79,9 @@ startup:
     in al, 0x92
     or al, 2
     out 0x92, al
-
+    
 	call vesa
+	
 	call initialize.fpu
 	call initialize.sse
 	call initialize.pic
@@ -93,6 +94,7 @@ startup:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
+	
     ; far jump to load CS with 32 bit segment
     jmp 0x08:protected_mode
 
@@ -129,14 +131,14 @@ gdt:
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b10011010   ; access byte - code
-    db 0x4f         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xcf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
     ; data entry
     dw 0xffff       ; limit 0:15
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b10010010   ; access byte - data
-    db 0x4f         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xcf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 gdt_end:
 
