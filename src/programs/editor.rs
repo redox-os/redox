@@ -18,6 +18,7 @@ use programs::program::*;
 
 pub struct Editor {
     window: Window,
+    filename: &'static str,
     string: String,
     offset: usize
 }
@@ -44,6 +45,7 @@ impl Editor {
                     valid: false
                 }
             },
+            filename: "",
             string: String::new(),
             offset: 0
         }
@@ -51,15 +53,17 @@ impl Editor {
     
     unsafe fn clear(&mut self){
         self.window.title = "Press a function key to load a file";
+        self.filename = "";
         self.string = String::new();
         self.offset = 0;
     }
-
+    
     unsafe fn load(&mut self, filename: &'static str){
         self.clear();
         let unfs = UnFS::new(Disk::new());
         let dest = unfs.load(filename);
         if dest > 0 {
+            self.filename = filename;
             self.window.title = filename;
             self.string = String::from_c_str(dest as *const u8);
             self.offset = self.string.len();
@@ -69,6 +73,14 @@ impl Editor {
             d(filename);
             d("'\n");
         }
+    }
+    
+    unsafe fn save(&self){
+        let unfs = UnFS::new(Disk::new());
+        let data = self.string.as_c_str() as usize;
+        unfs.save(self.filename, data);
+        unalloc(data);
+        d("Saved\n");
     }
 }
 
@@ -117,6 +129,7 @@ impl Program for Editor {
             match key_event.scancode {
                 0x3B => self.load("README.md"),
                 0x3C => self.load("LICENSE.md"),
+                0x40 => self.save(),
                 0x4B => if self.offset > 0 {
                             self.offset -= 1;
                         },
