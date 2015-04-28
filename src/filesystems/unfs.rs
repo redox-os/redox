@@ -1,7 +1,11 @@
+use core::mem::size_of;
 use core::ptr;
 use core::str::StrExt;
 
+use common::debug::*;
 use common::memory::*;
+use common::string::*;
+use common::vector::*;
 
 use drivers::disk::*;
 
@@ -39,42 +43,12 @@ struct Node {
     reserved: [u8; 184]
 }
 
-impl Node {
-    fn empty() -> Node{
-        Node{
-            parent_collection: Block{ address:0 },
-            data_sector_list: Block{ address:0 },
-            data_size: 0,
-            user_id: 0,
-            group_id: 0,
-            mode: 0,
-            create_time: 0,
-            modify_time: 0,
-            access_time: 0,
-            name: [0; 256],
-            reserved: [0; 184]
-        }
-    }
-}
-
 struct SectorList {
     parent_node: Block,
     fragment_number: u64,
     last_fragment: Block,
     next_fragment: Block,
     extents: [Extent; 30]
-}
-
-impl SectorList {
-    fn empty() -> SectorList{
-        SectorList{
-            parent_node: Block{ address:0 },
-            fragment_number: 0,
-            last_fragment: Block{ address:0 },
-            next_fragment: Block{ address:0 },
-            extents: [Extent{ block:Block{ address:0 }, length:0 }; 30]
-        }
-    }
 }
 
 pub struct UnFS {
@@ -87,7 +61,7 @@ impl UnFS {
         UnFS { disk:disk, header: &*(0x7E00 as *const Header) }
     }
 
-    pub unsafe fn node(&self, filename: &str) -> *const Node{
+    pub unsafe fn node(&self, filename: &str) -> *const Node{    
         let mut ret: *const Node = ptr::null();
         let mut node_matches = false;
 
@@ -136,8 +110,35 @@ impl UnFS {
 
         ret
     }
+    
+    pub unsafe fn list(&self) -> Vector<String> {
+        let mut ret = Vector::<String>::new();
+    
+        let mut root_sector_list_address = self.header.root_sector_list.address;
+        while root_sector_list_address > 0 {
+            self.disk.read(root_sector_list_address, 1, 0x200400);
+            let root_sector_list = &*(0x200400 as *const SectorList);
 
-    pub unsafe fn load(&self, filename: &str) -> usize{
+            for extent_i in 0..30 {
+                let extent = root_sector_list.extents[extent_i];
+                if extent.block.address > 0 {
+                    for node_address in extent.block.address..extent.block.address + extent.length {
+                        let node = alloc(size_of::<Node>()) as *const Node;
+                        self.disk.read(node_address, 1, node as usize);
+
+                        ret = ret + String::from_c_slice(&(*node).name);
+                        unalloc(node as usize);
+                    }
+                }
+            }
+
+            root_sector_list_address = root_sector_list.next_fragment.address;
+        }
+        
+        ret
+    }
+
+    pub unsafe fn load(&self, filename: &str) -> usize{ 
         let node = self.node(filename);
         
         if node != ptr::null() && (*node).data_sector_list.address > 0 {

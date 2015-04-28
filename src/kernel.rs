@@ -19,6 +19,7 @@ use common::vector::*;
 use drivers::disk::*;
 use drivers::keyboard::*;
 use drivers::mouse::*;
+use drivers::pci::*;
 
 use filesystems::unfs::*;
 
@@ -29,6 +30,7 @@ use graphics::size::*;
 
 use programs::program::*;
 use programs::editor::*;
+use programs::filemanager::*;
 use programs::viewer::*;
 
 mod common {
@@ -44,6 +46,7 @@ mod drivers {
     pub mod disk;
     pub mod keyboard;
     pub mod mouse;
+    pub mod pci;
 }
 
 mod filesystems {
@@ -61,6 +64,7 @@ mod graphics {
 
 mod programs {
     pub mod program;
+    pub mod filemanager;
     pub mod editor;
     pub mod viewer;
 }
@@ -126,6 +130,8 @@ pub unsafe fn kernel() {
     if *INTERRUPT == 255 {
         initialize();
         
+        pci_test();
+        
         let display = Display::new();
         
         let mut mouse_point: Point = Point {
@@ -135,6 +141,7 @@ pub unsafe fn kernel() {
         
         let programs = 
             Vector::<Box<Program>>::from_value(box Viewer::new()) +
+            Vector::<Box<Program>>::from_value(box FileManager::new()) +
             Vector::<Box<Program>>::from_value(box Editor::new());
         
         loop{

@@ -2,7 +2,7 @@ use16
 
 org 0x7C00
 
-boot:
+boot: ; dl comes with disk
     ; initialize segment registers
     xor ax, ax
     mov ds, ax
@@ -10,21 +10,13 @@ boot:
     mov ss, ax
     ; initialize stack
     mov sp, 0x7bfe
-
-    mov [drive], dl
-
-    call read_disk
-
-    jmp startup
-
-
-read_disk:
+    
     mov si, DAPACK      ; address of "disk address packet"
     mov ah, 0x42        ; AL is unused
-    mov dl, [drive]     ; DL comes with drive number already
     int 0x13
     jc error
-    ret
+
+    jmp startup
 
 error:
     mov si, .msg
@@ -39,9 +31,6 @@ error:
     cli
     hlt
     .msg db "could not read disk", 0
-
-drive:
-    db 0
 
 DAPACK:
 	db	0x10

@@ -69,6 +69,38 @@ impl String {
         }
     }
     
+    pub fn from_c_slice(s: &[u8]) -> String {
+        let mut length = 0;
+        for c in s {
+            if *c == 0 {
+                break;
+            }
+            length += 1;
+        }
+        
+        if length == 0 {
+            return String::new();
+        }
+        
+        let data = alloc(length * size_of::<char>());
+    
+        let mut i = 0;
+        for c in s {
+            if i >= length {
+                break;
+            }
+            unsafe {
+                *((data + i * size_of::<char>()) as *mut char) = *c as char;
+            }
+            i += 1;
+        }
+        
+        String {
+            data: data as *const char,
+            length: length
+        }
+    }
+    
     pub unsafe fn from_c_str(s: *const u8) -> String {
         let mut length = 0;
         loop {
