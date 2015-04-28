@@ -226,6 +226,19 @@ impl String {
         }
     }
     
+    pub unsafe fn as_c_str(&self) -> *const u8 {
+        let length = self.len() + 1;
+        
+        let data = alloc(length);
+    
+        for i in 0..self.len() {
+            *((data + i) as *mut u8) = *(((self.data as usize) + i * size_of::<char>()) as *const char) as u8;
+        }
+        *((data + self.len()) as *mut u8) = 0;
+        
+        data as *const u8
+    }
+    
     pub fn d(&self){
         for c_ptr in self.as_slice() {
             dc(*c_ptr);

@@ -165,4 +165,22 @@ impl UnFS {
         }
         return 0;
     }
+    
+    // TODO: Support realloc of LBAs
+    pub unsafe fn save(&self, filename: &str, source: usize){
+        let node = self.node(filename);
+        
+        if node != ptr::null() && (*node).data_sector_list.address > 0 {
+            self.disk.read((*node).data_sector_list.address, 1, 0x200B00);
+            let sector_list = &*(0x200B00 as *const SectorList);
+            
+            if source > 0 {
+                for i in 0..1 {
+                    if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
+                        self.disk.write(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, source);
+                    }
+                }
+            }
+        }
+    }
 }

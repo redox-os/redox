@@ -141,11 +141,11 @@ impl Disk {
 
     //TODO: Make sure count is not zero!
     pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8{
-        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-        }
-        
         if destination > 0 {
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+            }
+            
             self.ide_write(ATA_REG_HDDEVSEL, 0x40);
             
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
@@ -177,36 +177,38 @@ impl Disk {
 
     //TODO: Fix and make sure count is not zero!
     pub unsafe fn write(&self, lba: u64, count: u16, source: usize) -> u8{
-        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+        if source > 0 {
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
-        }
-
-        self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-
-        self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
-
-        self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA0, ((lba >> 0) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-
-        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_PIO_EXT);
-
-        for sector in 0..count as usize {
-            let err = self.ide_poll(true);
-            if err > 0{
-                return err;
             }
 
-            for word in 0..256 {
-                outw(self.base + ATA_REG_DATA, *((source + sector*512 + word*2) as *const u16));
-            }
+            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
 
-            self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
-            self.ide_poll(false);
+            self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
+
+            self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA0, ((lba >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
+
+            self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_PIO_EXT);
+
+            for sector in 0..count as usize {
+                let err = self.ide_poll(true);
+                if err > 0{
+                    return err;
+                }
+
+                for word in 0..256 {
+                    outw(self.base + ATA_REG_DATA, *((source + sector*512 + word*2) as *const u16));
+                }
+
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
+                self.ide_poll(false);
+            }
         }
 
         return 0;
