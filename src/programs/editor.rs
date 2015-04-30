@@ -27,15 +27,15 @@ impl Editor {
     pub unsafe fn new() -> Editor {
         Editor {
             window: Window{
-                point: Point{ x:400, y:300 },
-                size: Size { width:512, height:320 },
+                point: Point::new(420, 300),
+                size: Size::new(576, 400),
                 title: "Press a function key to load a file",
+                title_color: Color::new(0, 0, 0),
+                border_color: Color::new(255, 255, 255),
+                content_color: Color::alpha(0, 0, 0, 196),
                 shaded: false,
                 dragging: false,
-                last_mouse_point: Point {
-                    x: 0,
-                    y: 0
-                },
+                last_mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
                     y: 0,

@@ -10,4 +10,8 @@ impl Color {
 	pub fn new(r: u8, g: u8, b: u8) -> Color {
 		Color { r: r, g: g, b: b, a: 255 }
 	}
+	
+	pub fn alpha(r: u8, g: u8, b: u8, a: u8) -> Color {
+        Color { r: r, g: g, b: b, a: a }
+	}
 }
