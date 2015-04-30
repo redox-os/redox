@@ -1,7 +1,5 @@
 use core::mem::size_of;
 
-use common::debug::*;
-
 const PAGE_DIRECTORY: usize = 0x300000;
 const PAGE_TABLE_SIZE: usize = 1024;
 const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
@@ -62,14 +60,7 @@ unsafe fn cluster_address(number: usize) -> usize{
 
 pub fn cluster_init(){
     unsafe {
-        d("TODO: Automatic memory detection, ");
-        //CLUSTER_COUNT = 64*1024;
-        dd(CLUSTER_COUNT);
-        d(" Clusters, ");
-        dd(CLUSTER_SIZE);
-        d(" Bytes each");
-        dl();
-        
+        // TODO: Automatic memory detection
         for i in 0..CLUSTER_COUNT {
             set_cluster(i, 0);
         }
