@@ -93,6 +93,9 @@ unsafe fn initialize(){
     d("Clusters\n");
     cluster_init();
     
+    d("Display\n");
+    display_init();
+    
     d("Mouse\n");
     mouse_init();
     

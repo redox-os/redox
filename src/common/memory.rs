@@ -2,14 +2,15 @@ use core::mem::size_of;
 
 use common::debug::*;
 
-const PAGE_DIRECTORY: usize = 0x1000000;
+const PAGE_DIRECTORY: usize = 0x300000;
 const PAGE_TABLE_SIZE: usize = 1024;
 const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
+const PAGE_SIZE: usize = 4*1024;
 
 pub unsafe fn set_page(virtual_address: usize, physical_address: usize){
-    let page = virtual_address / 4096;
-    let table = page / 1024;
-    let entry = page % 1024;
+    let page = virtual_address / PAGE_SIZE;
+    let table = page / PAGE_TABLE_SIZE;
+    let entry = page % PAGE_TABLE_SIZE;
     let entry_address = PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * 4;
     
     *(entry_address as *mut u32) = (physical_address as u32 & 0xFFFFF000) | 1;
@@ -26,7 +27,7 @@ pub unsafe fn page_init(){
         *((PAGE_DIRECTORY + table_i * 4) as *mut u32) = (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * 4) as u32 | 1;
         
         for entry_i in 0..PAGE_TABLE_SIZE {
-            identity_page((table_i * PAGE_TABLE_SIZE + entry_i) * 4096);
+            identity_page((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE);
         }
     }
     
@@ -37,7 +38,7 @@ pub unsafe fn page_init(){
         : : "{eax}"(PAGE_DIRECTORY) : : "intel");
 }
 
-const CLUSTER_ADDRESS: usize = 0x2000000;
+const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * 4 ;
 const CLUSTER_COUNT: usize = 1024*1024; // 4 GiB
 const CLUSTER_SIZE: usize = 4*1024; // Of 4 K chunks
 
