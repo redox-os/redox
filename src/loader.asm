@@ -102,8 +102,6 @@ protected_mode:
     ; set up stack
     mov esp, 0x1FFFF0
     
-    call mouse.init
-    
     ;rust init
 	mov [0x200000], byte 255
 	jmp [kernel_file + 0x18]
@@ -132,7 +130,6 @@ gdt:
 gdt_end:
 
 %include "asm/interrupts.asm"
-%include "asm/mouse.asm"
 
 times (0xC000-0x1000)-0x7C00-($-$$) db 0
 
