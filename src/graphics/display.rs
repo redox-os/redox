@@ -2,7 +2,6 @@ use core::cmp::min;
 use core::cmp::max;
 use core::str::StrExt;
 
-use common::debug::*;
 use common::memory::*;
 
 use graphics::color::*;
@@ -61,9 +60,6 @@ static mut OFFSCREENLOCATION: usize = 0;
 pub unsafe fn display_init(){
     let mode_info = *(VBEMODEINFOLOCATION as *const VBEModeInfo);
     OFFSCREENLOCATION = alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize);
-    d("ALLOC: ");
-    dh(OFFSCREENLOCATION);
-    dl();
 }
 
 impl Display {
