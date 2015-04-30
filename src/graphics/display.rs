@@ -2,6 +2,9 @@ use core::cmp::min;
 use core::cmp::max;
 use core::str::StrExt;
 
+use common::debug::*;
+use common::memory::*;
+
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
@@ -44,7 +47,7 @@ pub struct VBEModeInfo {
 	offscreenmemsize: u16
 }
 
-pub static mut FONT_LOCATION: usize = 0x0;
+pub static mut FONT_LOCATION: usize = 0;
 
 pub struct Display {
 	mode_info: VBEModeInfo,
@@ -53,7 +56,15 @@ pub struct Display {
 	pub size: Size
 }
 
-const OFFSCREENLOCATION: usize = 0x400000;
+static mut OFFSCREENLOCATION: usize = 0;
+
+pub unsafe fn display_init(){
+    let mode_info = *(VBEMODEINFOLOCATION as *const VBEModeInfo);
+    OFFSCREENLOCATION = alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize);
+    d("ALLOC: ");
+    dh(OFFSCREENLOCATION);
+    dl();
+}
 
 impl Display {
 	pub fn new() -> Display {
@@ -115,11 +126,11 @@ impl Display {
             let end_x = max(0, min(self.size.width as i32 - 1, point.x + size.width as i32)) as usize;
         
             for y in start_y..end_y {
-                let row_ptr: usize = OFFSCREENLOCATION + y * self.bytesperrow;
-                for x in start_x..end_x {
-                    let pixel_ptr: usize = row_ptr + x * self.bytesperpixel;
-                
-                    unsafe{
+                unsafe{
+                    let row_ptr: usize = OFFSCREENLOCATION + y * self.bytesperrow;
+                    for x in start_x..end_x {
+                        let pixel_ptr: usize = row_ptr + x * self.bytesperpixel;
+                    
                         Display::fast_pixel(pixel_ptr, color);
                     }
                 }
