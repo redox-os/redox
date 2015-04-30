@@ -23,8 +23,8 @@ impl Viewer {
     pub unsafe fn new() -> Viewer {
         Viewer {
             window: Window{
-                point: Point{ x:50, y:50 },
-                size: Size { width:800, height:600 },
+                point: Point{ x:150, y:50 },
+                size: Size { width:640, height:480 },
                 title: "Press a function key to load a file",
                 shaded: false,
                 dragging: false,

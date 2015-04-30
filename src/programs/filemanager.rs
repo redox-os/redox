@@ -24,10 +24,27 @@ pub struct FileManager {
 
 impl FileManager {
     pub unsafe fn new() -> FileManager {
+        let mut size = Size {
+            width: 0,
+            height: 0
+        };
+        
+        let files = UnFS::new(Disk::new()).list();
+        
+        if size.height < files.len() as u32 * 16 {
+            size.height = files.len() as u32 * 16;
+        }
+        
+        for file in files.as_slice() {
+            if size.width < (file.len() + 1) as u32 * 8 {
+                size.width = (file.len() + 1) as u32 * 8 ;
+            }
+        }
+    
         FileManager {
             window: Window{
-                point: Point{ x:100, y:100 },
-                size: Size { width:800, height:600 },
+                point: Point{ x:0, y:50 },
+                size: size,
                 title: "File Manager",
                 shaded: false,
                 dragging: false,
@@ -44,7 +61,7 @@ impl FileManager {
                     valid: false
                 }
             },
-            files: UnFS::new(Disk::new()).list()
+            files: files
         }
     }
 }

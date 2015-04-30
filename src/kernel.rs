@@ -146,7 +146,16 @@ pub unsafe fn kernel() {
             Vector::<Box<Program>>::from_value(box Editor::new()) +
             Vector::<Box<Program>>::from_value(box FileManager::new()) +
             Vector::<Box<Program>>::from_value(box Viewer::new());
-        
+            
+        //Send F1 to hack in things.
+        for program in programs.as_slice() {
+            (*program).on_key(KeyEvent {
+                character: '\0',
+                scancode: 0x3B,
+                pressed: true
+            });
+        }
+    
         loop{
             let interrupt = *INTERRUPT;
             *INTERRUPT = 255;
