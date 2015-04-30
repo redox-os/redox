@@ -7,6 +7,7 @@ use drivers::mouse::*;
 use filesystems::unfs::*;
 
 use graphics::bmp::*;
+use graphics::color::*;
 use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
@@ -23,15 +24,15 @@ impl Viewer {
     pub unsafe fn new() -> Viewer {
         Viewer {
             window: Window{
-                point: Point{ x:150, y:50 },
-                size: Size { width:640, height:480 },
+                point: Point::new(180, 50),
+                size: Size::new(640, 480),
                 title: "Press a function key to load a file",
+                title_color: Color::new(255, 255, 255),
+                border_color: Color::new(0, 0, 0),
+                content_color: Color::alpha(0, 0, 0, 0),
                 shaded: false,
                 dragging: false,
-                last_mouse_point: Point {
-                    x: 0,
-                    y: 0
-                },
+                last_mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
                     y: 0,
@@ -69,7 +70,7 @@ impl Program for Viewer {
             if ! self.window.shaded {
                 for y in 0..self.background.size.height {
                     for x in 0..self.background.size.width {
-                        display.pixel(Point::new(self.window.point.x + (x + (self.window.size.width - self.background.size.width) / 2) as i32, self.window.point.y + (y + (self.window.size.height - self.background.size.height) / 2) as i32), self.background.pixel(Point::new(x as i32, y as i32)));
+                        display.pixel(Point::new(self.window.point.x + x as i32, self.window.point.y + y as i32), self.background.pixel(Point::new(x as i32, y as i32)));
                     }
                 }
             }
@@ -80,7 +81,7 @@ impl Program for Viewer {
         if key_event.pressed {
             match key_event.scancode {
                 0x3B => self.load("bmw.bmp"),
-                0x3C => self.load("stonehenge.bmp"),
+                0x3C => self.load("schemabanner.bmp"),
                 _ => ()
             }
             

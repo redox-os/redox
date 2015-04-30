@@ -11,6 +11,9 @@ pub struct Window {
 	pub point: Point,
 	pub size: Size,
 	pub title: &'static str,
+	pub title_color: Color,
+	pub border_color: Color,
+	pub content_color: Color,
 	pub shaded: bool,
 	pub dragging: bool,
 	pub last_mouse_point: Point,
@@ -19,24 +22,22 @@ pub struct Window {
 
 impl Window {	
 	pub fn draw(&self, display: &Display) {
-        let border_color = Color::new(0, 0, 0);
-        let title_color = Color::new(255, 255, 255);
-		display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), border_color);
+		display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
 		
         let mut cursor = Point::new(self.point.x, self.point.y - 17);
         for character in self.title.chars() {
             if cursor.x + 8 <= self.point.x + self.size.width as i32 {
-                display.char(cursor, character, title_color);
+                display.char(cursor, character, self.title_color);
             }
             cursor.x += 8;
         }
 		
 		if !self.shaded {
-            display.rect(Point::new(self.point.x - 2, self.point.y), Size::new(2, self.size.height), border_color);
-            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as i32), Size::new(self.size.width + 4, 2), border_color);
-            display.rect(Point::new(self.point.x + self.size.width as i32, self.point.y), Size::new(2, self.size.height), border_color);
+            display.rect(Point::new(self.point.x - 2, self.point.y), Size::new(2, self.size.height), self.border_color);
+            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as i32), Size::new(self.size.width + 4, 2), self.border_color);
+            display.rect(Point::new(self.point.x + self.size.width as i32, self.point.y), Size::new(2, self.size.height), self.border_color);
             
-            display.rect(Point::new(self.point.x, self.point.y), Size::new(self.size.width, self.size.height), Color { r: 0, g: 0, b: 0, a:196 });
+            display.rect(Point::new(self.point.x, self.point.y), Size::new(self.size.width, self.size.height), self.content_color);
 		}
 	}
 	

@@ -24,10 +24,7 @@ pub struct FileManager {
 
 impl FileManager {
     pub unsafe fn new() -> FileManager {
-        let mut size = Size {
-            width: 0,
-            height: 0
-        };
+        let mut size = Size::new(0, 0);
         
         let files = UnFS::new(Disk::new()).list();
         
@@ -43,15 +40,15 @@ impl FileManager {
     
         FileManager {
             window: Window{
-                point: Point{ x:0, y:50 },
+                point: Point::new(10, 50),
                 size: size,
                 title: "File Manager",
+                title_color: Color::new(0, 0, 0),
+                border_color: Color::new(255, 255, 255),
+                content_color: Color::alpha(0, 0, 0, 196),
                 shaded: false,
                 dragging: false,
-                last_mouse_point: Point {
-                    x: 0,
-                    y: 0
-                },
+                last_mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
                     y: 0,
