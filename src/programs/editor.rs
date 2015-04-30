@@ -27,8 +27,8 @@ impl Editor {
     pub unsafe fn new() -> Editor {
         Editor {
             window: Window{
-                point: Point{ x:150, y:150 },
-                size: Size { width:800, height:600 },
+                point: Point{ x:300, y:200 },
+                size: Size { width:640, height:480 },
                 title: "Press a function key to load a file",
                 shaded: false,
                 dragging: false,
