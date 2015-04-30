@@ -47,6 +47,19 @@ impl <T> Vector<T> {
     }
     */
     
+    pub fn from_ptr(ptr: *const T) -> Vector<T> {
+        let data = alloc(size_of::<T>());
+        
+        unsafe {
+            ptr::copy(ptr, data as *mut T, size_of::<T>());
+        }
+        
+        Vector::<T> {
+            data: data as *mut T,
+            length: 1
+        }
+    }
+    
     pub fn from_value(value: T) -> Vector<T> {
         let data = alloc(size_of::<T>());
         

@@ -130,12 +130,37 @@ impl Program for Editor {
                 0x3B => self.load("README.md"),
                 0x3C => self.load("LICENSE.md"),
                 0x40 => self.save(),
+                0x47 => self.offset = 0,
+                0x48 => for i in 1..self.offset {
+                    match self.string.get(self.offset - i) {
+                        '\0' => break,
+                        '\n' => {
+                            self.offset = self.offset - i;
+                            break;
+                        },
+                        _ => ()
+                    }
+                },
                 0x4B => if self.offset > 0 {
                             self.offset -= 1;
                         },
                 0x4D => if self.offset < self.string.len() {
                             self.offset += 1;
                         },
+                0x4F => self.offset = self.string.len(),
+                0x50 => for i in self.offset + 1..self.string.len() {
+                    match self.string.get(i) {
+                        '\0' => break,
+                        '\n' => {
+                            self.offset = i;
+                            break;
+                        },
+                        _ => ()
+                    }
+                },
+                0x53 => if self.offset < self.string.len() {
+                    self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
+                },
                 _ => ()
             }
             
@@ -154,7 +179,7 @@ impl Program for Editor {
         }
     }
     
-    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event);
+    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

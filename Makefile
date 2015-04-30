@@ -26,7 +26,7 @@ harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
 
 run: harddrive.bin
-	$(QEMU) -serial mon:stdio -sdl -hda $<
+	$(QEMU) -enable-kvm -serial mon:stdio -sdl -hda $<
 
 clean:
 	rm -f *.bin filesystem/*.bin filesystem/filesystem.asm

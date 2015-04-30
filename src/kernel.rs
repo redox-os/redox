@@ -139,13 +139,12 @@ pub unsafe fn kernel() {
             y: 0
         };
         
-        let programs = 
-            Vector::<Box<Program>>::from_value(box Viewer::new()) +
+        let mut programs = 
+            Vector::<Box<Program>>::from_value(box Editor::new()) +
             Vector::<Box<Program>>::from_value(box FileManager::new()) +
-            Vector::<Box<Program>>::from_value(box Editor::new());
+            Vector::<Box<Program>>::from_value(box Viewer::new());
         
         loop{
-            asm!("cli");
             let interrupt = *INTERRUPT;
             *INTERRUPT = 255;
             
@@ -153,23 +152,33 @@ pub unsafe fn kernel() {
             match interrupt {
                 32 => {
                 },
-                33 => {
-                    let key_event = keyboard_interrupt();
-                    
-                    d("KEY ");
-                    dc(key_event.character);
-                    dl();
-                
-                    for program in programs.as_slice() {                                            
-                        (*program).on_key(key_event);
-                    }
-                    
+                33 => (),
+                44 => (),
+                255 => {
                     draw = true;
                 },
-                44 => {
+                _ => {
+                    d("I: ");
+                    dd(interrupt as usize);
+                    dl();
+                }
+            }
+            
+            loop {
+                let status = inb(0x64);
+                if status & 0x21 == 1 {
+                    let key_event = keyboard_interrupt();
+                    if key_event.scancode > 0 {
+                        for program in programs.as_slice() {
+                            (*program).on_key(key_event);
+                            draw = true;
+                            break;
+                        }
+                    }
+                }else if status & 0x21 == 0x21 {
                     let mouse_event = mouse_interrupt();
 
-                    if mouse_event.valid {                        
+                    if mouse_event.valid {
                         mouse_point.x += mouse_event.x;
                         if mouse_point.x < 0 {
                             mouse_point.x = 0;
@@ -186,28 +195,22 @@ pub unsafe fn kernel() {
                             mouse_point.y = display.size.height as i32 - 1;
                         }
                         
-                        d("MOUSE ");
-                        dd(mouse_point.x as usize);
-                        d(", ");
-                        dd(mouse_point.y as usize);
-                        dl();
-                        
+                        let mut new_programs = Vector::<Box<Program>>::new();
+                        let mut allow_catch = true;
                         for program in programs.as_slice() {
-                            if (*program).on_mouse(mouse_point, mouse_event) {
-                                break;
+                            if (*program).on_mouse(mouse_point, mouse_event, allow_catch) {
+                                new_programs = Vector::<Box<Program>>::from_ptr(program) + new_programs;
+                                allow_catch = false;
+                            }else{
+                                new_programs = new_programs + Vector::<Box<Program>>::from_ptr(program);
                             }
                         }
+                        programs = new_programs;
                         
                         draw = true;
                     }
-                },
-                255 => {
-                    draw = true;
-                },
-                _ => {
-                    d("I: ");
-                    dd(interrupt as usize);
-                    dl();
+                }else{
+                    break;
                 }
             }
             
@@ -222,8 +225,11 @@ pub unsafe fn kernel() {
                 display.text(Point::new(display.size.width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
                 
                 //let t_prog = timestamp();
-                for program in programs.as_slice() {
-                    (*program).draw(&display);
+                for i in 0..programs.len() {
+                    match programs.get(programs.len() - 1 - i) {
+                        Result::Ok(program) => (*program).draw(&display),
+                        Result::Err(_) => ()
+                    }
                 }
                 
                 //let t_mouse = timestamp();
@@ -261,7 +267,6 @@ pub unsafe fn kernel() {
                 */
             }
             
-            
             if interrupt >= 0x20 && interrupt < 0x30 {
                 if interrupt >= 0x28 {
                     outb(0xA0, 0x20);
@@ -270,7 +275,9 @@ pub unsafe fn kernel() {
                 outb(0x20, 0x20);
             }
             
-            asm!("sti\nhlt");
+            asm!("sti\n
+                hlt\n
+                cli");
         }
 	}
 }

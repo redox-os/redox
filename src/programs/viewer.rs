@@ -51,9 +51,11 @@ impl Viewer {
     }
     
     unsafe fn load(&mut self, filename: &'static str){
+        self.window.title = filename;
         let unfs = UnFS::new(Disk::new());
         let background_data = unfs.load(filename);
         self.background = BMP::from_data(background_data);
+        self.window.size = self.background.size;
         unalloc(background_data);
     }
 }
@@ -77,9 +79,8 @@ impl Program for Viewer {
     unsafe fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
-                0x3D => self.load("bmw.bmp"),
-                0x3E => self.load("stonehenge.bmp"),
-                0x3F => self.load("tiger.bmp"),
+                0x3B => self.load("bmw.bmp"),
+                0x3C => self.load("stonehenge.bmp"),
                 _ => ()
             }
             
@@ -90,7 +91,7 @@ impl Program for Viewer {
         }
     }
     
-    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event);
+    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

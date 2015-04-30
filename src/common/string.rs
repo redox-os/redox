@@ -181,6 +181,16 @@ impl String {
         String::from_num_radix(num, 10)
     }
     
+    pub fn get(&self, i: usize) -> char {
+        if i >= self.len() {
+            return '\0';
+        }else{
+            unsafe{
+                return *(((self.data as usize) + i * size_of::<char>()) as *const char);
+            }
+        }
+    }
+    
     pub fn substr(&self, start: usize, len: usize) -> String {
         let mut i = start;
         if i > self.len() {

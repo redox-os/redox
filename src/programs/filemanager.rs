@@ -84,7 +84,7 @@ impl Program for FileManager {
     unsafe fn on_key(&mut self, key_event: KeyEvent){
     }
     
-    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event);
+    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }
