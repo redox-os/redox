@@ -77,7 +77,7 @@ impl Editor {
     
     unsafe fn save(&self){
         let unfs = UnFS::new(Disk::new());
-        let data = self.string.as_c_str() as usize;
+        let data = self.string.to_c_str() as usize;
         unfs.save(self.filename, data);
         unalloc(data);
         d("Saved\n");

@@ -14,6 +14,7 @@ use common::debug::*;
 use common::elf::*;
 use common::pio::*;
 use common::memory::*;
+use common::string::*;
 use common::vector::*;
 
 use drivers::disk::*;
@@ -73,11 +74,13 @@ mod programs {
 pub struct Box<T>(*mut T);
 
 #[lang="exchange_malloc"]
+#[allow(unused_variables)]
 pub fn exchange_malloc(size: usize, align: usize) -> *mut u8{
     alloc(size) as *mut u8
 }
 
 #[lang="exchange_free"]
+#[allow(unused_variables)]
 pub fn exchange_free(ptr: *mut u8, size: usize, align: usize){
     unalloc(ptr as usize);
 }
@@ -89,41 +92,43 @@ unsafe fn initialize(){
 
     d("Paging\n");
     page_init();
-    
+
     d("Clusters\n");
     cluster_init();
-    
+
     d("Display\n");
     display_init();
-    
+
     d("Mouse\n");
     mouse_init();
-    
+
     d("Keyboard Status\n");
     keyboard_init();
-    
+
     d("Fonts\n");
     let unfs = UnFS::new(Disk::new());
     FONT_LOCATION = unfs.load("unifont.font");
-    
+
     if FONT_LOCATION > 0 {
         d("Read font file\n");
     }else{
         d("Did not find font file\n");
     }
-    
+
+    dd(String::from_str("100").to_num() + String::from_str("128").to_num());
+    dl();
+
     d("ELF\n");
     let elf = ELF::new(unfs.load("test.bin"));
     elf.run();
 }
 
-pub unsafe fn timestamp() -> u64 {
+pub unsafe fn timestamp() -> usize {
     let low: u32;
-    let high: u32;
     asm!("rdtsc"
-        : "={eax}"(low), "={edx}"(high) : : "intel");
-        
-    return low as u64;
+        : "={eax}"(low) : : "{edx}" : "intel");
+
+    return low as usize;
 }
 
 const INTERRUPT: *mut u8 = 0x200000 as *mut u8;
@@ -132,21 +137,21 @@ const INTERRUPT: *mut u8 = 0x200000 as *mut u8;
 pub unsafe fn kernel() {
     if *INTERRUPT == 255 {
         initialize();
-        
+
         pci_test();
-        
+
         let display = Display::new();
-        
+
         let mut mouse_point: Point = Point {
             x: 0,
             y: 0
         };
-        
-        let mut programs = 
+
+        let mut programs =
             Vector::<Box<Program>>::from_value(box Editor::new()) +
             Vector::<Box<Program>>::from_value(box FileManager::new()) +
             Vector::<Box<Program>>::from_value(box Viewer::new());
-            
+
         //Send F1 to hack in things.
         for program in programs.as_slice() {
             (*program).on_key(KeyEvent {
@@ -155,11 +160,11 @@ pub unsafe fn kernel() {
                 pressed: true
             });
         }
-    
+
         loop{
             let interrupt = *INTERRUPT;
             *INTERRUPT = 255;
-            
+
             let mut draw = false;
             match interrupt {
                 32 => (),
@@ -174,7 +179,7 @@ pub unsafe fn kernel() {
                     dl();
                 }
             }
-            
+
             loop {
                 let status = inb(0x64);
                 if status & 0x21 == 1 {
@@ -205,7 +210,7 @@ pub unsafe fn kernel() {
                         if mouse_point.y >= display.size.height as i32 {
                             mouse_point.y = display.size.height as i32 - 1;
                         }
-                        
+
                         let mut new_programs = Vector::<Box<Program>>::new();
                         let mut allow_catch = true;
                         for program in programs.as_slice() {
@@ -217,24 +222,24 @@ pub unsafe fn kernel() {
                             }
                         }
                         programs = new_programs;
-                        
+
                         draw = true;
                     }
                 }else{
                     break;
                 }
             }
-            
+
             if draw {
                 //let t_clear = timestamp();
                 display.clear(Color::new(64, 64, 64));
-                
+
                 //let t_rect = timestamp();
                 display.rect(Point::new(0, 0), Size::new(display.size.width, 18), Color::new(0, 0, 0));
-                
+
                 //let t_text = timestamp();
                 display.text(Point::new(display.size.width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
-                
+
                 //let t_prog = timestamp();
                 for i in 0..programs.len() {
                     match programs.get(programs.len() - 1 - i) {
@@ -242,50 +247,50 @@ pub unsafe fn kernel() {
                         Result::Err(_) => ()
                     }
                 }
-                
+
                 //let t_mouse = timestamp();
                 display.char_bitmap(mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
-                
+
                 //let t_copy = timestamp();
                 display.copy();
-                
+
                 //let t_finish = timestamp();
-                
+
                 /*
                 d("Clear: ");
                 dd((t_rect - t_clear) as usize);
                 dl();
-                
+
                 d("Rect: ");
                 dd((t_text - t_rect) as usize);
                 dl();
-                
+
                 d("Text: ");
                 dd((t_prog - t_text) as usize);
                 dl();
-                
+
                 d("Prog: ");
                 dd((t_mouse - t_prog) as usize);
                 dl();
-                
+
                 d("Mouse: ");
                 dd((t_copy - t_mouse) as usize);
                 dl();
-                
+
                 d("Copy: ");
                 dd((t_finish - t_copy) as usize);
                 dl();
                 */
             }
-            
+
             if interrupt >= 0x20 && interrupt < 0x30 {
                 if interrupt >= 0x28 {
                     outb(0xA0, 0x20);
                 }
-                
+
                 outb(0x20, 0x20);
             }
-            
+
             asm!("sti\n
                 hlt\n
                 cli");

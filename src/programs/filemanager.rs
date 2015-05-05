@@ -23,19 +23,19 @@ pub struct FileManager {
 impl FileManager {
     pub unsafe fn new() -> FileManager {
         let mut size = Size::new(0, 0);
-        
+
         let files = UnFS::new(Disk::new()).list();
-        
+
         if size.height < files.len() as u32 * 16 {
             size.height = files.len() as u32 * 16;
         }
-        
+
         for file in files.as_slice() {
             if size.width < (file.len() + 1) as u32 * 8 {
                 size.width = (file.len() + 1) as u32 * 8 ;
             }
         }
-    
+
         FileManager {
             window: Window{
                 point: Point::new(10, 50),
@@ -64,12 +64,12 @@ impl FileManager {
 impl Program for FileManager {
     unsafe fn draw(&self, display: &Display){
         self.window.draw(display);
-		
+
 		if ! self.window.shaded {
             let mut row = 0;
             for string in self.files.as_slice() {
                 let mut col = 0;
-                for c_ptr in string.as_slice() {                
+                for c_ptr in string.as_slice() {
                     let c = *c_ptr;
                     if c == '\n' {
                         col = 0;
@@ -92,10 +92,11 @@ impl Program for FileManager {
             }
         }
     }
-    
+
+    #[allow(unused_variables)]
     unsafe fn on_key(&mut self, key_event: KeyEvent){
     }
-    
+
     unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
