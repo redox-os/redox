@@ -162,8 +162,7 @@ pub unsafe fn kernel() {
             
             let mut draw = false;
             match interrupt {
-                32 => {
-                },
+                32 => (),
                 33 => (),
                 44 => (),
                 255 => {

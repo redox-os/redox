@@ -1,4 +1,3 @@
-use core::marker::Copy;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
