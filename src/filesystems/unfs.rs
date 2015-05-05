@@ -2,7 +2,6 @@ use core::mem::size_of;
 use core::ptr;
 use core::str::StrExt;
 
-use common::debug::*;
 use common::memory::*;
 use common::string::*;
 use common::vector::*;
