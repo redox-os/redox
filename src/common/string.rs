@@ -236,7 +236,7 @@ impl String {
         }
     }
     
-    pub unsafe fn as_c_str(&self) -> *const u8 {
+    pub unsafe fn to_c_str(&self) -> *const u8 {
         let length = self.len() + 1;
         
         let data = alloc(length);
@@ -247,6 +247,39 @@ impl String {
         *((data + self.len()) as *mut u8) = 0;
         
         data as *const u8
+    }
+    
+    pub fn to_num_radix(&self, radix: usize) -> usize {
+        if radix == 0 {
+            return 0;
+        }
+    
+        let mut num = 0;
+        for c in self.as_slice(){
+            let digit;
+            if *c >= '0' && *c <= '9' {
+                digit = *c as usize - '0' as usize
+            } else if *c >= 'A' && *c <= 'Z' {
+                digit = *c as usize - 'A' as usize + 10
+            } else if *c >= 'a' && *c <= 'z' {
+                digit = *c as usize - 'a' as usize + 10
+            } else {
+                break;
+            }
+            
+            if digit >= radix {
+                break;
+            }
+            
+            num *= radix;
+            num += digit;
+        }
+        
+        num
+    }
+    
+    pub fn to_num(&self) -> usize {
+        self.to_num_radix(10)
     }
     
     pub fn d(&self){

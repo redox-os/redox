@@ -46,12 +46,12 @@ const RAL0: u32 = 0x5400;
 const RAH0: u32 = 0x5404;
     
 
-pub struct Intel_8254x {
+pub struct Intel8254x {
     base: usize,
     memory_mapped: bool
 }
 
-impl Intel_8254x {
+impl Intel8254x {
     pub unsafe fn read(&self, register: u32) -> u32 {
         let data;
     
@@ -170,7 +170,7 @@ impl Intel_8254x {
 }
 
 pub unsafe fn net_test(base: usize){    
-    let device = Intel_8254x {
+    let device = Intel8254x {
         base: base & (0xFFFFFFFF - 1),
         memory_mapped: base & 1 == 0
     };
