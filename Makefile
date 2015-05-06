@@ -32,7 +32,11 @@ run_no_kvm: harddrive.bin
 	$(QEMU) -sdl -serial mon:stdio -net nic,model=rtl8139 -net user -hda $<
 
 run_netdev: harddrive.bin
-	$(QEMU) -sdl -serial mon:stdio -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap0,script=no,downscript=no -hda $<
+	sudo tunctl -t tap_qemu -u "${USER}"
+	sudo ifconfig tap_qemu 10.85.85.1 up
+	$(QEMU) -sdl -serial mon:stdio -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	sudo ifconfig tap_qemu down
+	sudo tunctl -d tap_qemu
 
 clean:
 	rm -f *.bin filesystem/*.bin filesystem/filesystem.asm

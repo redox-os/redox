@@ -183,6 +183,173 @@ impl Intel8254x {
     }
 }
 
+pub struct MACAddr {
+    pub bytes: [u8; 6]
+}
+
+impl MACAddr {
+    pub fn d(&self){
+        for i in 0..6 {
+            if i > 0 {
+                d(":");
+            }
+            dbh(self.bytes[i]);
+        }
+    }
+}
+
+pub struct IPv4Addr {
+    pub bytes: [u8; 4]
+}
+
+impl IPv4Addr {
+    pub fn d(&self){
+        for i in 0..4 {
+            if i > 0 {
+                d(".");
+            }
+            dd(self.bytes[i] as usize);
+        }
+    }
+}
+
+pub struct IPv6Addr {
+    pub bytes: [u8; 16]
+}
+
+impl IPv6Addr {
+    pub fn d(&self){
+        for i in 0..16 {
+            if i > 0 && i % 2 == 0 {
+                d(":");
+            }
+            dbh(self.bytes[i]);
+        }
+    }
+}
+
+pub struct EthernetII {
+    pub dst: MACAddr,
+    pub src: MACAddr,
+    pub _type: u16
+}
+
+impl EthernetII {
+    pub fn d(&self){
+        d("Ethernet II ");
+        dh(self._type as usize);
+        d(" from ");
+        self.src.d();
+        d(" to ");
+        self.dst.d();
+    }
+}
+
+pub struct IPv4 {
+    ver_hlen: u8,
+    services: u8,
+    len: u16,
+    id: u16,
+    flags_fragment: u16,
+    ttl: u8,
+    proto: u8,
+    checksum: u16,
+    src: IPv4Addr,
+    dst: IPv4Addr
+}
+
+impl IPv4 {
+    pub fn d(&self){
+        d("IPv4 ");
+        dbh(self.proto);
+        d(" from ");
+        self.src.d();
+        d(" to ");
+        self.dst.d();
+    }
+}
+
+pub struct UDP {
+    pub src: [u8; 2],
+    pub dst: [u8; 2],
+    pub len: u16,
+    pub checksum: u16
+}
+
+impl UDP {
+    pub fn d(&self){
+        d("UDP from ");
+        dd(self.src[0] as usize * 256 + self.src[1] as usize);
+        d(" to ");
+        dd(self.dst[0] as usize * 256 + self.dst[1] as usize);
+    }
+}
+
+pub struct ARP {
+    htype: u16,
+    ptype: u16,
+    hlen: u8,
+    plen: u8,
+    oper: u16,
+    src_mac: MACAddr,
+    src_ip: IPv4Addr,
+    dst_mac: MACAddr,
+    dst_ip: IPv4Addr
+}
+
+impl ARP {
+    pub fn d(&self){
+        d("ARP hw ");
+        dh(self.htype as usize);
+        d("#");
+        dd(self.hlen as usize);
+        d(" proto ");
+        dh(self.ptype as usize);
+        d("#");
+        dd(self.plen as usize);
+        d(" oper ");
+        dh(self.oper as usize);
+        d(" from ");
+        self.src_mac.d();
+        d(" (");
+        self.src_ip.d();
+        d(") to ");
+        self.dst_mac.d();
+        d(" (");
+        self.dst_ip.d();
+        d(")");
+    }
+}
+
+pub struct IPv6 {
+    pub version: u32, // also has traffic class and flow label, TODO
+    pub len: u16,
+    pub next_header: u8,
+    pub hop_limit: u8,
+    pub src: IPv6Addr,
+    pub dst: IPv6Addr
+}
+
+impl IPv6 {
+    pub fn d(&self){
+        d("IPv6 ");
+        dh(self.version as usize);
+        d(" of length ");
+        dd(self.len as usize);
+        d(" from ");
+        self.src.d();
+        d(" to ");
+        self.dst.d();
+    }
+}
+
+pub struct ICMPv6 {
+    pub _type: u8,
+    pub code: u8,
+    pub checksum: u16,
+    pub body: u32
+}
+
 pub struct RTL8139 {
     base: usize,
     memory_mapped: bool,
@@ -191,39 +358,68 @@ pub struct RTL8139 {
 
 impl RTL8139 {
     pub unsafe fn handle(&self){
-        d("RTL8139 handle\n");
+        d("RTL8139 handle");
 
         let base = self.base as u16;
 
-
         let mut capr = (inw(base + 0x38) + 16) as usize;
+        let cbr = inw(base + 0x3A) as usize;
+        while capr != cbr {
+            d(" CAPR ");
+            dd(capr);
+            d(" CBR ");
+            dd(cbr);
 
-        d("CAPR: ");
-        dh(capr);
-        dl();
+            d(" packet len ");
+            let packet_len = *((self.receive_buffer + capr + 2) as *const u16) as usize;
+            dd(packet_len);
+            dl();
 
-        d("Packet len: ");
-        let packet_len = *((self.receive_buffer + capr + 2) as *const u16) as usize;
-        dh(packet_len);
-        dl();
+            let frame = &*((self.receive_buffer + capr + 4) as *const EthernetII);
+            frame.d();
+            dl();
 
-        for i in capr..capr + packet_len {
-            let data = *((self.receive_buffer + i) as *const u8);
-            dbh(data);
-            if (i - capr) % 40 == 39 {
+            if frame._type == 0x0008 {
+                let packet = &*((self.receive_buffer + capr + 18) as *const IPv4);
+                d("    ");
+                packet.d();
                 dl();
-            }else if (i - capr) % 4 == 3{
-                d(" ");
+
+                if packet.proto == 0x11 {
+                    let segment = &*((self.receive_buffer + capr + 18 + ((packet.ver_hlen & 0xF) as usize) * 4) as *const UDP);
+                    d("        ");
+                    segment.d();
+                    dl();
+                }
+            }else if frame._type == 0x0608 {
+                let packet = &*((self.receive_buffer + capr + 18) as *const ARP);
+                d("    ");
+                packet.d();
+                dl();
+            }else if frame._type == 0xDD86 {
+                let packet = &*((self.receive_buffer + capr + 18) as *const IPv6);
+                d("    ");
+                packet.d();
+                dl();
+            }else{
+                for i in capr..capr + packet_len {
+                    let data = *((self.receive_buffer + i) as *const u8);
+                    dbh(data);
+                    if (i - capr) % 40 == 39 {
+                        dl();
+                    }else if (i - capr) % 4 == 3{
+                        d(" ");
+                    }
+                }
+                dl();
+            }
+
+            capr = capr + packet_len + 4;
+            capr = (capr + 3) & (0xFFFFFFFF - 3);
+            if capr >= 8192 {
+                capr -= 8192
             }
         }
-        dl();
-
-        capr = capr + packet_len + 4;
-        capr = (capr + 3) & (0xFFFFFFFF - 3);
-        if capr >= 8192 {
-            capr -= 8192
-        }
-
         outw(base + 0x38, (capr as u16) - 16);
         outw(base + 0x3E, 0x0001);
     }
