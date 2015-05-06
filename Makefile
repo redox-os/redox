@@ -26,10 +26,13 @@ harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
 
 run: harddrive.bin
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=e1000 -net user -hda $<
+	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=rtl8139 -net user -hda $<
 
 run_no_kvm: harddrive.bin
-	$(QEMU) -sdl -serial mon:stdio -net nic,model=e1000 -net user -hda $<
+	$(QEMU) -sdl -serial mon:stdio -net nic,model=rtl8139 -net user -hda $<
+
+run_netdev: harddrive.bin
+	$(QEMU) -sdl -serial mon:stdio -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap0,script=no,downscript=no -hda $<
 
 clean:
 	rm -f *.bin filesystem/*.bin filesystem/filesystem.asm
