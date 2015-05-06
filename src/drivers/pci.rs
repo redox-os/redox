@@ -593,6 +593,8 @@ impl RTL8139 {
     }
 
     pub unsafe fn init(&self){
+        RTL8139_TX = 0;
+
         d("RTL8139 on: ");
         dh(self.base);
         if self.memory_mapped {
