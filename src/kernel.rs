@@ -167,15 +167,16 @@ pub unsafe fn kernel() {
 
             let mut draw = false;
             match interrupt {
-                32 => (),
-                33 => (),
-                44 => (),
+                0x20 => (),
+                0x21 => (),
+                0x2B => pci_handle(0xB),
+                0x2C => (),
                 255 => {
                     draw = true;
                 },
                 _ => {
                     d("I: ");
-                    dd(interrupt as usize);
+                    dh(interrupt as usize);
                     dl();
                 }
             }
