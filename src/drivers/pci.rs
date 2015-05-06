@@ -183,6 +183,7 @@ impl Intel8254x {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct MACAddr {
     pub bytes: [u8; 6]
 }
@@ -198,11 +199,25 @@ impl MACAddr {
     }
 }
 
+static MAC_ADDR: MACAddr = MACAddr {
+    bytes: [0x52, 0x54, 0x00, 0x12, 0x34, 0x56]
+};
+
+#[derive(Copy, Clone)]
 pub struct IPv4Addr {
     pub bytes: [u8; 4]
 }
 
 impl IPv4Addr {
+    pub fn equals(&self, other: IPv4Addr) -> bool {
+        for i in 0..4 {
+            if self.bytes[i] != other.bytes[i] {
+                return false;
+            }
+        }
+        return true;
+    }
+
     pub fn d(&self){
         for i in 0..4 {
             if i > 0 {
@@ -213,6 +228,11 @@ impl IPv4Addr {
     }
 }
 
+static IP_ADDR: IPv4Addr = IPv4Addr {
+    bytes: [10, 85, 85, 2]
+};
+
+#[derive(Copy, Clone)]
 pub struct IPv6Addr {
     pub bytes: [u8; 16]
 }
@@ -245,6 +265,52 @@ impl EthernetII {
     }
 }
 
+pub struct Checksum {
+    data: u16
+}
+
+impl Checksum {
+    pub unsafe fn check(&self, mut ptr: usize, mut len: usize) -> bool{
+        let mut sum: usize = 0;
+        while len > 1 {
+            sum += *(ptr as *const u16) as usize;
+            len -= 2;
+            ptr += 2;
+        }
+
+        if len > 0 {
+            sum += *(ptr as *const u8) as usize;
+        }
+
+        while (sum >> 16) > 0 {
+            sum = (sum & 0xFFFF) + (sum >> 16);
+        }
+
+        return sum == 0xFFFF;
+    }
+
+    pub unsafe fn calculate(&mut self, mut ptr: usize, mut len: usize){
+        self.data = 0;
+
+        let mut sum: usize = 0;
+        while len > 1 {
+            sum += *(ptr as *const u16) as usize;
+            len -= 2;
+            ptr += 2;
+        }
+
+        if len > 0 {
+            sum += *(ptr as *const u8) as usize;
+        }
+
+        while (sum >> 16) > 0 {
+            sum = (sum & 0xFFFF) + (sum >> 16);
+        }
+
+        self.data = 0xFFFF - (sum as u16);
+    }
+}
+
 pub struct IPv4 {
     ver_hlen: u8,
     services: u8,
@@ -253,7 +319,7 @@ pub struct IPv4 {
     flags_fragment: u16,
     ttl: u8,
     proto: u8,
-    checksum: u16,
+    checksum: Checksum,
     src: IPv4Addr,
     dst: IPv4Addr
 }
@@ -269,11 +335,47 @@ impl IPv4 {
     }
 }
 
+pub struct ICMP {
+    pub _type: u8,
+    pub code: u8,
+    pub checksum: Checksum,
+    pub data: [u8; 4]
+}
+
+impl ICMP {
+    pub fn d(&self){
+        d("ICMP ");
+        dbh(self._type);
+        d(" code ");
+        dbh(self.code);
+    }
+}
+
+pub struct TCP {
+    pub src: [u8; 2],
+    pub dst: [u8; 2],
+    pub sequence: u32,
+    pub ack_num: u32,
+    pub flags: u16,
+    pub window_size: u16,
+    pub checksum: Checksum,
+    pub urgent_pointer: u16
+}
+
+impl TCP {
+    pub fn d(&self){
+        d("TCP from ");
+        dd(self.src[0] as usize * 256 + self.src[1] as usize);
+        d(" to ");
+        dd(self.dst[0] as usize * 256 + self.dst[1] as usize);
+    }
+}
+
 pub struct UDP {
     pub src: [u8; 2],
     pub dst: [u8; 2],
     pub len: u16,
-    pub checksum: u16
+    pub checksum: Checksum
 }
 
 impl UDP {
@@ -333,9 +435,7 @@ pub struct IPv6 {
 impl IPv6 {
     pub fn d(&self){
         d("IPv6 ");
-        dh(self.version as usize);
-        d(" of length ");
-        dd(self.len as usize);
+        dh(self.next_header as usize);
         d(" from ");
         self.src.d();
         d(" to ");
@@ -346,7 +446,7 @@ impl IPv6 {
 pub struct ICMPv6 {
     pub _type: u8,
     pub code: u8,
-    pub checksum: u16,
+    pub checksum: Checksum,
     pub body: u32
 }
 
@@ -356,7 +456,22 @@ pub struct RTL8139 {
     receive_buffer: usize
 }
 
+static mut RTL8139_TX: u16 = 0;
+
 impl RTL8139 {
+    pub unsafe fn send(&self, ptr: usize, len: usize){
+        d("RTL8139 send ");
+        dd(RTL8139_TX as usize);
+        dl();
+
+        let base = self.base as u16;
+
+        outl(base + 0x20 + RTL8139_TX*4, ptr as u32);
+        outl(base + 0x10 + RTL8139_TX*4, len as u32 & 0x1FFF);
+
+        RTL8139_TX = (RTL8139_TX + 1) % 4;
+    }
+
     pub unsafe fn handle(&self){
         d("RTL8139 handle");
 
@@ -370,39 +485,90 @@ impl RTL8139 {
             d(" CBR ");
             dd(cbr);
 
-            d(" packet len ");
-            let packet_len = *((self.receive_buffer + capr + 2) as *const u16) as usize;
-            dd(packet_len);
+            d(" len ");
+            let frame_len = *((self.receive_buffer + capr + 2) as *const u16) as usize;
+            dd(frame_len);
             dl();
 
-            let frame = &*((self.receive_buffer + capr + 4) as *const EthernetII);
+            let frame_addr = self.receive_buffer + capr + 4;
+            let frame = &mut *(frame_addr as *mut EthernetII);
             frame.d();
             dl();
 
             if frame._type == 0x0008 {
-                let packet = &*((self.receive_buffer + capr + 18) as *const IPv4);
+                let packet = &mut *((frame_addr + 14) as *mut IPv4);
                 d("    ");
                 packet.d();
                 dl();
 
-                if packet.proto == 0x11 {
-                    let segment = &*((self.receive_buffer + capr + 18 + ((packet.ver_hlen & 0xF) as usize) * 4) as *const UDP);
+                if packet.proto == 0x01 {
+                    let segment = &mut *((frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4) as *mut ICMP);
+                    d("        ");
+                    segment.d();
+                    dl();
+
+                    if segment._type == 0x08 && packet.dst.equals(IP_ADDR) {
+                        d("            Echo Reply\n");
+                        //Send echo reply
+                        frame.dst = frame.src;
+                        frame.src = MAC_ADDR;
+                        packet.dst = packet.src;
+                        packet.src = IP_ADDR;
+                        segment._type = 0x00;
+
+                        segment.checksum.calculate(frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4, 98 - 14 - ((packet.ver_hlen & 0xF) as usize) * 4);
+                        packet.checksum.calculate(frame_addr + 14, 98 - 14);
+
+                        self.send(frame_addr, 98);
+                    }else{
+                        d("            Ignore ICMP\n");
+                    }
+                }else if packet.proto == 0x06 {
+                    let segment = &*((frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4) as *const TCP);
+                    d("        ");
+                    segment.d();
+                    dl();
+                }else if packet.proto == 0x11 {
+                    let segment = &*((frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4) as *const UDP);
                     d("        ");
                     segment.d();
                     dl();
                 }
             }else if frame._type == 0x0608 {
-                let packet = &*((self.receive_buffer + capr + 18) as *const ARP);
+                let packet = &mut *((frame_addr + 14) as *mut ARP);
                 d("    ");
                 packet.d();
                 dl();
+
+                if packet.oper == 0x0100 && packet.dst_ip.equals(IP_ADDR) {
+                    d("        ARP Reply\n");
+                    //Send arp reply
+                    frame.dst = frame.src;
+                    frame.src = MAC_ADDR;
+                    packet.oper = 0x0200;
+                    packet.dst_mac = packet.src_mac;
+                    packet.dst_ip = packet.src_ip;
+                    packet.src_mac = MAC_ADDR;
+                    packet.src_ip = IP_ADDR;
+
+                    self.send(frame_addr, 42);
+                }else{
+                    d("        Ignore ARP\n");
+                }
             }else if frame._type == 0xDD86 {
-                let packet = &*((self.receive_buffer + capr + 18) as *const IPv6);
+                let packet = &*((frame_addr + 14) as *const IPv6);
                 d("    ");
                 packet.d();
                 dl();
+
+                if packet.next_header == 0x11 {
+                    let segment = &*((frame_addr + 14 + 40) as *const UDP);
+                    d("        ");
+                    segment.d();
+                    dl();
+                }
             }else{
-                for i in capr..capr + packet_len {
+                for i in capr..capr + frame_len {
                     let data = *((self.receive_buffer + i) as *const u8);
                     dbh(data);
                     if (i - capr) % 40 == 39 {
@@ -414,13 +580,15 @@ impl RTL8139 {
                 dl();
             }
 
-            capr = capr + packet_len + 4;
+            capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
             if capr >= 8192 {
                 capr -= 8192
             }
+
+            outw(base + 0x38, (capr as u16) - 16);
         }
-        outw(base + 0x38, (capr as u16) - 16);
+
         outw(base + 0x3E, 0x0001);
     }
 
@@ -446,7 +614,7 @@ impl RTL8139 {
         outw(base + 0x38, 0);
         outw(base + 0x3A, 0);
 
-        outw(base + 0x3C, 0x0005);
+        outw(base + 0x3C, 0x0001);
 
         outl(base + 0x44, 0xf | (1 << 7));
 
