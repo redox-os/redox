@@ -197,27 +197,22 @@ impl RTL8139 {
 
 
         let mut capr = (inw(base + 0x38) + 16) as usize;
-        let cbr = inw(base + 0x3A) as usize;
 
         d("CAPR: ");
         dh(capr);
         dl();
 
-        d("CBR: ");
-        dh(cbr);
-        dl();
-
         d("Packet len: ");
-        let packet_len = *((self.receive_buffer + 2) as *const u16) as usize;
+        let packet_len = *((self.receive_buffer + capr + 2) as *const u16) as usize;
         dh(packet_len);
         dl();
 
-        for i in capr..cbr {
-            let data = *((self.receive_buffer + i*4) as *const u8);
+        for i in capr..capr + packet_len {
+            let data = *((self.receive_buffer + i) as *const u8);
             dbh(data);
-            if i % 40 == 39 {
+            if (i - capr) % 40 == 39 {
                 dl();
-            }else if i % 4 == 3{
+            }else if (i - capr) % 4 == 3{
                 d(" ");
             }
         }
