@@ -15,13 +15,18 @@ pub struct Window {
 	pub border_color: Color,
 	pub content_color: Color,
 	pub shaded: bool,
+	pub closed: bool,
 	pub dragging: bool,
 	pub last_mouse_point: Point,
 	pub last_mouse_event: MouseEvent
 }
 
 impl Window {
-	pub fn draw(&self, display: &Display) {
+	pub fn draw(&self, display: &Display) -> bool {
+            if self.closed {
+                return false;
+            }
+
             display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
 
             let mut cursor = Point::new(self.point.x, self.point.y - 17);
@@ -39,6 +44,8 @@ impl Window {
 
                 display.rect(Point::new(self.point.x, self.point.y), Size::new(self.size.width, self.size.height), self.content_color);
             }
+
+            return true;
 	}
 
 	pub fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{

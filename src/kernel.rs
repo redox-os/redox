@@ -10,7 +10,6 @@ extern crate core;
 use core::mem::size_of;
 
 use common::debug::*;
-use common::elf::*;
 use common::pio::*;
 use common::memory::*;
 use common::string::*;
@@ -101,10 +100,6 @@ unsafe fn initialize(){
 
     dd(String::from_str("100").to_num() + String::from_str("128").to_num());
     dl();
-
-    d("ELF\n");
-    let elf = ELF::new(unfs.load(&String::from_str("test.bin")));
-    elf.run();
 }
 
 pub unsafe fn timestamp() -> usize {

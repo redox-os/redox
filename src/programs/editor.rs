@@ -33,6 +33,7 @@ impl Editor {
                 border_color: Color::new(255, 255, 255),
                 content_color: Color::alpha(0, 0, 0, 196),
                 shaded: false,
+                closed: false,
                 dragging: false,
                 last_mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
@@ -94,10 +95,13 @@ impl Editor {
 }
 
 impl Program for Editor {
-    unsafe fn draw(&self, session: &mut Session){
+    unsafe fn draw(&self, session: &mut Session) -> bool{
         let display = &session.display;
 
-        self.window.draw(display);
+        if ! self.window.draw(display){
+            return false;
+        }
+
         if ! self.window.shaded {
             let mut offset = 0;
             let mut row = 0;
@@ -132,12 +136,15 @@ impl Program for Editor {
                 display.char(Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
             }
         }
+
+        return true;
     }
 
     #[allow(unused_variables)]
     unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
+                0x01 => self.window.closed = true,
                 0x40 => self.save(),
                 0x47 => self.offset = 0,
                 0x48 => for i in 1..self.offset {
@@ -179,7 +186,7 @@ impl Program for Editor {
                     self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset -= 1;
                 },
-                '\x1B' => self.clear(),
+                '\x1B' => (),
                 _ => {
                     self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset += 1;
