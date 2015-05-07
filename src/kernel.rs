@@ -173,10 +173,11 @@ pub unsafe fn kernel() {
 
             let mut draw = false;
             match interrupt {
-                0x20 => (),
-                0x21 => (),
+                0x20 => (), //timer
+                0x21 => (), //keyboard
                 0x2B => pci_handle(0xB),
-                0x2C => (),
+                0x2C => (), //mouse
+                0x2E => (), //disk
                 255 => {
                     draw = true;
                 },
