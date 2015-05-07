@@ -9,7 +9,6 @@ use drivers::mouse::*;
 use filesystems::unfs::*;
 
 use graphics::color::*;
-use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
@@ -18,18 +17,18 @@ use programs::program::*;
 
 pub struct Editor {
     window: Window,
-    filename: &'static str,
+    filename: String,
     string: String,
     offset: usize
 }
 
 impl Editor {
-    pub unsafe fn new() -> Editor {
-        Editor {
+    pub unsafe fn new(file: &String) -> Editor {
+        let mut ret = Editor {
             window: Window{
                 point: Point::new(420, 300),
                 size: Size::new(576, 400),
-                title: "Press a function key to load a file",
+                title: String::from_str("Editor"),
                 title_color: Color::new(0, 0, 0),
                 border_color: Color::new(255, 255, 255),
                 content_color: Color::alpha(0, 0, 0, 196),
@@ -45,50 +44,61 @@ impl Editor {
                     valid: false
                 }
             },
-            filename: "",
+            filename: String::new(),
             string: String::new(),
             offset: 0
+        };
+
+        if file.len() > 0{
+            d("Load text file ");
+            file.d();
+            dl();
+
+            ret.load(file);
         }
+
+        return ret;
     }
-    
+
     unsafe fn clear(&mut self){
-        self.window.title = "Press a function key to load a file";
-        self.filename = "";
+        self.window.title = String::from_str("Editor");
+        self.filename = String::new();
         self.string = String::new();
         self.offset = 0;
     }
-    
-    unsafe fn load(&mut self, filename: &'static str){
+
+    unsafe fn load(&mut self, filename: &String){
         self.clear();
         let unfs = UnFS::new(Disk::new());
         let dest = unfs.load(filename);
         if dest > 0 {
-            self.filename = filename;
-            self.window.title = filename;
+            self.filename = filename.clone();
+            self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
             self.string = String::from_c_str(dest as *const u8);
             self.offset = self.string.len();
             unalloc(dest);
         }else{
             d("Did not find '");
-            d(filename);
+            filename.d();
             d("'\n");
         }
     }
-    
+
     unsafe fn save(&self){
         let unfs = UnFS::new(Disk::new());
         let data = self.string.to_c_str() as usize;
-        unfs.save(self.filename, data);
+        unfs.save(&self.filename, data);
         unalloc(data);
         d("Saved\n");
     }
 }
 
 impl Program for Editor {
-    unsafe fn draw(&self, display: &Display){
+    unsafe fn draw(&self, session: &mut Session){
+        let display = &session.display;
+
         self.window.draw(display);
-		
-		if ! self.window.shaded {
+        if ! self.window.shaded {
             let mut offset = 0;
             let mut row = 0;
             let mut col = 0;
@@ -96,7 +106,7 @@ impl Program for Editor {
                 if offset == self.offset && col < self.window.size.width / 8 && row < self.window.size.height / 16 {
                     display.char(Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
                 }
-            
+
                 let c = *c_ptr;
                 if c == '\n' {
                     col = 0;
@@ -114,21 +124,20 @@ impl Program for Editor {
                     col = 0;
                     row += 1;
                 }
-                
+
                 offset += 1;
             }
-            
+
             if offset == self.offset && col < self.window.size.width / 8 && row < self.window.size.height / 16 {
                 display.char(Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
             }
         }
     }
-    
-    unsafe fn on_key(&mut self, key_event: KeyEvent){
+
+    #[allow(unused_variables)]
+    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
-                0x3B => self.load("README.md"),
-                0x3C => self.load("LICENSE.md"),
                 0x40 => self.save(),
                 0x47 => self.offset = 0,
                 0x48 => for i in 1..self.offset {
@@ -163,7 +172,7 @@ impl Program for Editor {
                 },
                 _ => ()
             }
-            
+
             match key_event.character {
                 '\x00' => (),
                 '\x08' => if self.offset > 0 {
@@ -178,8 +187,8 @@ impl Program for Editor {
             }
         }
     }
-    
-    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+
+    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }

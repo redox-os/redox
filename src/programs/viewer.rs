@@ -1,4 +1,6 @@
+use common::debug::*;
 use common::memory::*;
+use common::string::*;
 
 use drivers::disk::*;
 use drivers::keyboard::*;
@@ -8,7 +10,6 @@ use filesystems::unfs::*;
 
 use graphics::bmp::*;
 use graphics::color::*;
-use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
@@ -21,12 +22,12 @@ pub struct Viewer {
 }
 
 impl Viewer {
-    pub unsafe fn new() -> Viewer {
-        Viewer {
+    pub unsafe fn new(file: &String) -> Viewer {
+        let mut ret = Viewer {
             window: Window{
                 point: Point::new(180, 50),
                 size: Size::new(640, 480),
-                title: "Press a function key to load a file",
+                title: String::from_str("Viewer"),
                 title_color: Color::new(255, 255, 255),
                 border_color: Color::new(0, 0, 0),
                 content_color: Color::alpha(0, 0, 0, 0),
@@ -43,16 +44,25 @@ impl Viewer {
                 }
             },
             background: BMP::new()
+        };
+
+        if file.len() > 0{
+            d("Load image file ");
+            file.d();
+            dl();
+            ret.load(file);
         }
+
+        return ret;
     }
 
     unsafe fn clear(&mut self){
-        self.window.title = "Press a function key to load a file";
+        self.window.title = String::from_str("Viewer");
         self.background = BMP::new();
     }
 
-    unsafe fn load(&mut self, filename: &'static str){
-        self.window.title = filename;
+    unsafe fn load(&mut self, filename: &String){
+        self.window.title = String::from_str("Viewer (") + filename + String::from_str(")");
         let unfs = UnFS::new(Disk::new());
         let background_data = unfs.load(filename);
         self.background = BMP::from_data(background_data);
@@ -62,10 +72,11 @@ impl Viewer {
 }
 
 impl Program for Viewer {
-    unsafe fn draw(&self, display: &Display){
-        self.window.draw(display);
+    unsafe fn draw(&self, session: &mut Session){
+        let display = &session.display;
 
-		if ! self.window.shaded {
+        self.window.draw(display);
+        if ! self.window.shaded {
             // TODO: Improve speed!
             if ! self.window.shaded {
                 for y in 0..self.background.size.height {
@@ -77,23 +88,17 @@ impl Program for Viewer {
         }
     }
 
-    unsafe fn on_key(&mut self, key_event: KeyEvent){
+    #[allow(unused_variables)]
+    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
-                0x3B => self.load("bmw.bmp"),
-                0x3C => self.load("rust.bmp"),
-                0x3D => self.load("schemabanner.bmp"),
-                _ => ()
-            }
-
-            match key_event.character {
-                '\x1B' => self.clear(),
+                0x1C => self.clear(),
                 _ => ()
             }
         }
     }
 
-    unsafe fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }
