@@ -29,7 +29,7 @@ pub fn dbh(byte: u8){
         high += 'A' as u8;
     }
     db(high);
-    
+
     let mut low = byte % 16;
     if low <= 9 {
         low += '0' as u8;

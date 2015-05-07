@@ -8,47 +8,47 @@ use graphics::point::*;
 use graphics::size::*;
 
 pub struct Window {
-	pub point: Point,
-	pub size: Size,
-	pub title: String,
-	pub title_color: Color,
-	pub border_color: Color,
-	pub content_color: Color,
-	pub shaded: bool,
-	pub closed: bool,
-	pub dragging: bool,
-	pub last_mouse_point: Point,
-	pub last_mouse_event: MouseEvent
+    pub point: Point,
+    pub size: Size,
+    pub title: String,
+    pub title_color: Color,
+    pub border_color: Color,
+    pub content_color: Color,
+    pub shaded: bool,
+    pub closed: bool,
+    pub dragging: bool,
+    pub last_mouse_point: Point,
+    pub last_mouse_event: MouseEvent
 }
 
 impl Window {
-	pub fn draw(&self, display: &Display) -> bool {
-            if self.closed {
-                return false;
+    pub fn draw(&self, display: &Display) -> bool {
+        if self.closed {
+            return false;
+        }
+
+        display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
+
+        let mut cursor = Point::new(self.point.x, self.point.y - 17);
+        for character in self.title.as_slice() {
+            if cursor.x + 8 <= self.point.x + self.size.width as i32 {
+                display.char(cursor, *character, self.title_color);
             }
+            cursor.x += 8;
+        }
 
-            display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
+        if !self.shaded {
+            display.rect(Point::new(self.point.x - 2, self.point.y), Size::new(2, self.size.height), self.border_color);
+            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as i32), Size::new(self.size.width + 4, 2), self.border_color);
+            display.rect(Point::new(self.point.x + self.size.width as i32, self.point.y), Size::new(2, self.size.height), self.border_color);
 
-            let mut cursor = Point::new(self.point.x, self.point.y - 17);
-            for character in self.title.as_slice() {
-                if cursor.x + 8 <= self.point.x + self.size.width as i32 {
-                    display.char(cursor, *character, self.title_color);
-                }
-                cursor.x += 8;
-            }
+            display.rect(Point::new(self.point.x, self.point.y), Size::new(self.size.width, self.size.height), self.content_color);
+        }
 
-            if !self.shaded {
-                display.rect(Point::new(self.point.x - 2, self.point.y), Size::new(2, self.size.height), self.border_color);
-                display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as i32), Size::new(self.size.width + 4, 2), self.border_color);
-                display.rect(Point::new(self.point.x + self.size.width as i32, self.point.y), Size::new(2, self.size.height), self.border_color);
+        return true;
+    }
 
-                display.rect(Point::new(self.point.x, self.point.y), Size::new(self.size.width, self.size.height), self.content_color);
-            }
-
-            return true;
-	}
-
-	pub fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    pub fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         let mut caught = false;
 
         if allow_catch {
@@ -109,5 +109,5 @@ impl Window {
         self.last_mouse_event = mouse_event;
 
         return caught;
-	}
+    }
 }

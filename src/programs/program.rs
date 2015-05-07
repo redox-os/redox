@@ -1,6 +1,7 @@
 use core::result::Result;
 
 use common::memory::*;
+use common::string::*;
 use common::vector::*;
 
 use drivers::keyboard::*;
@@ -98,7 +99,7 @@ impl Session {
 
             self.display.rect(Point::new(0, 0), Size::new(self.display.size.width, 18), Color::new(0, 0, 0));
 
-            self.display.text(Point::new(self.display.size.width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
+            self.display.text(Point::new(self.display.size.width as i32/ 2 - 3*8, 1), &String::from_str("UberOS"), Color::new(255, 255, 255));
 
             let programs = self.copy_programs();
             let mut new_programs = Vector::<Box<Program>>::new();

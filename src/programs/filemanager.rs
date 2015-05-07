@@ -1,7 +1,6 @@
 use core::result::Result;
 
 use common::debug::*;
-use common::elf::*;
 use common::string::*;
 use common::vector::*;
 
@@ -17,6 +16,7 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::editor::*;
+use programs::executor::*;
 use programs::program::*;
 use programs::viewer::*;
 
@@ -132,13 +132,13 @@ impl Program for FileManager {
                                         || file.ends_with(&String::from_str(".txt"))
                                     {
                                         session.add_program(box Editor::new(file));
-                                    }else if file.ends_with(&String::from_str(".bin")){
+                                    }else if file.ends_with(&String::from_str(".bin"))
+                                        || file.ends_with(&String::from_str(".elf")){
                                         d("Load executable ");
                                         file.d();
                                         dl();
 
-                                        let elf = ELF::new(UnFS::new(Disk::new()).load(file));
-                                        elf.run();
+                                        session.add_program(box Executor::new(file));
                                     }else if file.ends_with(&String::from_str(".bmp")){
                                         session.add_program(box Viewer::new(file));
                                     }else{

@@ -10,13 +10,13 @@ QEMU=qemu-system-i386
 all: harddrive.bin
 
 kernel.bin: src/kernel.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o "$<.o" --emit obj $< && \
-	$(LD) -m elf_i386 -o $@ -T src/kernel.ld "$<.o" && \
-	rm "$<.o"
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o kernel.rs.o --emit obj $<
+	$(LD) -m elf_i386 -o $@ -T src/kernel.ld kernel.rs.o
+	rm kernel.rs.o
 
 filesystem/%.bin: src/%.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o "$<.o" --emit obj $< && \
-	$(LD) -m elf_i386 -o $@ -T src/program.ld "$<.o" && \
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o "$<.o" --emit obj $<
+	$(LD) -m elf_i386 -o $@ -T src/program.ld "$<.o"
 	rm "$<.o"
 
 filesystem/filesystem.asm: filesystem/test.bin
