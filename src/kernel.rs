@@ -14,14 +14,9 @@ use common::pio::*;
 use common::memory::*;
 use common::string::*;
 
-use drivers::disk::*;
 use drivers::keyboard::*;
 use drivers::mouse::*;
 use drivers::pci::*;
-
-use filesystems::unfs::*;
-
-use graphics::display::*;
 
 use programs::filemanager::*;
 use programs::program::*;
@@ -63,6 +58,7 @@ mod network {
 
 mod programs {
     pub mod editor;
+    pub mod executor;
     pub mod filemanager;
     pub mod program;
     pub mod viewer;
@@ -79,24 +75,11 @@ unsafe fn initialize(){
     d("Clusters\n");
     cluster_init();
 
-    d("Display\n");
-    display_init();
-
     d("Mouse\n");
     mouse_init();
 
     d("Keyboard Status\n");
     keyboard_init();
-
-    d("Fonts\n");
-    let unfs = UnFS::new(Disk::new());
-    FONT_LOCATION = unfs.load(&String::from_str("unifont.font"));
-
-    if FONT_LOCATION > 0 {
-        d("Read font file\n");
-    }else{
-        d("Did not find font file\n");
-    }
 
     dd(String::from_str("100").to_num() + String::from_str("128").to_num());
     dl();
