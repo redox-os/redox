@@ -38,9 +38,9 @@ mod common {
     pub mod debug;
     pub mod elf;
     pub mod memory;
-	pub mod pio;
-	pub mod string;
-	pub mod vector;
+    pub mod pio;
+    pub mod string;
+    pub mod vector;
 }
 
 mod drivers {
@@ -56,11 +56,17 @@ mod filesystems {
 
 mod graphics {
     pub mod bmp;
-	pub mod color;
-	pub mod display;
-	pub mod point;
-	pub mod size;
-	pub mod window;
+    pub mod color;
+    pub mod display;
+    pub mod point;
+    pub mod size;
+    pub mod window;
+}
+
+mod network {
+    pub mod intel8254x;
+    pub mod network;
+    pub mod rtl8139;
 }
 
 mod programs {

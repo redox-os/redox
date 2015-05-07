@@ -12,7 +12,7 @@ pub unsafe fn inw(port: u16) -> u16{
     ret
 }
 
-pub unsafe fn inl(port: u16) -> u32{
+pub unsafe fn ind(port: u16) -> u32{
     let ret: u32;
     asm!("in $0, $1\n"
         : "={eax}"(ret) : "{dx}"(port) : : "intel");
@@ -29,7 +29,7 @@ pub unsafe fn outw(port: u16, value: u16){
         : : "{ax}"(value), "{dx}"(port) : : "intel");
 }
 
-pub unsafe fn outl(port: u16, value: u32){
+pub unsafe fn outd(port: u16, value: u32){
     asm!("out $1, $0\n"
         : : "{eax}"(value), "{dx}"(port) : : "intel");
 }
