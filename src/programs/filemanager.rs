@@ -1,6 +1,7 @@
 use core::result::Result;
 
 use common::debug::*;
+use common::elf::*;
 use common::string::*;
 use common::vector::*;
 
@@ -50,6 +51,7 @@ impl FileManager {
                 border_color: Color::new(255, 255, 255),
                 content_color: Color::alpha(0, 0, 0, 196),
                 shaded: false,
+                closed: false,
                 dragging: false,
                 last_mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
@@ -68,10 +70,13 @@ impl FileManager {
 }
 
 impl Program for FileManager {
-    unsafe fn draw(&self, session: &mut Session){
+    unsafe fn draw(&self, session: &mut Session) -> bool{
         let display = &session.display;
 
-        self.window.draw(display);
+        if ! self.window.draw(display) {
+            return false;
+        }
+
         if ! self.window.shaded {
             let mut i = 0;
             let mut row = 0;
@@ -107,6 +112,8 @@ impl Program for FileManager {
                 i += 1;
             }
         }
+
+        return true;
     }
 
     #[allow(unused_variables)]
@@ -120,13 +127,20 @@ impl Program for FileManager {
                                     d("Loading ");
                                     file.d();
                                     dl();
-                                    if file.ends_with(&String::from_str(".bmp")){
-                                        session.add_program(box Viewer::new(file));
-                                    }else if file.ends_with(&String::from_str(".asm"))
+                                    if file.ends_with(&String::from_str(".asm"))
                                         || file.ends_with(&String::from_str(".md"))
                                         || file.ends_with(&String::from_str(".txt"))
                                     {
                                         session.add_program(box Editor::new(file));
+                                    }else if file.ends_with(&String::from_str(".bin")){
+                                        d("Load executable ");
+                                        file.d();
+                                        dl();
+
+                                        let elf = ELF::new(UnFS::new(Disk::new()).load(file));
+                                        elf.run();
+                                    }else if file.ends_with(&String::from_str(".bmp")){
+                                        session.add_program(box Viewer::new(file));
                                     }else{
                                         d("No program found!\n");
                                     }

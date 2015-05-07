@@ -32,6 +32,7 @@ impl Viewer {
                 border_color: Color::new(0, 0, 0),
                 content_color: Color::alpha(0, 0, 0, 0),
                 shaded: false,
+                closed: false,
                 dragging: false,
                 last_mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
@@ -72,10 +73,13 @@ impl Viewer {
 }
 
 impl Program for Viewer {
-    unsafe fn draw(&self, session: &mut Session){
+    unsafe fn draw(&self, session: &mut Session) -> bool{
         let display = &session.display;
 
-        self.window.draw(display);
+        if ! self.window.draw(display) {
+            return false;
+        }
+
         if ! self.window.shaded {
             // TODO: Improve speed!
             if ! self.window.shaded {
@@ -86,13 +90,15 @@ impl Program for Viewer {
                 }
             }
         }
+
+        return true;
     }
 
     #[allow(unused_variables)]
     unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
-                0x1C => self.clear(),
+                0x01 => self.window.closed = true,
                 _ => ()
             }
         }

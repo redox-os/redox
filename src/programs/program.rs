@@ -12,7 +12,7 @@ use graphics::point::*;
 use graphics::size::*;
 
 pub trait Program {
-    unsafe fn draw(&self, session: &mut Session);
+    unsafe fn draw(&self, session: &mut Session) -> bool;
     unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent);
     unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
 }
@@ -101,12 +101,16 @@ impl Session {
             self.display.text(Point::new(self.display.size.width as i32/ 2 - 3*8, 1), "UberOS", Color::new(255, 255, 255));
 
             let programs = self.copy_programs();
+            let mut new_programs = Vector::<Box<Program>>::new();
             for i in 0..programs.len() {
                 match programs.get(programs.len() - 1 - i) {
-                    Result::Ok(program) => (*program).draw(self),
+                    Result::Ok(program) => if (*program).draw(self){
+                        new_programs = Vector::<Box<Program>>::from_ptr(program) + new_programs;
+                    },
                     Result::Err(_) => ()
                 }
             }
+            self.programs = new_programs;
 
             self.display.char_bitmap(self.mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
 
