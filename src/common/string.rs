@@ -25,13 +25,13 @@ impl String {
     // TODO FromStr trait
     pub fn from_str(s: &str) -> String {
         let length = s.chars().count();
-        
+
         if length == 0 {
             return String::new();
         }
-        
+
         let data = alloc(length * size_of::<char>());
-    
+
         let mut i = 0;
         for c in s.chars() {
             unsafe {
@@ -39,22 +39,22 @@ impl String {
             }
             i += 1;
         }
-        
+
         String {
             data: data as *const char,
             length: length
         }
     }
-    
+
     pub fn from_slice(s: &[char]) -> String {
         let length = s.len();
-        
+
         if length == 0 {
             return String::new();
         }
-        
+
         let data = alloc(length * size_of::<char>());
-    
+
         let mut i = 0;
         for c in s {
             unsafe {
@@ -62,13 +62,13 @@ impl String {
             }
             i += 1;
         }
-        
+
         String {
             data: data as *const char,
             length: length
         }
     }
-    
+
     pub fn from_c_slice(s: &[u8]) -> String {
         let mut length = 0;
         for c in s {
@@ -77,13 +77,13 @@ impl String {
             }
             length += 1;
         }
-        
+
         if length == 0 {
             return String::new();
         }
-        
+
         let data = alloc(length * size_of::<char>());
-    
+
         let mut i = 0;
         for c in s {
             if i >= length {
@@ -94,13 +94,13 @@ impl String {
             }
             i += 1;
         }
-        
+
         String {
             data: data as *const char,
             length: length
         }
     }
-    
+
     pub unsafe fn from_c_str(s: *const u8) -> String {
         let mut length = 0;
         loop {
@@ -109,37 +109,37 @@ impl String {
             }
             length += 1;
         }
-        
+
         if length == 0 {
             return String::new();
         }
-        
+
         let data = alloc(length * size_of::<char>());
-    
+
         for i in 0..length {
             *((data + i * size_of::<char>()) as *mut char) = *(((s as usize) + i) as *const u8) as char;
         }
-        
+
         String {
             data: data as *const char,
             length: length
         }
     }
-    
+
     pub fn from_num_radix(num: usize, radix: usize) -> String {
         if radix == 0 {
             return String::new();
         }
-    
+
         let mut length = 1;
         let mut length_num = num;
         while length_num >= radix {
             length_num /= radix;
             length += 1;
         }
-        
+
         let data = alloc(length * 4);
-    
+
         let mut digit_num = num;
         for i in 0..length {
             let mut digit = (digit_num % radix) as u8;
@@ -148,39 +148,39 @@ impl String {
             }else{
                 digit += '0' as u8;
             }
-            
+
             unsafe {
                 *((data + (length - 1 - i) * size_of::<char>()) as *mut char) = digit as char;
             }
             digit_num /= radix;
         }
-        
+
         String {
             data: data as *const char,
             length: length
         }
     }
-    
+
     pub fn from_char(c: char) -> String {
         if c == '\0' {
             return String::new();
         }
-        
+
         let data = alloc(size_of::<char>());
         unsafe {
             *(data as *mut char) = c;
         }
-        
+
         String {
             data: data as *const char,
             length: 1
         }
     }
-    
+
     pub fn from_num(num: usize) -> String {
         String::from_num_radix(num, 10)
     }
-    
+
     pub fn get(&self, i: usize) -> char {
         if i >= self.len() {
             return '\0';
@@ -190,41 +190,75 @@ impl String {
             }
         }
     }
-    
+
     pub fn substr(&self, start: usize, len: usize) -> String {
         let mut i = start;
         if i > self.len() {
             i = self.len();
         }
-    
+
         let mut j = i + len;
         if j > self.len() {
             j = self.len();
         }
-        
+
         let length = j - i;
         if length == 0 {
             return String::new();
         }
-        
+
         let data = alloc(length * 4);
-    
+
         for k in i..j {
             unsafe {
                 *((data + (k - i)*4) as *mut char) = *(((self.data as usize) + k*4) as *const char);
             }
         }
-        
+
         String {
             data: data as *const char,
             length: length
         }
     }
-    
+
+    pub fn clone(&self) -> String {
+        return self.substr(0, self.len());
+    }
+
+    pub fn equals(&self, other: &String) -> bool {
+        if self.len() == other.len() {
+            for i in 0..self.len() {
+                if self.get(i) != other.get(i) {
+                    return false;
+                }
+            }
+
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    pub fn starts_with(&self, other: &String) -> bool {
+        if self.len() >= other.len() {
+            return self.substr(0, other.len()).equals(other);
+        }else{
+            return false;
+        }
+    }
+
+    pub fn ends_with(&self, other: &String) -> bool {
+        if self.len() >= other.len() {
+            return self.substr(self.len() - other.len(), other.len()).equals(other);
+        }else{
+            return false;
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.length
     }
-    
+
     // TODO: Str trait
     pub fn as_slice(&self) -> &[char] {
         if self.data as usize == 0 || self.length == 0 {
@@ -235,25 +269,25 @@ impl String {
             }
         }
     }
-    
+
     pub unsafe fn to_c_str(&self) -> *const u8 {
         let length = self.len() + 1;
-        
+
         let data = alloc(length);
-    
+
         for i in 0..self.len() {
             *((data + i) as *mut u8) = *(((self.data as usize) + i * size_of::<char>()) as *const char) as u8;
         }
         *((data + self.len()) as *mut u8) = 0;
-        
+
         data as *const u8
     }
-    
+
     pub fn to_num_radix(&self, radix: usize) -> usize {
         if radix == 0 {
             return 0;
         }
-    
+
         let mut num = 0;
         for c in self.as_slice(){
             let digit;
@@ -266,22 +300,22 @@ impl String {
             } else {
                 break;
             }
-            
+
             if digit >= radix {
                 break;
             }
-            
+
             num *= radix;
             num += digit;
         }
-        
+
         num
     }
-    
+
     pub fn to_num(&self) -> usize {
         self.to_num_radix(10)
     }
-    
+
     pub fn d(&self){
         for c_ptr in self.as_slice() {
             dc(*c_ptr);
@@ -301,13 +335,13 @@ impl Add for String {
     type Output = String;
     fn add(self, other: String) -> String {
         let length = self.length + other.length;
-        
+
         if length == 0 {
             return String::new();
         }
-        
+
         let data = alloc(length * 4);
-    
+
         let mut i = 0;
         for c in self.as_slice() {
             unsafe {
@@ -321,13 +355,21 @@ impl Add for String {
             }
             i += 1;
         }
-    
+
         String {
             data: data as *const char,
             length: length
         }
     }
 }
+
+impl<'a> Add<&'a String> for String {
+    type Output = String;
+    fn add(self, other: &'a String) -> String {
+        self + other.clone()
+    }
+}
+
 
 impl Add<&'static str> for String {
     type Output = String;

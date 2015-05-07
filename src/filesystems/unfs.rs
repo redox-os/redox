@@ -1,6 +1,5 @@
 use core::mem::size_of;
 use core::ptr;
-use core::str::StrExt;
 
 use common::memory::*;
 use common::string::*;
@@ -60,7 +59,7 @@ impl UnFS {
         UnFS { disk:disk, header: &*(0x7E00 as *const Header) }
     }
 
-    pub unsafe fn node(&self, filename: &str) -> *const Node{    
+    pub unsafe fn node(&self, filename: &String) -> *const Node{
         let mut ret: *const Node = ptr::null();
         let mut node_matches = false;
 
@@ -78,8 +77,8 @@ impl UnFS {
 
                         node_matches = true;
                         let mut i = 0;
-                        for character in filename.chars()  {
-                            if !(i < 256 && (*node).name[i] == character as u8) {
+                        for character in filename.as_slice()  {
+                            if !(i < 256 && (*node).name[i] == *character as u8) {
                                 node_matches = false;
                                 break;
                             }
@@ -109,10 +108,10 @@ impl UnFS {
 
         ret
     }
-    
+
     pub unsafe fn list(&self) -> Vector<String> {
         let mut ret = Vector::<String>::new();
-    
+
         let mut root_sector_list_address = self.header.root_sector_list.address;
         while root_sector_list_address > 0 {
             self.disk.read(root_sector_list_address, 1, 0x200400);
@@ -133,13 +132,13 @@ impl UnFS {
 
             root_sector_list_address = root_sector_list.next_fragment.address;
         }
-        
+
         ret
     }
 
-    pub unsafe fn load(&self, filename: &str) -> usize{ 
+    pub unsafe fn load(&self, filename: &String) -> usize{
         let node = self.node(filename);
-        
+
         if node != ptr::null() && (*node).data_sector_list.address > 0 {
             self.disk.read((*node).data_sector_list.address, 1, 0x200B00);
             let sector_list = &*(0x200B00 as *const SectorList);
@@ -151,7 +150,7 @@ impl UnFS {
                     size += sector_list.extents[i].length * 512;
                 }
             }
-            
+
             let destination = alloc(size as usize);
             if destination > 0 {
                 for i in 0..1 {
@@ -164,15 +163,15 @@ impl UnFS {
         }
         return 0;
     }
-    
+
     // TODO: Support realloc of LBAs
-    pub unsafe fn save(&self, filename: &str, source: usize){
+    pub unsafe fn save(&self, filename: &String, source: usize){
         let node = self.node(filename);
-        
+
         if node != ptr::null() && (*node).data_sector_list.address > 0 {
             self.disk.read((*node).data_sector_list.address, 1, 0x200B00);
             let sector_list = &*(0x200B00 as *const SectorList);
-            
+
             if source > 0 {
                 for i in 0..1 {
                     if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
