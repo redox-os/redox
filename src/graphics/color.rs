@@ -6,7 +6,7 @@ pub struct Color {
 impl Color {
     pub fn new(r: u8, g: u8, b: u8) -> Color {
         Color {
-            data: ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
+            data: 0xFF000000 | ((r as u32) << 16) | ((g as u32) << 8) | (b as u32)
         }
     }
 

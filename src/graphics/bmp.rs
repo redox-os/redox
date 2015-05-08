@@ -51,9 +51,9 @@ impl BMP {
                     }
 
                     if bytes == 3 {
-                        *((data + (y*width + x)*4) as *mut Color) = Color::new((pixel_data >> 16) as u8, (pixel_data >> 8) as u8, pixel_data as u8);
+                        *((data + (y*width + x)*4) as *mut u32) = Color::new((pixel_data >> 16) as u8, (pixel_data >> 8) as u8, pixel_data as u8).data;
                     }else if bytes == 4 {
-                        *((data + (y*width + x)*4) as *mut Color) = Color::alpha((pixel_data >> 24) as u8, (pixel_data >> 16) as u8, (pixel_data >> 8) as u8, pixel_data as u8);
+                        *((data + (y*width + x)*4) as *mut u32) = Color::alpha((pixel_data >> 24) as u8, (pixel_data >> 16) as u8, (pixel_data >> 8) as u8, pixel_data as u8).data;
                     }
                 }
             }

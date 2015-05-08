@@ -142,15 +142,33 @@ impl Display {
     }
 
     pub fn rect(&self, point: Point, size: Size, color: Color){
-        let start_y = max(0, min(self.height as isize - 1, point.y)) as usize;
-        let end_y = max(0, min(self.height as isize - 1, point.y + size.height as isize)) as usize;
+        let data = color.data;
+        let alpha = (color.data & 0xFF000000) >> 24;
 
-        let start_x = max(0, min(self.width as isize - 1, point.x)) as usize * 4;
-        let len = max(0, min(self.width as isize - 1, point.x + size.width as isize)) as usize * 4 - start_x;
+        if alpha > 0 {
+            let start_y = max(0, min(self.height as isize - 1, point.y)) as usize;
+            let end_y = max(0, min(self.height as isize - 1, point.y + size.height as isize)) as usize;
 
-        for y in start_y..end_y {
-            unsafe{
-                Display::set_run(color.data, self.offscreen + y * self.bytesperrow + start_x, len);
+            let start_x = max(0, min(self.width as isize - 1, point.x)) as usize * 4;
+            let len = max(0, min(self.width as isize - 1, point.x + size.width as isize)) as usize * 4 - start_x;
+
+            if alpha >= 255 {
+                for y in start_y..end_y {
+                    unsafe{
+                        Display::set_run(data, self.offscreen + y * self.bytesperrow + start_x, len);
+                    }
+                }
+            }else{
+                let n_alpha = 255 - alpha;
+                let r = (((data >> 16) & 0xFF) * alpha) >> 8;
+                let g = (((data >> 8) & 0xFF) * alpha) >> 8;
+                let b = ((data & 0xFF) * alpha) >> 8;
+                let premul = (r << 16) | (g << 8) | b;
+                for y in start_y..end_y {
+                    unsafe{
+                        Display::set_run_alpha(premul, n_alpha, self.offscreen + y * self.bytesperrow + start_x, len);
+                    }
+                }
             }
         }
     }
@@ -159,19 +177,35 @@ impl Display {
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
-        let start_x = max(0, point.x) as usize * 4;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x;
+        let start_x = max(0, point.x) as usize;
+        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x * 4;
+        let offscreen_offset = self.offscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data - start_y * bytesperrow - (point.x - max(0, point.x)) as usize * 4;
+        let data_offset = data - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y{
             unsafe{
-                Display::copy_run(data_offset + y * bytesperrow, self.offscreen + y * self.bytesperrow + start_x, len);
+                Display::copy_run(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
             }
         }
     }
     /* } Optimized */
+
+
+    //TODO: SIMD to optimize
+    pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize){
+        let mut i = 0;
+        //Everything after last 16 byte transfer
+        while len - i >= size_of::<u32>() {
+            let orig = *((dst + i) as *const u32);
+            let r = (((orig >> 16) & 0xFF) * n_alpha) >> 8;
+            let g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
+            let b = ((orig & 0xFF) * n_alpha) >> 8;
+            *((dst + i) as *mut u32) = ((r << 16) | (g << 8) | b) + premul;
+            i += size_of::<u32>();
+        }
+    }
 
     pub fn pixel(&self, point: Point, color: Color){
         unsafe{
