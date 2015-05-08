@@ -26,6 +26,17 @@ pub struct ELFHeader {
     pub sh_str_index: u16
 }
 
+pub struct ELFSegment {
+    pub _type: u32,
+    pub off: u32,
+    pub vaddr: u32,
+    pub paddr: u32,
+    pub file_len: u32,
+    pub mem_len: u32,
+    pub flags: u32,
+    pub align: u32
+}
+
 pub struct ELFSection {
     pub name: u32,
     pub _type: u32,

@@ -13,7 +13,7 @@ use graphics::point::*;
 use graphics::size::*;
 
 pub trait SessionItem {
-    unsafe fn draw(&self, session: &mut Session) -> bool;
+    unsafe fn draw(&mut self, session: &mut Session) -> bool;
     unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent);
     unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
 }
@@ -22,7 +22,7 @@ pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
     pub items: Vector<Box<SessionItem>>,
-    pub draw: bool
+    pub redraw: bool
 }
 
 impl Session {
@@ -31,7 +31,7 @@ impl Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
             items: Vector::<Box<SessionItem>>::new(),
-            draw: true
+            redraw: true
         }
     }
 
@@ -48,14 +48,14 @@ impl Session {
         let mut new_items = self.copy_items();
         new_items = Vector::<Box<SessionItem>>::from_value(item) + new_items;
         self.items = new_items;
-        self.draw = true;
+        self.redraw = true;
     }
 
     pub unsafe fn on_key(&mut self, key_event: KeyEvent){
         let items = self.copy_items();
         for item in items.as_slice() {
             (*item).on_key(self, key_event);
-            self.draw = true;
+            self.redraw = true;
             break;
         }
     }
@@ -90,11 +90,13 @@ impl Session {
         }
         self.items = new_items;
 
-        self.draw = true;
+        self.redraw = true;
     }
 
     pub unsafe fn redraw(&mut self){
-        if self.draw {
+        if self.redraw {
+            self.redraw = false;
+
             self.display.background();
 
             self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
@@ -116,8 +118,6 @@ impl Session {
             self.display.cursor(self.mouse_point);
 
             self.display.flip();
-
-            self.draw = false;
         }
     }
 }

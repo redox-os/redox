@@ -73,7 +73,7 @@ impl Viewer {
 }
 
 impl SessionItem for Viewer {
-    unsafe fn draw(&self, session: &mut Session) -> bool{
+    unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display) {

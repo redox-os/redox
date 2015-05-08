@@ -19,7 +19,8 @@ pub struct Editor {
     window: Window,
     filename: String,
     string: String,
-    offset: usize
+    offset: usize,
+    scroll: Point
 }
 
 impl Editor {
@@ -47,7 +48,8 @@ impl Editor {
             },
             filename: String::new(),
             string: String::new(),
-            offset: 0
+            offset: 0,
+            scroll: Point::new(0, 0)
         };
 
         if file.len() > 0{
@@ -66,6 +68,7 @@ impl Editor {
         self.filename = String::new();
         self.string = String::new();
         self.offset = 0;
+        self.scroll = Point::new(0, 0);
     }
 
     unsafe fn load(&mut self, filename: &String){
@@ -76,7 +79,6 @@ impl Editor {
             self.filename = filename.clone();
             self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
             self.string = String::from_c_str(dest as *const u8);
-            self.offset = self.string.len();
             unalloc(dest);
         }else{
             d("Did not find '");
@@ -95,7 +97,7 @@ impl Editor {
 }
 
 impl SessionItem for Editor {
-    unsafe fn draw(&self, session: &mut Session) -> bool{
+    unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display){
@@ -103,37 +105,68 @@ impl SessionItem for Editor {
         }
 
         if ! self.window.shaded {
+            let scroll = self.scroll;
             let mut offset = 0;
-            let mut row = 0;
-            let mut col = 0;
+
+            let mut col = -scroll.x;
+            let cols = self.window.size.width as isize / 8;
+
+            let mut row = -scroll.y;
+            let rows = self.window.size.height as isize / 16;
             for c_ptr in self.string.as_slice() {
-                if offset == self.offset && col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                    display.char(Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize), '_', Color::new(128, 128, 128));
+                if offset == self.offset{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        display.char(Point::new(self.window.point.x + 8*col, self.window.point.y + 16*row), '_', Color::new(128, 128, 128));
+                    }else{
+                        if col < 0 { //Too far to the left
+                            self.scroll.x += col;
+                        }else if col >= cols{ //Too far to the right
+                            self.scroll.x += col - cols;
+                        }
+                        if row < 0 { //Too far up
+                            self.scroll.y += row;
+                        }else if row >= rows{ //Too far down
+                            self.scroll.y += row - rows;
+                        }
+
+                        session.redraw = true;
+                    }
                 }
 
                 let c = *c_ptr;
                 if c == '\n' {
-                    col = 0;
+                    col = -scroll.x;
                     row += 1;
                 }else if c == '\t' {
                     col += 8 - col % 8;
                 }else{
-                    if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                        let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
                         display.char(point, c, Color::new(255, 255, 255));
-                        col += 1;
                     }
-                }
-                if col >= self.window.size.width / 8 {
-                    col = 0;
-                    row += 1;
+                    col += 1;
                 }
 
                 offset += 1;
             }
 
-            if offset == self.offset && col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                display.char(Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize), '_', Color::new(128, 128, 128));
+            if offset == self.offset {
+                if col >= 0 && col < cols && row >= 0 && row < rows{
+                    display.char(Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row), '_', Color::new(128, 128, 128));
+                }else{
+                    if col < 0 { //Too far to the left
+                        self.scroll.x += col;
+                    }else if col >= cols{ //Too far to the right
+                        self.scroll.x += cols - col;
+                    }
+                    if row < 0 { //Too far up
+                        self.scroll.y += row;
+                    }else if row >= rows{ //Too far down
+                        self.scroll.y += rows - row;
+                    }
+
+                    session.redraw = true;
+                }
             }
         }
 
