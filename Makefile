@@ -13,11 +13,11 @@ kernel.bin: src/kernel.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o kernel.o --emit obj $<
 	$(LD) -m elf_i386 -o $@ -T src/kernel.ld kernel.o
 
-filesystem/example/example.bin: filesystem/example/example.rs
+filesystem/example.bin: filesystem/example.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o example.o --emit obj $<
 	$(LD) -m elf_i386 -o $@ -T src/program.ld example.o
 
-filesystem/filesystem.asm: filesystem/example/example.bin
+filesystem/filesystem.asm: filesystem/example.bin
 	find filesystem -type f | cut -d '/' -f2- | grep -v filesystem.asm | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin

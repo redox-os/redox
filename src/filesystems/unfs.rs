@@ -77,8 +77,8 @@ impl UnFS {
 
                         node_matches = true;
                         let mut i = 0;
-                        for character in filename.as_slice()  {
-                            if !(i < 256 && (*node).name[i] == *character as u8) {
+                        for c in filename.iter()  {
+                            if !(i < 256 && (*node).name[i] == c as u8) {
                                 node_matches = false;
                                 break;
                             }
