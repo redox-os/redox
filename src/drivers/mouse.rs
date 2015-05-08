@@ -1,32 +1,13 @@
 use common::pio::*;
 
-pub const MOUSE_CURSOR: [u8; 16] = [
-    0b10000000,
-    0b11000000,
-    0b11100000,
-    0b11110000,
-    0b11111000,
-    0b11111100,
-    0b11111110,
-    0b11111111,
-    0b11100000,
-    0b11000000,
-    0b10000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000,
-    0b00000000
-];
-
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
-	pub x: isize,
-	pub y: isize,
-	pub left_button: bool,
-	pub right_button: bool,
-	pub middle_button: bool,
-	pub valid: bool
+    pub x: isize,
+    pub y: isize,
+    pub left_button: bool,
+    pub right_button: bool,
+    pub middle_button: bool,
+    pub valid: bool
 }
 
 static mut mouse_cycle: usize = 0;
@@ -49,28 +30,28 @@ pub unsafe fn mouse_init(){
     mouse_wait1();
     outb(0x64, 0xA8);
 
-	mouse_wait1();
-	outb(0x64, 0x20);
-	mouse_wait0();
-	let status = inb(0x60) | 2;
-	mouse_wait1();
-	outb(0x64, 0x60);
-	mouse_wait1();
-	outb(0x60, status);
+    mouse_wait1();
+    outb(0x64, 0x20);
+    mouse_wait0();
+    let status = inb(0x60) | 2;
+    mouse_wait1();
+    outb(0x64, 0x60);
+    mouse_wait1();
+    outb(0x60, status);
 
-	mouse_wait1();
-	outb(0x64, 0xD4);
-	mouse_wait1();
-	outb(0x60, 0xF6);
-	mouse_wait0();
-	inb(0x60);
+    mouse_wait1();
+    outb(0x64, 0xD4);
+    mouse_wait1();
+    outb(0x60, 0xF6);
+    mouse_wait0();
+    inb(0x60);
 
-	mouse_wait1();
-	outb(0x64, 0xD4);
-	mouse_wait1();
-	outb(0x60, 0xF4);
-	mouse_wait0();
-	inb(0x60);
+    mouse_wait1();
+    outb(0x64, 0xD4);
+    mouse_wait1();
+    outb(0x60, 0xF4);
+    mouse_wait0();
+    inb(0x60);
 }
 
 pub fn mouse_interrupt() -> MouseEvent {

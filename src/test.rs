@@ -42,6 +42,7 @@ mod filesystems {
 }
 
 mod graphics {
+    pub mod bmp;
     pub mod color;
     pub mod display;
     pub mod point;

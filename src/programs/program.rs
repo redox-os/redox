@@ -95,11 +95,11 @@ impl Session {
 
     pub unsafe fn redraw(&mut self){
         if self.draw {
-            self.display.set(Color::new(64, 64, 64));
+            self.display.background();
 
             self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
 
-            self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("UberOS"), Color::new(255, 255, 255));
+            self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
 
             let programs = self.copy_programs();
             let mut new_programs = Vector::<Box<Program>>::new();
@@ -113,7 +113,7 @@ impl Session {
             }
             self.programs = new_programs;
 
-            self.display.char_bitmap(self.mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
+            self.display.cursor(self.mouse_point);
 
             self.display.flip();
 
