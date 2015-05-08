@@ -54,7 +54,6 @@ pub struct VBEModeInfo {
 }
 
 pub struct Display {
-    mode_info: VBEModeInfo,
     offscreen: usize,
     onscreen: usize,
     size: usize,
@@ -69,7 +68,7 @@ pub struct Display {
 impl Display {
     pub fn new() -> Display {
         unsafe{
-            let mode_info = *(VBEMODEINFOLOCATION as *const VBEModeInfo);
+            let mode_info = &*(VBEMODEINFOLOCATION as *const VBEModeInfo);
 
             let unfs = UnFS::new(Disk::new());
 
@@ -84,7 +83,6 @@ impl Display {
             unalloc(cursor_data);
 
             Display {
-                mode_info: mode_info,
                 offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
                 onscreen: mode_info.physbaseptr as usize,
                 size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
@@ -309,20 +307,8 @@ impl Display {
 
     pub fn text(&self, point: Point, text: &String, color: Color){
         let mut cursor = Point::new(point.x, point.y);
-        for character in text.as_slice() {
-            self.char(cursor, *character, color);
-            cursor.x += 8;
-        }
-    }
-
-    pub unsafe fn c_text(&self, point: Point, c_text: *const u8, color: Color){
-        let mut cursor = Point::new(point.x, point.y);
-        for i in 0..(self.width - point.x as usize)/8 {
-            let character = *((c_text as usize + i) as *const u8);
-            if character == 0 {
-                break;
-            }
-            self.char(cursor, character as char, color);
+        for c in text.iter() {
+            self.char(cursor, c, color);
             cursor.x += 8;
         }
     }

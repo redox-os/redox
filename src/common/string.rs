@@ -2,12 +2,30 @@ use core::iter::Iterator;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
-use core::slice;
+use core::option::Option;
 use core::slice::SliceExt;
 use core::str::StrExt;
 
 use common::debug::*;
 use common::memory::*;
+
+struct StringIter<'a> {
+    string: &'a String,
+    offset: usize
+}
+
+impl <'a> Iterator for StringIter<'a> {
+    type Item = char;
+    fn next(&mut self) -> Option<char>{
+        if self.offset < self.string.len() {
+            let ret = Option::Some(self.string.get(self.offset));
+            self.offset += 1;
+            return ret;
+        }else{
+            return Option::None;
+        }
+    }
+}
 
 pub struct String {
     data: *const char,
@@ -36,29 +54,6 @@ impl String {
         for c in s.chars() {
             unsafe {
                 *((data + i * size_of::<char>()) as *mut char) = c;
-            }
-            i += 1;
-        }
-
-        String {
-            data: data as *const char,
-            length: length
-        }
-    }
-
-    pub fn from_slice(s: &[char]) -> String {
-        let length = s.len();
-
-        if length == 0 {
-            return String::new();
-        }
-
-        let data = alloc(length * size_of::<char>());
-
-        let mut i = 0;
-        for c in s {
-            unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = *c;
             }
             i += 1;
         }
@@ -259,14 +254,10 @@ impl String {
         self.length
     }
 
-    // TODO: Str trait
-    pub fn as_slice(&self) -> &[char] {
-        if self.data as usize == 0 || self.length == 0 {
-            &[]
-        }else{
-            unsafe {
-                slice::from_raw_parts(self.data, self.length)
-            }
+    pub fn iter(&self) -> StringIter {
+        StringIter {
+            string: &self,
+            offset: 0
         }
     }
 
@@ -289,14 +280,14 @@ impl String {
         }
 
         let mut num = 0;
-        for c in self.as_slice(){
+        for c in self.iter(){
             let digit;
-            if *c >= '0' && *c <= '9' {
-                digit = *c as usize - '0' as usize
-            } else if *c >= 'A' && *c <= 'Z' {
-                digit = *c as usize - 'A' as usize + 10
-            } else if *c >= 'a' && *c <= 'z' {
-                digit = *c as usize - 'a' as usize + 10
+            if c >= '0' && c <= '9' {
+                digit = c as usize - '0' as usize
+            } else if c >= 'A' && c <= 'Z' {
+                digit = c as usize - 'A' as usize + 10
+            } else if c >= 'a' && c <= 'z' {
+                digit = c as usize - 'a' as usize + 10
             } else {
                 break;
             }
@@ -317,8 +308,8 @@ impl String {
     }
 
     pub fn d(&self){
-        for c_ptr in self.as_slice() {
-            dc(*c_ptr);
+        for c in self.iter() {
+            dc(c);
         }
     }
 }
@@ -343,15 +334,15 @@ impl Add for String {
         let data = alloc(length * 4);
 
         let mut i = 0;
-        for c in self.as_slice() {
+        for c in self.iter() {
             unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = *c;
+                *((data + i * size_of::<char>()) as *mut char) = c;
             }
             i += 1;
         }
-        for c in other.as_slice() {
+        for c in other.iter() {
             unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = *c;
+                *((data + i * size_of::<char>()) as *mut char) = c;
             }
             i += 1;
         }

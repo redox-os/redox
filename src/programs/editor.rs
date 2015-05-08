@@ -113,7 +113,7 @@ impl SessionItem for Editor {
 
             let mut row = -scroll.y;
             let rows = self.window.size.height as isize / 16;
-            for c_ptr in self.string.as_slice() {
+            for c in self.string.iter() {
                 if offset == self.offset{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
                         display.char(Point::new(self.window.point.x + 8*col, self.window.point.y + 16*row), '_', Color::new(128, 128, 128));
@@ -133,7 +133,6 @@ impl SessionItem for Editor {
                     }
                 }
 
-                let c = *c_ptr;
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;

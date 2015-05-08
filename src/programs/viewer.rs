@@ -51,24 +51,16 @@ impl Viewer {
             d("Load image file ");
             file.d();
             dl();
-            ret.load(file);
+
+            ret.window.title = String::from_str("Viewer (") + file + String::from_str(")");
+            let unfs = UnFS::new(Disk::new());
+            let image_data = unfs.load(file);
+            ret.image = BMP::from_data(image_data);
+            ret.window.size = ret.image.size;
+            unalloc(image_data);
         }
 
         return ret;
-    }
-
-    unsafe fn clear(&mut self){
-        self.window.title = String::from_str("Viewer");
-        self.image = BMP::new();
-    }
-
-    unsafe fn load(&mut self, filename: &String){
-        self.window.title = String::from_str("Viewer (") + filename + String::from_str(")");
-        let unfs = UnFS::new(Disk::new());
-        let image_data = unfs.load(filename);
-        self.image = BMP::from_data(image_data);
-        self.window.size = self.image.size;
-        unalloc(image_data);
     }
 }
 

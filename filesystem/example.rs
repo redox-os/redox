@@ -22,7 +22,7 @@ use graphics::window::*;
 
 use programs::session::*;
 
-#[path="../../src/common"]
+#[path="../src/common"]
 mod common {
     pub mod debug;
     pub mod memory;
@@ -31,19 +31,19 @@ mod common {
     pub mod vector;
 }
 
-#[path="../../src/drivers"]
+#[path="../src/drivers"]
 mod drivers {
     pub mod disk;
     pub mod keyboard;
     pub mod mouse;
 }
 
-#[path="../../src/filesystems"]
+#[path="../src/filesystems"]
 mod filesystems {
     pub mod unfs;
 }
 
-#[path="../../src/graphics"]
+#[path="../src/graphics"]
 mod graphics {
     pub mod bmp;
     pub mod color;
@@ -53,7 +53,7 @@ mod graphics {
     pub mod window;
 }
 
-#[path="../../src/programs"]
+#[path="../src/programs"]
 mod programs {
     pub mod session;
 }
@@ -123,8 +123,7 @@ impl SessionItem for Application {
             let mut row = -scroll.y;
             let rows = self.window.size.height as isize / 16;
 
-            for c_ptr in self.output.as_slice(){
-                let c = *c_ptr;
+            for c in self.output.iter(){
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;
@@ -150,8 +149,7 @@ impl SessionItem for Application {
                 col += 2;
             }
 
-            for c_ptr in self.command.as_slice(){
-                let c = *c_ptr;
+            for c in self.command.iter(){
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;

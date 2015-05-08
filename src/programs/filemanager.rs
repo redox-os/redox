@@ -82,8 +82,7 @@ impl SessionItem for FileManager {
             let mut row = 0;
             for string in self.files.as_slice() {
                 let mut col = 0;
-                for c_ptr in string.as_slice() {
-                    let c = *c_ptr;
+                for c in string.iter() {
                     if c == '\n' {
                         col = 0;
                         row += 1;
@@ -163,8 +162,7 @@ impl SessionItem for FileManager {
                 let mut row = 0;
                 for string in self.files.as_slice() {
                     let mut col = 0;
-                    for c_ptr in string.as_slice() {
-                        let c = *c_ptr;
+                    for c in string.iter() {
                         if c == '\n' {
                             col = 0;
                             row += 1;
