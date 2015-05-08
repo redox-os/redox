@@ -32,13 +32,13 @@ impl FileManager {
 
         let files = UnFS::new(Disk::new()).list();
 
-        if size.height < files.len() as u32 * 16 {
-            size.height = files.len() as u32 * 16;
+        if size.height < files.len() * 16 {
+            size.height = files.len() * 16;
         }
 
         for file in files.as_slice() {
-            if size.width < (file.len() + 1) as u32 * 8 {
-                size.width = (file.len() + 1) as u32 * 8 ;
+            if size.width < (file.len() + 1) * 8 {
+                size.width = (file.len() + 1) * 8 ;
             }
         }
 
@@ -98,7 +98,7 @@ impl Program for FileManager {
                         }
 
                         if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                            let point = Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32);
+                            let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
                             display.char(point, c, color);
                             col += 1;
                         }
@@ -127,13 +127,9 @@ impl Program for FileManager {
                                     d("Loading ");
                                     file.d();
                                     dl();
-                                    if file.ends_with(&String::from_str(".asm"))
-                                        || file.ends_with(&String::from_str(".md"))
-                                        || file.ends_with(&String::from_str(".txt"))
-                                    {
+                                    if file.ends_with(&String::from_str(".md")){
                                         session.add_program(box Editor::new(file));
-                                    }else if file.ends_with(&String::from_str(".bin"))
-                                        || file.ends_with(&String::from_str(".elf")){
+                                    }else if file.ends_with(&String::from_str(".bin")){
                                         d("Load executable ");
                                         file.d();
                                         dl();
@@ -178,7 +174,7 @@ impl Program for FileManager {
                             col += 8 - col % 8;
                         }else{
                             if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                                let point = Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32);
+                                let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
                                 if mouse_point.x >= point.x && mouse_point.x < point.x + 8 && mouse_point.y >= point.y && mouse_point.y < point.y + 16 {
                                     self.selected = i;
                                 }

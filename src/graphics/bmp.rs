@@ -3,7 +3,6 @@ use core::ops::Drop;
 use common::memory::*;
 
 use graphics::color::*;
-use graphics::point::*;
 use graphics::size::*;
 
 pub struct BMP {
@@ -37,8 +36,8 @@ impl BMP {
 
             data = alloc(width * height * 4);
             size = Size {
-                width: width as u32,
-                height: height as u32
+                width: width,
+                height: height
             };
             for y in 0..height {
                 for x in 0..width {
@@ -70,18 +69,6 @@ impl BMP {
             data: data,
             size: size
         };
-    }
-
-    pub unsafe fn pixel(&self, point: Point) -> Color {
-        if point.x >= 0
-            && point.x < self.size.width as i32
-            && point.y >= 0
-            && point.y < self.size.height as i32
-        {
-            return *((self.data + (point.y as usize*self.size.width as usize + point.x as usize)*4) as *const Color);
-        }else{
-            return Color::new(0, 0, 0);
-        }
     }
 }
 
