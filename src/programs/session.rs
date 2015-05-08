@@ -12,7 +12,7 @@ use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 
-pub trait Program {
+pub trait SessionItem {
     unsafe fn draw(&self, session: &mut Session) -> bool;
     unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent);
     unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
@@ -21,7 +21,7 @@ pub trait Program {
 pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
-    pub programs: Vector<Box<Program>>,
+    pub items: Vector<Box<SessionItem>>,
     pub draw: bool
 }
 
@@ -30,31 +30,31 @@ impl Session {
         Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
-            programs: Vector::<Box<Program>>::new(),
+            items: Vector::<Box<SessionItem>>::new(),
             draw: true
         }
     }
 
     // TODO: Find out how to remove
-    pub fn copy_programs(&self) -> Vector<Box<Program>>{
-        let mut ret: Vector<Box<Program>> = Vector::<Box<Program>>::new();
-        for program in self.programs.as_slice() {
-            ret = ret + Vector::<Box<Program>>::from_ptr(program);
+    pub fn copy_items(&self) -> Vector<Box<SessionItem>>{
+        let mut ret: Vector<Box<SessionItem>> = Vector::<Box<SessionItem>>::new();
+        for item in self.items.as_slice() {
+            ret = ret + Vector::<Box<SessionItem>>::from_ptr(item);
         }
         return ret;
     }
 
-    pub fn add_program(&mut self, program: Box<Program>){
-        let mut new_programs = self.copy_programs();
-        new_programs = Vector::<Box<Program>>::from_value(program) + new_programs;
-        self.programs = new_programs;
+    pub fn add_item(&mut self, item: Box<SessionItem>){
+        let mut new_items = self.copy_items();
+        new_items = Vector::<Box<SessionItem>>::from_value(item) + new_items;
+        self.items = new_items;
         self.draw = true;
     }
 
     pub unsafe fn on_key(&mut self, key_event: KeyEvent){
-        let programs = self.copy_programs();
-        for program in programs.as_slice() {
-            (*program).on_key(self, key_event);
+        let items = self.copy_items();
+        for item in items.as_slice() {
+            (*item).on_key(self, key_event);
             self.draw = true;
             break;
         }
@@ -77,18 +77,18 @@ impl Session {
             self.mouse_point.y = self.display.height as isize - 1;
         }
 
-        let programs = self.copy_programs();
-        let mut new_programs = Vector::<Box<Program>>::new();
+        let items = self.copy_items();
+        let mut new_items = Vector::<Box<SessionItem>>::new();
         let mut allow_catch = true;
-        for program in programs.as_slice() {
-            if (*program).on_mouse(self, mouse_event, allow_catch) {
-                new_programs = Vector::<Box<Program>>::from_ptr(program) + new_programs;
+        for item in items.as_slice() {
+            if (*item).on_mouse(self, mouse_event, allow_catch) {
+                new_items = Vector::<Box<SessionItem>>::from_ptr(item) + new_items;
                 allow_catch = false;
             }else{
-                new_programs = new_programs + Vector::<Box<Program>>::from_ptr(program);
+                new_items = new_items + Vector::<Box<SessionItem>>::from_ptr(item);
             }
         }
-        self.programs = new_programs;
+        self.items = new_items;
 
         self.draw = true;
     }
@@ -101,17 +101,17 @@ impl Session {
 
             self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
 
-            let programs = self.copy_programs();
-            let mut new_programs = Vector::<Box<Program>>::new();
-            for i in 0..programs.len() {
-                match programs.get(programs.len() - 1 - i) {
-                    Result::Ok(program) => if (*program).draw(self){
-                        new_programs = Vector::<Box<Program>>::from_ptr(program) + new_programs;
+            let items = self.copy_items();
+            let mut new_items = Vector::<Box<SessionItem>>::new();
+            for i in 0..items.len() {
+                match items.get(items.len() - 1 - i) {
+                    Result::Ok(item) => if (*item).draw(self){
+                        new_items = Vector::<Box<SessionItem>>::from_ptr(item) + new_items;
                     },
                     Result::Err(_) => ()
                 }
             }
-            self.programs = new_programs;
+            self.items = new_items;
 
             self.display.cursor(self.mouse_point);
 

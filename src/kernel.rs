@@ -12,14 +12,13 @@ use core::mem::size_of;
 use common::debug::*;
 use common::pio::*;
 use common::memory::*;
-use common::string::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
 use drivers::pci::*;
 
 use programs::filemanager::*;
-use programs::program::*;
+use programs::session::*;
 
 mod common {
     pub mod debug;
@@ -60,11 +59,13 @@ mod programs {
     pub mod editor;
     pub mod executor;
     pub mod filemanager;
-    pub mod program;
+    pub mod session;
     pub mod viewer;
 }
 
 unsafe fn initialize(){
+    serial_init();
+
     dd(size_of::<usize>() * 8);
     d(" bits");
     dl();
@@ -78,11 +79,11 @@ unsafe fn initialize(){
     d("Mouse\n");
     mouse_init();
 
-    d("Keyboard Status\n");
+    d("Keyboard\n");
     keyboard_init();
 
-    dd(String::from_str("100").to_num() + String::from_str("128").to_num());
-    dl();
+    d("PCI\n");
+    pci_init();
 }
 
 pub unsafe fn timestamp() -> usize {
@@ -100,10 +101,8 @@ pub unsafe fn kernel() {
     if *INTERRUPT == 255 {
         initialize();
 
-        pci_test();
-
         let mut session = Session::new();
-        session.add_program(box FileManager::new());
+        session.add_item(box FileManager::new());
 
         loop{
             let interrupt = *INTERRUPT;

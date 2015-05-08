@@ -14,7 +14,7 @@ use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::program::*;
+use programs::session::*;
 
 pub struct Viewer {
     window: Window,
@@ -72,7 +72,7 @@ impl Viewer {
     }
 }
 
-impl Program for Viewer {
+impl SessionItem for Viewer {
     unsafe fn draw(&self, session: &mut Session) -> bool{
         let display = &session.display;
 

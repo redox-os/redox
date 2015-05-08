@@ -13,7 +13,7 @@ use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::program::*;
+use programs::session::*;
 
 pub struct Editor {
     window: Window,
@@ -94,7 +94,7 @@ impl Editor {
     }
 }
 
-impl Program for Editor {
+impl SessionItem for Editor {
     unsafe fn draw(&self, session: &mut Session) -> bool{
         let display = &session.display;
 
