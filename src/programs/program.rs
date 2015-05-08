@@ -65,16 +65,16 @@ impl Session {
         if self.mouse_point.x < 0 {
             self.mouse_point.x = 0;
         }
-        if self.mouse_point.x >= self.display.size.width as i32 {
-            self.mouse_point.x = self.display.size.width as i32 - 1;
+        if self.mouse_point.x >= self.display.width as isize {
+            self.mouse_point.x = self.display.width as isize - 1;
         }
 
         self.mouse_point.y += mouse_event.y;
         if self.mouse_point.y < 0 {
             self.mouse_point.y = 0;
         }
-        if self.mouse_point.y >= self.display.size.height as i32 {
-            self.mouse_point.y = self.display.size.height as i32 - 1;
+        if self.mouse_point.y >= self.display.height as isize {
+            self.mouse_point.y = self.display.height as isize - 1;
         }
 
         let programs = self.copy_programs();
@@ -95,11 +95,11 @@ impl Session {
 
     pub unsafe fn redraw(&mut self){
         if self.draw {
-            self.display.clear(Color::new(64, 64, 64));
+            self.display.set(Color::new(64, 64, 64));
 
-            self.display.rect(Point::new(0, 0), Size::new(self.display.size.width, 18), Color::new(0, 0, 0));
+            self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
 
-            self.display.text(Point::new(self.display.size.width as i32/ 2 - 3*8, 1), &String::from_str("UberOS"), Color::new(255, 255, 255));
+            self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("UberOS"), Color::new(255, 255, 255));
 
             let programs = self.copy_programs();
             let mut new_programs = Vector::<Box<Program>>::new();
@@ -115,7 +115,7 @@ impl Session {
 
             self.display.char_bitmap(self.mouse_point, &MOUSE_CURSOR as *const u8, Color::new(255, 255, 255));
 
-            self.display.copy();
+            self.display.flip();
 
             self.draw = false;
         }

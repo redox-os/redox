@@ -108,7 +108,7 @@ impl Program for Editor {
             let mut col = 0;
             for c_ptr in self.string.as_slice() {
                 if offset == self.offset && col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                    display.char(Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
+                    display.char(Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize), '_', Color::new(128, 128, 128));
                 }
 
                 let c = *c_ptr;
@@ -119,7 +119,7 @@ impl Program for Editor {
                     col += 8 - col % 8;
                 }else{
                     if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                        let point = Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32);
+                        let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
                         display.char(point, c, Color::new(255, 255, 255));
                         col += 1;
                     }
@@ -133,7 +133,7 @@ impl Program for Editor {
             }
 
             if offset == self.offset && col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                display.char(Point::new(self.window.point.x + 8*col as i32, self.window.point.y + 16*row as i32), '_', Color::new(128, 128, 128));
+                display.char(Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize), '_', Color::new(128, 128, 128));
             }
         }
 

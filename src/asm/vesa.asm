@@ -20,7 +20,7 @@ vesa:
 	cmp ax, 0x4F
 	jne near .noedid
 	xor di, di
-.lp:	
+.lp:
 	xor cx, cx
 	mov cl, [di+VBEEDID.standardtiming]
 	shl cx, 3
@@ -114,7 +114,7 @@ vesa:
 	ret
 .foundmode:
 	;check minimum values, really not minimums from an OS perspective but ugly for users
-	cmp byte [VBEModeInfo.bitsperpixel], 24
+	cmp byte [VBEModeInfo.bitsperpixel], 32
 	jb .searchmodes
 .testx:
 	mov cx, [VBEModeInfo.xresolution]
@@ -215,7 +215,7 @@ decshowrm:
 
 .number times 7 db 0
 .numberend db 0
-	
+
 convertrm:
 	dec si
 	mov bx, si		;place to convert into must be in si, number to convert must be in cx
@@ -264,13 +264,13 @@ printrm:
 	jmp printrm
 .return:
 	ret
-	
+
 charrm: 		    ;char must be in al
 	mov bx, 7
 	mov ah, 0xE
 	int 10h
 	ret
-	   
+
 ; .bestmode:	;preference is width > height > color
 	; mov bx, [VBEModeInfo.xresolution]
 	; cmp bx, [.width]
@@ -293,7 +293,7 @@ charrm: 		    ;char must be in al
 	; mov bl, [VBEModeInfo.bitsperpixel]
 	; mov [.color], bl
 	; jmp .searchmodes
-	
+
 ; .mode dw 0
 ; .color db 0
 ; .height dw 0

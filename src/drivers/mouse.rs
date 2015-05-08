@@ -21,15 +21,15 @@ pub const MOUSE_CURSOR: [u8; 16] = [
 
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
-	pub x: i32,
-	pub y: i32,
+	pub x: isize,
+	pub y: isize,
 	pub left_button: bool,
 	pub right_button: bool,
 	pub middle_button: bool,
 	pub valid: bool
 }
 
-static mut mouse_cycle: i32 = 0;
+static mut mouse_cycle: usize = 0;
 static mut mouse_byte: [u8; 3] = [0, 0, 0];
 
 pub unsafe fn mouse_wait0(){
@@ -45,10 +45,10 @@ pub unsafe fn mouse_wait1(){
 pub unsafe fn mouse_init(){
     mouse_cycle = 0;
     mouse_byte = [0, 0, 0];
-    
+
     mouse_wait1();
     outb(0x64, 0xA8);
-	
+
 	mouse_wait1();
 	outb(0x64, 0x20);
 	mouse_wait0();
@@ -57,14 +57,14 @@ pub unsafe fn mouse_init(){
 	outb(0x64, 0x60);
 	mouse_wait1();
 	outb(0x60, status);
-	
+
 	mouse_wait1();
 	outb(0x64, 0xD4);
 	mouse_wait1();
 	outb(0x60, 0xF6);
 	mouse_wait0();
 	inb(0x60);
-	
+
 	mouse_wait1();
 	outb(0x64, 0xD4);
 	mouse_wait1();
@@ -74,13 +74,13 @@ pub unsafe fn mouse_init(){
 }
 
 pub fn mouse_interrupt() -> MouseEvent {
-	unsafe{
-		let mut x = 0;
-		let mut y = 0;
-		let mut left_button = false;
-		let mut right_button = false;
-		let mut middle_button = false;
-		let mut valid = false;
+    unsafe{
+        let mut x = 0;
+        let mut y = 0;
+        let mut left_button = false;
+        let mut right_button = false;
+        let mut middle_button = false;
+        let mut valid = false;
 
         let packet = inb(0x60);
         if mouse_cycle == 0 {
@@ -106,11 +106,11 @@ pub fn mouse_interrupt() -> MouseEvent {
             }
 
             if (mouse_byte[0] & 0x40) != 0x40 && mouse_byte[1] != 0 {
-                x += mouse_byte[1] as i32 - (((mouse_byte[0] as i32) << 4) & 0x100);
+                x += mouse_byte[1] as isize - (((mouse_byte[0] as isize) << 4) & 0x100);
             }
 
             if (mouse_byte[0] & 0x80) != 0x80 && mouse_byte[2] != 0 {
-                y += (((mouse_byte[0] as i32) << 3) & 0x100) - mouse_byte[2] as i32;
+                y += (((mouse_byte[0] as isize) << 3) & 0x100) - mouse_byte[2] as isize;
             }
 
             valid = true;
@@ -118,6 +118,6 @@ pub fn mouse_interrupt() -> MouseEvent {
             mouse_cycle = 0;
         }
 
-		MouseEvent{ x:x/4, y:y/4, left_button:left_button, right_button:right_button, middle_button:middle_button, valid:valid }
-	}
+        MouseEvent{ x:x/4, y:y/4, left_button:left_button, right_button:right_button, middle_button:middle_button, valid:valid }
+    }
 }

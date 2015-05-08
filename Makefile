@@ -20,7 +20,7 @@ filesystem/%.bin: src/%.rs
 	rm "$<.o"
 
 filesystem/filesystem.asm: filesystem/test.bin
-	ls filesystem |  awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+	ls filesystem | grep -v filesystem.asm | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<

@@ -18,7 +18,7 @@ use programs::program::*;
 
 pub struct Viewer {
     window: Window,
-    background: BMP
+    image: BMP
 }
 
 impl Viewer {
@@ -44,7 +44,7 @@ impl Viewer {
                     valid: false
                 }
             },
-            background: BMP::new()
+            image: BMP::new()
         };
 
         if file.len() > 0{
@@ -59,16 +59,16 @@ impl Viewer {
 
     unsafe fn clear(&mut self){
         self.window.title = String::from_str("Viewer");
-        self.background = BMP::new();
+        self.image = BMP::new();
     }
 
     unsafe fn load(&mut self, filename: &String){
         self.window.title = String::from_str("Viewer (") + filename + String::from_str(")");
         let unfs = UnFS::new(Disk::new());
-        let background_data = unfs.load(filename);
-        self.background = BMP::from_data(background_data);
-        self.window.size = self.background.size;
-        unalloc(background_data);
+        let image_data = unfs.load(filename);
+        self.image = BMP::from_data(image_data);
+        self.window.size = self.image.size;
+        unalloc(image_data);
     }
 }
 
@@ -83,11 +83,7 @@ impl Program for Viewer {
         if ! self.window.shaded {
             // TODO: Improve speed!
             if ! self.window.shaded {
-                for y in 0..self.background.size.height {
-                    for x in 0..self.background.size.width {
-                        display.pixel(Point::new(self.window.point.x + x as i32, self.window.point.y + y as i32), self.background.pixel(Point::new(x as i32, y as i32)));
-                    }
-                }
+                display.image(self.window.point, self.image.data, self.image.size);
             }
         }
 

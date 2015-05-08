@@ -1,11 +1,11 @@
 #[derive(Copy, Clone)]
 pub struct Size {
-	pub width: u32,
-	pub height: u32
+	pub width: usize,
+	pub height: usize
 }
 
 impl Size {
-	pub fn new(width: u32, height: u32) -> Size {
+	pub fn new(width: usize, height: usize) -> Size {
 		Size { width: width, height: height }
 	}
 }
