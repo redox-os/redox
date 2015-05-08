@@ -10,6 +10,7 @@ use drivers::disk::*;
 
 use filesystems::unfs::*;
 
+use graphics::bmp::*;
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
@@ -58,6 +59,8 @@ pub struct Display {
     onscreen: usize,
     size: usize,
     fonts: usize,
+    background: BMP,
+    cursor: BMP,
     bytesperrow: usize,
     pub width: usize,
     pub height: usize
@@ -68,7 +71,17 @@ impl Display {
         unsafe{
             let mode_info = *(VBEMODEINFOLOCATION as *const VBEModeInfo);
 
-            let fonts = UnFS::new(Disk::new()).load(&String::from_str("unifont.font"));
+            let unfs = UnFS::new(Disk::new());
+
+            let fonts = unfs.load(&String::from_str("unifont.font"));
+
+            let background_data = unfs.load(&String::from_str("background.bmp"));
+            let background = BMP::from_data(background_data);
+            unalloc(background_data);
+
+            let cursor_data = unfs.load(&String::from_str("cursor.bmp"));
+            let cursor = BMP::from_data(cursor_data);
+            unalloc(cursor_data);
 
             Display {
                 mode_info: mode_info,
@@ -76,6 +89,8 @@ impl Display {
                 onscreen: mode_info.physbaseptr as usize,
                 size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
                 fonts: fonts,
+                background: background,
+                cursor: cursor,
                 bytesperrow: mode_info.bytesperscanline as usize,
                 width: mode_info.xresolution as usize,
                 height: mode_info.yresolution as usize
@@ -193,16 +208,76 @@ impl Display {
     /* } Optimized */
 
 
+    pub fn image_alpha(&self, point: Point, data: usize, size: Size){
+        let start_y = max(0, point.y) as usize;
+        let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
+
+        let start_x = max(0, point.x) as usize;
+        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x * 4;
+        let offscreen_offset = self.offscreen + start_x * 4;
+
+        let bytesperrow = size.width * 4;
+        let data_offset = data - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+
+        for y in start_y..end_y{
+            unsafe{
+                Display::copy_run_alpha(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
+            }
+        }
+    }
+
+    pub fn background(&self){
+        if self.background.data > 0 {
+            self.image(Point::new(0, 0), self.background.data, self.background.size);
+        }else{
+            self.set(Color::new(64, 64, 64));
+        }
+    }
+
+    pub fn cursor(&self, point: Point){
+        if self.cursor.data > 0 {
+            self.image_alpha(point, self.cursor.data, self.cursor.size);
+        }else{
+            self.char(Point::new(point.x - 3, point.y - 9), 'X', Color::new(255, 255, 255));
+        }
+    }
+
     //TODO: SIMD to optimize
     pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize){
         let mut i = 0;
-        //Everything after last 16 byte transfer
         while len - i >= size_of::<u32>() {
             let orig = *((dst + i) as *const u32);
             let r = (((orig >> 16) & 0xFF) * n_alpha) >> 8;
             let g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
             let b = ((orig & 0xFF) * n_alpha) >> 8;
             *((dst + i) as *mut u32) = ((r << 16) | (g << 8) | b) + premul;
+            i += size_of::<u32>();
+        }
+    }
+
+    //TODO: SIMD to optimize
+    pub unsafe fn copy_run_alpha(src: usize, dst: usize, len: usize){
+        let mut i = 0;
+        while len - i >= size_of::<u32>() {
+            let new = *((src + i) as *const u32);
+            let alpha = (new >> 24) & 0xFF;
+            if alpha > 0 {
+                if alpha >= 255 {
+                    *((dst + i) as *mut u32) = new;
+                }else{
+                    let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
+                    let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
+                    let n_b = ((new & 0xFF) * alpha) >> 8;
+
+                    let orig = *((dst + i) as *const u32);
+                    let n_alpha = 255 - alpha;
+                    let o_r = (((orig >> 16) & 0xFF) * n_alpha) >> 8;
+                    let o_g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
+                    let o_b = ((orig & 0xFF) * n_alpha) >> 8;
+
+                    *((dst + i) as *mut u32) = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
+                }
+            }
             i += size_of::<u32>();
         }
     }
@@ -215,22 +290,19 @@ impl Display {
         }
     }
 
-    pub unsafe fn char_bitmap(&self, point: Point, bitmap_location: *const u8, color: Color){
-        for row in 0..16 {
-            let row_data = *((bitmap_location as usize + row) as *const u8);
-            for col in 0..8 {
-                let pixel = (row_data >> (7 - col)) & 1;
-                if pixel > 0 {
-                    self.pixel(Point::new(point.x + col, point.y + row as isize), color);
-                }
-            }
-        }
-    }
-
     pub fn char(&self, point: Point, character: char, color: Color){
         unsafe{
             if self.fonts > 0 {
-                self.char_bitmap(point, (self.fonts + 16*(character as usize)) as *const u8, color);
+                let bitmap_location = self.fonts + 16*(character as usize);
+                for row in 0..16 {
+                    let row_data = *((bitmap_location as usize + row) as *const u8);
+                    for col in 0..8 {
+                        let pixel = (row_data >> (7 - col)) & 1;
+                        if pixel > 0 {
+                            self.pixel(Point::new(point.x + col, point.y + row as isize), color);
+                        }
+                    }
+                }
             }
         }
     }
