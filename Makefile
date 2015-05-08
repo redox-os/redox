@@ -10,14 +10,12 @@ QEMU=qemu-system-i386
 all: harddrive.bin
 
 kernel.bin: src/kernel.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o kernel.rs.o --emit obj $<
-	$(LD) -m elf_i386 -o $@ -T src/kernel.ld kernel.rs.o
-	rm kernel.rs.o
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o kernel.o --emit obj $<
+	$(LD) -m elf_i386 -o $@ -T src/kernel.ld kernel.o
 
-filesystem/%.bin: src/%.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o "$<.o" --emit obj $<
-	$(LD) -m elf_i386 -o $@ -T src/program.ld "$<.o"
-	rm "$<.o"
+filesystem/test.bin: src/test.rs
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o test.o --emit obj $<
+	$(LD) -m elf_i386 -o $@ -T src/program.ld test.o
 
 filesystem/filesystem.asm: filesystem/test.bin
 	ls filesystem | grep -v filesystem.asm | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
@@ -39,4 +37,4 @@ run_netdev: harddrive.bin
 	sudo tunctl -d tap_qemu
 
 clean:
-	rm -f *.bin filesystem/*.bin filesystem/filesystem.asm
+	rm -f *.bin *.o filesystem/*.bin filesystem/filesystem.asm

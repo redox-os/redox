@@ -47,9 +47,7 @@ pub unsafe fn pci_handle(irq: u8){
     }
 }
 
-pub unsafe fn pci_test(){
-    d("PCI\n");
-
+pub unsafe fn pci_init(){
     for device in 0..32 {
         let data = pci_read(0, device, 0, 0);
 

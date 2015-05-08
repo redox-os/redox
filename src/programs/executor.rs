@@ -8,7 +8,7 @@ use drivers::mouse::*;
 
 use filesystems::unfs::*;
 
-use programs::program::*;
+use programs::session::*;
 
 pub struct Executor {
     executable: ELF,
@@ -58,7 +58,7 @@ impl Executor {
     }
 }
 
-impl Program for Executor {
+impl SessionItem for Executor {
     unsafe fn draw(&self, session: &mut Session) -> bool{
         if self.executable.can_call(self.draw){
             //Rediculous call mechanism

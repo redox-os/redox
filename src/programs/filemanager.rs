@@ -17,7 +17,7 @@ use graphics::window::*;
 
 use programs::editor::*;
 use programs::executor::*;
-use programs::program::*;
+use programs::session::*;
 use programs::viewer::*;
 
 pub struct FileManager {
@@ -69,7 +69,7 @@ impl FileManager {
     }
 }
 
-impl Program for FileManager {
+impl SessionItem for FileManager {
     unsafe fn draw(&self, session: &mut Session) -> bool{
         let display = &session.display;
 
@@ -128,15 +128,15 @@ impl Program for FileManager {
                                     file.d();
                                     dl();
                                     if file.ends_with(&String::from_str(".md")){
-                                        session.add_program(box Editor::new(file));
+                                        session.add_item(box Editor::new(file));
                                     }else if file.ends_with(&String::from_str(".bin")){
                                         d("Load executable ");
                                         file.d();
                                         dl();
 
-                                        session.add_program(box Executor::new(file));
+                                        session.add_item(box Executor::new(file));
                                     }else if file.ends_with(&String::from_str(".bmp")){
-                                        session.add_program(box Viewer::new(file));
+                                        session.add_item(box Viewer::new(file));
                                     }else{
                                         d("No program found!\n");
                                     }

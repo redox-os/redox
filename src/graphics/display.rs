@@ -295,7 +295,7 @@ impl Display {
             if self.fonts > 0 {
                 let bitmap_location = self.fonts + 16*(character as usize);
                 for row in 0..16 {
-                    let row_data = *((bitmap_location as usize + row) as *const u8);
+                    let row_data = *((bitmap_location + row) as *const u8);
                     for col in 0..8 {
                         let pixel = (row_data >> (7 - col)) & 1;
                         if pixel > 0 {

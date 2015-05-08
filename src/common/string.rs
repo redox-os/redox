@@ -371,9 +371,9 @@ impl<'a> Add<&'a String> for String {
 }
 
 
-impl Add<&'static str> for String {
+impl<'a> Add<&'a str> for String {
     type Output = String;
-    fn add(self, other: &'static str) -> String {
+    fn add(self, other: &'a str) -> String {
         self + String::from_str(other)
     }
 }

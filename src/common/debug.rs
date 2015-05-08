@@ -2,21 +2,19 @@ use common::pio::*;
 
 use core::str::StrExt;
 
-static mut serial_initialized: bool = false;
+pub unsafe fn serial_init(){
+    outb(0x3F8 + 1, 0x00);
+    outb(0x3F8 + 3, 0x80);
+    outb(0x3F8 + 0, 0x03);
+    outb(0x3F8 + 1, 0x00);
+    outb(0x3F8 + 3, 0x03);
+    outb(0x3F8 + 2, 0xC7);
+    outb(0x3F8 + 4, 0x0B);
+}
+
 pub fn db(byte: u8){
-    let serial_port: u16 = 0x3F8;
     unsafe{
-        if !serial_initialized {
-            outb(serial_port + 1, 0x00);
-            outb(serial_port + 3, 0x80);
-            outb(serial_port + 0, 0x03);
-            outb(serial_port + 1, 0x00);
-            outb(serial_port + 3, 0x03);
-            outb(serial_port + 2, 0xC7);
-            outb(serial_port + 4, 0x0B);
-            serial_initialized = true;
-        }
-        outb(serial_port, byte);
+        outb(0x3F8, byte);
     }
 }
 

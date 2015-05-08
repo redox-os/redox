@@ -1,3 +1,4 @@
 *.bin
+*.o
 *.pcap
 filesystem/filesystem.asm
