@@ -22,6 +22,7 @@ use graphics::window::*;
 
 use programs::session::*;
 
+#[path="../../src/common"]
 mod common {
     pub mod debug;
     pub mod memory;
@@ -30,16 +31,19 @@ mod common {
     pub mod vector;
 }
 
+#[path="../../src/drivers"]
 mod drivers {
     pub mod disk;
     pub mod keyboard;
     pub mod mouse;
 }
 
+#[path="../../src/filesystems"]
 mod filesystems {
     pub mod unfs;
 }
 
+#[path="../../src/graphics"]
 mod graphics {
     pub mod bmp;
     pub mod color;
@@ -49,6 +53,7 @@ mod graphics {
     pub mod window;
 }
 
+#[path="../../src/programs"]
 mod programs {
     pub mod session;
 }
@@ -87,7 +92,7 @@ impl Application {
 }
 
 impl SessionItem for Application {
-    unsafe fn draw(&self, session: &mut Session) -> bool{
+    unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
         if self.window.draw(display) {
             display.char(self.window.point, self.character, Color::new(255, 255, 255));

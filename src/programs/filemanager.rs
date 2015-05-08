@@ -70,7 +70,7 @@ impl FileManager {
 }
 
 impl SessionItem for FileManager {
-    unsafe fn draw(&self, session: &mut Session) -> bool{
+    unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display) {
@@ -127,13 +127,11 @@ impl SessionItem for FileManager {
                                     d("Loading ");
                                     file.d();
                                     dl();
-                                    if file.ends_with(&String::from_str(".md")){
+                                    if file.ends_with(&String::from_str(".md"))
+                                        || file.ends_with(&String::from_str(".rs"))
+                                    {
                                         session.add_item(box Editor::new(file));
                                     }else if file.ends_with(&String::from_str(".bin")){
-                                        d("Load executable ");
-                                        file.d();
-                                        dl();
-
                                         session.add_item(box Executor::new(file));
                                     }else if file.ends_with(&String::from_str(".bmp")){
                                         session.add_item(box Viewer::new(file));

@@ -59,7 +59,7 @@ impl Executor {
 }
 
 impl SessionItem for Executor {
-    unsafe fn draw(&self, session: &mut Session) -> bool{
+    unsafe fn draw(&mut self, session: &mut Session) -> bool{
         if self.executable.can_call(self.draw){
             //Rediculous call mechanism
             self.executable.map();
