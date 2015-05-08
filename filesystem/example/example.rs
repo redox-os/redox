@@ -60,19 +60,21 @@ mod programs {
 
 pub struct Application {
     window: Window,
-    character: char
+    output: String,
+    command: String,
+    scroll: Point
 }
 
 impl Application {
     pub fn new() -> Application {
         Application {
             window: Window{
-                point: Point::new(420, 300),
+                point: Point::new(220, 100),
                 size: Size::new(576, 400),
-                title: String::from_str("Test Application"),
+                title: String::from_str("Terminal"),
                 title_color: Color::new(0, 0, 0),
                 border_color: Color::new(196, 196, 255),
-                content_color: Color::alpha(128, 128, 196, 196),
+                content_color: Color::alpha(160, 160, 196, 196),
                 shaded: false,
                 closed: false,
                 dragging: false,
@@ -86,7 +88,26 @@ impl Application {
                     valid: false
                 }
             },
-            character: ' '
+            output: String::new(),
+            command: String::new(),
+            scroll: Point::new(0, 0)
+        }
+    }
+
+    fn is_cmd(&self, name: &String) -> bool{
+        return self.command.equals(name) || self.command.starts_with(&(name.clone() + " "));
+    }
+
+    fn append(&mut self, line: &String) {
+        self.output = self.output.clone() + line + '\n';
+    }
+
+    #[allow(unused_variables)]
+    unsafe fn on_command(&mut self, session: &mut Session){
+        if self.is_cmd(&String::from_str("test")){
+            self.append(&String::from_str("Test Command"));
+        }else if self.is_cmd(&String::from_str("help")){
+            self.append(&String::from_str("Help Command"));
         }
     }
 }
@@ -95,7 +116,66 @@ impl SessionItem for Application {
     unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
         if self.window.draw(display) {
-            display.char(self.window.point, self.character, Color::new(255, 255, 255));
+            let scroll = self.scroll;
+
+            let mut col = -scroll.x;
+            let cols = self.window.size.width as isize / 8;
+            let mut row = -scroll.y;
+            let rows = self.window.size.height as isize / 16;
+
+            for c_ptr in self.output.as_slice(){
+                let c = *c_ptr;
+                if c == '\n' {
+                    col = -scroll.x;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
+                        display.char(point, c, Color::new(224, 224, 224));
+                    }
+                    col += 1;
+                }
+            }
+
+            if col > -scroll.x {
+                col = -scroll.x;
+                row += 1;
+            }
+
+            if col >= 0 && col < cols && row >= 0 && row < rows{
+                let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
+                display.char(point, '#', Color::new(255, 255, 255));
+                col += 2;
+            }
+
+            for c_ptr in self.command.as_slice(){
+                let c = *c_ptr;
+                if c == '\n' {
+                    col = -scroll.x;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
+                        display.char(point, c, Color::new(255, 255, 255));
+                    }
+                    col += 1;
+                }
+            }
+
+            if row >= rows {
+                self.scroll.y += row - rows + 1;
+                session.redraw = true;
+            }
+
+            if col >= 0 && col < cols && row >= 0 && row < rows{
+                let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
+                display.char(point, '_', Color::new(255, 255, 255));
+            }
+
             return true;
         }else{
             return false;
@@ -112,9 +192,21 @@ impl SessionItem for Application {
 
             match key_event.character {
                 '\x00' => (),
-                '\x1B' => (),
+                '\x08' => {
+                    if self.command.len() > 0 {
+                        self.command = self.command.substr(0, self.command.len() - 1);
+                    }
+                }
+                '\x1B' => self.command = String::new(),
+                '\n' => {
+                    if self.command.len() > 0 {
+                        self.output = self.output.clone() + (self.command.clone() + '\n');
+                        self.on_command(session);
+                        self.command = String::new();
+                    }
+                },
                 _ => {
-                    self.character = key_event.character
+                    self.command = self.command.clone() + key_event.character;
                 }
             }
         }
