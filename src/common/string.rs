@@ -2,6 +2,7 @@ use core::iter::Iterator;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
+use core::ops::Index;
 use core::option::Option;
 use core::slice::SliceExt;
 use core::str::StrExt;
@@ -9,18 +10,56 @@ use core::str::StrExt;
 use common::debug::*;
 use common::memory::*;
 
-struct StringIter<'a> {
+pub trait ToString {
+    fn to_string(&self) -> String;
+}
+
+impl ToString for &'static str {
+    fn to_string(&self) -> String {
+        String::from_str(self)
+    }
+}
+
+struct Chars<'a> {
     string: &'a String,
     offset: usize
 }
 
-impl <'a> Iterator for StringIter<'a> {
+struct Split<'a> {
+    string: &'a String,
+    offset: usize,
+    c: char
+}
+
+impl <'a> Iterator for Chars<'a> {
     type Item = char;
-    fn next(&mut self) -> Option<char>{
+    fn next(&mut self) -> Option<Self::Item>{
         if self.offset < self.string.len() {
-            let ret = Option::Some(self.string.get(self.offset));
+            let ret = Option::Some(self.string[self.offset]);
             self.offset += 1;
             return ret;
+        }else{
+            return Option::None;
+        }
+    }
+}
+
+impl <'a> Iterator for Split<'a> {
+    type Item = String;
+    fn next(&mut self) -> Option<Self::Item>{
+        if self.offset < self.string.len() {
+            let start = self.offset;
+            let mut len = 0;
+            for i in start..self.string.len(){
+                if self.string[i] == self.c {
+                    self.offset += 1;
+                    break;
+                }else{
+                    self.offset += 1;
+                    len += 1;
+                }
+            }
+            return Option::Some(self.string.substr(start, len));
         }else{
             return Option::None;
         }
@@ -176,16 +215,6 @@ impl String {
         String::from_num_radix(num, 10)
     }
 
-    pub fn get(&self, i: usize) -> char {
-        if i >= self.len() {
-            return '\0';
-        }else{
-            unsafe{
-                return *(((self.data as usize) + i * size_of::<char>()) as *const char);
-            }
-        }
-    }
-
     pub fn substr(&self, start: usize, len: usize) -> String {
         let mut i = start;
         if i > self.len() {
@@ -220,10 +249,10 @@ impl String {
         return self.substr(0, self.len());
     }
 
-    pub fn equals(&self, other: &String) -> bool {
+    pub fn equals(&self, other: String) -> bool {
         if self.len() == other.len() {
             for i in 0..self.len() {
-                if self.get(i) != other.get(i) {
+                if self[i] != other[i] {
                     return false;
                 }
             }
@@ -234,7 +263,7 @@ impl String {
         }
     }
 
-    pub fn starts_with(&self, other: &String) -> bool {
+    pub fn starts_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
             return self.substr(0, other.len()).equals(other);
         }else{
@@ -242,7 +271,7 @@ impl String {
         }
     }
 
-    pub fn ends_with(&self, other: &String) -> bool {
+    pub fn ends_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
             return self.substr(self.len() - other.len(), other.len()).equals(other);
         }else{
@@ -254,10 +283,18 @@ impl String {
         self.length
     }
 
-    pub fn iter(&self) -> StringIter {
-        StringIter {
+    pub fn chars(&self) -> Chars {
+        Chars {
             string: &self,
             offset: 0
+        }
+    }
+
+    pub fn split(&self, c: char) -> Split {
+        Split {
+            string: &self,
+            offset: 0,
+            c: c
         }
     }
 
@@ -280,7 +317,7 @@ impl String {
         }
 
         let mut num = 0;
-        for c in self.iter(){
+        for c in self.chars(){
             let digit;
             if c >= '0' && c <= '9' {
                 digit = c as usize - '0' as usize
@@ -308,8 +345,24 @@ impl String {
     }
 
     pub fn d(&self){
-        for c in self.iter() {
+        for c in self.chars() {
             dc(c);
+        }
+    }
+}
+
+static NULL_CHAR: char = '\0';
+
+impl Index<usize> for String {
+    type Output = char;
+    fn index<'a>(&'a self, i: usize) -> &'a Self::Output {
+        if i >= self.len() {
+            // Failure condition
+            return &NULL_CHAR;
+        }else{
+            unsafe{
+                return &*(((self.data as usize) + i * size_of::<char>()) as *const char);
+            }
         }
     }
 }
@@ -334,13 +387,13 @@ impl Add for String {
         let data = alloc(length * 4);
 
         let mut i = 0;
-        for c in self.iter() {
+        for c in self.chars() {
             unsafe {
                 *((data + i * size_of::<char>()) as *mut char) = c;
             }
             i += 1;
         }
-        for c in other.iter() {
+        for c in other.chars() {
             unsafe {
                 *((data + i * size_of::<char>()) as *mut char) = c;
             }

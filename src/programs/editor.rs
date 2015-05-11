@@ -113,7 +113,7 @@ impl SessionItem for Editor {
 
             let mut row = -scroll.y;
             let rows = self.window.size.height as isize / 16;
-            for c in self.string.iter() {
+            for c in self.string.chars() {
                 if offset == self.offset{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
                         display.char(Point::new(self.window.point.x + 8*col, self.window.point.y + 16*row), '_', Color::new(128, 128, 128));
@@ -180,7 +180,7 @@ impl SessionItem for Editor {
                 0x40 => self.save(),
                 0x47 => self.offset = 0,
                 0x48 => for i in 1..self.offset {
-                    match self.string.get(self.offset - i) {
+                    match self.string[self.offset - i] {
                         '\0' => break,
                         '\n' => {
                             self.offset = self.offset - i;
@@ -197,7 +197,7 @@ impl SessionItem for Editor {
                         },
                 0x4F => self.offset = self.string.len(),
                 0x50 => for i in self.offset + 1..self.string.len() {
-                    match self.string.get(i) {
+                    match self.string[i] {
                         '\0' => break,
                         '\n' => {
                             self.offset = i;

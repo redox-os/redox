@@ -8,10 +8,12 @@
 extern crate core;
 
 use core::mem::size_of;
+use core::result::Result;
 
 use common::debug::*;
 use common::memory::*;
 use common::string::*;
+use common::vector::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -99,20 +101,23 @@ impl Application {
         }
     }
 
-    fn is_cmd(&self, name: &String) -> bool{
-        return self.command.equals(name) || self.command.starts_with(&(name.clone() + " "));
-    }
-
-    fn append(&mut self, line: &String) {
+    fn append(&mut self, line: String) {
         self.output = self.output.clone() + line + '\n';
     }
 
     #[allow(unused_variables)]
     unsafe fn on_command(&mut self, session: &mut Session){
-        if self.is_cmd(&String::from_str("test")){
-            self.append(&String::from_str("Test Command"));
-        }else if self.is_cmd(&String::from_str("help")){
-            self.append(&String::from_str("Help Command"));
+        let mut args: Vector<String> = Vector::<String>::new();
+        for arg in self.command.split(' ') {
+            args = args + arg;
+        }
+        if args.len() > 0 {
+            match args.get(0) {
+                Result::Ok(arg) => if arg.equals("test".to_string()) {
+                    self.append("Test Command!".to_string());
+                },
+                Result::Err(_) => ()
+            }
         }
     }
 }
@@ -128,7 +133,7 @@ impl SessionItem for Application {
             let mut row = -scroll.y;
             let rows = self.window.size.height as isize / 16;
 
-            for c in self.output.iter(){
+            for c in self.output.chars(){
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
@@ -160,7 +165,7 @@ impl SessionItem for Application {
             }
 
             let mut i = 0;
-            for c in self.command.iter(){
+            for c in self.command.chars(){
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
