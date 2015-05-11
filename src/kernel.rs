@@ -63,7 +63,9 @@ mod programs {
     pub mod viewer;
 }
 
-unsafe fn initialize(){
+static mut session: *mut Session = 0 as *mut Session;
+
+unsafe fn init(){
     serial_init();
 
     dd(size_of::<usize>() * 8);
@@ -84,74 +86,63 @@ unsafe fn initialize(){
 
     d("PCI\n");
     pci_init();
+
+    session = alloc(size_of::<Session>()) as *mut Session;
+    *session = Session::new();
+    (*session).add_item(box FileManager::new());
 }
 
-pub unsafe fn timestamp() -> usize {
-    let low: u32;
-    asm!("rdtsc"
-        : "={eax}"(low) : : "{edx}" : "intel");
+pub unsafe fn input_handle(){
+    loop {
+        let status = inb(0x64);
+        if status & 0x21 == 1 {
+            let key_event = keyboard_interrupt();
+            if key_event.scancode > 0 {
+                (*session).on_key(key_event);
+            }
+        }else if status & 0x21 == 0x21 {
+            let mouse_event = mouse_interrupt();
 
-    return low as usize;
+            if mouse_event.valid {
+                (*session).on_mouse(mouse_event);
+            }
+        }else{
+            break;
+        }
+    }
 }
 
-const INTERRUPT: *mut u8 = 0x200000 as *mut u8;
 
 #[no_mangle]
-pub unsafe fn kernel() {
-    if *INTERRUPT == 255 {
-        initialize();
-
-        let mut session = Session::new();
-        session.add_item(box FileManager::new());
-
-        loop{
-            let interrupt = *INTERRUPT;
-            *INTERRUPT = 255;
-
-            match interrupt {
-                0x20 => (), //timer
-                0x21 => (), //keyboard
-                0x2B => pci_handle(0xB),
-                0x2C => (), //mouse
-                0x2E => (), //disk
-                _ => {
-                    d("I: ");
-                    dh(interrupt as usize);
-                    dl();
-                }
-            }
+pub unsafe fn kernel(interrupt: u32) {
+    match interrupt {
+        0x20 => (), //timer
+        0x21 => input_handle(), //keyboard
+        0x2B => pci_handle(0xB),
+        0x2C => input_handle(), //mouse
+        0x2E => (), //disk
+        0xFF => { // main loop
+            init();
 
             loop {
-                let status = inb(0x64);
-                if status & 0x21 == 1 {
-                    let key_event = keyboard_interrupt();
-                    if key_event.scancode > 0 {
-                        session.on_key(key_event);
-                    }
-                }else if status & 0x21 == 0x21 {
-                    let mouse_event = mouse_interrupt();
-
-                    if mouse_event.valid {
-                        session.on_mouse(mouse_event);
-                    }
-                }else{
-                    break;
-                }
+                (*session).redraw();
+                asm!("sti");
+                asm!("hlt");
+                asm!("cli"); // TODO: Allow preempting
             }
-
-            session.redraw();
-
-            if interrupt >= 0x20 && interrupt < 0x30 {
-                if interrupt >= 0x28 {
-                    outb(0xA0, 0x20);
-                }
-
-                outb(0x20, 0x20);
-            }
-
-            asm!("sti\n
-                hlt\n
-                cli");
         }
+        _ => {
+            d("I: ");
+            dh(interrupt as usize);
+            dl();
+        }
+    }
+
+    if interrupt >= 0x20 && interrupt < 0x30 {
+        if interrupt >= 0x28 {
+            outb(0xA0, 0x20);
+        }
+
+        outb(0x20, 0x20);
     }
 }
