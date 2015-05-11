@@ -1,5 +1,5 @@
-# UberOS
-UberOS is a Rust based operating system, designed to be modular and well documented (TODO).
+# Redox
+Redox is a Rust based operating system, designed to be modular and well documented (TODO).
 
 ## Building
 - Install 32-bit Rust:
@@ -10,7 +10,7 @@ cd rust
 make
 sudo make install
 ```
-- Checkout UberOS
+- Checkout Redox
 - Run make inside the checked out directory
 
 ## Running
