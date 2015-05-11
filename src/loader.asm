@@ -10,7 +10,7 @@ boot: ; dl comes with disk
     mov ss, ax
     ; initialize stack
     mov sp, 0x7bfe
-    
+
     mov si, DAPACK      ; address of "disk address packet"
     mov ah, 0x42        ; AL is unused
     int 0x13
@@ -68,12 +68,12 @@ startup:
     in al, 0x92
     or al, 2
     out 0x92, al
-    
-	call vesa
-	
-	call initialize.fpu
-	call initialize.sse
-	call initialize.pic
+
+    call vesa
+
+    call initialize.fpu
+    call initialize.sse
+    call initialize.pic
 
     ; load protected mode GDT and IDT
     cli
@@ -83,7 +83,7 @@ startup:
     mov eax, cr0
     or eax, 1
     mov cr0, eax
-	
+
     ; far jump to load CS with 32 bit segment
     jmp 0x08:protected_mode
 
@@ -101,10 +101,13 @@ protected_mode:
     mov ss, eax
     ; set up stack
     mov esp, 0x1FFFF0
-    
+
     ;rust init
-	mov [0x200000], byte 255
-	jmp [kernel_file + 0x18]
+    mov eax, [kernel_file + 0x18]
+    mov [interrupts.handler], eax
+    int 255
+    cli
+    hlt
 
 gdtr:
     dw (gdt_end - gdt) + 1  ; size
