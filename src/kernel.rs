@@ -72,24 +72,17 @@ unsafe fn init(){
     d(" bits");
     dl();
 
-    d("Paging\n");
     page_init();
-
-    d("Clusters\n");
     cluster_init();
-
-    d("Mouse\n");
-    mouse_init();
-
-    d("Keyboard\n");
-    keyboard_init();
-
-    d("PCI\n");
-    pci_init();
 
     session = alloc(size_of::<Session>()) as *mut Session;
     *session = Session::new();
     (*session).add_item(box FileManager::new());
+
+    keyboard_init();
+    mouse_init();
+
+    pci_init();
 }
 
 pub unsafe fn input_handle(){

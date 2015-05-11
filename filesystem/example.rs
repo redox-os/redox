@@ -10,7 +10,6 @@ extern crate core;
 use core::mem::size_of;
 use core::result::Result;
 
-use common::debug::*;
 use common::memory::*;
 use common::string::*;
 use common::vector::*;
