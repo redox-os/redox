@@ -82,7 +82,7 @@ impl SessionItem for FileManager {
             let mut row = 0;
             for string in self.files.as_slice() {
                 let mut col = 0;
-                for c in string.iter() {
+                for c in string.chars() {
                     if c == '\n' {
                         col = 0;
                         row += 1;
@@ -126,13 +126,13 @@ impl SessionItem for FileManager {
                                     d("Loading ");
                                     file.d();
                                     dl();
-                                    if file.ends_with(&String::from_str(".md"))
-                                        || file.ends_with(&String::from_str(".rs"))
+                                    if file.ends_with(".md".to_string())
+                                        || file.ends_with(".rs".to_string())
                                     {
                                         session.add_item(box Editor::new(file));
-                                    }else if file.ends_with(&String::from_str(".bin")){
+                                    }else if file.ends_with(".bin".to_string()){
                                         session.add_item(box Executor::new(file));
-                                    }else if file.ends_with(&String::from_str(".bmp")){
+                                    }else if file.ends_with(".bmp".to_string()){
                                         session.add_item(box Viewer::new(file));
                                     }else{
                                         d("No program found!\n");
@@ -162,7 +162,7 @@ impl SessionItem for FileManager {
                 let mut row = 0;
                 for string in self.files.as_slice() {
                     let mut col = 0;
-                    for c in string.iter() {
+                    for c in string.chars() {
                         if c == '\n' {
                             col = 0;
                             row += 1;

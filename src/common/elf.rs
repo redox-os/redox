@@ -178,9 +178,9 @@ impl ELF {
 
                 let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if name.equals(&String::from_str(".symtab")){
+                if name.equals(".symtab".to_string()){
                     sym_section = section;
-                }else if name.equals(&String::from_str(".strtab")){
+                }else if name.equals(".strtab".to_string()){
                     str_section = section;
                 }
 
@@ -330,9 +330,9 @@ impl ELF {
 
                 let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if name.equals(&String::from_str(".symtab")){
+                if name.equals(".symtab".to_string()){
                     sym_section = section;
-                }else if name.equals(&String::from_str(".strtab")){
+                }else if name.equals(".strtab".to_string()){
                     str_section = section;
                 }
             }
@@ -343,7 +343,7 @@ impl ELF {
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
 
-                        if name.equals(&String::from_c_str((self.data + str_section.off as usize + symbol.name as usize) as *const u8)){
+                        if name.equals(String::from_c_str((self.data + str_section.off as usize + symbol.name as usize) as *const u8)){
                             return symbol.value as usize;
                         }
                     }

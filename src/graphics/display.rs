@@ -307,7 +307,7 @@ impl Display {
 
     pub fn text(&self, point: Point, text: &String, color: Color){
         let mut cursor = Point::new(point.x, point.y);
-        for c in text.iter() {
+        for c in text.chars() {
             self.char(cursor, c, color);
             cursor.x += 8;
         }

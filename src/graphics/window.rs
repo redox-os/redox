@@ -30,7 +30,7 @@ impl Window {
         display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
 
         let mut cursor = Point::new(self.point.x, self.point.y - 17);
-        for c in self.title.iter() {
+        for c in self.title.chars() {
             if cursor.x + 8 <= self.point.x + self.size.width as isize {
                 display.char(cursor, c, self.title_color);
             }
