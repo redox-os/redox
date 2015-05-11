@@ -39,7 +39,11 @@ impl KeyboardStatus {
     }
 
     fn is_shifted(&self) -> bool{
-        self.lshift || self.rshift || self.caps_lock
+        if self.caps_lock {
+            !(self.lshift || self.rshift)
+        }else{
+            (self.lshift || self.rshift)
+        }
     }
 }
 
@@ -58,29 +62,29 @@ pub unsafe fn keyboard_init(){
 }
 
 pub fn keyboard_interrupt() -> KeyEvent{
-	let scancode_packed;
+    let scancode_packed;
     unsafe{
         scancode_packed = inb(0x60);
     }
 
-	let pressed;
-	if scancode_packed < 0x80 {
-		pressed = true;
-	}else{
-		pressed = false;
-	}
+    let pressed;
+    if scancode_packed < 0x80 {
+        pressed = true;
+    }else{
+        pressed = false;
+    }
 
-	let shift;
+    let shift;
 
-	unsafe{
-		keyboard_status.evaluate(scancode_packed);
+    unsafe{
+        keyboard_status.evaluate(scancode_packed);
 
-		shift = keyboard_status.is_shifted();
-	}
+        shift = keyboard_status.is_shifted();
+    }
 
-	let scancode = scancode_packed & 0x7F;
+    let scancode = scancode_packed & 0x7F;
 
-	KeyEvent { character:char_for_scancode(scancode, shift), scancode:scancode, pressed:pressed }
+    KeyEvent { character:char_for_scancode(scancode, shift), scancode:scancode, pressed:pressed }
 }
 
 fn char_for_scancode(scancode: u8, shift: bool) -> char{
