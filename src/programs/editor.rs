@@ -129,7 +129,7 @@ impl SessionItem for Editor {
                             self.scroll.y += row - rows;
                         }
 
-                        session.redraw = true;
+                        session.redraw = REDRAW_ALL;
                     }
                 }
 
@@ -164,7 +164,7 @@ impl SessionItem for Editor {
                         self.scroll.y += rows - row;
                     }
 
-                    session.redraw = true;
+                    session.redraw = REDRAW_ALL;
                 }
             }
         }

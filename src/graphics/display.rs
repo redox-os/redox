@@ -205,7 +205,6 @@ impl Display {
     }
     /* } Optimized */
 
-
     pub fn image_alpha(&self, point: Point, data: usize, size: Size){
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
@@ -229,14 +228,6 @@ impl Display {
             self.image(Point::new(0, 0), self.background.data, self.background.size);
         }else{
             self.set(Color::new(64, 64, 64));
-        }
-    }
-
-    pub fn cursor(&self, point: Point){
-        if self.cursor.data > 0 {
-            self.image_alpha(point, self.cursor.data, self.cursor.size);
-        }else{
-            self.char(Point::new(point.x - 3, point.y - 9), 'X', Color::new(255, 255, 255));
         }
     }
 
@@ -312,4 +303,57 @@ impl Display {
             cursor.x += 8;
         }
     }
+
+    /* Cursor hacks { */
+    pub fn image_alpha_onscreen(&self, point: Point, data: usize, size: Size){
+        let start_y = max(0, point.y) as usize;
+        let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
+
+        let start_x = max(0, point.x) as usize;
+        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x * 4;
+        let onscreen_offset = self.onscreen + start_x * 4;
+
+        let bytesperrow = size.width * 4;
+        let data_offset = data - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+
+        for y in start_y..end_y{
+            unsafe{
+                Display::copy_run_alpha(data_offset + y * bytesperrow, onscreen_offset + y * self.bytesperrow, len);
+            }
+        }
+    }
+
+    pub fn pixel_onscreen(&self, point: Point, color: Color){
+        unsafe{
+            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 && point.y < self.height as isize {
+                *((self.onscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
+            }
+        }
+    }
+
+    pub fn char_onscreen(&self, point: Point, character: char, color: Color){
+        unsafe{
+            if self.fonts > 0 {
+                let bitmap_location = self.fonts + 16*(character as usize);
+                for row in 0..16 {
+                    let row_data = *((bitmap_location + row) as *const u8);
+                    for col in 0..8 {
+                        let pixel = (row_data >> (7 - col)) & 1;
+                        if pixel > 0 {
+                            self.pixel_onscreen(Point::new(point.x + col, point.y + row as isize), color);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    pub fn cursor(&self, point: Point){
+        if self.cursor.data > 0 {
+            self.image_alpha_onscreen(point, self.cursor.data, self.cursor.size);
+        }else{
+            self.char_onscreen(Point::new(point.x - 3, point.y - 9), 'X', Color::new(255, 255, 255));
+        }
+    }
+    /* } Cursor hacks */
 }

@@ -198,7 +198,7 @@ impl SessionItem for Application {
 
             if row >= rows {
                 self.scroll.y += row - rows + 1;
-                session.redraw = true;
+                session.redraw = REDRAW_ALL;
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
