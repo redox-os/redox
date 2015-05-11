@@ -9,6 +9,7 @@ extern crate core;
 
 use core::mem::size_of;
 
+use common::debug::*;
 use common::memory::*;
 use common::string::*;
 
@@ -62,7 +63,9 @@ pub struct Application {
     window: Window,
     output: String,
     command: String,
-    scroll: Point
+    offset: usize,
+    scroll: Point,
+    wrap: bool
 }
 
 impl Application {
@@ -90,7 +93,9 @@ impl Application {
             },
             output: String::new(),
             command: String::new(),
-            scroll: Point::new(0, 0)
+            offset: 0,
+            scroll: Point::new(0, 0),
+            wrap: true
         }
     }
 
@@ -124,6 +129,11 @@ impl SessionItem for Application {
             let rows = self.window.size.height as isize / 16;
 
             for c in self.output.iter(){
+                if self.wrap && col >= cols {
+                    col = -scroll.x;
+                    row += 1;
+                }
+
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;
@@ -149,7 +159,18 @@ impl SessionItem for Application {
                 col += 2;
             }
 
+            let mut i = 0;
             for c in self.command.iter(){
+                if self.wrap && col >= cols {
+                    col = -scroll.x;
+                    row += 1;
+                }
+
+                if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
+                    let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
+                    display.char(point, '_', Color::new(255, 255, 255));
+                }
+
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;
@@ -162,6 +183,13 @@ impl SessionItem for Application {
                     }
                     col += 1;
                 }
+
+                i += 1;
+            }
+
+            if self.wrap && col >= cols {
+                col = -scroll.x;
+                row += 1;
             }
 
             if row >= rows {
@@ -169,7 +197,7 @@ impl SessionItem for Application {
                 session.redraw = true;
             }
 
-            if col >= 0 && col < cols && row >= 0 && row < rows{
+            if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
                 let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
                 display.char(point, '_', Color::new(255, 255, 255));
             }
@@ -185,14 +213,23 @@ impl SessionItem for Application {
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
+                0x47 => self.offset = 0,
+                0x4B => if self.offset > 0 {
+                    self.offset -= 1;
+                },
+                0x4D => if self.offset < self.command.len() {
+                    self.offset += 1;
+                },
+                0x4F => self.offset = self.command.len(),
                 _ => ()
             }
 
             match key_event.character {
                 '\x00' => (),
                 '\x08' => {
-                    if self.command.len() > 0 {
-                        self.command = self.command.substr(0, self.command.len() - 1);
+                    if self.offset > 0 {
+                        self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
+                        self.offset -= 1;
                     }
                 }
                 '\x1B' => self.command = String::new(),
@@ -201,10 +238,12 @@ impl SessionItem for Application {
                         self.output = self.output.clone() + (self.command.clone() + '\n');
                         self.on_command(session);
                         self.command = String::new();
+                        self.offset = 0;
                     }
                 },
                 _ => {
-                    self.command = self.command.clone() + key_event.character;
+                    self.command = self.command.substr(0, self.offset) + key_event.character + self.command.substr(self.offset, self.command.len() - self.offset);
+                    self.offset += 1;
                 }
             }
         }
