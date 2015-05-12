@@ -1,6 +1,60 @@
 use common::debug::*;
 
 #[derive(Copy, Clone)]
+pub struct n16 {
+    pub bytes: [u8; 2]
+}
+
+impl n16 {
+    pub fn new(value: u16) -> n16{
+        n16 {
+            bytes: [
+                (value >> 8) as u8,
+                value as u8
+            ]
+        }
+    }
+
+    pub fn get(&self) -> u16 {
+        return ((self.bytes[0] as u16) << 8) | (self.bytes[1] as u16);
+    }
+
+    pub fn set(&mut self, value: u16){
+        self.bytes[0] = (value >> 8) as u8;
+        self.bytes[1] = value as u8;
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct n32 {
+    pub bytes: [u8; 4]
+}
+
+impl n32 {
+    pub fn new(value: u32) -> n32{
+        n32 {
+            bytes: [
+                (value >> 24) as u8,
+                (value >> 16) as u8,
+                (value >> 8) as u8,
+                value as u8
+            ]
+        }
+    }
+
+    pub fn get(&self) -> u32 {
+        return ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16) | ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32);
+    }
+
+    pub fn set(&mut self, value: u32){
+        self.bytes[0] = (value >> 24) as u8;
+        self.bytes[1] = (value >> 16) as u8;
+        self.bytes[2] = (value >> 8) as u8;
+        self.bytes[3] = value as u8;
+    }
+}
+
+#[derive(Copy, Clone)]
 pub struct MACAddr {
     pub bytes: [u8; 6]
 }
@@ -65,16 +119,17 @@ impl IPv6Addr {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct EthernetII {
     pub dst: MACAddr,
     pub src: MACAddr,
-    pub _type: u16
+    pub _type: n16
 }
 
 impl EthernetII {
     pub fn d(&self){
         d("Ethernet II ");
-        dh(self._type as usize);
+        dh(self._type.get() as usize);
         d(" from ");
         self.src.d();
         d(" to ");
@@ -82,8 +137,9 @@ impl EthernetII {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Checksum {
-    data: u16
+    pub data: u16
 }
 
 impl Checksum {
@@ -128,12 +184,13 @@ impl Checksum {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct IPv4 {
     pub ver_hlen: u8,
     pub services: u8,
-    pub len: u16,
-    pub id: u16,
-    pub flags_fragment: u16,
+    pub len: n16,
+    pub id: n16,
+    pub flags_fragment: n16,
     pub ttl: u8,
     pub proto: u8,
     pub checksum: Checksum,
@@ -152,6 +209,7 @@ impl IPv4 {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ICMP {
     pub _type: u8,
     pub code: u8,
@@ -168,48 +226,74 @@ impl ICMP {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct TCP {
-    pub src: [u8; 2],
-    pub dst: [u8; 2],
-    pub sequence: u32,
-    pub ack_num: u32,
+    pub src: n16,
+    pub dst: n16,
+    pub sequence: n32,
+    pub ack_num: n32,
     pub flags: u16,
-    pub window_size: u16,
+    pub window_size: n16,
     pub checksum: Checksum,
-    pub urgent_pointer: u16
+    pub urgent_pointer: n16
 }
 
 impl TCP {
     pub fn d(&self){
         d("TCP from ");
-        dd(self.src[0] as usize * 256 + self.src[1] as usize);
+        dd(self.src.get() as usize);
         d(" to ");
-        dd(self.dst[0] as usize * 256 + self.dst[1] as usize);
+        dd(self.dst.get() as usize);
     }
 }
 
+//Psuedo header for checksum only
+pub struct TCPIPv4Psuedo {
+    pub src_addr: IPv4Addr,
+    pub dst_addr: IPv4Addr,
+    pub zero: u8,
+    pub proto: u8,
+    pub tcp_len: n16,
+    pub tcp: TCP
+}
+
+impl TCPIPv4Psuedo {
+    pub fn new(packet: &IPv4, segment: &TCP) -> TCPIPv4Psuedo{
+        TCPIPv4Psuedo {
+            src_addr: packet.src,
+            dst_addr: packet.dst,
+            zero: 0,
+            proto: packet.proto,
+            tcp_len: n16::new(40),
+            tcp: *segment
+        }
+    }
+}
+
+#[derive(Copy, Clone)]
 pub struct UDP {
-    pub src: [u8; 2],
-    pub dst: [u8; 2],
-    pub len: u16,
+    pub src: n16,
+    pub dst: n16,
+    pub len: n16,
     pub checksum: Checksum
 }
 
 impl UDP {
     pub fn d(&self){
         d("UDP from ");
-        dd(self.src[0] as usize * 256 + self.src[1] as usize);
+        dd(self.src.get() as usize);
         d(" to ");
-        dd(self.dst[0] as usize * 256 + self.dst[1] as usize);
+        dd(self.dst.get() as usize);
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ARP {
-    pub htype: u16,
-    pub ptype: u16,
+    pub htype: n16,
+    pub ptype: n16,
     pub hlen: u8,
     pub plen: u8,
-    pub oper: u16,
+    pub oper: n16,
     pub src_mac: MACAddr,
     pub src_ip: IPv4Addr,
     pub dst_mac: MACAddr,
@@ -219,15 +303,15 @@ pub struct ARP {
 impl ARP {
     pub fn d(&self){
         d("ARP hw ");
-        dh(self.htype as usize);
+        dh(self.htype.get() as usize);
         d("#");
         dd(self.hlen as usize);
         d(" proto ");
-        dh(self.ptype as usize);
+        dh(self.ptype.get() as usize);
         d("#");
         dd(self.plen as usize);
         d(" oper ");
-        dh(self.oper as usize);
+        dh(self.oper.get() as usize);
         d(" from ");
         self.src_mac.d();
         d(" (");
@@ -240,9 +324,10 @@ impl ARP {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct IPv6 {
-    pub version: u32, // also has traffic class and flow label, TODO
-    pub len: u16,
+    pub version: n32, // also has traffic class and flow label, TODO
+    pub len: n16,
     pub next_header: u8,
     pub hop_limit: u8,
     pub src: IPv6Addr,
@@ -260,9 +345,10 @@ impl IPv6 {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct ICMPv6 {
     pub _type: u8,
     pub code: u8,
     pub checksum: Checksum,
-    pub body: u32
+    pub body: n32
 }
