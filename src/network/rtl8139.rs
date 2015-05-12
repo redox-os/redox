@@ -13,9 +13,11 @@ static mut RTL8139_TX: u16 = 0;
 
 impl NetworkDevice for RTL8139 {
     unsafe fn send(&self, addr: usize, len: usize){
-        d("RTL8139 send ");
-        dd(RTL8139_TX as usize);
-        dl();
+        if cfg!(debug_network){
+            d("RTL8139 send ");
+            dd(RTL8139_TX as usize);
+            dl();
+        }
 
         let base = self.base as u16;
 
@@ -32,7 +34,9 @@ impl NetworkDevice for RTL8139 {
 
 impl RTL8139 {
     pub unsafe fn handle(&self){
-        d("RTL8139 handle");
+        if cfg!(debug_network){
+            d("RTL8139 handle");
+        }
 
         let base = self.base as u16;
 
@@ -40,17 +44,19 @@ impl RTL8139 {
         let mut capr = (inw(base + 0x38) + 16) as usize;
         let cbr = inw(base + 0x3A) as usize;
         while capr != cbr {
-            d(" CAPR ");
-            dd(capr);
-            d(" CBR ");
-            dd(cbr);
-
-            d(" len ");
-            let frame_len = *((receive_buffer + capr + 2) as *const u16) as usize;
-            dd(frame_len);
-            dl();
-
             let frame_addr = receive_buffer + capr + 4;
+            let frame_len = *((receive_buffer + capr + 2) as *const u16) as usize;
+
+            if cfg!(debug_network){
+                d(" CAPR ");
+                dd(capr);
+                d(" CBR ");
+                dd(cbr);
+
+                d(" len ");
+                dd(frame_len);
+                dl();
+            }
 
             network_frame(self, frame_addr, frame_len);
 

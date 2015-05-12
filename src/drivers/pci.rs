@@ -18,9 +18,11 @@ unsafe fn pci_write(bus: usize, slot: usize, function: usize, offset: usize, dat
 }
 
 pub unsafe fn pci_handle(irq: u8){
-    d("PCI Handle ");
-    dh(irq as usize);
-    dl();
+    if cfg!(debug_pci){
+        d("PCI Handle ");
+        dh(irq as usize);
+        dl();
+    }
 
     for device in 0..32 {
         let data = pci_read(0, device, 0, 0);

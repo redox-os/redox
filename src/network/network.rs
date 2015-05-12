@@ -374,12 +374,16 @@ pub struct ICMPv6 {
 
 unsafe fn network_icmpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: &mut IPv4, segment_addr: usize){
     let segment = &mut *(segment_addr as *mut ICMP);
-    d("        ");
-    segment.d();
-    dl();
+    if cfg!(debug_network){
+        d("        ");
+        segment.d();
+        dl();
+    }
 
     if segment._type == 0x08 && packet.dst.equals(IP_ADDR) {
-        d("            Echo Reply\n");
+        if cfg!(debug_network){
+            d("            Echo Reply\n");
+        }
         //Send echo reply
         frame.dst = frame.src;
         frame.src = MAC_ADDR;
@@ -397,25 +401,29 @@ unsafe fn network_icmpv4(device: &NetworkDevice, frame: &mut EthernetII, packet:
 
         let frame_addr: *const EthernetII = frame;
         device.send(frame_addr as usize, size_of::<EthernetII>() + packet.len.get() as usize);
-    }else{
+    }else if cfg!(debug_network){
         d("            Ignore ICMP\n");
     }
 }
 
 unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: &mut IPv4, segment_addr: usize){
     let mut segment = &mut *(segment_addr as *mut TCP);
-    d("        ");
-    segment.d();
-    dl();
+    if cfg!(debug_network){
+        d("        ");
+        segment.d();
+        dl();
+    }
 
     if segment.dst.get() == 80 {
-        d("            HTTP Reply ");
-        dh(segment.flags as usize);
-        d(" ");
-        dh(segment.sequence.get() as usize);
-        d(" ");
-        dh(segment.ack_num.get() as usize);
-        dl();
+        if cfg!(debug_network){
+            d("            HTTP Reply ");
+            dh(segment.flags as usize);
+            d(" ");
+            dh(segment.sequence.get() as usize);
+            d(" ");
+            dh(segment.ack_num.get() as usize);
+            dl();
+        }
 
         frame.dst = frame.src;
         frame.src = MAC_ADDR;
@@ -428,7 +436,9 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
         let packet_addr: *const IPv4 = packet;
 
         if segment.flags & (1 << 9) != 0 {
-            d("            HTTP SYN\n");
+            if cfg!(debug_network){
+                d("            HTTP SYN\n");
+            }
             let id = packet.id.get();
             packet.id.set(id + 1);
 
@@ -454,7 +464,9 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
 
             device.send(frame_addr as usize, 74);
         }else if segment.flags & (1 << 11) != 0{
-            d("            HTTP PSH\n");
+            if cfg!(debug_network){
+                d("            HTTP PSH\n");
+            }
 
             let request = String::from_c_slice(slice::from_raw_parts((segment_addr + segment.hlen()) as *const u8, packet.len.get() as usize - packet.hlen() - segment.hlen()));
 
@@ -616,6 +628,9 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                 device.send(response_addr as usize, response_len);
             }
         }else if segment.flags & (1 << 8) != 0 {
+            if cfg!(debug_network){
+                d("            HTTP FIN\n");
+            }
             let id = packet.id.get();
             packet.id.set(id + 1);
 
@@ -641,16 +656,20 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
 
 unsafe fn network_udpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: &mut IPv4, segment_addr: usize){
     let segment = &*(segment_addr as *const UDP);
-    d("        ");
-    segment.d();
-    dl();
+    if cfg!(debug_network){
+        d("        ");
+        segment.d();
+        dl();
+    }
 }
 
 unsafe fn network_ipv4(device: &NetworkDevice, frame: &mut EthernetII, packet_addr: usize){
     let packet = &mut *(packet_addr as *mut IPv4);
-    d("    ");
-    packet.d();
-    dl();
+    if cfg!(debug_network){
+        d("    ");
+        packet.d();
+        dl();
+    }
 
     let segment_addr = packet_addr + ((packet.ver_hlen & 0xF) as usize) * 4;
 
@@ -665,16 +684,20 @@ unsafe fn network_ipv4(device: &NetworkDevice, frame: &mut EthernetII, packet_ad
 
 unsafe fn network_udpv6(device: &NetworkDevice, frame: &mut EthernetII, packet: &mut IPv6, segment_addr: usize){
     let segment = &mut *(segment_addr as *mut UDP);
-    d("        ");
-    segment.d();
-    dl();
+    if cfg!(debug_network){
+        d("        ");
+        segment.d();
+        dl();
+    }
 }
 
 unsafe fn network_ipv6(device: &NetworkDevice, frame: &mut EthernetII, packet_addr: usize){
     let packet = &mut *(packet_addr as *mut IPv6);
-    d("    ");
-    packet.d();
-    dl();
+    if cfg!(debug_network){
+        d("    ");
+        packet.d();
+        dl();
+    }
 
     if packet.next_header == 0x11 {
         network_udpv6(device, frame, packet, packet_addr + size_of::<IPv6>())
@@ -682,13 +705,17 @@ unsafe fn network_ipv6(device: &NetworkDevice, frame: &mut EthernetII, packet_ad
 }
 
 unsafe fn network_arp(packet: ARP) -> Option<ARP>{
-    d("    ");
-    packet.d();
-    dl();
+    if cfg!(debug_network){
+        d("    ");
+        packet.d();
+        dl();
+    }
 
     if packet.dst_ip.equals(IP_ADDR) {
         if packet.oper.get() == 1 {
-            d("        ARP Reply\n");
+            if cfg!(debug_network){
+                d("        ARP Reply\n");
+            }
             let mut response = packet;
             response.oper.set(2);
             response.dst_mac = response.src_mac;
@@ -697,10 +724,10 @@ unsafe fn network_arp(packet: ARP) -> Option<ARP>{
             response.src_ip = IP_ADDR;
 
             return Option::Some(response);
-        }else{
+        }else if cfg!(debug_network){
             d("        Ignore ARP: Unknown operation\n");
         }
-    }else{
+    }else if cfg!(debug_network){
         d("        Ignore ARP: Wrong destination\n");
     }
 
@@ -709,8 +736,10 @@ unsafe fn network_arp(packet: ARP) -> Option<ARP>{
 
 pub unsafe fn network_frame(device: &NetworkDevice, frame_addr: usize, frame_len: usize){
     let frame = &mut *(frame_addr as *mut EthernetII);
-    frame.d();
-    dl();
+    if cfg!(debug_network){
+        frame.d();
+        dl();
+    }
 
     if frame._type.get() == 0x0800 {
         network_ipv4(device, frame, frame_addr + size_of::<EthernetII>());
@@ -737,15 +766,17 @@ pub unsafe fn network_frame(device: &NetworkDevice, frame_addr: usize, frame_len
     }else if frame._type.get() == 0x86DD {
         //Ignore ipv6 for now network_ipv6(device, frame, frame_addr + size_of::<EthernetII>());
     }else{
-        for ptr in frame_addr..frame_addr + frame_len {
-            let data = *(ptr as *const u8);
-            dbh(data);
-            if (ptr - frame_addr) % 40 == 39 {
-                dl();
-            }else if (ptr - frame_addr) % 4 == 3{
-                d(" ");
+        if cfg!(debug_network){
+            for ptr in frame_addr..frame_addr + frame_len {
+                let data = *(ptr as *const u8);
+                dbh(data);
+                if (ptr - frame_addr) % 40 == 39 {
+                    dl();
+                }else if (ptr - frame_addr) % 4 == 3{
+                    d(" ");
+                }
             }
+            dl();
         }
-        dl();
     }
 }
