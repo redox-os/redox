@@ -1,5 +1,3 @@
-use core::mem::size_of;
-
 use common::debug::*;
 use common::memory::*;
 use common::pio::*;
@@ -13,8 +11,8 @@ pub struct RTL8139 {
 
 static mut RTL8139_TX: u16 = 0;
 
-impl RTL8139 {
-    pub unsafe fn send(&self, ptr: usize, len: usize){
+impl NetworkDevice for RTL8139 {
+    unsafe fn send(&self, ptr: usize, len: usize){
         d("RTL8139 send ");
         dd(RTL8139_TX as usize);
         dl();
@@ -26,7 +24,9 @@ impl RTL8139 {
 
         RTL8139_TX = (RTL8139_TX + 1) % 4;
     }
+}
 
+impl RTL8139 {
     pub unsafe fn handle(&self){
         d("RTL8139 handle");
 
@@ -47,130 +47,8 @@ impl RTL8139 {
             dl();
 
             let frame_addr = receive_buffer + capr + 4;
-            let frame = &mut *(frame_addr as *mut EthernetII);
-            frame.d();
-            dl();
 
-            if frame._type.get() == 0x0800 {
-                let packet = &mut *((frame_addr + 14) as *mut IPv4);
-                d("    ");
-                packet.d();
-                dl();
-
-                if packet.proto == 0x01 {
-                    let segment = &mut *((frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4) as *mut ICMP);
-                    d("        ");
-                    segment.d();
-                    dl();
-
-                    if segment._type == 0x08 && packet.dst.equals(IP_ADDR) {
-                        d("            Echo Reply\n");
-                        //Send echo reply
-                        frame.dst = frame.src;
-                        frame.src = MAC_ADDR;
-                        packet.dst = packet.src;
-                        packet.src = IP_ADDR;
-                        segment._type = 0x00;
-
-                        segment.checksum.calculate(frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4, 98 - 14 - ((packet.ver_hlen & 0xF) as usize) * 4);
-                        packet.checksum.calculate(frame_addr + 14, 98 - 14);
-
-                        self.send(frame_addr, 98);
-                    }else{
-                        d("            Ignore ICMP\n");
-                    }
-                }else if packet.proto == 0x06 {
-                    let mut segment = &mut *((frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4) as *mut TCP);
-                    d("        ");
-                    segment.d();
-                    dl();
-
-                    if segment.dst.get() == 80 {
-                        d("            HTTP Reply ");
-                        dh(segment.flags as usize);
-                        d(" ");
-                        dh(segment.sequence.get() as usize);
-                        d(" ");
-                        dh(segment.ack_num.get() as usize);
-                        dl();
-
-                        frame.dst = frame.src;
-                        frame.src = MAC_ADDR;
-                        packet.dst = packet.src;
-                        packet.src = IP_ADDR;
-                        segment.dst.set(segment.src.get());
-                        segment.src.set(80);
-
-                        if segment.flags & (1 << 12) == 0 {
-                            d("            HTTP SYN\n");
-                            segment.flags = segment.flags | (1 << 12);
-                            segment.ack_num.set(segment.sequence.get() + 1);
-                            segment.sequence.set(0x76543210); // TODO: Randomize
-                        }else{
-                            d("            HTTP ACK\n");
-                        }
-
-                        segment.checksum.data = 0;
-
-                        let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
-                        let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-                        segment.checksum.calculate(tcpip_psuedo_addr as usize, size_of::<TCPIPv4Psuedo>());
-
-                        packet.checksum.calculate(frame_addr + 14, 74 - 14);
-
-                        self.send(frame_addr, 74);
-                    }
-                }else if packet.proto == 0x11 {
-                    let segment = &*((frame_addr + 14 + ((packet.ver_hlen & 0xF) as usize) * 4) as *const UDP);
-                    d("        ");
-                    segment.d();
-                    dl();
-                }
-            }else if frame._type.get() == 0x0806 {
-                let packet = &mut *((frame_addr + 14) as *mut ARP);
-                d("    ");
-                packet.d();
-                dl();
-
-                if packet.oper.get() == 1 && packet.dst_ip.equals(IP_ADDR) {
-                    d("        ARP Reply\n");
-                    //Send arp reply
-                    frame.dst = frame.src;
-                    frame.src = MAC_ADDR;
-                    packet.oper.set(2);
-                    packet.dst_mac = packet.src_mac;
-                    packet.dst_ip = packet.src_ip;
-                    packet.src_mac = MAC_ADDR;
-                    packet.src_ip = IP_ADDR;
-
-                    self.send(frame_addr, 42);
-                }else{
-                    d("        Ignore ARP\n");
-                }
-            }else if frame._type.get() == 0x86DD {
-                let packet = &*((frame_addr + 14) as *const IPv6);
-                d("    ");
-                packet.d();
-                dl();
-
-                if packet.next_header == 0x11 {
-                    let segment = &*((frame_addr + 14 + 40) as *const UDP);
-                    d("        ");
-                    segment.d();
-                    dl();
-                }
-            }else{
-                for ptr in frame_addr..frame_addr + frame_len {
-                    let data = *(ptr as *const u8);
-                    dbh(data);
-                    if (ptr - frame_addr) % 40 == 39 {
-                        dl();
-                    }else if (ptr - frame_addr) % 4 == 3{
-                        d(" ");
-                    }
-                }
-                dl();
-            }
+            network_frame(self, frame_addr, frame_len);
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
