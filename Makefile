@@ -18,7 +18,7 @@ filesystem/example.bin: filesystem/example.rs
 	$(LD) -m elf_i386 -o $@ -T src/program.ld example.o
 
 filesystem/filesystem.asm: filesystem/example.bin
-	find filesystem -type f | cut -d '/' -f2- | grep -v filesystem.asm | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+	find filesystem -type f | cut -d '/' -f2- | grep -v filesystem.asm | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
