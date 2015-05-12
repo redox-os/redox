@@ -7,6 +7,10 @@ use common::memory::*;
 use common::random::*;
 use common::string::*;
 
+use drivers::disk::*;
+
+use filesystems::unfs::*;
+
 pub trait NetworkDevice {
     unsafe fn send(&self, ptr: usize, len: usize);
 }
@@ -285,29 +289,6 @@ impl TCP {
     }
 }
 
-//Psuedo header for checksum only
-pub struct TCPIPv4Psuedo {
-    pub src_addr: IPv4Addr,
-    pub dst_addr: IPv4Addr,
-    pub zero: u8,
-    pub proto: u8,
-    pub segment_len: n16,
-    pub segment: TCP
-}
-
-impl TCPIPv4Psuedo {
-    pub fn new(packet: &IPv4, segment: &TCP) -> TCPIPv4Psuedo{
-        TCPIPv4Psuedo {
-            src_addr: packet.src,
-            dst_addr: packet.dst,
-            zero: 0,
-            proto: packet.proto,
-            segment_len: n16::new(packet.len.get() - packet.hlen() as u16),
-            segment: *segment
-        }
-    }
-}
-
 #[derive(Copy, Clone)]
 pub struct UDP {
     pub src: n16,
@@ -455,11 +436,18 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
             segment.ack_num.set(segment.sequence.get() + 1);
             segment.sequence.set(rand() as u32);
 
-            segment.checksum.data = 0;
 
-            let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
-            let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-            segment.checksum.calculate(tcpip_psuedo_addr as usize, 12 + tcpip_psuedo.segment_len.get() as usize);
+            let proto = n16::new(packet.proto as u16);
+            let segment_hlen = segment.hlen();
+            let segment_len = n16::new(segment_hlen as u16);
+            segment.checksum.data = 0;
+            segment.checksum.data = Checksum::compile(
+                                        Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                        Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                        Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                        Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                        Checksum::sum(segment_addr as usize, segment_hlen)
+                                    );
 
             let packet_hlen = packet.hlen();
             packet.checksum.calculate(packet_addr as usize, packet_hlen);
@@ -468,18 +456,7 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
         }else if segment.flags & (1 << 11) != 0{
             d("            HTTP PSH\n");
 
-            // TODO: Allocate space
             let request = String::from_c_slice(slice::from_raw_parts((segment_addr + segment.hlen()) as *const u8, packet.len.get() as usize - packet.hlen() - segment.hlen()));
-
-            let mut request_first = "".to_string();
-            for line in request.split("\r\n".to_string()) {
-                request_first = line;
-                break;
-            }
-
-            let message = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<b>Hello from Redox</b><br/>Your request:<br />".to_string() +
-                            request_first + "<br />".to_string() +
-                            String::from_num(rand());
 
             {
                 let id = packet.id.get();
@@ -494,11 +471,17 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                 let packet_len = (packet.hlen() + segment.hlen()) as u16;
                 packet.len.set(packet_len);
 
+                let proto = n16::new(packet.proto as u16);
+                let segment_hlen = segment.hlen();
+                let segment_len = n16::new(segment_hlen as u16);
                 segment.checksum.data = 0;
-
-                let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
-                let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-                segment.checksum.calculate(tcpip_psuedo_addr as usize, 12 + tcpip_psuedo.segment_len.get() as usize);
+                segment.checksum.data = Checksum::compile(
+                                            Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                            Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                            Checksum::sum(segment_addr as usize, segment_hlen)
+                                        );
 
                 let packet_hlen = packet.hlen();
                 packet.checksum.calculate(packet_addr as usize, packet_hlen);
@@ -507,47 +490,146 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
             }
 
             {
-                let id = packet.id.get();
-                packet.id.set(id + 1);
+                let mut method = "GET".to_string();
+                let mut path = "/".to_string();
+                let mut version = "HTTP/1.1".to_string();
 
-                segment.flags = segment.flags | (1 << 11) | (1 << 8);
-
-                let packet_len = (packet.hlen() + segment.hlen() + message.len()) as u16;
-                packet.len.set(packet_len);
-
-                for i in 0..message.len() {
-                    *((segment_addr + segment.hlen() + i) as *mut u8) = message[i] as u8;
+                for row in request.split("\r\n".to_string()) {
+                    let mut i = 0;
+                    for col in row.split(" ".to_string()) {
+                        match i {
+                            0 => method = col,
+                            1 => path = col,
+                            2 => version = col,
+                            _ => ()
+                        }
+                        i += 1;
+                    }
+                    break;
                 }
 
-                segment.checksum.data = 0;
+                let mut message = "HTTP/1.1 200 OK\r\n".to_string()
+                                    + "Content-Type: text/html\r\n"
+                                    + "Connection: close\r\n"
+                                    + "\r\n";
+
+                if path.equals("/files".to_string()) {
+                    message = message + "<title>Files - Redox</title>\r\n";
+                }else{
+                    message = message + "<title>Home - Redox</title>\r\n";
+                }
+                message = message + "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'>\r\n";
+                message = message + "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css'>\r\n";
+                message = message + "<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js'></script>\r\n";
+
+                message = message + "<div class='container'>\r\n";
+                    message = message + "<nav class='navbar navbar-default'>";
+                    message = message + "  <div class='container-fluid'>";
+                    message = message + "    <div class='navbar-header'>";
+                    message = message + "      <button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#navbar-collapse'></button>";
+                    message = message + "      <a class='navbar-brand' href='/'>Redox Web Interface</a>";
+                    message = message + "    </div>";
+                    message = message + "    <div class='collapse navbar-collapse' id='navbar-collapse'>";
+                    message = message + "      <ul class='nav navbar-nav navbar-right'>";
+
+                    if path.equals("/files".to_string()) {
+                        message = message + "        <li><a href='/'>Home</a></li>";
+                        message = message + "        <li class='active'><a href='/files'>Files</a></li>";
+                    }else{
+                        message = message + "        <li class='active'><a href='/'>Home</a></li>";
+                        message = message + "        <li><a href='/files'>Files</a></li>";
+                    }
+
+                    message = message + "      </ul>";
+                    message = message + "    </div>";
+                    message = message + "  </div>";
+                    message = message + "</nav>";
+
+                    message = message + "Method: " + method + "<br/>\r\n";
+                    message = message + "Path: " + path.clone() + "<br/>\r\n";
+                    message = message + "Version: " + version + "<br/>\r\n";
+                    message = message + "Random: " + String::from_num(rand()) + "<br/>\r\n";
+
+                    if path.equals("/files".to_string()) {
+                        message = message + "<table class='table table-bordered'>\r\n";
+                            message = message + "  <caption><h3>Files</h3></caption>\r\n";
+                            message = message + "<taFiles:<br/>\r\n";
+                            let files = UnFS::new(Disk::new()).list();
+                            for file in files.as_slice() {
+                                message = message + "  <tr><td>" + file.clone() + "</td></tr>\r\n";
+                            }
+                        message = message + "</table>\r\n";
+                    }else{
+                        message = message + "<table class='table table-bordered'>\r\n";
+                            message = message + "  <caption><h3>Request</h3></caption>\r\n";
+                            message = message + "  <tr><th>Key</th><th>Value</th></tr>\r\n";
+                            let mut first = true;
+                            for row in request.split("\r\n".to_string()) {
+                                if row.len() > 0 {
+                                    if first {
+                                        first = false;
+                                    }else{
+                                        message = message + "  <tr>";
+                                        for column in row.split(": ".to_string()) {
+                                            message = message + "<td>" + column + "</td>";
+                                        }
+                                        message = message + "</tr>\r\n";
+                                    }
+                                }
+                            }
+                        message = message + "</table>\r\n";
+                    }
+                message = message + "</div>\r\n";
+
+                let response_len = size_of::<EthernetII>() + packet.hlen() + segment.hlen() + message.len();
+                let response_addr = alloc(response_len);
+
+                let response_frame = &mut *(response_addr as *mut EthernetII);
+                *response_frame = *frame;
+
+                let response_packet = &mut *((response_addr + size_of::<EthernetII>()) as *mut IPv4);
+                *response_packet = *packet;
+                response_packet.id.set(packet.id.get() + 1);
+                response_packet.len.set((packet.hlen() + segment.hlen() + message.len()) as u16);
+                response_packet.checksum.calculate(response_addr + size_of::<EthernetII>(), packet.hlen());
+
+                let response_segment = &mut *((response_addr + size_of::<EthernetII>() + packet.hlen()) as *mut TCP);
+                *response_segment = *segment;
+                response_segment.flags = segment.flags | (1 << 11) | (1 << 8);
+                response_segment.checksum.data = 0;
+
+                for i in 0..message.len() {
+                    *((response_addr + size_of::<EthernetII>() + packet.hlen() + segment.hlen() + i) as *mut u8) = message[i] as u8;
+                }
 
                 let proto = n16::new(packet.proto as u16);
-                let segment_hlen = segment.hlen();
-                let segment_len = n16::new(segment_hlen as u16 + message.len() as u16);
+                let segment_len = n16::new(segment.hlen() as u16 + message.len() as u16);
+                response_segment.checksum.data = Checksum::compile(
+                                            Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                            Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                            Checksum::sum(response_addr + size_of::<EthernetII>() + packet.hlen(), segment.hlen()) +
+                                            Checksum::sum(response_addr + size_of::<EthernetII>() + packet.hlen() + segment.hlen(), message.len())
+                                        );
 
-                segment.checksum.data = Checksum::compile(
-                                        Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                        Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                        Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                                        Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                        Checksum::sum(segment_addr as usize, segment_hlen) +
-                                        Checksum::sum(segment_addr as usize + segment_hlen, message.len())
-                                    );
-
-                let packet_hlen = packet.hlen();
-                packet.checksum.calculate(packet_addr as usize, packet_hlen);
-
-                device.send(frame_addr as usize, size_of::<EthernetII>() + packet.len.get() as usize);
+                device.send(response_addr as usize, response_len);
             }
         }else if segment.flags & (1 << 8) != 0 {
             let id = packet.id.get();
             packet.id.set(id + 1);
 
+            let proto = n16::new(packet.proto as u16);
+            let segment_hlen = segment.hlen();
+            let segment_len = n16::new(segment_hlen as u16);
             segment.checksum.data = 0;
-
-            let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
-            let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-            segment.checksum.calculate(tcpip_psuedo_addr as usize, 12 + tcpip_psuedo.segment_len.get() as usize);
+            segment.checksum.data = Checksum::compile(
+                                        Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                        Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                        Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                        Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                        Checksum::sum(segment_addr as usize, segment_hlen)
+                                    );
 
             let packet_hlen = packet.hlen();
             packet.checksum.calculate(packet_addr as usize, packet_hlen);
