@@ -107,7 +107,7 @@ impl Application {
     #[allow(unused_variables)]
     unsafe fn on_command(&mut self, session: &mut Session){
         let mut args: Vector<String> = Vector::<String>::new();
-        for arg in self.command.split(' ') {
+        for arg in self.command.split(" ".to_string()) {
             args = args + arg;
         }
         if args.len() > 0 {

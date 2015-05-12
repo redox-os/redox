@@ -12,15 +12,19 @@ pub struct RTL8139 {
 static mut RTL8139_TX: u16 = 0;
 
 impl NetworkDevice for RTL8139 {
-    unsafe fn send(&self, ptr: usize, len: usize){
+    unsafe fn send(&self, addr: usize, len: usize){
         d("RTL8139 send ");
         dd(RTL8139_TX as usize);
         dl();
 
         let base = self.base as u16;
 
-        outd(base + 0x20 + RTL8139_TX*4, ptr as u32);
+        outd(base + 0x20 + RTL8139_TX*4, addr as u32);
         outd(base + 0x10 + RTL8139_TX*4, len as u32 & 0x1FFF);
+
+        while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
+            //Waiting for move out of memory
+        }
 
         RTL8139_TX = (RTL8139_TX + 1) % 4;
     }
@@ -63,8 +67,6 @@ impl RTL8139 {
     }
 
     pub unsafe fn init(&self){
-        RTL8139_TX = 0;
-
         d("RTL8139 on: ");
         dh(self.base);
         if self.memory_mapped {
@@ -81,6 +83,8 @@ impl RTL8139 {
         outb(base + 0x37, 0x10);
         while inb(base + 0x37) & 0x10 != 0 {
         }
+
+        RTL8139_TX = 0;
 
         let receive_buffer = alloc(10240);
         outd(base + 0x30, receive_buffer as u32);

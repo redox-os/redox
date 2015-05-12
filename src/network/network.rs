@@ -1,6 +1,11 @@
 use core::mem::size_of;
+use core::option::Option;
+use core::slice;
 
 use common::debug::*;
+use common::memory::*;
+use common::random::*;
+use common::string::*;
 
 pub trait NetworkDevice {
     unsafe fn send(&self, ptr: usize, len: usize);
@@ -170,10 +175,17 @@ impl Checksum {
         return sum == 0xFFFF;
     }
 
-    pub unsafe fn calculate(&mut self, mut ptr: usize, mut len: usize){
+    pub unsafe fn calculate(&mut self, ptr: usize, len: usize){
         self.data = 0;
 
-        let mut sum: usize = 0;
+        let sum = Checksum::sum(ptr, len);
+
+        self.data = Checksum::compile(sum);
+    }
+
+    pub unsafe fn sum(mut ptr: usize, mut len: usize) -> usize{
+        let mut sum = 0;
+
         while len > 1 {
             sum += *(ptr as *const u16) as usize;
             len -= 2;
@@ -184,11 +196,15 @@ impl Checksum {
             sum += *(ptr as *const u8) as usize;
         }
 
+        return sum;
+    }
+
+    pub unsafe fn compile(mut sum: usize) -> u16{
         while (sum >> 16) > 0 {
             sum = (sum & 0xFFFF) + (sum >> 16);
         }
 
-        self.data = 0xFFFF - (sum as u16);
+        return 0xFFFF - (sum as u16);
     }
 }
 
@@ -203,10 +219,17 @@ pub struct IPv4 {
     pub proto: u8,
     pub checksum: Checksum,
     pub src: IPv4Addr,
-    pub dst: IPv4Addr
+    pub dst: IPv4Addr,
+    //Split to fix problem with rust's copy/clone method
+    pub options_a: [u8; 20],
+    pub options_b: [u8; 20]
 }
 
 impl IPv4 {
+    pub fn hlen(&self) -> usize{
+        return ((self.ver_hlen & 0xF) << 2) as usize;
+    }
+
     pub fn d(&self){
         d("IPv4 ");
         dbh(self.proto);
@@ -244,10 +267,16 @@ pub struct TCP {
     pub window_size: n16,
     pub checksum: Checksum,
     pub urgent_pointer: n16,
-    pub options: [u8; 20]
+    //Split to fix problem with rust's copy/clone method
+    pub options_a: [u8; 20],
+    pub options_b: [u8; 20]
 }
 
 impl TCP {
+    pub fn hlen(&self) -> usize{
+        return ((self.flags & 0xF0) >> 2) as usize;
+    }
+
     pub fn d(&self){
         d("TCP from ");
         dd(self.src.get() as usize);
@@ -273,7 +302,7 @@ impl TCPIPv4Psuedo {
             dst_addr: packet.dst,
             zero: 0,
             proto: packet.proto,
-            segment_len: n16::new(packet.len.get() - ((packet.ver_hlen & 0xF) as u16)*4),
+            segment_len: n16::new(packet.len.get() - packet.hlen() as u16),
             segment: *segment
         }
     }
@@ -379,10 +408,11 @@ unsafe fn network_icmpv4(device: &NetworkDevice, frame: &mut EthernetII, packet:
         packet.id.set(id + 1);
         segment._type = 0x00;
 
-        segment.checksum.calculate(segment_addr, packet.len.get() as usize - ((packet.ver_hlen & 0xF) as usize) * 4);
+        segment.checksum.calculate(segment_addr, packet.len.get() as usize - packet.hlen());
 
         let packet_addr: *const IPv4 = packet;
-        packet.checksum.calculate(packet_addr as usize, ((packet.ver_hlen & 0xF) as usize) * 4);
+        let packet_hlen = packet.hlen();
+        packet.checksum.calculate(packet_addr as usize, packet_hlen);
 
         let frame_addr: *const EthernetII = frame;
         device.send(frame_addr as usize, size_of::<EthernetII>() + packet.len.get() as usize);
@@ -416,55 +446,111 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
         let frame_addr: *const EthernetII = frame;
         let packet_addr: *const IPv4 = packet;
 
-        if segment.flags & (1 << 12) == 0 {
+        if segment.flags & (1 << 9) != 0 {
             d("            HTTP SYN\n");
+            let id = packet.id.get();
+            packet.id.set(id + 1);
+
             segment.flags = segment.flags | (1 << 12);
             segment.ack_num.set(segment.sequence.get() + 1);
-            segment.sequence.set(0x76543210); // TODO: Randomize
+            segment.sequence.set(rand() as u32);
 
             segment.checksum.data = 0;
 
             let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
             let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-            segment.checksum.calculate(tcpip_psuedo_addr as usize, 52);
+            segment.checksum.calculate(tcpip_psuedo_addr as usize, 12 + tcpip_psuedo.segment_len.get() as usize);
 
-            packet.checksum.calculate(packet_addr as usize, ((packet.ver_hlen & 0xF) as usize)*4);
+            let packet_hlen = packet.hlen();
+            packet.checksum.calculate(packet_addr as usize, packet_hlen);
 
             device.send(frame_addr as usize, 74);
-        }else if segment.flags & (1 << 11) == 0{
-            d("            HTTP ACK\n");
-        }else{
+        }else if segment.flags & (1 << 11) != 0{
             d("            HTTP PSH\n");
 
-            segment.flags = segment.flags & (0xFFFF - (1 << 11));
-            segment.ack_num.set(segment.sequence.get() + 137);
-            segment.sequence.set(0x65432109);
+            // TODO: Allocate space
+            let request = String::from_c_slice(slice::from_raw_parts((segment_addr + segment.hlen()) as *const u8, packet.len.get() as usize - packet.hlen() - segment.hlen()));
 
-            packet.len.set(52);
+            let mut request_first = "".to_string();
+            for line in request.split("\r\n".to_string()) {
+                request_first = line;
+                break;
+            }
+
+            let message = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<b>Hello from Redox</b><br/>Your request:<br />".to_string() + request_first;
+
+            {
+                let id = packet.id.get();
+                packet.id.set(id + 1);
+
+                segment.flags = segment.flags & (0xFFFF - (1 << 11));
+                let sequence = segment.ack_num.get();
+                let ack_num = segment.sequence.get() + (packet.len.get() as usize - packet.hlen() - segment.hlen()) as u32;
+                segment.ack_num.set(ack_num);
+                segment.sequence.set(sequence);
+
+                let packet_len = (packet.hlen() + segment.hlen()) as u16;
+                packet.len.set(packet_len);
+
+                segment.checksum.data = 0;
+
+                let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
+                let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
+                segment.checksum.calculate(tcpip_psuedo_addr as usize, 12 + tcpip_psuedo.segment_len.get() as usize);
+
+                let packet_hlen = packet.hlen();
+                packet.checksum.calculate(packet_addr as usize, packet_hlen);
+
+                device.send(frame_addr as usize, size_of::<EthernetII>() + packet.len.get() as usize);
+            }
+
+            {
+                let id = packet.id.get();
+                packet.id.set(id + 1);
+
+                segment.flags = segment.flags | (1 << 11) | (1 << 8);
+
+                let packet_len = (packet.hlen() + segment.hlen() + message.len()) as u16;
+                packet.len.set(packet_len);
+
+                for i in 0..message.len() {
+                    *((segment_addr as usize + segment.hlen() + i) as *mut u8) = message[i] as u8;
+                }
+
+                segment.checksum.data = 0;
+
+                let proto = n16::new(packet.proto as u16);
+                let segment_hlen = segment.hlen();
+                let segment_len = n16::new(segment_hlen as u16 + message.len() as u16);
+
+                segment.checksum.data = Checksum::compile(
+                                        Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                        Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                        Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                        Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                        Checksum::sum(segment_addr as usize, segment_hlen) +
+                                        Checksum::sum(segment_addr as usize + segment_hlen, message.len())
+                                    );
+
+                let packet_hlen = packet.hlen();
+                packet.checksum.calculate(packet_addr as usize, packet_hlen);
+
+                device.send(frame_addr as usize, size_of::<EthernetII>() + packet.len.get() as usize);
+            }
+        }else if segment.flags & (1 << 8) != 0 {
+            let id = packet.id.get();
+            packet.id.set(id + 1);
 
             segment.checksum.data = 0;
 
             let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
             let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-            segment.checksum.calculate(tcpip_psuedo_addr as usize, 44);
+            segment.checksum.calculate(tcpip_psuedo_addr as usize, 12 + tcpip_psuedo.segment_len.get() as usize);
 
-            packet.checksum.calculate(packet_addr as usize, ((packet.ver_hlen & 0xF) as usize)*4);
+            let packet_hlen = packet.hlen();
+            packet.checksum.calculate(packet_addr as usize, packet_hlen);
 
-            device.send(frame_addr as usize, 66);
-
-            segment.flags = segment.flags | (1 << 11);
-            let sequence = segment.sequence.get();
-            segment.sequence.set(sequence);
-
-            segment.checksum.data = 0;
-
-            let tcpip_psuedo = TCPIPv4Psuedo::new(packet, segment);
-            let tcpip_psuedo_addr: *const TCPIPv4Psuedo = &tcpip_psuedo;
-            segment.checksum.calculate(tcpip_psuedo_addr as usize, 44);
-
-            packet.checksum.calculate(packet_addr as usize, ((packet.ver_hlen & 0xF) as usize)*4);
-
-            device.send(frame_addr as usize, 66);
+            device.send(frame_addr as usize, size_of::<EthernetII>() + packet.len.get() as usize);
         }
     }
 }
@@ -511,28 +597,30 @@ unsafe fn network_ipv6(device: &NetworkDevice, frame: &mut EthernetII, packet_ad
     }
 }
 
-unsafe fn network_arp(device: &NetworkDevice, frame: &mut EthernetII, packet_addr: usize){
-    let packet = &mut *(packet_addr as *mut ARP);
+unsafe fn network_arp(packet: ARP) -> Option<ARP>{
     d("    ");
     packet.d();
     dl();
 
-    if packet.oper.get() == 1 && packet.dst_ip.equals(IP_ADDR) {
-        d("        ARP Reply\n");
-        //Send arp reply
-        frame.dst = frame.src;
-        frame.src = MAC_ADDR;
-        packet.oper.set(2);
-        packet.dst_mac = packet.src_mac;
-        packet.dst_ip = packet.src_ip;
-        packet.src_mac = MAC_ADDR;
-        packet.src_ip = IP_ADDR;
+    if packet.dst_ip.equals(IP_ADDR) {
+        if packet.oper.get() == 1 {
+            d("        ARP Reply\n");
+            let mut response = packet;
+            response.oper.set(2);
+            response.dst_mac = response.src_mac;
+            response.dst_ip = response.src_ip;
+            response.src_mac = MAC_ADDR;
+            response.src_ip = IP_ADDR;
 
-        let frame_addr: *const EthernetII = frame;
-        device.send(frame_addr as usize, size_of::<EthernetII>() + size_of::<ARP>());
+            return Option::Some(response);
+        }else{
+            d("        Ignore ARP: Unknown operation\n");
+        }
     }else{
-        d("        Ignore ARP\n");
+        d("        Ignore ARP: Wrong destination\n");
     }
+
+    return Option::None;
 }
 
 pub unsafe fn network_frame(device: &NetworkDevice, frame_addr: usize, frame_len: usize){
@@ -543,9 +631,27 @@ pub unsafe fn network_frame(device: &NetworkDevice, frame_addr: usize, frame_len
     if frame._type.get() == 0x0800 {
         network_ipv4(device, frame, frame_addr + size_of::<EthernetII>());
     }else if frame._type.get() == 0x0806 {
-        network_arp(device, frame, frame_addr + size_of::<EthernetII>());
+        let packet = *((frame_addr + size_of::<EthernetII>()) as *const ARP);
+        match network_arp(packet){
+            Option::Some(response) => {
+                let response_addr = alloc(size_of::<EthernetII>() + size_of::<ARP>());
+
+                *(response_addr as *mut EthernetII) = EthernetII {
+                    src: MAC_ADDR,
+                    dst: frame.src,
+                    _type: frame._type
+                };
+
+                *((response_addr + size_of::<EthernetII>()) as *mut ARP) = response;
+
+                device.send(response_addr, size_of::<EthernetII>() + size_of::<ARP>());
+
+                unalloc(response_addr);
+            },
+            Option::None => ()
+        }
     }else if frame._type.get() == 0x86DD {
-        network_ipv6(device, frame, frame_addr + size_of::<EthernetII>());
+        //Ignore ipv6 for now network_ipv6(device, frame, frame_addr + size_of::<EthernetII>());
     }else{
         for ptr in frame_addr..frame_addr + frame_len {
             let data = *(ptr as *const u8);
