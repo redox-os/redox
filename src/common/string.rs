@@ -25,12 +25,6 @@ struct Chars<'a> {
     offset: usize
 }
 
-struct Split<'a> {
-    string: &'a String,
-    offset: usize,
-    c: char
-}
-
 impl <'a> Iterator for Chars<'a> {
     type Item = char;
     fn next(&mut self) -> Option<Self::Item>{
@@ -44,6 +38,12 @@ impl <'a> Iterator for Chars<'a> {
     }
 }
 
+struct Split<'a> {
+    string: &'a String,
+    offset: usize,
+    seperator: String
+}
+
 impl <'a> Iterator for Split<'a> {
     type Item = String;
     fn next(&mut self) -> Option<Self::Item>{
@@ -51,8 +51,8 @@ impl <'a> Iterator for Split<'a> {
             let start = self.offset;
             let mut len = 0;
             for i in start..self.string.len(){
-                if self.string[i] == self.c {
-                    self.offset += 1;
+                if self.seperator.equals(self.string.substr(i, self.seperator.len())){
+                    self.offset += self.seperator.len();
                     break;
                 }else{
                     self.offset += 1;
@@ -290,11 +290,11 @@ impl String {
         }
     }
 
-    pub fn split(&self, c: char) -> Split {
+    pub fn split(&self, seperator: String) -> Split {
         Split {
             string: &self,
             offset: 0,
-            c: c
+            seperator: seperator
         }
     }
 

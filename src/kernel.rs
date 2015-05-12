@@ -25,6 +25,7 @@ mod common {
     pub mod elf;
     pub mod memory;
     pub mod pio;
+    pub mod random;
     pub mod string;
     pub mod vector;
 }
