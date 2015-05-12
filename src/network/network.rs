@@ -477,7 +477,9 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                 break;
             }
 
-            let message = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<b>Hello from Redox</b><br/>Your request:<br />".to_string() + request_first;
+            let message = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection: close\r\n\r\n<b>Hello from Redox</b><br/>Your request:<br />".to_string() +
+                            request_first + "<br />".to_string() +
+                            String::from_num(rand());
 
             {
                 let id = packet.id.get();
@@ -514,7 +516,7 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                 packet.len.set(packet_len);
 
                 for i in 0..message.len() {
-                    *((segment_addr as usize + segment.hlen() + i) as *mut u8) = message[i] as u8;
+                    *((segment_addr + segment.hlen() + i) as *mut u8) = message[i] as u8;
                 }
 
                 segment.checksum.data = 0;
