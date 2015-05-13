@@ -24,12 +24,12 @@ pub struct Editor {
 }
 
 impl Editor {
-    pub unsafe fn new(file: &String) -> Editor {
+    pub unsafe fn new(file: String) -> Editor {
         let mut ret = Editor {
             window: Window{
                 point: Point::new(420, 300),
                 size: Size::new(576, 400),
-                title: String::from_str("Editor"),
+                title: "Editor".to_string(),
                 title_color: Color::new(0, 0, 0),
                 border_color: Color::new(255, 255, 255),
                 content_color: Color::alpha(0, 0, 0, 196),
@@ -53,10 +53,6 @@ impl Editor {
         };
 
         if file.len() > 0{
-            d("Load text file ");
-            file.d();
-            dl();
-
             ret.load(file);
         }
 
@@ -71,10 +67,10 @@ impl Editor {
         self.scroll = Point::new(0, 0);
     }
 
-    unsafe fn load(&mut self, filename: &String){
+    unsafe fn load(&mut self, filename: String){
         self.clear();
         let unfs = UnFS::new(Disk::new());
-        let dest = unfs.load(filename);
+        let dest = unfs.load(filename.clone());
         if dest > 0 {
             self.filename = filename.clone();
             self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
@@ -90,7 +86,7 @@ impl Editor {
     unsafe fn save(&self){
         let unfs = UnFS::new(Disk::new());
         let data = self.string.to_c_str() as usize;
-        unfs.save(&self.filename, data);
+        unfs.save(self.filename.clone(), data);
         unalloc(data);
         d("Saved\n");
     }

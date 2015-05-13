@@ -72,13 +72,13 @@ impl Display {
 
             let unfs = UnFS::new(Disk::new());
 
-            let fonts = unfs.load(&String::from_str("unifont.font"));
+            let fonts = unfs.load("unifont.font".to_string());
 
-            let background_data = unfs.load(&String::from_str("background.bmp"));
+            let background_data = unfs.load("background.bmp".to_string());
             let background = BMP::from_data(background_data);
             unalloc(background_data);
 
-            let cursor_data = unfs.load(&String::from_str("cursor.bmp"));
+            let cursor_data = unfs.load("cursor.bmp".to_string());
             let cursor = BMP::from_data(cursor_data);
             unalloc(cursor_data);
 

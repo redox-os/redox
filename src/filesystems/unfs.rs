@@ -59,7 +59,7 @@ impl UnFS {
         UnFS { disk:disk, header: &*(0x7E00 as *const Header) }
     }
 
-    pub unsafe fn node(&self, filename: &String) -> *const Node{
+    pub unsafe fn node(&self, filename: String) -> *const Node{
         let mut ret: *const Node = ptr::null();
         let mut node_matches = false;
 
@@ -136,7 +136,7 @@ impl UnFS {
         ret
     }
 
-    pub unsafe fn load(&self, filename: &String) -> usize{
+    pub unsafe fn load(&self, filename: String) -> usize{
         let node = self.node(filename);
 
         if node != ptr::null() && (*node).data_sector_list.address > 0 {
@@ -165,7 +165,7 @@ impl UnFS {
     }
 
     // TODO: Support realloc of LBAs
-    pub unsafe fn save(&self, filename: &String, source: usize){
+    pub unsafe fn save(&self, filename: String, source: usize){
         let node = self.node(filename);
 
         if node != ptr::null() && (*node).data_sector_list.address > 0 {

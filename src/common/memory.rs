@@ -69,27 +69,31 @@ pub fn cluster_init(){
 
 pub fn alloc(size: usize) -> usize{
     unsafe{
-        let mut number = 0;
-        let mut count = 0;
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                if count == 0 {
-                    number = i;
+        if size > 0 {
+            let mut number = 0;
+            let mut count = 0;
+            for i in 0..CLUSTER_COUNT {
+                if cluster(i) == 0 {
+                    if count == 0 {
+                        number = i;
+                    }
+                    count += 1;
+                    if count*CLUSTER_SIZE > size {
+                        break;
+                    }
+                }else{
+                    count = 0;
                 }
-                count += 1;
-                if count*CLUSTER_SIZE > size {
-                    break;
+            }
+            if count*CLUSTER_SIZE > size {
+                let address = cluster_address(number);
+                for i in number..number + count {
+                    set_cluster(i, address);
                 }
+                return address;
             }else{
-                count = 0;
+                return 0;
             }
-        }
-        if count*CLUSTER_SIZE > size {
-            let address = cluster_address(number);
-            for i in number..number + count {
-                set_cluster(i, address);
-            }
-            return address;
         }else{
             return 0;
         }
@@ -106,6 +110,30 @@ pub fn unalloc(ptr: usize){
             }
         }
     }
+}
+
+pub fn memory_used() -> usize{
+    let mut ret = 0;
+    unsafe{
+        for i in 0..CLUSTER_COUNT {
+            if cluster(i) != 0 {
+                ret += CLUSTER_SIZE;
+            }
+        }
+    }
+    return ret;
+}
+
+pub fn memory_free() -> usize{
+    let mut ret = 0;
+    unsafe{
+        for i in 0..CLUSTER_COUNT {
+            if cluster(i) == 0 {
+                ret += CLUSTER_SIZE;
+            }
+        }
+    }
+    return ret;
 }
 
 #[lang = "owned_box"]

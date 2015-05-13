@@ -22,12 +22,12 @@ pub struct Viewer {
 }
 
 impl Viewer {
-    pub unsafe fn new(file: &String) -> Viewer {
+    pub unsafe fn new(file: String) -> Viewer {
         let mut ret = Viewer {
             window: Window{
                 point: Point::new(180, 50),
                 size: Size::new(640, 480),
-                title: String::from_str("Viewer"),
+                title: "Viewer".to_string(),
                 title_color: Color::new(255, 255, 255),
                 border_color: Color::new(0, 0, 0),
                 content_color: Color::alpha(0, 0, 0, 0),
@@ -48,13 +48,9 @@ impl Viewer {
         };
 
         if file.len() > 0{
-            d("Load image file ");
-            file.d();
-            dl();
-
-            ret.window.title = String::from_str("Viewer (") + file + String::from_str(")");
+            ret.window.title = String::from_str("Viewer (") + file.clone() + String::from_str(")");
             let unfs = UnFS::new(Disk::new());
-            let image_data = unfs.load(file);
+            let image_data = unfs.load(file.clone());
             ret.image = BMP::from_data(image_data);
             ret.window.size = ret.image.size;
             unalloc(image_data);

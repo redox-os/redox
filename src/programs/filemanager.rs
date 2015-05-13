@@ -123,17 +123,14 @@ impl SessionItem for FileManager {
                 0x1C => if self.selected >= 0 && self.selected < self.files.len() as isize {
                             match self.files.get(self.selected as usize) {
                                 Result::Ok(file) => {
-                                    d("Loading ");
-                                    file.d();
-                                    dl();
                                     if file.ends_with(".md".to_string())
                                         || file.ends_with(".rs".to_string())
                                     {
-                                        session.add_item(box Editor::new(file));
+                                        session.add_item(box Editor::new(file.clone()));
                                     }else if file.ends_with(".bin".to_string()){
-                                        session.add_item(box Executor::new(file));
+                                        session.add_item(box Executor::new(file.clone()));
                                     }else if file.ends_with(".bmp".to_string()){
-                                        session.add_item(box Viewer::new(file));
+                                        session.add_item(box Viewer::new(file.clone()));
                                     }else{
                                         d("No program found!\n");
                                     }
