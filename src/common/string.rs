@@ -87,19 +87,19 @@ impl String {
             return String::new();
         }
 
-        let data = alloc(length * size_of::<char>());
+        unsafe {
+            let data = alloc(length * size_of::<char>()) as *mut char;
 
-        let mut i = 0;
-        for c in s.chars() {
-            unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = c;
+            let mut i = 0;
+            for c in s.chars() {
+                *data.offset(i) = c;
+                i += 1;
             }
-            i += 1;
-        }
 
-        String {
-            data: data as *const char,
-            length: length
+            String {
+                data: data,
+                length: length
+            }
         }
     }
 
@@ -116,22 +116,22 @@ impl String {
             return String::new();
         }
 
-        let data = alloc(length * size_of::<char>());
+        unsafe {
+            let data = alloc(length * size_of::<char>()) as *mut char;
 
-        let mut i = 0;
-        for c in s {
-            if i >= length {
-                break;
+            let mut i = 0;
+            for c in s {
+                if i >= length {
+                    break;
+                }
+                *data.offset(i as isize) = *c as char;
+                i += 1;
             }
-            unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = *c as char;
-            }
-            i += 1;
-        }
 
-        String {
-            data: data as *const char,
-            length: length
+            String {
+                data: data,
+                length: length
+            }
         }
     }
 
@@ -172,26 +172,26 @@ impl String {
             length += 1;
         }
 
-        let data = alloc(length * 4);
+        unsafe {
+            let data = alloc(length * size_of::<char>()) as *mut char;
 
-        let mut digit_num = num;
-        for i in 0..length {
-            let mut digit = (digit_num % radix) as u8;
-            if digit > 9 {
-                digit += 'A' as u8 - 10;
-            }else{
-                digit += '0' as u8;
+            let mut digit_num = num;
+            for i in 0..length {
+                let mut digit = (digit_num % radix) as u8;
+                if digit > 9 {
+                    digit += 'A' as u8 - 10;
+                }else{
+                    digit += '0' as u8;
+                }
+
+                *data.offset((length - 1 - i) as isize) = digit as char;
+                digit_num /= radix;
             }
 
-            unsafe {
-                *((data + (length - 1 - i) * size_of::<char>()) as *mut char) = digit as char;
+            String {
+                data: data,
+                length: length
             }
-            digit_num /= radix;
-        }
-
-        String {
-            data: data as *const char,
-            length: length
         }
     }
 
@@ -200,14 +200,14 @@ impl String {
             return String::new();
         }
 
-        let data = alloc(size_of::<char>());
-        unsafe {
-            *(data as *mut char) = c;
-        }
+        unsafe{
+            let data = alloc(size_of::<char>()) as *mut char;
+            *data = c;
 
-        String {
-            data: data as *const char,
-            length: 1
+            String {
+                data: data,
+                length: 1
+            }
         }
     }
 
@@ -231,17 +231,17 @@ impl String {
             return String::new();
         }
 
-        let data = alloc(length * 4);
+        unsafe {
+            let data = alloc(length * size_of::<char>()) as *mut char;
 
-        for k in i..j {
-            unsafe {
-                *((data + (k - i)*4) as *mut char) = *(((self.data as usize) + k*4) as *const char);
+            for k in i..j {
+                *data.offset((k - i) as isize) = *self.data.offset(k as isize);
             }
-        }
 
-        String {
-            data: data as *const char,
-            length: length
+            String {
+                data: data,
+                length: length
+            }
         }
     }
 
@@ -369,9 +369,11 @@ impl Index<usize> for String {
 
 impl Drop for String {
     fn drop(&mut self){
-        unalloc(self.data as usize);
-        self.data = 0 as *const char;
-        self.length = 0;
+        unsafe {
+            unalloc(self.data as usize);
+            self.data = 0 as *const char;
+            self.length = 0;
+        }
     }
 }
 
@@ -384,25 +386,23 @@ impl Add for String {
             return String::new();
         }
 
-        let data = alloc(length * 4);
+        unsafe {
+            let data = alloc(length * size_of::<char>()) as *mut char;
 
-        let mut i = 0;
-        for c in self.chars() {
-            unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = c;
+            let mut i = 0;
+            for c in self.chars() {
+                *data.offset(i) = c;
+                i += 1;
             }
-            i += 1;
-        }
-        for c in other.chars() {
-            unsafe {
-                *((data + i * size_of::<char>()) as *mut char) = c;
+            for c in other.chars() {
+                *data.offset(i) = c;
+                i += 1;
             }
-            i += 1;
-        }
 
-        String {
-            data: data as *const char,
-            length: length
+            String {
+                data: data,
+                length: length
+            }
         }
     }
 }

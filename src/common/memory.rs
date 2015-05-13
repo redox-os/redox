@@ -58,55 +58,49 @@ unsafe fn cluster_address(number: usize) -> usize{
     return CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number*CLUSTER_SIZE;
 }
 
-pub fn cluster_init(){
-    unsafe {
-        // TODO: Automatic memory detection
-        for i in 0..CLUSTER_COUNT {
-            set_cluster(i, 0);
-        }
+pub unsafe fn cluster_init(){
+    // TODO: Automatic memory detection
+    for i in 0..CLUSTER_COUNT {
+        set_cluster(i, 0);
     }
 }
 
-pub fn alloc(size: usize) -> usize{
-    unsafe{
-        if size > 0 {
-            let mut number = 0;
-            let mut count = 0;
-            for i in 0..CLUSTER_COUNT {
-                if cluster(i) == 0 {
-                    if count == 0 {
-                        number = i;
-                    }
-                    count += 1;
-                    if count*CLUSTER_SIZE > size {
-                        break;
-                    }
-                }else{
-                    count = 0;
+pub unsafe fn alloc(size: usize) -> usize{
+    if size > 0 {
+        let mut number = 0;
+        let mut count = 0;
+        for i in 0..CLUSTER_COUNT {
+            if cluster(i) == 0 {
+                if count == 0 {
+                    number = i;
                 }
-            }
-            if count*CLUSTER_SIZE > size {
-                let address = cluster_address(number);
-                for i in number..number + count {
-                    set_cluster(i, address);
+                count += 1;
+                if count*CLUSTER_SIZE > size {
+                    break;
                 }
-                return address;
             }else{
-                return 0;
+                count = 0;
             }
+        }
+        if count*CLUSTER_SIZE > size {
+            let address = cluster_address(number);
+            for i in number..number + count {
+                set_cluster(i, address);
+            }
+            return address;
         }else{
             return 0;
         }
+    }else{
+        return 0;
     }
 }
 
-pub fn unalloc(ptr: usize){
-    unsafe{
-        if ptr > 0 {
-            for i in 0..CLUSTER_COUNT {
-                if cluster(i) == ptr {
-                    set_cluster(i, 0);
-                }
+pub unsafe fn unalloc(ptr: usize){
+    if ptr > 0 {
+        for i in 0..CLUSTER_COUNT {
+            if cluster(i) == ptr {
+                set_cluster(i, 0);
             }
         }
     }
@@ -141,12 +135,12 @@ pub struct Box<T>(*mut T);
 
 #[lang="exchange_malloc"]
 #[allow(unused_variables)]
-pub fn exchange_malloc(size: usize, align: usize) -> *mut u8{
+pub unsafe fn exchange_malloc(size: usize, align: usize) -> *mut u8{
     alloc(size) as *mut u8
 }
 
 #[lang="exchange_free"]
 #[allow(unused_variables)]
-pub fn exchange_free(ptr: *mut u8, size: usize, align: usize){
+pub unsafe fn exchange_free(ptr: *mut u8, size: usize, align: usize){
     unalloc(ptr as usize);
 }

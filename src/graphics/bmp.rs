@@ -74,13 +74,15 @@ impl BMP {
 
 impl Drop for BMP {
     fn drop(&mut self){
-        if self.data > 0 {
-            unalloc(self.data);
-            self.data = 0;
-            self.size = Size {
-                width: 0,
-                height: 0
-            };
+        unsafe {
+            if self.data > 0 {
+                unalloc(self.data);
+                self.data = 0;
+                self.size = Size {
+                    width: 0,
+                    height: 0
+                };
+            }
         }
     }
 }

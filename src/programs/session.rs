@@ -45,7 +45,9 @@ impl Session {
     pub fn copy_items(&self) -> Vector<Box<SessionItem>>{
         let mut ret: Vector<Box<SessionItem>> = Vector::<Box<SessionItem>>::new();
         for item in self.items.as_slice() {
-            ret = ret + Vector::<Box<SessionItem>>::from_ptr(item);
+            unsafe {
+                ret = ret + Vector::<Box<SessionItem>>::from_ptr(item);
+            }
         }
         return ret;
     }

@@ -46,12 +46,10 @@ impl <T> Vector<T> {
     }
     */
 
-    pub fn from_raw(ptr: *const T, len: usize) -> Vector<T> {
+    pub unsafe fn from_raw(ptr: *const T, len: usize) -> Vector<T> {
         let data = alloc(size_of::<T>() * len);
 
-        unsafe {
-            ptr::copy(ptr, data as *mut T, size_of::<T>() * len);
-        }
+        ptr::copy(ptr, data as *mut T, size_of::<T>() * len);
 
         Vector::<T> {
             data: data as *mut T,
@@ -59,12 +57,10 @@ impl <T> Vector<T> {
         }
     }
 
-    pub fn from_ptr(ptr: *const T) -> Vector<T> {
+    pub unsafe fn from_ptr(ptr: *const T) -> Vector<T> {
         let data = alloc(size_of::<T>());
 
-        unsafe {
-            ptr::copy(ptr, data as *mut T, size_of::<T>());
-        }
+        ptr::copy(ptr, data as *mut T, size_of::<T>());
 
         Vector::<T> {
             data: data as *mut T,
@@ -73,15 +69,15 @@ impl <T> Vector<T> {
     }
 
     pub fn from_value(value: T) -> Vector<T> {
-        let data = alloc(size_of::<T>());
-
         unsafe {
-            ptr::write(data as *mut T, value);
-        }
+            let data = alloc(size_of::<T>());
 
-        Vector::<T> {
-            data: data as *mut T,
-            length: 1
+            ptr::write(data as *mut T, value);
+
+            Vector::<T> {
+                data: data as *mut T,
+                length: 1
+            }
         }
     }
 
@@ -90,7 +86,7 @@ impl <T> Vector<T> {
             return Result::Err(self.len());
         }else{
             unsafe{
-                return Result::Ok(&mut *(((self.data as usize) + i * size_of::<T>()) as *mut T));
+                return Result::Ok(&mut*self.data.offset(i as isize));
             }
         }
     }
@@ -113,9 +109,11 @@ impl <T> Vector<T> {
 
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
-        unalloc(self.data as usize);
-        self.data = 0 as *mut T;
-        self.length = 0;
+        unsafe {
+            unalloc(self.data as usize);
+            self.data = 0 as *mut T;
+            self.length = 0;
+        }
     }
 }
 
@@ -128,23 +126,21 @@ impl <T> Add for Vector<T> {
             return Vector::<T>::new();
         }
 
-        let data = alloc(length * size_of::<T>());
+        unsafe{
+            let data = alloc(length * size_of::<T>()) as *mut T;
 
-        for i in 0..self.len() {
-            unsafe {
-                ptr::write((data + i * size_of::<T>()) as *mut T, ptr::read((self.data as usize + i * size_of::<T>()) as *const T));
+            for i in 0..self.len() {
+                ptr::write(data.offset(i as isize), ptr::read(self.data.offset(i as isize)));
             }
-        }
 
-        for i in 0..other.len() {
-            unsafe {
-                ptr::write((data + (i + self.len()) * size_of::<T>()) as *mut T, ptr::read((other.data as usize + i * size_of::<T>()) as *const T));
+            for i in 0..other.len() {
+                ptr::write(data.offset((i + self.len()) as isize), ptr::read(other.data.offset(i as isize)));
             }
-        }
 
-        Vector::<T> {
-            data: data as *mut T,
-            length: length
+            Vector::<T> {
+                data: data,
+                length: length
+            }
         }
     }
 }

@@ -359,9 +359,11 @@ impl ELF {
 
 impl Drop for ELF {
     fn drop(&mut self){
-        if self.data > 0 {
-            unalloc(self.data);
-            self.data = 0;
+        unsafe {
+            if self.data > 0 {
+                unalloc(self.data);
+                self.data = 0;
+            }
         }
     }
 }
