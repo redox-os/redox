@@ -8,9 +8,9 @@ cd setup
 ./ubuntu.sh
 ```
 - Make the project
-- ```bash
-- make clean && make
-- ```
+```bash
+make clean && make
+```
 
 ## Running on Ubuntu
 - Run Qemu:
