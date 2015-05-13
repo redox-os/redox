@@ -13,7 +13,11 @@ make clean && make
 ```
 
 ## Running on Ubuntu
-- Run Qemu:
+- Run Qemu (without network bridge):
 ```bash
 make run
+```
+- Run Qemu (with network bridge, requires sudo password, guest accessible at 10.85.85.2):
+```bash
+make run_tap
 ```
