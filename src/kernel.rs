@@ -51,6 +51,7 @@ mod graphics {
 }
 
 mod network {
+    pub mod http;
     pub mod intel8254x;
     pub mod network;
     pub mod rtl8139;

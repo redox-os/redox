@@ -1,3 +1,5 @@
+use core::clone::Clone;
+use core::cmp::PartialEq;
 use core::iter::Iterator;
 use core::mem::size_of;
 use core::ops::Add;
@@ -51,7 +53,7 @@ impl <'a> Iterator for Split<'a> {
             let start = self.offset;
             let mut len = 0;
             for i in start..self.string.len(){
-                if self.seperator.equals(self.string.substr(i, self.seperator.len())){
+                if self.seperator == self.string.substr(i, self.seperator.len()){
                     self.offset += self.seperator.len();
                     break;
                 }else{
@@ -245,27 +247,9 @@ impl String {
         }
     }
 
-    pub fn clone(&self) -> String {
-        return self.substr(0, self.len());
-    }
-
-    pub fn equals(&self, other: String) -> bool {
-        if self.len() == other.len() {
-            for i in 0..self.len() {
-                if self[i] != other[i] {
-                    return false;
-                }
-            }
-
-            return true;
-        }else{
-            return false;
-        }
-    }
-
     pub fn starts_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
-            return self.substr(0, other.len()).equals(other);
+            return self.substr(0, other.len()) == other;
         }else{
             return false;
         }
@@ -273,7 +257,7 @@ impl String {
 
     pub fn ends_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
-            return self.substr(self.len() - other.len(), other.len()).equals(other);
+            return self.substr(self.len() - other.len(), other.len()) == other;
         }else{
             return false;
         }
@@ -364,6 +348,28 @@ impl Index<usize> for String {
                 return &*(((self.data as usize) + i * size_of::<char>()) as *const char);
             }
         }
+    }
+}
+
+impl PartialEq for String {
+    fn eq(&self, other: &Self) -> bool{
+        if self.len() == other.len() {
+            for i in 0..self.len() {
+                if self[i] != other[i] {
+                    return false;
+                }
+            }
+
+            return true;
+        }else{
+            return false;
+        }
+    }
+}
+
+impl Clone for String {
+    fn clone(&self) -> Self{
+        return self.substr(0, self.len());
     }
 }
 

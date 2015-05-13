@@ -1,3 +1,4 @@
+use core::clone::Clone;
 use core::result::Result;
 
 use common::debug::*;

@@ -7,6 +7,7 @@
 
 extern crate core;
 
+use core::clone::Clone;
 use core::mem::size_of;
 use core::result::Result;
 
@@ -112,7 +113,7 @@ impl Application {
         }
         if args.len() > 0 {
             match args.get(0) {
-                Result::Ok(arg) => if arg.equals("test".to_string()) {
+                Result::Ok(arg) => if *arg == "test".to_string() {
                     self.append("Test Command!".to_string());
                 },
                 Result::Err(_) => ()

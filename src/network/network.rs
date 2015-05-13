@@ -7,9 +7,7 @@ use common::memory::*;
 use common::random::*;
 use common::string::*;
 
-use drivers::disk::*;
-
-use filesystems::unfs::*;
+use network::http::*;
 
 pub trait NetworkDevice {
     unsafe fn send(&self, ptr: usize, len: usize);
@@ -406,6 +404,7 @@ unsafe fn network_icmpv4(device: &NetworkDevice, frame: &mut EthernetII, packet:
     }
 }
 
+#[allow(trivial_casts)]
 unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: &mut IPv4, segment_addr: usize){
     let mut segment = &mut *(segment_addr as *mut TCP);
     if cfg!(debug_network){
@@ -456,13 +455,13 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                                         Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                                         Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
                                         Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                        Checksum::sum(segment_addr as usize, segment_hlen)
+                                        Checksum::sum(segment_addr, segment_hlen)
                                     );
 
             let packet_hlen = packet.hlen();
             packet.checksum.calculate(packet_addr as usize, packet_hlen);
 
-            device.send(frame_addr as usize, 74);
+            device.send(frame_addr as usize, size_of::<EthernetII>() + packet.hlen() + segment.hlen());
         }else if segment.flags & (1 << 11) != 0{
             if cfg!(debug_network){
                 d("            HTTP PSH\n");
@@ -492,7 +491,7 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                                             Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                                             Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
                                             Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                            Checksum::sum(segment_addr as usize, segment_hlen)
+                                            Checksum::sum(segment_addr, segment_hlen)
                                         );
 
                 let packet_hlen = packet.hlen();
@@ -502,166 +501,9 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
             }
 
             {
-                let mut method = "GET".to_string();
-                let mut path = "/".to_string();
-                let mut version = "HTTP/1.1".to_string();
+                let html = http_response(request);
 
-                for row in request.split("\r\n".to_string()) {
-                    let mut i = 0;
-                    for col in row.split(" ".to_string()) {
-                        match i {
-                            0 => method = col,
-                            1 => path = col,
-                            2 => version = col,
-                            _ => ()
-                        }
-                        i += 1;
-                    }
-                    break;
-                }
-
-                let mut message = "HTTP/1.1 200 OK\r\n".to_string()
-                                    + "Content-Type: text/html\r\n"
-                                    + "Connection: close\r\n"
-                                    + "\r\n";
-
-                if path.equals("/files".to_string()) {
-                    message = message + "<title>Files - Redox</title>\r\n";
-                }else if path.equals("/readme".to_string()) {
-                    message = message + "<title>Readme - Redox</title>\r\n";
-                }else{
-                    message = message + "<title>Home - Redox</title>\r\n";
-                }
-                message = message + "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'>\r\n";
-                message = message + "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css'>\r\n";
-                message = message + "<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js'></script>\r\n";
-
-                message = message + "<div class='container'>\r\n";
-                    message = message + "<nav class='navbar navbar-default'>\r\n";
-                    message = message + "  <div class='container-fluid'>\r\n";
-                    message = message + "    <div class='navbar-header'>\r\n";
-                    message = message + "      <button type='button' class='navbar-toggle collapsed' data-toggle='collapse' data-target='#navbar-collapse'></button>\r\n";
-                    message = message + "      <a class='navbar-brand' href='/'>Redox Web Interface</a>\r\n";
-                    message = message + "    </div>\r\n";
-                    message = message + "    <div class='collapse navbar-collapse' id='navbar-collapse'>\r\n";
-                    message = message + "      <ul class='nav navbar-nav navbar-right'>\r\n";
-
-                    if path.equals("/files".to_string()) {
-                        message = message + "        <li><a href='/'>Home</a></li>\r\n";
-                        message = message + "        <li class='active'><a href='/files'>Files</a></li>\r\n";
-                        message = message + "        <li><a href='/readme'>Readme</a></li>\r\n";
-                    }else if path.equals("/readme".to_string()) {
-                        message = message + "        <li><a href='/'>Home</a></li>\r\n";
-                        message = message + "        <li><a href='/files'>Files</a></li>\r\n";
-                        message = message + "        <li class='active'><a href='/readme'>Readme</a></li>\r\n";
-                    }else{
-                        message = message + "        <li class='active'><a href='/'>Home</a></li>\r\n";
-                        message = message + "        <li><a href='/files'>Files</a></li>\r\n";
-                        message = message + "        <li><a href='/readme'>Readme</a></li>\r\n";
-                    }
-
-                    message = message + "      </ul>\r\n";
-                    message = message + "    </div>\r\n";
-                    message = message + "  </div>\r\n";
-                    message = message + "</nav>\r\n";
-
-                    if path.equals("/files".to_string()) {
-                        let unfs = UnFS::new(Disk::new());
-
-                        message = message + "<table class='table table-bordered'>\r\n";
-                            message = message + "  <caption><h3>Files</h3></caption>\r\n";
-                            message = message + "<taFiles:<br/>\r\n";
-                            let files = unfs.list();
-                            for file in files.as_slice() {
-                                message = message + "  <tr><td>" + file.clone() + "</td></tr>\r\n";
-                            }
-                        message = message + "</table>\r\n";
-                    }else if path.equals("/readme".to_string()) {
-                        message = message + "<div class='panel panel-default'>\r\n";
-                            let unfs = UnFS::new(Disk::new());
-                            let readme_file = "README.md".to_string();
-                            let readme_c_str = unfs.load(readme_file.clone());
-                            if readme_c_str > 0 {
-                                let readme = String::from_c_str(readme_c_str as *const u8);
-                                unalloc(readme_c_str);
-
-                                message = message + "<div class='panel-heading'>\r\n";
-                                    message = message + "<h3 class='panel-title'><span class='glyphicon glyphicon-book'></span> " + readme_file.clone() + "</h3>";
-                                message = message + "</div>\r\n";
-
-                                message = message + "<div class='panel-body'>\r\n";
-                                    let mut in_code = false;
-                                    for line in readme.split("\n".to_string()){
-                                        if line.starts_with("# ".to_string()){
-                                            message = message + "<h1>" + line.substr(2, line.len() - 2) + "</h1>\r\n";
-                                        }else if line.starts_with("## ".to_string()){
-                                            message = message + "<h2>" + line.substr(3, line.len() - 3) + "</h2>\r\n";
-                                        }else if line.starts_with("### ".to_string()){
-                                            message = message + "<h3>" + line.substr(4, line.len() - 4) + "</h3>\r\n";
-                                        }else if line.starts_with("- ".to_string()){
-                                            message = message + "<li>" + line.substr(2, line.len() - 2) + "</li>\r\n";
-                                        }else if line.starts_with("```".to_string()){
-                                            if in_code {
-                                                message = message + "</pre>\r\n";
-                                                in_code = false;
-                                            }else{
-                                                message = message + "<pre>\r\n";
-                                                in_code = true;
-                                            }
-                                        }else{
-                                            message = message + line;
-                                            if in_code {
-                                                message = message + "\r\n";
-                                            }else{
-                                                message = message + "<br/>\r\n";
-                                            }
-                                        }
-                                    }
-                                    if(in_code){
-                                        message = message + "</pre>\r\n";
-                                        in_code = false;
-                                    }
-                                message = message + "</div>\r\n";
-                            }else{
-                                message = message + "<div class='panel-heading'>\r\n";
-                                    message = message + "<h3 class='panel-title'><span class='glyphicon glyphicon-exlamation-sign'></span> Failed to open " + readme_file.clone() + "</h3>";
-                                message = message + "</div>\r\n";
-                            }
-                        message = message + "</div>\r\n";
-                    }else{
-                        message = message + "<table class='table table-bordered'>\r\n";
-                            message = message + "  <caption><h3>Request</h3></caption>\r\n";
-                            message = message + "  <tr><th>Key</th><th>Value</th></tr>\r\n";
-                            let mut first = true;
-                            for row in request.split("\r\n".to_string()) {
-                                if row.len() > 0 {
-                                    if first {
-                                        first = false;
-                                    }else{
-                                        message = message + "  <tr>";
-                                        for column in row.split(": ".to_string()) {
-                                            message = message + "<td>" + column + "</td>";
-                                        }
-                                        message = message + "</tr>\r\n";
-                                    }
-                                }
-                            }
-                        message = message + "</table>\r\n";
-                    }
-
-                    message = message + "<ul class='list-group'>\r\n";
-                        message = message + "<li class='list-group-item'><h4 class='list-group-item-heading'>Server Information</h4></li>\r\n";
-                        message = message + "<li class='list-group-item'>Method: " + method + "</li>\r\n";
-                        message = message + "<li class='list-group-item'>Path: " + path.clone() + "</li>\r\n";
-                        message = message + "<li class='list-group-item'>Version: " + version + "</li>\r\n";
-                        message = message + "<li class='list-group-item'>Random Number: " + rand() + "</li>\r\n";
-                        message = message + "<li class='list-group-item'>Memory Used: " + memory_used()/1024/1024 + " MB</li>\r\n";
-                        message = message + "<li class='list-group-item'>Memory Free: " + memory_free()/1024/1024 + " MB</li>\r\n";
-                    message = message + "</ul>\r\n";
-
-                message = message + "</div>\r\n";
-
-                let response_len = size_of::<EthernetII>() + packet.hlen() + segment.hlen() + message.len();
+                let response_len = size_of::<EthernetII>() + packet.hlen() + segment.hlen() + html.len();
                 let response_addr = alloc(response_len);
 
                 let response_frame = &mut *(response_addr as *mut EthernetII);
@@ -670,7 +512,7 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                 let response_packet = &mut *((response_addr + size_of::<EthernetII>()) as *mut IPv4);
                 *response_packet = *packet;
                 response_packet.id.set(packet.id.get() + 1);
-                response_packet.len.set((packet.hlen() + segment.hlen() + message.len()) as u16);
+                response_packet.len.set((packet.hlen() + segment.hlen() + html.len()) as u16);
                 response_packet.checksum.calculate(response_addr + size_of::<EthernetII>(), packet.hlen());
 
                 let response_segment = &mut *((response_addr + size_of::<EthernetII>() + packet.hlen()) as *mut TCP);
@@ -678,22 +520,22 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                 response_segment.flags = segment.flags | (1 << 11) | (1 << 8);
                 response_segment.checksum.data = 0;
 
-                for i in 0..message.len() {
-                    *((response_addr + size_of::<EthernetII>() + packet.hlen() + segment.hlen() + i) as *mut u8) = message[i] as u8;
+                for i in 0..html.len() {
+                    *((response_addr + size_of::<EthernetII>() + packet.hlen() + segment.hlen() + i) as *mut u8) = html[i] as u8;
                 }
 
                 let proto = n16::new(packet.proto as u16);
-                let segment_len = n16::new(segment.hlen() as u16 + message.len() as u16);
+                let segment_len = n16::new(segment.hlen() as u16 + html.len() as u16);
                 response_segment.checksum.data = Checksum::compile(
                                             Checksum::sum((&packet.src as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                                             Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                                             Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
                                             Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
                                             Checksum::sum(response_addr + size_of::<EthernetII>() + packet.hlen(), segment.hlen()) +
-                                            Checksum::sum(response_addr + size_of::<EthernetII>() + packet.hlen() + segment.hlen(), message.len())
+                                            Checksum::sum(response_addr + size_of::<EthernetII>() + packet.hlen() + segment.hlen(), html.len())
                                         );
 
-                device.send(response_addr as usize, response_len);
+                device.send(response_addr, response_len);
 
                 unalloc(response_addr);
             }
@@ -713,7 +555,7 @@ unsafe fn network_tcpv4(device: &NetworkDevice, frame: &mut EthernetII, packet: 
                                         Checksum::sum((&packet.dst as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                                         Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
                                         Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                        Checksum::sum(segment_addr as usize, segment_hlen)
+                                        Checksum::sum(segment_addr, segment_hlen)
                                     );
 
             let packet_hlen = packet.hlen();

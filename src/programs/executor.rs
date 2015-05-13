@@ -1,4 +1,3 @@
-use common::debug::*;
 use common::elf::*;
 use common::string::*;
 
@@ -33,9 +32,9 @@ impl Executor {
             //ret.executable.d();
 
             ret.entry = ret.executable.entry();
-            ret.draw = ret.executable.symbol(&String::from_str("draw"));
-            ret.on_key = ret.executable.symbol(&String::from_str("on_key"));
-            ret.on_mouse = ret.executable.symbol(&String::from_str("on_mouse"));
+            ret.draw = ret.executable.symbol("draw".to_string());
+            ret.on_key = ret.executable.symbol("on_key".to_string());
+            ret.on_mouse = ret.executable.symbol("on_mouse".to_string());
 
             ret.entry();
         }

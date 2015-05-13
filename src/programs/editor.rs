@@ -1,3 +1,5 @@
+use core::clone::Clone;
+
 use common::debug::*;
 use common::memory::*;
 use common::string::*;
