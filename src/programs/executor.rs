@@ -19,7 +19,7 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub unsafe fn new(file: &String) -> Executor {
+    pub unsafe fn new(file: String) -> Executor {
         let mut ret = Executor {
             executable: ELF::new(),
             entry: 0,
@@ -29,10 +29,6 @@ impl Executor {
         };
 
         if file.len() > 0{
-            d("Load executable file ");
-            file.d();
-            dl();
-
             ret.executable = ELF::from_data(UnFS::new(Disk::new()).load(file));
             //ret.executable.d();
 
