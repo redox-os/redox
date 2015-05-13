@@ -178,9 +178,9 @@ impl ELF {
 
                 let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if name.equals(".symtab".to_string()){
+                if name == ".symtab".to_string(){
                     sym_section = section;
-                }else if name.equals(".strtab".to_string()){
+                }else if name == ".strtab".to_string(){
                     str_section = section;
                 }
 
@@ -315,7 +315,7 @@ impl ELF {
         return 0;
     }
 
-    pub unsafe fn symbol(&self, name: &String) -> usize{
+    pub unsafe fn symbol(&self, name: String) -> usize{
         if self.data > 0 {
             let header = &*(self.data as *const ELFHeader);
 
@@ -328,11 +328,11 @@ impl ELF {
             for i in 0..header.sh_len {
                 let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ELFSection);
 
-                let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
+                let section_name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if name.equals(".symtab".to_string()){
+                if section_name == ".symtab".to_string(){
                     sym_section = section;
-                }else if name.equals(".strtab".to_string()){
+                }else if section_name == ".strtab".to_string(){
                     str_section = section;
                 }
             }
@@ -343,7 +343,7 @@ impl ELF {
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
 
-                        if name.equals(String::from_c_str((self.data + str_section.off as usize + symbol.name as usize) as *const u8)){
+                        if name == String::from_c_str((self.data + str_section.off as usize + symbol.name as usize) as *const u8){
                             return symbol.value as usize;
                         }
                     }
