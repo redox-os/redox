@@ -1,6 +1,7 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(core)]
+#![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
 #![feature(unique)]
@@ -25,6 +26,11 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
+
+#[path="../src/alloc"]
+mod alloc {
+    pub mod boxed;
+}
 
 #[path="../src/common"]
 mod common {
@@ -72,7 +78,29 @@ pub struct Application {
 }
 
 impl Application {
-    pub fn new() -> Application {
+    fn append(&mut self, line: String) {
+        self.output = self.output.clone() + line + '\n';
+    }
+
+    #[allow(unused_variables)]
+    unsafe fn on_command(&mut self, session: &mut Session){
+        let mut args: Vector<String> = Vector::<String>::new();
+        for arg in self.command.split(" ".to_string()) {
+            args = args + arg;
+        }
+        if args.len() > 0 {
+            match args.get(0) {
+                Result::Ok(arg) => if *arg == "test".to_string() {
+                    self.append("Test Command!".to_string());
+                },
+                Result::Err(_) => ()
+            }
+        }
+    }
+}
+
+impl SessionItem for Application {
+    fn new(file: String) -> Application {
         Application {
             window: Window{
                 point: Point::new(220, 100),
@@ -102,28 +130,6 @@ impl Application {
         }
     }
 
-    fn append(&mut self, line: String) {
-        self.output = self.output.clone() + line + '\n';
-    }
-
-    #[allow(unused_variables)]
-    unsafe fn on_command(&mut self, session: &mut Session){
-        let mut args: Vector<String> = Vector::<String>::new();
-        for arg in self.command.split(" ".to_string()) {
-            args = args + arg;
-        }
-        if args.len() > 0 {
-            match args.get(0) {
-                Result::Ok(arg) => if *arg == "test".to_string() {
-                    self.append("Test Command!".to_string());
-                },
-                Result::Err(_) => ()
-            }
-        }
-    }
-}
-
-impl SessionItem for Application {
     unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
         if self.window.draw(display) {
@@ -267,7 +273,7 @@ static mut application: *mut Application = 0 as *mut Application;
 #[no_mangle]
 pub unsafe fn entry(){
     application = alloc(size_of::<Application>()) as *mut Application;
-    *application = Application::new();
+    *application = Application::new("".to_string());
 }
 
 #[no_mangle]

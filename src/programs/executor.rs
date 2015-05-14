@@ -18,30 +18,6 @@ pub struct Executor {
 }
 
 impl Executor {
-    pub unsafe fn new(file: String) -> Executor {
-        let mut ret = Executor {
-            executable: ELF::new(),
-            entry: 0,
-            draw: 0,
-            on_mouse: 0,
-            on_key: 0
-        };
-
-        if file.len() > 0{
-            ret.executable = ELF::from_data(UnFS::new(Disk::new()).load(file));
-            //ret.executable.d();
-
-            ret.entry = ret.executable.entry();
-            ret.draw = ret.executable.symbol("draw".to_string());
-            ret.on_key = ret.executable.symbol("on_key".to_string());
-            ret.on_mouse = ret.executable.symbol("on_mouse".to_string());
-
-            ret.entry();
-        }
-
-        return ret;
-    }
-
     unsafe fn entry(&self){
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
@@ -54,6 +30,32 @@ impl Executor {
 }
 
 impl SessionItem for Executor {
+    fn new(file: String) -> Executor {
+        let mut ret = Executor {
+            executable: ELF::new(),
+            entry: 0,
+            draw: 0,
+            on_mouse: 0,
+            on_key: 0
+        };
+
+        if file.len() > 0{
+            unsafe{
+                ret.executable = ELF::from_data(UnFS::new(Disk::new()).load(file));
+                //ret.executable.d();
+
+                ret.entry = ret.executable.entry();
+                ret.draw = ret.executable.symbol("draw".to_string());
+                ret.on_key = ret.executable.symbol("on_key".to_string());
+                ret.on_mouse = ret.executable.symbol("on_mouse".to_string());
+
+                ret.entry();
+            }
+        }
+
+        return ret;
+    }
+
     unsafe fn draw(&mut self, session: &mut Session) -> bool{
         if self.executable.can_call(self.draw){
             //Rediculous call mechanism

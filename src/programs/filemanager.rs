@@ -2,6 +2,7 @@ use core::clone::Clone;
 use core::result::Result;
 
 use common::debug::*;
+use common::memory::*;
 use common::string::*;
 use common::vector::*;
 
@@ -27,11 +28,15 @@ pub struct FileManager {
     selected: isize
 }
 
-impl FileManager {
-    pub unsafe fn new() -> FileManager {
+impl SessionItem for FileManager {
+    fn new(file: String) -> FileManager {
         let mut size = Size::new(0, 0);
 
-        let files = UnFS::new(Disk::new()).list();
+        let files;
+
+        unsafe{
+            files = UnFS::new(Disk::new()).list();
+        }
 
         if size.height < files.len() * 16 {
             size.height = files.len() * 16;
@@ -68,9 +73,7 @@ impl FileManager {
             selected: -1
         }
     }
-}
 
-impl SessionItem for FileManager {
     unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 

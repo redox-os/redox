@@ -26,7 +26,43 @@ pub struct Editor {
 }
 
 impl Editor {
-    pub unsafe fn new(file: String) -> Editor {
+    fn clear(&mut self){
+        self.window.title = "Editor".to_string();
+        self.filename = String::new();
+        self.string = String::new();
+        self.offset = 0;
+        self.scroll = Point::new(0, 0);
+    }
+
+    fn load(&mut self, filename: String){
+        self.clear();
+        unsafe {
+            let unfs = UnFS::new(Disk::new());
+            let dest = unfs.load(filename.clone());
+            if dest > 0 {
+                self.filename = filename.clone();
+                self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
+                self.string = String::from_c_str(dest as *const u8);
+                unalloc(dest);
+            }else{
+                d("Did not find '");
+                filename.d();
+                d("'\n");
+            }
+        }
+    }
+
+    unsafe fn save(&self){
+        let unfs = UnFS::new(Disk::new());
+        let data = self.string.to_c_str() as usize;
+        unfs.save(self.filename.clone(), data);
+        unalloc(data);
+        d("Saved\n");
+    }
+}
+
+impl SessionItem for Editor {
+    fn new(file: String) -> Editor {
         let mut ret = Editor {
             window: Window{
                 point: Point::new(420, 300),
@@ -61,40 +97,6 @@ impl Editor {
         return ret;
     }
 
-    unsafe fn clear(&mut self){
-        self.window.title = String::from_str("Editor");
-        self.filename = String::new();
-        self.string = String::new();
-        self.offset = 0;
-        self.scroll = Point::new(0, 0);
-    }
-
-    unsafe fn load(&mut self, filename: String){
-        self.clear();
-        let unfs = UnFS::new(Disk::new());
-        let dest = unfs.load(filename.clone());
-        if dest > 0 {
-            self.filename = filename.clone();
-            self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
-            self.string = String::from_c_str(dest as *const u8);
-            unalloc(dest);
-        }else{
-            d("Did not find '");
-            filename.d();
-            d("'\n");
-        }
-    }
-
-    unsafe fn save(&self){
-        let unfs = UnFS::new(Disk::new());
-        let data = self.string.to_c_str() as usize;
-        unfs.save(self.filename.clone(), data);
-        unalloc(data);
-        d("Saved\n");
-    }
-}
-
-impl SessionItem for Editor {
     unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 

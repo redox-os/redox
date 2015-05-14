@@ -22,8 +22,8 @@ pub struct Viewer {
     image: BMP
 }
 
-impl Viewer {
-    pub unsafe fn new(file: String) -> Viewer {
+impl SessionItem for Viewer {
+    fn new(file: String) -> Viewer {
         let mut ret = Viewer {
             window: Window{
                 point: Point::new(180, 50),
@@ -50,20 +50,20 @@ impl Viewer {
 
         if file.len() > 0{
             ret.window.title = String::from_str("Viewer (") + file.clone() + String::from_str(")");
-            let unfs = UnFS::new(Disk::new());
-            let image_data = unfs.load(file.clone());
-            if image_data > 0 {
-                ret.image = BMP::from_data(image_data);
-                ret.window.size = ret.image.size;
-                unalloc(image_data);
+            unsafe {
+                let unfs = UnFS::new(Disk::new());
+                let image_data = unfs.load(file.clone());
+                if image_data > 0 {
+                    ret.image = BMP::from_data(image_data);
+                    ret.window.size = ret.image.size;
+                    unalloc(image_data);
+                }
             }
         }
 
         return ret;
     }
-}
 
-impl SessionItem for Viewer {
     unsafe fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
