@@ -1,3 +1,4 @@
+use core::cmp::min;
 use core::mem::size_of;
 
 const PAGE_DIRECTORY: usize = 0x300000;
@@ -96,6 +97,53 @@ pub unsafe fn alloc(size: usize) -> usize{
     }
 }
 
+pub unsafe fn alloc_size(ptr: usize) -> usize {
+    let mut size = 0;
+
+    if ptr > 0 {
+        for i in 0..CLUSTER_COUNT {
+            if cluster(i) == ptr {
+                size += CLUSTER_SIZE;
+            }
+        }
+    }
+
+    return size;
+}
+
+pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
+    if size == 0 {
+        if ptr > 0 {
+            unalloc(ptr);
+        }
+        return 0;
+    }
+
+    let old_size = alloc_size(ptr);
+    if size <= old_size {
+        return ptr;
+    }else{
+        let new = alloc(size);
+        if ptr > 0 {
+            if new > 0 {
+                let copy_size = min(old_size, size);
+
+                let mut i = 0;
+                while i < copy_size - size_of::<usize>() {
+                    *(new as *mut usize).offset(i as isize) = *(ptr as *const usize).offset(i as isize);
+                    i += size_of::<usize>();
+                }
+                while i < copy_size {
+                    *(new as *mut u8).offset(i as isize) = *(ptr as *const u8).offset(i as isize);
+                    i += size_of::<u8>();
+                }
+            }
+            unalloc(ptr);
+        }
+        return new;
+    }
+}
+
 pub unsafe fn unalloc(ptr: usize){
     if ptr > 0 {
         for i in 0..CLUSTER_COUNT {
@@ -128,16 +176,4 @@ pub fn memory_free() -> usize{
         }
     }
     return ret;
-}
-
-#[lang="exchange_malloc"]
-#[allow(unused_variables)]
-pub unsafe fn exchange_malloc(size: usize, align: usize) -> *mut u8{
-    alloc(size) as *mut u8
-}
-
-#[lang="exchange_free"]
-#[allow(unused_variables)]
-pub unsafe fn exchange_free(ptr: *mut u8, size: usize, align: usize){
-    unalloc(ptr as usize);
 }

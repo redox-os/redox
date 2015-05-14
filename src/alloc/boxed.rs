@@ -65,6 +65,20 @@ use core::marker::Unsize;
 #[cfg(not(stage0))]
 use core::ops::CoerceUnsized;
 
+use common::memory;
+
+#[lang="exchange_malloc"]
+#[allow(unused_variables)]
+pub unsafe fn exchange_malloc(size: usize, align: usize) -> *mut u8{
+    memory::alloc(size) as *mut u8
+}
+
+#[lang="exchange_free"]
+#[allow(unused_variables)]
+pub unsafe fn exchange_free(ptr: *mut u8, size: usize, align: usize){
+    memory::unalloc(ptr as usize);
+}
+
 /// A pointer type for heap allocation.
 ///
 /// See the [module-level documentation](../../std/boxed/index.html) for more.
