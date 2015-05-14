@@ -2,3 +2,4 @@
 *.o
 *.pcap
 filesystem/filesystem.asm
+setup/rust/
