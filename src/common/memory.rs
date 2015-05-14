@@ -1,5 +1,4 @@
 use core::mem::size_of;
-use core::ptr::Unique;
 
 const PAGE_DIRECTORY: usize = 0x300000;
 const PAGE_TABLE_SIZE: usize = 1024;
@@ -130,9 +129,6 @@ pub fn memory_free() -> usize{
     }
     return ret;
 }
-
-#[lang = "owned_box"]
-pub struct Box<T>(Unique<T>);
 
 #[lang="exchange_malloc"]
 #[allow(unused_variables)]

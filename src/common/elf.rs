@@ -66,28 +66,30 @@ pub struct ELF {
 }
 
 impl ELF {
-    pub unsafe fn new() -> ELF {
+    pub fn new() -> ELF {
         ELF {
             data: 0
         }
     }
 
-    pub unsafe fn from_data(file_data: usize) -> ELF {
+    pub fn from_data(file_data: usize) -> ELF {
         let data;
-        if file_data > 0
-            //Signature
-            && *(file_data as *const u8) == 0x7F
-            && *((file_data + 1) as *const u8) == 'E' as u8
-            && *((file_data + 2) as *const u8) == 'L' as u8
-            && *((file_data + 3) as *const u8) == 'F' as u8
-            //1 for 32 bit, 2 for 64 bit
-            && *((file_data + 4) as *const u8) == 1
-            // TODO: Add more tests from header (architecture, platform)
-        {
-            data = file_data;
-        }else{
-            d("Invalid ELF Format\n");
-            data = 0;
+        unsafe{
+            if file_data > 0
+                //Signature
+                && *(file_data as *const u8) == 0x7F
+                && *((file_data + 1) as *const u8) == 'E' as u8
+                && *((file_data + 2) as *const u8) == 'L' as u8
+                && *((file_data + 3) as *const u8) == 'F' as u8
+                //1 for 32 bit, 2 for 64 bit
+                && *((file_data + 4) as *const u8) == 1
+                // TODO: Add more tests from header (architecture, platform)
+            {
+                data = file_data;
+            }else{
+                d("Invalid ELF Format\n");
+                data = 0;
+            }
         }
 
         return ELF {

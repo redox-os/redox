@@ -1,6 +1,7 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(core)]
+#![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
 #![feature(unique)]
@@ -13,6 +14,7 @@ use core::mem::size_of;
 use common::debug::*;
 use common::pio::*;
 use common::memory::*;
+use common::string::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -20,6 +22,10 @@ use drivers::pci::*;
 
 use programs::filemanager::*;
 use programs::session::*;
+
+mod alloc {
+    pub mod boxed;
+}
 
 mod common {
     pub mod debug;
@@ -80,7 +86,7 @@ unsafe fn init(){
 
     session = alloc(size_of::<Session>()) as *mut Session;
     *session = Session::new();
-    (*session).add_item(box FileManager::new());
+    (*session).add_item(box FileManager::new("".to_string()));
 
     keyboard_init();
     mouse_init();

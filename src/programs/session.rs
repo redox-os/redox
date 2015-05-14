@@ -1,8 +1,9 @@
 use core::cmp::max;
 use core::cmp::min;
+use core::marker::Sized;
+use core::ptr;
 use core::result::Result;
 
-use common::memory::*;
 use common::string::*;
 use common::vector::*;
 
@@ -14,10 +15,19 @@ use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 
+use alloc::boxed::*;
+
 pub trait SessionItem {
-    unsafe fn draw(&mut self, session: &mut Session) -> bool;
-    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent);
-    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
+    fn new(file: String) -> Self where Self:Sized;
+    unsafe fn draw(&mut self, session: &mut Session) -> bool{
+        false
+    }
+    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+
+    }
+    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool{
+        false
+    }
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -61,7 +71,7 @@ impl Session {
     pub unsafe fn on_key(&mut self, key_event: KeyEvent){
         let items = self.copy_items();
         for item in items.as_slice() {
-            (*item).on_key(self, key_event);
+            item.on_key(self, key_event);
             self.redraw = REDRAW_ALL;
             break;
         }
@@ -77,7 +87,7 @@ impl Session {
         let mut new_items = Vector::<Box<SessionItem>>::new();
         let mut allow_catch = true;
         for item in items.as_slice() {
-            if (*item).on_mouse(self, mouse_event, allow_catch) {
+            if item.on_mouse(self, mouse_event, allow_catch) {
                 new_items = Vector::<Box<SessionItem>>::from_ptr(item) + new_items;
                 allow_catch = false;
                 self.redraw = REDRAW_ALL;
@@ -101,8 +111,11 @@ impl Session {
                 let mut new_items = Vector::<Box<SessionItem>>::new();
                 for i in 0..items.len() {
                     match items.get(items.len() - 1 - i) {
-                        Result::Ok(item) => if (*item).draw(self){
+                        Result::Ok(item) => if item.draw(self){
                             new_items = Vector::<Box<SessionItem>>::from_ptr(item) + new_items;
+                        }else{
+                            //Destroy item !!!!SHOULD DO THIS BETTER!!!!
+                            ptr::read(item);
                         },
                         Result::Err(_) => ()
                     }
