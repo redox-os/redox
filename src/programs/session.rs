@@ -41,7 +41,6 @@ impl Session {
         }
     }
 
-    // TODO: Find out how to remove
     pub fn copy_items(&self) -> Vector<Box<SessionItem>>{
         let mut ret: Vector<Box<SessionItem>> = Vector::<Box<SessionItem>>::new();
         for item in self.items.as_slice() {

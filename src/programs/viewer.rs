@@ -52,9 +52,11 @@ impl Viewer {
             ret.window.title = String::from_str("Viewer (") + file.clone() + String::from_str(")");
             let unfs = UnFS::new(Disk::new());
             let image_data = unfs.load(file.clone());
-            ret.image = BMP::from_data(image_data);
-            ret.window.size = ret.image.size;
-            unalloc(image_data);
+            if image_data > 0 {
+                ret.image = BMP::from_data(image_data);
+                ret.window.size = ret.image.size;
+                unalloc(image_data);
+            }
         }
 
         return ret;
