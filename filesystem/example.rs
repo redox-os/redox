@@ -3,6 +3,7 @@
 #![feature(core)]
 #![feature(lang_items)]
 #![feature(no_std)]
+#![feature(unique)]
 #![no_std]
 
 extern crate core;
