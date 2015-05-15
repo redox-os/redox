@@ -37,6 +37,7 @@ pub fn http_response(request: String) -> String{
     }else{
         html = html + "<title>Home - Redox</title>\r\n";
     }
+    html = html + "<link rel='icon' href='data:;base64,iVBORw0KGgo='>\r\n";
     html = html + "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'>\r\n";
     html = html + "<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css'>\r\n";
     html = html + "<script src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js'></script>\r\n";

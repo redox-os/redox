@@ -70,7 +70,8 @@ impl Response for IPv4 {
                     Option::Some(packet) => responses = packet.respond(),
                     Option::None => ()
                 },
-                0x06 => match TCP::from_bytes(self.data.clone()) {
+                //Must copy source IP and destination IP for checksum
+                0x06 => match TCP::from_bytes_ipv4(self.data.clone(), self.header.src, self.header.dst) {
                     Option::Some(packet) => responses = packet.respond(),
                     Option::None => ()
                 },
