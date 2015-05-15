@@ -27,7 +27,7 @@ pub fn http_response(request: String) -> String{
 
     let mut html = "HTTP/1.1 200 OK\r\n".to_string()
                 + "Content-Type: text/html\r\n"
-                + "Connection: close\r\n"
+                + "Connection: keep-alive\r\n"
                 + "\r\n";
 
     if path == "/files".to_string() {
