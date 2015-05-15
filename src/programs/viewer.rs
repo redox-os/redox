@@ -3,7 +3,6 @@ use core::clone::Clone;
 use common::memory::*;
 use common::string::*;
 
-use drivers::disk::*;
 use drivers::keyboard::*;
 use drivers::mouse::*;
 
@@ -51,7 +50,7 @@ impl SessionItem for Viewer {
         if file.len() > 0{
             ret.window.title = String::from_str("Viewer (") + file.clone() + String::from_str(")");
             unsafe {
-                let unfs = UnFS::new(Disk::new());
+                let unfs = UnFS::new();
                 let image_data = unfs.load(file.clone());
                 if image_data > 0 {
                     ret.image = BMP::from_data(image_data);
@@ -64,7 +63,7 @@ impl SessionItem for Viewer {
         return ret;
     }
 
-    unsafe fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display) {
@@ -82,7 +81,7 @@ impl SessionItem for Viewer {
     }
 
     #[allow(unused_variables)]
-    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -91,7 +90,7 @@ impl SessionItem for Viewer {
         }
     }
 
-    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }

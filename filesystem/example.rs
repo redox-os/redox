@@ -83,7 +83,7 @@ impl Application {
     }
 
     #[allow(unused_variables)]
-    unsafe fn on_command(&mut self, session: &mut Session){
+    fn on_command(&mut self, session: &mut Session){
         let mut args: Vector<String> = Vector::<String>::new();
         for arg in self.command.split(" ".to_string()) {
             args = args + arg;
@@ -100,6 +100,7 @@ impl Application {
 }
 
 impl SessionItem for Application {
+    #[allow(unused_variables)]
     fn new(file: String) -> Application {
         Application {
             window: Window{
@@ -130,7 +131,7 @@ impl SessionItem for Application {
         }
     }
 
-    unsafe fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
         if self.window.draw(display) {
             let scroll = self.scroll;
@@ -221,7 +222,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -261,7 +262,7 @@ impl SessionItem for Application {
         }
     }
 
-    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }

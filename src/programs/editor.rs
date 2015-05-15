@@ -4,7 +4,6 @@ use common::debug::*;
 use common::memory::*;
 use common::string::*;
 
-use drivers::disk::*;
 use drivers::keyboard::*;
 use drivers::mouse::*;
 
@@ -37,7 +36,7 @@ impl Editor {
     fn load(&mut self, filename: String){
         self.clear();
         unsafe {
-            let unfs = UnFS::new(Disk::new());
+            let unfs = UnFS::new();
             let dest = unfs.load(filename.clone());
             if dest > 0 {
                 self.filename = filename.clone();
@@ -52,11 +51,13 @@ impl Editor {
         }
     }
 
-    unsafe fn save(&self){
-        let unfs = UnFS::new(Disk::new());
-        let data = self.string.to_c_str() as usize;
-        unfs.save(self.filename.clone(), data);
-        unalloc(data);
+    fn save(&self){
+        let unfs = UnFS::new();
+        unsafe{
+            let data = self.string.to_c_str() as usize;
+            unfs.save(self.filename.clone(), data);
+            unalloc(data);
+        }
         d("Saved\n");
     }
 }
@@ -97,7 +98,7 @@ impl SessionItem for Editor {
         return ret;
     }
 
-    unsafe fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display){
@@ -173,7 +174,7 @@ impl SessionItem for Editor {
     }
 
     #[allow(unused_variables)]
-    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -227,7 +228,7 @@ impl SessionItem for Editor {
         }
     }
 
-    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }

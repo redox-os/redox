@@ -58,10 +58,16 @@ mod graphics {
 }
 
 mod network {
+    pub mod arp;
+    pub mod common;
+    pub mod ethernet;
     pub mod http;
+    pub mod icmp;
     pub mod intel8254x;
-    pub mod network;
+    pub mod ipv4;
     pub mod rtl8139;
+    pub mod tcp;
+    pub mod udp;
 }
 
 mod programs {
@@ -146,5 +152,24 @@ pub unsafe fn kernel(interrupt: u32) {
         }
 
         outb(0x20, 0x20);
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
+    unsafe {
+        if src < dst {
+            let mut i = len;
+            while i > 0 {
+                i -= 1;
+                *dst.offset(i) = *src.offset(i);
+            }
+        }else{
+            let mut i = 0;
+            while i < len {
+                *dst.offset(i) = *src.offset(i);
+                i += 1;
+            }
+        }
     }
 }

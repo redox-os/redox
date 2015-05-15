@@ -4,8 +4,6 @@ use common::memory::*;
 use common::random::*;
 use common::string::*;
 
-use drivers::disk::*;
-
 use filesystems::unfs::*;
 
 pub fn http_response(request: String) -> String{
@@ -73,22 +71,20 @@ pub fn http_response(request: String) -> String{
         html = html + "</nav>\r\n";
 
         if path == "/files".to_string() {
-            unsafe{
-                let unfs = UnFS::new(Disk::new());
+            let unfs = UnFS::new();
 
-                html = html + "<table class='table table-bordered'>\r\n";
-                    html = html + "  <caption><h3>Files</h3></caption>\r\n";
-                    html = html + "<taFiles:<br/>\r\n";
-                    let files = unfs.list();
-                    for file in files.as_slice() {
-                        html = html + "  <tr><td>" + file.clone() + "</td></tr>\r\n";
-                    }
-                html = html + "</table>\r\n";
-            }
+            html = html + "<table class='table table-bordered'>\r\n";
+                html = html + "  <caption><h3>Files</h3></caption>\r\n";
+                html = html + "<taFiles:<br/>\r\n";
+                let files = unfs.list("".to_string());
+                for file in files.as_slice() {
+                    html = html + "  <tr><td>" + file.clone() + "</td></tr>\r\n";
+                }
+            html = html + "</table>\r\n";
         }else if path == "/readme".to_string() {
             unsafe {
                 html = html + "<div class='panel panel-default'>\r\n";
-                    let unfs = UnFS::new(Disk::new());
+                    let unfs = UnFS::new();
                     let readme_file = "README.md".to_string();
                     let readme_c_str = unfs.load(readme_file.clone());
                     if readme_c_str > 0 {
