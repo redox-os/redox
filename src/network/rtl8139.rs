@@ -1,8 +1,12 @@
+use core::option::Option;
+
 use common::debug::*;
 use common::memory::*;
 use common::pio::*;
+use common::vector::*;
 
-use network::network::*;
+use network::common::*;
+use network::ethernet::*;
 
 pub struct RTL8139 {
     pub base: usize,
@@ -11,7 +15,7 @@ pub struct RTL8139 {
 
 static mut RTL8139_TX: u16 = 0;
 
-impl NetworkDevice for RTL8139 {
+impl RTL8139 {
     unsafe fn send(&self, addr: usize, len: usize){
         if cfg!(debug_network){
             d("RTL8139 send ");
@@ -30,9 +34,7 @@ impl NetworkDevice for RTL8139 {
 
         RTL8139_TX = (RTL8139_TX + 1) % 4;
     }
-}
 
-impl RTL8139 {
     pub unsafe fn handle(&self){
         if cfg!(debug_network){
             d("RTL8139 handle");
@@ -58,7 +60,14 @@ impl RTL8139 {
                 dl();
             }
 
-            network_frame(self, frame_addr, frame_len);
+            match EthernetII::from_bytes(Vector::<u8>::from_raw(frame_addr as *const u8, frame_len - 4)){
+                Option::Some(frame) => {
+                    for response in frame.respond().as_slice() {
+                        self.send(response.data as usize, response.len());
+                    }
+                },
+                Option::None => ()
+            }
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);

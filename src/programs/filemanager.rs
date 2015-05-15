@@ -2,11 +2,9 @@ use core::clone::Clone;
 use core::result::Result;
 
 use common::debug::*;
-use common::memory::*;
 use common::string::*;
 use common::vector::*;
 
-use drivers::disk::*;
 use drivers::keyboard::*;
 use drivers::mouse::*;
 
@@ -32,11 +30,7 @@ impl SessionItem for FileManager {
     fn new(file: String) -> FileManager {
         let mut size = Size::new(0, 0);
 
-        let files;
-
-        unsafe{
-            files = UnFS::new(Disk::new()).list();
-        }
+        let files = UnFS::new().list(file);
 
         if size.height < files.len() * 16 {
             size.height = files.len() * 16;
@@ -74,7 +68,7 @@ impl SessionItem for FileManager {
         }
     }
 
-    unsafe fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &mut Session) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display) {
@@ -120,7 +114,7 @@ impl SessionItem for FileManager {
     }
 
     #[allow(unused_variables)]
-    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.selected = -1,
@@ -155,7 +149,7 @@ impl SessionItem for FileManager {
         }
     }
 
-    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         let mouse_point = session.mouse_point;
         if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
             if ! self.window.shaded {

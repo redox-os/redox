@@ -1,3 +1,4 @@
+use core::clone::Clone;
 use core::mem::size_of;
 use core::ptr;
 
@@ -55,7 +56,14 @@ pub struct UnFS {
 }
 
 impl UnFS {
-    pub unsafe fn new(disk: Disk) -> UnFS{
+    pub fn new() -> UnFS{
+        unsafe{
+            return UnFS::from_disk(Disk::new());
+        }
+    }
+
+    pub unsafe fn from_disk(disk: Disk) -> UnFS{
+        // TODO: Do not use header loaded in memory
         UnFS { disk:disk, header: &*(0x7E00 as *const Header) }
     }
 
@@ -72,8 +80,8 @@ impl UnFS {
                 let extent = root_sector_list.extents[extent_i];
                 if extent.block.address > 0 {
                     for node_address in extent.block.address..extent.block.address + extent.length {
-                        self.disk.read(node_address, 1, 0x200800);
-                        let node = 0x200800 as *const Node;
+                        let node = alloc(size_of::<Node>()) as *const Node;
+                        self.disk.read(node_address, 1, node as usize);
 
                         node_matches = true;
                         let mut i = 0;
@@ -87,6 +95,9 @@ impl UnFS {
                         if !(i < 256 && (*node).name[i] == 0) {
                             node_matches = false;
                         }
+
+                        unalloc(node as usize);
+
                         if node_matches {
                             ret = node;
                             break;
@@ -109,28 +120,33 @@ impl UnFS {
         ret
     }
 
-    pub unsafe fn list(&self) -> Vector<String> {
+    pub fn list(&self, directory: String) -> Vector<String> {
         let mut ret = Vector::<String>::new();
 
-        let mut root_sector_list_address = self.header.root_sector_list.address;
-        while root_sector_list_address > 0 {
-            self.disk.read(root_sector_list_address, 1, 0x200400);
-            let root_sector_list = &*(0x200400 as *const SectorList);
+        unsafe{
+            let mut root_sector_list_address = self.header.root_sector_list.address;
+            while root_sector_list_address > 0 {
+                self.disk.read(root_sector_list_address, 1, 0x200400);
+                let root_sector_list = &*(0x200400 as *const SectorList);
 
-            for extent_i in 0..30 {
-                let extent = root_sector_list.extents[extent_i];
-                if extent.block.address > 0 {
-                    for node_address in extent.block.address..extent.block.address + extent.length {
-                        let node = alloc(size_of::<Node>()) as *const Node;
-                        self.disk.read(node_address, 1, node as usize);
+                for extent_i in 0..30 {
+                    let extent = root_sector_list.extents[extent_i];
+                    if extent.block.address > 0 {
+                        for node_address in extent.block.address..extent.block.address + extent.length {
+                            let node = alloc(size_of::<Node>()) as *const Node;
+                            self.disk.read(node_address, 1, node as usize);
 
-                        ret = ret + String::from_c_slice(&(*node).name);
-                        unalloc(node as usize);
+                            let node_name = String::from_c_slice(&(*node).name);
+                            if node_name.starts_with(directory.clone()){
+                                ret = ret + node_name;
+                            }
+                            unalloc(node as usize);
+                        }
                     }
                 }
-            }
 
-            root_sector_list_address = root_sector_list.next_fragment.address;
+                root_sector_list_address = root_sector_list.next_fragment.address;
+            }
         }
 
         ret
