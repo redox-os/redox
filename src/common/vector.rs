@@ -149,7 +149,7 @@ impl <T> Drop for Vector<T> {
     fn drop(&mut self){
         unsafe {
             for i in 0..self.len() {
-                ptr::read(self.data.offset(i as isize));
+                // TODO ptr::read(self.data.offset(i as isize));
             }
 
             unalloc(self.data as usize);

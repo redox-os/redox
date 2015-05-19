@@ -136,7 +136,7 @@ impl UnFS {
                             let node = alloc(size_of::<Node>()) as *const Node;
                             self.disk.read(node_address, 1, node as usize);
 
-                            // TODO: Fix listing
+                            ret = ret + String::from_c_slice(&(*node).name);
 
                             unalloc(node as usize);
                         }
