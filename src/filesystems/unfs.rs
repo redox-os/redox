@@ -1,3 +1,4 @@
+use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
@@ -138,7 +139,10 @@ impl UnFS {
                             let node = alloc(size_of::<Node>()) as *const Node;
                             self.disk.read(node_address, 1, node as usize);
 
-                            ret = ret + String::from_c_slice(&(*node).name);
+                            let node_name = String::from_c_slice(&(*node).name);
+                            if node_name.starts_with(directory.clone()) {
+                                ret = ret + node_name;
+                            }
 
                             unalloc(node as usize);
                         }

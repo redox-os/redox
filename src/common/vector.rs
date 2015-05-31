@@ -148,9 +148,11 @@ impl <T> Clone for Vector<T> {
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
         unsafe {
+            /* TODO: Destruct values
             for i in 0..self.len() {
-                // TODO ptr::read(self.data.offset(i as isize));
+                ptr::read(self.data.offset(i as isize));
             }
+            */
 
             unalloc(self.data as usize);
             self.data = 0 as *mut T;
