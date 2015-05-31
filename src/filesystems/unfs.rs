@@ -1,6 +1,8 @@
 use core::mem::size_of;
+use core::option::Option;
 
 use common::memory::*;
+use common::safeptr::*;
 use common::string::*;
 use common::vector::*;
 
@@ -159,27 +161,30 @@ impl UnFS {
 
         if node as usize > 0{
             if (*node).data_sector_list.address > 0 {
-                let sector_list = alloc(size_of::<SectorList>()) as *const SectorList;
-                self.disk.read((*node).data_sector_list.address, 1, sector_list as usize);
+                let sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
+                match sector_list_ptr.get() {
+                    Option::Some(sector_list) => {
+                        self.disk.read((*node).data_sector_list.address, 1, sector_list_ptr.unsafe_ptr() as usize);
 
-                //TODO: More than one extent, extent sector count > 64K
-                let mut size = 0;
-                for i in 0..1 {
-                    if (*sector_list).extents[i].block.address > 0 && (*sector_list).extents[i].length > 0{
-                        size += (*sector_list).extents[i].length * 512;
-                    }
-                }
-
-                destination = alloc(size as usize);
-                if destination > 0 {
-                    for i in 0..1 {
-                        if (*sector_list).extents[i].block.address > 0 && (*sector_list).extents[i].length > 0{
-                            self.disk.read((*sector_list).extents[i].block.address, (*sector_list).extents[i].length as u16, destination);
+                        //TODO: More than one extent, extent sector count > 64K
+                        let mut size = 0;
+                        for i in 0..1 {
+                            if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
+                                size += (*sector_list).extents[i].length * 512;
+                            }
                         }
-                    }
-                }
 
-                unalloc(sector_list as usize);
+                        destination = alloc(size as usize);
+                        if destination > 0 {
+                            for i in 0..1 {
+                                if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
+                                    self.disk.read(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, destination);
+                                }
+                            }
+                        }
+                    },
+                    Option::None => ()
+                }
             }
 
             unalloc(node as usize);
@@ -194,18 +199,21 @@ impl UnFS {
 
         if node as usize > 0{
             if (*node).data_sector_list.address > 0 {
-                let sector_list = alloc(size_of::<SectorList>()) as *const SectorList;
-                self.disk.read((*node).data_sector_list.address, 1, sector_list as usize);
+                let sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
+                match sector_list_ptr.get() {
+                    Option::Some(sector_list) => {
+                        self.disk.read((*node).data_sector_list.address, 1, sector_list_ptr.unsafe_ptr() as usize);
 
-                if source > 0 {
-                    for i in 0..1 {
-                        if (*sector_list).extents[i].block.address > 0 && (*sector_list).extents[i].length > 0{
-                            self.disk.write((*sector_list).extents[i].block.address, (*sector_list).extents[i].length as u16, source);
+                        if source > 0 {
+                            for i in 0..1 {
+                                if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
+                                    self.disk.write(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, source);
+                                }
+                            }
                         }
-                    }
+                    },
+                    Option::None => ()
                 }
-
-                unalloc(sector_list as usize);
             }
 
             unalloc(node as usize);
