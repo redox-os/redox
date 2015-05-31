@@ -6,8 +6,6 @@ use core::simd::*;
 use common::memory::*;
 use common::string::*;
 
-use drivers::disk::*;
-
 use filesystems::unfs::*;
 
 use graphics::bmp::*;
@@ -70,7 +68,7 @@ impl Display {
         unsafe{
             let mode_info = &*(VBEMODEINFOLOCATION as *const VBEModeInfo);
 
-            let unfs = UnFS::new(Disk::new());
+            let unfs = UnFS::new();
 
             let fonts = unfs.load("unifont.font".to_string());
 

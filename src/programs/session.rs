@@ -1,7 +1,6 @@
 use core::cmp::max;
 use core::cmp::min;
 use core::marker::Sized;
-use core::ptr;
 use core::result::Result;
 
 use common::string::*;
@@ -19,15 +18,9 @@ use alloc::boxed::*;
 
 pub trait SessionItem {
     fn new(file: String) -> Self where Self:Sized;
-    unsafe fn draw(&mut self, session: &mut Session) -> bool{
-        false
-    }
-    unsafe fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
-
-    }
-    unsafe fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool{
-        false
-    }
+    fn draw(&mut self, session: &mut Session) -> bool;
+    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent);
+    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -113,9 +106,6 @@ impl Session {
                     match items.get(items.len() - 1 - i) {
                         Result::Ok(item) => if item.draw(self){
                             new_items = Vector::<Box<SessionItem>>::from_ptr(item) + new_items;
-                        }else{
-                            //Destroy item !!!!SHOULD DO THIS BETTER!!!!
-                            ptr::read(item);
                         },
                         Result::Err(_) => ()
                     }

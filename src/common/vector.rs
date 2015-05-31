@@ -1,3 +1,4 @@
+use core::clone::Clone;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
@@ -9,7 +10,8 @@ use core::slice::SliceExt;
 use common::memory::*;
 
 pub struct Vector<T> {
-    data: *mut T,
+    // TODO: Hide!
+    pub data: *mut T,
     length: usize
 }
 
@@ -95,6 +97,36 @@ impl <T> Vector<T> {
         self.length
     }
 
+    pub fn sub(&self, start: usize, len: usize) -> Vector<T> {
+        let mut i = start;
+        if i > self.len() {
+            i = self.len();
+        }
+
+        let mut j = i + len;
+        if j > self.len() {
+            j = self.len();
+        }
+
+        let length = j - i;
+        if length == 0 {
+            return Vector::<T>::new();
+        }
+
+        unsafe {
+            let data = alloc(length * size_of::<T>()) as *mut T;
+
+            for k in i..j {
+                ptr::write(data.offset((k - i) as isize), ptr::read(self.data.offset(k as isize)));
+            }
+
+            Vector {
+                data: data,
+                length: length
+            }
+        }
+    }
+
     // TODO: Str trait
     pub fn as_slice(&self) -> &mut [T] {
         if self.data as usize == 0 && self.length == 0 {
@@ -107,9 +139,21 @@ impl <T> Vector<T> {
     }
 }
 
+impl <T> Clone for Vector<T> {
+    fn clone(&self) -> Vector<T> {
+        self.sub(0, self.len())
+    }
+}
+
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
         unsafe {
+            /* TODO: Destruct values
+            for i in 0..self.len() {
+                ptr::read(self.data.offset(i as isize));
+            }
+            */
+
             unalloc(self.data as usize);
             self.data = 0 as *mut T;
             self.length = 0;
