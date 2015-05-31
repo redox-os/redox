@@ -33,6 +33,7 @@ mod common {
     pub mod memory;
     pub mod pio;
     pub mod random;
+    pub mod safeptr;
     pub mod string;
     pub mod vector;
 }
