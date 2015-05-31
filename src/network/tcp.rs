@@ -46,6 +46,7 @@ const TCP_RST: u16 = 1 << 2;
 const TCP_PSH: u16 = 1 << 3;
 const TCP_ACK: u16 = 1 << 4;
 
+#[allow(trivial_casts)]
 impl Response for TCP {
     fn respond(&self) -> Vector<Vector<u8>> {
         d("            ");
