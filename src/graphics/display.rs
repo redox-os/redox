@@ -222,10 +222,9 @@ impl Display {
     }
 
     pub fn background(&self){
+        self.set(Color::new(64, 64, 64));
         if self.background.data > 0 {
-            self.image(Point::new(0, 0), self.background.data, self.background.size);
-        }else{
-            self.set(Color::new(64, 64, 64));
+            self.image(Point::new((self.width as isize - self.background.size.width as isize)/2, (self.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
         }
     }
 
