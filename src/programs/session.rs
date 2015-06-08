@@ -56,9 +56,7 @@ impl Session {
     }
 
     pub fn add_item(&mut self, item: Box<SessionItem>){
-        let mut new_items = self.copy_items();
-        new_items = Vector::<Box<SessionItem>>::from_value(item) + new_items;
-        self.items = new_items;
+        self.items.insert(0, item);
         self.redraw = REDRAW_ALL;
     }
 

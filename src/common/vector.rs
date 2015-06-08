@@ -72,12 +72,12 @@ impl <T> Vector<T> {
 
     pub fn from_value(value: T) -> Vector<T> {
         unsafe {
-            let data = alloc(size_of::<T>());
+            let data = alloc(size_of::<T>()) as *mut T;
 
-            ptr::write(data as *mut T, value);
+            ptr::write(data, value);
 
             Vector::<T> {
-                data: data as *mut T,
+                data: data,
                 length: 1
             }
         }
@@ -90,6 +90,50 @@ impl <T> Vector<T> {
             unsafe{
                 return Result::Ok(&mut*self.data.offset(i as isize));
             }
+        }
+    }
+
+    pub fn insert(&mut self, i: usize, value: T) {
+        if i <= self.length {
+            self.length += 1;
+            unsafe {
+                self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+
+                //Move all things ahead of insert forward one
+                let mut j = self.length - 1;
+                while j > i {
+                    ptr::write(self.data.offset(j as isize), ptr::read(self.data.offset(j as isize - 1)));
+                    j -= 1;
+                }
+
+                ptr::write(self.data.offset(i as isize), value);
+            }
+        }
+    }
+
+    pub fn remove(&mut self, i: usize) {
+        if i < self.length {
+            self.length -= 1;
+            unsafe{
+                ptr::read(self.data.offset(i as isize));
+
+                //Move all things ahead of remove back one
+                let mut j = i;
+                while j < self.length {
+                    ptr::write(self.data.offset(j as isize), ptr::read(self.data.offset(j as isize + 1)));
+                    j += 1;
+                }
+
+                self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+            }
+        }
+    }
+
+    pub fn push(&mut self, value: T) {
+        self.length += 1;
+        unsafe{
+            self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+            ptr::write(self.data.offset(self.length as isize - 1), value);
         }
     }
 
