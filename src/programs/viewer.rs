@@ -52,11 +52,9 @@ impl SessionItem for Viewer {
             unsafe {
                 let unfs = UnFS::new();
                 let image_data = unfs.load(file.clone());
-                if image_data > 0 {
-                    ret.image = BMP::from_data(image_data);
-                    ret.window.size = ret.image.size;
-                    unalloc(image_data);
-                }
+                ret.image = BMP::from_data(image_data);
+                ret.window.size = ret.image.size;
+                unalloc(image_data);
             }
         }
 
