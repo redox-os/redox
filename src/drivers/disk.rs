@@ -145,9 +145,9 @@ impl Disk {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
             }
-            
+
             self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            
+
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
             self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
             self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);

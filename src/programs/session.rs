@@ -1,6 +1,7 @@
 use core::cmp::max;
 use core::cmp::min;
 use core::marker::Sized;
+use core::ptr;
 use core::result::Result;
 
 use common::string::*;
@@ -106,6 +107,8 @@ impl Session {
                     match items.get(items.len() - 1 - i) {
                         Result::Ok(item) => if item.draw(self){
                             new_items = Vector::<Box<SessionItem>>::from_ptr(item) + new_items;
+                        }else{
+                            ptr::read(item);
                         },
                         Result::Err(_) => ()
                     }
