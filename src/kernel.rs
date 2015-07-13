@@ -1,10 +1,17 @@
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(coerce_unsized)]
 #![feature(core)]
+#![feature(core_prelude)]
+#![feature(core_simd)]
+#![feature(core_slice_ext)]
+#![feature(core_str_ext)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
+#![feature(raw)]
 #![feature(unique)]
+#![feature(unsize)]
 #![no_std]
 
 extern crate core;
