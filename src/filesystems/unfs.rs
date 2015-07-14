@@ -80,7 +80,7 @@ impl UnFS {
                     self.disk.read(root_sector_list_address, 1, root_sector_list_ptr.unsafe_ptr() as usize);
 
                     for extent_i in 0..30 {
-                        let extent = (*root_sector_list).extents[extent_i];
+                        let extent = root_sector_list.extents[extent_i];
                         if extent.block.address > 0 {
                             for node_address in extent.block.address..extent.block.address + extent.length {
                                 let node = alloc(size_of::<Node>()) as *const Node;
@@ -113,7 +113,7 @@ impl UnFS {
                         }
                     }
 
-                    root_sector_list_address = (*root_sector_list).next_fragment.address;
+                    root_sector_list_address = root_sector_list.next_fragment.address;
 
                     if node_matches{
                         break;
@@ -137,7 +137,7 @@ impl UnFS {
                         self.disk.read(root_sector_list_address, 1, root_sector_list_ptr.unsafe_ptr() as usize);
 
                         for extent_i in 0..30 {
-                            let extent = (*root_sector_list).extents[extent_i];
+                            let extent = root_sector_list.extents[extent_i];
                             if extent.block.address > 0 {
                                 for node_address in extent.block.address..extent.block.address + extent.length {
                                     let node = alloc(size_of::<Node>()) as *const Node;
@@ -153,7 +153,7 @@ impl UnFS {
                             }
                         }
 
-                        root_sector_list_address = (*root_sector_list).next_fragment.address;
+                        root_sector_list_address = root_sector_list.next_fragment.address;
                     }
                 },
                 Option::None => ()
@@ -179,7 +179,7 @@ impl UnFS {
                         let mut size = 0;
                         for i in 0..1 {
                             if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                size += (*sector_list).extents[i].length * 512;
+                                size += sector_list.extents[i].length * 512;
                             }
                         }
 
