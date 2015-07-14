@@ -10,7 +10,6 @@ use core::slice::SliceExt;
 use common::memory::*;
 
 pub struct Vector<T> {
-    // TODO: Hide!
     pub data: *mut T,
     length: usize
 }
@@ -196,11 +195,9 @@ impl <T> Clone for Vector<T> {
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
         unsafe {
-            /*
             for i in 0..self.len() {
                 ptr::read(self.data.offset(i as isize));
             }
-            */
 
             unalloc(self.data as usize);
             self.data = 0 as *mut T;

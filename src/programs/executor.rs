@@ -55,13 +55,13 @@ impl SessionItem for Executor {
         return ret;
     }
 
-    fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         unsafe {
             if self.executable.can_call(self.draw){
                 //Rediculous call mechanism
                 self.executable.map();
                 let fn_ptr: *const usize = &self.draw;
-                let ret = (*(fn_ptr as *const fn(&mut Session) -> bool))(session);
+                let ret = (*(fn_ptr as *const fn(&Session, &mut SessionUpdates) -> bool))(session, updates);
                 self.executable.unmap();
 
                 return ret;
@@ -70,25 +70,25 @@ impl SessionItem for Executor {
         return false;
     }
 
-    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
         unsafe {
             if self.executable.can_call(self.on_key){
                 //Rediculous call mechanism
                 self.executable.map();
                 let fn_ptr: *const usize = &self.on_key;
-                (*(fn_ptr as *const fn(&mut Session, KeyEvent)))(session, key_event);
+                (*(fn_ptr as *const fn(&Session, &mut SessionUpdates, KeyEvent)))(session, updates, key_event);
                 self.executable.unmap();
             }
         }
     }
 
-    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         unsafe {
             if self.executable.can_call(self.on_mouse){
                 //Rediculous call mechanism
                 self.executable.map();
                 let fn_ptr: *const usize = &self.on_mouse;
-                let ret = (*(fn_ptr as *const fn(&mut Session, MouseEvent, bool) -> bool))(session, mouse_event, allow_catch);
+                let ret = (*(fn_ptr as *const fn(&Session, &mut SessionUpdates, MouseEvent, bool) -> bool))(session, updates, mouse_event, allow_catch);
                 self.executable.unmap();
                 return ret;
             }

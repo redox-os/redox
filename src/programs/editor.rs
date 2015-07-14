@@ -98,7 +98,7 @@ impl SessionItem for Editor {
         return ret;
     }
 
-    fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display){
@@ -130,7 +130,7 @@ impl SessionItem for Editor {
                             self.scroll.y += row - rows;
                         }
 
-                        session.redraw = REDRAW_ALL;
+                        updates.redraw = REDRAW_ALL;
                     }
                 }
 
@@ -165,7 +165,7 @@ impl SessionItem for Editor {
                         self.scroll.y += rows - row;
                     }
 
-                    session.redraw = REDRAW_ALL;
+                    updates.redraw = REDRAW_ALL;
                 }
             }
         }
@@ -174,7 +174,7 @@ impl SessionItem for Editor {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -228,7 +228,7 @@ impl SessionItem for Editor {
         }
     }
 
-    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }

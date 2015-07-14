@@ -91,7 +91,7 @@ impl Application {
     }
 
     #[allow(unused_variables)]
-    fn on_command(&mut self, session: &mut Session){
+    fn on_command(&mut self, session: &Session){
         let mut args: Vector<String> = Vector::<String>::new();
         for arg in self.command.split(" ".to_string()) {
             args.push(arg);
@@ -139,7 +139,7 @@ impl SessionItem for Application {
         }
     }
 
-    fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         let display = &session.display;
         if self.window.draw(display) {
             let scroll = self.scroll;
@@ -215,7 +215,7 @@ impl SessionItem for Application {
 
             if row >= rows {
                 self.scroll.y += row - rows + 1;
-                session.redraw = REDRAW_ALL;
+                updates.redraw = REDRAW_ALL;
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
@@ -230,7 +230,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -270,7 +270,7 @@ impl SessionItem for Application {
         }
     }
 
-    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 }
@@ -286,25 +286,25 @@ pub unsafe fn entry(){
 }
 
 #[no_mangle]
-pub unsafe fn draw(session: &mut Session) -> bool{
+pub unsafe fn draw(session: &Session, updates: &mut SessionUpdates) -> bool{
     if application as usize > 0 {
-        return (*application).draw(session);
+        return (*application).draw(session, updates);
     }else{
         return false;
     }
 }
 
 #[no_mangle]
-pub unsafe fn on_key(session: &mut Session, key_event: KeyEvent){
+pub unsafe fn on_key(session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
     if application as usize > 0{
-        (*application).on_key(session, key_event);
+        (*application).on_key(session, updates, key_event);
     }
 }
 
 #[no_mangle]
-pub unsafe fn on_mouse(session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+pub unsafe fn on_mouse(session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
     if application as usize > 0 {
-        return (*application).on_mouse(session, mouse_event, allow_catch);
+        return (*application).on_mouse(session, updates, mouse_event, allow_catch);
     }else{
         return false;
     }
