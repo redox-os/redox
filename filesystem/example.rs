@@ -94,7 +94,7 @@ impl Application {
     fn on_command(&mut self, session: &mut Session){
         let mut args: Vector<String> = Vector::<String>::new();
         for arg in self.command.split(" ".to_string()) {
-            args = args + arg;
+            args.push(arg);
         }
         if args.len() > 0 {
             match args.get(0) {

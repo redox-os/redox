@@ -124,11 +124,11 @@ impl SessionItem for FileManager {
                                     if file.ends_with(".md".to_string())
                                         || file.ends_with(".rs".to_string())
                                     {
-                                        session.add_item(box Editor::new(file.clone()));
+                                        session.new_items.push(box Editor::new(file.clone()));
                                     }else if file.ends_with(".bin".to_string()){
-                                        session.add_item(box Executor::new(file.clone()));
+                                        session.new_items.push(box Executor::new(file.clone()));
                                     }else if file.ends_with(".bmp".to_string()){
-                                        session.add_item(box Viewer::new(file.clone()));
+                                        session.new_items.push(box Viewer::new(file.clone()));
                                     }else{
                                         d("No program found!\n");
                                     }
