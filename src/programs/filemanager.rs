@@ -42,7 +42,7 @@ impl SessionItem for FileManager {
             }
         }
 
-        FileManager {
+        let ret = FileManager {
             window: Window{
                 point: Point::new(10, 50),
                 size: size,
@@ -65,10 +65,12 @@ impl SessionItem for FileManager {
             },
             files: files,
             selected: -1
-        }
+        };
+
+        return ret;
     }
 
-    fn draw(&mut self, session: &mut Session) -> bool{
+    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display) {
@@ -114,7 +116,7 @@ impl SessionItem for FileManager {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, session: &mut Session, key_event: KeyEvent){
+    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.selected = -1,
@@ -124,11 +126,11 @@ impl SessionItem for FileManager {
                                     if file.ends_with(".md".to_string())
                                         || file.ends_with(".rs".to_string())
                                     {
-                                        session.new_items.push(box Editor::new(file.clone()));
+                                        updates.new_items.push(box Editor::new(file.clone()));
                                     }else if file.ends_with(".bin".to_string()){
-                                        session.new_items.push(box Executor::new(file.clone()));
+                                        updates.new_items.push(box Executor::new(file.clone()));
                                     }else if file.ends_with(".bmp".to_string()){
-                                        session.new_items.push(box Viewer::new(file.clone()));
+                                        updates.new_items.push(box Viewer::new(file.clone()));
                                     }else{
                                         d("No program found!\n");
                                     }
@@ -158,7 +160,7 @@ impl SessionItem for FileManager {
         }
     }
 
-    fn on_mouse(&mut self, session: &mut Session, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         let mouse_point = session.mouse_point;
         if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
             if ! self.window.shaded {
