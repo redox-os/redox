@@ -84,8 +84,8 @@ impl <T> Vector<T> {
     }
 
     pub fn get(&self, i: usize) -> Result<&mut T, usize> {
-        if i >= self.len() {
-            return Result::Err(self.len());
+        if i >= self.length {
+            return Result::Err(self.length);
         }else{
             unsafe{
                 return Result::Ok(&mut*self.data.offset(i as isize));
@@ -111,11 +111,11 @@ impl <T> Vector<T> {
         }
     }
 
-    pub fn remove(&mut self, i: usize) {
+    pub fn remove(&mut self, i: usize) -> Result<T, usize> {
         if i < self.length {
             self.length -= 1;
             unsafe{
-                ptr::read(self.data.offset(i as isize));
+                let item = ptr::read(self.data.offset(i as isize));
 
                 //Move all things ahead of remove back one
                 let mut j = i;
@@ -125,7 +125,11 @@ impl <T> Vector<T> {
                 }
 
                 self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+
+                return Result::Ok(item);
             }
+        }else{
+            return Result::Err(self.length);
         }
     }
 
@@ -192,7 +196,7 @@ impl <T> Clone for Vector<T> {
 impl <T> Drop for Vector<T> {
     fn drop(&mut self){
         unsafe {
-            /* TODO: Destruct values
+            /*
             for i in 0..self.len() {
                 ptr::read(self.data.offset(i as isize));
             }
@@ -230,12 +234,5 @@ impl <T> Add for Vector<T> {
                 length: length
             }
         }
-    }
-}
-
-impl <T> Add<T> for Vector<T> {
-    type Output = Vector<T>;
-    fn add(self, other: T) -> Vector<T> {
-        self + Vector::<T>::from_value(other)
     }
 }

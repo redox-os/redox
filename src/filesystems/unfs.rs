@@ -145,7 +145,7 @@ impl UnFS {
 
                                     let node_name = String::from_c_slice(&(*node).name);
                                     if node_name.starts_with(directory.clone()) {
-                                        ret = ret + node_name;
+                                        ret.push(node_name);
                                     }
 
                                     unalloc(node as usize);

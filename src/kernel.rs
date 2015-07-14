@@ -100,7 +100,7 @@ unsafe fn init(){
 
     session = alloc(size_of::<Session>()) as *mut Session;
     *session = Session::new();
-    (*session).add_item(box FileManager::new("".to_string()));
+    (*session).items.insert(0, box FileManager::new("".to_string()));
 
     keyboard_init();
     mouse_init();
