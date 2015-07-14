@@ -72,54 +72,56 @@ impl UnFS {
         let mut ret: *const Node = 0 as *const Node;
         let mut node_matches = false;
 
-        let root_sector_list = alloc(size_of::<SectorList>()) as *const SectorList;
-        let mut root_sector_list_address = self.header.root_sector_list.address;
-        while root_sector_list_address > 0 {
-            self.disk.read(root_sector_list_address, 1, root_sector_list as usize);
+        let root_sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
+        match root_sector_list_ptr.get() {
+            Option::Some(root_sector_list) => {
+                let mut root_sector_list_address = self.header.root_sector_list.address;
+                while root_sector_list_address > 0 {
+                    self.disk.read(root_sector_list_address, 1, root_sector_list_ptr.unsafe_ptr() as usize);
 
-            for extent_i in 0..30 {
-                let extent = (*root_sector_list).extents[extent_i];
-                if extent.block.address > 0 {
-                    for node_address in extent.block.address..extent.block.address + extent.length {
-                        let node = alloc(size_of::<Node>()) as *const Node;
-                        self.disk.read(node_address, 1, node as usize);
+                    for extent_i in 0..30 {
+                        let extent = (*root_sector_list).extents[extent_i];
+                        if extent.block.address > 0 {
+                            for node_address in extent.block.address..extent.block.address + extent.length {
+                                let node = alloc(size_of::<Node>()) as *const Node;
+                                self.disk.read(node_address, 1, node as usize);
 
-                        node_matches = true;
-                        let mut i = 0;
-                        for c in filename.chars()  {
-                            if !(i < 256 && (*node).name[i] == c as u8) {
-                                node_matches = false;
-                                break;
+                                node_matches = true;
+                                let mut i = 0;
+                                for c in filename.chars()  {
+                                    if !(i < 256 && (*node).name[i] == c as u8) {
+                                        node_matches = false;
+                                        break;
+                                    }
+                                    i += 1;
+                                }
+                                if !(i < 256 && (*node).name[i] == 0) {
+                                    node_matches = false;
+                                }
+
+                                if node_matches {
+                                    ret = node;
+                                    break;
+                                }else{
+                                    unalloc(node as usize);
+                                }
                             }
-                            i += 1;
                         }
-                        if !(i < 256 && (*node).name[i] == 0) {
-                            node_matches = false;
-                        }
-
-                        unalloc(node as usize);
 
                         if node_matches {
-                            ret = node;
                             break;
                         }
                     }
+
+                    root_sector_list_address = (*root_sector_list).next_fragment.address;
+
+                    if node_matches{
+                        break;
+                    }
                 }
-
-                if node_matches {
-                    break;
-                }
-            }
-
-            root_sector_list_address = (*root_sector_list).next_fragment.address;
-
-            if node_matches{
-                break;
-            }
+            },
+            Option::None => ()
         }
-
-        unalloc(root_sector_list as usize);
-
         ret
     }
 
@@ -127,32 +129,35 @@ impl UnFS {
         let mut ret = Vector::<String>::new();
 
         unsafe{
-            let root_sector_list = alloc(size_of::<SectorList>()) as *const SectorList;
-            let mut root_sector_list_address = self.header.root_sector_list.address;
-            while root_sector_list_address > 0 {
-                self.disk.read(root_sector_list_address, 1, root_sector_list as usize);
+            let root_sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
+            match root_sector_list_ptr.get() {
+                Option::Some(root_sector_list) => {
+                    let mut root_sector_list_address = self.header.root_sector_list.address;
+                    while root_sector_list_address > 0 {
+                        self.disk.read(root_sector_list_address, 1, root_sector_list_ptr.unsafe_ptr() as usize);
 
-                for extent_i in 0..30 {
-                    let extent = (*root_sector_list).extents[extent_i];
-                    if extent.block.address > 0 {
-                        for node_address in extent.block.address..extent.block.address + extent.length {
-                            let node = alloc(size_of::<Node>()) as *const Node;
-                            self.disk.read(node_address, 1, node as usize);
+                        for extent_i in 0..30 {
+                            let extent = (*root_sector_list).extents[extent_i];
+                            if extent.block.address > 0 {
+                                for node_address in extent.block.address..extent.block.address + extent.length {
+                                    let node = alloc(size_of::<Node>()) as *const Node;
+                                    self.disk.read(node_address, 1, node as usize);
 
-                            let node_name = String::from_c_slice(&(*node).name);
-                            if node_name.starts_with(directory.clone()) {
-                                ret = ret + node_name;
+                                    let node_name = String::from_c_slice(&(*node).name);
+                                    if node_name.starts_with(directory.clone()) {
+                                        ret = ret + node_name;
+                                    }
+
+                                    unalloc(node as usize);
+                                }
                             }
-
-                            unalloc(node as usize);
                         }
+
+                        root_sector_list_address = (*root_sector_list).next_fragment.address;
                     }
-                }
-
-                root_sector_list_address = (*root_sector_list).next_fragment.address;
+                },
+                Option::None => ()
             }
-
-            unalloc(root_sector_list as usize);
         }
 
         ret
