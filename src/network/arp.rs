@@ -51,12 +51,16 @@ impl ToBytes for ARP {
 impl Response for ARP {
     fn respond(&self) -> Vector<Vector<u8>>{
         if self.header.dst_ip.equals(IP_ADDR) {
-            d("    ");
-            self.d();
-            dl();
+            if cfg!(debug_network){
+                d("    ");
+                self.d();
+                dl();
+            }
 
             if self.header.oper.get() == 1 {
-                d("        ARP Reply\n");
+                if cfg!(debug_network){
+                    d("        ARP Reply\n");
+                }
                 let mut response = ARP{
                     header: self.header,
                     data: self.data.clone()

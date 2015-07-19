@@ -16,6 +16,10 @@ use graphics::size::*;
 
 use alloc::boxed::*;
 
+pub trait SessionDevice {
+    fn handle(&mut self, irq: u8);
+}
+
 pub trait SessionItem {
     fn new(file: String) -> Self where Self:Sized;
     fn draw(&mut self, session: &Session, &mut SessionUpdates) -> bool;
@@ -30,6 +34,7 @@ pub const REDRAW_ALL: usize = 2;
 pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
+    pub devices: Vector<Box<SessionDevice>>,
     pub items: Vector<Box<SessionItem>>,
     pub redraw: usize
 }
@@ -44,6 +49,7 @@ impl Session {
         Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
+            devices: Vector::new(),
             items: Vector::new(),
             redraw: REDRAW_ALL
         }

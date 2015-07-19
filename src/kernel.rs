@@ -17,6 +17,7 @@
 extern crate core;
 
 use core::mem::size_of;
+use core::result::Result;
 
 use common::debug::*;
 use common::pio::*;
@@ -38,6 +39,7 @@ mod common {
     pub mod debug;
     pub mod elf;
     pub mod memory;
+    pub mod pci;
     pub mod pio;
     pub mod random;
     pub mod safeptr;
@@ -105,7 +107,7 @@ unsafe fn init(){
     keyboard_init();
     mouse_init();
 
-    pci_init();
+    pci_init(&mut *session);
 }
 
 pub unsafe fn input_handle(){
@@ -124,6 +126,23 @@ pub unsafe fn input_handle(){
             }
         }else{
             break;
+        }
+    }
+}
+
+pub unsafe fn pci_handle(irq: u8){
+    if cfg!(debug_pci){
+        d("PCI Handle ");
+        dh(irq as usize);
+        dl();
+    }
+
+    for i in 0..(*session).devices.len(){
+        match (*session).devices.get(i){
+            Result::Ok(device) => {
+                device.handle(irq);
+            },
+            Result::Err(_) => ()
         }
     }
 }

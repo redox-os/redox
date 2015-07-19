@@ -45,12 +45,16 @@ impl ToBytes for ICMP {
 
 impl Response for ICMP {
     fn respond(&self) -> Vector<Vector<u8>> {
-        d("        ");
-        self.d();
-        dl();
+        if cfg!(debug_network){
+            d("        ");
+            self.d();
+            dl();
+        }
 
         if self.header._type == 0x08 {
-            d("            Echo Reply\n");
+            if cfg!(debug_network){
+                d("            Echo Reply\n");
+            }
 
             let mut ret = ICMP {
                 header: self.header,
