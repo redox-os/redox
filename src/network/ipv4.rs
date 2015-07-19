@@ -60,9 +60,11 @@ impl ToBytes for IPv4 {
 impl Response for IPv4 {
     fn respond(&self) -> Vector<Vector<u8>>{
         if self.header.dst.equals(IP_ADDR) || self.header.dst.equals(BROADCAST_IP_ADDR){
-            d("    ");
-            self.d();
-            dl();
+            if cfg!(debug_network){
+                d("    ");
+                self.d();
+                dl();
+            }
 
             let mut responses: Vector<Vector<u8>> = Vector::new();
             match self.header.proto {

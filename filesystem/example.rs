@@ -43,6 +43,7 @@ mod alloc {
 mod common {
     pub mod debug;
     pub mod memory;
+    pub mod pci;
     pub mod pio;
     pub mod safeptr;
     pub mod string;

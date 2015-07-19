@@ -1,6 +1,9 @@
 use common::debug::*;
 use common::memory::*;
+use common::pci::*;
 use common::pio::*;
+
+use programs::session::*;
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;
@@ -45,8 +48,19 @@ const RAH0: u32 = 0x5404;
 
 
 pub struct Intel8254x {
+    pub bus: usize,
+    pub slot: usize,
     pub base: usize,
-    pub memory_mapped: bool
+    pub memory_mapped: bool,
+    pub irq: u8
+}
+
+impl SessionDevice for Intel8254x {
+    fn handle(&mut self, irq: u8){
+        if(irq == self.irq){
+            d("Intel 8254x handle\n");
+        }
+    }
 }
 
 impl Intel8254x {
@@ -98,10 +112,6 @@ impl Intel8254x {
         }
     }
 
-    pub unsafe fn handle(&self){
-        d("Intel 8254x handle\n");
-    }
-
     pub unsafe fn init(&self){
         d("Intel 8254x on: ");
         dh(self.base);
@@ -110,7 +120,11 @@ impl Intel8254x {
         }else{
             d(" port mapped");
         }
+        d(", IRQ: ");
+        dbh(self.irq);
         dl();
+
+        pci_write(self.bus, self.slot, 0, 0x04, pci_read(self.bus, self.slot, 0, 0x04) | (1 << 2)); // Bus mastering
 
         self.read(CTRL);
         self.read(STATUS);

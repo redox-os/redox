@@ -48,8 +48,10 @@ impl ToBytes for EthernetII {
 impl Response for EthernetII {
     fn respond(&self) -> Vector<Vector<u8>> {
         if self.header.dst.equals(MAC_ADDR) || self.header.dst.equals(BROADCAST_MAC_ADDR) {
-            self.d();
-            dl();
+            if cfg!(debug_network){
+                self.d();
+                dl();
+            }
 
             let mut responses: Vector<Vector<u8>> = Vector::new();
             match self.header._type.get() {
@@ -63,10 +65,6 @@ impl Response for EthernetII {
                 },
                 _ => ()
             }
-
-            dd(memory_used()/1024);
-            d(" KB Used");
-            dl();
 
             let mut ret: Vector<Vector<u8>> = Vector::new();
             for response in responses.as_slice() {
