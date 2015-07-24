@@ -32,6 +32,13 @@ run_no_kvm: harddrive.bin
 run_tap: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
+	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	sudo ifconfig tap_qemu down
+	sudo tunctl -d tap_qemu
+
+run_tap_dump: harddrive.bin
+	sudo tunctl -t tap_qemu -u "${USER}"
+	sudo ifconfig tap_qemu 10.85.85.1 up
 	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu

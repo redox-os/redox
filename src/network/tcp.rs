@@ -49,9 +49,11 @@ const TCP_ACK: u16 = 1 << 4;
 #[allow(trivial_casts)]
 impl Response for TCP {
     fn respond(&self) -> Vector<Vector<u8>> {
-        d("            ");
-        self.d();
-        dl();
+        if cfg!(debug_network){
+            d("            ");
+            self.d();
+            dl();
+        }
 
         let allow;
         match self.header.dst.get() {
@@ -61,7 +63,9 @@ impl Response for TCP {
 
         if allow {
             if self.header.flags.get() & TCP_SYN != 0 {
-                d("            TCP SYN\n");
+                if cfg!(debug_network){
+                    d("            TCP SYN\n");
+                }
                 let mut ret = TCP {
                     header: self.header,
                     options: self.options.clone(),
@@ -94,7 +98,9 @@ impl Response for TCP {
 
                 return Vector::from_value(ret.to_bytes());
             }else if self.header.flags.get() & TCP_PSH != 0{
-                d("            TCP PSH\n");
+                if cfg!(debug_network){
+                    d("            TCP PSH\n");
+                }
                 //Send TCP_ACK_PSH_FIN in one statement
                 {
                     let mut ret = TCP {
