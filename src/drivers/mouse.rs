@@ -1,3 +1,4 @@
+use common::debug::*;
 use common::pio::*;
 
 #[derive(Copy, Clone)]
@@ -23,10 +24,21 @@ pub unsafe fn mouse_wait1(){
     }
 }
 
+pub unsafe fn mouse_cmd(byte: u8) -> u8{
+    mouse_wait1();
+    outb(0x64, 0xD4);
+    mouse_wait1();
+    outb(0x60, byte);
+
+    mouse_wait0();
+    return inb(0x60);
+}
+
 pub unsafe fn mouse_init(){
     mouse_cycle = 0;
     mouse_byte = [0, 0, 0];
 
+    //The Init Dance
     mouse_wait1();
     outb(0x64, 0xA8);
 
@@ -39,19 +51,11 @@ pub unsafe fn mouse_init(){
     mouse_wait1();
     outb(0x60, status);
 
-    mouse_wait1();
-    outb(0x64, 0xD4);
-    mouse_wait1();
-    outb(0x60, 0xF6);
-    mouse_wait0();
-    inb(0x60);
+    //Set defaults
+    mouse_cmd(0xF6);
 
-    mouse_wait1();
-    outb(0x64, 0xD4);
-    mouse_wait1();
-    outb(0x60, 0xF4);
-    mouse_wait0();
-    inb(0x60);
+    //Enable Streaming
+    mouse_cmd(0xF4);
 }
 
 pub fn mouse_interrupt() -> MouseEvent {
@@ -99,6 +103,6 @@ pub fn mouse_interrupt() -> MouseEvent {
             mouse_cycle = 0;
         }
 
-        MouseEvent{ x:x/4, y:y/4, left_button:left_button, right_button:right_button, middle_button:middle_button, valid:valid }
+        MouseEvent{ x:x, y:y, left_button:left_button, right_button:right_button, middle_button:middle_button, valid:valid }
     }
 }
