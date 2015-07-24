@@ -64,7 +64,7 @@ impl Session {
 
     pub fn apply_updates(&mut self, mut updates: SessionUpdates){
         while updates.new_items.len() > 0 {
-            match updates.new_items.remove(0){
+            match updates.new_items.extract(0){
                 Result::Ok(item) => {
                     self.items.insert(0, item);
                     updates.redraw = REDRAW_ALL;
@@ -109,7 +109,7 @@ impl Session {
             }
         }
         if catcher > 0 {
-            match self.items.remove(catcher){
+            match self.items.extract(catcher){
                 Result::Ok(item) => self.items.insert(0, item),
                 Result::Err(_) => ()
             }
@@ -128,19 +128,19 @@ impl Session {
                 self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
                 self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
 
-                let mut remove_i: Vector<usize> = Vector::new();
+                let mut erase_i: Vector<usize> = Vector::new();
                 for reverse_i in 0..self.items.len() {
                     let i = self.items.len() - 1 - reverse_i;
                     match self.items.get(i) {
                         Result::Ok(item) => if ! item.draw(self, &mut updates) {
-                            remove_i.push(i);
+                            erase_i.push(i);
                         },
                         Result::Err(_) => ()
                     }
                 }
 
-                for i in remove_i.as_slice() {
-                    self.items.remove(*i);
+                for i in erase_i.as_slice() {
+                    self.items.erase(*i);
                 }
             }
 

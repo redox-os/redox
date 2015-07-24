@@ -110,7 +110,7 @@ impl <T> Vector<T> {
         }
     }
 
-    pub fn remove(&mut self, i: usize) -> Result<T, usize> {
+    pub fn extract(&mut self, i: usize) -> Result<T, usize> {
         if i < self.length {
             self.length -= 1;
             unsafe{
@@ -129,6 +129,24 @@ impl <T> Vector<T> {
             }
         }else{
             return Result::Err(self.length);
+        }
+    }
+
+    pub fn erase(&mut self, i: usize){
+        if i < self.length {
+            self.length -= 1;
+            unsafe{
+                ptr::read(self.data.offset(i as isize));
+
+                //Move all things ahead of remove back one
+                let mut j = i;
+                while j < self.length {
+                    ptr::write(self.data.offset(j as isize), ptr::read(self.data.offset(j as isize + 1)));
+                    j += 1;
+                }
+
+                self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+            }
         }
     }
 

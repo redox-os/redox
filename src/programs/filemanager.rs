@@ -70,6 +70,7 @@ impl SessionItem for FileManager {
         return ret;
     }
 
+    #[allow(unused_variables)]
     fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         let display = &session.display;
 
@@ -160,6 +161,7 @@ impl SessionItem for FileManager {
         }
     }
 
+    #[allow(unused_variables)]
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         let mouse_point = session.mouse_point;
         if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
