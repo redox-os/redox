@@ -271,6 +271,7 @@ impl SessionItem for Application {
         }
     }
 
+    #[allow(unused_variables)]
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }

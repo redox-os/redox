@@ -1,4 +1,3 @@
-use common::debug::*;
 use common::pio::*;
 
 #[derive(Copy, Clone)]

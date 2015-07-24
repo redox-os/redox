@@ -7,11 +7,11 @@ use network::rtl8139::*;
 use programs::session::*;
 
 pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, vendor_code: usize, device_code: usize){
-    match(vendor_code){
-        0x10EC => match(device_code){ // REALTEK
+    match vendor_code{
+        0x10EC => match device_code{ // REALTEK
             0x8139 => {
                 let base = pci_read(bus, slot, 0, 0x10);
-                let mut session_device = box RTL8139 {
+                let session_device = box RTL8139 {
                     bus: bus,
                     slot: slot,
                     base: base & (0xFFFFFFFF - 1),
@@ -23,10 +23,10 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, vendor_
             },
             _ => ()
         },
-        0x8086 => match(device_code){ // INTEL
+        0x8086 => match device_code{ // INTEL
             0x100E => {
                 let base = pci_read(bus, slot, 0, 0x10);
-                let mut session_device = box Intel8254x {
+                let session_device = box Intel8254x {
                     bus: bus,
                     slot: slot,
                     base: base & (0xFFFFFFFF - 1),
