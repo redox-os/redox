@@ -50,6 +50,7 @@ const RAH0: u32 = 0x5404;
 pub struct Intel8254x {
     pub bus: usize,
     pub slot: usize,
+    pub func: usize,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8
@@ -124,7 +125,7 @@ impl Intel8254x {
         dbh(self.irq);
         dl();
 
-        pci_write(self.bus, self.slot, 0, 0x04, pci_read(self.bus, self.slot, 0, 0x04) | (1 << 2)); // Bus mastering
+        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
 
         self.read(CTRL);
         self.read(STATUS);

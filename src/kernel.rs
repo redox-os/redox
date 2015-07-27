@@ -88,6 +88,10 @@ mod programs {
     pub mod viewer;
 }
 
+mod usb {
+    pub mod xhci;
+}
+
 static mut session: *mut Session = 0 as *mut Session;
 
 unsafe fn init(){

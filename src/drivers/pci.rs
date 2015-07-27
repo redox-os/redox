@@ -6,69 +6,122 @@ use network::rtl8139::*;
 
 use programs::session::*;
 
-pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, vendor_code: usize, device_code: usize){
-    match vendor_code{
-        0x10EC => match device_code{ // REALTEK
-            0x8139 => {
-                let base = pci_read(bus, slot, 0, 0x10);
-                let session_device = box RTL8139 {
-                    bus: bus,
-                    slot: slot,
-                    base: base & (0xFFFFFFFF - 1),
-                    memory_mapped: base & 1 == 0,
-                    irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
-                };
-                session_device.init();
-                session.devices.push(session_device);
+use usb::xhci::*;
+
+pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: usize, class_id: usize, subclass_id: usize, interface_id: usize, vendor_code: usize, device_code: usize){
+    if class_id == 0x01 && subclass_id == 0x01{
+        let base = pci_read(bus, slot, func, 0x20);
+
+        d("IDE Controller on ");
+        dh(base & 0xFFFFFFFE);
+        dl();
+    }else if class_id == 0x0C && subclass_id == 0x03{
+        if interface_id == 0x30{
+            let base = pci_read(bus, slot, func, 0x10);
+
+            let session_device = box XHCI {
+                bus: bus,
+                slot: slot,
+                func: func,
+                base: base & 0xFFFFFFFE,
+                memory_mapped: base & 1 == 0,
+                irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
+            };
+            session_device.init();
+            session.devices.push(session_device);
+        }else if interface_id == 0x20{
+            let base = pci_read(bus, slot, func, 0x10);
+
+            d("EHCI Controller on ");
+            dh(base & 0xFFFFFFFE);
+            dl();
+        }else if interface_id == 0x10{
+            let base = pci_read(bus, slot, func, 0x10);
+
+            d("OHCI Controller on ");
+            dh(base & 0xFFFFFFFE);
+            dl();
+        }else if interface_id == 0x00{
+            let base = pci_read(bus, slot, func, 0x20);
+
+            d("UHCI Controller on ");
+            dh(base & 0xFFFFFFFE);
+            dl();
+        }else{
+            d("Unknown USB interface version\n");
+        }
+    }else{
+        match vendor_code {
+            0x10EC => match device_code{ // REALTEK
+                0x8139 => {
+                    let base = pci_read(bus, slot, func, 0x10);
+                    let session_device = box RTL8139 {
+                        bus: bus,
+                        slot: slot,
+                        func: func,
+                        base: base & 0xFFFFFFFE,
+                        memory_mapped: base & 1 == 0,
+                        irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
+                    };
+                    session_device.init();
+                    session.devices.push(session_device);
+                },
+                _ => ()
+            },
+            0x8086 => match device_code{ // INTEL
+                0x100E => {
+                    let base = pci_read(bus, slot, 0, 0x10);
+                    let session_device = box Intel8254x {
+                        bus: bus,
+                        slot: slot,
+                        func: func,
+                        base: base & (0xFFFFFFFF - 1),
+                        memory_mapped: base & 1 == 0,
+                        irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
+                    };
+                    session_device.init();
+                    session.devices.push(session_device);
+                },
+                _ => ()
             },
             _ => ()
-        },
-        0x8086 => match device_code{ // INTEL
-            0x100E => {
-                let base = pci_read(bus, slot, 0, 0x10);
-                let session_device = box Intel8254x {
-                    bus: bus,
-                    slot: slot,
-                    base: base & (0xFFFFFFFF - 1),
-                    memory_mapped: base & 1 == 0,
-                    irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
-                };
-                session_device.init();
-                session.devices.push(session_device);
-            },
-            _ => ()
-        },
-        _ => ()
+        }
     }
 }
 
 pub unsafe fn pci_init(session: &mut Session){
     for bus in 0..256 {
         for slot in 0..32 {
-            let data = pci_read(bus, slot, 0, 0);
+            for func in 0..8 {
+                let data = pci_read(bus, slot, func, 0);
 
-            if (data & 0xFFFF) != 0xFFFF {
-                d("Bus ");
-                dd(bus);
-                d(" Slot ");
-                dd(slot);
-                d(": ");
-                dh(data);
-                d(", ");
-                dh(pci_read(bus, slot, 0, 8));
-                dl();
+                if (data & 0xFFFF) != 0xFFFF {
+                    let class_id = pci_read(bus, slot, func, 8);
 
-                for i in 0..6 {
-                    d("    ");
-                    dd(i);
+                    d("Bus ");
+                    dd(bus);
+                    d(" Slot ");
+                    dd(slot);
+                    d(" Function ");
+                    dd(func);
                     d(": ");
-                    dh(pci_read(bus, slot, 0, i*4 + 0x10));
+                    dh(data);
+                    d(", ");
+                    dh(class_id);
+                    dl();
+
+                    for i in 0..6 {
+                        d("    ");
+                        dd(i);
+                        d(": ");
+                        dh(pci_read(bus, slot, func, i*4 + 0x10));
+                        dl();
+                    }
+
+                    pci_device(session, bus, slot, func, (class_id >> 24) & 0xFF, (class_id >> 16) & 0xFF, (class_id >> 8) & 0xFF, data & 0xFFFF, (data >> 16) & 0xFFFF);
+
                     dl();
                 }
-
-                pci_device(session, bus, slot, data & 0xFFFF, (data >> 16) & 0xFFFF);
-
-                dl();
             }
         }
     }

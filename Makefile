@@ -24,22 +24,22 @@ harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
 
 run: harddrive.bin
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=rtl8139 -net user -hda $<
+	$(QEMU) -enable-kvm -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net user -hda $<
 
 run_no_kvm: harddrive.bin
-	$(QEMU) -sdl -serial mon:stdio -net nic,model=rtl8139 -net user -hda $<
+	$(QEMU) -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net user -hda $<
 
 run_tap: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	$(QEMU) -enable-kvm -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 
 run_tap_dump: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	$(QEMU) -enable-kvm -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 
