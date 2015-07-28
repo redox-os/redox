@@ -53,7 +53,6 @@ impl XHCI {
         dh(rt_base);
         dl();
 
-
         //Set FLADJ Frame Length Adjustment (optional?)
         //Set I/O memory maps (optional?)
 
@@ -86,7 +85,7 @@ impl XHCI {
 
         let config = (op_base + 0x38) as *mut u32;
         dh(*config as usize);
-        *config = *hcsparams1 & 0xFF;
+        *config = (*config & 0xFFFFFF00) | (*hcsparams1 & 0xFF);
         d(" ");
         dh(*config as usize);
         dl();
