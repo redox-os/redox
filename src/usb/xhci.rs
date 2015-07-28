@@ -1,7 +1,16 @@
+use core::mem::size_of;
+
 use common::debug::*;
+use common::memory::*;
 use common::pci::*;
 
 use programs::session::*;
+
+struct TRB {
+    pub data: u64,
+    pub status: u32,
+    pub control: u32
+}
 
 pub struct XHCI {
     pub bus: usize,
@@ -72,26 +81,53 @@ impl XHCI {
         while *usbsts & 1 == 0 {
             d("Command Not Ready\n");
         }
+
         d("Command Ready ");
         dh(*usbcmd as usize);
         dl();
 
         //Program the Max Device Slots Enabled in the CONFIG register
         let hcsparams1 = (cap_base + 0x04) as *const u32;
+        let max_slots = *hcsparams1 & 0xFF;
+        let max_ports = (*hcsparams1 >> 24) & 0xFF;
 
-        d("Enabling Slots ");
-        dd((*hcsparams1 & 0xFF) as usize);
+        d("Max Slots ");
+        dd(max_slots as usize);
+        dl();
+
+        d("Max Ports ");
+        dd(max_ports as usize);
         dl();
 
         let config = (op_base + 0x38) as *mut u32;
-        dh(*config as usize);
-        *config = (*config & 0xFFFFFF00) | (*hcsparams1 & 0xFF);
-        d(" ");
-        dh(*config as usize);
+        *config = max_slots;
+        d("Slots Enabled ");
+        dd(*config as usize);
         dl();
 
         //Program the Device Context Base Address Array Pointer with a pointer to the Device Context Base Address Array
-        //Device the Command Ring Dequeue Pointer by programming the Command ring Control register with a pointer to the first TRB
+        let page_size = *((op_base + 0x08) as *mut u32) as usize;
+        d("Page Size ");
+        dd(page_size);
+        dl();
+
+        let dcbaap = (op_base + 0x30) as *mut u64;
+        *dcbaap = alloc(max_slots as usize * size_of::<u64>()) as u64;
+        for slot in 0..max_slots as isize {
+            *dcbaap.offset(slot) = alloc(4096) as u64;
+        }
+
+        d("Set Device Context Base Address Array ");
+        dh(*dcbaap as usize);
+        dl();
+
+        //Define the Command Ring Dequeue Pointer by programming the Command ring Control register with a pointer to the first TRB
+        let crcr = (op_base + 0x18) as *mut u64;
+        *crcr = alloc(256 * size_of::<TRB>()) as u64;
+        d("Set Command Ring Dequeue Pointer ");
+        dh(*crcr as usize);
+        dl();
+
         //Initialize interrupts (optional)
             //Allocate and initalize the MSI-X Message Table, setting the message address and message data, and enable the vectors. At least table vector entry 0 should be initialized
             //Allocate and initialize the MSI-X Pending Bit Array
@@ -99,6 +135,26 @@ impl XHCI {
             //Initialize the Message Control register in the MSI-X Capability Structure
             //Initialize each active interrupter by:
                 //TODO: Pull from page 72
+
         //Write the USBCMD to turn on the host controller by setting Run/Stop to 1
+        let usbcmd = op_base as *mut u32;
+        *usbcmd = *usbcmd | 1;
+
+        while *usbsts & 1 != 0 {
+            d("Not Running\n");
+        }
+
+        d("Running ");
+        dh(*usbcmd as usize);
+        dl();
+
+        for i in 0..max_ports as usize{
+            let portsc = (op_base + 0x400 + (0x10 * i)) as *mut u32;
+            d("Port ");
+            dd(i + 1);
+            d(" is ");
+            dh(*portsc as usize);
+            dl();
+        }
     }
 }
