@@ -6,6 +6,7 @@ RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
+QEMU_FLAGS=-serial mon:stdio -usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=usb-bus.0 -net user -net nic,model=rtl8139
 
 all: harddrive.bin
 
@@ -24,22 +25,22 @@ harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
 
 run: harddrive.bin
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net user -hda $<
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -hda $<
 
 run_no_kvm: harddrive.bin
-	$(QEMU) -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net user -hda $<
+	$(QEMU) $(QEMU_FLAGS) -sdl -hda $<
 
 run_tap: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl  -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 
 run_tap_dump: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) -enable-kvm -sdl -serial mon:stdio -usb -device nec-usb-xhci,id=xhci -net nic,model=rtl8139 -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 

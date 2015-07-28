@@ -13,7 +13,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
         let base = pci_read(bus, slot, func, 0x20);
 
         d("IDE Controller on ");
-        dh(base & 0xFFFFFFFE);
+        dh(base & 0xFFFFFFF0);
         dl();
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
@@ -23,7 +23,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                 bus: bus,
                 slot: slot,
                 func: func,
-                base: base & 0xFFFFFFFE,
+                base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,
                 irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
             };
@@ -33,19 +33,19 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             let base = pci_read(bus, slot, func, 0x10);
 
             d("EHCI Controller on ");
-            dh(base & 0xFFFFFFFE);
+            dh(base & 0xFFFFFFF0);
             dl();
         }else if interface_id == 0x10{
             let base = pci_read(bus, slot, func, 0x10);
 
             d("OHCI Controller on ");
-            dh(base & 0xFFFFFFFE);
+            dh(base & 0xFFFFFFF0);
             dl();
         }else if interface_id == 0x00{
             let base = pci_read(bus, slot, func, 0x20);
 
             d("UHCI Controller on ");
-            dh(base & 0xFFFFFFFE);
+            dh(base & 0xFFFFFFF0);
             dl();
         }else{
             d("Unknown USB interface version\n");
@@ -59,7 +59,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         bus: bus,
                         slot: slot,
                         func: func,
-                        base: base & 0xFFFFFFFE,
+                        base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
                     };
@@ -75,7 +75,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         bus: bus,
                         slot: slot,
                         func: func,
-                        base: base & (0xFFFFFFFF - 1),
+                        base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
                     };
