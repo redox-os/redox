@@ -204,3 +204,14 @@ pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
         }
     }
 }
+
+#[no_mangle]
+pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
+    unsafe {
+        let mut i = 0;
+        while i < len {
+            *src.offset(i) = c as u8;
+            i += 1;
+        }
+    }
+}
