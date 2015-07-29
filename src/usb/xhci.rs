@@ -6,10 +6,25 @@ use common::pci::*;
 
 use programs::session::*;
 
+struct STE {
+    pub ptr: u64,
+    pub length: u64
+}
+
 struct TRB {
     pub data: u64,
     pub status: u32,
     pub control: u32
+}
+
+impl TRB {
+    pub fn new() -> TRB {
+        TRB {
+           data: 0,
+           status: 0,
+           control: 0
+        }
+    }
 }
 
 pub struct XHCI {
@@ -106,35 +121,57 @@ impl XHCI {
         dl();
 
         //Program the Device Context Base Address Array Pointer with a pointer to the Device Context Base Address Array
-        let page_size = *((op_base + 0x08) as *mut u32) as usize;
-        d("Page Size ");
-        dd(page_size);
-        dl();
+        let device_context_base_address_array = alloc(max_slots as usize * size_of::<u64>()) as *mut u64;
+        for slot in 0..max_slots as isize {
+            *device_context_base_address_array.offset(slot) = alloc(2048) as u64;
+        }
 
         let dcbaap = (op_base + 0x30) as *mut u64;
-        *dcbaap = alloc(max_slots as usize * size_of::<u64>()) as u64;
-        for slot in 0..max_slots as isize {
-            *dcbaap.offset(slot) = alloc(4096) as u64;
-        }
+        *dcbaap = device_context_base_address_array as u64;
 
         d("Set Device Context Base Address Array ");
         dh(*dcbaap as usize);
         dl();
 
         //Define the Command Ring Dequeue Pointer by programming the Command ring Control register with a pointer to the first TRB
+        let command_ring = alloc(256 * size_of::<TRB>()) as *mut TRB;
+
         let crcr = (op_base + 0x18) as *mut u64;
-        *crcr = alloc(256 * size_of::<TRB>()) as u64;
+        *crcr = command_ring as u64;
         d("Set Command Ring Dequeue Pointer ");
         dh(*crcr as usize);
         dl();
 
-        //Initialize interrupts (optional)
-            //Allocate and initalize the MSI-X Message Table, setting the message address and message data, and enable the vectors. At least table vector entry 0 should be initialized
-            //Allocate and initialize the MSI-X Pending Bit Array
-            //Point the Table Offset and PBA Offsets in the MSI-X Capability Structure to the MSI-X Message Control Table and Pending Bit Array
-            //Initialize the Message Control register in the MSI-X Capability Structure
-            //Initialize each active interrupter by:
-                //TODO: Pull from page 72
+        //Define the Event Ring for interrupter 0
+        let event_ring_segments = 1;
+        let event_ring_segment_table = alloc(event_ring_segments * size_of::<STE>()) as *mut STE;
+
+        for segment in 0..event_ring_segments {
+            let ste = &mut *event_ring_segment_table.offset(segment as isize);
+            ste.length = 16;
+            ste.ptr = alloc(ste.length as usize * size_of::<TRB>()) as u64;
+
+            for i in 0..ste.length as isize {
+                *(ste.ptr as *mut TRB).offset(i) = TRB::new();
+            }
+
+            if segment == 0 {
+                let erdp = (rt_base + 0x38) as *mut u64;
+                *erdp = ste.ptr;
+            }
+        }
+
+        let erstsz = (rt_base + 0x28) as *mut u32;
+        *erstsz = event_ring_segments as u32;
+
+        let erstba = (rt_base + 0x30) as *mut u64;
+        *erstba = event_ring_segment_table as u64;
+
+        d("Set Event Ring Segment Table ");
+        dh(*erstba as usize);
+        d(" ");
+        dd(*erstsz as usize);
+        dl();
 
         //Write the USBCMD to turn on the host controller by setting Run/Stop to 1
         let usbcmd = op_base as *mut u32;
@@ -155,6 +192,25 @@ impl XHCI {
             d(" is ");
             dh(*portsc as usize);
             dl();
+        }
+
+        for segment in 0..event_ring_segments{
+            let ste = &*event_ring_segment_table.offset(segment as isize);
+            for i in 0..ste.length as usize {
+                let trb_ptr = (ste.ptr as *const TRB).offset(i as isize);
+                let trb = &*trb_ptr;
+                d("TRB ");
+                dd(segment);
+                d(" ");
+                dd(i);
+                d(" at ");
+                dh(trb_ptr as usize);
+                d(" is ");
+                dh(trb.status as usize);
+                d(" ");
+                dh(trb.control as usize);
+                dl();
+            }
         }
     }
 }
