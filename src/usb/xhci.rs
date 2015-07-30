@@ -25,6 +25,14 @@ impl TRB {
            control: 0
         }
     }
+
+    pub fn from_type(trb_type: u32) -> TRB {
+        TRB {
+            data: 0,
+            status: 0,
+            control: (trb_type & 0x3F) << 10
+        }
+    }
 }
 
 pub struct XHCI {
@@ -134,7 +142,14 @@ impl XHCI {
         dl();
 
         //Define the Command Ring Dequeue Pointer by programming the Command ring Control register with a pointer to the first TRB
-        let command_ring = alloc(256 * size_of::<TRB>()) as *mut TRB;
+        let command_ring_length = 256;
+        let mut command_ring_offset = 0;
+        let command_ring = alloc(command_ring_length * size_of::<TRB>()) as *mut TRB;
+        for i in 0..command_ring_length {
+            *command_ring.offset(i as isize) = TRB::new();
+            d("."); //Timing issue?
+        }
+        dl();
 
         let crcr = (op_base + 0x18) as *mut u64;
         *crcr = command_ring as u64;
@@ -145,24 +160,30 @@ impl XHCI {
         //Define the Event Ring for interrupter 0
         let event_ring_segments = 1;
         let event_ring_segment_table = alloc(event_ring_segments * size_of::<STE>()) as *mut STE;
+        let mut event_ring_dequeue = 0;
 
         for segment in 0..event_ring_segments {
             let ste = &mut *event_ring_segment_table.offset(segment as isize);
-            ste.length = 16;
+            ste.length = 256;
             ste.ptr = alloc(ste.length as usize * size_of::<TRB>()) as u64;
 
             for i in 0..ste.length as isize {
                 *(ste.ptr as *mut TRB).offset(i) = TRB::new();
+                dd(i as usize);
+                d(" ");
             }
+            dl();
 
             if segment == 0 {
-                let erdp = (rt_base + 0x38) as *mut u64;
-                *erdp = ste.ptr;
+                event_ring_dequeue = ste.ptr;
             }
         }
 
         let erstsz = (rt_base + 0x28) as *mut u32;
         *erstsz = event_ring_segments as u32;
+
+        let erdp = (rt_base + 0x38) as *mut u64;
+        *erdp = event_ring_dequeue;
 
         let erstba = (rt_base + 0x30) as *mut u64;
         *erstba = event_ring_segment_table as u64;
@@ -171,6 +192,8 @@ impl XHCI {
         dh(*erstba as usize);
         d(" ");
         dd(*erstsz as usize);
+        d(" ");
+        dh(*erdp as usize);
         dl();
 
         //Write the USBCMD to turn on the host controller by setting Run/Stop to 1
@@ -192,24 +215,45 @@ impl XHCI {
             d(" is ");
             dh(*portsc as usize);
             dl();
+
+            if *portsc & 1 == 1 {
+                d("Connected\n");
+            }
+            if *portsc & 2 == 2 {
+                d("Enabled\n");
+            }
+            if *portsc & 3 == 3 {
+                d("Enabling slot\n");
+
+                *command_ring.offset(command_ring_offset as isize) = TRB::from_type(23);
+                command_ring_offset += 1;
+                if command_ring_offset >= command_ring_length{
+                    command_ring_offset = 0;
+                }
+
+/*
+                *command_ring.offset(command_ring_offset as isize) = TRB::from_type(9);
+                command_ring_offset += 1;
+                if command_ring_offset >= command_ring_length{
+                    command_ring_offset = 0;
+                }
+*/
+
+                d("Write Doorbell\n");
+                let doorbell = db_base as *mut u32;
+                *doorbell = 0;
+            }
         }
 
-        for segment in 0..event_ring_segments{
-            let ste = &*event_ring_segment_table.offset(segment as isize);
-            for i in 0..ste.length as usize {
-                let trb_ptr = (ste.ptr as *const TRB).offset(i as isize);
-                let trb = &*trb_ptr;
-                d("TRB ");
-                dd(segment);
-                d(" ");
-                dd(i);
-                d(" at ");
-                dh(trb_ptr as usize);
-                d(" is ");
-                dh(trb.status as usize);
-                d(" ");
-                dh(trb.control as usize);
+        let mut checking = true;
+        while checking {
+            let trb = &*(event_ring_dequeue as *const TRB);
+            if trb.control != 0{
+                dd(i as usize);
+                d(": ");
+                dd(trb.control as usize);
                 dl();
+                checking = false;
             }
         }
     }

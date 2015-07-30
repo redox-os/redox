@@ -6,7 +6,7 @@ RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
-QEMU_FLAGS=-serial mon:stdio -usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=usb-bus.0 -net user -net nic,model=rtl8139
+QEMU_FLAGS=-serial mon:stdio -usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0 -net user -net nic,model=rtl8139
 
 all: harddrive.bin
 
