@@ -90,6 +90,9 @@ impl RTL8139 {
 
         while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
             //Waiting for move out of memory
+            if cfg!(debug_network){
+                d("RTL8139 waiting for DMA\n");
+            }
         }
 
         RTL8139_TX = (RTL8139_TX + 1) % 4;

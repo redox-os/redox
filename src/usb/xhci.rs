@@ -47,7 +47,7 @@ pub struct XHCI {
 impl SessionDevice for XHCI {
     fn handle(&mut self, irq: u8){
         if irq == self.irq {
-            d("XHCI handle");
+            d("XHCI handle\n");
         }
     }
 }
@@ -242,18 +242,6 @@ impl XHCI {
                 d("Write Doorbell\n");
                 let doorbell = db_base as *mut u32;
                 *doorbell = 0;
-            }
-        }
-
-        let mut checking = true;
-        while checking {
-            let trb = &*(event_ring_dequeue as *const TRB);
-            if trb.control != 0{
-                dd(i as usize);
-                d(": ");
-                dd(trb.control as usize);
-                dl();
-                checking = false;
             }
         }
     }
