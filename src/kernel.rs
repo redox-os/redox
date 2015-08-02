@@ -17,13 +17,11 @@
 extern crate core;
 
 use core::mem::size_of;
-use core::result::Result;
 
 use common::debug::*;
 use common::pio::*;
 use common::memory::*;
 use common::string::*;
-use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -114,8 +112,6 @@ unsafe fn init(){
     mouse_init();
 
     pci_init(&mut *session);
-
-    url_test();
 }
 
 pub unsafe fn input_handle(){
@@ -145,14 +141,7 @@ pub unsafe fn pci_handle(irq: u8){
         dl();
     }
 
-    for i in 0..(*session).devices.len(){
-        match (*session).devices.get(i){
-            Result::Ok(device) => {
-                device.handle(irq);
-            },
-            Result::Err(_) => ()
-        }
-    }
+    (*session).on_irq(irq);
 }
 
 

@@ -57,7 +57,7 @@ pub struct Intel8254x {
 }
 
 impl SessionDevice for Intel8254x {
-    fn handle(&mut self, irq: u8){
+    fn on_irq(&mut self, session: &Session, irq: u8){
         if irq == self.irq{
             d("Intel 8254x handle\n");
         }

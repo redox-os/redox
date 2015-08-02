@@ -27,15 +27,15 @@ harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
 	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
 
 run: harddrive.bin
-	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -hda $<
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -net user -hda $<
 
 run_no_kvm: harddrive.bin
-	$(QEMU) $(QEMU_FLAGS) -sdl -hda $<
+	$(QEMU) $(QEMU_FLAGS) -sdl -net user -hda $<
 
 run_tap: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl  -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 

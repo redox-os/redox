@@ -5,6 +5,7 @@ use core::result::Result;
 
 use common::string::*;
 use common::vector::*;
+use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -17,7 +18,7 @@ use graphics::size::*;
 use alloc::boxed::*;
 
 pub trait SessionDevice {
-    fn handle(&mut self, irq: u8);
+    fn on_irq(&mut self, session: &Session, irq: u8);
 }
 
 pub trait SessionItem {
@@ -25,6 +26,10 @@ pub trait SessionItem {
     fn draw(&mut self, session: &Session, &mut SessionUpdates) -> bool;
     fn on_key(&mut self, session: &Session, &mut SessionUpdates, key_event: KeyEvent);
     fn on_mouse(&mut self, session: &Session, &mut SessionUpdates, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
+}
+
+pub trait SessionScheme {
+    fn on_url(&mut self, session: &Session, url: &URL);
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -36,6 +41,7 @@ pub struct Session {
     pub mouse_point: Point,
     pub devices: Vector<Box<SessionDevice>>,
     pub items: Vector<Box<SessionItem>>,
+    pub schemes: Vector<Box<SessionScheme>>,
     pub redraw: usize
 }
 
@@ -51,28 +57,31 @@ impl Session {
             mouse_point: Point::new(0, 0),
             devices: Vector::new(),
             items: Vector::new(),
+            schemes: Vector::new(),
             redraw: REDRAW_ALL
         }
     }
 
-    pub fn new_updates(&self) -> SessionUpdates {
-        SessionUpdates{
-            new_items: Vector::new(),
-            redraw: REDRAW_NONE
-        }
-    }
-
-    pub fn apply_updates(&mut self, mut updates: SessionUpdates){
-        while updates.new_items.len() > 0 {
-            match updates.new_items.extract(0){
-                Result::Ok(item) => {
-                    self.items.insert(0, item);
-                    updates.redraw = REDRAW_ALL;
+    pub fn on_irq(&self, irq: u8){
+        for i in 0..self.devices.len(){
+            match self.devices.get(i){
+                Result::Ok(device) => {
+                    device.on_irq(self, irq);
                 },
                 Result::Err(_) => ()
             }
         }
-        self.redraw = max(updates.redraw, self.redraw);
+    }
+
+    pub fn on_url(&self, url: &URL){
+        for i in 0..self.schemes.len(){
+            match self.schemes.get(i){
+                Result::Ok(scheme) => {
+                    scheme.on_url(self, url);
+                },
+                Result::Err(_) => ()
+            }
+        }
     }
 
     pub unsafe fn on_key(&mut self, key_event: KeyEvent){
@@ -152,5 +161,25 @@ impl Session {
 
             self.apply_updates(updates);
         }
+    }
+
+    fn new_updates(&self) -> SessionUpdates {
+        SessionUpdates{
+            new_items: Vector::new(),
+            redraw: REDRAW_NONE
+        }
+    }
+
+    fn apply_updates(&mut self, mut updates: SessionUpdates){
+        while updates.new_items.len() > 0 {
+            match updates.new_items.extract(0){
+                Result::Ok(item) => {
+                    self.items.insert(0, item);
+                    updates.redraw = REDRAW_ALL;
+                },
+                Result::Err(_) => ()
+            }
+        }
+        self.redraw = max(updates.redraw, self.redraw);
     }
 }
