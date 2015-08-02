@@ -23,6 +23,7 @@ use common::debug::*;
 use common::pio::*;
 use common::memory::*;
 use common::string::*;
+use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -45,6 +46,7 @@ mod common {
     pub mod safeptr;
     pub mod string;
     pub mod vector;
+    pub mod url;
 }
 
 mod drivers {
@@ -88,11 +90,9 @@ mod programs {
     pub mod viewer;
 }
 
-/*
 mod usb {
     pub mod xhci;
 }
-*/
 
 static mut session: *mut Session = 0 as *mut Session;
 
@@ -114,6 +114,8 @@ unsafe fn init(){
     mouse_init();
 
     pci_init(&mut *session);
+
+    url_test();
 }
 
 pub unsafe fn input_handle(){
@@ -207,7 +209,6 @@ pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
     }
 }
 
-/*
 #[no_mangle]
 pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
     unsafe {
@@ -218,4 +219,3 @@ pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
         }
     }
 }
-*/

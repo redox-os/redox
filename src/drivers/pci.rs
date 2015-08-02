@@ -6,7 +6,7 @@ use network::rtl8139::*;
 
 use programs::session::*;
 
-//use usb::xhci::*;
+use usb::xhci::*;
 
 pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: usize, class_id: usize, subclass_id: usize, interface_id: usize, vendor_code: usize, device_code: usize){
     if class_id == 0x01 && subclass_id == 0x01{
@@ -18,7 +18,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
             let base = pci_read(bus, slot, func, 0x10);
-            /*
+
             let session_device = box XHCI {
                 bus: bus,
                 slot: slot,
@@ -29,7 +29,6 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             };
             session_device.init();
             session.devices.push(session_device);
-            */
         }else if interface_id == 0x20{
             let base = pci_read(bus, slot, func, 0x10);
 

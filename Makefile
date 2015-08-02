@@ -2,11 +2,12 @@ RUSTC=rustc
 RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 	-O -Z no-landing-pads \
 	-A dead-code \
-	-W trivial-casts -W trivial-numeric-casts --cfg debug_network
+	-W trivial-casts -W trivial-numeric-casts
+#--cfg debug_network
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
-QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -net user
+QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139
 #-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 
 all: harddrive.bin
