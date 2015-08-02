@@ -48,6 +48,7 @@ mod common {
     pub mod safeptr;
     pub mod string;
     pub mod vector;
+    pub mod url;
 }
 
 #[path="../src/drivers"]

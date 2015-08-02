@@ -23,7 +23,7 @@ pub struct RTL8139 {
 static mut RTL8139_TX: u16 = 0;
 
 impl SessionDevice for RTL8139 {
-    fn handle(&mut self, irq: u8){
+    fn on_irq(&mut self, session: &Session, irq: u8){
         if irq == self.irq {
             unsafe {
                 if cfg!(debug_network){
