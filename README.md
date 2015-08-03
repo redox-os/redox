@@ -6,6 +6,7 @@ Redox is a Rust based operating system, designed to be modular and well document
 ```bash
 cd setup
 ./ubuntu.sh
+./binary.sh
 ```
 - Make the project
 ```bash
@@ -21,3 +22,7 @@ make run
 ```bash
 make run_tap
 ```
+
+## Building on Windows
+- Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
+- Make sure to select Add to PATH
