@@ -1,22 +1,22 @@
-ENTRY(kernel)
+ENTRY(_entry)
 OUTPUT_FORMAT(elf32-i386)
 
 MEMORY {
-	lowmem : org = 0xC000, l = 256K
+	highmem : org = 0x80000000, l = 4096K
 }
 
 SECTIONS {
 	.text : {
 		*(.text*)
-	} >lowmem
+	} >highmem
 
 	.data : {
 		*(.data*)
-	} >lowmem
+	} >highmem
 
 	.rodata : {
 		*(.rodata*)
-	} >lowmem
+	} >highmem
 
 	/DISCARD/ : {
 		*(.comment)
