@@ -1,4 +1,4 @@
-ENTRY(entry)
+ENTRY(_entry)
 OUTPUT_FORMAT(elf32-i386)
 
 MEMORY {
