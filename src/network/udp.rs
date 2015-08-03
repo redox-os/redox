@@ -7,6 +7,8 @@ use common::vector::*;
 
 use network::common::*;
 
+use programs::session::*;
+
 #[derive(Copy, Clone)]
 pub struct UDPHeader {
     pub src: n16,
@@ -44,7 +46,8 @@ impl ToBytes for UDP {
 }
 
 impl Response for UDP {
-    fn respond(&self) -> Vector<Vector<u8>> {
+    #[allow(unused_variables)]
+    fn respond(&self, session: &Session) -> Vector<Vector<u8>> {
         d("            ");
         self.d();
         dl();

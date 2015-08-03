@@ -11,6 +11,8 @@ use common::vector::*;
 use network::common::*;
 use network::http::*;
 
+use programs::session::*;
+
 #[derive(Copy, Clone)]
 pub struct TCPHeader {
     pub src: n16,
@@ -48,7 +50,7 @@ const TCP_ACK: u16 = 1 << 4;
 
 #[allow(trivial_casts)]
 impl Response for TCP {
-    fn respond(&self) -> Vector<Vector<u8>> {
+    fn respond(&self, session: &Session) -> Vector<Vector<u8>> {
         if cfg!(debug_network){
             d("            ");
             self.d();
@@ -120,7 +122,7 @@ impl Response for TCP {
                     match self.header.dst.get() {
                         80 => {
                             // TODO: More efficient method
-                            let html = http_response(String::from_c_slice(self.data.as_slice()));
+                            let html = http_response(String::from_c_slice(self.data.as_slice()), session);
                             unsafe{
                                 let html_ptr = html.to_c_str();
                                 ret.data = Vector::from_raw(html_ptr, html.len());

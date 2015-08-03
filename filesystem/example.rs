@@ -23,6 +23,7 @@ use core::result::Result;
 use common::memory::*;
 use common::string::*;
 use common::vector::*;
+use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -89,7 +90,7 @@ pub struct Application {
 
 impl Application {
     fn append(&mut self, line: String) {
-        self.output = self.output.clone() + line + '\n';
+        self.output = self.output.clone() + line + "\n";
     }
 
     #[allow(unused_variables)]
@@ -98,13 +99,31 @@ impl Application {
         for arg in self.command.split(" ".to_string()) {
             args.push(arg);
         }
-        if args.len() > 0 {
-            match args.get(0) {
-                Result::Ok(arg) => if *arg == "test".to_string() {
-                    self.append("Test Command!".to_string());
-                },
-                Result::Err(_) => ()
-            }
+        match args.get(0) {
+            Result::Ok(cmd) => {
+                if *cmd == "url".to_string() {
+                    match args.get(1) {
+                        Result::Ok(url_string) =>{
+                            let url = URL::from_string(url_string.clone());
+                            self.append(url.to_string());
+                            self.append(session.on_url(&url));
+                        },
+                        Result::Err(_) => {
+                            for i in 0..session.schemes.len() {
+                                match session.schemes.get(i) {
+                                    Result::Ok(scheme) => {
+                                        self.append(scheme.scheme());
+                                    },
+                                    Result::Err(_) => ()
+                                }
+                            }
+                        }
+                    }
+                }else{
+                    self.append("The only command right now is 'url'".to_string());
+                }
+            },
+            Result::Err(_) => ()
         }
     }
 }
@@ -118,8 +137,8 @@ impl SessionItem for Application {
                 size: Size::new(576, 400),
                 title: String::from_str("Terminal"),
                 title_color: Color::new(0, 0, 0),
-                border_color: Color::new(196, 196, 255),
-                content_color: Color::alpha(160, 160, 196, 196),
+                border_color: Color::new(192, 192, 255),
+                content_color: Color::alpha(128, 128, 160, 192),
                 shaded: false,
                 closed: false,
                 dragging: false,
@@ -258,7 +277,7 @@ impl SessionItem for Application {
                 '\x1B' => self.command = String::new(),
                 '\n' => {
                     if self.command.len() > 0 {
-                        self.output = self.output.clone() + (self.command.clone() + '\n');
+                        self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";
                         self.on_command(session);
                         self.command = String::new();
                         self.offset = 0;

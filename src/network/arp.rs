@@ -7,6 +7,8 @@ use common::vector::*;
 
 use network::common::*;
 
+use programs::session::*;
+
 #[derive(Copy, Clone)]
 pub struct ARPHeader {
     pub htype: n16,
@@ -49,7 +51,8 @@ impl ToBytes for ARP {
 }
 
 impl Response for ARP {
-    fn respond(&self) -> Vector<Vector<u8>>{
+    #[allow(unused_variables)]
+    fn respond(&self, session: &Session) -> Vector<Vector<u8>>{
         if self.header.dst_ip.equals(IP_ADDR) {
             if cfg!(debug_network){
                 d("    ");
