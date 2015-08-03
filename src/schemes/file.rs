@@ -29,7 +29,11 @@ impl SessionScheme for FileScheme {
 
         let mut ret = String::new();
         for file in unfs.list(path.clone()).as_slice() {
-            ret = ret + file.clone() + "\n";
+            if ret.len() > 0 {
+                ret = ret + "\n" + file.clone();
+            }else{
+                ret = file.clone();
+            }
         }
         return ret;
     }
