@@ -30,6 +30,12 @@ use drivers::pci::*;
 use programs::filemanager::*;
 use programs::session::*;
 
+use schemes::file::*;
+use schemes::http::*;
+use schemes::memory::*;
+use schemes::pci::*;
+use schemes::random::*;
+
 mod alloc {
     pub mod boxed;
 }
@@ -88,6 +94,14 @@ mod programs {
     pub mod viewer;
 }
 
+mod schemes {
+    pub mod file;
+    pub mod http;
+    pub mod memory;
+    pub mod pci;
+    pub mod random;
+}
+
 mod usb {
     pub mod xhci;
 }
@@ -112,6 +126,12 @@ unsafe fn init(){
     mouse_init();
 
     pci_init(&mut *session);
+
+    (*session).schemes.push(box FileScheme);
+    (*session).schemes.push(box HTTPScheme);
+    (*session).schemes.push(box MemoryScheme);
+    (*session).schemes.push(box PCIScheme);
+    (*session).schemes.push(box RandomScheme);
 }
 
 pub unsafe fn input_handle(){

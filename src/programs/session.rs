@@ -29,7 +29,8 @@ pub trait SessionItem {
 }
 
 pub trait SessionScheme {
-    fn on_url(&mut self, session: &Session, url: &URL);
+    fn scheme(&self) -> String;
+    fn on_url(&mut self, session: &Session, url: &URL) -> String;
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -73,15 +74,21 @@ impl Session {
         }
     }
 
-    pub fn on_url(&self, url: &URL){
+    pub fn on_url(&self, url: &URL) -> String {
+        let mut ret = String::new();
+
         for i in 0..self.schemes.len(){
             match self.schemes.get(i){
                 Result::Ok(scheme) => {
-                    scheme.on_url(self, url);
+                    if scheme.scheme() == url.scheme {
+                        ret = ret + scheme.on_url(self, url);
+                    }
                 },
                 Result::Err(_) => ()
             }
         }
+
+        return ret;
     }
 
     pub unsafe fn on_key(&mut self, key_event: KeyEvent){

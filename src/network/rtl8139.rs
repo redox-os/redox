@@ -53,7 +53,7 @@ impl SessionDevice for RTL8139 {
 
                     match EthernetII::from_bytes(Vector::<u8>::from_raw(frame_addr as *const u8, frame_len - 4)){
                         Option::Some(frame) => {
-                            for response in frame.respond().as_slice() {
+                            for response in frame.respond(session).as_slice() {
                                 self.send(response.data as usize, response.len());
                             }
                         },

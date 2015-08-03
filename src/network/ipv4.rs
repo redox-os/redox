@@ -10,6 +10,8 @@ use network::icmp::*;
 use network::tcp::*;
 use network::udp::*;
 
+use programs::session::*;
+
 #[derive(Copy, Clone)]
 pub struct IPv4Header {
     pub ver_hlen: u8,
@@ -58,7 +60,7 @@ impl ToBytes for IPv4 {
 }
 
 impl Response for IPv4 {
-    fn respond(&self) -> Vector<Vector<u8>>{
+    fn respond(&self, session: &Session) -> Vector<Vector<u8>>{
         if self.header.dst.equals(IP_ADDR) || self.header.dst.equals(BROADCAST_IP_ADDR){
             if cfg!(debug_network){
                 d("    ");
@@ -69,16 +71,16 @@ impl Response for IPv4 {
             let mut responses: Vector<Vector<u8>> = Vector::new();
             match self.header.proto {
                 0x01 => match ICMP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(),
+                    Option::Some(packet) => responses = packet.respond(session),
                     Option::None => ()
                 },
                 //Must copy source IP and destination IP for checksum
                 0x06 => match TCP::from_bytes_ipv4(self.data.clone(), self.header.src, self.header.dst) {
-                    Option::Some(packet) => responses = packet.respond(),
+                    Option::Some(packet) => responses = packet.respond(session),
                     Option::None => ()
                 },
                 0x11 => match UDP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(),
+                    Option::Some(packet) => responses = packet.respond(session),
                     Option::None => ()
                 },
                 _ => ()
