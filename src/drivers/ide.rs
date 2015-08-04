@@ -1,3 +1,5 @@
+use core::result::Result;
+
 use common::debug::*;
 use common::memory::*;
 use common::pci::*;
@@ -8,7 +10,6 @@ use common::url::*;
 use drivers::disk::*;
 
 use programs::session::*;
-
 
 pub struct IDEScheme {
     pub bus: usize,
@@ -25,13 +26,51 @@ impl SessionScheme for IDEScheme {
 
     #[allow(unused_variables)]
     fn on_url(&mut self, session: &Session, url: &URL) -> String {
-        unsafe {
-            let destination = alloc(512);
-            let disk = Disk::new();
-            disk.read_dma(1, 1, destination, self.base as u16);
+        let mut ret = String::new();
+
+        let mut sector = 1;
+        match url.path.get(0) {
+            Result::Ok(part) => {
+                sector = part.to_num();
+            },
+            Result::Err(_) => ()
         }
 
-        return "TEST".to_string();
+        let mut count = 1;
+        match url.path.get(1) {
+            Result::Ok(part) => {
+                count = part.to_num();
+            },
+            Result::Err(_) => ()
+        }
+
+        unsafe {
+            let base = self.base as u16;
+
+            if count < 1 {
+                count = 1;
+            }
+
+            if count > 0x7F {
+                count = 0x7F;
+            }
+
+            let destination = alloc(count * 512);
+            if destination > 0 {
+                let disk = Disk::new();
+                //disk.read(sector as u64, count as u16, destination);
+                disk.read_dma(sector as u64, count as u16, destination, base);
+
+                while inb(base + 2) & 4 != 4{
+                    d("DISK WAIT\n");
+                }
+
+                ret = String::from_c_str(destination as *const u8);
+                unalloc(destination);
+            }
+        }
+
+        return ret;
     }
 }
 
@@ -56,7 +95,7 @@ impl SessionDevice for IDE {
                     d("IDE handle");
 
                     if command & 1 == 1 {
-                        d(" Command ");
+                        d(" DMA Command ");
                         dbh(command);
 
                         outb(base, command & 0xFE);
@@ -67,34 +106,29 @@ impl SessionDevice for IDE {
                         d(" Status ");
                         dbh(status);
 
-                        outb(base + 0x2, 1);
+                        outb(base + 0x2, 4);
 
                         d(" to ");
                         dbh(inb(base + 0x2));
 
                         let prdt = ind(base + 0x4) as usize;
-                        if prdt > 0 {
-                            let prdte = &mut *(prdt as *mut PRDTE);
-                            d(" PTR ");
-                            dh(prdte.ptr as usize);
-
-                            d(" SIZE ");
-                            dd(prdte.size as usize);
-
-                            d(" RESERVED ");
-                            dh(prdte.reserved as usize);
-
-                            d(" DATA ");
-                            for i in 0..4 {
-                                dc(*(prdte.ptr as *const u8).offset(i) as char);
-                            }
-
-                            unalloc(prdte.ptr as usize);
-                            prdte.ptr = 0;
-                        }
-                        unalloc(prdt);
-
                         outd(base + 0x4, 0);
+
+                        d(" PRDT ");
+                        dh(prdt);
+
+                        unalloc(prdt);
+                    }else{
+                        d(" PIO Command ");
+                        dbh(command);
+
+                        d(" Status ");
+                        dbh(status);
+
+                        outb(base + 0x2, 4);
+
+                        d(" to ");
+                        dbh(inb(base + 0x2));
                     }
 
                     dl();
