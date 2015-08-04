@@ -46,7 +46,7 @@ pub struct XHCI {
 
 impl SessionDevice for XHCI {
     #[allow(unused_variables)]
-    fn on_irq(&mut self, session: &Session, irq: u8){
+    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
         if irq == self.irq {
             d("XHCI handle\n");
         }
