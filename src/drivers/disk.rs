@@ -1,3 +1,7 @@
+use core::mem::size_of;
+
+use common::debug::*;
+use common::memory::*;
 use common::pio::*;
 
 //Status port bits
@@ -75,6 +79,12 @@ const ATA_REG_LBA5: u16 = 0x0B;
 const ATA_REG_CONTROL: u16 = 0x0C;
 const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
+
+pub struct PRDTE {
+    pub ptr: u32,
+    pub size: u16,
+    pub reserved: u16
+}
 
 pub struct Disk{
     base: u16,
@@ -169,6 +179,55 @@ impl Disk {
                     let data = inw(self.base + ATA_REG_DATA);
                     *((destination + sector*512 + word*2) as *mut u16) = data;
                 }
+            }
+        }
+
+        return 0;
+    }
+
+    pub unsafe fn read_dma(&self, lba: u64, count: u16, destination: usize, busmaster: u16) -> u8{
+        if destination > 0 {
+            //Allocate PDTR
+            let mut prdt = ind(busmaster + 4) as usize;
+
+            if prdt == 0 {
+                prdt = alloc(size_of::<PRDTE>());
+                *(prdt as *mut PRDTE) = PRDTE {
+                    ptr: destination as u32,
+                    size: count * 512,
+                    reserved: 0x8000
+                };
+
+                outd(busmaster + 4, prdt as u32);
+
+                //Set read bit
+                outb(busmaster, 8);
+
+                //Clear interrupt, error bit
+                outb(busmaster + 2, 0);
+
+                //DMA Transfer Command
+                while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+                }
+
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+
+                self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
+
+                self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+
+                //Engage bus mastering
+                outb(busmaster, inb(busmaster) | 1);
+            }else{
+                d("Operation Running!\n");
             }
         }
 

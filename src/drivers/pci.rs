@@ -1,6 +1,7 @@
-
 use common::debug::*;
 use common::pci::*;
+
+use drivers::ide::*;
 
 use network::intel8254x::*;
 use network::rtl8139::*;
@@ -13,9 +14,22 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
     if class_id == 0x01 && subclass_id == 0x01{
         let base = pci_read(bus, slot, func, 0x20);
 
-        d("IDE Controller on ");
-        dh(base & 0xFFFFFFF0);
-        dl();
+        let session_device = box IDE {
+            bus: bus,
+            slot: slot,
+            func: func,
+            base: base & 0xFFFFFFF0,
+            memory_mapped: base & 1 == 0
+        };
+        session_device.init();
+        session.devices.push(session_device);
+        session.schemes.push(box IDEScheme {
+            bus: bus,
+            slot: slot,
+            func: func,
+            base: base & 0xFFFFFFF0,
+            memory_mapped: base & 1 == 0
+        });
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
             let base = pci_read(bus, slot, func, 0x10);
@@ -26,7 +40,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                 func: func,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,
-                irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
+                irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
             };
             session_device.init();
             session.devices.push(session_device);
@@ -62,7 +76,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
-                        irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
+                        irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
                     };
                     session_device.init();
                     session.devices.push(session_device);
@@ -78,7 +92,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
-                        irq: pci_read(bus, slot, 0, 0x3C) as u8 & 0xF
+                        irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
                     };
                     session_device.init();
                     session.devices.push(session_device);
