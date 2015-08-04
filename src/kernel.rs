@@ -26,6 +26,7 @@ use common::string::*;
 use drivers::keyboard::*;
 use drivers::mouse::*;
 use drivers::pci::*;
+use drivers::ps2::*;
 
 use programs::filemanager::*;
 use programs::session::*;
@@ -58,6 +59,7 @@ mod drivers {
     pub mod keyboard;
     pub mod mouse;
     pub mod pci;
+    pub mod ps2;
 }
 
 mod filesystems {
@@ -125,6 +127,8 @@ unsafe fn init(){
     keyboard_init();
     mouse_init();
 
+    (*session).devices.push(box PS2);
+
     pci_init(&mut *session);
 
     (*session).schemes.push(box FileScheme);
@@ -134,45 +138,14 @@ unsafe fn init(){
     (*session).schemes.push(box RandomScheme);
 }
 
-pub unsafe fn input_handle(){
-    loop {
-        let status = inb(0x64);
-        if status & 0x21 == 1 {
-            let key_event = keyboard_interrupt();
-            if key_event.scancode > 0 {
-                (*session).on_key(key_event);
-            }
-        }else if status & 0x21 == 0x21 {
-            let mouse_event = mouse_interrupt();
-
-            if mouse_event.valid {
-                (*session).on_mouse(mouse_event);
-            }
-        }else{
-            break;
-        }
-    }
-}
-
-pub unsafe fn pci_handle(irq: u8){
-    if cfg!(debug_pci){
-        d("PCI Handle ");
-        dh(irq as usize);
-        dl();
-    }
-
-    (*session).on_irq(irq);
-}
-
-
 #[no_mangle]
 pub unsafe fn kernel(interrupt: u32) {
     match interrupt {
         0x20 => (), //timer
-        0x21 => input_handle(), //keyboard
-        0x2B => pci_handle(0xB),
-        0x2C => input_handle(), //mouse
-        0x2E => (), //disk
+        0x21 => (*session).on_irq(0x1), //keyboard
+        0x2B => (*session).on_irq(0xB),
+        0x2C => (*session).on_irq(0xC), //mouse
+        0x2E => (*session).on_irq(0xE), //disk
         0xFF => { // main loop
             init();
 
@@ -180,7 +153,7 @@ pub unsafe fn kernel(interrupt: u32) {
                 (*session).redraw();
                 asm!("sti");
                 asm!("hlt");
-                asm!("cli"); // TODO: Allow preempting
+                //asm!("cli"); // TODO: Allow preempting
             }
         }
         _ => {

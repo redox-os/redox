@@ -18,14 +18,14 @@ use graphics::size::*;
 use alloc::boxed::*;
 
 pub trait SessionDevice {
-    fn on_irq(&mut self, session: &Session, irq: u8);
+    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8);
 }
 
 pub trait SessionItem {
     fn new(file: String) -> Self where Self:Sized;
-    fn draw(&mut self, session: &Session, &mut SessionUpdates) -> bool;
-    fn on_key(&mut self, session: &Session, &mut SessionUpdates, key_event: KeyEvent);
-    fn on_mouse(&mut self, session: &Session, &mut SessionUpdates, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
+    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool;
+    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent);
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
 }
 
 pub trait SessionScheme {
@@ -47,6 +47,8 @@ pub struct Session {
 }
 
 pub struct SessionUpdates {
+    pub key_events: Vector<KeyEvent>,
+    pub mouse_events: Vector<MouseEvent>,
     pub new_items: Vector<Box<SessionItem>>,
     pub redraw: usize
 }
@@ -63,15 +65,19 @@ impl Session {
         }
     }
 
-    pub fn on_irq(&self, irq: u8){
+    pub fn on_irq(&mut self, irq: u8){
+        let mut updates = self.new_updates();
+
         for i in 0..self.devices.len(){
             match self.devices.get(i){
                 Result::Ok(device) => {
-                    device.on_irq(self, irq);
+                    device.on_irq(self, &mut updates, irq);
                 },
                 Result::Err(_) => ()
             }
         }
+
+        self.apply_updates(updates);
     }
 
     pub fn on_url(&self, url: &URL) -> String {
@@ -91,7 +97,7 @@ impl Session {
         return ret;
     }
 
-    pub unsafe fn on_key(&mut self, key_event: KeyEvent){
+    pub fn on_key(&mut self, key_event: KeyEvent){
         let mut updates = self.new_updates();
 
         match self.items.get(0){
@@ -105,7 +111,7 @@ impl Session {
         self.apply_updates(updates);
     }
 
-    pub unsafe fn on_mouse(&mut self, mouse_event: MouseEvent){
+    pub fn on_mouse(&mut self, mouse_event: MouseEvent){
         self.mouse_point.x = max(0, min(self.display.width as isize - 1, self.mouse_point.x + mouse_event.x));
         self.mouse_point.y = max(0, min(self.display.height as isize - 1, self.mouse_point.y + mouse_event.y));
 
@@ -134,7 +140,7 @@ impl Session {
         self.apply_updates(updates);
     }
 
-    pub unsafe fn redraw(&mut self){
+    pub fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
             let mut updates = self.new_updates();
 
@@ -172,12 +178,32 @@ impl Session {
 
     fn new_updates(&self) -> SessionUpdates {
         SessionUpdates{
+            key_events: Vector::new(),
+            mouse_events: Vector::new(),
             new_items: Vector::new(),
             redraw: REDRAW_NONE
         }
     }
 
     fn apply_updates(&mut self, mut updates: SessionUpdates){
+        while updates.key_events.len() > 0 {
+            match updates.key_events.extract(0){
+                Result::Ok(key_event) => {
+                    self.on_key(key_event);
+                },
+                Result::Err(_) => ()
+            }
+        }
+
+        while updates.mouse_events.len() > 0 {
+            match updates.mouse_events.extract(0){
+                Result::Ok(mouse_event) => {
+                    self.on_mouse(mouse_event);
+                },
+                Result::Err(_) => ()
+            }
+        }
+
         while updates.new_items.len() > 0 {
             match updates.new_items.extract(0){
                 Result::Ok(item) => {
