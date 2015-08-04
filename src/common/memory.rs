@@ -97,6 +97,41 @@ pub unsafe fn alloc(size: usize) -> usize{
     }
 }
 
+pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
+    if size > 0 {
+        let mut number = 0;
+        let mut count = 0;
+        for i in 0..CLUSTER_COUNT {
+            if cluster(i) == 0 {
+                if count == 0 {
+                    if cluster_address(i) % alignment == 0 {
+                        number = i;
+                    }else{
+                        continue;
+                    }
+                }
+                count += 1;
+                if count*CLUSTER_SIZE > size {
+                    break;
+                }
+            }else{
+                count = 0;
+            }
+        }
+        if count*CLUSTER_SIZE > size {
+            let address = cluster_address(number);
+            for i in number..number + count {
+                set_cluster(i, address);
+            }
+            return address;
+        }else{
+            return 0;
+        }
+    }else{
+        return 0;
+    }
+}
+
 pub unsafe fn alloc_size(ptr: usize) -> usize {
     let mut size = 0;
 

@@ -57,6 +57,7 @@ mod common {
 
 mod drivers {
     pub mod disk;
+    pub mod ide;
     pub mod keyboard;
     pub mod mouse;
     pub mod pci;
@@ -151,6 +152,7 @@ pub unsafe fn kernel(interrupt: u32) {
         0x2B => (*session).on_irq(0xB), //pci
         0x2C => (*session).on_irq(0xC), //mouse
         0x2E => (*session).on_irq(0xE), //disk
+        0x2F => (*session).on_irq(0xF), //disk
         0xFF => { // main loop
             init();
 
