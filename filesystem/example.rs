@@ -97,13 +97,32 @@ impl Application {
     fn on_command(&mut self, session: &Session){
         let mut args: Vector<String> = Vector::<String>::new();
         for arg in self.command.split(" ".to_string()) {
-            args.push(arg);
+            if arg.len() > 0 {
+                args.push(arg);
+            }
         }
         match args.get(0) {
             Result::Ok(cmd) => {
-                if *cmd == "url".to_string() {
+                if *cmd == "echo".to_string() {
+                    let mut echo = String::new();
+                    for i in 1..args.len() {
+                        match args.get(i) {
+                            Result::Ok(arg) => {
+                                if echo.len() == 0 {
+                                    echo = arg.clone();
+                                }else{
+                                    echo = echo + " " + arg.clone();
+                                }
+                            },
+                            Result::Err(_) => ()
+                        }
+                    }
+                    self.append(echo);
+                }else if *cmd == "exit".to_string() {
+                    self.window.closed = true;
+                }else if *cmd == "url".to_string() {
                     match args.get(1) {
-                        Result::Ok(url_string) =>{
+                        Result::Ok(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
                             self.append(session.on_url(&url));
@@ -120,7 +139,7 @@ impl Application {
                         }
                     }
                 }else{
-                    self.append("The only command right now is 'url'".to_string());
+                    self.append("Commands:  echo  exit  url".to_string());
                 }
             },
             Result::Err(_) => ()

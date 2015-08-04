@@ -10,6 +10,7 @@ pub unsafe fn serial_init(){
     outb(0x3F8 + 3, 0x03);
     outb(0x3F8 + 2, 0xC7);
     outb(0x3F8 + 4, 0x0B);
+    outb(0x3F8 + 1, 0x01);
 }
 
 pub fn db(byte: u8){

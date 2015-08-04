@@ -27,6 +27,7 @@ use drivers::keyboard::*;
 use drivers::mouse::*;
 use drivers::pci::*;
 use drivers::ps2::*;
+use drivers::serial::*;
 
 use programs::filemanager::*;
 use programs::session::*;
@@ -60,6 +61,7 @@ mod drivers {
     pub mod mouse;
     pub mod pci;
     pub mod ps2;
+    pub mod serial;
 }
 
 mod filesystems {
@@ -128,6 +130,7 @@ unsafe fn init(){
     mouse_init();
 
     (*session).devices.push(box PS2);
+    (*session).devices.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(&mut *session);
 
@@ -143,7 +146,9 @@ pub unsafe fn kernel(interrupt: u32) {
     match interrupt {
         0x20 => (), //timer
         0x21 => (*session).on_irq(0x1), //keyboard
-        0x2B => (*session).on_irq(0xB),
+        0x23 => (*session).on_irq(0x3), // serial 2 and 4
+        0x24 => (*session).on_irq(0x4), // serial 1 and 3
+        0x2B => (*session).on_irq(0xB), //pci
         0x2C => (*session).on_irq(0xC), //mouse
         0x2E => (*session).on_irq(0xE), //disk
         0xFF => { // main loop
