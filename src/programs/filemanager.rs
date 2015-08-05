@@ -121,24 +121,6 @@ impl SessionItem for FileManager {
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.selected = -1,
-                0x1C => if self.selected >= 0 && self.selected < self.files.len() as isize {
-                            match self.files.get(self.selected as usize) {
-                                Result::Ok(file) => {
-                                    if file.ends_with(".md".to_string())
-                                        || file.ends_with(".rs".to_string())
-                                    {
-                                        updates.new_items.push(box Editor::new(file.clone()));
-                                    }else if file.ends_with(".bin".to_string()){
-                                        updates.new_items.push(box Executor::new(file.clone()));
-                                    }else if file.ends_with(".bmp".to_string()){
-                                        updates.new_items.push(box Viewer::new(file.clone()));
-                                    }else{
-                                        d("No program found!\n");
-                                    }
-                                },
-                                Result::Err(_) => ()
-                            }
-                        },
                 0x47 => self.selected = 0,
                 0x48 => if self.selected > 0 {
                             self.selected -= 1;
@@ -147,16 +129,40 @@ impl SessionItem for FileManager {
                 0x50 => if self.selected < self.files.len() as isize - 1 {
                             self.selected += 1;
                         },
-                _ => if key_event.character != '\0' {
-                        let mut i = 0;
-                        for file in self.files.as_slice() {
-                            if file[0] == key_event.character {
-                                self.selected = i;
-                                break;
-                            }
-                            i += 1;
+                _ => ()
+            }
+            match key_event.character {
+                '\0' => (),
+                '\n' => {
+                    if self.selected >= 0 && self.selected < self.files.len() as isize {
+                        match self.files.get(self.selected as usize) {
+                            Result::Ok(file) => {
+                                if file.ends_with(".md".to_string())
+                                    || file.ends_with(".rs".to_string())
+                                {
+                                    updates.new_items.push(box Editor::new(file.clone()));
+                                }else if file.ends_with(".bin".to_string()){
+                                    updates.new_items.push(box Executor::new(file.clone()));
+                                }else if file.ends_with(".bmp".to_string()){
+                                    updates.new_items.push(box Viewer::new(file.clone()));
+                                }else{
+                                    d("No program found!\n");
+                                }
+                            },
+                            Result::Err(_) => ()
                         }
                     }
+                },
+                _ => {
+                    let mut i = 0;
+                    for file in self.files.as_slice() {
+                        if file[0] == key_event.character {
+                            self.selected = i;
+                            break;
+                        }
+                        i += 1;
+                    }
+                }
             }
         }
     }
