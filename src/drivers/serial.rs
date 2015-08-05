@@ -59,10 +59,9 @@ impl SessionDevice for Serial {
                     c = '\0';
                 }else if c == '\r' {
                     c = '\n';
-                    dc(c);
+                    dl();
                 }else if c == '\x7F' {
                     c = '\x08';
-                    dc(c);
                 }else{
                     dc(c);
                 }
