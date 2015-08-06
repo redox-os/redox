@@ -156,6 +156,8 @@ pub unsafe fn kernel(interrupt: u32) {
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
+        0x29 => (*session_ptr).on_irq(0x9), //pci
+        0x2A => (*session_ptr).on_irq(0xA), //pci
         0x2B => (*session_ptr).on_irq(0xB), //pci
         0x2C => (*session_ptr).on_irq(0xC), //mouse
         0x2E => (*session_ptr).on_irq(0xE), //disk
@@ -170,7 +172,67 @@ pub unsafe fn kernel(interrupt: u32) {
                 asm!("hlt");
                 asm!("cli"); // TODO: Allow preempting
             }
-        }
+        },
+        0x0 => {
+            d("Divide by zero exception\n");
+        },
+        0x1 => {
+            d("Debug exception\n");
+        },
+        0x2 => {
+            d("Non-maskable interrupt\n");
+        },
+        0x3 => {
+            d("Breakpoint exception\n");
+        },
+        0x4 => {
+            d("Overflow exception\n");
+        },
+        0x5 => {
+            d("Bound range exceeded exception\n");
+        },
+        0x6 => {
+            d("Invalid opcode exception\n");
+        },
+        0x7 => {
+            d("Device not available exception\n");
+        },
+        0x8 => {
+            d("Double fault\n");
+        },
+        0xA => {
+            d("Invalid TSS exception\n");
+        },
+        0xB => {
+            d("Segment not present exception\n");
+        },
+        0xC => {
+            d("Stack-segment fault\n");
+        },
+        0xD => {
+            d("General protection fault\n");
+        },
+        0xE => {
+            d("Page fault\n");
+        },
+        0x10 => {
+            d("x87 floating-point exception\n");
+        },
+        0x11 => {
+            d("Alignment check exception\n");
+        },
+        0x12 => {
+            d("Machine check exception\n");
+        },
+        0x13 => {
+            d("SIMD floating-point exception\n");
+        },
+        0x14 => {
+            d("Virtualization exception\n");
+        },
+        0x1E => {
+            d("Security exception\n");
+        },
         _ => {
             d("I: ");
             dh(interrupt as usize);
