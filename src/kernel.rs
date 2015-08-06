@@ -114,7 +114,7 @@ mod usb {
     pub mod xhci;
 }
 
-static mut session: *mut Session = 0 as *mut Session;
+static mut session_ptr: *mut Session = 0 as *mut Session;
 
 unsafe fn init(){
     serial_init();
@@ -126,25 +126,27 @@ unsafe fn init(){
     page_init();
     cluster_init();
 
-    session = alloc(size_of::<Session>()) as *mut Session;
-    *session = Session::new();
-    (*session).items.insert(0, box FileManager::new("".to_string()));
+    session_ptr = alloc(size_of::<Session>()) as *mut Session;
+    *session_ptr = Session::new();
+    let session = &mut *session_ptr;
+
+    session.items.insert(0, box FileManager::new("".to_string()));
 
     keyboard_init();
     mouse_init();
 
-    (*session).modules.push(box PS2);
-    (*session).modules.push(box Serial::new(0x3F8, 0x4));
+    session.modules.push(box PS2);
+    session.modules.push(box Serial::new(0x3F8, 0x4));
 
-    pci_init(&mut *session);
+    pci_init(session);
 
-    (*session).modules.push(box FileScheme);
-    (*session).modules.push(box HTTPScheme);
-    (*session).modules.push(box MemoryScheme);
-    (*session).modules.push(box PCIScheme);
-    (*session).modules.push(box RandomScheme);
+    session.modules.push(box FileScheme);
+    session.modules.push(box HTTPScheme);
+    session.modules.push(box MemoryScheme);
+    session.modules.push(box PCIScheme);
+    session.modules.push(box RandomScheme);
 
-    (*session).on_url_async(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
+    session.on_url_async(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
         dl();
         let background_data = response.to_num();
         dh(background_data);
@@ -154,12 +156,7 @@ unsafe fn init(){
         dl();
         d("Response File\n");
         if background_data > 0 {
-            (*session).display.background = BMP::from_data(background_data);
-
-            for i in 0..4 {
-                dc(*((background_data + i) as *const u8) as char);
-            }
-
+            (*session_ptr).display.background = BMP::from_data(background_data);
             unalloc(background_data);
         }
     });
@@ -169,19 +166,19 @@ unsafe fn init(){
 pub unsafe fn kernel(interrupt: u32) {
     match interrupt {
         0x20 => (), //timer
-        0x21 => (*session).on_irq(0x1), //keyboard
-        0x23 => (*session).on_irq(0x3), // serial 2 and 4
-        0x24 => (*session).on_irq(0x4), // serial 1 and 3
-        0x2B => (*session).on_irq(0xB), //pci
-        0x2C => (*session).on_irq(0xC), //mouse
-        0x2E => (*session).on_irq(0xE), //disk
-        0x2F => (*session).on_irq(0xF), //disk
+        0x21 => (*session_ptr).on_irq(0x1), //keyboard
+        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
+        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
+        0x2B => (*session_ptr).on_irq(0xB), //pci
+        0x2C => (*session_ptr).on_irq(0xC), //mouse
+        0x2E => (*session_ptr).on_irq(0xE), //disk
+        0x2F => (*session_ptr).on_irq(0xF), //disk
         0xFF => { // main loop
             init();
 
             loop {
-                (*session).on_poll();
-                (*session).redraw();
+                (*session_ptr).on_poll();
+                (*session_ptr).redraw();
                 asm!("sti");
                 asm!("hlt");
                 asm!("cli"); // TODO: Allow preempting
