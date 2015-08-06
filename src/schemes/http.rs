@@ -1,5 +1,4 @@
 use core::clone::Clone;
-use core::result::Result;
 
 use common::memory::*;
 use common::string::*;
@@ -29,15 +28,15 @@ impl HTTPScheme {
     }
 }
 
-impl SessionScheme for HTTPScheme {
+impl SessionModule for HTTPScheme {
     fn scheme(&self) -> String {
         return "http".to_string();
     }
 
-    fn on_url(&mut self, session: &Session, url: &URL) -> String {
+    fn on_url(&mut self, session: &Session, url: &URL) -> String{
         let mut path = String::new();
 
-        for part in url.path.as_slice() {
+        for part in url.path.iter() {
             path = path + "/" + part.clone();
         }
 
@@ -148,18 +147,17 @@ impl SessionScheme for HTTPScheme {
                 }else{
                     html = html + "<table class='table table-bordered'>\n";
                         html = html + "  <caption><h3>Schemes</h3></caption>\n";
-                        for i in 0..session.schemes.len() {
-                            match session.schemes.get(i) {
-                                Result::Ok(scheme) => {
-                                    html = html + "<tr><td><a href='/" + HTTPScheme::encode(scheme.scheme()) + ":///'>" + HTTPScheme::encode(scheme.scheme()) + "</a></td></tr>";
-                                },
-                                Result::Err(_) => ()
+                        for module in session.modules.iter() {
+                            let scheme = module.scheme();
+                            if scheme.len() > 0 {
+                                html = html + "<tr><td><a href='/" + scheme.clone() + ":///'>" + scheme.clone() + "</a></td></tr>";
                             }
                         }
                     html = html + "</table>\n";
                 }
             }
         html = html + "</div>\n";
+
         return html;
     }
 }

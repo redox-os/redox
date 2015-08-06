@@ -1,13 +1,35 @@
 use core::clone::Clone;
+use core::iter::Iterator;
 use core::mem::size_of;
 use core::ops::Add;
 use core::ops::Drop;
+use core::option::Option;
 use core::ptr;
 use core::result::Result;
 use core::slice;
 use core::slice::SliceExt;
 
 use common::memory::*;
+
+struct VectorIterator<'a, T: 'a> {
+    vector: &'a Vector<T>,
+    offset: usize
+}
+
+impl <'a, T> Iterator for VectorIterator<'a, T> {
+    type Item = &'a mut T;
+    fn next(&mut self) -> Option<Self::Item>{
+        match self.vector.get(self.offset) {
+            Result::Ok(item) => {
+                self.offset += 1;
+                return Option::Some(item);
+            },
+            Result::Err(_) => {
+                return Option::None;
+            }
+        }
+    }
+}
 
 pub struct Vector<T> {
     pub data: *mut T,
@@ -162,6 +184,13 @@ impl <T> Vector<T> {
         self.length
     }
 
+    pub fn iter(&self) -> VectorIterator<T> {
+        VectorIterator {
+            vector: self,
+            offset: 0
+        }
+    }
+
     pub fn sub(&self, start: usize, len: usize) -> Vector<T> {
         let mut i = start;
         if i > self.len() {
@@ -192,7 +221,7 @@ impl <T> Vector<T> {
         }
     }
 
-    // TODO: Str trait
+    //TODO: Deprecate
     pub fn as_slice(&self) -> &mut [T] {
         if self.data as usize == 0 && self.length == 0 {
             &mut []

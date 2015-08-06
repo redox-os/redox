@@ -35,6 +35,16 @@ use graphics::window::*;
 
 use programs::session::*;
 
+/* TEST { */
+use core::any::Any;
+use core::ops::Fn;
+use core::option::Option;
+
+use alloc::boxed::*;
+
+use common::debug::*;
+/* } TEST */
+
 #[path="../src/alloc"]
 mod alloc {
     pub mod boxed;
@@ -79,6 +89,78 @@ mod programs {
     pub mod session;
 }
 
+/* TEST { */
+struct EventA {
+    x: isize,
+    y: isize
+}
+
+struct EventB {
+    txt: String
+}
+
+struct EventListener {
+    fn_ptr: Box<Fn(&Box<Any>)>
+}
+
+impl EventListener {
+    pub fn call(&self, event: &Box<Any>){
+        (*self.fn_ptr)(event);
+    }
+}
+
+fn test(){
+    let mut events: Vector<Box<Any>> = Vector::new();
+
+    events.push(box EventB {
+        txt: "first test".to_string()
+    });
+    events.push(box EventA {
+        x: 2,
+        y: 3
+    });
+    events.push(box EventB {
+        txt: "second test".to_string()
+    });
+
+    let mut listeners: Vector<Box<EventListener>> = Vector::new();
+
+    listeners.push(box EventListener {
+        fn_ptr: box |event: &Box<Any>| {
+            match event.downcast_ref::<EventA>() {
+                Option::Some(a) => {
+                    d("Event A ");
+                    dd(a.x as usize);
+                    d(", ");
+                    dd(a.y as usize);
+                    dl();
+                },
+                Option::None => ()
+            }
+        }
+    });
+
+    listeners.push(box EventListener {
+        fn_ptr: box |event: &Box<Any>| {
+            match event.downcast_ref::<EventB>() {
+                Option::Some(b) => {
+                    d("Event B ");
+                    b.txt.d();
+                    dl();
+                },
+                Option::None => ()
+            }
+        }
+    });
+
+    for event in events.iter() {
+        for listener in listeners.iter() {
+            listener.call(event);
+        }
+    }
+}
+/* } TEST */
+
 pub struct Application {
     window: Window,
     output: String,
@@ -120,6 +202,8 @@ impl Application {
                     self.append(echo);
                 }else if *cmd == "exit".to_string() {
                     self.window.closed = true;
+                }else if *cmd == "test".to_string() {
+                    test();
                 }else if *cmd == "url".to_string() {
                     match args.get(1) {
                         Result::Ok(url_string) => {
@@ -128,12 +212,10 @@ impl Application {
                             self.append(session.on_url(&url));
                         },
                         Result::Err(_) => {
-                            for i in 0..session.schemes.len() {
-                                match session.schemes.get(i) {
-                                    Result::Ok(scheme) => {
-                                        self.append(scheme.scheme());
-                                    },
-                                    Result::Err(_) => ()
+                            for module in session.modules.iter() {
+                                let scheme = module.scheme();
+                                if scheme.len() > 0 {
+                                    self.append(scheme);
                                 }
                             }
                         }

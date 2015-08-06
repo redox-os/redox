@@ -87,7 +87,7 @@ impl Response for IPv4 {
             }
 
             let mut ret: Vector<Vector<u8>> = Vector::new();
-            for response in responses.as_slice() {
+            for response in responses.iter() {
                 let mut packet = IPv4 {
                     header: self.header,
                     options: self.options.clone(),

@@ -68,7 +68,7 @@ impl Response for EthernetII {
             }
 
             let mut ret: Vector<Vector<u8>> = Vector::new();
-            for response in responses.as_slice() {
+            for response in responses.iter() {
                 ret = ret + Vector::from_value(EthernetII {
                     header: EthernetIIHeader {
                         src: MAC_ADDR,
