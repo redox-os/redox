@@ -191,12 +191,24 @@ impl Disk {
             let mut prdt = ind(busmaster + 4) as usize;
 
             if prdt == 0 {
-                prdt = alloc(size_of::<PRDTE>());
-                *(prdt as *mut PRDTE) = PRDTE {
-                    ptr: destination as u32,
-                    size: count * 512,
-                    reserved: 0x8000
-                };
+                let size = count as usize * 512;
+                let entries = (size + 65535)/65536;
+                prdt = alloc(size_of::<PRDTE>() * entries);
+                for i in 0..entries {
+                    if i == entries - 1 {
+                        *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
+                            ptr: (destination + i * 65536) as u32,
+                            size: (size % 65536) as u16,
+                            reserved: 0x8000
+                        };
+                    }else{
+                        *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
+                            ptr: (destination + i * 65536) as u32,
+                            size: 0,
+                            reserved: 0
+                        };
+                    }
+                }
 
                 outd(busmaster + 4, prdt as u32);
 
