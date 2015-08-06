@@ -49,8 +49,6 @@
 //! list, and so we don't know how much memory to allocate for a `Cons`. By introducing a `Box`,
 //! which has a defined size, we know how big `Cons` needs to be.
 
-use core::prelude::*;
-
 use core::any::Any;
 use core::cmp::Ordering;
 use core::fmt;
@@ -108,14 +106,37 @@ impl<T : ?Sized> Box<T> {
     /// of `T` and releases memory. Since the way `Box` allocates and
     /// releases memory is unspecified, the only valid pointer to pass
     /// to this function is the one taken from another `Box` with
-    /// `boxed::into_raw` function.
+    /// `Box::into_raw` function.
     ///
     /// Function is unsafe, because improper use of this function may
     /// lead to memory problems like double-free, for example if the
     /// function is called twice on the same raw pointer.
     #[inline]
+    // NB: may want to be called from_ptr, see comments on CStr::from_ptr
     pub unsafe fn from_raw(raw: *mut T) -> Self {
         mem::transmute(raw)
+    }
+
+    /// Consumes the `Box`, returning the wrapped raw pointer.
+    ///
+    /// After call to this function, caller is responsible for the memory
+    /// previously managed by `Box`, in particular caller should properly
+    /// destroy `T` and release memory. The proper way to do it is to
+    /// convert pointer back to `Box` with `Box::from_raw` function, because
+    /// `Box` does not specify, how memory is allocated.
+    ///
+    /// # Examples
+    /// ```
+    /// #![feature(box_raw)]
+    ///
+    /// let seventeen = Box::new(17u32);
+    /// let raw = Box::into_raw(seventeen);
+    /// let boxed_again = unsafe { Box::from_raw(raw) };
+    /// ```
+    #[inline]
+    // NB: may want to be called into_ptr, see comments on CStr::from_ptr
+    pub fn into_raw(b: Box<T>) -> *mut T {
+        unsafe { mem::transmute(b) }
     }
 }
 
@@ -127,22 +148,19 @@ impl<T : ?Sized> Box<T> {
 /// convert pointer back to `Box` with `Box::from_raw` function, because
 /// `Box` does not specify, how memory is allocated.
 ///
-/// Function is unsafe, because result of this function is no longer
-/// automatically managed that may lead to memory or other resource
-/// leak.
-///
 /// # Examples
 /// ```
-/// # #![feature(alloc)]
+/// #![feature(box_raw)]
+///
 /// use std::boxed;
 ///
 /// let seventeen = Box::new(17u32);
-/// let raw = unsafe { boxed::into_raw(seventeen) };
+/// let raw = boxed::into_raw(seventeen);
 /// let boxed_again = unsafe { Box::from_raw(raw) };
 /// ```
 #[inline]
-pub unsafe fn into_raw<T : ?Sized>(b: Box<T>) -> *mut T {
-    mem::transmute(b)
+pub fn into_raw<T : ?Sized>(b: Box<T>) -> *mut T {
+    Box::into_raw(b)
 }
 
 impl<T: Default> Default for Box<T> {

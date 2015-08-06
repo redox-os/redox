@@ -1,8 +1,6 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
-#![feature(core)]
-#![feature(core_prelude)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
@@ -13,8 +11,6 @@
 #![feature(unique)]
 #![feature(unsize)]
 #![no_std]
-
-extern crate core;
 
 use core::mem::size_of;
 
@@ -147,17 +143,8 @@ unsafe fn init(){
     session.modules.push(box RandomScheme);
 
     session.on_url_async(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
-        dl();
-        let background_data = response.to_num();
-        dh(background_data);
-        d(" ");
-        dd(alloc_size(background_data)/1024);
-        d(" KB");
-        dl();
-        d("Response File\n");
-        if background_data > 0 {
-            (*session_ptr).display.background = BMP::from_data(background_data);
-            unalloc(background_data);
+        if response.data as usize > 0 {
+            (*session_ptr).display.background = BMP::from_data(response.data as usize);
         }
     });
 }
