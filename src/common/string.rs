@@ -69,8 +69,8 @@ impl <'a> Iterator for Split<'a> {
 }
 
 pub struct String {
-    data: *const char,
-    length: usize
+    pub data: *const char,
+    pub length: usize
 }
 
 impl String {

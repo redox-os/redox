@@ -1,3 +1,4 @@
+use core::mem::size_of;
 use core::ops::Fn;
 use core::result::Result;
 
@@ -153,7 +154,10 @@ impl SessionModule for IDE {
                     let disk = Disk::new();
                     disk.read(sector as u64, count as u16, destination);
 
-                    ret = String::from_num_radix(destination, 16);
+                    ret = String {
+                        data: destination as *const char,
+                        length: alloc_size(destination)/size_of::<char>()
+                    }
                 }
             }
         }
@@ -169,7 +173,12 @@ impl SessionModule for IDE {
             destination: 0,
             callback: box move |destination: usize|{
                 if destination > 0 {
-                    callback(String::from_num(destination));
+                    unsafe{
+                        callback(String {
+                            data: destination as *const char,
+                            length: alloc_size(destination)/size_of::<char>()
+                        });
+                    }
                 }else{
                     callback(String::new());
                 }
@@ -191,17 +200,11 @@ impl SessionModule for IDE {
         }
 
         unsafe {
-            d("Request ");
-            dd(request.sector as usize);
-            d(" ");
-            dd(request.count as usize);
-            dl();
             if request.count > 0 {
                 request.destination = alloc(request.count as usize * 512);
                 if request.destination > 0 {
                     self.requests.push(request);
                     if self.requests.len() == 1 {
-                        d("Request Start\n");
                         match self.requests.get(0) {
                             Result::Ok(request) => {
                                 let disk = Disk::new();
@@ -209,8 +212,6 @@ impl SessionModule for IDE {
                             },
                             Result::Err(_) => ()
                         }
-                    }else{
-                        d("Request Wait\n");
                     }
                 }
             }
