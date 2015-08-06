@@ -9,13 +9,13 @@ use programs::session::*;
 
 pub struct PCIScheme;
 
-impl SessionScheme for PCIScheme {
+impl SessionModule for PCIScheme {
     fn scheme(&self) -> String {
         return "pci".to_string();
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String {
+    fn on_url(&mut self, session: &Session, url: &URL) -> String{
         let mut bus = -1;
         let mut slot = -1;
         let mut func = -1;

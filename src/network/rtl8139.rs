@@ -22,7 +22,7 @@ pub struct RTL8139 {
 
 static mut RTL8139_TX: u16 = 0;
 
-impl SessionDevice for RTL8139 {
+impl SessionModule for RTL8139 {
     #[allow(unused_variables)]
     fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
         if irq == self.irq {
@@ -54,7 +54,7 @@ impl SessionDevice for RTL8139 {
 
                     match EthernetII::from_bytes(Vector::<u8>::from_raw(frame_addr as *const u8, frame_len - 4)){
                         Option::Some(frame) => {
-                            for response in frame.respond(session).as_slice() {
+                            for response in frame.respond(session).iter() {
                                 self.send(response.data as usize, response.len());
                             }
                         },

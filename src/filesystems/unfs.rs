@@ -11,13 +11,13 @@ use drivers::disk::*;
 
 #[derive(Copy, Clone)]
 pub struct Block {
-    address: u64
+    pub address: u64
 }
 
 #[derive(Copy, Clone)]
-struct Extent{
-    block: Block,
-    length: u64
+pub struct Extent{
+    pub block: Block,
+    pub length: u64
 }
 
 pub struct Header {
@@ -26,33 +26,33 @@ pub struct Header {
     pub root_sector_list: Block,
     pub free_sector_list: Block,
     pub name: [u8; 256],
-    reserved: [u8; 232]
+    pub reserved: [u8; 232]
 }
 
-struct Node {
-    parent_collection: Block,
-    data_sector_list: Block,
-    data_size: u64,
-    user_id: u64,
-    group_id: u64,
-    mode: u64,
-    create_time: u64,
-    modify_time: u64,
-    access_time: u64,
-    name: [u8; 256],
-    reserved: [u8; 184]
+pub struct Node {
+    pub parent_collection: Block,
+    pub data_sector_list: Block,
+    pub data_size: u64,
+    pub user_id: u64,
+    pub group_id: u64,
+    pub mode: u64,
+    pub modify_time: u64,
+    pub access_time: u64,
+    pub create_time: u64,
+    pub name: [u8; 256],
+    pub reserved: [u8; 184]
 }
 
-struct SectorList {
-    parent_node: Block,
-    fragment_number: u64,
-    last_fragment: Block,
-    next_fragment: Block,
-    extents: [Extent; 30]
+pub struct SectorList {
+    pub parent_node: Block,
+    pub fragment_number: u64,
+    pub next_fragment: Block,
+    pub last_fragment: Block,
+    pub extents: [Extent; 30]
 }
 
 pub struct UnFS {
-    disk: Disk,
+    pub disk: Disk,
     pub header: &'static Header
 }
 
@@ -163,7 +163,7 @@ impl UnFS {
         ret
     }
 
-    pub unsafe fn load(&self, filename: String) -> usize{
+    pub unsafe fn load(&self, filename: String) -> usize {
         let mut destination = 0;
 
         let node = self.node(filename);

@@ -52,13 +52,13 @@ pub struct VBEModeInfo {
 }
 
 pub struct Display {
-    offscreen: usize,
-    onscreen: usize,
-    size: usize,
-    fonts: usize,
-    background: BMP,
-    cursor: BMP,
-    bytesperrow: usize,
+    pub offscreen: usize,
+    pub onscreen: usize,
+    pub size: usize,
+    pub fonts: usize,
+    pub background: BMP,
+    pub cursor: BMP,
+    pub bytesperrow: usize,
     pub width: usize,
     pub height: usize
 }
@@ -70,12 +70,6 @@ impl Display {
 
             let unfs = UnFS::new();
 
-            let fonts = unfs.load("unifont.font".to_string());
-
-            let background_data = unfs.load("background.bmp".to_string());
-            let background = BMP::from_data(background_data);
-            unalloc(background_data);
-
             let cursor_data = unfs.load("cursor.bmp".to_string());
             let cursor = BMP::from_data(cursor_data);
             unalloc(cursor_data);
@@ -84,8 +78,8 @@ impl Display {
                 offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
                 onscreen: mode_info.physbaseptr as usize,
                 size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
-                fonts: fonts,
-                background: background,
+                fonts: unfs.load("unifont.font".to_string()),
+                background: BMP::new(),
                 cursor: cursor,
                 bytesperrow: mode_info.bytesperscanline as usize,
                 width: mode_info.xresolution as usize,

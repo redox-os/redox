@@ -36,7 +36,7 @@ impl SessionItem for FileManager {
             size.height = files.len() * 16;
         }
 
-        for file in files.as_slice() {
+        for file in files.iter() {
             if size.width < (file.len() + 1) * 8 {
                 size.width = (file.len() + 1) * 8 ;
             }
@@ -81,7 +81,7 @@ impl SessionItem for FileManager {
         if ! self.window.shaded {
             let mut i = 0;
             let mut row = 0;
-            for string in self.files.as_slice() {
+            for string in self.files.iter() {
                 let mut col = 0;
                 for c in string.chars() {
                     if c == '\n' {
@@ -155,7 +155,7 @@ impl SessionItem for FileManager {
                 },
                 _ => {
                     let mut i = 0;
-                    for file in self.files.as_slice() {
+                    for file in self.files.iter() {
                         if file[0] == key_event.character {
                             self.selected = i;
                             break;
@@ -174,7 +174,7 @@ impl SessionItem for FileManager {
             if ! self.window.shaded {
                 let mut i = 0;
                 let mut row = 0;
-                for file in self.files.as_slice() {
+                for file in self.files.iter() {
                     let mut col = 0;
                     for c in file.chars() {
                         if c == '\n' {

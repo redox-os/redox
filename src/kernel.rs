@@ -22,12 +22,15 @@ use common::debug::*;
 use common::pio::*;
 use common::memory::*;
 use common::string::*;
+use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
 use drivers::pci::*;
 use drivers::ps2::*;
 use drivers::serial::*;
+
+use graphics::bmp::*;
 
 use programs::filemanager::*;
 use programs::session::*;
@@ -130,16 +133,36 @@ unsafe fn init(){
     keyboard_init();
     mouse_init();
 
-    (*session).devices.push(box PS2);
-    (*session).devices.push(box Serial::new(0x3F8, 0x4));
+    (*session).modules.push(box PS2);
+    (*session).modules.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(&mut *session);
 
-    (*session).schemes.push(box FileScheme);
-    (*session).schemes.push(box HTTPScheme);
-    (*session).schemes.push(box MemoryScheme);
-    (*session).schemes.push(box PCIScheme);
-    (*session).schemes.push(box RandomScheme);
+    (*session).modules.push(box FileScheme);
+    (*session).modules.push(box HTTPScheme);
+    (*session).modules.push(box MemoryScheme);
+    (*session).modules.push(box PCIScheme);
+    (*session).modules.push(box RandomScheme);
+
+    (*session).on_url_async(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
+        dl();
+        let background_data = response.to_num();
+        dh(background_data);
+        d(" ");
+        dd(alloc_size(background_data)/1024);
+        d(" KB");
+        dl();
+        d("Response File\n");
+        if background_data > 0 {
+            (*session).display.background = BMP::from_data(background_data);
+
+            for i in 0..4 {
+                dc(*((background_data + i) as *const u8) as char);
+            }
+
+            unalloc(background_data);
+        }
+    });
 }
 
 #[no_mangle]
@@ -157,10 +180,11 @@ pub unsafe fn kernel(interrupt: u32) {
             init();
 
             loop {
+                (*session).on_poll();
                 (*session).redraw();
                 asm!("sti");
                 asm!("hlt");
-                //asm!("cli"); // TODO: Allow preempting
+                asm!("cli"); // TODO: Allow preempting
             }
         }
         _ => {

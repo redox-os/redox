@@ -23,7 +23,7 @@ impl Serial {
     }
 }
 
-impl SessionDevice for Serial {
+impl SessionModule for Serial {
     #[allow(unused_variables)]
     fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
         if irq == self.irq {
@@ -67,7 +67,7 @@ impl SessionDevice for Serial {
                 }
 
                 if c != '\0' || sc != 0 {
-                    updates.key_events.push(KeyEvent {
+                    updates.events.push(box KeyEvent {
                         character: c,
                         scancode: sc,
                         pressed: true

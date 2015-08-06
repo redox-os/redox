@@ -1,6 +1,9 @@
+use core::any::Any;
 use core::cmp::max;
 use core::cmp::min;
 use core::marker::Sized;
+use core::ops::Fn;
+use core::option::Option;
 use core::result::Result;
 
 use common::string::*;
@@ -17,8 +20,30 @@ use graphics::size::*;
 
 use alloc::boxed::*;
 
-pub trait SessionDevice {
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8);
+pub trait SessionModule {
+    #[allow(unused_variables)]
+    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
+
+    }
+
+    #[allow(unused_variables)]
+    fn on_poll(&mut self, session: &Session, updates: &mut SessionUpdates){
+
+    }
+
+    fn scheme(&self) -> String{
+        return String::new();
+    }
+
+    #[allow(unused_variables)]
+    fn on_url(&mut self, session: &Session, url: &URL) -> String{
+        return String::new();
+    }
+
+    #[allow(unused_variables)]
+    fn on_url_async(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>) {
+        callback(self.on_url(session, url));
+    }
 }
 
 pub trait SessionItem {
@@ -28,11 +53,6 @@ pub trait SessionItem {
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
 }
 
-pub trait SessionScheme {
-    fn scheme(&self) -> String;
-    fn on_url(&mut self, session: &Session, url: &URL) -> String;
-}
-
 pub const REDRAW_NONE: usize = 0;
 pub const REDRAW_CURSOR: usize = 1;
 pub const REDRAW_ALL: usize = 2;
@@ -40,15 +60,13 @@ pub const REDRAW_ALL: usize = 2;
 pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
-    pub devices: Vector<Box<SessionDevice>>,
     pub items: Vector<Box<SessionItem>>,
-    pub schemes: Vector<Box<SessionScheme>>,
+    pub modules: Vector<Box<SessionModule>>,
     pub redraw: usize
 }
 
 pub struct SessionUpdates {
-    pub key_events: Vector<KeyEvent>,
-    pub mouse_events: Vector<MouseEvent>,
+    pub events: Vector<Box<Any>>,
     pub new_items: Vector<Box<SessionItem>>,
     pub redraw: usize
 }
@@ -58,9 +76,8 @@ impl Session {
         Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
-            devices: Vector::new(),
             items: Vector::new(),
-            schemes: Vector::new(),
+            modules: Vector::new(),
             redraw: REDRAW_ALL
         }
     }
@@ -68,33 +85,39 @@ impl Session {
     pub fn on_irq(&mut self, irq: u8){
         let mut updates = self.new_updates();
 
-        for i in 0..self.devices.len(){
-            match self.devices.get(i){
-                Result::Ok(device) => {
-                    device.on_irq(self, &mut updates, irq);
-                },
-                Result::Err(_) => ()
-            }
+        for module in self.modules.iter() {
+            module.on_irq(self, &mut updates, irq);
         }
 
         self.apply_updates(updates);
     }
 
-    pub fn on_url(&self, url: &URL) -> String {
-        let mut ret = String::new();
+    pub fn on_poll(&mut self){
+        let mut updates = self.new_updates();
 
-        for i in 0..self.schemes.len(){
-            match self.schemes.get(i){
-                Result::Ok(scheme) => {
-                    if scheme.scheme() == url.scheme {
-                        ret = ret + scheme.on_url(self, url);
-                    }
-                },
-                Result::Err(_) => ()
-            }
+        for module in self.modules.iter() {
+            module.on_poll(self, &mut updates);
         }
 
-        return ret;
+        self.apply_updates(updates);
+    }
+
+    pub fn on_url(&self, url: &URL) -> String{
+        for module in self.modules.iter() {
+            if module.scheme() == url.scheme {
+                return module.on_url(self, url);
+            }
+        }
+        return String::new();
+    }
+
+    pub fn on_url_async(&self, url: &URL, callback: Box<Fn(String)>){
+        for module in self.modules.iter() {
+            if module.scheme() == url.scheme {
+                module.on_url_async(self, url, callback);
+                break;
+            }
+        }
     }
 
     pub fn on_key(&mut self, key_event: KeyEvent){
@@ -161,7 +184,7 @@ impl Session {
                     }
                 }
 
-                for i in erase_i.as_slice() {
+                for i in erase_i.iter() {
                     self.items.erase(*i);
                 }
             }
@@ -178,27 +201,24 @@ impl Session {
 
     fn new_updates(&self) -> SessionUpdates {
         SessionUpdates{
-            key_events: Vector::new(),
-            mouse_events: Vector::new(),
+            events: Vector::new(),
             new_items: Vector::new(),
             redraw: REDRAW_NONE
         }
     }
 
     fn apply_updates(&mut self, mut updates: SessionUpdates){
-        while updates.key_events.len() > 0 {
-            match updates.key_events.extract(0){
-                Result::Ok(key_event) => {
-                    self.on_key(key_event);
-                },
-                Result::Err(_) => ()
-            }
-        }
-
-        while updates.mouse_events.len() > 0 {
-            match updates.mouse_events.extract(0){
-                Result::Ok(mouse_event) => {
-                    self.on_mouse(mouse_event);
+        while updates.events.len() > 0 {
+            match updates.events.extract(0){
+                Result::Ok(event) => {
+                    match event.downcast_ref::<KeyEvent>() {
+                        Option::Some(key_event) => self.on_key(*key_event),
+                        Option::None => ()
+                    }
+                    match event.downcast_ref::<MouseEvent>() {
+                        Option::Some(mouse_event) => self.on_mouse(*mouse_event),
+                        Option::None => ()
+                    }
                 },
                 Result::Err(_) => ()
             }

@@ -105,7 +105,7 @@ impl URL {
             }
         }
 
-        for element in self.path.as_slice() {
+        for element in self.path.iter() {
             ret = ret + "/" + element.clone();
         }
 
