@@ -1,3 +1,5 @@
+use alloc::boxed::*;
+
 use common::memory::*;
 use common::string::*;
 use common::url::*;
@@ -12,7 +14,7 @@ impl SessionModule for MemoryScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
-        return "Memory Used: ".to_string() + memory_used()/1024/1024 + " MB\n" + "Memory Free: " + memory_free()/1024/1024 + " MB";
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+        callback("Memory Used: ".to_string() + memory_used()/1024/1024 + " MB\n" + "Memory Free: " + memory_free()/1024/1024 + " MB");
     }
 }

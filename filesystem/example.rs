@@ -1,14 +1,22 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
+#![feature(core)]
+#![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
+#![feature(filling_drop)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
+#![feature(nonzero)]
+#![feature(optin_builtin_traits)]
+#![feature(placement_new_protocol)]
 #![feature(raw)]
+#![feature(unboxed_closures)]
 #![feature(unique)]
+#![feature(unsafe_no_drop_flag)]
 #![feature(unsize)]
 #![no_std]
 
@@ -43,7 +51,11 @@ use common::debug::*;
 
 #[path="../src/alloc"]
 mod alloc {
+    pub mod arc;
     pub mod boxed;
+    pub mod heap;
+    pub mod raw_vec;
+    pub mod rc;
 }
 
 #[path="../src/common"]
@@ -204,7 +216,7 @@ impl Application {
                         Result::Ok(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
-                            self.append(session.on_url(&url));
+                            // TODO self.append(session.on_url(&url));
                         },
                         Result::Err(_) => {
                             for module in session.modules.iter() {
@@ -425,5 +437,46 @@ pub unsafe fn on_mouse(session: &Session, updates: &mut SessionUpdates, mouse_ev
         return (*application).on_mouse(session, updates, mouse_event, allow_catch);
     }else{
         return false;
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
+    unsafe {
+        if src < dst {
+            let mut i = len;
+            while i > 0 {
+                i -= 1;
+                *dst.offset(i) = *src.offset(i);
+            }
+        }else{
+            let mut i = 0;
+            while i < len {
+                *dst.offset(i) = *src.offset(i);
+                i += 1;
+            }
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: isize){
+    unsafe {
+        let mut i = 0;
+        while i < len {
+            *dst.offset(i) = *src.offset(i);
+            i += 1;
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
+    unsafe {
+        let mut i = 0;
+        while i < len {
+            *src.offset(i) = c as u8;
+            i += 1;
+        }
     }
 }

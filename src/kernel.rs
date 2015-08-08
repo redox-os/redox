@@ -1,14 +1,22 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
+#![feature(core)]
+#![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
+#![feature(filling_drop)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
+#![feature(nonzero)]
+#![feature(optin_builtin_traits)]
+#![feature(placement_new_protocol)]
 #![feature(raw)]
+#![feature(unboxed_closures)]
 #![feature(unique)]
+#![feature(unsafe_no_drop_flag)]
 #![feature(unsize)]
 #![no_std]
 
@@ -38,7 +46,11 @@ use schemes::pci::*;
 use schemes::random::*;
 
 mod alloc {
+    pub mod arc;
     pub mod boxed;
+    pub mod heap;
+    pub mod raw_vec;
+    pub mod rc;
 }
 
 mod common {
@@ -141,7 +153,7 @@ unsafe fn init(){
     session.modules.push(box PCIScheme);
     session.modules.push(box RandomScheme);
 
-    session.on_url_async(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
+    session.on_url(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
         if response.data as usize > 0 {
             (*session_ptr).display.background = BMP::from_data(response.data as usize);
         }
@@ -263,6 +275,17 @@ pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
                 *dst.offset(i) = *src.offset(i);
                 i += 1;
             }
+        }
+    }
+}
+
+#[no_mangle]
+pub extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: isize){
+    unsafe {
+        let mut i = 0;
+        while i < len {
+            *dst.offset(i) = *src.offset(i);
+            i += 1;
         }
     }
 }

@@ -1,5 +1,7 @@
 use core::clone::Clone;
 
+use alloc::boxed::*;
+
 use common::memory::*;
 use common::string::*;
 use common::url::*;
@@ -33,7 +35,7 @@ impl SessionModule for HTTPScheme {
         return "http".to_string();
     }
 
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
         let mut path = String::new();
 
         for part in url.path.iter() {
@@ -137,7 +139,7 @@ impl SessionModule for HTTPScheme {
                 let url_string = path.substr(1, path.len());
                 if url_string.len() > 0 {
                     let url = URL::from_string(url_string);
-                    let data = session.on_url(&url);
+                    let data = String::new(); //session.on_url(&url);
                     html = html + "<table class='table table-bordered'>\n";
                         html = html + "  <caption><h3>" + HTTPScheme::encode(url.to_string()) + "</h3></caption>\n";
                         for line in data.split("\n".to_string()) {
@@ -158,6 +160,6 @@ impl SessionModule for HTTPScheme {
             }
         html = html + "</div>\n";
 
-        return html;
+        callback(html);
     }
 }

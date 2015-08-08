@@ -1,6 +1,8 @@
 use core::clone::Clone;
 use core::result::Result;
 
+use alloc::boxed::*;
+
 use common::pci::*;
 use common::string::*;
 use common::url::*;
@@ -15,7 +17,7 @@ impl SessionModule for PCIScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
         let mut bus = -1;
         let mut slot = -1;
         let mut func = -1;
@@ -42,28 +44,30 @@ impl SessionModule for PCIScheme {
             }
         }
 
+        let ret;
         if bus >= 0 {
             if slot >= 0 {
                 if func >= 0 {
                     if reg.len() > 0 {
                         if reg == "class".to_string() {
                             unsafe {
-                                return String::from_num_radix((pci_read(bus as usize, slot as usize, func as usize, 8) >> 24) & 0xFF, 16);
+                                ret = String::from_num_radix((pci_read(bus as usize, slot as usize, func as usize, 8) >> 24) & 0xFF, 16);
                             }
                         }else{
-                            return "Unknown register ".to_string() + reg.clone();
+                            ret = "Unknown register ".to_string() + reg.clone();
                         }
                     }else{
-                        return String::from_num(256);
+                        ret = String::from_num(256);
                     }
                 }else{
-                    return String::from_num(8);
+                    ret = String::from_num(8);
                 }
             }else{
-                return String::from_num(32);
+                ret = String::from_num(32);
             }
         }else{
-            return String::from_num(256);
+            ret = String::from_num(256);
         }
+        callback(ret);
     }
 }

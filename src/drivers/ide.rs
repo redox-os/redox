@@ -124,49 +124,7 @@ impl SessionModule for IDE {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
-        let mut ret = String::new();
-
-        let mut sector = 1;
-        match url.path.get(0) {
-            Result::Ok(part) => {
-                sector = part.to_num();
-            },
-            Result::Err(_) => ()
-        }
-
-        let mut count = 1;
-        match url.path.get(1) {
-            Result::Ok(part) => {
-                count = part.to_num();
-            },
-            Result::Err(_) => ()
-        }
-
-        unsafe {
-            if count > 0 {
-                if count > 0xFFFF {
-                    count = 0xFFFF;
-                }
-
-                let destination = alloc(count * 512);
-                if destination > 0 {
-                    let disk = Disk::new();
-                    disk.read(sector as u64, count as u16, destination);
-
-                    ret = String {
-                        data: destination as *const char,
-                        length: alloc_size(destination)/size_of::<char>()
-                    }
-                }
-            }
-        }
-
-        return ret;
-    }
-
-    #[allow(unused_variables)]
-    fn on_url_async(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
         let mut request = IDERequest {
             sector: 1,
             count: 1,

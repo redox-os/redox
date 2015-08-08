@@ -1,5 +1,5 @@
 use common::string::*;
-use common::url::*;
+//use common::url::*;
 
 use programs::session::*;
 
@@ -18,5 +18,5 @@ pub fn http_response(request: String, session: &Session) -> String {
         break;
     }
 
-    return session.on_url(&URL::from_string("http://".to_string() + path));
+    return path; //session.on_url(&URL::from_string("http://".to_string() + path));
 }

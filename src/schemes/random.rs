@@ -2,6 +2,8 @@ use common::random::*;
 use common::string::*;
 use common::url::*;
 
+use alloc::boxed::*;
+
 use programs::session::*;
 
 pub struct RandomScheme;
@@ -12,7 +14,7 @@ impl SessionModule for RandomScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
-        return String::from_num(rand());
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+        callback(String::from_num(rand()));
     }
 }
