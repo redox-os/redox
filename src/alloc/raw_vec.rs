@@ -11,10 +11,10 @@
 use core::ptr::Unique;
 use core::mem;
 use core::slice::{self, SliceExt};
-use alloc::heap;
+use heap;
 // TODO use lib.rs use super::oom;
-use alloc::heap::oom;
-use alloc::boxed::Box;
+use heap::oom;
+use boxed::Box;
 use core::ops::Drop;
 
 /// A low-level utility for more ergonomically allocating, reallocating, and deallocating a

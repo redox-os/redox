@@ -1,6 +1,6 @@
 use core::clone::Clone;
 
-use alloc::boxed::*;
+use redox_alloc::boxed::*;
 
 use common::memory::*;
 use common::string::*;

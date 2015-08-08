@@ -20,6 +20,8 @@
 #![feature(unsize)]
 #![no_std]
 
+extern crate redox_alloc;
+
 use core::mem::size_of;
 
 use common::debug::*;
@@ -45,14 +47,6 @@ use schemes::memory::*;
 use schemes::pci::*;
 use schemes::random::*;
 
-mod alloc {
-    pub mod arc;
-    pub mod boxed;
-    pub mod heap;
-    pub mod raw_vec;
-    pub mod rc;
-}
-
 mod common {
     pub mod debug;
     pub mod elf;
@@ -67,7 +61,6 @@ mod common {
 
 mod drivers {
     pub mod disk;
-    pub mod ide;
     pub mod keyboard;
     pub mod mouse;
     pub mod pci;
@@ -112,6 +105,7 @@ mod programs {
 mod schemes {
     pub mod file;
     pub mod http;
+    pub mod ide;
     pub mod memory;
     pub mod pci;
     pub mod random;

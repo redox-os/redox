@@ -2,12 +2,12 @@ use common::debug::*;
 use common::pci::*;
 use common::vector::*;
 
-use drivers::ide::*;
-
 use network::intel8254x::*;
 use network::rtl8139::*;
 
 use programs::session::*;
+
+use schemes::ide::*;
 
 use usb::xhci::*;
 

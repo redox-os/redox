@@ -154,7 +154,7 @@
 use core::prelude::v1::*;
 
 #[cfg(not(test))]
-use alloc::boxed::Box;
+use boxed::Box;
 #[cfg(test)]
 use std::boxed::Box;
 
@@ -169,7 +169,7 @@ use core::nonzero::NonZero;
 use core::ops::{CoerceUnsized, Deref};
 use core::ptr;
 
-use alloc::heap::deallocate;
+use heap::deallocate;
 
 struct RcBox<T: ?Sized> {
     strong: Cell<usize>,

@@ -18,7 +18,7 @@ use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 
-use alloc::boxed::*;
+use redox_alloc::boxed::*;
 
 pub trait SessionModule {
     #[allow(unused_variables)]

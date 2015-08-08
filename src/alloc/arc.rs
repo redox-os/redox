@@ -69,7 +69,7 @@
 //! }
 //! ```
 
-use alloc::boxed::Box;
+use boxed::Box;
 
 #[cfg(stage0)]
 use core::prelude::v1::*;
@@ -87,7 +87,7 @@ use core::ptr;
 use core::marker::Unsize;
 use core::hash::{Hash, Hasher};
 use core::{usize, isize};
-use alloc::heap::deallocate;
+use heap::deallocate;
 
 const MAX_REFCOUNT: usize = (isize::MAX) as usize;
 
