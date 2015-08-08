@@ -20,33 +20,7 @@ impl SessionModule for FileScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
-        let mut ret = String::new();
-
-        let unfs = UnFS::new();
-
-        let mut path = String::new();
-        for part in url.path.iter(){
-            if path.len() > 0 {
-                path = path + "/" + part.clone();
-            }else{
-                path = part.clone();
-            }
-        }
-
-        for file in unfs.list(path.clone()).iter() {
-            if ret.len() > 0 {
-                ret = ret + "\n" + file.clone();
-            }else{
-                ret = file.clone();
-            }
-        }
-
-        return ret;
-    }
-
-    #[allow(unused_variables)]
-    fn on_url_async(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
         unsafe{
             let unfs = UnFS::new();
 
@@ -59,7 +33,7 @@ impl SessionModule for FileScheme {
                 }
             }
 
-            let node = unfs.node(path);
+            let node = unfs.node(path.clone());
 
             if node as usize > 0{
                 if (*node).data_sector_list.address > 0 {
@@ -70,7 +44,7 @@ impl SessionModule for FileScheme {
 
                         for i in 0..1 {
                             if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                session.on_url_async(&URL::from_string("ide:///".to_string() + sector_list.extents[i].block.address as usize + "/" + sector_list.extents[i].length as usize), callback);
+                                session.on_url(&URL::from_string("ide:///".to_string() + sector_list.extents[i].block.address as usize + "/" + sector_list.extents[i].length as usize), callback);
                                 break;
                             }
                         }
@@ -79,6 +53,18 @@ impl SessionModule for FileScheme {
                 }
 
                 unalloc(node as usize);
+            }else{
+                let mut ret = String::new();
+
+                for file in unfs.list(path.clone()).iter() {
+                    if ret.len() > 0 {
+                        ret = ret + "\n" + file.clone();
+                    }else{
+                        ret = file.clone();
+                    }
+                }
+
+                callback(ret);
             }
         }
     }

@@ -36,13 +36,8 @@ pub trait SessionModule {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL) -> String{
-        return String::new();
-    }
-
-    #[allow(unused_variables)]
-    fn on_url_async(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>) {
-        callback(self.on_url(session, url));
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>) {
+        callback(String::new());
     }
 }
 
@@ -102,19 +97,10 @@ impl Session {
         self.apply_updates(updates);
     }
 
-    pub fn on_url(&self, url: &URL) -> String{
+    pub fn on_url(&self, url: &URL, callback: Box<Fn(String)>){
         for module in self.modules.iter() {
             if module.scheme() == url.scheme {
-                return module.on_url(self, url);
-            }
-        }
-        return String::new();
-    }
-
-    pub fn on_url_async(&self, url: &URL, callback: Box<Fn(String)>){
-        for module in self.modules.iter() {
-            if module.scheme() == url.scheme {
-                module.on_url_async(self, url, callback);
+                module.on_url(self, url, callback);
                 break;
             }
         }
