@@ -1,9 +1,7 @@
 use core::clone::Clone;
 use core::mem::size_of;
-use core::option::Option;
 
 use common::memory::*;
-use common::safeptr::*;
 use common::string::*;
 use common::vector::*;
 
@@ -72,55 +70,54 @@ impl UnFS {
         let mut ret: *const Node = 0 as *const Node;
         let mut node_matches = false;
 
-        let root_sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
-        match root_sector_list_ptr.get() {
-            Option::Some(root_sector_list) => {
-                let mut root_sector_list_address = self.header.root_sector_list.address;
-                while root_sector_list_address > 0 {
-                    self.disk.read(root_sector_list_address, 1, root_sector_list_ptr.unsafe_ptr() as usize);
+        let root_sector_list_ptr = alloc(size_of::<SectorList>()) as *mut SectorList;
+        if root_sector_list_ptr as usize > 0 {
+            let root_sector_list = &mut *root_sector_list_ptr;
+            let mut root_sector_list_address = self.header.root_sector_list.address;
+            while root_sector_list_address > 0 {
+                self.disk.read(root_sector_list_address, 1, root_sector_list_ptr as usize);
 
-                    for extent_i in 0..30 {
-                        let extent = root_sector_list.extents[extent_i];
-                        if extent.block.address > 0 {
-                            for node_address in extent.block.address..extent.block.address + extent.length {
-                                let node = alloc(size_of::<Node>()) as *const Node;
-                                self.disk.read(node_address, 1, node as usize);
+                for extent_i in 0..30 {
+                    let extent = root_sector_list.extents[extent_i];
+                    if extent.block.address > 0 {
+                        for node_address in extent.block.address..extent.block.address + extent.length {
+                            let node = alloc(size_of::<Node>()) as *const Node;
+                            self.disk.read(node_address, 1, node as usize);
 
-                                node_matches = true;
-                                let mut i = 0;
-                                for c in filename.chars()  {
-                                    if !(i < 256 && (*node).name[i] == c as u8) {
-                                        node_matches = false;
-                                        break;
-                                    }
-                                    i += 1;
-                                }
-                                if !(i < 256 && (*node).name[i] == 0) {
+                            node_matches = true;
+                            let mut i = 0;
+                            for c in filename.chars()  {
+                                if !(i < 256 && (*node).name[i] == c as u8) {
                                     node_matches = false;
-                                }
-
-                                if node_matches {
-                                    ret = node;
                                     break;
-                                }else{
-                                    unalloc(node as usize);
                                 }
+                                i += 1;
                             }
-                        }
+                            if !(i < 256 && (*node).name[i] == 0) {
+                                node_matches = false;
+                            }
 
-                        if node_matches {
-                            break;
+                            if node_matches {
+                                ret = node;
+                                break;
+                            }else{
+                                unalloc(node as usize);
+                            }
                         }
                     }
 
-                    root_sector_list_address = root_sector_list.next_fragment.address;
-
-                    if node_matches{
+                    if node_matches {
                         break;
                     }
                 }
-            },
-            Option::None => ()
+
+                root_sector_list_address = root_sector_list.next_fragment.address;
+
+                if node_matches{
+                    break;
+                }
+            }
+            unalloc(root_sector_list_ptr as usize);
         }
         ret
     }
@@ -129,34 +126,33 @@ impl UnFS {
         let mut ret = Vector::<String>::new();
 
         unsafe{
-            let root_sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
-            match root_sector_list_ptr.get() {
-                Option::Some(root_sector_list) => {
-                    let mut root_sector_list_address = self.header.root_sector_list.address;
-                    while root_sector_list_address > 0 {
-                        self.disk.read(root_sector_list_address, 1, root_sector_list_ptr.unsafe_ptr() as usize);
+            let root_sector_list_ptr = alloc(size_of::<SectorList>()) as *mut SectorList;
+            if root_sector_list_ptr as usize > 0 {
+                let root_sector_list = &mut *root_sector_list_ptr;
+                let mut root_sector_list_address = self.header.root_sector_list.address;
+                while root_sector_list_address > 0 {
+                    self.disk.read(root_sector_list_address, 1, root_sector_list_ptr as usize);
 
-                        for extent_i in 0..30 {
-                            let extent = root_sector_list.extents[extent_i];
-                            if extent.block.address > 0 {
-                                for node_address in extent.block.address..extent.block.address + extent.length {
-                                    let node = alloc(size_of::<Node>()) as *const Node;
-                                    self.disk.read(node_address, 1, node as usize);
+                    for extent_i in 0..30 {
+                        let extent = root_sector_list.extents[extent_i];
+                        if extent.block.address > 0 {
+                            for node_address in extent.block.address..extent.block.address + extent.length {
+                                let node = alloc(size_of::<Node>()) as *const Node;
+                                self.disk.read(node_address, 1, node as usize);
 
-                                    let node_name = String::from_c_slice(&(*node).name);
-                                    if node_name.starts_with(directory.clone()) {
-                                        ret.push(node_name);
-                                    }
-
-                                    unalloc(node as usize);
+                                let node_name = String::from_c_slice(&(*node).name);
+                                if node_name.starts_with(directory.clone()) {
+                                    ret.push(node_name);
                                 }
+
+                                unalloc(node as usize);
                             }
                         }
-
-                        root_sector_list_address = root_sector_list.next_fragment.address;
                     }
-                },
-                Option::None => ()
+
+                    root_sector_list_address = root_sector_list.next_fragment.address;
+                }
+                unalloc(root_sector_list_ptr as usize);
             }
         }
 
@@ -170,29 +166,28 @@ impl UnFS {
 
         if node as usize > 0{
             if (*node).data_sector_list.address > 0 {
-                let sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
-                match sector_list_ptr.get() {
-                    Option::Some(sector_list) => {
-                        self.disk.read((*node).data_sector_list.address, 1, sector_list_ptr.unsafe_ptr() as usize);
+                let sector_list_ptr = alloc(size_of::<SectorList>()) as *mut SectorList;
+                if sector_list_ptr as usize > 0 {
+                    let sector_list = &mut *sector_list_ptr;
+                    self.disk.read((*node).data_sector_list.address, 1, sector_list_ptr as usize);
 
-                        //TODO: More than one extent, extent sector count > 64K
-                        let mut size = 0;
+                    //TODO: More than one extent, extent sector count > 64K
+                    let mut size = 0;
+                    for i in 0..1 {
+                        if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
+                            size += sector_list.extents[i].length * 512;
+                        }
+                    }
+
+                    destination = alloc(size as usize);
+                    if destination > 0 {
                         for i in 0..1 {
                             if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                size += sector_list.extents[i].length * 512;
+                                self.disk.read(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, destination);
                             }
                         }
-
-                        destination = alloc(size as usize);
-                        if destination > 0 {
-                            for i in 0..1 {
-                                if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                    self.disk.read(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, destination);
-                                }
-                            }
-                        }
-                    },
-                    Option::None => ()
+                    }
+                    unalloc(sector_list_ptr as usize);
                 }
             }
 
@@ -208,20 +203,19 @@ impl UnFS {
 
         if node as usize > 0{
             if (*node).data_sector_list.address > 0 {
-                let sector_list_ptr: SafePtr<SectorList> = SafePtr::new();
-                match sector_list_ptr.get() {
-                    Option::Some(sector_list) => {
-                        self.disk.read((*node).data_sector_list.address, 1, sector_list_ptr.unsafe_ptr() as usize);
+                let sector_list_ptr = alloc(size_of::<SectorList>()) as *mut SectorList;
+                if sector_list_ptr as usize > 0 {
+                    let sector_list = &mut *sector_list_ptr;
+                    self.disk.read((*node).data_sector_list.address, 1, sector_list_ptr as usize);
 
-                        if source > 0 {
-                            for i in 0..1 {
-                                if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                    self.disk.write(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, source);
-                                }
+                    if source > 0 {
+                        for i in 0..1 {
+                            if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
+                                self.disk.write(sector_list.extents[i].block.address, sector_list.extents[i].length as u16, source);
                             }
                         }
-                    },
-                    Option::None => ()
+                    }
+                    unalloc(sector_list_ptr as usize);
                 }
             }
 
