@@ -1,24 +1,16 @@
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(coerce_unsized)]
-#![feature(core)]
-#![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![feature(filling_drop)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
-#![feature(nonzero)]
-#![feature(optin_builtin_traits)]
-#![feature(placement_new_protocol)]
-#![feature(raw)]
 #![feature(unboxed_closures)]
-#![feature(unique)]
 #![feature(unsafe_no_drop_flag)]
-#![feature(unsize)]
 #![no_std]
+
+extern crate redox_alloc;
 
 use core::clone::Clone;
 use core::mem::size_of;
@@ -44,19 +36,10 @@ use core::any::Any;
 use core::ops::Fn;
 use core::option::Option;
 
-use alloc::boxed::*;
+use redox_alloc::boxed::*;
 
 use common::debug::*;
 /* } TEST */
-
-#[path="../src/alloc"]
-mod alloc {
-    pub mod arc;
-    pub mod boxed;
-    pub mod heap;
-    pub mod raw_vec;
-    pub mod rc;
-}
 
 #[path="../src/common"]
 mod common {

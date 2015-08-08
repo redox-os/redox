@@ -60,10 +60,8 @@
 #![cfg_attr(stage0, feature(custom_attribute))]
 #![crate_name = "alloc"]
 #![crate_type = "rlib"]
-#![staged_api]
-#![unstable(feature = "alloc",
-            reason = "this library is unlikely to be stabilized in its current \
-                      form or name")]
+//#![staged_api]
+//#![unstable(feature = "alloc", reason = "this library is unlikely to be stabilized in its current form or name")]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/nightly/",
@@ -71,6 +69,7 @@
 #![no_std]
 
 #![feature(allocator)]
+#![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
 #![feature(core)]
@@ -108,6 +107,13 @@ extern crate libc;
 #[cfg(test)] #[macro_use] extern crate std;
 #[cfg(test)] #[macro_use] extern crate log;
 
+#[path="../common"]
+mod common {
+    pub mod debug;
+    pub mod memory;
+    pub mod pio;
+}
+
 // Heaps provided for low-level allocation strategies
 
 pub mod heap;
@@ -123,7 +129,6 @@ pub mod boxed;
 #[cfg(test)]
 mod boxed { pub use std::boxed::{Box, HEAP}; }
 #[cfg(test)]
-mod boxed_test;
 pub mod arc;
 pub mod rc;
 pub mod raw_vec;

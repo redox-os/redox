@@ -56,10 +56,10 @@
 #[cfg(stage0)]
 use core::prelude::v1::*;
 
-use alloc::heap;
+use heap;
 ///TODO: Replace with panic
-use alloc::heap::oom;
-use alloc::raw_vec::RawVec;
+use heap::oom;
+use raw_vec::RawVec;
 
 use core::any::Any;
 use core::cmp::Ordering;
