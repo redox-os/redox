@@ -50,7 +50,7 @@ pub trait SessionItem {
     fn new(file: String) -> Self where Self:Sized;
     fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool;
     fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent);
-    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, alloc_catch: bool) -> bool;
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool;
 }
 
 pub const REDRAW_NONE: usize = 0;
