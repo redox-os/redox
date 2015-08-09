@@ -1,6 +1,8 @@
 use core::clone::Clone;
 use core::result::Result;
 
+use alloc::rc::*;
+
 use common::debug::*;
 use common::string::*;
 use common::vector::*;
@@ -137,22 +139,25 @@ impl SessionItem for FileManager {
                     if self.selected >= 0 && self.selected < self.files.len() as isize {
                         match self.files.get(self.selected as usize) {
                             Result::Ok(file) => {
-                                if file.ends_with(".md".to_string())
-                                    || file.ends_with(".rs".to_string())
-                                {
-                                    let mut editor = box Editor::new();
-                                    editor.load(session, file.clone());
-                                    updates.new_items.push(editor);
+                                if file.ends_with(".md".to_string()) || file.ends_with(".rs".to_string()){
+                                    updates.events.push(box OpenEvent {
+                                        item: Rc::new(Editor::new()),
+                                        filename: file.clone()
+                                    });
                                 }else if file.ends_with(".bin".to_string()){
-                                    let mut executor = box Executor::new();
-                                    executor.load(session, file.clone());
-                                    updates.new_items.push(executor);
+                                    updates.events.push(box OpenEvent {
+                                        item: Rc::new(Executor::new()),
+                                        filename: file.clone()
+                                    });
                                 }else if file.ends_with(".bmp".to_string()){
-                                    let mut viewer = box Viewer::new();
-                                    viewer.load(session, file.clone());
-                                    updates.new_items.push(viewer);
+                                    updates.events.push(box OpenEvent {
+                                        item: Rc::new(Viewer::new()),
+                                        filename: file.clone()
+                                    });
                                 }else{
-                                    d("No program found!\n");
+                                    d("No program found: ");
+                                    file.d();
+                                    dl();
                                 }
                             },
                             Result::Err(_) => ()

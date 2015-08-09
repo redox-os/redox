@@ -46,7 +46,7 @@ impl Editor {
 
 impl SessionItem for Editor {
     fn new() -> Editor {
-        let mut ret = Editor {
+        Editor {
             window: Window{
                 point: Point::new(420, 300),
                 size: Size::new(576, 400),
@@ -71,11 +71,10 @@ impl SessionItem for Editor {
             string: String::new(),
             offset: 0,
             scroll: Point::new(0, 0)
-        };
-
-        return ret;
+        }
     }
 
+    #[allow(unused_variables)]
     fn load(&mut self, session: &Session, filename: String){
         if filename.len() > 0 {
             self.clear();

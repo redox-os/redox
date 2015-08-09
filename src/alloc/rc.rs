@@ -341,7 +341,7 @@ impl<T: ?Sized> Rc<T> {
 
     #[inline]
     //#[unstable(feature = "rc_unique")]
-    pub unsafe fn unsafe_get_mut(rc: &mut Rc<T>) -> &mut T {
+    pub unsafe fn unsafe_get_mut(rc: &Rc<T>) -> &mut T {
         let inner = &mut **rc._ptr;
         &mut inner.value
     }

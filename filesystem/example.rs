@@ -12,6 +12,9 @@
 
 extern crate redox_alloc as alloc;
 
+#[macro_use]
+extern crate mopa;
+
 use core::clone::Clone;
 use core::mem::size_of;
 use core::result::Result;
@@ -199,6 +202,16 @@ impl Application {
                         Result::Ok(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
+                            /*
+                            session.on_url(&url, box |me, response|{
+                                match me.downcast_mut::<Application>() {
+                                    Option::Some(app) => {
+                                        app.append(response);
+                                    },
+                                    Option::None => ()
+                                }
+                            });
+                            */
                         },
                         Result::Err(_) => {
                             for module in session.modules.iter() {

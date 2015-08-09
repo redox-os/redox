@@ -12,6 +12,9 @@
 
 extern crate redox_alloc as alloc;
 
+#[macro_use]
+extern crate mopa;
+
 use core::mem::size_of;
 
 use alloc::rc::*;
@@ -123,7 +126,7 @@ unsafe fn init(){
     *session_ptr = Session::new();
     let session = &mut *session_ptr;
 
-    session.items.insert(0, box FileManager::new());
+    session.items.insert(0, Rc::new(FileManager::new()));
 
     keyboard_init();
     mouse_init();
@@ -139,7 +142,7 @@ unsafe fn init(){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-    session.on_url(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
+    session.on_url_wrapped(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
         if response.data as usize > 0 {
             (*session_ptr).display.background = BMP::from_data(response.data as usize);
         }
