@@ -29,7 +29,7 @@ impl Executor {
 }
 
 impl SessionItem for Executor {
-    fn new(file: String) -> Executor {
+    fn new() -> Executor {
         let mut ret = Executor {
             executable: ELF::new(),
             entry: 0,
@@ -38,21 +38,23 @@ impl SessionItem for Executor {
             on_key: 0
         };
 
-        if file.len() > 0{
+        return ret;
+    }
+
+    fn load(&mut self, session: &Session, filename: String){
+        if filename.len() > 0{
             unsafe{
-                ret.executable = ELF::from_data(UnFS::new().load(file));
+                self.executable = ELF::from_data(UnFS::new().load(filename));
                 //ret.executable.d();
 
-                ret.entry = ret.executable.entry();
-                ret.draw = ret.executable.symbol("draw".to_string());
-                ret.on_key = ret.executable.symbol("on_key".to_string());
-                ret.on_mouse = ret.executable.symbol("on_mouse".to_string());
+                self.entry = self.executable.entry();
+                self.draw = self.executable.symbol("draw".to_string());
+                self.on_key = self.executable.symbol("on_key".to_string());
+                self.on_mouse = self.executable.symbol("on_mouse".to_string());
 
-                ret.entry();
+                self.entry();
             }
         }
-
-        return ret;
     }
 
     fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{

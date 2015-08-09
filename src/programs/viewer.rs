@@ -1,12 +1,10 @@
 use core::clone::Clone;
 
-use common::memory::*;
 use common::string::*;
+use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
-
-use filesystems::unfs::*;
 
 use graphics::bmp::*;
 use graphics::color::*;
@@ -18,11 +16,12 @@ use programs::session::*;
 
 pub struct Viewer {
     window: Window,
-    image: BMP
+    image: BMP,
+    loading: bool
 }
 
 impl SessionItem for Viewer {
-    fn new(file: String) -> Viewer {
+    fn new() -> Viewer {
         let mut ret = Viewer {
             window: Window{
                 point: Point::new(180, 50),
@@ -44,21 +43,34 @@ impl SessionItem for Viewer {
                     valid: false
                 }
             },
-            image: BMP::new()
+            image: BMP::new(),
+            loading: false
         };
 
-        if file.len() > 0{
-            ret.window.title = String::from_str("Viewer (") + file.clone() + String::from_str(")");
+        return ret;
+    }
+
+    fn load(&mut self, session: &Session, filename: String){
+        if filename.len() > 0 && !self.loading{
+            self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
             unsafe {
-                let unfs = UnFS::new();
-                let image_data = unfs.load(file.clone());
-                ret.image = BMP::from_data(image_data);
-                ret.window.size = ret.image.size;
-                unalloc(image_data);
+                self.image = BMP::new();
+                self.loading = true;
+
+                unsafe{
+                    let self_ptr: *mut Viewer = self; // BIG NO NO
+                    session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |response|{
+                        let viewer = &mut *self_ptr;
+                        viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
+                        if response.data as usize > 0 {
+                            viewer.image = BMP::from_data(response.data as usize);
+                            viewer.window.size = viewer.image.size;
+                        }
+                        viewer.loading = false;
+                    });
+                }
             }
         }
-
-        return ret;
     }
 
     #[allow(unused_variables)]
@@ -66,7 +78,7 @@ impl SessionItem for Viewer {
         let display = &session.display;
 
         if ! self.window.draw(display) {
-            return false;
+            return self.loading;
         }
 
         if ! self.window.shaded {

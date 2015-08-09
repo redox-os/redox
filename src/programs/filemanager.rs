@@ -27,10 +27,10 @@ pub struct FileManager {
 }
 
 impl SessionItem for FileManager {
-    fn new(file: String) -> FileManager {
+    fn new() -> FileManager {
         let mut size = Size::new(0, 0);
 
-        let files = UnFS::new().list(file);
+        let files = UnFS::new().list("".to_string());
 
         if size.height < files.len() * 16 {
             size.height = files.len() * 16;
@@ -140,11 +140,17 @@ impl SessionItem for FileManager {
                                 if file.ends_with(".md".to_string())
                                     || file.ends_with(".rs".to_string())
                                 {
-                                    updates.new_items.push(box Editor::new(file.clone()));
+                                    let mut editor = box Editor::new();
+                                    editor.load(session, file.clone());
+                                    updates.new_items.push(editor);
                                 }else if file.ends_with(".bin".to_string()){
-                                    updates.new_items.push(box Executor::new(file.clone()));
+                                    let mut executor = box Executor::new();
+                                    executor.load(session, file.clone());
+                                    updates.new_items.push(executor);
                                 }else if file.ends_with(".bmp".to_string()){
-                                    updates.new_items.push(box Viewer::new(file.clone()));
+                                    let mut viewer = box Viewer::new();
+                                    viewer.load(session, file.clone());
+                                    updates.new_items.push(viewer);
                                 }else{
                                     d("No program found!\n");
                                 }
