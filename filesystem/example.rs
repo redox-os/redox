@@ -199,13 +199,6 @@ impl Application {
                         Result::Ok(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
-
-                            unsafe{
-                                let self_ptr: *mut Application = self; // BIG NO NO
-                                session.on_url(&url, box move |response|{
-                                    (*self_ptr).append(response);
-                                })
-                            }
                         },
                         Result::Err(_) => {
                             for module in session.modules.iter() {
