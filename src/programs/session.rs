@@ -43,10 +43,27 @@ pub trait SessionModule {
 }
 
 pub trait SessionItem {
-    fn new(file: String) -> Self where Self:Sized;
-    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool;
-    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent);
-    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool;
+    fn new() -> Self where Self:Sized;
+
+    #[allow(unused_variables)]
+    fn load(&mut self, session: &Session, file: String){
+
+    }
+
+    #[allow(unused_variables)]
+    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
+        return true;
+    }
+
+    #[allow(unused_variables)]
+    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
+
+    }
+
+    #[allow(unused_variables)]
+    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return false;
+    }
 }
 
 pub const REDRAW_NONE: usize = 0;

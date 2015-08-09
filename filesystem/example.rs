@@ -199,7 +199,13 @@ impl Application {
                         Result::Ok(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
-                            // TODO self.append(session.on_url(&url));
+
+                            unsafe{
+                                let self_ptr: *mut Application = self; // BIG NO NO
+                                session.on_url(&url, box move |response|{
+                                    (*self_ptr).append(response);
+                                })
+                            }
                         },
                         Result::Err(_) => {
                             for module in session.modules.iter() {
@@ -221,7 +227,7 @@ impl Application {
 
 impl SessionItem for Application {
     #[allow(unused_variables)]
-    fn new(file: String) -> Application {
+    fn new() -> Application {
         Application {
             window: Window{
                 point: Point::new(220, 100),
@@ -395,7 +401,7 @@ static mut application: *mut Application = 0 as *mut Application;
 #[no_mangle]
 pub unsafe fn entry(){
     application = alloc(size_of::<Application>()) as *mut Application;
-    *application = Application::new("".to_string());
+    *application = Application::new();
 }
 
 #[no_mangle]

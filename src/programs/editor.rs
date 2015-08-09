@@ -33,24 +33,6 @@ impl Editor {
         self.scroll = Point::new(0, 0);
     }
 
-    fn load(&mut self, filename: String){
-        self.clear();
-        unsafe {
-            let unfs = UnFS::new();
-            let dest = unfs.load(filename.clone());
-            if dest > 0 {
-                self.filename = filename.clone();
-                self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
-                self.string = String::from_c_str(dest as *const u8);
-                unalloc(dest);
-            }else{
-                d("Did not find '");
-                filename.d();
-                d("'\n");
-            }
-        }
-    }
-
     fn save(&self){
         let unfs = UnFS::new();
         unsafe{
@@ -63,7 +45,7 @@ impl Editor {
 }
 
 impl SessionItem for Editor {
-    fn new(file: String) -> Editor {
+    fn new() -> Editor {
         let mut ret = Editor {
             window: Window{
                 point: Point::new(420, 300),
@@ -91,11 +73,27 @@ impl SessionItem for Editor {
             scroll: Point::new(0, 0)
         };
 
-        if file.len() > 0{
-            ret.load(file);
-        }
-
         return ret;
+    }
+
+    fn load(&mut self, session: &Session, filename: String){
+        if filename.len() > 0 {
+            self.clear();
+            unsafe {
+                let unfs = UnFS::new();
+                let dest = unfs.load(filename.clone());
+                if dest > 0 {
+                    self.filename = filename.clone();
+                    self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
+                    self.string = String::from_c_str(dest as *const u8);
+                    unalloc(dest);
+                }else{
+                    d("Did not find '");
+                    filename.d();
+                    d("'\n");
+                }
+            }
+        }
     }
 
     fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{

@@ -123,7 +123,7 @@ unsafe fn init(){
     *session_ptr = Session::new();
     let session = &mut *session_ptr;
 
-    session.items.insert(0, box FileManager::new("".to_string()));
+    session.items.insert(0, box FileManager::new());
 
     keyboard_init();
     mouse_init();
