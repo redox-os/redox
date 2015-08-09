@@ -16,14 +16,17 @@ all: harddrive.bin
 libredox_alloc.rlib: src/alloc/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<
 
-kernel.rlib: src/kernel.rs libredox_alloc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib
+libmopa.rlib: src/mopa/lib.rs
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --cfg 'feature = "no_std"'
+
+kernel.rlib: src/kernel.rs libredox_alloc.rlib libmopa.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib --extern mopa=libmopa.rlib
 
 kernel.bin: kernel.rlib libredox_alloc.rlib
 	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< libredox_alloc.rlib
 
-example.rlib: filesystem/example.rs libredox_alloc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib
+example.rlib: filesystem/example.rs libredox_alloc.rlib libmopa.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib --extern mopa=libmopa.rlib
 
 filesystem/example.bin: example.rlib libredox_alloc.rlib
 	$(LD) -m elf_i386 -o $@ -T src/program.ld $< libredox_alloc.rlib

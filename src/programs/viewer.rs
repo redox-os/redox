@@ -22,7 +22,7 @@ pub struct Viewer {
 
 impl SessionItem for Viewer {
     fn new() -> Viewer {
-        let mut ret = Viewer {
+        Viewer {
             window: Window{
                 point: Point::new(180, 50),
                 size: Size::new(640, 480),
@@ -45,31 +45,29 @@ impl SessionItem for Viewer {
             },
             image: BMP::new(),
             loading: false
-        };
-
-        return ret;
+        }
     }
 
     fn load(&mut self, session: &Session, filename: String){
         if filename.len() > 0 && !self.loading{
             self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
-            unsafe {
-                self.image = BMP::new();
-                self.loading = true;
 
-                unsafe{
-                    let self_ptr: *mut Viewer = self; // BIG NO NO
-                    session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |response|{
-                        let viewer = &mut *self_ptr;
+            self.image = BMP::new();
+            self.loading = true;
+
+            session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |me, response|{
+                match me.downcast_mut::<Viewer>() {
+                    Option::Some(viewer) => {
                         viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
                         if response.data as usize > 0 {
                             viewer.image = BMP::from_data(response.data as usize);
                             viewer.window.size = viewer.image.size;
                         }
                         viewer.loading = false;
-                    });
+                    },
+                    Option::None => ()
                 }
-            }
+            });
         }
     }
 

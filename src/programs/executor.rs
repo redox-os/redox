@@ -10,6 +10,7 @@ use programs::session::*;
 
 pub struct Executor {
     executable: ELF,
+    mapped: bool,
     entry: usize,
     draw: usize,
     on_key: usize,
@@ -17,30 +18,30 @@ pub struct Executor {
 }
 
 impl Executor {
-    unsafe fn entry(&self){
+    unsafe fn entry(&mut self){
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
-            self.executable.map();
+            self.unsafe_map();
             let fn_ptr: *const usize = &self.entry;
             (*(fn_ptr as *const fn()))();
-            self.executable.unmap();
+            self.unsafe_unmap();
         }
     }
 }
 
 impl SessionItem for Executor {
     fn new() -> Executor {
-        let mut ret = Executor {
+        Executor {
             executable: ELF::new(),
+            mapped: false,
             entry: 0,
             draw: 0,
             on_mouse: 0,
             on_key: 0
-        };
-
-        return ret;
+        }
     }
 
+    #[allow(unused_variables)]
     fn load(&mut self, session: &Session, filename: String){
         if filename.len() > 0{
             unsafe{
@@ -61,10 +62,10 @@ impl SessionItem for Executor {
         unsafe {
             if self.executable.can_call(self.draw){
                 //Rediculous call mechanism
-                self.executable.map();
+                self.unsafe_map();
                 let fn_ptr: *const usize = &self.draw;
                 let ret = (*(fn_ptr as *const fn(&Session, &mut SessionUpdates) -> bool))(session, updates);
-                self.executable.unmap();
+                self.unsafe_unmap();
 
                 return ret;
             }
@@ -76,10 +77,10 @@ impl SessionItem for Executor {
         unsafe {
             if self.executable.can_call(self.on_key){
                 //Rediculous call mechanism
-                self.executable.map();
+                self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_key;
                 (*(fn_ptr as *const fn(&Session, &mut SessionUpdates, KeyEvent)))(session, updates, key_event);
-                self.executable.unmap();
+                self.unsafe_unmap();
             }
         }
     }
@@ -88,13 +89,27 @@ impl SessionItem for Executor {
         unsafe {
             if self.executable.can_call(self.on_mouse){
                 //Rediculous call mechanism
-                self.executable.map();
+                self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_mouse;
                 let ret = (*(fn_ptr as *const fn(&Session, &mut SessionUpdates, MouseEvent, bool) -> bool))(session, updates, mouse_event, allow_catch);
-                self.executable.unmap();
+                self.unsafe_unmap();
                 return ret;
             }
         }
         return false;
+    }
+
+    unsafe fn unsafe_map(&mut self){
+        if self.executable.data > 0 && !self.mapped{
+            self.executable.map();
+            self.mapped = true;
+        }
+    }
+
+    unsafe fn unsafe_unmap(&mut self){
+        if self.executable.data > 0 && self.mapped {
+            self.executable.unmap();
+            self.mapped = false;
+        }
     }
 }

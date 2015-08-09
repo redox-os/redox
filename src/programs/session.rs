@@ -6,6 +6,9 @@ use core::ops::Fn;
 use core::option::Option;
 use core::result::Result;
 
+use alloc::boxed::*;
+use alloc::rc::*;
+
 use common::string::*;
 use common::vector::*;
 use common::url::*;
@@ -17,9 +20,6 @@ use graphics::color::*;
 use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
-
-use alloc::boxed::*;
-use alloc::rc::*;
 
 pub trait SessionModule {
     #[allow(unused_variables)]
@@ -42,7 +42,7 @@ pub trait SessionModule {
     }
 }
 
-pub trait SessionItem {
+pub trait SessionItem : ::mopa::Any {
     fn new() -> Self where Self:Sized;
 
     #[allow(unused_variables)]
@@ -64,6 +64,20 @@ pub trait SessionItem {
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
+
+    unsafe fn unsafe_map(&mut self){
+
+    }
+
+    unsafe fn unsafe_unmap(&mut self){
+
+    }
+}
+mopafy!(SessionItem, core=core, alloc=alloc);
+
+pub struct OpenEvent {
+    pub item: Rc<SessionItem>,
+    pub filename: String
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -73,14 +87,14 @@ pub const REDRAW_ALL: usize = 2;
 pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
-    pub items: Vector<Box<SessionItem>>,
+    pub items: Vector<Rc<SessionItem>>,
+    pub current_item: isize,
     pub modules: Vector<Rc<SessionModule>>,
     pub redraw: usize
 }
 
 pub struct SessionUpdates {
     pub events: Vector<Box<Any>>,
-    pub new_items: Vector<Box<SessionItem>>,
     pub redraw: usize
 }
 
@@ -90,6 +104,7 @@ impl Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
             items: Vector::new(),
+            current_item: -1,
             modules: Vector::new(),
             redraw: REDRAW_ALL
         }
@@ -119,7 +134,7 @@ impl Session {
         self.apply_updates(updates);
     }
 
-    pub fn on_url(&self, url: &URL, callback: Box<Fn(String)>){
+    pub fn on_url_wrapped(&self, url: &URL, callback: Box<Fn(String)>){
         for module in self.modules.iter() {
             if module.scheme() == url.scheme {
                 unsafe{
@@ -130,16 +145,38 @@ impl Session {
         }
     }
 
+    pub fn on_url(&self, url: &URL, callback: Box<Fn(&mut SessionItem, String)>){
+        if self.current_item >= 0 {
+            match self.items.get(self.current_item as usize) {
+                Result::Ok(item) => {
+                    let me = item.clone();
+                    self.on_url_wrapped(url, box move |response|{
+                        unsafe {
+                            Rc::unsafe_get_mut(&me).unsafe_map();
+                            callback(Rc::unsafe_get_mut(&me), response);
+                            Rc::unsafe_get_mut(&me).unsafe_unmap();
+                        }
+                    });
+                },
+                Result::Err(_) => ()
+            }
+        }
+    }
+
     pub fn on_key(&mut self, key_event: KeyEvent){
         let mut updates = self.new_updates();
 
-        match self.items.get(0){
+        self.current_item = 0;
+        match self.items.get(self.current_item as usize){
             Result::Ok(item) => {
-                item.on_key(self, &mut updates, key_event);
+                unsafe {
+                    Rc::unsafe_get_mut(item).on_key(self, &mut updates, key_event);
+                }
                 updates.redraw = REDRAW_ALL;
             },
             Result::Err(_) => ()
         }
+        self.current_item = -1;
 
         self.apply_updates(updates);
     }
@@ -154,15 +191,22 @@ impl Session {
         let mut catcher = 0;
         let mut allow_catch = true;
         for i in 0..self.items.len() {
-            match self.items.get(i){
-                Result::Ok(item) => if item.on_mouse(self, &mut updates, mouse_event, allow_catch) {
-                    allow_catch = false;
-                    catcher = i;
-                    updates.redraw = REDRAW_ALL;
+            self.current_item = i as isize;
+            match self.items.get(self.current_item as usize){
+                Result::Ok(item) => {
+                    unsafe {
+                        if Rc::unsafe_get_mut(item).on_mouse(self, &mut updates, mouse_event, allow_catch) {
+                            allow_catch = false;
+                            catcher = i;
+                            updates.redraw = REDRAW_ALL;
+                        }
+                    }
                 },
                 Result::Err(_) => ()
             }
         }
+        self.current_item = -1;
+
         if catcher > 0 {
             match self.items.extract(catcher){
                 Result::Ok(item) => self.items.insert(0, item),
@@ -185,14 +229,19 @@ impl Session {
 
                 let mut erase_i: Vector<usize> = Vector::new();
                 for reverse_i in 0..self.items.len() {
-                    let i = self.items.len() - 1 - reverse_i;
-                    match self.items.get(i) {
-                        Result::Ok(item) => if ! item.draw(self, &mut updates) {
-                            erase_i.push(i);
+                    self.current_item = (self.items.len() - 1 - reverse_i) as isize;
+                    match self.items.get(self.current_item as usize) {
+                        Result::Ok(item) => {
+                            unsafe {
+                                if ! Rc::unsafe_get_mut(item).draw(self, &mut updates) {
+                                    erase_i.push(self.current_item as usize);
+                                }
+                            }
                         },
                         Result::Err(_) => ()
                     }
                 }
+                self.current_item = -1;
 
                 for i in erase_i.iter() {
                     self.items.erase(*i);
@@ -212,7 +261,6 @@ impl Session {
     fn new_updates(&self) -> SessionUpdates {
         SessionUpdates{
             events: Vector::new(),
-            new_items: Vector::new(),
             redraw: REDRAW_NONE
         }
     }
@@ -222,11 +270,30 @@ impl Session {
             match updates.events.extract(0){
                 Result::Ok(event) => {
                     match event.downcast_ref::<KeyEvent>() {
-                        Option::Some(key_event) => self.on_key(*key_event),
+                        Option::Some(key_event) => {
+                            self.on_key(*key_event);
+                            continue;
+                        },
                         Option::None => ()
                     }
                     match event.downcast_ref::<MouseEvent>() {
-                        Option::Some(mouse_event) => self.on_mouse(*mouse_event),
+                        Option::Some(mouse_event) => {
+                            self.on_mouse(*mouse_event);
+                            continue;
+                        },
+                        Option::None => ()
+                    }
+                    match event.downcast_ref::<OpenEvent>() {
+                        Option::Some(open_event) => {
+                            self.items.insert(0, open_event.item.clone());
+                            self.current_item = 0;
+                            unsafe{
+                                Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
+                            }
+                            self.current_item = -1;
+                            updates.redraw = REDRAW_ALL;
+                            continue;
+                        },
                         Option::None => ()
                     }
                 },
@@ -234,15 +301,6 @@ impl Session {
             }
         }
 
-        while updates.new_items.len() > 0 {
-            match updates.new_items.extract(0){
-                Result::Ok(item) => {
-                    self.items.insert(0, item);
-                    updates.redraw = REDRAW_ALL;
-                },
-                Result::Err(_) => ()
-            }
-        }
         self.redraw = max(updates.redraw, self.redraw);
     }
 }
