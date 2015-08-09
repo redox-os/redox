@@ -2,7 +2,7 @@ use common::random::*;
 use common::string::*;
 use common::url::*;
 
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
 
 use programs::session::*;
 

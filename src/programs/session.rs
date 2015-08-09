@@ -18,7 +18,8 @@ use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
+use alloc::rc::*;
 
 pub trait SessionModule {
     #[allow(unused_variables)]
@@ -56,7 +57,7 @@ pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
     pub items: Vector<Box<SessionItem>>,
-    pub modules: Vector<Box<SessionModule>>,
+    pub modules: Vector<Rc<SessionModule>>,
     pub redraw: usize
 }
 
@@ -81,7 +82,9 @@ impl Session {
         let mut updates = self.new_updates();
 
         for module in self.modules.iter() {
-            module.on_irq(self, &mut updates, irq);
+            unsafe{
+                Rc::unsafe_get_mut(module).on_irq(self, &mut updates, irq);
+            }
         }
 
         self.apply_updates(updates);
@@ -91,7 +94,9 @@ impl Session {
         let mut updates = self.new_updates();
 
         for module in self.modules.iter() {
-            module.on_poll(self, &mut updates);
+            unsafe{
+                Rc::unsafe_get_mut(module).on_poll(self, &mut updates);
+            }
         }
 
         self.apply_updates(updates);
@@ -100,7 +105,9 @@ impl Session {
     pub fn on_url(&self, url: &URL, callback: Box<Fn(String)>){
         for module in self.modules.iter() {
             if module.scheme() == url.scheme {
-                module.on_url(self, url, callback);
+                unsafe{
+                    Rc::unsafe_get_mut(module).on_url(self, url, callback);
+                }
                 break;
             }
         }

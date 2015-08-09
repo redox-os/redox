@@ -57,8 +57,7 @@
 use core::prelude::v1::*;
 
 use heap;
-///TODO: Replace with panic
-use heap::oom;
+use super::oom;
 use raw_vec::RawVec;
 
 use core::any::Any;

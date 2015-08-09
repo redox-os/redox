@@ -2,7 +2,7 @@ use core::mem::size_of;
 use core::ops::Fn;
 use core::result::Result;
 
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
 
 use common::debug::*;
 use common::memory::*;

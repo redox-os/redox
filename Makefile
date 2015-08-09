@@ -2,7 +2,8 @@ RUSTC=rustc
 RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 	-O -Z no-landing-pads \
 	-A dead-code \
-	-W trivial-casts -W trivial-numeric-casts
+	-W trivial-casts -W trivial-numeric-casts \
+	-L .
 #--cfg debug_network
 LD=ld
 AS=nasm
@@ -13,21 +14,25 @@ QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139
 all: harddrive.bin
 
 libredox_alloc.rlib: src/alloc/lib.rs
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<
 
-kernel.bin: src/kernel.rs libredox_alloc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o kernel.o --emit obj $< --extern redox_alloc=libredox_alloc.rlib -l static=libredox_alloc.rlib
-	$(LD) -m elf_i386 -o $@ -T src/kernel.ld kernel.o libredox_alloc.rlib
+kernel.rlib: src/kernel.rs libredox_alloc.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib
 
-filesystem/example.bin: filesystem/example.rs libredox_alloc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type lib -o example.o --emit obj $< --extern redox_alloc=libredox_alloc.rlib -l static=libredox_alloc.rlib
-	$(LD) -m elf_i386 -o $@ -T src/program.ld example.o libredox_alloc.rlib
+kernel.bin: kernel.rlib libredox_alloc.rlib
+	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< libredox_alloc.rlib
+
+example.rlib: filesystem/example.rs libredox_alloc.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib
+
+filesystem/example.bin: example.rlib libredox_alloc.rlib
+	$(LD) -m elf_i386 -o $@ -T src/program.ld $< libredox_alloc.rlib
 
 filesystem/filesystem.asm: filesystem/example.bin
 	find filesystem -type f -o -type l | cut -d '/' -f2- | grep -v filesystem.asm | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-harddrive.bin: src/loader.asm filesystem/filesystem.asm kernel.bin
-	$(AS) -f bin -o $@ -ifilesystem/ -isrc/ $<
+harddrive.bin: src/loader.asm kernel.bin filesystem/filesystem.asm
+	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<
 
 run: harddrive.bin
 	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -net user -hda $<
