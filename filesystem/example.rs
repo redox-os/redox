@@ -10,7 +10,7 @@
 #![feature(unsafe_no_drop_flag)]
 #![no_std]
 
-extern crate redox_alloc;
+extern crate redox_alloc as alloc;
 
 use core::clone::Clone;
 use core::mem::size_of;
@@ -36,7 +36,7 @@ use core::any::Any;
 use core::ops::Fn;
 use core::option::Option;
 
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
 
 use common::debug::*;
 /* } TEST */

@@ -338,6 +338,13 @@ impl<T: ?Sized> Rc<T> {
             None
         }
     }
+
+    #[inline]
+    //#[unstable(feature = "rc_unique")]
+    pub unsafe fn unsafe_get_mut(rc: &mut Rc<T>) -> &mut T {
+        let inner = &mut **rc._ptr;
+        &mut inner.value
+    }
 }
 
 /// Get the number of weak references to this value.

@@ -2,7 +2,7 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::ops::Fn;
 
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
 
 use common::memory::*;
 use common::string::*;

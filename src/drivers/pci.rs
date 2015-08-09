@@ -1,3 +1,5 @@
+use alloc::rc::*;
+
 use common::debug::*;
 use common::pci::*;
 use common::vector::*;
@@ -15,28 +17,28 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
     if class_id == 0x01 && subclass_id == 0x01{
         let base = pci_read(bus, slot, func, 0x20);
 
-        let module = box IDE {
+        let module = Rc::new(IDE {
             bus: bus,
             slot: slot,
             func: func,
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
             requests: Vector::new()
-        };
+        });
         module.init();
         session.modules.push(module);
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
             let base = pci_read(bus, slot, func, 0x10);
 
-            let module = box XHCI {
+            let module = Rc::new(XHCI {
                 bus: bus,
                 slot: slot,
                 func: func,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,
                 irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
-            };
+            });
             module.init();
             session.modules.push(module);
         }else if interface_id == 0x20{
@@ -65,14 +67,14 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             0x10EC => match device_code{ // REALTEK
                 0x8139 => {
                     let base = pci_read(bus, slot, func, 0x10);
-                    let module = box RTL8139 {
+                    let module = Rc::new(RTL8139 {
                         bus: bus,
                         slot: slot,
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
-                    };
+                    });
                     module.init();
                     session.modules.push(module);
                 },
@@ -81,14 +83,14 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             0x8086 => match device_code{ // INTEL
                 0x100E => {
                     let base = pci_read(bus, slot, 0, 0x10);
-                    let module = box Intel8254x {
+                    let module = Rc::new(Intel8254x {
                         bus: bus,
                         slot: slot,
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
-                    };
+                    });
                     module.init();
                     session.modules.push(module);
                 },

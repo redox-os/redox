@@ -12,8 +12,7 @@ use core::ptr::Unique;
 use core::mem;
 use core::slice::{self, SliceExt};
 use heap;
-// TODO use lib.rs use super::oom;
-use heap::oom;
+use super::oom;
 use boxed::Box;
 use core::ops::Drop;
 

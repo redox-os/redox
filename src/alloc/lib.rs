@@ -58,8 +58,8 @@
 
 // Do not remove on snapshot creation. Needed for bootstrap. (Issue #22364)
 #![cfg_attr(stage0, feature(custom_attribute))]
-#![crate_name = "alloc"]
-#![crate_type = "rlib"]
+//#![crate_name = "alloc"]
+//#![crate_type = "rlib"]
 //#![staged_api]
 //#![unstable(feature = "alloc", reason = "this library is unlikely to be stabilized in its current form or name")]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
@@ -133,6 +133,9 @@ pub mod arc;
 pub mod rc;
 pub mod raw_vec;
 
+// For OOM
+use common::debug::*;
+
 /// Common out-of-memory routine
 #[cold]
 #[inline(never)]
@@ -141,5 +144,11 @@ pub fn oom() -> ! {
     // FIXME(#14674): This really needs to do something other than just abort
     //                here, but any printing done must be *guaranteed* to not
     //                allocate.
-    unsafe { core::intrinsics::abort() }
+    unsafe {
+        d("OOM\n");
+        asm!("cli");
+        asm!("hlt");
+
+        loop{}
+    }
 }

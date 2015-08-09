@@ -1,4 +1,4 @@
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
 
 use common::memory::*;
 use common::string::*;

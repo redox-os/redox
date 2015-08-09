@@ -1,7 +1,7 @@
 use core::clone::Clone;
 use core::result::Result;
 
-use redox_alloc::boxed::*;
+use alloc::boxed::*;
 
 use common::pci::*;
 use common::string::*;

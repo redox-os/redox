@@ -8,22 +8,9 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use super::oom;
+
 use common::memory;
-
-// TODO use lib.rs
-use common::debug::*;
-pub fn oom() -> ! {
-    // FIXME(#14674): This really needs to do something other than just abort
-    //                here, but any printing done must be *guaranteed* to not
-    //                allocate.
-    unsafe {
-        d("OOM\n");
-        asm!("cli");
-        asm!("hlt");
-
-        loop{}
-    }
-}
 
 // FIXME: #13996: mark the `allocate` and `reallocate` return value as `noalias`
 

@@ -1,28 +1,20 @@
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(coerce_unsized)]
-#![feature(core)]
-#![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![feature(filling_drop)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
-#![feature(nonzero)]
-#![feature(optin_builtin_traits)]
-#![feature(placement_new_protocol)]
-#![feature(raw)]
 #![feature(unboxed_closures)]
-#![feature(unique)]
 #![feature(unsafe_no_drop_flag)]
-#![feature(unsize)]
 #![no_std]
 
-extern crate redox_alloc;
+extern crate redox_alloc as alloc;
 
 use core::mem::size_of;
+
+use alloc::rc::*;
 
 use common::debug::*;
 use common::pio::*;
@@ -136,16 +128,16 @@ unsafe fn init(){
     keyboard_init();
     mouse_init();
 
-    session.modules.push(box PS2);
-    session.modules.push(box Serial::new(0x3F8, 0x4));
+    session.modules.push(Rc::new(PS2));
+    session.modules.push(Rc::new(Serial::new(0x3F8, 0x4)));
 
     pci_init(session);
 
-    session.modules.push(box FileScheme);
-    session.modules.push(box HTTPScheme);
-    session.modules.push(box MemoryScheme);
-    session.modules.push(box PCIScheme);
-    session.modules.push(box RandomScheme);
+    session.modules.push(Rc::new(FileScheme));
+    session.modules.push(Rc::new(HTTPScheme));
+    session.modules.push(Rc::new(MemoryScheme));
+    session.modules.push(Rc::new(PCIScheme));
+    session.modules.push(Rc::new(RandomScheme));
 
     session.on_url(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
         if response.data as usize > 0 {
