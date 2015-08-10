@@ -52,7 +52,7 @@ impl SessionItem for Viewer {
 
             self.image = BMP::new();
 
-            session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |me, response|{
+            session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |me: &mut SessionItem, response: String|{
                 match me.downcast_mut::<Viewer>() {
                     Option::Some(viewer) => {
                         viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");

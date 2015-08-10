@@ -1,3 +1,4 @@
+use common::debug::*;
 use common::elf::*;
 use common::string::*;
 

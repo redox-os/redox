@@ -1,6 +1,5 @@
 use core::clone::Clone;
 use core::mem::size_of;
-use core::ops::Fn;
 
 use alloc::boxed::*;
 
@@ -20,7 +19,7 @@ impl SessionModule for FileScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         unsafe{
             let unfs = UnFS::new();
 
