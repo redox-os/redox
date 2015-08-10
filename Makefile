@@ -25,16 +25,17 @@ kernel.rlib: src/kernel.rs libredox_alloc.rlib libmopa.rlib
 kernel.bin: kernel.rlib libredox_alloc.rlib
 	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< libredox_alloc.rlib
 
-example.rlib: filesystem/example.rs libredox_alloc.rlib libmopa.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib --extern mopa=libmopa.rlib
+example.rlib: src/program.rs filesystem/example.rs libredox_alloc.rlib libmopa.rlib
+	sed 's|APPLICATION_PATH|../filesystem/example.rs|' src/program.rs > src/program.gen
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern redox_alloc=libredox_alloc.rlib --extern mopa=libmopa.rlib
 
 filesystem/example.bin: example.rlib libredox_alloc.rlib
 	$(LD) -m elf_i386 -o $@ -T src/program.ld $< libredox_alloc.rlib
 
-filesystem/filesystem.asm: filesystem/example.bin
-	find filesystem -type f -o -type l | cut -d '/' -f2- | grep -v filesystem.asm | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+src/filesystem.gen: filesystem/example.bin
+	find filesystem -type f -o -type l | cut -d '/' -f2- | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-harddrive.bin: src/loader.asm kernel.bin filesystem/filesystem.asm
+harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
 	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<
 
 run: harddrive.bin
@@ -58,4 +59,4 @@ run_tap_dump: harddrive.bin
 	sudo tunctl -d tap_qemu
 
 clean:
-	rm -f *.bin *.o *.rlib filesystem/*.bin filesystem/filesystem.asm
+	rm -f *.bin *.o *.rlib filesystem/*.bin src/*.gen

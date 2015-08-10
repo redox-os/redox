@@ -16,8 +16,7 @@ use programs::session::*;
 
 pub struct Viewer {
     window: Window,
-    image: BMP,
-    loading: bool
+    image: BMP
 }
 
 impl SessionItem for Viewer {
@@ -43,17 +42,15 @@ impl SessionItem for Viewer {
                     valid: false
                 }
             },
-            image: BMP::new(),
-            loading: false
+            image: BMP::new()
         }
     }
 
     fn load(&mut self, session: &Session, filename: String){
-        if filename.len() > 0 && !self.loading{
+        if filename.len() > 0{
             self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
 
             self.image = BMP::new();
-            self.loading = true;
 
             session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |me, response|{
                 match me.downcast_mut::<Viewer>() {
@@ -63,7 +60,6 @@ impl SessionItem for Viewer {
                             viewer.image = BMP::from_data(response.data as usize);
                             viewer.window.size = viewer.image.size;
                         }
-                        viewer.loading = false;
                     },
                     Option::None => ()
                 }
@@ -76,7 +72,7 @@ impl SessionItem for Viewer {
         let display = &session.display;
 
         if ! self.window.draw(display) {
-            return self.loading;
+            return false;
         }
 
         if ! self.window.shaded {
