@@ -2,14 +2,16 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use common::debug::*;
 use common::memory::*;
 use common::random::*;
 use common::string::*;
 use common::vector::*;
+use common::url::*;
 
 use network::common::*;
-use network::http::*;
 
 use programs::session::*;
 
@@ -50,7 +52,7 @@ const TCP_ACK: u16 = 1 << 4;
 
 #[allow(trivial_casts)]
 impl Response for TCP {
-    fn respond(&self, session: &Session) -> Vector<Vector<u8>> {
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
         if cfg!(debug_network){
             d("            ");
             self.d();
@@ -98,64 +100,84 @@ impl Response for TCP {
                     );
                 }
 
-                return Vector::from_value(ret.to_bytes());
+                callback(Vector::from_value(ret.to_bytes()));
             }else if self.header.flags.get() & TCP_PSH != 0{
                 if cfg!(debug_network){
                     d("            TCP PSH\n");
                 }
                 //Send TCP_ACK_PSH_FIN in one statement
                 {
-                    let mut ret = TCP {
-                        header: self.header,
-                        options: self.options.clone(),
-                        data: Vector::new(),
-                        src_ip: IP_ADDR,
-                        dst_ip: self.src_ip
-                    };
+                    let tcp_header = self.header;
+                    let tcp_options = self.options.clone();
+                    let tcp_dst_ip = self.src_ip;
+                    let tcp_data = self.data.clone();
+                    let tcp_callback = box move |response: String|{
+                        let mut ret = TCP {
+                            header: tcp_header,
+                            options: tcp_options.clone(),
+                            data: Vector::new(),
+                            src_ip: IP_ADDR,
+                            dst_ip: tcp_dst_ip
+                        };
 
-                    ret.header.src = self.header.dst;
-                    ret.header.dst = self.header.src;
-                    ret.header.flags.set(self.header.flags.get() | TCP_FIN);
-                    ret.header.ack_num.set(self.header.sequence.get() + self.data.len() as u32);
-                    ret.header.sequence.set(self.header.ack_num.get());
+                        ret.header.src = tcp_header.dst;
+                        ret.header.dst = tcp_header.src;
+                        ret.header.flags.set(tcp_header.flags.get() | TCP_FIN);
+                        ret.header.ack_num.set(tcp_header.sequence.get() + tcp_data.len() as u32);
+                        ret.header.sequence.set(tcp_header.ack_num.get());
 
-                    match self.header.dst.get() {
-                        80 => {
-                            // TODO: More efficient method
-                            let html = http_response(String::from_c_slice(self.data.as_slice()), session);
-                            unsafe{
-                                let html_ptr = html.to_c_str();
-                                ret.data = Vector::from_raw(html_ptr, html.len());
-                                unalloc(html_ptr as usize);
-                            }
-                        },
-                        _ => ()
-                    }
+                        unsafe{
+                            let response_ptr = response.to_c_str();
+                            ret.data = Vector::from_raw(response_ptr, response.len());
+                            unalloc(response_ptr as usize);
+                        }
 
-                    unsafe{
                         ret.header.checksum.data = 0;
 
                         let proto = n16::new(0x06);
                         let segment_len = n16::new((size_of::<TCPHeader>() + ret.options.len() + ret.data.len()) as u16);
-                        ret.header.checksum.data = Checksum::compile(
-                            Checksum::sum((&ret.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                            Checksum::sum((&ret.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                            Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                            Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                            Checksum::sum((&ret.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
-                            Checksum::sum(ret.options.data as usize, ret.options.len()) +
-                            Checksum::sum(ret.data.data as usize, ret.data.len())
-                        );
-                    }
+                        unsafe{
+                            ret.header.checksum.data = Checksum::compile(
+                                Checksum::sum((&ret.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                Checksum::sum((&ret.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                Checksum::sum((&ret.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                                Checksum::sum(ret.options.data as usize, ret.options.len()) +
+                                Checksum::sum(ret.data.data as usize, ret.data.len())
+                            );
+                        }
 
-                    return Vector::from_value(ret.to_bytes());
+                        callback(Vector::from_value(ret.to_bytes()));
+                    };
+
+                    match self.header.dst.get() {
+                        80 => {
+                            let request = String::from_c_slice(self.data.as_slice());
+
+                            let mut path = "/".to_string();
+
+                            for row in request.split("\r\n".to_string()) {
+                                let mut i = 0;
+                                for col in row.split(" ".to_string()) {
+                                    match i {
+                                        1 => path = col,
+                                        _ => ()
+                                    }
+                                    i += 1;
+                                }
+                                break;
+                            }
+
+                            session.on_url_wrapped(&URL::from_string("http://".to_string() + path), tcp_callback);
+                        },
+                        _ => ()
+                    }
                 }
             }
         }else{
             d("            TCP RST TODO\n");
         }
-
-        return Vector::new();
     }
 }
 

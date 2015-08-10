@@ -54,9 +54,27 @@ impl SessionModule for RTL8139 {
 
                     match EthernetII::from_bytes(Vector::<u8>::from_raw(frame_addr as *const u8, frame_len - 4)){
                         Option::Some(frame) => {
-                            for response in frame.respond(session).iter() {
-                                self.send(response.data as usize, response.len());
-                            }
+                            frame.respond(session, box move |responses: Vector<Vector<u8>>|{
+                                for response in responses.iter() {
+                                    if cfg!(debug_network){
+                                        d("RTL8139 send ");
+                                        dd(RTL8139_TX as usize);
+                                        dl();
+                                    }
+
+                                    outd(base + 0x20 + RTL8139_TX*4, response.data as u32);
+                                    outd(base + 0x10 + RTL8139_TX*4, response.len() as u32 & 0x1FFF);
+
+                                    while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
+                                        //Waiting for move out of memory
+                                        if cfg!(debug_network){
+                                            d("RTL8139 waiting for DMA\n");
+                                        }
+                                    }
+
+                                    RTL8139_TX = (RTL8139_TX + 1) % 4;
+                                }
+                            });
                         },
                         Option::None => ()
                     }
@@ -77,28 +95,6 @@ impl SessionModule for RTL8139 {
 }
 
 impl RTL8139 {
-    unsafe fn send(&self, addr: usize, len: usize){
-        if cfg!(debug_network){
-            d("RTL8139 send ");
-            dd(RTL8139_TX as usize);
-            dl();
-        }
-
-        let base = self.base as u16;
-
-        outd(base + 0x20 + RTL8139_TX*4, addr as u32);
-        outd(base + 0x10 + RTL8139_TX*4, len as u32 & 0x1FFF);
-
-        while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
-            //Waiting for move out of memory
-            if cfg!(debug_network){
-                d("RTL8139 waiting for DMA\n");
-            }
-        }
-
-        RTL8139_TX = (RTL8139_TX + 1) % 4;
-    }
-
     pub unsafe fn init(&self){
         d("RTL8139 on: ");
         dh(self.base);
