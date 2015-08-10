@@ -1,4 +1,3 @@
-use common::debug::*;
 use common::elf::*;
 use common::string::*;
 
@@ -47,7 +46,7 @@ impl SessionItem for Executor {
         if filename.len() > 0{
             unsafe{
                 self.executable = ELF::from_data(UnFS::new().load(filename));
-                //ret.executable.d();
+                self.executable.d();
 
                 self.entry = self.executable.entry();
                 self.draw = self.executable.symbol("draw".to_string());
