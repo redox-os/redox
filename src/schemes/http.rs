@@ -2,7 +2,6 @@ use core::clone::Clone;
 
 use alloc::boxed::*;
 
-use common::memory::*;
 use common::string::*;
 use common::url::*;
 

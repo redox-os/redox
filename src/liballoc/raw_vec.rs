@@ -13,7 +13,7 @@ use core::mem;
 use core::slice::{self, SliceExt};
 use heap;
 use super::oom;
-use boxed::Box;
+use super::boxed::Box;
 use core::ops::Drop;
 
 /// A low-level utility for more ergonomically allocating, reallocating, and deallocating a
@@ -449,8 +449,5 @@ fn alloc_guard(_alloc_size: usize) { }
 #[inline]
 #[cfg(target_pointer_width = "32")]
 fn alloc_guard(alloc_size: usize) {
-    if alloc_size > ::core::isize::MAX as usize {
-        oom();
-    }
     //assert!(alloc_size <= ::core::isize::MAX as usize, "capacity overflow");
 }

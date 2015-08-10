@@ -1,9 +1,10 @@
 use core::clone::Clone;
-use core::result::Result;
+use core::option::Option;
+
+use collections::vec::*;
 
 use common::debug::*;
 use common::string::*;
-use common::vector::*;
 use common::url::*;
 
 use drivers::keyboard::*;
@@ -32,26 +33,26 @@ impl Application {
 
     #[allow(unused_variables)]
     fn on_command(&mut self, session: &Session){
-        let mut args: Vector<String> = Vector::<String>::new();
+        let mut args: Vec<String> = Vec::<String>::new();
         for arg in self.command.split(" ".to_string()) {
             if arg.len() > 0 {
                 args.push(arg);
             }
         }
         match args.get(0) {
-            Result::Ok(cmd) => {
+            Option::Some(cmd) => {
                 if *cmd == "echo".to_string() {
                     let mut echo = String::new();
                     for i in 1..args.len() {
                         match args.get(i) {
-                            Result::Ok(arg) => {
+                            Option::Some(arg) => {
                                 if echo.len() == 0 {
                                     echo = arg.clone();
                                 }else{
                                     echo = echo + " " + arg.clone();
                                 }
                             },
-                            Result::Err(_) => ()
+                            Option::None => ()
                         }
                     }
                     self.append(echo);
@@ -59,12 +60,12 @@ impl Application {
                     self.window.closed = true;
                 }else if *cmd == "url".to_string() {
                     match args.get(1) {
-                        Result::Ok(url_string) => {
+                        Option::Some(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
                             // TODO session request
                         },
-                        Result::Err(_) => {
+                        Option::None => {
                             for module in session.modules.iter() {
                                 let scheme = module.scheme();
                                 if scheme.len() > 0 {
@@ -77,7 +78,7 @@ impl Application {
                     self.append("Commands:  echo  exit  url".to_string());
                 }
             },
-            Result::Err(_) => ()
+            Option::None => ()
         }
     }
 }

@@ -13,24 +13,27 @@ QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139
 
 all: harddrive.bin
 
-libredox_alloc.rlib: src/alloc/lib.rs
+liballoc.rlib: src/liballoc/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<
 
-libmopa.rlib: src/mopa/lib.rs
+libcollections.rlib: src/libcollections/lib.rs liballoc.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib
+
+libmopa.rlib: src/libmopa/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --cfg 'feature = "no_std"'
 
-kernel.rlib: src/kernel.rs libredox_alloc.rlib libmopa.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern redox_alloc=libredox_alloc.rlib --extern mopa=libmopa.rlib
+kernel.rlib: src/kernel.rs liballoc.rlib libcollections.rlib libmopa.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib --extern collections=libcollections.rlib --extern mopa=libmopa.rlib
 
-kernel.bin: kernel.rlib libredox_alloc.rlib
-	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< libredox_alloc.rlib
+kernel.bin: kernel.rlib liballoc.rlib
+	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< liballoc.rlib
 
-example.rlib: src/program.rs filesystem/example.rs libredox_alloc.rlib libmopa.rlib
+example.rlib: src/program.rs filesystem/example.rs liballoc.rlib libcollections.rlib libmopa.rlib
 	sed 's|APPLICATION_PATH|../filesystem/example.rs|' src/program.rs > src/program.gen
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern redox_alloc=libredox_alloc.rlib --extern mopa=libmopa.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern alloc=liballoc.rlib --extern collections=libcollections.rlib --extern mopa=libmopa.rlib
 
-filesystem/example.bin: example.rlib libredox_alloc.rlib
-	$(LD) -m elf_i386 -o $@ -T src/program.ld $< libredox_alloc.rlib
+filesystem/example.bin: example.rlib liballoc.rlib
+	$(LD) -m elf_i386 -o $@ -T src/program.ld $< liballoc.rlib
 
 src/filesystem.gen: filesystem/example.bin
 	find filesystem -type f -o -type l | cut -d '/' -f2- | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
