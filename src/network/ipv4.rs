@@ -2,6 +2,8 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use common::debug::*;
 use common::vector::*;
 
@@ -60,7 +62,7 @@ impl ToBytes for IPv4 {
 }
 
 impl Response for IPv4 {
-    fn respond(&self, session: &Session) -> Vector<Vector<u8>>{
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
         if self.header.dst.equals(IP_ADDR) || self.header.dst.equals(BROADCAST_IP_ADDR){
             if cfg!(debug_network){
                 d("    ");
@@ -68,52 +70,53 @@ impl Response for IPv4 {
                 dl();
             }
 
-            let mut responses: Vector<Vector<u8>> = Vector::new();
+            let ipv4_header = self.header;
+            let ipv4_options = self.options.clone();
+            let ipv4_callback = box move |responses: Vector<Vector<u8>>|{
+                let mut ret: Vector<Vector<u8>> = Vector::new();
+                for response in responses.iter() {
+                    let mut packet = IPv4 {
+                        header: ipv4_header,
+                        options: ipv4_options.clone(),
+                        data: response.clone()
+                    };
+
+                    packet.header.dst = ipv4_header.src;
+                    packet.header.src = IP_ADDR;
+                    packet.header.len.set((size_of::<IPv4Header>() + packet.options.len() + packet.data.len()) as u16);
+
+                    unsafe{
+                        packet.header.checksum.data = 0;
+
+                        let header_ptr: *const IPv4Header = &packet.header;
+                        packet.header.checksum.data = Checksum::compile(
+                            Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
+                            Checksum::sum(packet.options.data as usize, packet.options.len())
+                        );
+                    }
+
+                    ret.push(packet.to_bytes());
+                }
+                callback(ret);
+            };
+
             match self.header.proto {
                 0x01 => match ICMP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(session),
+                    Option::Some(packet) => packet.respond(session, ipv4_callback),
                     Option::None => ()
                 },
                 //Must copy source IP and destination IP for checksum
                 0x06 => match TCP::from_bytes_ipv4(self.data.clone(), self.header.src, self.header.dst) {
-                    Option::Some(packet) => responses = packet.respond(session),
+                    Option::Some(packet) => packet.respond(session, ipv4_callback),
                     Option::None => ()
                 },
                 0x11 => match UDP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(session),
+                    Option::Some(packet) => packet.respond(session, ipv4_callback),
                     Option::None => ()
                 },
                 _ => ()
             }
-
-            let mut ret: Vector<Vector<u8>> = Vector::new();
-            for response in responses.iter() {
-                let mut packet = IPv4 {
-                    header: self.header,
-                    options: self.options.clone(),
-                    data: response.clone()
-                };
-
-                packet.header.dst = self.header.src;
-                packet.header.src = IP_ADDR;
-                packet.header.len.set((size_of::<IPv4Header>() + packet.options.len() + packet.data.len()) as u16);
-
-                unsafe{
-                    packet.header.checksum.data = 0;
-
-                    let header_ptr: *const IPv4Header = &packet.header;
-                    packet.header.checksum.data = Checksum::compile(
-                        Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
-                        Checksum::sum(packet.options.data as usize, packet.options.len())
-                    );
-                }
-
-                ret = ret + Vector::from_value(packet.to_bytes());
-            }
-            return ret;
         }
-
-        return Vector::new();
     }
 }
 

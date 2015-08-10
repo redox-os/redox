@@ -2,6 +2,8 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use common::debug::*;
 use common::vector::*;
 
@@ -47,12 +49,10 @@ impl ToBytes for UDP {
 
 impl Response for UDP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session) -> Vector<Vector<u8>> {
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
         d("            ");
         self.d();
         dl();
-
-        return Vector::new();
     }
 }
 

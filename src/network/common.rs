@@ -1,12 +1,14 @@
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use common::debug::*;
 use common::vector::*;
 
 use programs::session::*;
 
 pub trait Response {
-    fn respond(&self, session: &Session) -> Vector<Vector<u8>>;
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>);
 }
 
 pub trait FromBytes{

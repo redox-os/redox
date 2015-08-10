@@ -80,7 +80,6 @@ mod network {
     pub mod arp;
     pub mod common;
     pub mod ethernet;
-    pub mod http;
     pub mod icmp;
     pub mod intel8254x;
     pub mod ipv4;

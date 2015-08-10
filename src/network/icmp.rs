@@ -2,6 +2,8 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use common::debug::*;
 use common::vector::*;
 
@@ -47,7 +49,7 @@ impl ToBytes for ICMP {
 
 impl Response for ICMP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session) -> Vector<Vector<u8>> {
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
         if cfg!(debug_network){
             d("        ");
             self.d();
@@ -76,10 +78,8 @@ impl Response for ICMP {
                 );
             }
 
-            return Vector::from_value(ret.to_bytes());
+            callback(Vector::from_value(ret.to_bytes()));
         }
-
-        return Vector::new();
     }
 }
 

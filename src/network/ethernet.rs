@@ -2,6 +2,8 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use common::debug::*;
 use common::vector::*;
 
@@ -47,41 +49,41 @@ impl ToBytes for EthernetII {
 }
 
 impl Response for EthernetII {
-    fn respond(&self, session: &Session) -> Vector<Vector<u8>> {
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
         if self.header.dst.equals(MAC_ADDR) || self.header.dst.equals(BROADCAST_MAC_ADDR) {
             if cfg!(debug_network){
                 self.d();
                 dl();
             }
 
-            let mut responses: Vector<Vector<u8>> = Vector::new();
+            let ethernet_header = self.header;
+            let ethernet_callback = box move |responses: Vector<Vector<u8>>|{
+                let mut ret: Vector<Vector<u8>> = Vector::new();
+                for response in responses.iter() {
+                    ret.push(EthernetII {
+                        header: EthernetIIHeader {
+                            src: MAC_ADDR,
+                            dst: ethernet_header.src,
+                            _type: ethernet_header._type
+                        },
+                        data: response.clone()
+                    }.to_bytes());
+                }
+                callback(ret);
+            };
+
             match self.header._type.get() {
                 0x0800 => match IPv4::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(session),
+                    Option::Some(packet) => packet.respond(session, ethernet_callback),
                     Option::None => ()
                 },
                 0x0806 => match ARP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(session),
+                    Option::Some(packet) => packet.respond(session, ethernet_callback),
                     Option::None => ()
                 },
                 _ => ()
             }
-
-            let mut ret: Vector<Vector<u8>> = Vector::new();
-            for response in responses.iter() {
-                ret = ret + Vector::from_value(EthernetII {
-                    header: EthernetIIHeader {
-                        src: MAC_ADDR,
-                        dst: self.header.src,
-                        _type: self.header._type
-                    },
-                    data: response.clone()
-                }.to_bytes());
-            }
-            return ret;
         }
-
-        Vector::<Vector<u8>>::new()
     }
 }
 
