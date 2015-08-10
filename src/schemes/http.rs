@@ -35,7 +35,7 @@ impl SessionModule for HTTPScheme {
         return "http".to_string();
     }
 
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         let mut path = String::new();
 
         for part in url.path.iter() {

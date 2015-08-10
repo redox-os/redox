@@ -2,13 +2,13 @@ use core::any::Any;
 use core::cmp::max;
 use core::cmp::min;
 use core::marker::Sized;
-use core::ops::Fn;
 use core::option::Option;
 use core::result::Result;
 
 use alloc::boxed::*;
 use alloc::rc::*;
 
+use common::debug::*;
 use common::string::*;
 use common::vector::*;
 use common::url::*;
@@ -37,7 +37,7 @@ pub trait SessionModule {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>) {
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>) {
         callback(String::new());
     }
 }
@@ -134,7 +134,7 @@ impl Session {
         self.apply_updates(updates);
     }
 
-    pub fn on_url_wrapped(&self, url: &URL, callback: Box<Fn(String)>){
+    pub fn on_url_wrapped(&self, url: &URL, callback: Box<FnBox(String)>){
         for module in self.modules.iter() {
             if module.scheme() == url.scheme {
                 unsafe{
@@ -145,16 +145,17 @@ impl Session {
         }
     }
 
-    pub fn on_url(&self, url: &URL, callback: Box<Fn(&mut SessionItem, String)>){
+    pub fn on_url(&self, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>){
         if self.current_item >= 0 {
             match self.items.get(self.current_item as usize) {
                 Result::Ok(item) => {
-                    let me = item.clone();
+                    let item_copy = item.clone();
                     self.on_url_wrapped(url, box move |response|{
                         unsafe {
-                            Rc::unsafe_get_mut(&me).unsafe_map();
-                            callback(Rc::unsafe_get_mut(&me), response);
-                            Rc::unsafe_get_mut(&me).unsafe_unmap();
+                            let me = Rc::unsafe_get_mut(&item_copy);
+                            me.unsafe_map();
+                            callback.call_box((me, response,));
+                            me.unsafe_unmap();
                         }
                     });
                 },

@@ -1,5 +1,4 @@
 use core::mem::size_of;
-use core::ops::Fn;
 use core::result::Result;
 
 use alloc::boxed::*;
@@ -20,7 +19,7 @@ pub struct IDERequest {
     pub sector: u64,
     pub count: u16,
     pub destination: usize,
-    pub callback: Box<Fn(usize)>
+    pub callback: Box<FnBox(usize)>
 }
 
 pub struct IDE {
@@ -96,7 +95,7 @@ impl SessionModule for IDE {
                                 dh(request.destination);
                                 d(" RETURN ");
                                 dh(destination);
-                                (*request.callback)(destination);
+                                (request.callback)(destination);
                             },
                             Result::Err(_) => ()
                         }
@@ -124,7 +123,7 @@ impl SessionModule for IDE {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<Fn(String)>){
+    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         let mut request = IDERequest {
             sector: 1,
             count: 1,

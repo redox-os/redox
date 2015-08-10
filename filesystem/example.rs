@@ -1,6 +1,7 @@
 use core::clone::Clone;
 use core::result::Result;
 
+use common::debug::*;
 use common::string::*;
 use common::vector::*;
 use common::url::*;
@@ -61,16 +62,7 @@ impl Application {
                         Result::Ok(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
-                            /*
-                            session.on_url(&url, box |me, response|{
-                                match me.downcast_mut::<Application>() {
-                                    Option::Some(app) => {
-                                        app.append(response);
-                                    },
-                                    Option::None => ()
-                                }
-                            });
-                            */
+                            // TODO session request
                         },
                         Result::Err(_) => {
                             for module in session.modules.iter() {
