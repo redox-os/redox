@@ -10,8 +10,6 @@
 
 use super::oom;
 
-use common::memory;
-
 // FIXME: #13996: mark the `allocate` and `reallocate` return value as `noalias`
 
 /// Return a pointer to `size` bytes of memory aligned to `align`.
@@ -24,7 +22,7 @@ use common::memory;
 #[allow(unused_variables)]
 #[inline]
 pub unsafe fn allocate(size: usize, align: usize) -> *mut u8 {
-    return memory::alloc(size) as *mut u8;
+    return ::common::memory::alloc(size) as *mut u8;
 }
 
 /// Resize the allocation referenced by `ptr` to `size` bytes.
@@ -44,7 +42,7 @@ pub unsafe fn allocate(size: usize, align: usize) -> *mut u8 {
 #[allow(unused_variables)]
 #[inline]
 pub unsafe fn reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8 {
-    return memory::realloc(ptr as usize, size) as *mut u8;
+    return ::common::memory::realloc(ptr as usize, size) as *mut u8;
 }
 
 /// Resize the allocation referenced by `ptr` to `size` bytes.
@@ -78,7 +76,7 @@ pub unsafe fn reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize,
 #[allow(unused_variables)]
 #[inline]
 pub unsafe fn deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    memory::unalloc(ptr as usize);
+    ::common::memory::unalloc(ptr as usize);
 }
 
 /// Returns the usable size of an allocation created with the specified the

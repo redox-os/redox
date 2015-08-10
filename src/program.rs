@@ -1,16 +1,22 @@
+#![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(collections)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
+#![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
+#![feature(rc_unique)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![no_std]
 
-extern crate redox_alloc as alloc;
+extern crate alloc;
+
+extern crate collections;
 
 #[macro_use]
 extern crate mopa;

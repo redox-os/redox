@@ -58,10 +58,12 @@
 
 // Do not remove on snapshot creation. Needed for bootstrap. (Issue #22364)
 #![cfg_attr(stage0, feature(custom_attribute))]
-//#![crate_name = "alloc"]
-//#![crate_type = "rlib"]
-//#![staged_api]
-//#![unstable(feature = "alloc", reason = "this library is unlikely to be stabilized in its current form or name")]
+#![crate_name = "alloc"]
+#![crate_type = "rlib"]
+#![staged_api]
+#![unstable(feature = "alloc",
+            reason = "this library is unlikely to be stabilized in its current \
+                      form or name")]
 #![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
        html_root_url = "http://doc.rust-lang.org/nightly/",
@@ -107,13 +109,6 @@ extern crate libc;
 #[cfg(test)] #[macro_use] extern crate std;
 #[cfg(test)] #[macro_use] extern crate log;
 
-#[path="../common"]
-mod common {
-    pub mod debug;
-    pub mod memory;
-    pub mod pio;
-}
-
 // Heaps provided for low-level allocation strategies
 
 pub mod heap;
@@ -129,26 +124,29 @@ pub mod boxed;
 #[cfg(test)]
 mod boxed { pub use std::boxed::{Box, HEAP}; }
 #[cfg(test)]
+mod boxed_test;
 pub mod arc;
 pub mod rc;
 pub mod raw_vec;
 
-// For OOM
-use common::debug::*;
+#[path="../common"]
+mod common {
+    pub mod debug;
+    pub mod memory;
+    pub mod pio;
+}
 
 /// Common out-of-memory routine
 #[cold]
 #[inline(never)]
-//#[unstable(feature = "oom", reason = "not a scrutinized interface")]
-pub fn oom() -> ! {
+#[unstable(feature = "oom", reason = "not a scrutinized interface")]
+pub fn oom() {
     // FIXME(#14674): This really needs to do something other than just abort
     //                here, but any printing done must be *guaranteed* to not
     //                allocate.
     unsafe {
-        d("OOM\n");
+        ::common::debug::d("ALLOC: Out Of Memory\n");
         asm!("cli");
         asm!("hlt");
-
-        loop{}
     }
 }
