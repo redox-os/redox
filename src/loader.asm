@@ -185,7 +185,7 @@ unfs_root_node_list:
     .end:
 %endmacro
 
-%include "filesystem.asm"
+%include "filesystem.gen"
 
 %unmacro file 2+
 
@@ -213,7 +213,6 @@ unfs_data.%1:
 .end:
 %endmacro
 
-%include "filesystem.asm"
+%include "filesystem.gen"
 
 %unmacro file 2+
-

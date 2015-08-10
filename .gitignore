@@ -1,6 +1,6 @@
 *.bin
+*.gen
 *.o
 *.pcap
 *.rlib
-filesystem/filesystem.asm
 setup/rust/

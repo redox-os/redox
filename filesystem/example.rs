@@ -1,25 +1,6 @@
-#![feature(asm)]
-#![feature(box_syntax)]
-#![feature(core_simd)]
-#![feature(core_slice_ext)]
-#![feature(core_str_ext)]
-#![feature(fundamental)]
-#![feature(lang_items)]
-#![feature(no_std)]
-#![feature(unboxed_closures)]
-#![feature(unsafe_no_drop_flag)]
-#![no_std]
-
-extern crate redox_alloc as alloc;
-
-#[macro_use]
-extern crate mopa;
-
 use core::clone::Clone;
-use core::mem::size_of;
 use core::result::Result;
 
-use common::memory::*;
 use common::string::*;
 use common::vector::*;
 use common::url::*;
@@ -33,126 +14,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
-
-/* TEST { */
-use core::any::Any;
-use core::ops::Fn;
-use core::option::Option;
-
-use alloc::boxed::*;
-
-use common::debug::*;
-/* } TEST */
-
-#[path="../src/common"]
-mod common {
-    pub mod debug;
-    pub mod memory;
-    pub mod pci;
-    pub mod pio;
-    pub mod string;
-    pub mod vector;
-    pub mod url;
-}
-
-#[path="../src/drivers"]
-mod drivers {
-    pub mod disk;
-    pub mod keyboard;
-    pub mod mouse;
-}
-
-#[path="../src/filesystems"]
-mod filesystems {
-    pub mod unfs;
-}
-
-#[path="../src/graphics"]
-mod graphics {
-    pub mod bmp;
-    pub mod color;
-    pub mod display;
-    pub mod point;
-    pub mod size;
-    pub mod window;
-}
-
-#[path="../src/programs"]
-mod programs {
-    pub mod session;
-}
-
-/* TEST { */
-struct EventA {
-    x: isize,
-    y: isize
-}
-
-struct EventB {
-    txt: String
-}
-
-struct EventListener {
-    fn_ptr: Box<Fn(&Box<Any>)>
-}
-
-impl EventListener {
-    pub fn call(&self, event: &Box<Any>){
-        (*self.fn_ptr)(event);
-    }
-}
-
-fn test(){
-    let mut events: Vector<Box<Any>> = Vector::new();
-
-    events.push(box EventB {
-        txt: "first test".to_string()
-    });
-    events.push(box EventA {
-        x: 2,
-        y: 3
-    });
-    events.push(box EventB {
-        txt: "second test".to_string()
-    });
-
-    let mut listeners: Vector<Box<EventListener>> = Vector::new();
-
-    listeners.push(box EventListener {
-        fn_ptr: box |event: &Box<Any>| {
-            match event.downcast_ref::<EventA>() {
-                Option::Some(a) => {
-                    d("Event A ");
-                    dd(a.x as usize);
-                    d(", ");
-                    dd(a.y as usize);
-                    dl();
-                },
-                Option::None => ()
-            }
-        }
-    });
-
-    listeners.push(box EventListener {
-        fn_ptr: box |event: &Box<Any>| {
-            match event.downcast_ref::<EventB>() {
-                Option::Some(b) => {
-                    d("Event B ");
-                    b.txt.d();
-                    dl();
-                },
-                Option::None => ()
-            }
-        }
-    });
-
-    for event in events.iter() {
-        for listener in listeners.iter() {
-            listener.call(event);
-        }
-    }
-}
-/* } TEST */
 
 pub struct Application {
     window: Window,
@@ -195,8 +56,6 @@ impl Application {
                     self.append(echo);
                 }else if *cmd == "exit".to_string() {
                     self.window.closed = true;
-                }else if *cmd == "test".to_string() {
-                    test();
                 }else if *cmd == "url".to_string() {
                     match args.get(1) {
                         Result::Ok(url_string) => {
@@ -397,81 +256,5 @@ impl SessionItem for Application {
     #[allow(unused_variables)]
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
-    }
-}
-
-//Class wrappers
-
-static mut application: *mut Application = 0 as *mut Application;
-
-#[no_mangle]
-pub unsafe fn entry(){
-    application = alloc(size_of::<Application>()) as *mut Application;
-    *application = Application::new();
-}
-
-#[no_mangle]
-pub unsafe fn draw(session: &Session, updates: &mut SessionUpdates) -> bool{
-    if application as usize > 0 {
-        return (*application).draw(session, updates);
-    }else{
-        return false;
-    }
-}
-
-#[no_mangle]
-pub unsafe fn on_key(session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
-    if application as usize > 0{
-        (*application).on_key(session, updates, key_event);
-    }
-}
-
-#[no_mangle]
-pub unsafe fn on_mouse(session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-    if application as usize > 0 {
-        return (*application).on_mouse(session, updates, mouse_event, allow_catch);
-    }else{
-        return false;
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
-    unsafe {
-        if src < dst {
-            let mut i = len;
-            while i > 0 {
-                i -= 1;
-                *dst.offset(i) = *src.offset(i);
-            }
-        }else{
-            let mut i = 0;
-            while i < len {
-                *dst.offset(i) = *src.offset(i);
-                i += 1;
-            }
-        }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: isize){
-    unsafe {
-        let mut i = 0;
-        while i < len {
-            *dst.offset(i) = *src.offset(i);
-            i += 1;
-        }
-    }
-}
-
-#[no_mangle]
-pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
-    unsafe {
-        let mut i = 0;
-        while i < len {
-            *src.offset(i) = c as u8;
-            i += 1;
-        }
     }
 }
