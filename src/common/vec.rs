@@ -128,6 +128,36 @@ impl <T> Vec<T> {
         }
     }
 
+    pub fn sub(&self, start: usize, count: usize) -> Vec<T> {
+        let mut i = start;
+        if i > self.len() {
+            i = self.len();
+        }
+
+        let mut j = i + count;
+        if j > self.len() {
+            j = self.len();
+        }
+
+        let length = j - i;
+        if length == 0 {
+            return Vec::new();
+        }
+
+        unsafe {
+            let data = alloc(length * size_of::<T>()) as *mut T;
+
+            for k in i..j {
+                ptr::write(data.offset((k - i) as isize), ptr::read(self.data.offset(k as isize)));
+            }
+
+            Vec {
+                data: data,
+                length: length
+            }
+        }
+    }
+
     pub fn as_slice(&self) -> &[T] {
         if self.data as usize > 0 && self.length > 0 {
             unsafe{
@@ -139,59 +169,10 @@ impl <T> Vec<T> {
     }
 }
 
-impl<T> Index<Range<usize>> for Vec<T>{
-    type Output = [T];
-
-    fn index(&self, index: Range<usize>) -> &[T] {
-        let mut i = index.start;
-        if i > self.len() {
-            i = self.len();
-        }
-
-        let mut j = index.end;
-        if j > self.len() {
-            j = self.len();
-        }
-
-        let length = j - i;
-        if length == 0 {
-            return &[];
-        }
-
-        unsafe{
-            return slice::from_raw_parts_mut(self.data.offset(i as isize), length);
-        }
-    }
-}
-
 impl<T> Vec<T> where T: Clone {
     pub fn push_all(&mut self, vec: &Vec<T>) {
         for value in vec.iter() {
             self.push(value.clone());
-        }
-    }
-}
-
-impl<'a, T> From<&'a [T]> for Vec<T> where T: Clone {
-    fn from(s: &'a [T]) -> Vec<T> {
-        let length = s.len();
-
-        if length == 0 {
-            return Vec::new();
-        }
-        unsafe{
-            let data = alloc(length * (size_of::<T>())) as *mut T;
-
-            let mut i = 0;
-            for c in s {
-                ptr::write(data.offset(i as isize), c.clone());
-                i += 1;
-            }
-
-            Vec {
-                data: data,
-                length: length
-            }
         }
     }
 }

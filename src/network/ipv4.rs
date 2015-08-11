@@ -43,8 +43,8 @@ impl FromBytes for IPv4 {
 
                 return Option::Some(IPv4 {
                     header: header,
-                    options: Vec::from(&bytes[size_of::<IPv4Header>() .. header_len - size_of::<IPv4Header>()]),
-                    data: Vec::from(&bytes[header_len .. bytes.len() - header_len])
+                    options: bytes.sub(size_of::<IPv4Header>(), header_len - size_of::<IPv4Header>()),
+                    data: bytes.sub(header_len, bytes.len() - header_len)
                 });
             }
         }

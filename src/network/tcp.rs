@@ -197,8 +197,8 @@ impl TCP {
 
                 return Option::Some(TCP {
                     header: header,
-                    options: Vec::from(&bytes[size_of::<TCPHeader>() .. header_len - size_of::<TCPHeader>()]),
-                    data: Vec::from(&bytes[header_len .. bytes.len() - header_len]),
+                    options: bytes.sub(size_of::<TCPHeader>(), header_len - size_of::<TCPHeader>()),
+                    data: bytes.sub(header_len, bytes.len() - header_len),
                     src_ip: src_ip,
                     dst_ip: dst_ip
                 });
