@@ -2,8 +2,6 @@ use core::clone::Clone;
 use core::iter::Iterator;
 use core::mem::size_of;
 use core::ops::Drop;
-use core::ops::Index;
-use core::ops::Range;
 use core::option::Option;
 use core::ptr;
 use core::slice;

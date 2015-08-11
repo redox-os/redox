@@ -14,7 +14,7 @@ impl SessionModule for MemoryScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         callback("Memory Used: ".to_string() + memory_used()/1024/1024 + " MB\n" + "Memory Free: " + memory_free()/1024/1024 + " MB");
     }
 }

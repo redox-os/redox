@@ -7,6 +7,7 @@ use core::option::Option;
 use alloc::boxed::*;
 use alloc::rc::*;
 
+use common::debug::*;
 use common::string::*;
 use common::vec::*;
 use common::url::*;
@@ -35,7 +36,7 @@ pub trait SessionModule {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>) {
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>) {
         callback(String::new());
     }
 }
@@ -63,12 +64,27 @@ pub trait SessionItem : ::mopa::Any {
         return false;
     }
 
-    unsafe fn unsafe_map(&mut self){
-
+    fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
+        if session.current_item >= 0 {
+            match session.items.get(session.current_item as usize) {
+                Option::Some(item) => {
+                    let item_copy = item.clone();
+                    session.request(url, box move |response|{
+                        unsafe {
+                            match Rc::unsafe_get_mut(&item_copy).downcast_mut::<Self>(){
+                                Option::Some(item_downcast) => item_downcast.on_response(response, callback),
+                                Option::None => d("Failed to downcast\n")
+                            }
+                        }
+                    });
+                },
+                Option::None => d("Failed to find current item\n")
+            }
+        }
     }
 
-    unsafe fn unsafe_unmap(&mut self){
-
+    fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
+        callback.call_box((self, response,));
     }
 }
 mopafy!(SessionItem, core=core, alloc=alloc);
@@ -132,32 +148,13 @@ impl Session {
         self.apply_updates(updates);
     }
 
-    pub fn on_url_wrapped(&self, url: &URL, callback: Box<FnBox(String)>){
+    pub fn request(&self, url: &URL, callback: Box<FnBox(String)>){
         for module in self.modules.iter() {
             if module.scheme() == url.scheme {
                 unsafe{
-                    Rc::unsafe_get_mut(module).on_url(self, url, callback);
+                    Rc::unsafe_get_mut(module).request(self, url, callback);
                 }
                 break;
-            }
-        }
-    }
-
-    pub fn on_url(&self, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>){
-        if self.current_item >= 0 {
-            match self.items.get(self.current_item as usize) {
-                Option::Some(item) => {
-                    let item_copy = item.clone();
-                    self.on_url_wrapped(url, box move |response|{
-                        unsafe {
-                            let me = Rc::unsafe_get_mut(&item_copy);
-                            me.unsafe_map();
-                            callback.call_box((me, response,));
-                            me.unsafe_unmap();
-                        }
-                    });
-                },
-                Option::None => ()
             }
         }
     }

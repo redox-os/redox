@@ -145,7 +145,7 @@ unsafe fn init(){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-    session.on_url_wrapped(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
+    session.request(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
         if response.data as usize > 0 {
             (*session_ptr).display.background = BMP::from_data(response.data as usize);
         }

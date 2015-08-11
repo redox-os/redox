@@ -32,7 +32,7 @@ impl SessionModule for HTTPScheme {
         return "http".to_string();
     }
 
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         let mut path = String::new();
 
         for part in url.path.iter() {
@@ -85,7 +85,7 @@ impl SessionModule for HTTPScheme {
         };
 
         if path == "/readme".to_string() {
-            session.on_url_wrapped(&URL::from_string("file:///README.md".to_string()), box move |response: String|{
+            session.request(&URL::from_string("file:///README.md".to_string()), box move |response: String|{
                 let mut html = "<div class='panel panel-default'>\n".to_string();
                     if response.data as usize > 0 {
                         let readme;
@@ -142,7 +142,7 @@ impl SessionModule for HTTPScheme {
             let url_string = path.substr(1, path.len());
             if url_string.len() > 0 {
                 let url_string_copy = url_string.clone();
-                session.on_url_wrapped(&URL::from_string(url_string), box move |response: String|{
+                session.request(&URL::from_string(url_string), box move |response: String|{
                     let mut html = "<table class='table table-bordered'>\n".to_string();
                         html = html + "  <caption><h3>" + HTTPScheme::encode(url_string_copy) + "</h3></caption>\n";
                         for line in response.split("\n".to_string()) {

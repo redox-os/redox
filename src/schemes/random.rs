@@ -14,7 +14,7 @@ impl SessionModule for RandomScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         callback(String::from_num(rand()));
     }
 }

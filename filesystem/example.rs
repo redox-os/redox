@@ -63,7 +63,16 @@ impl Application {
                         Option::Some(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
-                            // TODO session request
+                            self.request(session, &url, box move |item: &mut SessionItem, response: String|{
+                                response.d();
+                                dl();
+                                match item.downcast_mut::<Application>() {
+                                    Option::Some(app) => {
+                                        app.append(response);
+                                    },
+                                    Option::None => ()
+                                }
+                            });
                         },
                         Option::None => {
                             for module in session.modules.iter() {

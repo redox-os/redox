@@ -123,7 +123,7 @@ impl SessionModule for IDE {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         let mut request = IDERequest {
             sector: 1,
             count: 1,
