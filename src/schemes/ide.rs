@@ -3,13 +3,12 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
-use collections::vec::*;
-
 use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
 use common::string::*;
+use common::vec::*;
 use common::url::*;
 
 use drivers::disk::*;
@@ -90,13 +89,15 @@ impl SessionModule for IDE {
                             Option::None => ()
                         }
 
-                        if self.requests.len() > 0 {
-                            let request = self.requests.remove(0);
-                            d(" REQUEST ");
-                            dh(request.destination);
-                            d(" RETURN ");
-                            dh(destination);
-                            (request.callback)(destination);
+                        match self.requests.remove(0){
+                            Option::Some(request) => {
+                                d(" REQUEST ");
+                                dh(request.destination);
+                                d(" RETURN ");
+                                dh(destination);
+                                (request.callback)(destination);
+                            },
+                            Option::None => ()
                         }
                     }
                 }else{

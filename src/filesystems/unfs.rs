@@ -1,10 +1,9 @@
 use core::clone::Clone;
 use core::mem::size_of;
 
-use collections::vec::*;
-
 use common::memory::*;
 use common::string::*;
+use common::vec::*;
 
 use drivers::disk::*;
 

@@ -3,9 +3,8 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
-use collections::vec::*;
-
 use common::debug::*;
+use common::vec::*;
 
 use network::common::*;
 

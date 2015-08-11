@@ -1,9 +1,8 @@
 use alloc::rc::*;
 
-use collections::vec::*;
-
 use common::debug::*;
 use common::pci::*;
+use common::vec::*;
 
 use network::intel8254x::*;
 use network::rtl8139::*;

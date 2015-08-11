@@ -4,12 +4,11 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
-use collections::vec::*;
-
 use common::debug::*;
 use common::memory::*;
 use common::random::*;
 use common::string::*;
+use common::vec::*;
 use common::url::*;
 
 use network::common::*;

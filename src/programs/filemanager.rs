@@ -3,10 +3,9 @@ use core::option::Option;
 
 use alloc::rc::*;
 
-use collections::vec::*;
-
 use common::debug::*;
 use common::string::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
