@@ -1,5 +1,5 @@
 use core::mem::size_of;
-use core::result::Result;
+use core::option::Option;
 
 use alloc::boxed::*;
 
@@ -8,7 +8,7 @@ use common::memory::*;
 use common::pci::*;
 use common::pio::*;
 use common::string::*;
-use common::vector::*;
+use common::vec::*;
 use common::url::*;
 
 use drivers::disk::*;
@@ -28,7 +28,7 @@ pub struct IDE {
     pub func: usize,
     pub base: usize,
     pub memory_mapped: bool,
-    pub requests: Vector<IDERequest>
+    pub requests: Vec<IDERequest>
 }
 
 impl SessionModule for IDE {
@@ -77,7 +77,7 @@ impl SessionModule for IDE {
                         unalloc(prdt);
 
                         match self.requests.get(1) {
-                            Result::Ok(request) => {
+                            Option::Some(request) => {
                                 d(" NEXT ");
                                 dd(request.sector as usize);
                                 d(" ");
@@ -86,18 +86,18 @@ impl SessionModule for IDE {
                                 let disk = Disk::new();
                                 disk.read_dma(request.sector, request.count, request.destination, base);
                             },
-                            Result::Err(_) => ()
+                            Option::None => ()
                         }
 
-                        match self.requests.extract(0) {
-                            Result::Ok(request) => {
+                        match self.requests.remove(0){
+                            Option::Some(request) => {
                                 d(" REQUEST ");
                                 dh(request.destination);
                                 d(" RETURN ");
                                 dh(destination);
                                 (request.callback)(destination);
                             },
-                            Result::Err(_) => ()
+                            Option::None => ()
                         }
                     }
                 }else{
@@ -143,17 +143,17 @@ impl SessionModule for IDE {
         };
 
         match url.path.get(0) {
-            Result::Ok(part) => {
+            Option::Some(part) => {
                 request.sector = part.to_num() as u64;
             },
-            Result::Err(_) => ()
+            Option::None => ()
         }
 
         match url.path.get(1) {
-            Result::Ok(part) => {
+            Option::Some(part) => {
                 request.count = part.to_num() as u16;
             },
-            Result::Err(_) => ()
+            Option::None => ()
         }
 
         unsafe {
@@ -163,11 +163,11 @@ impl SessionModule for IDE {
                     self.requests.push(request);
                     if self.requests.len() == 1 {
                         match self.requests.get(0) {
-                            Result::Ok(request) => {
+                            Option::Some(request) => {
                                 let disk = Disk::new();
                                 disk.read_dma(request.sector, request.count, request.destination, self.base as u16);
                             },
-                            Result::Err(_) => ()
+                            Option::None => ()
                         }
                     }
                 }

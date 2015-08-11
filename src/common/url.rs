@@ -2,7 +2,7 @@ use core::clone::Clone;
 
 use common::debug::*;
 use common::string::*;
-use common::vector::*;
+use common::vec::*;
 
 pub struct URL {
     pub scheme: String,
@@ -10,7 +10,7 @@ pub struct URL {
     pub password: String,
     pub host: String,
     pub port: String,
-    pub path: Vector<String>
+    pub path: Vec<String>
 }
 
 impl URL {
@@ -21,7 +21,7 @@ impl URL {
             password: String::new(),
             host: String::new(),
             port: String::new(),
-            path: Vector::new()
+            path: Vec::new()
         }
     }
 

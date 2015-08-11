@@ -41,7 +41,7 @@ mod common {
     pub mod pci;
     pub mod pio;
     pub mod string;
-    pub mod vector;
+    pub mod vec;
     pub mod url;
 }
 

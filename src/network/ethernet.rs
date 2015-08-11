@@ -5,7 +5,7 @@ use core::option::Option;
 use alloc::boxed::*;
 
 use common::debug::*;
-use common::vector::*;
+use common::vec::*;
 
 use network::arp::*;
 use network::common::*;
@@ -22,15 +22,15 @@ pub struct EthernetIIHeader {
 
 pub struct EthernetII {
     pub header: EthernetIIHeader,
-    pub data: Vector<u8>
+    pub data: Vec<u8>
 }
 
 impl FromBytes for EthernetII {
-    fn from_bytes(bytes: Vector<u8>) -> Option<EthernetII> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<EthernetII> {
         if bytes.len() >= size_of::<EthernetIIHeader>() {
             unsafe {
                 return Option::Some(EthernetII {
-                    header: *(bytes.data as *const EthernetIIHeader),
+                    header: *(bytes.as_ptr() as *const EthernetIIHeader),
                     data: bytes.sub(size_of::<EthernetIIHeader>(), bytes.len() - size_of::<EthernetIIHeader>())
                 });
             }
@@ -40,16 +40,18 @@ impl FromBytes for EthernetII {
 }
 
 impl ToBytes for EthernetII {
-    fn to_bytes(&self) -> Vector<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         unsafe{
             let header_ptr: *const EthernetIIHeader = &self.header;
-            Vector::<u8>::from_raw(header_ptr as *const u8, size_of::<EthernetIIHeader>()) + self.data.clone()
+            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<EthernetIIHeader>());
+            ret.push_all(&self.data);
+            return ret;
         }
     }
 }
 
 impl Response for EthernetII {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if self.header.dst.equals(MAC_ADDR) || self.header.dst.equals(BROADCAST_MAC_ADDR) {
             if cfg!(debug_network){
                 self.d();
@@ -57,8 +59,8 @@ impl Response for EthernetII {
             }
 
             let ethernet_header = self.header;
-            let ethernet_callback = box move |responses: Vector<Vector<u8>>|{
-                let mut ret: Vector<Vector<u8>> = Vector::new();
+            let ethernet_callback = box move |responses: Vec<Vec<u8>>|{
+                let mut ret: Vec<Vec<u8>> = Vec::new();
                 for response in responses.iter() {
                     ret.push(EthernetII {
                         header: EthernetIIHeader {

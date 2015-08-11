@@ -3,7 +3,7 @@ use core::mem::size_of;
 
 use common::memory::*;
 use common::string::*;
-use common::vector::*;
+use common::vec::*;
 
 use drivers::disk::*;
 
@@ -122,8 +122,8 @@ impl UnFS {
         ret
     }
 
-    pub fn list(&self, directory: String) -> Vector<String> {
-        let mut ret = Vector::<String>::new();
+    pub fn list(&self, directory: String) -> Vec<String> {
+        let mut ret = Vec::<String>::new();
 
         unsafe{
             let root_sector_list_ptr = alloc(size_of::<SectorList>()) as *mut SectorList;

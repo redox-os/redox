@@ -2,7 +2,7 @@ use alloc::rc::*;
 
 use common::debug::*;
 use common::pci::*;
-use common::vector::*;
+use common::vec::*;
 
 use network::intel8254x::*;
 use network::rtl8139::*;
@@ -23,7 +23,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             func: func,
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
-            requests: Vector::new()
+            requests: Vec::new()
         });
         module.init();
         session.modules.push(module);
