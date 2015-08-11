@@ -1,9 +1,8 @@
 use core::clone::Clone;
 
-use collections::vec::*;
-
 use common::debug::*;
 use common::string::*;
+use common::vec::*;
 
 pub struct URL {
     pub scheme: String,

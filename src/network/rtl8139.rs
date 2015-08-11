@@ -1,11 +1,10 @@
 use core::option::Option;
 
-use collections::vec::*;
-
 use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
+use common::vec::*;
 
 use network::common::*;
 use network::ethernet::*;

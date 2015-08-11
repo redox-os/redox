@@ -7,9 +7,8 @@ use core::option::Option;
 use alloc::boxed::*;
 use alloc::rc::*;
 
-use collections::vec::*;
-
 use common::string::*;
+use common::vec::*;
 use common::url::*;
 
 use drivers::keyboard::*;
@@ -208,8 +207,12 @@ impl Session {
         self.current_item = -1;
 
         if catcher > 0 && catcher < self.items.len() {
-            let item = self.items.remove(catcher);
-            self.items.insert(0, item);
+            match self.items.remove(catcher){
+                Option::Some(item) => {
+                    self.items.insert(0, item);
+                },
+                Option::None => ()
+            }
         }
 
         self.apply_updates(updates);
@@ -265,34 +268,37 @@ impl Session {
 
     fn apply_updates(&mut self, mut updates: SessionUpdates){
         while updates.events.len() > 0 {
-            let event = updates.events.remove(0);
-
-            match event.downcast_ref::<KeyEvent>() {
-                Option::Some(key_event) => {
-                    self.on_key(*key_event);
-                    continue;
-                },
-                Option::None => ()
-            }
-
-            match event.downcast_ref::<MouseEvent>() {
-                Option::Some(mouse_event) => {
-                    self.on_mouse(*mouse_event);
-                    continue;
-                },
-                Option::None => ()
-            }
-
-            match event.downcast_ref::<OpenEvent>() {
-                Option::Some(open_event) => {
-                    self.items.insert(0, open_event.item.clone());
-                    self.current_item = 0;
-                    unsafe{
-                        Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
+            match updates.events.remove(0){
+                Option::Some(event) => {
+                    match event.downcast_ref::<KeyEvent>() {
+                        Option::Some(key_event) => {
+                            self.on_key(*key_event);
+                            continue;
+                        },
+                        Option::None => ()
                     }
-                    self.current_item = -1;
-                    updates.redraw = REDRAW_ALL;
-                    continue;
+
+                    match event.downcast_ref::<MouseEvent>() {
+                        Option::Some(mouse_event) => {
+                            self.on_mouse(*mouse_event);
+                            continue;
+                        },
+                        Option::None => ()
+                    }
+
+                    match event.downcast_ref::<OpenEvent>() {
+                        Option::Some(open_event) => {
+                            self.items.insert(0, open_event.item.clone());
+                            self.current_item = 0;
+                            unsafe{
+                                Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
+                            }
+                            self.current_item = -1;
+                            updates.redraw = REDRAW_ALL;
+                            continue;
+                        },
+                        Option::None => ()
+                    }
                 },
                 Option::None => ()
             }
