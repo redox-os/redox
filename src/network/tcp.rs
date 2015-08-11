@@ -176,7 +176,7 @@ impl Response for TCP {
                                 break;
                             }
 
-                            session.on_url_wrapped(&URL::from_string("http://".to_string() + path), tcp_callback);
+                            session.request(&URL::from_string("http://".to_string() + path), tcp_callback);
                         },
                         _ => ()
                     }

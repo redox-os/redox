@@ -1,3 +1,6 @@
+use alloc::boxed::*;
+
+use common::debug::*;
 use common::elf::*;
 use common::string::*;
 
@@ -14,7 +17,8 @@ pub struct Executor {
     entry: usize,
     draw: usize,
     on_key: usize,
-    on_mouse: usize
+    on_mouse: usize,
+    on_response: usize
 }
 
 impl Executor {
@@ -27,6 +31,20 @@ impl Executor {
             self.unsafe_unmap();
         }
     }
+
+    unsafe fn unsafe_map(&mut self){
+        if self.executable.data > 0 && !self.mapped{
+            self.executable.map();
+            self.mapped = true;
+        }
+    }
+
+    unsafe fn unsafe_unmap(&mut self){
+        if self.executable.data > 0 && self.mapped {
+            self.executable.unmap();
+            self.mapped = false;
+        }
+    }
 }
 
 impl SessionItem for Executor {
@@ -37,7 +55,8 @@ impl SessionItem for Executor {
             entry: 0,
             draw: 0,
             on_mouse: 0,
-            on_key: 0
+            on_key: 0,
+            on_response: 0
         }
     }
 
@@ -52,6 +71,7 @@ impl SessionItem for Executor {
                 self.draw = self.executable.symbol("draw".to_string());
                 self.on_key = self.executable.symbol("on_key".to_string());
                 self.on_mouse = self.executable.symbol("on_mouse".to_string());
+                self.on_response = self.executable.symbol("on_response".to_string());
 
                 self.entry();
             }
@@ -99,17 +119,17 @@ impl SessionItem for Executor {
         return false;
     }
 
-    unsafe fn unsafe_map(&mut self){
-        if self.executable.data > 0 && !self.mapped{
-            self.executable.map();
-            self.mapped = true;
-        }
-    }
-
-    unsafe fn unsafe_unmap(&mut self){
-        if self.executable.data > 0 && self.mapped {
-            self.executable.unmap();
-            self.mapped = false;
+    fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>){
+        unsafe {
+            d("On Response\n");
+            if self.executable.can_call(self.on_response){
+                d("On Response Call\n");
+                //Rediculous call mechanism
+                self.unsafe_map();
+                let fn_ptr: *const usize = &self.on_response;
+                (*(fn_ptr as *const fn(String, Box<FnBox(&mut SessionItem, String)>)))(response, callback);
+                self.unsafe_unmap();
+            }
         }
     }
 }

@@ -52,8 +52,8 @@ impl SessionItem for Viewer {
 
             self.image = BMP::new();
 
-            session.on_url(&URL::from_string("file:///".to_string() + filename.clone()), box move |me: &mut SessionItem, response: String|{
-                match me.downcast_mut::<Viewer>() {
+            self.request(session, &URL::from_string("file:///".to_string() + filename.clone()), box move |item: &mut SessionItem, response: String|{
+                match item.downcast_mut::<Viewer>() {
                     Option::Some(viewer) => {
                         viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
                         if response.data as usize > 0 {

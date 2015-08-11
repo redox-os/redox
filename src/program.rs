@@ -25,7 +25,10 @@ use application::Application;
 
 use core::mem::size_of;
 
+use alloc::boxed::*;
+
 use common::memory::*;
+use common::string::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -100,6 +103,13 @@ pub unsafe fn on_mouse(session: &Session, updates: &mut SessionUpdates, mouse_ev
         return (*application).on_mouse(session, updates, mouse_event, allow_catch);
     }else{
         return false;
+    }
+}
+
+#[no_mangle]
+pub unsafe fn on_response(response: String, callback: Box<FnBox(&mut SessionItem, String)>){
+    if application as usize > 0{
+        (*application).on_response(response, callback);
     }
 }
 

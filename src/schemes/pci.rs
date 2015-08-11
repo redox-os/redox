@@ -17,7 +17,7 @@ impl SessionModule for PCIScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         let mut bus = -1;
         let mut slot = -1;
         let mut func = -1;

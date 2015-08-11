@@ -19,7 +19,7 @@ impl SessionModule for FileScheme {
     }
 
     #[allow(unused_variables)]
-    fn on_url(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         unsafe{
             let unfs = UnFS::new();
 
@@ -43,7 +43,7 @@ impl SessionModule for FileScheme {
 
                         for i in 0..1 {
                             if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                session.on_url_wrapped(&URL::from_string("ide:///".to_string() + sector_list.extents[i].block.address as usize + "/" + sector_list.extents[i].length as usize), callback);
+                                session.request(&URL::from_string("ide:///".to_string() + sector_list.extents[i].block.address as usize + "/" + sector_list.extents[i].length as usize), callback);
                                 break;
                             }
                         }
