@@ -5,6 +5,7 @@
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
+#![feature(convert)]
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
@@ -12,6 +13,8 @@
 #![feature(rc_unique)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
+#![feature(vec_from_raw_buf)]
+#![feature(vec_push_all)]
 #![no_std]
 
 extern crate alloc;
@@ -56,7 +59,6 @@ mod common {
     pub mod pio;
     pub mod random;
     pub mod string;
-    pub mod vector;
     pub mod url;
 }
 

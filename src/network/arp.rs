@@ -4,8 +4,9 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
+use collections::vec::*;
+
 use common::debug::*;
-use common::vector::*;
 
 use network::common::*;
 
@@ -26,16 +27,16 @@ pub struct ARPHeader {
 
 pub struct ARP {
     pub header: ARPHeader,
-    pub data: Vector<u8>
+    pub data: Vec<u8>
 }
 
 impl FromBytes for ARP {
-    fn from_bytes(bytes: Vector<u8>) -> Option<ARP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<ARP> {
         if bytes.len() >= size_of::<ARPHeader>() {
             unsafe {
                 return Option::Some(ARP {
-                    header: *(bytes.data as *const ARPHeader),
-                    data: bytes.sub(size_of::<ARPHeader>(), bytes.len() - size_of::<ARPHeader>())
+                    header: *(bytes.as_ptr() as *const ARPHeader),
+                    data: Vec::from(&bytes[size_of::<ARPHeader>() .. bytes.len() - size_of::<ARPHeader>()])
                 });
             }
         }
@@ -44,17 +45,19 @@ impl FromBytes for ARP {
 }
 
 impl ToBytes for ARP {
-    fn to_bytes(&self) -> Vector<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         unsafe{
             let header_ptr: *const ARPHeader = &self.header;
-            Vector::<u8>::from_raw(header_ptr as *const u8, size_of::<ARPHeader>()) + self.data.clone()
+            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ARPHeader>());
+            ret.push_all(&self.data);
+            return ret;
         }
     }
 }
 
 impl Response for ARP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if self.header.dst_ip.equals(IP_ADDR) {
             if cfg!(debug_network){
                 d("    ");
@@ -76,7 +79,9 @@ impl Response for ARP {
                 response.header.src_mac = MAC_ADDR;
                 response.header.src_ip = IP_ADDR;
 
-                callback(Vector::from_value(response.to_bytes()));
+                let mut ret: Vec<Vec<u8>> = Vec::new();
+                ret.push(response.to_bytes());
+                callback(ret);
             }
         }
     }

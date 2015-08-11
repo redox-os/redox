@@ -3,13 +3,13 @@ use core::cmp::max;
 use core::cmp::min;
 use core::marker::Sized;
 use core::option::Option;
-use core::result::Result;
 
 use alloc::boxed::*;
 use alloc::rc::*;
 
+use collections::vec::*;
+
 use common::string::*;
-use common::vector::*;
 use common::url::*;
 
 use drivers::keyboard::*;
@@ -86,14 +86,14 @@ pub const REDRAW_ALL: usize = 2;
 pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
-    pub items: Vector<Rc<SessionItem>>,
+    pub items: Vec<Rc<SessionItem>>,
     pub current_item: isize,
-    pub modules: Vector<Rc<SessionModule>>,
+    pub modules: Vec<Rc<SessionModule>>,
     pub redraw: usize
 }
 
 pub struct SessionUpdates {
-    pub events: Vector<Box<Any>>,
+    pub events: Vec<Box<Any>>,
     pub redraw: usize
 }
 
@@ -102,9 +102,9 @@ impl Session {
         Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
-            items: Vector::new(),
+            items: Vec::new(),
             current_item: -1,
-            modules: Vector::new(),
+            modules: Vec::new(),
             redraw: REDRAW_ALL
         }
     }
@@ -147,7 +147,7 @@ impl Session {
     pub fn on_url(&self, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>){
         if self.current_item >= 0 {
             match self.items.get(self.current_item as usize) {
-                Result::Ok(item) => {
+                Option::Some(item) => {
                     let item_copy = item.clone();
                     self.on_url_wrapped(url, box move |response|{
                         unsafe {
@@ -158,7 +158,7 @@ impl Session {
                         }
                     });
                 },
-                Result::Err(_) => ()
+                Option::None => ()
             }
         }
     }
@@ -168,13 +168,13 @@ impl Session {
 
         self.current_item = 0;
         match self.items.get(self.current_item as usize){
-            Result::Ok(item) => {
+            Option::Some(item) => {
                 unsafe {
                     Rc::unsafe_get_mut(item).on_key(self, &mut updates, key_event);
                 }
                 updates.redraw = REDRAW_ALL;
             },
-            Result::Err(_) => ()
+            Option::None => ()
         }
         self.current_item = -1;
 
@@ -193,7 +193,7 @@ impl Session {
         for i in 0..self.items.len() {
             self.current_item = i as isize;
             match self.items.get(self.current_item as usize){
-                Result::Ok(item) => {
+                Option::Some(item) => {
                     unsafe {
                         if Rc::unsafe_get_mut(item).on_mouse(self, &mut updates, mouse_event, allow_catch) {
                             allow_catch = false;
@@ -202,16 +202,14 @@ impl Session {
                         }
                     }
                 },
-                Result::Err(_) => ()
+                Option::None => ()
             }
         }
         self.current_item = -1;
 
-        if catcher > 0 {
-            match self.items.extract(catcher){
-                Result::Ok(item) => self.items.insert(0, item),
-                Result::Err(_) => ()
-            }
+        if catcher > 0 && catcher < self.items.len() {
+            let item = self.items.remove(catcher);
+            self.items.insert(0, item);
         }
 
         self.apply_updates(updates);
@@ -227,24 +225,24 @@ impl Session {
                 self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
                 self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
 
-                let mut erase_i: Vector<usize> = Vector::new();
+                let mut erase_i: Vec<usize> = Vec::new();
                 for reverse_i in 0..self.items.len() {
                     self.current_item = (self.items.len() - 1 - reverse_i) as isize;
                     match self.items.get(self.current_item as usize) {
-                        Result::Ok(item) => {
+                        Option::Some(item) => {
                             unsafe {
                                 if ! Rc::unsafe_get_mut(item).draw(self, &mut updates) {
                                     erase_i.push(self.current_item as usize);
                                 }
                             }
                         },
-                        Result::Err(_) => ()
+                        Option::None => ()
                     }
                 }
                 self.current_item = -1;
 
                 for i in erase_i.iter() {
-                    self.items.erase(*i);
+                    drop(self.items.remove(*i));
                 }
             }
 
@@ -260,44 +258,43 @@ impl Session {
 
     fn new_updates(&self) -> SessionUpdates {
         SessionUpdates{
-            events: Vector::new(),
+            events: Vec::new(),
             redraw: REDRAW_NONE
         }
     }
 
     fn apply_updates(&mut self, mut updates: SessionUpdates){
         while updates.events.len() > 0 {
-            match updates.events.extract(0){
-                Result::Ok(event) => {
-                    match event.downcast_ref::<KeyEvent>() {
-                        Option::Some(key_event) => {
-                            self.on_key(*key_event);
-                            continue;
-                        },
-                        Option::None => ()
-                    }
-                    match event.downcast_ref::<MouseEvent>() {
-                        Option::Some(mouse_event) => {
-                            self.on_mouse(*mouse_event);
-                            continue;
-                        },
-                        Option::None => ()
-                    }
-                    match event.downcast_ref::<OpenEvent>() {
-                        Option::Some(open_event) => {
-                            self.items.insert(0, open_event.item.clone());
-                            self.current_item = 0;
-                            unsafe{
-                                Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
-                            }
-                            self.current_item = -1;
-                            updates.redraw = REDRAW_ALL;
-                            continue;
-                        },
-                        Option::None => ()
-                    }
+            let event = updates.events.remove(0);
+
+            match event.downcast_ref::<KeyEvent>() {
+                Option::Some(key_event) => {
+                    self.on_key(*key_event);
+                    continue;
                 },
-                Result::Err(_) => ()
+                Option::None => ()
+            }
+
+            match event.downcast_ref::<MouseEvent>() {
+                Option::Some(mouse_event) => {
+                    self.on_mouse(*mouse_event);
+                    continue;
+                },
+                Option::None => ()
+            }
+
+            match event.downcast_ref::<OpenEvent>() {
+                Option::Some(open_event) => {
+                    self.items.insert(0, open_event.item.clone());
+                    self.current_item = 0;
+                    unsafe{
+                        Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
+                    }
+                    self.current_item = -1;
+                    updates.redraw = REDRAW_ALL;
+                    continue;
+                },
+                Option::None => ()
             }
         }
 

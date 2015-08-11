@@ -4,8 +4,9 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
+use collections::vec::*;
+
 use common::debug::*;
-use common::vector::*;
 
 use network::common::*;
 use network::icmp::*;
@@ -30,21 +31,21 @@ pub struct IPv4Header {
 
 pub struct IPv4 {
     header: IPv4Header,
-    options: Vector<u8>,
-    data: Vector<u8>
+    options: Vec<u8>,
+    data: Vec<u8>
 }
 
 impl FromBytes for IPv4 {
-    fn from_bytes(bytes: Vector<u8>) -> Option<IPv4> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<IPv4> {
         if bytes.len() >= size_of::<IPv4Header>() {
             unsafe {
-                let header = *(bytes.data as *const IPv4Header);
+                let header = *(bytes.as_ptr() as *const IPv4Header);
                 let header_len = ((header.ver_hlen & 0xF) << 2) as usize;
 
                 return Option::Some(IPv4 {
                     header: header,
-                    options: bytes.sub(size_of::<IPv4Header>(), header_len - size_of::<IPv4Header>()),
-                    data: bytes.sub(header_len, bytes.len() - header_len)
+                    options: Vec::from(&bytes[size_of::<IPv4Header>() .. header_len - size_of::<IPv4Header>()]),
+                    data: Vec::from(&bytes[header_len .. bytes.len() - header_len])
                 });
             }
         }
@@ -53,16 +54,19 @@ impl FromBytes for IPv4 {
 }
 
 impl ToBytes for IPv4 {
-    fn to_bytes(&self) -> Vector<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         unsafe{
             let header_ptr: *const IPv4Header = &self.header;
-            Vector::<u8>::from_raw(header_ptr as *const u8, size_of::<IPv4Header>()) + self.options.clone() + self.data.clone()
+            let mut ret = Vec::<u8>::from_raw_buf(header_ptr as *const u8, size_of::<IPv4Header>());
+            ret.push_all(&self.options);
+            ret.push_all(&self.data);
+            return ret;
         }
     }
 }
 
 impl Response for IPv4 {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if self.header.dst.equals(IP_ADDR) || self.header.dst.equals(BROADCAST_IP_ADDR){
             if cfg!(debug_network){
                 d("    ");
@@ -72,8 +76,8 @@ impl Response for IPv4 {
 
             let ipv4_header = self.header;
             let ipv4_options = self.options.clone();
-            let ipv4_callback = box move |responses: Vector<Vector<u8>>|{
-                let mut ret: Vector<Vector<u8>> = Vector::new();
+            let ipv4_callback = box move |responses: Vec<Vec<u8>>|{
+                let mut ret: Vec<Vec<u8>> = Vec::new();
                 for response in responses.iter() {
                     let mut packet = IPv4 {
                         header: ipv4_header,
@@ -91,7 +95,7 @@ impl Response for IPv4 {
                         let header_ptr: *const IPv4Header = &packet.header;
                         packet.header.checksum.data = Checksum::compile(
                             Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
-                            Checksum::sum(packet.options.data as usize, packet.options.len())
+                            Checksum::sum(packet.options.as_ptr() as usize, packet.options.len())
                         );
                     }
 
