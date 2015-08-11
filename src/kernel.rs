@@ -258,7 +258,7 @@ pub unsafe fn kernel(interrupt: u32) {
 }
 
 #[lang = "panic_fmt"]
-pub fn panic_impl(fmt: fmt::Arguments, file: &'static str, line: u32) -> !{
+pub extern fn panic_fmt(fmt: fmt::Arguments, file: &'static str, line: u32) -> ! {
     d("PANIC: ");
     d(file);
     d(": ");
