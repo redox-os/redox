@@ -2,21 +2,22 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
+use collections::vec::*;
+
 use common::debug::*;
-use common::vector::*;
 
 use programs::session::*;
 
 pub trait Response {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>);
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>);
 }
 
 pub trait FromBytes{
-    fn from_bytes(bytes: Vector<u8>) -> Option<Self>;
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self>;
 }
 
 pub trait ToBytes{
-    fn to_bytes(&self) -> Vector<u8>;
+    fn to_bytes(&self) -> Vec<u8>;
 }
 
 #[derive(Copy, Clone)]

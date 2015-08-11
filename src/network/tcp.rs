@@ -4,11 +4,12 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
+use collections::vec::*;
+
 use common::debug::*;
 use common::memory::*;
 use common::random::*;
 use common::string::*;
-use common::vector::*;
 use common::url::*;
 
 use network::common::*;
@@ -29,17 +30,20 @@ pub struct TCPHeader {
 
 pub struct TCP {
     header: TCPHeader,
-    options: Vector<u8>,
-    data: Vector<u8>,
+    options: Vec<u8>,
+    data: Vec<u8>,
     src_ip: IPv4Addr,
     dst_ip: IPv4Addr
 }
 
 impl ToBytes for TCP {
-    fn to_bytes(&self) -> Vector<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         unsafe{
             let header_ptr: *const TCPHeader = &self.header;
-            Vector::<u8>::from_raw(header_ptr as *const u8, size_of::<TCPHeader>()) + self.options.clone() + self.data.clone()
+            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<TCPHeader>());
+            ret.push_all(&self.options);
+            ret.push_all(&self.data);
+            return ret;
         }
     }
 }
@@ -52,7 +56,7 @@ const TCP_ACK: u16 = 1 << 4;
 
 #[allow(trivial_casts)]
 impl Response for TCP {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if cfg!(debug_network){
             d("            ");
             self.d();
@@ -70,37 +74,39 @@ impl Response for TCP {
                 if cfg!(debug_network){
                     d("            TCP SYN\n");
                 }
-                let mut ret = TCP {
+                let mut response = TCP {
                     header: self.header,
                     options: self.options.clone(),
-                    data: Vector::new(),
+                    data: Vec::new(),
                     src_ip: IP_ADDR,
                     dst_ip: self.src_ip
                 };
 
-                ret.header.src = self.header.dst;
-                ret.header.dst = self.header.src;
-                ret.header.flags.set(self.header.flags.get() | TCP_ACK);
-                ret.header.ack_num.set(self.header.sequence.get() + 1);
-                ret.header.sequence.set(rand() as u32);
+                response.header.src = self.header.dst;
+                response.header.dst = self.header.src;
+                response.header.flags.set(self.header.flags.get() | TCP_ACK);
+                response.header.ack_num.set(self.header.sequence.get() + 1);
+                response.header.sequence.set(rand() as u32);
 
                 unsafe{
-                    ret.header.checksum.data = 0;
+                    response.header.checksum.data = 0;
 
                     let proto = n16::new(0x06);
-                    let segment_len = n16::new((size_of::<TCPHeader>() + ret.options.len() + ret.data.len()) as u16);
-                    ret.header.checksum.data = Checksum::compile(
-                        Checksum::sum((&ret.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                        Checksum::sum((&ret.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                    let segment_len = n16::new((size_of::<TCPHeader>() + response.options.len() + response.data.len()) as u16);
+                    response.header.checksum.data = Checksum::compile(
+                        Checksum::sum((&response.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                        Checksum::sum((&response.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                         Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
                         Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                        Checksum::sum((&ret.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
-                        Checksum::sum(ret.options.data as usize, ret.options.len()) +
-                        Checksum::sum(ret.data.data as usize, ret.data.len())
+                        Checksum::sum((&response.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                        Checksum::sum(response.options.as_ptr() as usize, response.options.len()) +
+                        Checksum::sum(response.data.as_ptr() as usize, response.data.len())
                     );
                 }
 
-                callback(Vector::from_value(ret.to_bytes()));
+                let mut ret: Vec<Vec<u8>> = Vec::new();
+                ret.push(response.to_bytes());
+                callback(ret);
             }else if self.header.flags.get() & TCP_PSH != 0{
                 if cfg!(debug_network){
                     d("            TCP PSH\n");
@@ -111,44 +117,46 @@ impl Response for TCP {
                     let tcp_options = self.options.clone();
                     let tcp_dst_ip = self.src_ip;
                     let tcp_data = self.data.clone();
-                    let tcp_callback = box move |response: String|{
-                        let mut ret = TCP {
+                    let tcp_callback = box move |data: String|{
+                        let mut response = TCP {
                             header: tcp_header,
                             options: tcp_options.clone(),
-                            data: Vector::new(),
+                            data: Vec::new(),
                             src_ip: IP_ADDR,
                             dst_ip: tcp_dst_ip
                         };
 
-                        ret.header.src = tcp_header.dst;
-                        ret.header.dst = tcp_header.src;
-                        ret.header.flags.set(tcp_header.flags.get() | TCP_FIN);
-                        ret.header.ack_num.set(tcp_header.sequence.get() + tcp_data.len() as u32);
-                        ret.header.sequence.set(tcp_header.ack_num.get());
+                        response.header.src = tcp_header.dst;
+                        response.header.dst = tcp_header.src;
+                        response.header.flags.set(tcp_header.flags.get() | TCP_FIN);
+                        response.header.ack_num.set(tcp_header.sequence.get() + tcp_data.len() as u32);
+                        response.header.sequence.set(tcp_header.ack_num.get());
 
                         unsafe{
-                            let response_ptr = response.to_c_str();
-                            ret.data = Vector::from_raw(response_ptr, response.len());
-                            unalloc(response_ptr as usize);
+                            let data_ptr = data.to_c_str();
+                            response.data = Vec::from_raw_buf(data_ptr, data.len());
+                            unalloc(data_ptr as usize);
                         }
 
-                        ret.header.checksum.data = 0;
+                        response.header.checksum.data = 0;
 
                         let proto = n16::new(0x06);
-                        let segment_len = n16::new((size_of::<TCPHeader>() + ret.options.len() + ret.data.len()) as u16);
+                        let segment_len = n16::new((size_of::<TCPHeader>() + response.options.len() + response.data.len()) as u16);
                         unsafe{
-                            ret.header.checksum.data = Checksum::compile(
-                                Checksum::sum((&ret.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                Checksum::sum((&ret.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                            response.header.checksum.data = Checksum::compile(
+                                Checksum::sum((&response.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                Checksum::sum((&response.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
                                 Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
                                 Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                Checksum::sum((&ret.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
-                                Checksum::sum(ret.options.data as usize, ret.options.len()) +
-                                Checksum::sum(ret.data.data as usize, ret.data.len())
+                                Checksum::sum((&response.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                                Checksum::sum(response.options.as_ptr() as usize, response.options.len()) +
+                                Checksum::sum(response.data.as_ptr() as usize, response.data.len())
                             );
                         }
 
-                        callback(Vector::from_value(ret.to_bytes()));
+                        let mut ret: Vec<Vec<u8>> = Vec::new();
+                        ret.push(response.to_bytes());
+                        callback(ret);
                     };
 
                     match self.header.dst.get() {
@@ -182,16 +190,16 @@ impl Response for TCP {
 }
 
 impl TCP {
-    pub fn from_bytes_ipv4(bytes: Vector<u8>, src_ip: IPv4Addr, dst_ip: IPv4Addr) -> Option<TCP> {
+    pub fn from_bytes_ipv4(bytes: Vec<u8>, src_ip: IPv4Addr, dst_ip: IPv4Addr) -> Option<TCP> {
         if bytes.len() >= size_of::<TCPHeader>() {
             unsafe {
-                let header = *(bytes.data as *const TCPHeader);
+                let header = *(bytes.as_ptr() as *const TCPHeader);
                 let header_len = ((header.flags.get() & 0xF000) >> 10) as usize;
 
                 return Option::Some(TCP {
                     header: header,
-                    options: bytes.sub(size_of::<TCPHeader>(), header_len - size_of::<TCPHeader>()),
-                    data: bytes.sub(header_len, bytes.len() - header_len),
+                    options: Vec::from(&bytes[size_of::<TCPHeader>() .. header_len - size_of::<TCPHeader>()]),
+                    data: Vec::from(&bytes[header_len .. bytes.len() - header_len]),
                     src_ip: src_ip,
                     dst_ip: dst_ip
                 });

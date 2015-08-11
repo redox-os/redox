@@ -1,11 +1,12 @@
 use core::clone::Clone;
-use core::result::Result;
+use core::option::Option;
 
 use alloc::rc::*;
 
+use collections::vec::*;
+
 use common::debug::*;
 use common::string::*;
-use common::vector::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -24,7 +25,7 @@ use programs::viewer::*;
 
 pub struct FileManager {
     window: Window,
-    files: Vector<String>,
+    files: Vec<String>,
     selected: isize
 }
 
@@ -138,7 +139,7 @@ impl SessionItem for FileManager {
                 '\n' => {
                     if self.selected >= 0 && self.selected < self.files.len() as isize {
                         match self.files.get(self.selected as usize) {
-                            Result::Ok(file) => {
+                            Option::Some(file) => {
                                 if file.ends_with(".md".to_string()) || file.ends_with(".rs".to_string()){
                                     updates.events.push(box OpenEvent {
                                         item: Rc::new(Editor::new()),
@@ -160,7 +161,7 @@ impl SessionItem for FileManager {
                                     dl();
                                 }
                             },
-                            Result::Err(_) => ()
+                            Option::None => ()
                         }
                     }
                 },

@@ -1,10 +1,11 @@
 use core::option::Option;
 
+use collections::vec::*;
+
 use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
-use common::vector::*;
 
 use network::common::*;
 use network::ethernet::*;
@@ -52,9 +53,9 @@ impl SessionModule for RTL8139 {
                         dl();
                     }
 
-                    match EthernetII::from_bytes(Vector::<u8>::from_raw(frame_addr as *const u8, frame_len - 4)){
+                    match EthernetII::from_bytes(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4)){
                         Option::Some(frame) => {
-                            frame.respond(session, box move |responses: Vector<Vector<u8>>|{
+                            frame.respond(session, box move |responses: Vec<Vec<u8>>|{
                                 for response in responses.iter() {
                                     if cfg!(debug_network){
                                         d("RTL8139 send ");
@@ -62,7 +63,7 @@ impl SessionModule for RTL8139 {
                                         dl();
                                     }
 
-                                    outd(base + 0x20 + RTL8139_TX*4, response.data as u32);
+                                    outd(base + 0x20 + RTL8139_TX*4, response.as_ptr() as u32);
                                     outd(base + 0x10 + RTL8139_TX*4, response.len() as u32 & 0x1FFF);
 
                                     while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
