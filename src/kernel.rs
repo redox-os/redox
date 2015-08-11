@@ -24,6 +24,7 @@ extern crate collections;
 #[macro_use]
 extern crate mopa;
 
+use core::fmt;
 use core::mem::size_of;
 
 use alloc::rc::*;
@@ -253,6 +254,36 @@ pub unsafe fn kernel(interrupt: u32) {
         }
 
         outb(0x20, 0x20);
+    }
+}
+
+#[lang = "panic_fmt"]
+pub fn panic_impl(fmt: fmt::Arguments, file: &'static str, line: u32) -> !{
+    d("PANIC: ");
+    d(file);
+    d(": ");
+    dh(line as usize);
+    dl();
+    unsafe{
+        asm!("cli");
+        asm!("hlt");
+    }
+    loop{}
+}
+
+#[no_mangle]
+pub extern "C" fn memcmp(a: *mut u8, b: *const u8, len: isize) -> isize {
+    unsafe {
+        let mut i = 0;
+        while i < len {
+            let c_a = *a.offset(i);
+            let c_b = *b.offset(i);
+            if c_a != c_b{
+                return c_a as isize - c_b as isize;
+            }
+            i += 1;
+        }
+        return 0;
     }
 }
 
