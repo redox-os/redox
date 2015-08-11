@@ -29,7 +29,7 @@ impl FromBytes for UDP {
             unsafe {
                 return Option::Some(UDP {
                     header: *(bytes.as_ptr() as *const UDPHeader),
-                    data: Vec::from(&bytes[size_of::<UDPHeader>() .. bytes.len() - size_of::<UDPHeader>()])
+                    data: bytes.sub(size_of::<UDPHeader>(), bytes.len() - size_of::<UDPHeader>())
                 });
             }
         }

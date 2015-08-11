@@ -31,7 +31,7 @@ impl FromBytes for EthernetII {
             unsafe {
                 return Option::Some(EthernetII {
                     header: *(bytes.as_ptr() as *const EthernetIIHeader),
-                    data: Vec::from(&bytes[size_of::<EthernetIIHeader>() .. bytes.len() - size_of::<EthernetIIHeader>()])
+                    data: bytes.sub(size_of::<EthernetIIHeader>(), bytes.len() - size_of::<EthernetIIHeader>())
                 });
             }
         }

@@ -30,7 +30,7 @@ impl FromBytes for ICMP {
             unsafe {
                 return Option::Some(ICMP {
                     header: *(bytes.as_ptr() as *const ICMPHeader),
-                    data: Vec::from(&bytes[size_of::<ICMPHeader>() .. bytes.len() - size_of::<ICMPHeader>()])
+                    data: bytes.sub(size_of::<ICMPHeader>(), bytes.len() - size_of::<ICMPHeader>())
                 });
             }
         }
