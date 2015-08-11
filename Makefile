@@ -22,11 +22,11 @@ libcollections.rlib: src/libcollections/lib.rs liballoc.rlib
 libmopa.rlib: src/libmopa/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --cfg 'feature = "no_std"'
 
-kernel.rlib: src/kernel.rs liballoc.rlib libcollections.rlib libmopa.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib --extern collections=libcollections.rlib --extern mopa=libmopa.rlib
+kernel.rlib: src/kernel.rs liballoc.rlib libmopa.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
 
-kernel.bin: kernel.rlib liballoc.rlib libcollections.rlib libmopa.rlib
-	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< liballoc.rlib libcollections.rlib libmopa.rlib
+kernel.bin: kernel.rlib liballoc.rlib libmopa.rlib
+	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< liballoc.rlib libmopa.rlib
 
 example.rlib: src/program.rs filesystem/example.rs liballoc.rlib libcollections.rlib libmopa.rlib
 	sed 's|APPLICATION_PATH|../filesystem/example.rs|' src/program.rs > src/program.gen
