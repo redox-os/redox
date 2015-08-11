@@ -1,5 +1,5 @@
 use core::clone::Clone;
-use core::result::Result;
+use core::option::Option;
 
 use alloc::boxed::*;
 
@@ -25,7 +25,7 @@ impl SessionModule for PCIScheme {
 
         for i in 0..url.path.len() {
             match url.path.get(i){
-                Result::Ok(part) => match i {
+                Option::Some(part) => match i {
                     0 => {
                         bus = part.to_num() as isize;
                     },
@@ -40,7 +40,7 @@ impl SessionModule for PCIScheme {
                     },
                     _ => ()
                 },
-                Result::Err(_) => ()
+                Option::None => ()
             }
         }
 

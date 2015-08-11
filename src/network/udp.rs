@@ -1,11 +1,10 @@
-use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
 use alloc::boxed::*;
 
 use common::debug::*;
-use common::vector::*;
+use common::vec::*;
 
 use network::common::*;
 
@@ -21,15 +20,15 @@ pub struct UDPHeader {
 
 pub struct UDP {
     header: UDPHeader,
-    data: Vector<u8>
+    data: Vec<u8>
 }
 
 impl FromBytes for UDP {
-    fn from_bytes(bytes: Vector<u8>) -> Option<UDP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<UDP> {
         if bytes.len() >= size_of::<UDPHeader>() {
             unsafe {
                 return Option::Some(UDP {
-                    header: *(bytes.data as *const UDPHeader),
+                    header: *(bytes.as_ptr() as *const UDPHeader),
                     data: bytes.sub(size_of::<UDPHeader>(), bytes.len() - size_of::<UDPHeader>())
                 });
             }
@@ -39,17 +38,19 @@ impl FromBytes for UDP {
 }
 
 impl ToBytes for UDP {
-    fn to_bytes(&self) -> Vector<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         unsafe{
             let header_ptr: *const UDPHeader = &self.header;
-            return Vector::<u8>::from_raw(header_ptr as *const u8, size_of::<UDPHeader>()) + self.data.clone();
+            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<UDPHeader>());
+            ret.push_all(&self.data);
+            return ret;
         }
     }
 }
 
 impl Response for UDP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
         d("            ");
         self.d();
         dl();

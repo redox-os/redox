@@ -5,7 +5,7 @@ use core::option::Option;
 use alloc::boxed::*;
 
 use common::debug::*;
-use common::vector::*;
+use common::vec::*;
 
 use network::common::*;
 
@@ -21,15 +21,15 @@ pub struct ICMPHeader {
 
 pub struct ICMP {
     header: ICMPHeader,
-    data: Vector<u8>
+    data: Vec<u8>
 }
 
 impl FromBytes for ICMP {
-    fn from_bytes(bytes: Vector<u8>) -> Option<ICMP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<ICMP> {
         if bytes.len() >= size_of::<ICMPHeader>() {
             unsafe {
                 return Option::Some(ICMP {
-                    header: *(bytes.data as *const ICMPHeader),
+                    header: *(bytes.as_ptr() as *const ICMPHeader),
                     data: bytes.sub(size_of::<ICMPHeader>(), bytes.len() - size_of::<ICMPHeader>())
                 });
             }
@@ -39,17 +39,19 @@ impl FromBytes for ICMP {
 }
 
 impl ToBytes for ICMP {
-    fn to_bytes(&self) -> Vector<u8> {
+    fn to_bytes(&self) -> Vec<u8> {
         unsafe{
             let header_ptr: *const ICMPHeader = &self.header;
-            Vector::<u8>::from_raw(header_ptr as *const u8, size_of::<ICMPHeader>()) + self.data.clone()
+            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ICMPHeader>());
+            ret.push_all(&self.data);
+            return ret;
         }
     }
 }
 
 impl Response for ICMP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vector<Vector<u8>>)>){
+    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if cfg!(debug_network){
             d("        ");
             self.d();
@@ -61,24 +63,26 @@ impl Response for ICMP {
                 d("            Echo Reply\n");
             }
 
-            let mut ret = ICMP {
+            let mut response = ICMP {
                 header: self.header,
                 data: self.data.clone()
             };
 
-            ret.header._type = 0x00;
+            response.header._type = 0x00;
 
             unsafe{
-                ret.header.checksum.data = 0;
+                response.header.checksum.data = 0;
 
-                let header_ptr: *const ICMPHeader = &ret.header;
-                ret.header.checksum.data = Checksum::compile(
+                let header_ptr: *const ICMPHeader = &response.header;
+                response.header.checksum.data = Checksum::compile(
                     Checksum::sum(header_ptr as usize, size_of::<ICMPHeader>()) +
-                    Checksum::sum(ret.data.data as usize, ret.data.len())
+                    Checksum::sum(response.data.as_ptr() as usize, response.data.len())
                 );
             }
 
-            callback(Vector::from_value(ret.to_bytes()));
+            let mut ret: Vec<Vec<u8>> = Vec::new();
+            ret.push(response.to_bytes());
+            callback(ret);
         }
     }
 }
