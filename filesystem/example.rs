@@ -1,11 +1,14 @@
 use core::clone::Clone;
+use core::mem::size_of;
 use core::option::Option;
+use core::ptr;
 
 use alloc::boxed::*;
 
 use collections::vec::*;
 
 use common::debug::*;
+use common::memory::*;
 use common::string::*;
 use common::url::*;
 
@@ -68,11 +71,12 @@ impl Application {
                             self.request(session, &url, box move |item: &mut SessionItem, response: String|{
                                 response.d();
                                 dl();
+
                                 match item.downcast_mut::<Application>() {
                                     Option::Some(app) => {
                                         app.append(response);
                                     },
-                                    Option::None => ()
+                                    Option::None => d("Failed to downcast application\n")
                                 }
                             });
                         },
@@ -265,12 +269,13 @@ impl SessionItem for Application {
     fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
         unsafe{
             let url_ptr: *const URL = url;
-            let callback_ptr: *const Box<FnBox(&mut SessionItem, String)> = &callback;
+            let callback_ptr: *mut Box<FnBox(&mut SessionItem, String)> = alloc(size_of::<Box<FnBox(&mut SessionItem, String)>>()) as *mut Box<FnBox(&mut SessionItem, String)>;
+            ptr::write(callback_ptr, callback);
             asm!("pushad\n
                 int 0x80\n
                 popad\n"
                 :
-                : "{eax}"(1 as u32), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32), "{edx}"(0xDEADC0DE as u32)
+                : "{eax}"(1), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32)
                 :
                 : "intel");
         }

@@ -1,3 +1,5 @@
+use core::atomic::*;
+
 use alloc::boxed::*;
 
 use common::debug::*;
@@ -13,7 +15,7 @@ use programs::session::*;
 
 pub struct Executor {
     executable: ELF,
-    mapped: bool,
+    mapped: AtomicUsize,
     entry: usize,
     draw: usize,
     on_key: usize,
@@ -33,16 +35,16 @@ impl Executor {
     }
 
     unsafe fn unsafe_map(&mut self){
-        if self.executable.data > 0 && !self.mapped{
+        let mapped = self.mapped.fetch_add(1, Ordering::SeqCst);
+        if self.executable.data > 0 && mapped == 0{
             self.executable.map();
-            self.mapped = true;
         }
     }
 
     unsafe fn unsafe_unmap(&mut self){
-        if self.executable.data > 0 && self.mapped {
+        let mapped = self.mapped.fetch_sub(1, Ordering::SeqCst);
+        if self.executable.data > 0 && mapped == 1{
             self.executable.unmap();
-            self.mapped = false;
         }
     }
 }
@@ -51,7 +53,7 @@ impl SessionItem for Executor {
     fn new() -> Executor {
         Executor {
             executable: ELF::new(),
-            mapped: false,
+            mapped: AtomicUsize::new(0),
             entry: 0,
             draw: 0,
             on_mouse: 0,
@@ -121,9 +123,7 @@ impl SessionItem for Executor {
 
     fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>){
         unsafe {
-            d("On Response\n");
             if self.executable.can_call(self.on_response){
-                d("On Response Call\n");
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_response;
