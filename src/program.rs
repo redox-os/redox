@@ -71,6 +71,8 @@ mod programs {
     pub mod session;
 }
 
+pub mod syscall;
+
 //Class wrappers
 
 static mut application: *mut Application = 0 as *mut Application;

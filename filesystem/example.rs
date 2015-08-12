@@ -1,14 +1,11 @@
 use core::clone::Clone;
-use core::mem::size_of;
 use core::option::Option;
-use core::ptr;
 
 use alloc::boxed::*;
 
 use collections::vec::*;
 
 use common::debug::*;
-use common::memory::*;
 use common::string::*;
 use common::url::*;
 
@@ -21,6 +18,8 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
+
+use syscall;
 
 pub struct Application {
     window: Window,
@@ -266,18 +265,8 @@ impl SessionItem for Application {
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
 
+    #[allow(unused_variables)]
     fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        unsafe{
-            let url_ptr: *const URL = url;
-            let callback_ptr: *mut Box<FnBox(&mut SessionItem, String)> = alloc(size_of::<Box<FnBox(&mut SessionItem, String)>>()) as *mut Box<FnBox(&mut SessionItem, String)>;
-            ptr::write(callback_ptr, callback);
-            asm!("pushad\n
-                int 0x80\n
-                popad\n"
-                :
-                : "{eax}"(1), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32)
-                :
-                : "intel");
-        }
+        syscall::request(url, callback);
     }
 }
