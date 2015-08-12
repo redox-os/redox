@@ -1,6 +1,8 @@
 use core::clone::Clone;
 use core::option::Option;
 
+use alloc::boxed::*;
+
 use collections::vec::*;
 
 use common::debug::*;
@@ -258,5 +260,19 @@ impl SessionItem for Application {
     #[allow(unused_variables)]
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
+    }
+
+    fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
+        unsafe{
+            let url_ptr: *const URL = url;
+            let callback_ptr: *const Box<FnBox(&mut SessionItem, String)> = &callback;
+            asm!("pushad\n
+                int 0x80\n
+                popad\n"
+                :
+                : "{eax}"(1 as u32), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32), "{edx}"(0xDEADC0DE as u32)
+                :
+                : "intel");
+        }
     }
 }

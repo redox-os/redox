@@ -154,6 +154,13 @@ unsafe fn init(){
 
 #[no_mangle]
 pub unsafe fn kernel(interrupt: u32) {
+    //Preserve regs for kernel calls
+    let eax: u32;
+    let ebx: u32;
+    let ecx: u32;
+    let edx: u32;
+    asm!("" : "={eax}"(eax), "={ebx}"(ebx), "={ecx}"(ecx), "={edx}"(edx) : : : "intel");
+
     match interrupt {
         0x20 => (), //timer
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
@@ -165,6 +172,18 @@ pub unsafe fn kernel(interrupt: u32) {
         0x2C => (*session_ptr).on_irq(0xC), //mouse
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
+        0x80 => { // kernel calls
+            d("System Call");
+            d(" EAX:");
+            dh(eax as usize);
+            d(" EBX:");
+            dh(ebx as usize);
+            d(" ECX:");
+            dh(ecx as usize);
+            d(" EDX:");
+            dh(edx as usize);
+            dl();
+        },
         0xFF => { // main loop
             init();
 
