@@ -20,7 +20,9 @@ extern crate mopa;
 
 use core::fmt;
 use core::mem::size_of;
+use core::ptr;
 
+use alloc::boxed::*;
 use alloc::rc::*;
 
 use common::debug::*;
@@ -37,6 +39,7 @@ use drivers::serial::*;
 
 use graphics::bmp::*;
 
+use programs::executor::*;
 use programs::filemanager::*;
 use programs::session::*;
 
@@ -173,16 +176,44 @@ pub unsafe fn kernel(interrupt: u32) {
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => { // kernel calls
-            d("System Call");
-            d(" EAX:");
-            dh(eax as usize);
-            d(" EBX:");
-            dh(ebx as usize);
-            d(" ECX:");
-            dh(ecx as usize);
-            d(" EDX:");
-            dh(edx as usize);
-            dl();
+            match eax {
+                0x1 => {
+                    d("Session Request: ");
+                    let url: &URL = &*(ebx as *const URL);
+                    let callback: Box<FnBox(&mut SessionItem, String)> = ptr::read(ecx as *const Box<FnBox(&mut SessionItem, String)>);
+                    unalloc(ecx as usize);
+                    url.d();
+                    dl();
+
+                    let session = &mut *session_ptr;
+                    if session.current_item >= 0 {
+                        match session.items.get((*session).current_item as usize) {
+                            Option::Some(item) => {
+                                let item_copy = item.clone();
+                                session.request(url, box move |response|{
+                                    match Rc::unsafe_get_mut(&item_copy).downcast_mut::<Executor>(){
+                                        Option::Some(item_downcast) => item_downcast.on_response(response, callback),
+                                        Option::None => d("Failed to downcast\n")
+                                    }
+                                });
+                            },
+                            Option::None => d("Failed to find current item\n")
+                        }
+                    }
+                },
+                _ => {
+                    d("System Call");
+                    d(" EAX:");
+                    dh(eax as usize);
+                    d(" EBX:");
+                    dh(ebx as usize);
+                    d(" ECX:");
+                    dh(ecx as usize);
+                    d(" EDX:");
+                    dh(edx as usize);
+                    dl();
+                }
+            }
         },
         0xFF => { // main loop
             init();
