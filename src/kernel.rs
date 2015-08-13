@@ -155,14 +155,36 @@ unsafe fn init(){
     });
 }
 
+fn dr(reg: &str, value: u32){
+    d(reg);
+    d(": ");
+    dh(value as usize);
+    dl();
+}
+
 #[no_mangle]
-pub unsafe fn kernel(interrupt: u32) {
-    //Preserve regs for kernel calls
-    let eax: u32;
-    let ebx: u32;
-    let ecx: u32;
-    let edx: u32;
-    asm!("" : "={eax}"(eax), "={ebx}"(ebx), "={ecx}"(ecx), "={edx}"(edx) : : : "intel");
+//Take regs for kernel calls and exceptions
+pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, eax: u32, eip: u32, eflags: u32) {
+    let exception = |name: &str|{
+        d(name);
+        dl();
+
+        dr("INT", interrupt);
+        dr("EIP", eip);
+        dr("EFLAGS", eflags);
+        dr("EAX", eax);
+        dr("EBX", ebx);
+        dr("ECX", ecx);
+        dr("EDX", edx);
+        dr("EDI", edi);
+        dr("ESI", esi);
+        dr("EBP", ebp);
+        dr("ESP", esp);
+
+        asm!("cli");
+        asm!("hlt");
+        loop{}
+    };
 
     match interrupt {
         0x20 => (), //timer
@@ -226,68 +248,28 @@ pub unsafe fn kernel(interrupt: u32) {
                 asm!("cli"); // TODO: Allow preempting
             }
         },
-        0x0 => {
-            d("Divide by zero exception\n");
-        },
-        0x1 => {
-            d("Debug exception\n");
-        },
-        0x2 => {
-            d("Non-maskable interrupt\n");
-        },
-        0x3 => {
-            d("Breakpoint exception\n");
-        },
-        0x4 => {
-            d("Overflow exception\n");
-        },
-        0x5 => {
-            d("Bound range exceeded exception\n");
-        },
-        0x6 => {
-            d("Invalid opcode exception\n");
-        },
-        0x7 => {
-            d("Device not available exception\n");
-        },
-        0x8 => {
-            d("Double fault\n");
-        },
-        0xA => {
-            d("Invalid TSS exception\n");
-        },
-        0xB => {
-            d("Segment not present exception\n");
-        },
-        0xC => {
-            d("Stack-segment fault\n");
-        },
-        0xD => {
-            d("General protection fault\n");
-        },
-        0xE => {
-            d("Page fault\n");
-        },
-        0x10 => {
-            d("x87 floating-point exception\n");
-        },
-        0x11 => {
-            d("Alignment check exception\n");
-        },
-        0x12 => {
-            d("Machine check exception\n");
-        },
-        0x13 => {
-            d("SIMD floating-point exception\n");
-        },
-        0x14 => {
-            d("Virtualization exception\n");
-        },
-        0x1E => {
-            d("Security exception\n");
-        },
+        0x0 => exception("Divide by zero exception"),
+        0x1 => exception("Debug exception"),
+        0x2 => exception("Non-maskable interrupt"),
+        0x3 => exception("Breakpoint exception"),
+        0x4 => exception("Overflow exception"),
+        0x5 => exception("Bound range exceeded exception"),
+        0x6 => exception("Invalid opcode exception"),
+        0x7 => exception("Device not available exception"),
+        0x8 => exception("Double fault"),
+        0xA => exception("Invalid TSS exception"),
+        0xB => exception("Segment not present exception"),
+        0xC => exception("Stack-segment fault"),
+        0xD => exception("General protection fault"),
+        0xE => exception("Page fault"),
+        0x10 => exception("x87 floating-point exception"),
+        0x11 => exception("Alignment check exception"),
+        0x12 => exception("Machine check exception"),
+        0x13 => exception("SIMD floating-point exception"),
+        0x14 => exception("Virtualization exception"),
+        0x1E => exception("Security exception"),
         _ => {
-            d("I: ");
+            d("Interrupt: ");
             dh(interrupt as usize);
             dl();
         }

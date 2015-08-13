@@ -45,7 +45,11 @@ impl Application {
         }
         match args.get(0) {
             Option::Some(cmd) => {
-                if *cmd == "echo".to_string() {
+                if *cmd == "break".to_string() {
+                    unsafe{
+                        asm!("int 3" : : : : "intel");
+                    }
+                }else if *cmd == "echo".to_string() {
                     let mut echo = String::new();
                     for i in 1..args.len() {
                         match args.get(i) {
