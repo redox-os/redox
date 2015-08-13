@@ -30,12 +30,10 @@ interrupts:
 %endrep
 .handle:
     pushad
-    mov ebp, esp
     push dword [0x200000]
     call [.handler]
     add esp, 4
     popad
-    ; The kernel runs hlt and handles each IRQ individually, TODO: Syscalls
     iretd
 
 .handler: dw 0
