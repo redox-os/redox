@@ -5,7 +5,6 @@ use alloc::boxed::*;
 
 use collections::vec::*;
 
-use common::debug::*;
 use common::string::*;
 use common::url::*;
 
@@ -24,6 +23,7 @@ use syscall;
 pub struct Application {
     window: Window,
     output: String,
+    last_command: String,
     command: String,
     offset: usize,
     scroll: Point,
@@ -37,6 +37,7 @@ impl Application {
 
     #[allow(unused_variables)]
     fn on_command(&mut self, session: &Session){
+        self.last_command = self.command.clone();
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in self.command.split(" ".to_string()) {
             if arg.len() > 0 {
@@ -71,6 +72,25 @@ impl Application {
                         Option::Some(url_string) => {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
+
+                            let mut resource = syscall::open(&url);
+                            loop {
+                                let buf: &mut [u8] = &mut [0; 256];
+                                match resource.read(buf){
+                                    Option::Some(len) => {
+                                        if len == 0 {
+                                            break;
+                                        }
+                                        self.append(String::from_c_slice(buf));
+                                    },
+                                    Option::None => {
+                                        self.append("Failed to read".to_string());
+                                        break;
+                                    }
+                                }
+                            }
+
+                            /*
                             self.request(session, &url, box move |item: &mut SessionItem, response: String|{
                                 response.d();
                                 dl();
@@ -82,6 +102,7 @@ impl Application {
                                     Option::None => d("Failed to downcast application\n")
                                 }
                             });
+                            */
                         },
                         Option::None => {
                             for module in session.modules.iter() {
@@ -126,6 +147,7 @@ impl SessionItem for Application {
                 }
             },
             output: String::new(),
+            last_command: String::new(),
             command: String::new(),
             offset: 0,
             scroll: Point::new(0, 0),
@@ -229,6 +251,10 @@ impl SessionItem for Application {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
                 0x47 => self.offset = 0,
+                0x48 => {
+                    self.command = self.last_command.clone();
+                    self.offset = self.command.len();
+                },
                 0x4B => if self.offset > 0 {
                     self.offset -= 1;
                 },
@@ -236,6 +262,10 @@ impl SessionItem for Application {
                     self.offset += 1;
                 },
                 0x4F => self.offset = self.command.len(),
+                0x50 => {
+                    self.command = String::new();
+                    self.offset = self.command.len();
+                },
                 _ => ()
             }
 
@@ -246,8 +276,7 @@ impl SessionItem for Application {
                         self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
                         self.offset -= 1;
                     }
-                }
-                '\x1B' => self.command = String::new(),
+                },
                 '\n' => {
                     if self.command.len() > 0 {
                         self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";

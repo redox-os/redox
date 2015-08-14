@@ -1,6 +1,7 @@
 use alloc::boxed::*;
 
 use common::memory::*;
+use common::resource::*;
 use common::string::*;
 use common::url::*;
 
@@ -13,8 +14,8 @@ impl SessionModule for MemoryScheme {
         return "memory".to_string();
     }
 
-    #[allow(unused_variables)]
-    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
-        callback("Memory Used: ".to_string() + memory_used()/1024/1024 + " MB\n" + "Memory Free: " + memory_free()/1024/1024 + " MB");
+    fn open(&mut self, url: &URL) -> Box<Resource>{
+        let string = "Memory Used: ".to_string() + memory_used()/1024/1024 + " MB\n" + "Memory Free: " + memory_free()/1024/1024 + " MB";
+        return box VecResource::new(string.to_utf8());
     }
 }

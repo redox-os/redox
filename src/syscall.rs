@@ -4,6 +4,7 @@ use core::ptr;
 use alloc::boxed::*;
 
 use common::memory::*;
+use common::resource::*;
 use common::string::*;
 use common::url::*;
 
@@ -19,5 +20,20 @@ pub fn request(url: &URL, callback: Box<FnBox(&mut SessionItem, String)>){
             : "{eax}"(1), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32)
             :
             : "intel");
+    }
+}
+
+pub fn open(url: &URL) -> Box<Resource> {
+    unsafe{
+        let url_ptr: *const URL = url;
+        let resource_ptr: *mut Box<Resource> = alloc(size_of::<Box<Resource>>()) as *mut Box<Resource>;
+        asm!("int 0x80"
+            :
+            : "{eax}"(2), "{ebx}"(url_ptr as u32), "{ecx}"(resource_ptr as u32)
+            :
+            : "intel");
+        let resource = ptr::read(resource_ptr);
+        unalloc(resource_ptr as usize);
+        return resource;
     }
 }

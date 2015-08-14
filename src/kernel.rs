@@ -28,6 +28,7 @@ use alloc::rc::*;
 use common::debug::*;
 use common::pio::*;
 use common::memory::*;
+use common::resource::*;
 use common::string::*;
 use common::url::*;
 
@@ -56,6 +57,7 @@ mod common {
     pub mod pci;
     pub mod pio;
     pub mod random;
+    pub mod resource;
     pub mod string;
     pub mod vec;
     pub mod url;
@@ -223,6 +225,15 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                         }
                     }
                 },
+                0x2 => {
+                    d("Open: ");
+                    let url: &URL = &*(ebx as *const URL);
+                    url.d();
+                    dl();
+
+                    let session = &mut *session_ptr;
+                    ptr::write(ecx as *mut Box<Resource>, session.open(url));
+                }
                 _ => {
                     d("System Call");
                     d(" EAX:");

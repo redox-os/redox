@@ -30,8 +30,8 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
 }
 
 pub struct Vec<T> {
-    data: *mut T,
-    length: usize
+    pub data: *mut T,
+    pub length: usize
 }
 
 impl <T> Vec<T> {
@@ -63,6 +63,14 @@ impl <T> Vec<T> {
         }else{
             unsafe{
                 return Option::Some(&mut *self.data.offset(i as isize));
+            }
+        }
+    }
+
+    pub fn set(&self, i: usize, value: T) {
+        if i <= self.length {
+            unsafe {
+                ptr::write(self.data.offset(i as isize), value);
             }
         }
     }
