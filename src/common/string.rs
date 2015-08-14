@@ -11,6 +11,7 @@ use core::str::StrExt;
 
 use common::debug::*;
 use common::memory::*;
+use common::vec::*;
 
 pub trait ToString {
     fn to_string(&self) -> String;
@@ -136,6 +137,15 @@ impl String {
             }
         }
     }
+
+    /*
+    pub fn from_utf8(vec: &Vec<u8>) -> String {
+        //TODO
+        for b in vec.iter() {
+
+        }
+    }
+    */
 
     pub unsafe fn from_c_str(s: *const u8) -> String {
         let mut length = 0;
@@ -280,6 +290,30 @@ impl String {
             offset: 0,
             seperator: seperator
         }
+    }
+
+    pub fn to_utf8(&self) -> Vec<u8> {
+        let mut vec: Vec<u8> = Vec::new();
+
+        for c in self.chars() {
+            let u = c as usize;
+            if u < 0x80 {
+                vec.push(u as u8);
+            }else if u < 0x800 {
+                vec.push(0b11000000 | ((u >> 6) as u8 & 0b00011111));
+                vec.push(0b10000000 | (u as u8 & 0b00111111));
+            }else if u < 0x10000 {
+                vec.push(0b11100000 | ((u >> 12) as u8 & 0b00001111));
+                vec.push(0b10000000 | ((u >> 6) as u8 & 0b00111111));
+                vec.push(0b10000000 | (u as u8 & 0b00111111));
+            }else{
+                d("Unhandled to_utf8 code ");
+                dh(u);
+                dl();
+            }
+        }
+
+        return vec;
     }
 
     pub unsafe fn to_c_str(&self) -> *const u8 {

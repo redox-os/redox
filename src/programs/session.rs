@@ -8,6 +8,7 @@ use alloc::boxed::*;
 use alloc::rc::*;
 
 use common::debug::*;
+use common::resource::*;
 use common::string::*;
 use common::vec::*;
 use common::url::*;
@@ -20,13 +21,12 @@ use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 
+#[allow(unused_variables)]
 pub trait SessionModule {
-    #[allow(unused_variables)]
     fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
 
     }
 
-    #[allow(unused_variables)]
     fn on_poll(&mut self, session: &Session, updates: &mut SessionUpdates){
 
     }
@@ -35,31 +35,35 @@ pub trait SessionModule {
         return String::new();
     }
 
-    #[allow(unused_variables)]
+    fn open(&mut self, url: &URL) -> Box<Resource> {
+        return box NoneResource;
+    }
+
+    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>) {
+        callback(self.open(url));
+    }
+
     fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>) {
         callback(String::new());
     }
 }
 
+#[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
     fn new() -> Self where Self:Sized;
 
-    #[allow(unused_variables)]
     fn load(&mut self, session: &Session, file: String){
 
     }
 
-    #[allow(unused_variables)]
     fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         return true;
     }
 
-    #[allow(unused_variables)]
     fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
 
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
@@ -153,6 +157,28 @@ impl Session {
             if module.scheme() == url.scheme {
                 unsafe{
                     Rc::unsafe_get_mut(module).request(self, url, callback);
+                }
+                break;
+            }
+        }
+    }
+
+    pub fn open(&self, url: &URL) -> Box<Resource>{
+        for module in self.modules.iter() {
+            if module.scheme() == url.scheme {
+                unsafe{
+                    return Rc::unsafe_get_mut(module).open(url);
+                }
+            }
+        }
+        return box NoneResource;
+    }
+
+    pub fn open_async(&self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
+        for module in self.modules.iter() {
+            if module.scheme() == url.scheme {
+                unsafe{
+                    Rc::unsafe_get_mut(module).open_async(url, callback);
                 }
                 break;
             }
