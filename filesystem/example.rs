@@ -297,9 +297,4 @@ impl SessionItem for Application {
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
     }
-
-    #[allow(unused_variables)]
-    fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        syscall::request(url, callback);
-    }
 }
