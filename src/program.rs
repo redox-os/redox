@@ -1,7 +1,6 @@
 #![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(collections)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
@@ -15,8 +14,6 @@
 #![no_std]
 
 extern crate alloc;
-
-extern crate collections;
 
 #[macro_use]
 extern crate mopa;
@@ -46,7 +43,6 @@ mod common {
     pub mod resource;
     pub mod string;
     pub mod vec;
-    pub mod url;
 }
 
 mod drivers {
@@ -71,8 +67,6 @@ mod graphics {
 mod programs {
     pub mod session;
 }
-
-pub mod syscall;
 
 //Class wrappers
 
@@ -106,13 +100,6 @@ pub unsafe fn on_mouse(session: &Session, updates: &mut SessionUpdates, mouse_ev
         return (*application).on_mouse(session, updates, mouse_event, allow_catch);
     }else{
         return false;
-    }
-}
-
-#[no_mangle]
-pub unsafe fn on_response(response: String, callback: Box<FnBox(&mut SessionItem, String)>){
-    if application as usize > 0{
-        (*application).on_response(response, callback);
     }
 }
 

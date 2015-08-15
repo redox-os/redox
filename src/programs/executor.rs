@@ -1,9 +1,9 @@
 use core::atomic::*;
 
-use alloc::boxed::*;
-
 use common::elf::*;
+use common::resource::*;
 use common::string::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -18,8 +18,7 @@ pub struct Executor {
     entry: usize,
     draw: usize,
     on_key: usize,
-    on_mouse: usize,
-    on_response: usize
+    on_mouse: usize
 }
 
 impl Executor {
@@ -56,26 +55,31 @@ impl SessionItem for Executor {
             entry: 0,
             draw: 0,
             on_mouse: 0,
-            on_key: 0,
-            on_response: 0
+            on_key: 0
         }
     }
 
     #[allow(unused_variables)]
-    fn load(&mut self, session: &Session, filename: String){
-        if filename.len() > 0{
-            unsafe{
-                self.executable = ELF::from_data(UnFS::new().load(filename));
-                //self.executable.d();
+    fn load(&mut self, url: &URL){
+        let mut resource = url.open();
 
-                self.entry = self.executable.entry();
-                self.draw = self.executable.symbol("draw".to_string());
-                self.on_key = self.executable.symbol("on_key".to_string());
-                self.on_mouse = self.executable.symbol("on_mouse".to_string());
-                self.on_response = self.executable.symbol("on_response".to_string());
+        let mut vec: Vec<u8> = Vec::new();
+        match resource.read_to_end(&mut vec){
+            Option::Some(0) => (),
+            Option::Some(len) => {
+                unsafe{
+                    self.executable = ELF::from_data(vec.as_ptr() as usize);
+                    //self.executable.d();
 
-                self.entry();
-            }
+                    self.entry = self.executable.entry();
+                    self.draw = self.executable.symbol("draw".to_string());
+                    self.on_key = self.executable.symbol("on_key".to_string());
+                    self.on_mouse = self.executable.symbol("on_mouse".to_string());
+
+                    self.entry();
+                }
+            },
+            Option::None => ()
         }
     }
 
@@ -118,17 +122,5 @@ impl SessionItem for Executor {
             }
         }
         return false;
-    }
-
-    fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>){
-        unsafe {
-            if self.executable.can_call(self.on_response){
-                //Rediculous call mechanism
-                self.unsafe_map();
-                let fn_ptr: *const usize = &self.on_response;
-                (*(fn_ptr as *const fn(String, Box<FnBox(&mut SessionItem, String)>)))(response, callback);
-                self.unsafe_unmap();
-            }
-        }
     }
 }
