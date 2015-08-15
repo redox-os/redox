@@ -3,8 +3,8 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
+use common::resource::*;
 use common::string::*;
-use common::url::*;
 use common::vec::*;
 
 use drivers::keyboard::*;
@@ -16,7 +16,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
-use programs::syscall;
 
 pub struct Application {
     window: Window,
@@ -71,7 +70,7 @@ impl Application {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
 
-                            let mut resource = syscall::open(&url);
+                            let mut resource = url.open();
 
                             let mut vec: Vec<u8> = Vec::new();
                             match resource.read_to_end(&mut vec) {

@@ -1,7 +1,6 @@
 use common::random::*;
 use common::resource::*;
 use common::string::*;
-use common::url::*;
 
 use alloc::boxed::*;
 

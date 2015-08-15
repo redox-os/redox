@@ -11,7 +11,6 @@ use common::debug::*;
 use common::resource::*;
 use common::string::*;
 use common::vec::*;
-use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;

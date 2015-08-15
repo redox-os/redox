@@ -30,7 +30,6 @@ use common::pio::*;
 use common::memory::*;
 use common::resource::*;
 use common::string::*;
-use common::url::*;
 use common::vec::*;
 
 use drivers::keyboard::*;
@@ -44,7 +43,6 @@ use graphics::bmp::*;
 use programs::executor::*;
 use programs::filemanager::*;
 use programs::session::*;
-use programs::syscall;
 
 use schemes::file::*;
 use schemes::http::*;
@@ -62,7 +60,6 @@ mod common {
     pub mod resource;
     pub mod string;
     pub mod vec;
-    pub mod url;
 }
 
 mod drivers {
@@ -104,7 +101,6 @@ mod programs {
     pub mod executor;
     pub mod filemanager;
     pub mod session;
-    pub mod syscall;
     pub mod viewer;
 }
 
@@ -153,7 +149,7 @@ unsafe fn init(){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-    syscall::open_async(&URL::from_string("file:///background.bmp".to_string()), box |mut resource: Box<Resource>|{
+    URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
         d("\nfile://background.bmp return\n");
         let mut vec: Vec<u8> = Vec::new();
         d("Read to end start\n");

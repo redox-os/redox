@@ -4,7 +4,6 @@ use core::clone::Clone;
 
 use common::resource::*;
 use common::string::*;
-use common::url::*;
 use common::vec::*;
 
 use drivers::keyboard::*;
@@ -17,7 +16,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
-use programs::syscall;
 
 pub struct Viewer {
     window: Window,
@@ -61,7 +59,7 @@ impl SessionItem for Viewer {
             self.loading = true;
 
             let self_ptr: *mut Viewer = self;
-            syscall::open_async(&URL::from_string("file:///".to_string() + filename.clone()), box move |mut resource: Box<Resource>|{
+            URL::from_string("file:///".to_string() + filename.clone()).open_async(box move |mut resource: Box<Resource>|{
                 let viewer;
                 unsafe {
                     viewer = &mut *self_ptr;

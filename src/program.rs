@@ -43,7 +43,6 @@ mod common {
     pub mod resource;
     pub mod string;
     pub mod vec;
-    pub mod url;
 }
 
 mod drivers {
@@ -67,7 +66,6 @@ mod graphics {
 
 mod programs {
     pub mod session;
-    pub mod syscall;
 }
 
 //Class wrappers
