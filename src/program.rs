@@ -70,9 +70,8 @@ mod graphics {
 
 mod programs {
     pub mod session;
+    pub mod syscall;
 }
-
-pub mod syscall;
 
 //Class wrappers
 

@@ -17,8 +17,7 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
-
-use syscall;
+use programs::syscall;
 
 pub struct Application {
     window: Window,
