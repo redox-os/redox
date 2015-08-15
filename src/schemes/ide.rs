@@ -122,6 +122,7 @@ impl SessionModule for IDE {
         return "ide".to_string();
     }
 
+/* TODO
     #[allow(unused_variables)]
     fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
         let mut request = IDERequest {
@@ -174,6 +175,7 @@ impl SessionModule for IDE {
             }
         }
     }
+    */
 }
 
 impl IDE {

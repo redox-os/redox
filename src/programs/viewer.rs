@@ -51,7 +51,7 @@ impl SessionItem for Viewer {
             self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
 
             self.image = BMP::new();
-
+/* TODO
             self.request(session, &URL::from_string("file:///".to_string() + filename.clone()), box move |item: &mut SessionItem, response: String|{
                 match item.downcast_mut::<Viewer>() {
                     Option::Some(viewer) => {
@@ -64,6 +64,7 @@ impl SessionItem for Viewer {
                     Option::None => ()
                 }
             });
+            */
         }
     }
 

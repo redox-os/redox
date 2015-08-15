@@ -42,10 +42,6 @@ pub trait SessionModule {
     fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>) {
         callback(self.open(url));
     }
-
-    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>) {
-        callback(String::new());
-    }
 }
 
 #[allow(unused_variables)]
@@ -66,25 +62,6 @@ pub trait SessionItem : ::mopa::Any {
 
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
-    }
-
-    fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        if session.current_item >= 0 {
-            match session.items.get(session.current_item as usize) {
-                Option::Some(item) => {
-                    let item_copy = item.clone();
-                    session.request(url, box move |response|{
-                        unsafe {
-                            match Rc::unsafe_get_mut(&item_copy).downcast_mut::<Self>(){
-                                Option::Some(item_downcast) => item_downcast.on_response(response, callback),
-                                Option::None => d("Failed to downcast\n")
-                            }
-                        }
-                    });
-                },
-                Option::None => d("Failed to find current item\n")
-            }
-        }
     }
 
     fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
@@ -150,17 +127,6 @@ impl Session {
         }
 
         self.apply_updates(updates);
-    }
-
-    pub fn request(&self, url: &URL, callback: Box<FnBox(String)>){
-        for module in self.modules.iter() {
-            if module.scheme() == url.scheme {
-                unsafe{
-                    Rc::unsafe_get_mut(module).request(self, url, callback);
-                }
-                break;
-            }
-        }
     }
 
     pub fn open(&self, url: &URL) -> Box<Resource>{

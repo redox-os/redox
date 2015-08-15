@@ -28,6 +28,10 @@ pub trait Resource {
         return Option::None;
     }
 
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        return Option::None;
+    }
+
     fn read_async(&mut self, buf: &mut [u8], callback: Box<FnBox(Option<usize>)>){
         callback.call_box((self.read(buf),));
     }
@@ -79,6 +83,11 @@ impl Resource for VecResource {
             i += 1;
         }
         return Option::Some(i);
+    }
+
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        vec.push_all(&self.vec);
+        return Option::Some(self.vec.len());
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
