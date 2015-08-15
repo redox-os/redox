@@ -47,7 +47,7 @@ pub trait SessionModule {
 pub trait SessionItem : ::mopa::Any {
     fn new() -> Self where Self:Sized;
 
-    fn load(&mut self, session: &Session, file: String){
+    fn load(&mut self, url: &URL){
 
     }
 
@@ -67,7 +67,7 @@ mopafy!(SessionItem, core=core, alloc=alloc);
 
 pub struct OpenEvent {
     pub item: Rc<SessionItem>,
-    pub filename: String
+    pub url: URL
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -275,7 +275,7 @@ impl Session {
                             self.items.insert(0, open_event.item.clone());
                             self.current_item = 0;
                             unsafe{
-                                Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
+                                Rc::unsafe_get_mut(&open_event.item).load(&open_event.url);
                             }
                             self.current_item = -1;
                             updates.redraw = REDRAW_ALL;

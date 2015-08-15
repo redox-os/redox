@@ -4,6 +4,7 @@ use core::option::Option;
 use alloc::rc::*;
 
 use common::debug::*;
+use common::resource::*;
 use common::string::*;
 use common::vec::*;
 
@@ -142,17 +143,17 @@ impl SessionItem for FileManager {
                                 if file.ends_with(".md".to_string()) || file.ends_with(".rs".to_string()){
                                     updates.events.push(box OpenEvent {
                                         item: Rc::new(Editor::new()),
-                                        filename: file.clone()
+                                        url: URL::from_string("file:///".to_string() + file.clone())
                                     });
                                 }else if file.ends_with(".bin".to_string()){
                                     updates.events.push(box OpenEvent {
                                         item: Rc::new(Executor::new()),
-                                        filename: file.clone()
+                                        url: URL::from_string("file:///".to_string() + file.clone())
                                     });
                                 }else if file.ends_with(".bmp".to_string()){
                                     updates.events.push(box OpenEvent {
                                         item: Rc::new(Viewer::new()),
-                                        filename: file.clone()
+                                        url: URL::from_string("file:///".to_string() + file.clone())
                                     });
                                 }else{
                                     d("No program found: ");

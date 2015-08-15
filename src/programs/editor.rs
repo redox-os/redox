@@ -1,8 +1,12 @@
+use alloc::boxed::*;
+
 use core::clone::Clone;
 
 use common::debug::*;
 use common::memory::*;
+use common::resource::*;
 use common::string::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -18,30 +22,10 @@ use programs::session::*;
 
 pub struct Editor {
     window: Window,
-    filename: String,
     string: String,
+    loading: bool,
     offset: usize,
     scroll: Point
-}
-
-impl Editor {
-    fn clear(&mut self){
-        self.window.title = "Editor".to_string();
-        self.filename = String::new();
-        self.string = String::new();
-        self.offset = 0;
-        self.scroll = Point::new(0, 0);
-    }
-
-    fn save(&self){
-        let unfs = UnFS::new();
-        unsafe{
-            let data = self.string.to_c_str() as usize;
-            unfs.save(self.filename.clone(), data);
-            unalloc(data);
-        }
-        d("Saved\n");
-    }
 }
 
 impl SessionItem for Editor {
@@ -67,39 +51,46 @@ impl SessionItem for Editor {
                     valid: false
                 }
             },
-            filename: String::new(),
             string: String::new(),
+            loading: false,
             offset: 0,
             scroll: Point::new(0, 0)
         }
     }
 
     #[allow(unused_variables)]
-    fn load(&mut self, session: &Session, filename: String){
-        if filename.len() > 0 {
-            self.clear();
+    fn load(&mut self, url: &URL){
+        self.window.title = "Editor Loading (".to_string() + url.to_string() + ")";
+
+        self.string = String::new();
+        self.offset = 0;
+        self.scroll = Point::new(0, 0);
+        self.loading = true;
+
+        let self_ptr: *mut Editor = self;
+        let url_copy = url.clone();
+        url.open_async(box move |mut resource: Box<Resource>|{
+            let editor;
             unsafe {
-                let unfs = UnFS::new();
-                let dest = unfs.load(filename.clone());
-                if dest > 0 {
-                    self.filename = filename.clone();
-                    self.window.title = String::from_str("Editor (") + filename + String::from_str(")");
-                    self.string = String::from_c_str(dest as *const u8);
-                    unalloc(dest);
-                }else{
-                    d("Did not find '");
-                    filename.d();
-                    d("'\n");
-                }
+                editor = &mut *self_ptr;
             }
-        }
+
+            let mut vec: Vec<u8> = Vec::new();
+            match resource.read_to_end(&mut vec){
+                Option::Some(len) => editor.string = String::from_utf8(&vec),
+                Option::None => ()
+            }
+
+            editor.window.title = "Editor (".to_string() + url_copy.to_string() + ")";
+            editor.loading = false;
+        });
     }
 
     fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
         let display = &session.display;
 
         if ! self.window.draw(display){
-            return false;
+            return self.loading;
         }
 
         if ! self.window.shaded {
@@ -175,7 +166,6 @@ impl SessionItem for Editor {
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
-                0x40 => self.save(),
                 0x47 => self.offset = 0,
                 0x48 => for i in 1..self.offset {
                     match self.string[self.offset - i] {

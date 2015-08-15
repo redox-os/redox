@@ -166,6 +166,22 @@ impl URL {
         }
     }
 
+    pub fn path_string(&self) -> String{
+        let mut ret = String::new();
+
+        let mut first = true;
+        for element in self.path.iter() {
+            if first {
+                ret = element.clone();
+                first = false;
+            }else{
+                ret = ret + "/" + element.clone();
+            }
+        }
+
+        return ret;
+    }
+
     pub fn to_string(&self) -> String{
         let mut ret = self.scheme.clone() + "://";
 
@@ -184,9 +200,7 @@ impl URL {
             }
         }
 
-        for element in self.path.iter() {
-            ret = ret + "/" + element.clone();
-        }
+        ret = ret + "/" + self.path_string();
 
         return ret;
     }
@@ -194,6 +208,19 @@ impl URL {
     pub fn d(&self){
         self.to_string().d();
         dl();
+    }
+}
+
+impl Clone for URL {
+    fn clone(&self) -> URL{
+        URL {
+            scheme: self.scheme.clone(),
+            user: self.user.clone(),
+            password: self.password.clone(),
+            host: self.host.clone(),
+            port: self.port.clone(),
+            path: self.path.clone()
+        }
     }
 }
 
