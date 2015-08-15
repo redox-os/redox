@@ -1,7 +1,10 @@
+use alloc::boxed::*;
+
 use core::clone::Clone;
 
+use common::resource::*;
 use common::string::*;
-use common::url::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -16,7 +19,8 @@ use programs::session::*;
 
 pub struct Viewer {
     window: Window,
-    image: BMP
+    image: BMP,
+    loading: bool
 }
 
 impl SessionItem for Viewer {
@@ -42,29 +46,40 @@ impl SessionItem for Viewer {
                     valid: false
                 }
             },
-            image: BMP::new()
+            image: BMP::new(),
+            loading: false
         }
     }
 
-    fn load(&mut self, session: &Session, filename: String){
-        if filename.len() > 0{
-            self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
+    fn load(&mut self, url: &URL){
+        self.window.title = "Viewer Loading (".to_string() + url.to_string() + ")";
 
-            self.image = BMP::new();
+        self.image = BMP::new();
+        self.loading = true;
 
-            self.request(session, &URL::from_string("file:///".to_string() + filename.clone()), box move |item: &mut SessionItem, response: String|{
-                match item.downcast_mut::<Viewer>() {
-                    Option::Some(viewer) => {
-                        viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
-                        if response.data as usize > 0 {
-                            viewer.image = BMP::from_data(response.data as usize);
-                            viewer.window.size = viewer.image.size;
-                        }
-                    },
-                    Option::None => ()
-                }
-            });
-        }
+        let self_ptr: *mut Viewer = self;
+        let url_copy = url.clone();
+        url.open_async(box move |mut resource: Box<Resource>|{
+            let viewer;
+            unsafe {
+                viewer = &mut *self_ptr;
+            }
+
+            let mut vec: Vec<u8> = Vec::new();
+            match resource.read_to_end(&mut vec){
+                Option::Some(0) => (),
+                Option::Some(len) => {
+                    unsafe {
+                        viewer.image = BMP::from_data(vec.as_ptr() as usize);
+                    }
+                    viewer.window.size = viewer.image.size;
+                },
+                Option::None => ()
+            }
+
+            viewer.window.title = "Viewer (".to_string() + url_copy.to_string() + ")";
+            viewer.loading = false;
+        });
     }
 
     #[allow(unused_variables)]
@@ -72,7 +87,7 @@ impl SessionItem for Viewer {
         let display = &session.display;
 
         if ! self.window.draw(display) {
-            return false;
+            return self.loading;
         }
 
         if ! self.window.shaded {

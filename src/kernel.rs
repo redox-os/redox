@@ -30,7 +30,7 @@ use common::pio::*;
 use common::memory::*;
 use common::resource::*;
 use common::string::*;
-use common::url::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -60,7 +60,6 @@ mod common {
     pub mod resource;
     pub mod string;
     pub mod vec;
-    pub mod url;
 }
 
 mod drivers {
@@ -150,10 +149,30 @@ unsafe fn init(){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-    session.request(&URL::from_string("file:///background.bmp".to_string()), box |response: String|{
-        if response.data as usize > 0 {
-            (*session_ptr).display.background = BMP::from_data(response.data as usize);
+    URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
+        d("\nfile://background.bmp return\n");
+        let mut vec: Vec<u8> = Vec::new();
+        d("Read to end start\n");
+        match resource.read_to_end(&mut vec) {
+            Option::Some(0) => d("No background data\n"),
+            Option::Some(len) => {
+                d("Background load ");
+                dh(vec.as_ptr() as usize);
+                d(" ");
+                dd(vec.len());
+                dl();
+
+                (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize);
+
+                d("Background is ");
+                dd((*session_ptr).display.background.size.width);
+                d(" x ");
+                dd((*session_ptr).display.background.size.height);
+                dl();
+            },
+            Option::None => d("Background load error\n")
         }
+        d("Read to end end\n");
     });
 }
 
@@ -202,38 +221,23 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x80 => { // kernel calls
             match eax {
                 0x1 => {
-                    d("Session Request: ");
-                    let url: &URL = &*(ebx as *const URL);
-                    let callback: Box<FnBox(&mut SessionItem, String)> = ptr::read(ecx as *const Box<FnBox(&mut SessionItem, String)>);
-                    unalloc(ecx as usize);
-                    url.d();
-                    dl();
-
-                    let session = &mut *session_ptr;
-                    if session.current_item >= 0 {
-                        match session.items.get((*session).current_item as usize) {
-                            Option::Some(item) => {
-                                let item_copy = item.clone();
-                                session.request(url, box move |response|{
-                                    match Rc::unsafe_get_mut(&item_copy).downcast_mut::<Executor>(){
-                                        Option::Some(item_downcast) => item_downcast.on_response(response, callback),
-                                        Option::None => d("Failed to downcast\n")
-                                    }
-                                });
-                            },
-                            Option::None => d("Failed to find current item\n")
-                        }
-                    }
-                },
-                0x2 => {
                     d("Open: ");
                     let url: &URL = &*(ebx as *const URL);
                     url.d();
-                    dl();
 
                     let session = &mut *session_ptr;
                     ptr::write(ecx as *mut Box<Resource>, session.open(url));
-                }
+                },
+                0x2 => {
+                    d("Open Async: ");
+                    let url: &URL = &*(ebx as *const URL);
+                    let callback: Box<FnBox(Box<Resource>)> = ptr::read(ecx as *const Box<FnBox(Box<Resource>)>);
+                    unalloc(ecx as usize);
+                    url.d();
+
+                    let session = &mut *session_ptr;
+                    session.open_async(url, callback);
+                },
                 _ => {
                     d("System Call");
                     d(" EAX:");

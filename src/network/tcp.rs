@@ -9,7 +9,6 @@ use common::memory::*;
 use common::random::*;
 use common::string::*;
 use common::vec::*;
-use common::url::*;
 
 use network::common::*;
 
@@ -176,7 +175,7 @@ impl Response for TCP {
                                 break;
                             }
 
-                            session.request(&URL::from_string("http://".to_string() + path), tcp_callback);
+                            //session.request(&URL::from_string("http://".to_string() + path), tcp_callback);
                         },
                         _ => ()
                     }

@@ -3,10 +3,9 @@ use core::option::Option;
 
 use alloc::boxed::*;
 
-use collections::vec::*;
-
+use common::resource::*;
 use common::string::*;
-use common::url::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -17,8 +16,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
-
-use syscall;
 
 pub struct Application {
     window: Window,
@@ -73,36 +70,14 @@ impl Application {
                             let url = URL::from_string(url_string.clone());
                             self.append(url.to_string());
 
-                            let mut resource = syscall::open(&url);
-                            loop {
-                                let buf: &mut [u8] = &mut [0; 256];
-                                match resource.read(buf){
-                                    Option::Some(len) => {
-                                        if len == 0 {
-                                            break;
-                                        }
-                                        self.append(String::from_c_slice(buf));
-                                    },
-                                    Option::None => {
-                                        self.append("Failed to read".to_string());
-                                        break;
-                                    }
-                                }
+                            let mut resource = url.open();
+
+                            let mut vec: Vec<u8> = Vec::new();
+                            match resource.read_to_end(&mut vec) {
+                                Option::Some(0) => (),
+                                Option::Some(len) => self.append(String::from_utf8(&vec)),
+                                Option::None => self.append("Failed to read".to_string())
                             }
-
-                            /*
-                            self.request(session, &url, box move |item: &mut SessionItem, response: String|{
-                                response.d();
-                                dl();
-
-                                match item.downcast_mut::<Application>() {
-                                    Option::Some(app) => {
-                                        app.append(response);
-                                    },
-                                    Option::None => d("Failed to downcast application\n")
-                                }
-                            });
-                            */
                         },
                         Option::None => {
                             for module in session.modules.iter() {
@@ -296,10 +271,5 @@ impl SessionItem for Application {
     #[allow(unused_variables)]
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
-    }
-
-    #[allow(unused_variables)]
-    fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        syscall::request(url, callback);
     }
 }

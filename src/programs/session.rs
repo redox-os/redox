@@ -11,7 +11,6 @@ use common::debug::*;
 use common::resource::*;
 use common::string::*;
 use common::vec::*;
-use common::url::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -42,17 +41,13 @@ pub trait SessionModule {
     fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>) {
         callback(self.open(url));
     }
-
-    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>) {
-        callback(String::new());
-    }
 }
 
 #[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
     fn new() -> Self where Self:Sized;
 
-    fn load(&mut self, session: &Session, file: String){
+    fn load(&mut self, url: &URL){
 
     }
 
@@ -67,35 +62,12 @@ pub trait SessionItem : ::mopa::Any {
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
-
-    fn request(&self, session: &Session, url: &URL, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        if session.current_item >= 0 {
-            match session.items.get(session.current_item as usize) {
-                Option::Some(item) => {
-                    let item_copy = item.clone();
-                    session.request(url, box move |response|{
-                        unsafe {
-                            match Rc::unsafe_get_mut(&item_copy).downcast_mut::<Self>(){
-                                Option::Some(item_downcast) => item_downcast.on_response(response, callback),
-                                Option::None => d("Failed to downcast\n")
-                            }
-                        }
-                    });
-                },
-                Option::None => d("Failed to find current item\n")
-            }
-        }
-    }
-
-    fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        callback.call_box((self, response,));
-    }
 }
 mopafy!(SessionItem, core=core, alloc=alloc);
 
 pub struct OpenEvent {
     pub item: Rc<SessionItem>,
-    pub filename: String
+    pub url: URL
 }
 
 pub const REDRAW_NONE: usize = 0;
@@ -150,17 +122,6 @@ impl Session {
         }
 
         self.apply_updates(updates);
-    }
-
-    pub fn request(&self, url: &URL, callback: Box<FnBox(String)>){
-        for module in self.modules.iter() {
-            if module.scheme() == url.scheme {
-                unsafe{
-                    Rc::unsafe_get_mut(module).request(self, url, callback);
-                }
-                break;
-            }
-        }
     }
 
     pub fn open(&self, url: &URL) -> Box<Resource>{
@@ -314,7 +275,7 @@ impl Session {
                             self.items.insert(0, open_event.item.clone());
                             self.current_item = 0;
                             unsafe{
-                                Rc::unsafe_get_mut(&open_event.item).load(self, open_event.filename.clone());
+                                Rc::unsafe_get_mut(&open_event.item).load(&open_event.url);
                             }
                             self.current_item = -1;
                             updates.redraw = REDRAW_ALL;
