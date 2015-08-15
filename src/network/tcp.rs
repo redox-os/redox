@@ -9,7 +9,6 @@ use common::memory::*;
 use common::random::*;
 use common::string::*;
 use common::vec::*;
-use common::url::*;
 
 use network::common::*;
 

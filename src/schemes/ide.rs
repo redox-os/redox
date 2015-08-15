@@ -9,7 +9,6 @@ use common::pio::*;
 use common::resource::*;
 use common::string::*;
 use common::vec::*;
-use common::url::*;
 
 use drivers::disk::*;
 

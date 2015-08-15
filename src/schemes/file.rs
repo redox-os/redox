@@ -6,12 +6,10 @@ use alloc::boxed::*;
 use common::memory::*;
 use common::resource::*;
 use common::string::*;
-use common::url::*;
 
 use filesystems::unfs::*;
 
 use programs::session::*;
-use programs::syscall;
 
 pub struct FileScheme;
 
@@ -45,7 +43,7 @@ impl SessionModule for FileScheme {
                         unfs.disk.read((*node).data_sector_list.address, 1, sector_list_ptr as usize);
 
                         if sector_list.extents[0].block.address > 0 && sector_list.extents[0].length > 0{
-                            ret = syscall::open(&URL::from_string("ide:///".to_string() + sector_list.extents[0].block.address as usize + "/" + sector_list.extents[0].length as usize));
+                            ret = URL::from_string("ide:///".to_string() + sector_list.extents[0].block.address as usize + "/" + sector_list.extents[0].length as usize).open();
                         }
 
                         unalloc(sector_list_ptr as usize);
@@ -94,7 +92,7 @@ impl SessionModule for FileScheme {
                         unfs.disk.read((*node).data_sector_list.address, 1, sector_list_ptr as usize);
 
                         if sector_list.extents[0].block.address > 0 && sector_list.extents[0].length > 0{
-                            syscall::open_async(&URL::from_string("ide:///".to_string() + sector_list.extents[0].block.address as usize + "/" + sector_list.extents[0].length as usize), callback);
+                            URL::from_string("ide:///".to_string() + sector_list.extents[0].block.address as usize + "/" + sector_list.extents[0].length as usize).open_async(callback);
                         }else{
                             callback(box NoneResource);
                         }

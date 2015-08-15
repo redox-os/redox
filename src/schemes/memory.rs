@@ -3,7 +3,6 @@ use alloc::boxed::*;
 use common::memory::*;
 use common::resource::*;
 use common::string::*;
-use common::url::*;
 
 use programs::session::*;
 

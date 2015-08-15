@@ -4,7 +4,6 @@ use alloc::boxed::*;
 
 use common::resource::*;
 use common::string::*;
-use common::url::*;
 use common::vec::*;
 
 use programs::session::*;
