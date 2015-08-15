@@ -4,12 +4,11 @@ use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
-use common::vec::*;
 
 use network::common::*;
 use network::ethernet::*;
 
-use programs::session::*;
+use programs::common::*;
 
 pub struct RTL8139 {
     pub bus: usize,
@@ -23,73 +22,77 @@ pub struct RTL8139 {
 static mut RTL8139_TX: u16 = 0;
 
 impl SessionModule for RTL8139 {
-    #[allow(unused_variables)]
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
         if irq == self.irq {
-            unsafe {
-                if cfg!(debug_network){
-                    d("RTL8139 handle");
-                }
-
-                let base = self.base as u16;
-
-                let receive_buffer = ind(base + 0x30) as usize;
-                let mut capr = (inw(base + 0x38) + 16) as usize;
-                let cbr = inw(base + 0x3A) as usize;
-
-                while capr != cbr {
-                    let frame_addr = receive_buffer + capr + 4;
-                    let frame_len = *((receive_buffer + capr + 2) as *const u16) as usize;
-
-                    if cfg!(debug_network){
-                        d(" CAPR ");
-                        dd(capr);
-                        d(" CBR ");
-                        dd(cbr);
-
-                        d(" len ");
-                        dd(frame_len);
-                        dl();
-                    }
-
-                    match EthernetII::from_bytes(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4)){
-                        Option::Some(frame) => {
-                            frame.respond(session, box move |responses: Vec<Vec<u8>>|{
-                                for response in responses.iter() {
-                                    if cfg!(debug_network){
-                                        d("RTL8139 send ");
-                                        dd(RTL8139_TX as usize);
-                                        dl();
-                                    }
-
-                                    outd(base + 0x20 + RTL8139_TX*4, response.as_ptr() as u32);
-                                    outd(base + 0x10 + RTL8139_TX*4, response.len() as u32 & 0x1FFF);
-
-                                    while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
-                                        //Waiting for move out of memory
-                                        if cfg!(debug_network){
-                                            d("RTL8139 waiting for DMA\n");
-                                        }
-                                    }
-
-                                    RTL8139_TX = (RTL8139_TX + 1) % 4;
-                                }
-                            });
-                        },
-                        Option::None => ()
-                    }
-
-                    capr = capr + frame_len + 4;
-                    capr = (capr + 3) & (0xFFFFFFFF - 3);
-                    if capr >= 8192 {
-                        capr -= 8192
-                    }
-
-                    outw(base + 0x38, (capr as u16) - 16);
-                }
-
-                outw(base + 0x3E, 0x0001);
+            if cfg!(debug_network){
+                d("RTL8139 handle\n");
             }
+
+            self.on_poll(events);
+        }
+    }
+
+    #[allow(unused_variables)]
+    fn on_poll(&mut self, events: &mut Vec<Box<Any>>){
+        unsafe {
+            let base = self.base as u16;
+
+            let receive_buffer = ind(base + 0x30) as usize;
+            let mut capr = (inw(base + 0x38) + 16) as usize;
+            let cbr = inw(base + 0x3A) as usize;
+
+            while capr != cbr {
+                let frame_addr = receive_buffer + capr + 4;
+                let frame_len = *((receive_buffer + capr + 2) as *const u16) as usize;
+
+                if cfg!(debug_network){
+                    d(" CAPR ");
+                    dd(capr);
+                    d(" CBR ");
+                    dd(cbr);
+
+                    d(" len ");
+                    dd(frame_len);
+                    dl();
+                }
+
+                match EthernetII::from_bytes(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4)){
+                    Option::Some(frame) => {
+                        frame.respond(box move |responses: Vec<Vec<u8>>|{
+                            for response in responses.iter() {
+                                if cfg!(debug_network){
+                                    d("RTL8139 send ");
+                                    dd(RTL8139_TX as usize);
+                                    dl();
+                                }
+
+                                outd(base + 0x20 + RTL8139_TX*4, response.as_ptr() as u32);
+                                outd(base + 0x10 + RTL8139_TX*4, response.len() as u32 & 0x1FFF);
+
+                                while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
+                                    //Waiting for move out of memory
+                                    if cfg!(debug_network){
+                                        d("RTL8139 waiting for DMA\n");
+                                    }
+                                }
+
+                                RTL8139_TX = (RTL8139_TX + 1) % 4;
+                            }
+                        });
+                    },
+                    Option::None => ()
+                }
+
+                capr = capr + frame_len + 4;
+                capr = (capr + 3) & (0xFFFFFFFF - 3);
+                if capr >= 8192 {
+                    capr -= 8192
+                }
+
+                outw(base + 0x38, (capr as u16) - 16);
+            }
+
+            outw(base + 0x3E, 0x0001);
         }
     }
 }

@@ -5,10 +5,8 @@ use alloc::boxed::*;
 use common::debug::*;
 use common::vec::*;
 
-use programs::session::*;
-
 pub trait Response {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>);
+    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>);
 }
 
 pub trait FromBytes{

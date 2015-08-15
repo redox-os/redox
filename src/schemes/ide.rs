@@ -1,18 +1,13 @@
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
 
 use drivers::disk::*;
 
-use programs::session::*;
+use programs::common::*;
 
 pub struct IDERequest {
     pub sector: u64,
@@ -32,14 +27,14 @@ pub struct IDE {
 
 impl SessionModule for IDE {
     #[allow(unused_variables)]
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
         if irq == 0xE || irq == 0xF {
-            self.on_poll(session, updates);
+            self.on_poll(events);
         }
     }
 
     #[allow(unused_variables)]
-    fn on_poll(&mut self, session: &Session, updates: &mut SessionUpdates){
+    fn on_poll(&mut self, events: &mut Vec<Box<Any>>){
         unsafe {
             let base = self.base as u16;
 

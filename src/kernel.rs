@@ -22,26 +22,20 @@ use core::fmt;
 use core::mem::size_of;
 use core::ptr;
 
-use alloc::boxed::*;
-use alloc::rc::*;
-
 use common::debug::*;
 use common::pio::*;
 use common::memory::*;
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
 
-use drivers::keyboard::*;
-use drivers::mouse::*;
+use drivers::keyboard::keyboard_init;
+use drivers::mouse::mouse_init;
 use drivers::pci::*;
 use drivers::ps2::*;
 use drivers::serial::*;
 
 use graphics::bmp::*;
 
-use programs::executor::*;
 use programs::filemanager::*;
+use programs::common::*;
 use programs::session::*;
 
 use schemes::file::*;
@@ -97,6 +91,7 @@ mod network {
 }
 
 mod programs {
+    pub mod common;
     pub mod editor;
     pub mod executor;
     pub mod filemanager;

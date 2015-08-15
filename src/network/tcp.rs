@@ -12,8 +12,6 @@ use common::vec::*;
 
 use network::common::*;
 
-use programs::session::*;
-
 #[derive(Copy, Clone)]
 pub struct TCPHeader {
     pub src: n16,
@@ -54,7 +52,7 @@ const TCP_ACK: u16 = 1 << 4;
 
 #[allow(trivial_casts)]
 impl Response for TCP {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if cfg!(debug_network){
             d("            ");
             self.d();

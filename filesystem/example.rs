@@ -1,21 +1,11 @@
 use core::clone::Clone;
 use core::option::Option;
 
-use alloc::boxed::*;
-
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
-
-use drivers::keyboard::*;
-use drivers::mouse::*;
-
 use graphics::color::*;
-use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::session::*;
+use programs::common::*;
 
 pub struct Application {
     window: Window,
@@ -33,7 +23,7 @@ impl Application {
     }
 
     #[allow(unused_variables)]
-    fn on_command(&mut self, session: &Session){
+    fn on_command(&mut self){
         self.last_command = self.command.clone();
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in self.command.split(" ".to_string()) {
@@ -65,28 +55,24 @@ impl Application {
                 }else if *cmd == "exit".to_string() {
                     self.window.closed = true;
                 }else if *cmd == "url".to_string() {
+                    let mut url = URL::new();
+
                     match args.get(1) {
-                        Option::Some(url_string) => {
-                            let url = URL::from_string(url_string.clone());
-                            self.append(url.to_string());
-
-                            let mut resource = url.open();
-
-                            let mut vec: Vec<u8> = Vec::new();
-                            match resource.read_to_end(&mut vec) {
-                                Option::Some(0) => (),
-                                Option::Some(len) => self.append(String::from_utf8(&vec)),
-                                Option::None => self.append("Failed to read".to_string())
-                            }
+                        Option::Some(arg) => {
+                            url = URL::from_string(arg.clone());
                         },
-                        Option::None => {
-                            for module in session.modules.iter() {
-                                let scheme = module.scheme();
-                                if scheme.len() > 0 {
-                                    self.append(scheme);
-                                }
-                            }
-                        }
+                        Option::None => ()
+                    }
+
+                    self.append(url.to_string());
+
+                    let mut resource = url.open();
+
+                    let mut vec: Vec<u8> = Vec::new();
+                    match resource.read_to_end(&mut vec) {
+                        Option::Some(0) => (),
+                        Option::Some(len) => self.append(String::from_utf8(&vec)),
+                        Option::None => self.append("Failed to read".to_string())
                     }
                 }else{
                     self.append("Commands:  echo  exit  url".to_string());
@@ -130,8 +116,7 @@ impl SessionItem for Application {
         }
     }
 
-    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
-        let display = &session.display;
+    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
         if self.window.draw(display) {
             let scroll = self.scroll;
 
@@ -206,7 +191,9 @@ impl SessionItem for Application {
 
             if row >= rows {
                 self.scroll.y += row - rows + 1;
-                updates.redraw = REDRAW_ALL;
+                events.push(box RedrawEvent {
+                    redraw: REDRAW_ALL
+                });
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
@@ -221,7 +208,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -255,7 +242,7 @@ impl SessionItem for Application {
                 '\n' => {
                     if self.command.len() > 0 {
                         self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";
-                        self.on_command(session);
+                        self.on_command();
                         self.command = String::new();
                         self.offset = 0;
                     }
@@ -269,7 +256,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
+    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

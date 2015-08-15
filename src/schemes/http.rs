@@ -1,12 +1,6 @@
 use core::clone::Clone;
 
-use alloc::boxed::*;
-
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
-
-use programs::session::*;
+use programs::common::*;
 
 pub struct HTTPScheme;
 

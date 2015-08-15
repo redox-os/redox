@@ -1,78 +1,11 @@
-use core::any::Any;
 use core::cmp::max;
 use core::cmp::min;
-use core::marker::Sized;
 use core::option::Option;
 
-use alloc::boxed::*;
-use alloc::rc::*;
-
-use common::debug::*;
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
-
-use drivers::keyboard::*;
-use drivers::mouse::*;
-
 use graphics::color::*;
-use graphics::display::*;
-use graphics::point::*;
 use graphics::size::*;
 
-#[allow(unused_variables)]
-pub trait SessionModule {
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
-
-    }
-
-    fn on_poll(&mut self, session: &Session, updates: &mut SessionUpdates){
-
-    }
-
-    fn scheme(&self) -> String{
-        return String::new();
-    }
-
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box NoneResource;
-    }
-
-    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>) {
-        callback(self.open(url));
-    }
-}
-
-#[allow(unused_variables)]
-pub trait SessionItem : ::mopa::Any {
-    fn new() -> Self where Self:Sized;
-
-    fn load(&mut self, url: &URL){
-
-    }
-
-    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
-        return true;
-    }
-
-    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
-
-    }
-
-    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return false;
-    }
-}
-mopafy!(SessionItem, core=core, alloc=alloc);
-
-pub struct OpenEvent {
-    pub item: Rc<SessionItem>,
-    pub url: URL
-}
-
-pub const REDRAW_NONE: usize = 0;
-pub const REDRAW_CURSOR: usize = 1;
-pub const REDRAW_ALL: usize = 2;
+use programs::common::*;
 
 pub struct Session {
     pub display: Display,
@@ -80,11 +13,6 @@ pub struct Session {
     pub items: Vec<Rc<SessionItem>>,
     pub current_item: isize,
     pub modules: Vec<Rc<SessionModule>>,
-    pub redraw: usize
-}
-
-pub struct SessionUpdates {
-    pub events: Vec<Box<Any>>,
     pub redraw: usize
 }
 
@@ -101,75 +29,114 @@ impl Session {
     }
 
     pub fn on_irq(&mut self, irq: u8){
-        let mut updates = self.new_updates();
+        let mut events: Vec<Box<Any>> = Vec::new();
 
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_irq(self, &mut updates, irq);
+                Rc::unsafe_get_mut(module).on_irq(&mut events, irq);
             }
         }
 
-        self.apply_updates(updates);
+        self.handle_events(events);
     }
 
     pub fn on_poll(&mut self){
-        let mut updates = self.new_updates();
+        let mut events: Vec<Box<Any>> = Vec::new();
 
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_poll(self, &mut updates);
+                Rc::unsafe_get_mut(module).on_poll(&mut events);
             }
         }
 
-        self.apply_updates(updates);
+        self.handle_events(events);
     }
 
     pub fn open(&self, url: &URL) -> Box<Resource>{
-        for module in self.modules.iter() {
-            if module.scheme() == url.scheme {
-                unsafe{
-                    return Rc::unsafe_get_mut(module).open(url);
+        if url.scheme.len() == 0 {
+            let mut list = String::new();
+
+            for module in self.modules.iter() {
+                let scheme = module.scheme();
+                if scheme.len() > 0 {
+                    if list.len() > 0 {
+                        list = list + "\n" + scheme;
+                    }else{
+                        list = scheme;
+                    }
                 }
             }
+
+            return box VecResource::new(list.to_utf8());
+        }else{
+            for module in self.modules.iter() {
+                if module.scheme() == url.scheme {
+                    unsafe{
+                        return Rc::unsafe_get_mut(module).open(url);
+                    }
+                }
+            }
+            return box NoneResource;
         }
-        return box NoneResource;
     }
 
     pub fn open_async(&self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
-        for module in self.modules.iter() {
-            if module.scheme() == url.scheme {
-                unsafe{
-                    Rc::unsafe_get_mut(module).open_async(url, callback);
+        if url.scheme.len() == 0 {
+            let mut list = String::new();
+
+            for module in self.modules.iter() {
+                let scheme = module.scheme();
+                if scheme.len() > 0 {
+                    if list.len() > 0 {
+                        list = list + "\n" + scheme;
+                    }else{
+                        list = scheme;
+                    }
                 }
-                break;
             }
+
+            callback(box VecResource::new(list.to_utf8()));
+        }else{
+            for module in self.modules.iter() {
+                if module.scheme() == url.scheme {
+                    unsafe{
+                        Rc::unsafe_get_mut(module).open_async(url, callback);
+                    }
+                    return;
+                }
+            }
+            callback(box NoneResource);
         }
     }
 
     pub fn on_key(&mut self, key_event: KeyEvent){
-        let mut updates = self.new_updates();
+        let mut events: Vec<Box<Any>> = Vec::new();
 
         self.current_item = 0;
         match self.items.get(self.current_item as usize){
             Option::Some(item) => {
                 unsafe {
-                    Rc::unsafe_get_mut(item).on_key(self, &mut updates, key_event);
+                    Rc::unsafe_get_mut(item).on_key(&mut events, key_event);
                 }
-                updates.redraw = REDRAW_ALL;
+                events.push(box RedrawEvent {
+                    redraw: REDRAW_ALL
+                });
             },
             Option::None => ()
         }
         self.current_item = -1;
 
-        self.apply_updates(updates);
+        self.handle_events(events);
     }
 
     pub fn on_mouse(&mut self, mouse_event: MouseEvent){
         self.mouse_point.x = max(0, min(self.display.width as isize - 1, self.mouse_point.x + mouse_event.x));
         self.mouse_point.y = max(0, min(self.display.height as isize - 1, self.mouse_point.y + mouse_event.y));
 
-        let mut updates = self.new_updates();
-        updates.redraw = REDRAW_CURSOR;
+        let mut events: Vec<Box<Any>> = Vec::new();
+        events.push(box RedrawEvent {
+            redraw: REDRAW_CURSOR
+        });
 
         let mut catcher = 0;
         let mut allow_catch = true;
@@ -178,10 +145,12 @@ impl Session {
             match self.items.get(self.current_item as usize){
                 Option::Some(item) => {
                     unsafe {
-                        if Rc::unsafe_get_mut(item).on_mouse(self, &mut updates, mouse_event, allow_catch) {
+                        if Rc::unsafe_get_mut(item).on_mouse(&mut events, self.mouse_point, mouse_event, allow_catch) {
                             allow_catch = false;
                             catcher = i;
-                            updates.redraw = REDRAW_ALL;
+                            events.push(box RedrawEvent {
+                                redraw: REDRAW_ALL
+                            });
                         }
                     }
                 },
@@ -199,12 +168,12 @@ impl Session {
             }
         }
 
-        self.apply_updates(updates);
+        self.handle_events(events);
     }
 
     pub fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
-            let mut updates = self.new_updates();
+            let mut events: Vec<Box<Any>> = Vec::new();
 
             if self.redraw >= REDRAW_ALL {
                 self.display.background();
@@ -218,7 +187,7 @@ impl Session {
                     match self.items.get(self.current_item as usize) {
                         Option::Some(item) => {
                             unsafe {
-                                if ! Rc::unsafe_get_mut(item).draw(self, &mut updates) {
+                                if ! Rc::unsafe_get_mut(item).draw(&self.display, &mut events) {
                                     erase_i.push(self.current_item as usize);
                                 }
                             }
@@ -239,29 +208,14 @@ impl Session {
 
             self.redraw = REDRAW_NONE;
 
-            self.apply_updates(updates);
+            self.handle_events(events);
         }
     }
 
-    fn new_updates(&self) -> SessionUpdates {
-        SessionUpdates{
-            events: Vec::new(),
-            redraw: REDRAW_NONE
-        }
-    }
-
-    fn apply_updates(&mut self, mut updates: SessionUpdates){
-        while updates.events.len() > 0 {
-            match updates.events.remove(0){
+    fn handle_events(&mut self, mut events: Vec<Box<Any>>){
+        while events.len() > 0 {
+            match events.remove(0){
                 Option::Some(event) => {
-                    match event.downcast_ref::<KeyEvent>() {
-                        Option::Some(key_event) => {
-                            self.on_key(*key_event);
-                            continue;
-                        },
-                        Option::None => ()
-                    }
-
                     match event.downcast_ref::<MouseEvent>() {
                         Option::Some(mouse_event) => {
                             self.on_mouse(*mouse_event);
@@ -270,15 +224,31 @@ impl Session {
                         Option::None => ()
                     }
 
+                    match event.downcast_ref::<KeyEvent>() {
+                        Option::Some(key_event) => {
+                            self.on_key(*key_event);
+                            continue;
+                        },
+                        Option::None => ()
+                    }
+
+                    match event.downcast_ref::<RedrawEvent>() {
+                        Option::Some(redraw_event) => {
+                            self.redraw = max(self.redraw, redraw_event.redraw);
+                            continue;
+                        },
+                        Option::None => ()
+                    }
+
                     match event.downcast_ref::<OpenEvent>() {
                         Option::Some(open_event) => {
+                            self.redraw = max(self.redraw, REDRAW_ALL);
                             self.items.insert(0, open_event.item.clone());
                             self.current_item = 0;
                             unsafe{
                                 Rc::unsafe_get_mut(&open_event.item).load(&open_event.url);
                             }
                             self.current_item = -1;
-                            updates.redraw = REDRAW_ALL;
                             continue;
                         },
                         Option::None => ()
@@ -287,7 +257,5 @@ impl Session {
                 Option::None => ()
             }
         }
-
-        self.redraw = max(updates.redraw, self.redraw);
     }
 }

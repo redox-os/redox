@@ -3,7 +3,7 @@ use common::memory::*;
 use common::pci::*;
 use common::pio::*;
 
-use programs::session::*;
+use programs::common::*;
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;
@@ -58,7 +58,7 @@ pub struct Intel8254x {
 
 impl SessionModule for Intel8254x {
     #[allow(unused_variables)]
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
         if irq == self.irq {
             d("Intel 8254x handle\n");
         }

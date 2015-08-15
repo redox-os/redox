@@ -4,7 +4,7 @@ use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 
-use programs::session::*;
+use programs::common::*;
 
 struct STE {
     pub ptr: u64,
@@ -46,7 +46,7 @@ pub struct XHCI {
 
 impl SessionModule for XHCI {
     #[allow(unused_variables)]
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
         if irq == self.irq {
             d("XHCI handle\n");
         }

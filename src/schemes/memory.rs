@@ -1,10 +1,6 @@
-use alloc::boxed::*;
-
 use common::memory::*;
-use common::resource::*;
-use common::string::*;
 
-use programs::session::*;
+use programs::common::*;
 
 pub struct MemoryScheme;
 

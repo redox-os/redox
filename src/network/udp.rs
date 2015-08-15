@@ -8,8 +8,6 @@ use common::vec::*;
 
 use network::common::*;
 
-use programs::session::*;
-
 #[derive(Copy, Clone)]
 pub struct UDPHeader {
     pub src: n16,
@@ -50,7 +48,7 @@ impl ToBytes for UDP {
 
 impl Response for UDP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
         d("            ");
         self.d();
         dl();

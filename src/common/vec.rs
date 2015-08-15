@@ -190,15 +190,11 @@ impl<T> Vec<T> where T: Clone {
     }
 }
 
-impl<T> Clone for Vec<T> {
+impl<T> Clone for Vec<T> where T: Clone {
     fn clone(&self) -> Vec<T> {
-        if self.data as usize > 0 && self.length > 0 {
-            unsafe{
-                return Vec::from_raw_buf(self.data, self.length);
-            }
-        }else{
-            return Vec::new();
-        }
+        let mut ret = Vec::new();
+        ret.push_all(self);
+        return ret;
     }
 }
 
