@@ -44,6 +44,7 @@ use graphics::bmp::*;
 use programs::executor::*;
 use programs::filemanager::*;
 use programs::session::*;
+use programs::syscall;
 
 use schemes::file::*;
 use schemes::http::*;
@@ -103,6 +104,7 @@ mod programs {
     pub mod executor;
     pub mod filemanager;
     pub mod session;
+    pub mod syscall;
     pub mod viewer;
 }
 
@@ -114,8 +116,6 @@ mod schemes {
     pub mod pci;
     pub mod random;
 }
-
-pub mod syscall;
 
 mod usb {
     pub mod xhci;
@@ -153,7 +153,6 @@ unsafe fn init(){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-/* TODO
     syscall::open_async(&URL::from_string("file:///background.bmp".to_string()), box |mut resource: Box<Resource>|{
         let mut vec: Vec<u8> = Vec::new();
         match resource.read_to_end(&mut vec) {
@@ -162,7 +161,6 @@ unsafe fn init(){
             Option::None => ()
         }
     });
-    */
 }
 
 fn dr(reg: &str, value: u32){

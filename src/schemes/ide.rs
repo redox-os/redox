@@ -7,6 +7,7 @@ use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
+use common::resource::*;
 use common::string::*;
 use common::vec::*;
 use common::url::*;
@@ -122,9 +123,42 @@ impl SessionModule for IDE {
         return "ide".to_string();
     }
 
-/* TODO
+    fn open(&mut self, url: &URL) -> Box<Resource> {
+        let mut sector = 1;
+        match url.path.get(0) {
+            Option::Some(part) => {
+                sector = part.to_num() as u64;
+            },
+            Option::None => ()
+        }
+
+        let mut count = 1;
+        match url.path.get(1) {
+            Option::Some(part) => {
+                count = part.to_num() as u16;
+            },
+            Option::None => ()
+        }
+
+        unsafe {
+            if count > 0 {
+                let destination = alloc(count as usize * 512);
+                if destination > 0 {
+                    let disk = Disk::new();
+                    disk.read(sector, count, destination);
+                    return box VecResource::new(Vec::<u8> {
+                        data: destination as *mut u8,
+                        length: alloc_size(destination)
+                    });
+                }
+            }
+        }
+
+        return box NoneResource;
+    }
+
     #[allow(unused_variables)]
-    fn request(&mut self, session: &Session, url: &URL, callback: Box<FnBox(String)>){
+    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
         let mut request = IDERequest {
             sector: 1,
             count: 1,
@@ -132,13 +166,13 @@ impl SessionModule for IDE {
             callback: box move |destination: usize|{
                 if destination > 0 {
                     unsafe{
-                        callback(String {
-                            data: destination as *const char,
-                            length: alloc_size(destination)/size_of::<char>()
-                        });
+                        callback(box VecResource::new(Vec::<u8> {
+                            data: destination as *mut u8,
+                            length: alloc_size(destination)
+                        }));
                     }
                 }else{
-                    callback(String::new());
+                    callback(box NoneResource);
                 }
             }
         };
@@ -175,7 +209,6 @@ impl SessionModule for IDE {
             }
         }
     }
-    */
 }
 
 impl IDE {

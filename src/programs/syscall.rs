@@ -8,8 +8,6 @@ use common::resource::*;
 use common::string::*;
 use common::url::*;
 
-use programs::session::*;
-
 pub fn open(url: &URL) -> Box<Resource> {
     unsafe{
         let url_ptr: *const URL = url;
