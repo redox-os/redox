@@ -63,10 +63,6 @@ pub trait SessionItem : ::mopa::Any {
     fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
-
-    fn on_response(&mut self, response: String, callback: Box<FnBox(&mut SessionItem, String)>) where Self:Sized{
-        callback.call_box((self, response,));
-    }
 }
 mopafy!(SessionItem, core=core, alloc=alloc);
 

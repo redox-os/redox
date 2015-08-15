@@ -154,12 +154,29 @@ unsafe fn init(){
     session.modules.push(Rc::new(RandomScheme));
 
     syscall::open_async(&URL::from_string("file:///background.bmp".to_string()), box |mut resource: Box<Resource>|{
+        d("\nfile://background.bmp return\n");
         let mut vec: Vec<u8> = Vec::new();
+        d("Read to end start\n");
         match resource.read_to_end(&mut vec) {
-            Option::Some(0) => (),
-            Option::Some(len) => (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize),
-            Option::None => ()
+            Option::Some(0) => d("No background data\n"),
+            Option::Some(len) => {
+                d("Background load ");
+                dh(vec.as_ptr() as usize);
+                d(" ");
+                dd(vec.len());
+                dl();
+
+                (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize);
+
+                d("Background is ");
+                dd((*session_ptr).display.background.size.width);
+                d(" x ");
+                dd((*session_ptr).display.background.size.height);
+                dl();
+            },
+            Option::None => d("Background load error\n")
         }
+        d("Read to end end\n");
     });
 }
 
@@ -211,7 +228,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     d("Open: ");
                     let url: &URL = &*(ebx as *const URL);
                     url.d();
-                    dl();
 
                     let session = &mut *session_ptr;
                     ptr::write(ecx as *mut Box<Resource>, session.open(url));
@@ -222,7 +238,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     let callback: Box<FnBox(Box<Resource>)> = ptr::read(ecx as *const Box<FnBox(Box<Resource>)>);
                     unalloc(ecx as usize);
                     url.d();
-                    dl();
 
                     let session = &mut *session_ptr;
                     session.open_async(url, callback);

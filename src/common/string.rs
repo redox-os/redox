@@ -138,14 +138,10 @@ impl String {
         }
     }
 
-    /*
     pub fn from_utf8(vec: &Vec<u8>) -> String {
-        //TODO
-        for b in vec.iter() {
-
-        }
+        // TODO
+        return String::from_c_slice(vec.as_slice());
     }
-    */
 
     pub unsafe fn from_c_str(s: *const u8) -> String {
         let mut length = 0;
