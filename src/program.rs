@@ -8,7 +8,6 @@
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
-#![feature(rc_unique)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![no_std]
@@ -22,15 +21,9 @@ use application::Application;
 
 use core::mem::size_of;
 
-use alloc::boxed::*;
-
 use common::memory::*;
-use common::string::*;
 
-use drivers::keyboard::*;
-use drivers::mouse::*;
-
-use programs::session::*;
+use programs::common::*;
 
 #[path="APPLICATION_PATH"]
 mod application;
@@ -65,7 +58,7 @@ mod graphics {
 }
 
 mod programs {
-    pub mod session;
+    pub mod common;
 }
 
 //Class wrappers
@@ -79,25 +72,25 @@ pub unsafe fn entry(){
 }
 
 #[no_mangle]
-pub unsafe fn draw(session: &Session, updates: &mut SessionUpdates) -> bool{
+pub unsafe fn draw(display: &Display, events: &mut Vec<Box<Any>>) -> bool{
     if application as usize > 0 {
-        return (*application).draw(session, updates);
+        return (*application).draw(display, events);
     }else{
         return false;
     }
 }
 
 #[no_mangle]
-pub unsafe fn on_key(session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
+pub unsafe fn on_key(events: &mut Vec<Box<Any>>, key_event: KeyEvent){
     if application as usize > 0{
-        (*application).on_key(session, updates, key_event);
+        (*application).on_key(events, key_event);
     }
 }
 
 #[no_mangle]
-pub unsafe fn on_mouse(session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+pub unsafe fn on_mouse(events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
     if application as usize > 0 {
-        return (*application).on_mouse(session, updates, mouse_event, allow_catch);
+        return (*application).on_mouse(events, mouse_point, mouse_event, allow_catch);
     }else{
         return false;
     }

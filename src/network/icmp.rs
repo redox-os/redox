@@ -9,8 +9,6 @@ use common::vec::*;
 
 use network::common::*;
 
-use programs::session::*;
-
 #[derive(Copy, Clone)]
 pub struct ICMPHeader {
     pub _type: u8,
@@ -51,7 +49,7 @@ impl ToBytes for ICMP {
 
 impl Response for ICMP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if cfg!(debug_network){
             d("        ");
             self.d();

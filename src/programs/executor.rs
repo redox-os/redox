@@ -1,19 +1,12 @@
 use core::atomic::*;
 
 use common::elf::*;
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
 
-use drivers::keyboard::*;
-use drivers::mouse::*;
-
-use filesystems::unfs::*;
-
-use programs::session::*;
+use programs::common::*;
 
 pub struct Executor {
     executable: ELF,
+    loading: bool,
     mapped: AtomicUsize,
     entry: usize,
     draw: usize,
@@ -51,6 +44,7 @@ impl SessionItem for Executor {
     fn new() -> Executor {
         Executor {
             executable: ELF::new(),
+            loading: false,
             mapped: AtomicUsize::new(0),
             entry: 0,
             draw: 0,
@@ -61,62 +55,72 @@ impl SessionItem for Executor {
 
     #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
-        let mut resource = url.open();
+        self.loading = true;
 
-        let mut vec: Vec<u8> = Vec::new();
-        match resource.read_to_end(&mut vec){
-            Option::Some(0) => (),
-            Option::Some(len) => {
-                unsafe{
-                    self.executable = ELF::from_data(vec.as_ptr() as usize);
-                    //self.executable.d();
+        let self_ptr: *mut Executor = self;
+        url.open_async(box move |mut resource: Box<Resource>|{
+            let executor;
+            unsafe{
+                executor = &mut *self_ptr;
+            }
 
-                    self.entry = self.executable.entry();
-                    self.draw = self.executable.symbol("draw".to_string());
-                    self.on_key = self.executable.symbol("on_key".to_string());
-                    self.on_mouse = self.executable.symbol("on_mouse".to_string());
+            let mut vec: Vec<u8> = Vec::new();
+            match resource.read_to_end(&mut vec){
+                Option::Some(0) => (),
+                Option::Some(len) => {
+                    unsafe{
+                        executor.executable = ELF::from_data(vec.as_ptr() as usize);
+                        //self.executable.d();
 
-                    self.entry();
-                }
-            },
-            Option::None => ()
-        }
+                        executor.entry = executor.executable.entry();
+                        executor.draw = executor.executable.symbol("draw".to_string());
+                        executor.on_key = executor.executable.symbol("on_key".to_string());
+                        executor.on_mouse = executor.executable.symbol("on_mouse".to_string());
+
+                        executor.entry();
+
+                        executor.loading = false;
+                    }
+                },
+                Option::None => ()
+            }
+        });
     }
 
-    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
+    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
         unsafe {
             if self.executable.can_call(self.draw){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.draw;
-                let ret = (*(fn_ptr as *const fn(&Session, &mut SessionUpdates) -> bool))(session, updates);
+                let ret = (*(fn_ptr as *const fn(&Display, &mut Vec<Box<Any>>) -> bool))(display, events);
                 self.unsafe_unmap();
 
                 return ret;
             }
         }
-        return false;
+        return self.loading;
     }
 
-    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
         unsafe {
             if self.executable.can_call(self.on_key){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_key;
-                (*(fn_ptr as *const fn(&Session, &mut SessionUpdates, KeyEvent)))(session, updates, key_event);
+                (*(fn_ptr as *const fn(&mut Vec<Box<Any>>, KeyEvent)))(events, key_event);
                 self.unsafe_unmap();
             }
         }
     }
 
-    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         unsafe {
             if self.executable.can_call(self.on_mouse){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_mouse;
-                let ret = (*(fn_ptr as *const fn(&Session, &mut SessionUpdates, MouseEvent, bool) -> bool))(session, updates, mouse_event, allow_catch);
+                let ret = (*(fn_ptr as *const fn(&mut Vec<Box<Any>>, Point, MouseEvent, bool) -> bool))(events, mouse_point, mouse_event, allow_catch);
                 self.unsafe_unmap();
                 return ret;
             }

@@ -9,8 +9,6 @@ use common::vec::*;
 
 use network::common::*;
 
-use programs::session::*;
-
 #[derive(Copy, Clone)]
 pub struct ARPHeader {
     pub htype: n16,
@@ -56,7 +54,7 @@ impl ToBytes for ARP {
 
 impl Response for ARP {
     #[allow(unused_variables)]
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if self.header.dst_ip.equals(IP_ADDR) {
             if cfg!(debug_network){
                 d("    ");

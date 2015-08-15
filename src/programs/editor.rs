@@ -1,24 +1,10 @@
-use alloc::boxed::*;
-
 use core::clone::Clone;
 
-use common::debug::*;
-use common::memory::*;
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
-
-use drivers::keyboard::*;
-use drivers::mouse::*;
-
-use filesystems::unfs::*;
-
 use graphics::color::*;
-use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::session::*;
+use programs::common::*;
 
 pub struct Editor {
     window: Window,
@@ -86,9 +72,7 @@ impl SessionItem for Editor {
         });
     }
 
-    fn draw(&mut self, session: &Session, updates: &mut SessionUpdates) -> bool{
-        let display = &session.display;
-
+    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
         if ! self.window.draw(display){
             return self.loading;
         }
@@ -118,7 +102,9 @@ impl SessionItem for Editor {
                             self.scroll.y += row - rows;
                         }
 
-                        updates.redraw = REDRAW_ALL;
+                        events.push(box RedrawEvent {
+                            redraw: REDRAW_ALL
+                        });
                     }
                 }
 
@@ -153,7 +139,9 @@ impl SessionItem for Editor {
                         self.scroll.y += rows - row;
                     }
 
-                    updates.redraw = REDRAW_ALL;
+                    events.push(box RedrawEvent {
+                        redraw: REDRAW_ALL
+                    });
                 }
             }
         }
@@ -162,7 +150,7 @@ impl SessionItem for Editor {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, session: &Session, updates: &mut SessionUpdates, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -216,7 +204,7 @@ impl SessionItem for Editor {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, session: &Session, updates: &mut SessionUpdates, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(session.mouse_point, mouse_event, allow_catch);
+    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

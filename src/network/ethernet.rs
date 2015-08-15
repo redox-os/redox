@@ -11,8 +11,6 @@ use network::arp::*;
 use network::common::*;
 use network::ipv4::*;
 
-use programs::session::*;
-
 #[derive(Copy, Clone)]
 pub struct EthernetIIHeader {
     pub dst: MACAddr,
@@ -51,7 +49,7 @@ impl ToBytes for EthernetII {
 }
 
 impl Response for EthernetII {
-    fn respond(&self, session: &Session, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
         if self.header.dst.equals(MAC_ADDR) || self.header.dst.equals(BROADCAST_MAC_ADDR) {
             if cfg!(debug_network){
                 self.d();
@@ -76,11 +74,11 @@ impl Response for EthernetII {
 
             match self.header._type.get() {
                 0x0800 => match IPv4::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => packet.respond(session, ethernet_callback),
+                    Option::Some(packet) => packet.respond(ethernet_callback),
                     Option::None => ()
                 },
                 0x0806 => match ARP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => packet.respond(session, ethernet_callback),
+                    Option::Some(packet) => packet.respond(ethernet_callback),
                     Option::None => ()
                 },
                 _ => ()

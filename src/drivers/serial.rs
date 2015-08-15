@@ -1,9 +1,7 @@
 use common::debug::*;
 use common::pio::*;
 
-use drivers::keyboard::KeyEvent;
-
-use programs::session::*;
+use programs::common::*;
 
 pub struct Serial {
     pub port: u16,
@@ -25,7 +23,7 @@ impl Serial {
 
 impl SessionModule for Serial {
     #[allow(unused_variables)]
-    fn on_irq(&mut self, session: &Session, updates: &mut SessionUpdates, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
         if irq == self.irq {
             unsafe{
                 while inb(self.port + 5) & 1 == 0 {}
@@ -67,7 +65,7 @@ impl SessionModule for Serial {
                 }
 
                 if c != '\0' || sc != 0 {
-                    updates.events.push(box KeyEvent {
+                    events.push(box KeyEvent {
                         character: c,
                         scancode: sc,
                         pressed: true
