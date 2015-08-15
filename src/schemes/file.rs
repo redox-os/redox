@@ -7,7 +7,6 @@ use common::memory::*;
 use common::resource::*;
 use common::string::*;
 use common::url::*;
-use common::vec::*;
 
 use filesystems::unfs::*;
 
@@ -45,11 +44,8 @@ impl SessionModule for FileScheme {
                         let sector_list = &mut *sector_list_ptr;
                         unfs.disk.read((*node).data_sector_list.address, 1, sector_list_ptr as usize);
 
-                        for i in 0..1 {
-                            if sector_list.extents[i].block.address > 0 && sector_list.extents[i].length > 0{
-                                ret = syscall::open(&URL::from_string("ide:///".to_string() + sector_list.extents[i].block.address as usize + "/" + sector_list.extents[i].length as usize));
-                                break;
-                            }
+                        if sector_list.extents[0].block.address > 0 && sector_list.extents[0].length > 0{
+                            ret = syscall::open(&URL::from_string("ide:///".to_string() + sector_list.extents[0].block.address as usize + "/" + sector_list.extents[0].length as usize));
                         }
 
                         unalloc(sector_list_ptr as usize);

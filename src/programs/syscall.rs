@@ -5,7 +5,6 @@ use alloc::boxed::*;
 
 use common::memory::*;
 use common::resource::*;
-use common::string::*;
 use common::url::*;
 
 pub fn open(url: &URL) -> Box<Resource> {

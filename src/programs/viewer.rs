@@ -1,7 +1,11 @@
+use alloc::boxed::*;
+
 use core::clone::Clone;
 
+use common::resource::*;
 use common::string::*;
 use common::url::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -13,10 +17,12 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::*;
+use programs::syscall;
 
 pub struct Viewer {
     window: Window,
-    image: BMP
+    image: BMP,
+    loading: bool
 }
 
 impl SessionItem for Viewer {
@@ -42,7 +48,8 @@ impl SessionItem for Viewer {
                     valid: false
                 }
             },
-            image: BMP::new()
+            image: BMP::new(),
+            loading: false
         }
     }
 
@@ -51,20 +58,30 @@ impl SessionItem for Viewer {
             self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
 
             self.image = BMP::new();
-/* TODO
-            self.request(session, &URL::from_string("file:///".to_string() + filename.clone()), box move |item: &mut SessionItem, response: String|{
-                match item.downcast_mut::<Viewer>() {
-                    Option::Some(viewer) => {
-                        viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
-                        if response.data as usize > 0 {
-                            viewer.image = BMP::from_data(response.data as usize);
-                            viewer.window.size = viewer.image.size;
+            self.loading = true;
+
+            let self_ptr: *mut Viewer = self;
+            syscall::open_async(&URL::from_string("file:///".to_string() + filename.clone()), box move |mut resource: Box<Resource>|{
+                let viewer;
+                unsafe {
+                    viewer = &mut *self_ptr;
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                match resource.read_to_end(&mut vec){
+                    Option::Some(0) => (),
+                    Option::Some(len) => {
+                        unsafe {
+                            viewer.image = BMP::from_data(vec.as_ptr() as usize);
                         }
+                        viewer.window.size = viewer.image.size;
                     },
                     Option::None => ()
                 }
+
+                viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
+                viewer.loading = false;
             });
-            */
         }
     }
 
@@ -73,7 +90,7 @@ impl SessionItem for Viewer {
         let display = &session.display;
 
         if ! self.window.draw(display) {
-            return false;
+            return self.loading;
         }
 
         if ! self.window.shaded {

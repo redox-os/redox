@@ -177,8 +177,15 @@ impl <T> Vec<T> {
 
 impl<T> Vec<T> where T: Clone {
     pub fn push_all(&mut self, vec: &Vec<T>) {
-        for value in vec.iter() {
-            self.push(value.clone());
+        let mut i = self.length as isize;
+        self.length += vec.len();
+        unsafe{
+            self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+
+            for value in vec.iter() {
+                ptr::write(self.data.offset(i), value.clone());
+                i += 1;
+            }
         }
     }
 }

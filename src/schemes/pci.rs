@@ -1,4 +1,3 @@
-use core::clone::Clone;
 use core::option::Option;
 
 use alloc::boxed::*;
