@@ -22,14 +22,7 @@ impl SessionModule for FileScheme {
         unsafe{
             let unfs = UnFS::new();
 
-            let mut path = String::new();
-            for part in url.path.iter(){
-                if path.len() > 0 {
-                    path = path + "/" + part.clone();
-                }else{
-                    path = part.clone();
-                }
-            }
+            let mut path = url.path_string();
 
             let mut ret: Box<Resource> = box NoneResource;
 

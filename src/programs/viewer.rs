@@ -51,36 +51,35 @@ impl SessionItem for Viewer {
         }
     }
 
-    fn load(&mut self, session: &Session, filename: String){
-        if filename.len() > 0{
-            self.window.title = String::from_str("Viewer Loading (") + filename.clone() + String::from_str(")");
+    fn load(&mut self, url: &URL){
+        self.window.title = "Viewer Loading (".to_string() + url.to_string() + ")";
 
-            self.image = BMP::new();
-            self.loading = true;
+        self.image = BMP::new();
+        self.loading = true;
 
-            let self_ptr: *mut Viewer = self;
-            URL::from_string("file:///".to_string() + filename.clone()).open_async(box move |mut resource: Box<Resource>|{
-                let viewer;
-                unsafe {
-                    viewer = &mut *self_ptr;
-                }
+        let self_ptr: *mut Viewer = self;
+        let url_copy = url.clone();
+        url.open_async(box move |mut resource: Box<Resource>|{
+            let viewer;
+            unsafe {
+                viewer = &mut *self_ptr;
+            }
 
-                let mut vec: Vec<u8> = Vec::new();
-                match resource.read_to_end(&mut vec){
-                    Option::Some(0) => (),
-                    Option::Some(len) => {
-                        unsafe {
-                            viewer.image = BMP::from_data(vec.as_ptr() as usize);
-                        }
-                        viewer.window.size = viewer.image.size;
-                    },
-                    Option::None => ()
-                }
+            let mut vec: Vec<u8> = Vec::new();
+            match resource.read_to_end(&mut vec){
+                Option::Some(0) => (),
+                Option::Some(len) => {
+                    unsafe {
+                        viewer.image = BMP::from_data(vec.as_ptr() as usize);
+                    }
+                    viewer.window.size = viewer.image.size;
+                },
+                Option::None => ()
+            }
 
-                viewer.window.title = String::from_str("Viewer (") + filename.clone() + String::from_str(")");
-                viewer.loading = false;
-            });
-        }
+            viewer.window.title = "Viewer (".to_string() + url_copy.to_string() + ")";
+            viewer.loading = false;
+        });
     }
 
     #[allow(unused_variables)]

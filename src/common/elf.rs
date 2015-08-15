@@ -1,4 +1,5 @@
 use core::ops::Drop;
+use core::ptr;
 
 use common::debug::*;
 use common::memory::*;
@@ -85,7 +86,9 @@ impl ELF {
                 && *((file_data + 4) as *const u8) == 1
                 // TODO: Add more tests from header (architecture, platform)
             {
-                data = file_data;
+                let size = alloc_size(file_data);
+                data = alloc(size);
+                ptr::copy(file_data as *const u8, data as *mut u8, size);
             }else{
                 d("Invalid ELF Format\n");
                 data = 0;

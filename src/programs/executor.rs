@@ -1,7 +1,9 @@
 use core::atomic::*;
 
 use common::elf::*;
+use common::resource::*;
 use common::string::*;
+use common::vec::*;
 
 use drivers::keyboard::*;
 use drivers::mouse::*;
@@ -58,19 +60,26 @@ impl SessionItem for Executor {
     }
 
     #[allow(unused_variables)]
-    fn load(&mut self, session: &Session, filename: String){
-        if filename.len() > 0{
-            unsafe{
-                self.executable = ELF::from_data(UnFS::new().load(filename));
-                //self.executable.d();
+    fn load(&mut self, url: &URL){
+        let mut resource = url.open();
 
-                self.entry = self.executable.entry();
-                self.draw = self.executable.symbol("draw".to_string());
-                self.on_key = self.executable.symbol("on_key".to_string());
-                self.on_mouse = self.executable.symbol("on_mouse".to_string());
+        let mut vec: Vec<u8> = Vec::new();
+        match resource.read_to_end(&mut vec){
+            Option::Some(0) => (),
+            Option::Some(len) => {
+                unsafe{
+                    self.executable = ELF::from_data(vec.as_ptr() as usize);
+                    //self.executable.d();
 
-                self.entry();
-            }
+                    self.entry = self.executable.entry();
+                    self.draw = self.executable.symbol("draw".to_string());
+                    self.on_key = self.executable.symbol("on_key".to_string());
+                    self.on_mouse = self.executable.symbol("on_mouse".to_string());
+
+                    self.entry();
+                }
+            },
+            Option::None => ()
         }
     }
 
