@@ -252,7 +252,9 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
             loop {
                 (*session_ptr).on_poll();
+                (*session_ptr).handle_events();
                 (*session_ptr).redraw();
+                (*session_ptr).handle_events();
                 asm!("sti");
                 asm!("hlt");
                 asm!("cli"); // TODO: Allow preempting
