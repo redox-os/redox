@@ -19,6 +19,7 @@ pub struct Session {
     pub items: Vec<Rc<SessionItem>>,
     pub current_item: isize,
     pub modules: Vec<Rc<SessionModule>>,
+    pub events: Vec<URL>,
     pub redraw: usize
 }
 
@@ -30,32 +31,25 @@ impl Session {
             items: Vec::new(),
             current_item: -1,
             modules: Vec::new(),
+            events: Vec::new(),
             redraw: REDRAW_ALL
         }
     }
 
     pub fn on_irq(&mut self, irq: u8){
-        let mut events: Vec<URL> = Vec::new();
-
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_irq(&mut events, irq);
+                Rc::unsafe_get_mut(module).on_irq(&mut self.events, irq);
             }
         }
-
-        self.handle_events(events);
     }
 
     pub fn on_poll(&mut self){
-        let mut events: Vec<URL> = Vec::new();
-
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_poll(&mut events);
+                Rc::unsafe_get_mut(module).on_poll(&mut self.events);
             }
         }
-
-        self.handle_events(events);
     }
 
     pub fn open(&self, url: &URL) -> Box<Resource>{
@@ -116,13 +110,11 @@ impl Session {
     }
 
     pub fn on_key(&mut self, key_event: KeyEvent){
-        let mut events: Vec<URL> = Vec::new();
-
         self.current_item = 0;
         match self.items.get(self.current_item as usize){
             Option::Some(item) => {
                 unsafe {
-                    Rc::unsafe_get_mut(item).on_key(&mut events, key_event);
+                    Rc::unsafe_get_mut(item).on_key(&mut self.events, key_event);
                 }
 
                 self.redraw = max(self.redraw, REDRAW_ALL);
@@ -130,15 +122,11 @@ impl Session {
             Option::None => ()
         }
         self.current_item = -1;
-
-        self.handle_events(events);
     }
 
     pub fn on_mouse(&mut self, mouse_event: MouseEvent){
         self.mouse_point.x = max(0, min(self.display.width as isize - 1, self.mouse_point.x + mouse_event.x));
         self.mouse_point.y = max(0, min(self.display.height as isize - 1, self.mouse_point.y + mouse_event.y));
-
-        let mut events: Vec<URL> = Vec::new();
 
         self.redraw = max(self.redraw, REDRAW_CURSOR);
 
@@ -149,7 +137,7 @@ impl Session {
             match self.items.get(self.current_item as usize){
                 Option::Some(item) => {
                     unsafe {
-                        if Rc::unsafe_get_mut(item).on_mouse(&mut events, self.mouse_point, mouse_event, allow_catch) {
+                        if Rc::unsafe_get_mut(item).on_mouse(&mut self.events, self.mouse_point, mouse_event, allow_catch) {
                             allow_catch = false;
                             catcher = i;
 
@@ -170,14 +158,10 @@ impl Session {
                 Option::None => ()
             }
         }
-
-        self.handle_events(events);
     }
 
     pub fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
-            let mut events: Vec<URL> = Vec::new();
-
             if self.redraw >= REDRAW_ALL {
                 self.display.background();
 
@@ -190,7 +174,7 @@ impl Session {
                     match self.items.get(self.current_item as usize) {
                         Option::Some(item) => {
                             unsafe {
-                                if ! Rc::unsafe_get_mut(item).draw(&self.display, &mut events) {
+                                if ! Rc::unsafe_get_mut(item).draw(&self.display, &mut self.events) {
                                     erase_i.push(self.current_item as usize);
                                 }
                             }
@@ -210,14 +194,12 @@ impl Session {
             self.display.cursor(self.mouse_point);
 
             self.redraw = REDRAW_NONE;
-
-            self.handle_events(events);
         }
     }
 
-    fn handle_events(&mut self, mut events: Vec<URL>){
-        while events.len() > 0 {
-            match events.remove(0){
+    pub fn handle_events(&mut self){
+        while self.events.len() > 0 {
+            match self.events.remove(0){
                 Option::Some(event) => {
                     if event.scheme == "r".to_string() {
                         match event.path.get(0) {

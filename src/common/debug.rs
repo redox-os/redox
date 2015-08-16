@@ -75,3 +75,15 @@ pub fn d(text: &str){
         dc(character);
     }
 }
+
+pub fn dt(){
+    unsafe{
+        let low: u32;
+        let high: u32;
+        asm!("rdtsc" : "={eax}"(low), "={edx}"(high));
+        dd(high as usize);
+        d(":");
+        dd(low as usize);
+        dl();
+    }
+}
