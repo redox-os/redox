@@ -27,14 +27,14 @@ pub struct IDE {
 
 impl SessionModule for IDE {
     #[allow(unused_variables)]
-    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
         if irq == 0xE || irq == 0xF {
             self.on_poll(events);
         }
     }
 
     #[allow(unused_variables)]
-    fn on_poll(&mut self, events: &mut Vec<Box<Any>>){
+    fn on_poll(&mut self, events: &mut Vec<URL>){
         unsafe {
             let base = self.base as u16;
 
@@ -139,7 +139,7 @@ impl SessionModule for IDE {
                 if destination > 0 {
                     let disk = Disk::new();
                     disk.read(sector, count, destination);
-                    return box VecResource::new(Vec::<u8> {
+                    return box VecResource::new(ResourceType::File, Vec::<u8> {
                         data: destination as *mut u8,
                         length: alloc_size(destination)
                     });
@@ -159,7 +159,7 @@ impl SessionModule for IDE {
             callback: box move |destination: usize|{
                 if destination > 0 {
                     unsafe{
-                        callback(box VecResource::new(Vec::<u8> {
+                        callback(box VecResource::new(ResourceType::File, Vec::<u8> {
                             data: destination as *mut u8,
                             length: alloc_size(destination)
                         }));

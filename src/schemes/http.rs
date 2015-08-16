@@ -155,6 +155,6 @@ impl SessionModule for HTTPScheme {
 
         html = html + "</div>\n";
 
-        return box VecResource::new(html.to_utf8());
+        return box VecResource::new(ResourceType::File, html.to_utf8());
     }
 }

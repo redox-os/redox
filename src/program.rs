@@ -72,7 +72,7 @@ pub unsafe fn entry(){
 }
 
 #[no_mangle]
-pub unsafe fn draw(display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+pub unsafe fn draw(display: &Display, events: &mut Vec<URL>) -> bool{
     if application as usize > 0 {
         return (*application).draw(display, events);
     }else{
@@ -81,14 +81,14 @@ pub unsafe fn draw(display: &Display, events: &mut Vec<Box<Any>>) -> bool{
 }
 
 #[no_mangle]
-pub unsafe fn on_key(events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+pub unsafe fn on_key(events: &mut Vec<URL>, key_event: KeyEvent){
     if application as usize > 0{
         (*application).on_key(events, key_event);
     }
 }
 
 #[no_mangle]
-pub unsafe fn on_mouse(events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+pub unsafe fn on_mouse(events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
     if application as usize > 0 {
         return (*application).on_mouse(events, mouse_point, mouse_event, allow_catch);
     }else{

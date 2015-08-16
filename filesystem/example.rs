@@ -64,9 +64,16 @@ impl Application {
                         Option::None => ()
                     }
 
-                    self.append(url.to_string());
+                    self.append("URL: ".to_string() + url.to_string());
 
                     let mut resource = url.open();
+
+                    match resource.stat() {
+                        ResourceType::File => self.append("Type: File".to_string()),
+                        ResourceType::Dir => self.append("Type: Dir".to_string()),
+                        ResourceType::Array => self.append("Type: Array".to_string()),
+                        _ => self.append("Type: None".to_string())
+                    }
 
                     let mut vec: Vec<u8> = Vec::new();
                     match resource.read_to_end(&mut vec) {
@@ -116,7 +123,7 @@ impl SessionItem for Application {
         }
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
         if self.window.draw(display) {
             let scroll = self.scroll;
 
@@ -191,9 +198,11 @@ impl SessionItem for Application {
 
             if row >= rows {
                 self.scroll.y += row - rows + 1;
-                events.push(box RedrawEvent {
-                    redraw: REDRAW_ALL
-                });
+                
+                let mut event = URL::new();
+                event.scheme = "r".to_string();
+                event.path.push(String::from_num(REDRAW_ALL));
+                events.push(event);
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
@@ -208,7 +217,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -256,7 +265,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

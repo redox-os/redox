@@ -1,11 +1,17 @@
+use core::char;
 use core::cmp::max;
 use core::cmp::min;
 use core::option::Option;
+
+use common::debug::*;
 
 use graphics::color::*;
 use graphics::size::*;
 
 use programs::common::*;
+use programs::editor::*;
+use programs::executor::*;
+use programs::viewer::*;
 
 pub struct Session {
     pub display: Display,
@@ -29,7 +35,7 @@ impl Session {
     }
 
     pub fn on_irq(&mut self, irq: u8){
-        let mut events: Vec<Box<Any>> = Vec::new();
+        let mut events: Vec<URL> = Vec::new();
 
         for module in self.modules.iter() {
             unsafe{
@@ -41,7 +47,7 @@ impl Session {
     }
 
     pub fn on_poll(&mut self){
-        let mut events: Vec<Box<Any>> = Vec::new();
+        let mut events: Vec<URL> = Vec::new();
 
         for module in self.modules.iter() {
             unsafe{
@@ -67,7 +73,7 @@ impl Session {
                 }
             }
 
-            return box VecResource::new(list.to_utf8());
+            return box VecResource::new(ResourceType::Dir, list.to_utf8());
         }else{
             for module in self.modules.iter() {
                 if module.scheme() == url.scheme {
@@ -95,7 +101,7 @@ impl Session {
                 }
             }
 
-            callback(box VecResource::new(list.to_utf8()));
+            callback(box VecResource::new(ResourceType::Dir, list.to_utf8()));
         }else{
             for module in self.modules.iter() {
                 if module.scheme() == url.scheme {
@@ -110,7 +116,7 @@ impl Session {
     }
 
     pub fn on_key(&mut self, key_event: KeyEvent){
-        let mut events: Vec<Box<Any>> = Vec::new();
+        let mut events: Vec<URL> = Vec::new();
 
         self.current_item = 0;
         match self.items.get(self.current_item as usize){
@@ -118,9 +124,8 @@ impl Session {
                 unsafe {
                     Rc::unsafe_get_mut(item).on_key(&mut events, key_event);
                 }
-                events.push(box RedrawEvent {
-                    redraw: REDRAW_ALL
-                });
+
+                self.redraw = max(self.redraw, REDRAW_ALL);
             },
             Option::None => ()
         }
@@ -133,10 +138,9 @@ impl Session {
         self.mouse_point.x = max(0, min(self.display.width as isize - 1, self.mouse_point.x + mouse_event.x));
         self.mouse_point.y = max(0, min(self.display.height as isize - 1, self.mouse_point.y + mouse_event.y));
 
-        let mut events: Vec<Box<Any>> = Vec::new();
-        events.push(box RedrawEvent {
-            redraw: REDRAW_CURSOR
-        });
+        let mut events: Vec<URL> = Vec::new();
+
+        self.redraw = max(self.redraw, REDRAW_CURSOR);
 
         let mut catcher = 0;
         let mut allow_catch = true;
@@ -148,9 +152,8 @@ impl Session {
                         if Rc::unsafe_get_mut(item).on_mouse(&mut events, self.mouse_point, mouse_event, allow_catch) {
                             allow_catch = false;
                             catcher = i;
-                            events.push(box RedrawEvent {
-                                redraw: REDRAW_ALL
-                            });
+
+                            self.redraw = max(self.redraw, REDRAW_ALL);
                         }
                     }
                 },
@@ -173,7 +176,7 @@ impl Session {
 
     pub fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
-            let mut events: Vec<Box<Any>> = Vec::new();
+            let mut events: Vec<URL> = Vec::new();
 
             if self.redraw >= REDRAW_ALL {
                 self.display.background();
@@ -212,46 +215,109 @@ impl Session {
         }
     }
 
-    fn handle_events(&mut self, mut events: Vec<Box<Any>>){
+    fn handle_events(&mut self, mut events: Vec<URL>){
         while events.len() > 0 {
             match events.remove(0){
                 Option::Some(event) => {
-                    match event.downcast_ref::<MouseEvent>() {
-                        Option::Some(mouse_event) => {
-                            self.on_mouse(*mouse_event);
-                            continue;
-                        },
-                        Option::None => ()
-                    }
+                    if event.scheme == "r".to_string() {
+                        match event.path.get(0) {
+                            Option::Some(part) => self.redraw = max(self.redraw, part.to_num()),
+                            Option::None => ()
+                        }
+                    }else if event.scheme == "m".to_string() {
+                        let mut mouse_event = MouseEvent {
+                            x: 0,
+                            y: 0,
+                            left_button: false,
+                            middle_button: false,
+                            right_button: false,
+                            valid: true
+                        };
 
-                    match event.downcast_ref::<KeyEvent>() {
-                        Option::Some(key_event) => {
-                            self.on_key(*key_event);
-                            continue;
-                        },
-                        Option::None => ()
-                    }
+                        match event.path.get(0) {
+                            Option::Some(part) => mouse_event.x = part.to_num_signed(),
+                            Option::None => ()
+                        }
 
-                    match event.downcast_ref::<RedrawEvent>() {
-                        Option::Some(redraw_event) => {
-                            self.redraw = max(self.redraw, redraw_event.redraw);
-                            continue;
-                        },
-                        Option::None => ()
-                    }
+                        match event.path.get(1) {
+                            Option::Some(part) => mouse_event.y = part.to_num_signed(),
+                            Option::None => ()
+                        }
 
-                    match event.downcast_ref::<OpenEvent>() {
-                        Option::Some(open_event) => {
-                            self.redraw = max(self.redraw, REDRAW_ALL);
-                            self.items.insert(0, open_event.item.clone());
+                        match event.path.get(2) {
+                            Option::Some(part) => mouse_event.left_button = part.to_num() > 0,
+                            Option::None => ()
+                        }
+
+                        match event.path.get(3) {
+                            Option::Some(part) => mouse_event.middle_button = part.to_num() > 0,
+                            Option::None => ()
+                        }
+
+                        match event.path.get(4) {
+                            Option::Some(part) => mouse_event.right_button = part.to_num() > 0,
+                            Option::None => ()
+                        }
+
+                        self.on_mouse(mouse_event);
+                    }else if event.scheme == "k".to_string() {
+                        let mut key_event = KeyEvent {
+                            character: '\0',
+                            scancode: 0,
+                            pressed: false
+                        };
+
+                        match event.path.get(0) {
+                            Option::Some(part) => match char::from_u32(part.to_num() as u32){
+                                Option::Some(character) => key_event.character = character,
+                                Option::None => ()
+                            },
+                            Option::None => ()
+                        }
+
+                        match event.path.get(1) {
+                            Option::Some(part) => key_event.scancode = part.to_num() as u8,
+                            Option::None => ()
+                        }
+
+                        match event.path.get(2) {
+                            Option::Some(part) => key_event.pressed = part.to_num() > 0,
+                            Option::None => ()
+                        }
+
+                        self.on_key(key_event);
+                    }else if event.scheme == "open".to_string() {
+                        self.redraw = max(self.redraw, REDRAW_ALL);
+
+                        let url_string = event.path_string();
+                        let url = URL::from_string(url_string.clone());
+
+                        let mut found = false;
+                        if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()){
+                            self.items.insert(0, Rc::new(Editor::new()));
+                            found = true;
+                        }else if url_string.ends_with(".bin".to_string()){
+                            self.items.insert(0, Rc::new(Executor::new()));
+                            found = true;
+                        }else if url_string.ends_with(".bmp".to_string()){
+                            self.items.insert(0, Rc::new(Viewer::new()));
+                            found = true;
+                        }else{
+                            d("No program found: ");
+                            url.d();
+                            dl();
+                        }
+
+                        if found {
                             self.current_item = 0;
-                            unsafe{
-                                Rc::unsafe_get_mut(&open_event.item).load(&open_event.url);
+                            match self.items.get(0) {
+                                Option::Some(item) => unsafe{
+                                    Rc::unsafe_get_mut(&item).load(&url);
+                                },
+                                Option::None => ()
                             }
                             self.current_item = -1;
-                            continue;
-                        },
-                        Option::None => ()
+                        }
                     }
                 },
                 Option::None => ()

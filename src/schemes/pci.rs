@@ -44,7 +44,7 @@ impl SessionModule for PCIScheme {
                 data = pci_read(bus as usize, slot as usize, func as usize, reg as usize);
             }
 
-            return box VecResource::new(String::from_num(data).to_utf8());
+            return box VecResource::new(ResourceType::File, String::from_num(data).to_utf8());
         }else{
             return box NoneResource;
         }
