@@ -1,5 +1,3 @@
-use core::option::Option;
-
 use common::pci::*;
 
 use programs::common::*;

@@ -1,5 +1,3 @@
-use common::random::*;
-
 use programs::common::*;
 
 pub struct RandomScheme;

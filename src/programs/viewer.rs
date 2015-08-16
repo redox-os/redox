@@ -1,5 +1,3 @@
-use core::clone::Clone;
-
 use graphics::bmp::*;
 use graphics::color::*;
 use graphics::size::*;
@@ -17,7 +15,7 @@ impl SessionItem for Viewer {
     fn new() -> Viewer {
         Viewer {
             window: Window{
-                point: Point::new(180, 50),
+                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
                 size: Size::new(640, 480),
                 title: "Viewer".to_string(),
                 title_color: Color::new(255, 255, 255),

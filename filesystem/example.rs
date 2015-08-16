@@ -1,6 +1,3 @@
-use core::clone::Clone;
-use core::option::Option;
-
 use graphics::color::*;
 use graphics::size::*;
 use graphics::window::*;
@@ -23,7 +20,7 @@ impl Application {
     }
 
     #[allow(unused_variables)]
-    fn on_command(&mut self){
+    fn on_command(&mut self, events: &mut Vec<URL>){
         self.last_command = self.command.clone();
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in self.command.split(" ".to_string()) {
@@ -54,13 +51,16 @@ impl Application {
                     self.append(echo);
                 }else if *cmd == "exit".to_string() {
                     self.window.closed = true;
+                }else if *cmd == "open".to_string() {
+                    match args.get(1) {
+                        Option::Some(arg) => events.push(URL::from_string("open:///".to_string() + arg.clone())),
+                        Option::None => ()
+                    }
                 }else if *cmd == "url".to_string() {
                     let mut url = URL::new();
 
                     match args.get(1) {
-                        Option::Some(arg) => {
-                            url = URL::from_string(arg.clone());
-                        },
+                        Option::Some(arg) => url = URL::from_string(arg.clone()),
                         Option::None => ()
                     }
 
@@ -82,7 +82,7 @@ impl Application {
                         Option::None => self.append("Failed to read".to_string())
                     }
                 }else{
-                    self.append("Commands:  echo  exit  url".to_string());
+                    self.append("Commands:  echo  exit  open  url".to_string());
                 }
             },
             Option::None => ()
@@ -95,7 +95,7 @@ impl SessionItem for Application {
     fn new() -> Application {
         Application {
             window: Window{
-                point: Point::new(220, 100),
+                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
                 size: Size::new(576, 400),
                 title: String::from_str("Terminal"),
                 title_color: Color::new(0, 0, 0),
@@ -198,7 +198,7 @@ impl SessionItem for Application {
 
             if row >= rows {
                 self.scroll.y += row - rows + 1;
-                
+
                 let mut event = URL::new();
                 event.scheme = "r".to_string();
                 event.path.push(String::from_num(REDRAW_ALL));
@@ -251,7 +251,7 @@ impl SessionItem for Application {
                 '\n' => {
                     if self.command.len() > 0 {
                         self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";
-                        self.on_command();
+                        self.on_command(events);
                         self.command = String::new();
                         self.offset = 0;
                     }

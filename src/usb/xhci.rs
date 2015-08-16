@@ -1,6 +1,5 @@
 use core::mem::size_of;
 
-use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 
