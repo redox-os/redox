@@ -1,6 +1,3 @@
-use core::clone::Clone;
-use core::option::Option;
-
 use filesystems::unfs::*;
 
 use graphics::color::*;

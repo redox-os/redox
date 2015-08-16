@@ -1,6 +1,3 @@
-use core::option::Option;
-
-use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;

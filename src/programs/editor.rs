@@ -1,5 +1,3 @@
-use core::clone::Clone;
-
 use graphics::color::*;
 use graphics::size::*;
 use graphics::window::*;
@@ -18,7 +16,7 @@ impl SessionItem for Editor {
     fn new() -> Editor {
         Editor {
             window: Window{
-                point: Point::new(420, 300),
+                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
                 size: Size::new(576, 400),
                 title: "Editor".to_string(),
                 title_color: Color::new(0, 0, 0),

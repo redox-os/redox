@@ -1,5 +1,3 @@
-use core::clone::Clone;
-
 use programs::common::*;
 
 pub struct HTTPScheme;

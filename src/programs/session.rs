@@ -1,9 +1,6 @@
 use core::char;
 use core::cmp::max;
 use core::cmp::min;
-use core::option::Option;
-
-use common::debug::*;
 
 use graphics::color::*;
 use graphics::size::*;

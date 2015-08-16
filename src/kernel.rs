@@ -22,7 +22,6 @@ use core::fmt;
 use core::mem::size_of;
 use core::ptr;
 
-use common::debug::*;
 use common::pio::*;
 use common::memory::*;
 

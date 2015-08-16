@@ -1,6 +1,11 @@
 pub use alloc::boxed::*;
 pub use alloc::rc::*;
 
+pub use core::clone::Clone;
+pub use core::option::Option;
+
+pub use common::debug::*;
+pub use common::random::*;
 pub use common::resource::*;
 pub use common::string::*;
 pub use common::vec::*;
