@@ -10,6 +10,6 @@ impl SessionModule for RandomScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box VecResource::new(String::from_num(rand()).to_utf8());
+        return box VecResource::new(ResourceType::File, String::from_num(rand()).to_utf8());
     }
 }

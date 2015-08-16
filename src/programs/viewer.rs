@@ -73,7 +73,7 @@ impl SessionItem for Viewer {
     }
 
     #[allow(unused_variables)]
-    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
         if ! self.window.draw(display) {
             return self.loading;
         }
@@ -89,7 +89,7 @@ impl SessionItem for Viewer {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -99,7 +99,7 @@ impl SessionItem for Viewer {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

@@ -53,6 +53,15 @@ pub fn dd(num: usize){
     db('0' as u8 + (num % 10) as u8);
 }
 
+pub fn ds(num: isize){
+    if num >= 0 {
+        dd(num as usize);
+    }else{
+        dc('-');
+        dd((-num) as usize);
+    }
+}
+
 pub fn dc(character: char){
     db(character as u8);
 }

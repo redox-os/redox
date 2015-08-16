@@ -87,13 +87,13 @@ impl SessionItem for Executor {
         });
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
         unsafe {
             if self.executable.can_call(self.draw){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.draw;
-                let ret = (*(fn_ptr as *const fn(&Display, &mut Vec<Box<Any>>) -> bool))(display, events);
+                let ret = (*(fn_ptr as *const fn(&Display, &mut Vec<URL>) -> bool))(display, events);
                 self.unsafe_unmap();
 
                 return ret;
@@ -102,25 +102,25 @@ impl SessionItem for Executor {
         return self.loading;
     }
 
-    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
         unsafe {
             if self.executable.can_call(self.on_key){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_key;
-                (*(fn_ptr as *const fn(&mut Vec<Box<Any>>, KeyEvent)))(events, key_event);
+                (*(fn_ptr as *const fn(&mut Vec<URL>, KeyEvent)))(events, key_event);
                 self.unsafe_unmap();
             }
         }
     }
 
-    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         unsafe {
             if self.executable.can_call(self.on_mouse){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_mouse;
-                let ret = (*(fn_ptr as *const fn(&mut Vec<Box<Any>>, Point, MouseEvent, bool) -> bool))(events, mouse_point, mouse_event, allow_catch);
+                let ret = (*(fn_ptr as *const fn(&mut Vec<URL>, Point, MouseEvent, bool) -> bool))(events, mouse_point, mouse_event, allow_catch);
                 self.unsafe_unmap();
                 return ret;
             }

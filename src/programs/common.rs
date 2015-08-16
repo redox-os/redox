@@ -1,8 +1,6 @@
 pub use alloc::boxed::*;
 pub use alloc::rc::*;
 
-pub use core::any::Any;
-
 pub use common::resource::*;
 pub use common::string::*;
 pub use common::vec::*;
@@ -13,26 +11,17 @@ pub use drivers::keyboard::KeyEvent;
 pub use graphics::display::*;
 pub use graphics::point::*;
 
-pub struct OpenEvent {
-    pub item: Rc<SessionItem>,
-    pub url: URL
-}
-
 pub const REDRAW_NONE: usize = 0;
 pub const REDRAW_CURSOR: usize = 1;
 pub const REDRAW_ALL: usize = 2;
 
-pub struct RedrawEvent {
-    pub redraw: usize
-}
-
 #[allow(unused_variables)]
 pub trait SessionModule {
-    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
+    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
 
     }
 
-    fn on_poll(&mut self, events: &mut Vec<Box<Any>>){
+    fn on_poll(&mut self, events: &mut Vec<URL>){
 
     }
 
@@ -57,15 +46,15 @@ pub trait SessionItem : ::mopa::Any {
 
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
         return true;
     }
 
-    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
 
     }
 
-    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
 }

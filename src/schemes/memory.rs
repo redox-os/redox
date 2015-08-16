@@ -11,6 +11,6 @@ impl SessionModule for MemoryScheme {
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
         let string = "Memory Used: ".to_string() + memory_used()/1024/1024 + " MB\n" + "Memory Free: " + memory_free()/1024/1024 + " MB";
-        return box VecResource::new(string.to_utf8());
+        return box VecResource::new(ResourceType::File, string.to_utf8());
     }
 }

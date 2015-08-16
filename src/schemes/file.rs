@@ -51,7 +51,7 @@ impl SessionModule for FileScheme {
                     }
                 }
 
-                ret = box VecResource::new(list.to_utf8());
+                ret = box VecResource::new(ResourceType::Dir, list.to_utf8());
             }
 
             return ret;
@@ -106,7 +106,7 @@ impl SessionModule for FileScheme {
                     }
                 }
 
-                callback(box VecResource::new(list.to_utf8()));
+                callback(box VecResource::new(ResourceType::Dir, list.to_utf8()));
             }
         }
     }
