@@ -70,7 +70,7 @@ impl SessionItem for Editor {
         });
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
+    fn draw(&mut self, display: &Display) -> bool{
         if ! self.window.draw(display){
             return self.loading;
         }
@@ -100,10 +100,9 @@ impl SessionItem for Editor {
                             self.scroll.y += row - rows;
                         }
 
-                        let mut event = URL::new();
-                        event.scheme = "r".to_string();
-                        event.path.push(String::from_num(REDRAW_ALL));
-                        events.push(event);
+                        RedrawEvent {
+                            redraw: REDRAW_ALL
+                        }.trigger();
                     }
                 }
 
@@ -138,10 +137,9 @@ impl SessionItem for Editor {
                         self.scroll.y += rows - row;
                     }
 
-                    let mut event = URL::new();
-                    event.scheme = "r".to_string();
-                    event.path.push(String::from_num(REDRAW_ALL));
-                    events.push(event);
+                    RedrawEvent {
+                        redraw: REDRAW_ALL
+                    }.trigger();
                 }
             }
         }
@@ -150,7 +148,7 @@ impl SessionItem for Editor {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
+    fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -204,7 +202,7 @@ impl SessionItem for Editor {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

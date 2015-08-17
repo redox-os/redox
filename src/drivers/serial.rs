@@ -21,8 +21,7 @@ impl Serial {
 }
 
 impl SessionModule for Serial {
-    #[allow(unused_variables)]
-    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
+    fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             unsafe{
                 while inb(self.port + 5) & 1 == 0 {}
@@ -64,12 +63,11 @@ impl SessionModule for Serial {
                 }
 
                 if c != '\0' || sc != 0 {
-                    let mut event = URL::new();
-                    event.scheme = "k".to_string();
-                    event.path.push(String::from_num(c as usize));
-                    event.path.push(String::from_num(sc as usize));
-                    event.path.push("1".to_string());
-                    events.push(event);
+                    KeyEvent {
+                        character: c,
+                        scancode: sc,
+                        pressed: true
+                    }.trigger();
                 }
             }
         }

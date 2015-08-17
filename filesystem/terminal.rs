@@ -20,7 +20,7 @@ impl Application {
     }
 
     #[allow(unused_variables)]
-    fn on_command(&mut self, events: &mut Vec<URL>){
+    fn on_command(&mut self){
         self.last_command = self.command.clone();
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in self.command.split(" ".to_string()) {
@@ -53,7 +53,7 @@ impl Application {
                     self.window.closed = true;
                 }else if *cmd == "open".to_string() {
                     match args.get(1) {
-                        Option::Some(arg) => events.push(URL::from_string("open:///".to_string() + arg.clone())),
+                        Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
                         Option::None => ()
                     }
                 }else if *cmd == "url".to_string() {
@@ -123,7 +123,7 @@ impl SessionItem for Application {
         }
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
+    fn draw(&mut self, display: &Display) -> bool{
         if self.window.draw(display) {
             let scroll = self.scroll;
 
@@ -199,10 +199,9 @@ impl SessionItem for Application {
             if row >= rows {
                 self.scroll.y += row - rows + 1;
 
-                let mut event = URL::new();
-                event.scheme = "r".to_string();
-                event.path.push(String::from_num(REDRAW_ALL));
-                events.push(event);
+                RedrawEvent {
+                    redraw: REDRAW_ALL
+                }.trigger();
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
@@ -217,7 +216,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
+    fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -251,7 +250,7 @@ impl SessionItem for Application {
                 '\n' => {
                     if self.command.len() > 0 {
                         self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";
-                        self.on_command(events);
+                        self.on_command();
                         self.command = String::new();
                         self.offset = 0;
                     }
@@ -265,7 +264,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

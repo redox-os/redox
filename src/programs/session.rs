@@ -1,4 +1,3 @@
-use core::char;
 use core::cmp::max;
 use core::cmp::min;
 
@@ -16,7 +15,6 @@ pub struct Session {
     pub items: Vec<Rc<SessionItem>>,
     pub current_item: isize,
     pub modules: Vec<Rc<SessionModule>>,
-    pub events: Vec<URL>,
     pub redraw: usize
 }
 
@@ -28,7 +26,6 @@ impl Session {
             items: Vec::new(),
             current_item: -1,
             modules: Vec::new(),
-            events: Vec::new(),
             redraw: REDRAW_ALL
         }
     }
@@ -36,7 +33,7 @@ impl Session {
     pub fn on_irq(&mut self, irq: u8){
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_irq(&mut self.events, irq);
+                Rc::unsafe_get_mut(module).on_irq(irq);
             }
         }
     }
@@ -44,7 +41,7 @@ impl Session {
     pub fn on_poll(&mut self){
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_poll(&mut self.events);
+                Rc::unsafe_get_mut(module).on_poll();
             }
         }
     }
@@ -111,7 +108,7 @@ impl Session {
         match self.items.get(self.current_item as usize){
             Option::Some(item) => {
                 unsafe {
-                    Rc::unsafe_get_mut(item).on_key(&mut self.events, key_event);
+                    Rc::unsafe_get_mut(item).on_key(key_event);
                 }
 
                 self.redraw = max(self.redraw, REDRAW_ALL);
@@ -134,7 +131,7 @@ impl Session {
             match self.items.get(self.current_item as usize){
                 Option::Some(item) => {
                     unsafe {
-                        if Rc::unsafe_get_mut(item).on_mouse(&mut self.events, self.mouse_point, mouse_event, allow_catch) {
+                        if Rc::unsafe_get_mut(item).on_mouse(self.mouse_point, mouse_event, allow_catch) {
                             allow_catch = false;
                             catcher = i;
 
@@ -171,7 +168,7 @@ impl Session {
                     match self.items.get(self.current_item as usize) {
                         Option::Some(item) => {
                             unsafe {
-                                if ! Rc::unsafe_get_mut(item).draw(&self.display, &mut self.events) {
+                                if ! Rc::unsafe_get_mut(item).draw(&self.display) {
                                     erase_i.push(self.current_item as usize);
                                 }
                             }
@@ -194,112 +191,46 @@ impl Session {
         }
     }
 
-    pub fn handle_events(&mut self){
-        while self.events.len() > 0 {
-            match self.events.remove(0){
-                Option::Some(event) => {
-                    if event.scheme == "r".to_string() {
-                        match event.path.get(0) {
-                            Option::Some(part) => self.redraw = max(self.redraw, part.to_num()),
-                            Option::None => ()
-                        }
-                    }else if event.scheme == "m".to_string() {
-                        let mut mouse_event = MouseEvent {
-                            x: 0,
-                            y: 0,
-                            left_button: false,
-                            middle_button: false,
-                            right_button: false,
-                            valid: true
-                        };
+    pub fn handle_events(&mut self, events: &mut Vec<Event>){
+        for event in events.iter() {
+            match event.code {
+                'm' => self.on_mouse(MouseEvent::from_event(event)),
+                'k' => self.on_key(KeyEvent::from_event(event)),
+                'r' => self.redraw = max(self.redraw, RedrawEvent::from_event(event).redraw),
+                'o' => {
+                    self.redraw = max(self.redraw, REDRAW_ALL);
 
-                        match event.path.get(0) {
-                            Option::Some(part) => mouse_event.x = part.to_num_signed(),
-                            Option::None => ()
-                        }
+                    let url_string = OpenEvent::from_event(event).url_string;
+                    let url = URL::from_string(url_string.clone());
 
-                        match event.path.get(1) {
-                            Option::Some(part) => mouse_event.y = part.to_num_signed(),
-                            Option::None => ()
-                        }
+                    let mut found = false;
+                    if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()){
+                        self.items.insert(0, Rc::new(Editor::new()));
+                        found = true;
+                    }else if url_string.ends_with(".bin".to_string()){
+                        self.items.insert(0, Rc::new(Executor::new()));
+                        found = true;
+                    }else if url_string.ends_with(".bmp".to_string()){
+                        self.items.insert(0, Rc::new(Viewer::new()));
+                        found = true;
+                    }else{
+                        d("No program found: ");
+                        url.d();
+                        dl();
+                    }
 
-                        match event.path.get(2) {
-                            Option::Some(part) => mouse_event.left_button = part.to_num() > 0,
-                            Option::None => ()
-                        }
-
-                        match event.path.get(3) {
-                            Option::Some(part) => mouse_event.middle_button = part.to_num() > 0,
-                            Option::None => ()
-                        }
-
-                        match event.path.get(4) {
-                            Option::Some(part) => mouse_event.right_button = part.to_num() > 0,
-                            Option::None => ()
-                        }
-
-                        self.on_mouse(mouse_event);
-                    }else if event.scheme == "k".to_string() {
-                        let mut key_event = KeyEvent {
-                            character: '\0',
-                            scancode: 0,
-                            pressed: false
-                        };
-
-                        match event.path.get(0) {
-                            Option::Some(part) => match char::from_u32(part.to_num() as u32){
-                                Option::Some(character) => key_event.character = character,
-                                Option::None => ()
+                    if found {
+                        self.current_item = 0;
+                        match self.items.get(0) {
+                            Option::Some(item) => unsafe{
+                                Rc::unsafe_get_mut(&item).load(&url);
                             },
                             Option::None => ()
                         }
-
-                        match event.path.get(1) {
-                            Option::Some(part) => key_event.scancode = part.to_num() as u8,
-                            Option::None => ()
-                        }
-
-                        match event.path.get(2) {
-                            Option::Some(part) => key_event.pressed = part.to_num() > 0,
-                            Option::None => ()
-                        }
-
-                        self.on_key(key_event);
-                    }else if event.scheme == "open".to_string() {
-                        self.redraw = max(self.redraw, REDRAW_ALL);
-
-                        let url_string = event.path_string();
-                        let url = URL::from_string(url_string.clone());
-
-                        let mut found = false;
-                        if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()){
-                            self.items.insert(0, Rc::new(Editor::new()));
-                            found = true;
-                        }else if url_string.ends_with(".bin".to_string()){
-                            self.items.insert(0, Rc::new(Executor::new()));
-                            found = true;
-                        }else if url_string.ends_with(".bmp".to_string()){
-                            self.items.insert(0, Rc::new(Viewer::new()));
-                            found = true;
-                        }else{
-                            d("No program found: ");
-                            url.d();
-                            dl();
-                        }
-
-                        if found {
-                            self.current_item = 0;
-                            match self.items.get(0) {
-                                Option::Some(item) => unsafe{
-                                    Rc::unsafe_get_mut(&item).load(&url);
-                                },
-                                Option::None => ()
-                            }
-                            self.current_item = -1;
-                        }
+                        self.current_item = -1;
                     }
-                },
-                Option::None => ()
+                }
+                _ => ()
             }
         }
     }
