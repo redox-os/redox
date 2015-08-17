@@ -248,19 +248,27 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                 redraw: REDRAW_ALL
             }.to_event());
             loop {
+                //Polling must take place without interrupts to avoid interruption during I/O logic
                 asm!("cli");
-                while (*events_ptr).len() > 0 {
                     session.on_poll();
-
-                    let mut events_copy: Vec<Event> = Vec::new();
-                    swap(&mut events_copy, &mut *(events_ptr));
-
-                    asm!("sti");
-                    //Can preempt event handling and redraw
-                    session.handle_events(&mut events_copy);
-                    session.redraw();
+                loop {
+                    //Copying the events must take place without interrupts to avoid pushes of events
                     asm!("cli");
+                        let mut events_copy: Vec<Event> = Vec::new();
+                        swap(&mut events_copy, &mut *events_ptr);
+
+                    //Can preempt event handling and redraw
+                    asm!("sti");
+                        session.handle_events(&mut events_copy);
+                        session.redraw();
+
+                    //Checking for new events must take place without interrupts to avoid pushes of events
+                    asm!("cli");
+                        if (*events_ptr).len() == 0 {
+                            break;
+                        }
                 }
+                //On no new events, halt
                 asm!("sti");
                 asm!("hlt");
             }
