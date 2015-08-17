@@ -5,7 +5,6 @@ use core::option::Option;
 use alloc::boxed::*;
 
 use common::debug::*;
-use common::memory::*;
 use common::random::*;
 use common::resource::*;
 use common::string::*;

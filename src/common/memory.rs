@@ -55,7 +55,11 @@ unsafe fn set_cluster(number: usize, address: usize){
     }
 }
 
-unsafe fn cluster_address(number: usize) -> usize{
+unsafe fn address_to_cluster(address: usize) -> usize {
+    return (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>())/CLUSTER_SIZE;
+}
+
+unsafe fn cluster_to_address(number: usize) -> usize {
     return CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number*CLUSTER_SIZE;
 }
 
@@ -84,7 +88,7 @@ pub unsafe fn alloc(size: usize) -> usize{
             }
         }
         if count*CLUSTER_SIZE > size {
-            let address = cluster_address(number);
+            let address = cluster_to_address(number);
             for i in number..number + count {
                 set_cluster(i, address);
             }
@@ -104,7 +108,7 @@ pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 {
                 if count == 0 {
-                    if cluster_address(i) % alignment == 0 {
+                    if cluster_to_address(i) % alignment == 0 {
                         number = i;
                     }else{
                         continue;
@@ -119,7 +123,7 @@ pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
             }
         }
         if count*CLUSTER_SIZE > size {
-            let address = cluster_address(number);
+            let address = cluster_to_address(number);
             for i in number..number + count {
                 set_cluster(i, address);
             }
@@ -136,7 +140,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
     let mut size = 0;
 
     if ptr > 0 {
-        for i in 0..CLUSTER_COUNT {
+        for i in address_to_cluster(ptr)..CLUSTER_COUNT {
             if cluster(i) == ptr {
                 size += CLUSTER_SIZE;
             }
@@ -181,7 +185,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
 
 pub unsafe fn unalloc(ptr: usize){
     if ptr > 0 {
-        for i in 0..CLUSTER_COUNT {
+        for i in address_to_cluster(ptr)..CLUSTER_COUNT {
             if cluster(i) == ptr {
                 set_cluster(i, 0);
             }

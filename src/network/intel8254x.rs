@@ -1,4 +1,3 @@
-use common::debug::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
@@ -57,8 +56,7 @@ pub struct Intel8254x {
 }
 
 impl SessionModule for Intel8254x {
-    #[allow(unused_variables)]
-    fn on_irq(&mut self, events: &mut Vec<Box<Any>>, irq: u8){
+    fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             d("Intel 8254x handle\n");
         }
