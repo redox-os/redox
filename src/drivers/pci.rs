@@ -120,19 +120,20 @@ pub unsafe fn pci_init(session: &mut Session){
                     dh(data);
                     d(", ");
                     dh(class_id);
-                    dl();
 
                     for i in 0..6 {
-                        d("    ");
-                        dd(i);
-                        d(": ");
-                        dh(pci_read(bus, slot, func, i*4 + 0x10));
-                        dl();
+                        let bar = pci_read(bus, slot, func, i*4 + 0x10);
+                        if bar > 0 {
+                            d(" BAR");
+                            dd(i);
+                            d(": ");
+                            dh(bar);
+                        }
                     }
 
-                    pci_device(session, bus, slot, func, (class_id >> 24) & 0xFF, (class_id >> 16) & 0xFF, (class_id >> 8) & 0xFF, data & 0xFFFF, (data >> 16) & 0xFFFF);
-
                     dl();
+
+                    pci_device(session, bus, slot, func, (class_id >> 24) & 0xFF, (class_id >> 16) & 0xFF, (class_id >> 8) & 0xFF, data & 0xFFFF, (data >> 16) & 0xFFFF);
                 }
             }
         }
