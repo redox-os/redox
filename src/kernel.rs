@@ -33,6 +33,7 @@ use drivers::ps2::*;
 use drivers::serial::*;
 
 use graphics::bmp::*;
+use graphics::color::*;
 
 use programs::filemanager::*;
 use programs::common::*;
@@ -115,9 +116,14 @@ mod usb {
 
 static mut session_ptr: *mut Session = 0 as *mut Session;
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
+static mut debug_point: Point = Point{ x: 0, y: 16 };
 
-unsafe fn init(){
-    serial_init();
+unsafe fn init(font_data: usize, cursor_data: usize){
+    session_ptr = 0 as *mut Session;
+    events_ptr = 0 as *mut Vec<Event>;
+    debug_point = Point{ x: 0, y: 16 };
+
+    debug_init();
 
     dd(size_of::<usize>() * 8);
     d(" bits");
@@ -132,8 +138,10 @@ unsafe fn init(){
     *events_ptr = Vec::new();
 
     let session = &mut *session_ptr;
+    session.display.fonts = font_data;
+    session.display.cursor = BMP::from_data(cursor_data);
 
-    session.items.insert(0, Rc::new(FileManager::new()));
+    //session.items.insert(0, Rc::new(FileManager::new()));
 
     keyboard_init();
     mouse_init();
@@ -149,6 +157,7 @@ unsafe fn init(){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
+    /*
     URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
         let mut vec: Vec<u8> = Vec::new();
         match resource.read_to_end(&mut vec) {
@@ -159,6 +168,7 @@ unsafe fn init(){
             Option::None => d("Background load error\n")
         }
     });
+    */
 }
 
 fn dr(reg: &str, value: u32){
@@ -205,6 +215,19 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => { // kernel calls
             match eax {
+                0x0 => { //Debug
+                    if session_ptr as usize > 0 {
+                        if ebx == 10 {
+                            debug_point.x = 0;
+                            debug_point.y += 16;
+                        }else{
+                            (*session_ptr).display.char_onscreen(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
+                            debug_point.x += 8;
+                        }
+                    }else{
+                        outb(0x3F8, ebx as u8);
+                    }
+                }
                 0x1 => {
                     d("Open: ");
                     let url: &URL = &*(ebx as *const URL);
@@ -241,7 +264,9 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             }
         },
         0xFF => { // main loop
-            init();
+            init(eax as usize, ebx as usize);
+            asm!("cli");
+            asm!("hlt");
 
             let session = &mut *session_ptr;
             (*events_ptr).push(RedrawEvent {

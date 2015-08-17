@@ -6,8 +6,6 @@ use core::simd::*;
 use common::memory::*;
 use common::string::*;
 
-use filesystems::unfs::*;
-
 use graphics::bmp::*;
 use graphics::color::*;
 use graphics::point::*;
@@ -68,19 +66,13 @@ impl Display {
         unsafe{
             let mode_info = &*(VBEMODEINFOLOCATION as *const VBEModeInfo);
 
-            let unfs = UnFS::new();
-
-            let cursor_data = unfs.load("cursor.bmp".to_string());
-            let cursor = BMP::from_data(cursor_data);
-            unalloc(cursor_data);
-
             Display {
                 offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
                 onscreen: mode_info.physbaseptr as usize,
                 size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
-                fonts: unfs.load("unifont.font".to_string()),
+                fonts: 0,
                 background: BMP::new(),
-                cursor: cursor,
+                cursor: BMP::new(),
                 bytesperrow: mode_info.bytesperscanline as usize,
                 width: mode_info.xresolution as usize,
                 height: mode_info.yresolution as usize

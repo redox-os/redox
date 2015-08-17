@@ -11,6 +11,9 @@ boot: ; dl comes with disk
     ; initialize stack
     mov sp, 0x7bfe
 
+    mov si, name
+    call print
+
     mov si, DAPACK      ; address of "disk address packet"
     mov ah, 0x42        ; AL is unused
     int 0x13
@@ -18,8 +21,7 @@ boot: ; dl comes with disk
 
     jmp startup
 
-error:
-    mov si, .msg
+print:
 .loop:
     lodsb
     or al, al
@@ -28,9 +30,18 @@ error:
     int 0x10
     jmp .loop
 .done:
-    cli
-    hlt
-    .msg db "could not read disk", 0
+    ret
+
+name: db "Redox Loader",0
+
+error:
+  mov si, .msg
+  call print
+.halt:
+  cli
+  hlt
+  jmp .halt
+.msg db ": Could not read disk", 0
 
 DAPACK:
 	db	0x10
@@ -105,6 +116,8 @@ protected_mode:
     ;rust init
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
+    mov eax, kernel_file.font
+    mov ebx, kernel_file.cursor
     int 255
     cli
     hlt
@@ -137,8 +150,16 @@ gdt_end:
 times (0xC000-0x1000)-0x7C00-($-$$) db 0
 
 kernel_file:
-incbin "kernel.bin"
-align 512, db 0
+  incbin "kernel.bin"
+  align 512, db 0
+
+  .font:
+      incbin "unifont.font"
+      align 512, db 0
+
+  .cursor:
+      incbin "cursor.bmp"
+      align 512, db 0
 .end:
 
 unfs_root_sector_list:
