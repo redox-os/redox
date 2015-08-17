@@ -44,8 +44,7 @@ pub struct XHCI {
 }
 
 impl SessionModule for XHCI {
-    #[allow(unused_variables)]
-    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
+    fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             d("XHCI handle\n");
         }

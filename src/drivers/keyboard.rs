@@ -1,11 +1,5 @@
+use common::event::*;
 use common::pio::*;
-
-#[derive(Copy, Clone)]
-pub struct KeyEvent {
-    pub character: char,
-    pub scancode: u8,
-    pub pressed: bool
-}
 
 pub struct KeyboardStatus {
     pub lshift: bool,

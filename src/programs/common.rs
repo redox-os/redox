@@ -5,28 +5,22 @@ pub use core::clone::Clone;
 pub use core::option::Option;
 
 pub use common::debug::*;
+pub use common::event::*;
 pub use common::random::*;
 pub use common::resource::*;
 pub use common::string::*;
 pub use common::vec::*;
 
-pub use drivers::mouse::MouseEvent;
-pub use drivers::keyboard::KeyEvent;
-
 pub use graphics::display::*;
 pub use graphics::point::*;
 
-pub const REDRAW_NONE: usize = 0;
-pub const REDRAW_CURSOR: usize = 1;
-pub const REDRAW_ALL: usize = 2;
-
 #[allow(unused_variables)]
 pub trait SessionModule {
-    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
+    fn on_irq(&mut self, irq: u8){
 
     }
 
-    fn on_poll(&mut self, events: &mut Vec<URL>){
+    fn on_poll(&mut self){
 
     }
 
@@ -51,15 +45,15 @@ pub trait SessionItem : ::mopa::Any {
 
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<URL>) -> bool{
+    fn draw(&mut self, display: &Display) -> bool{
         return true;
     }
 
-    fn on_key(&mut self, events: &mut Vec<URL>, key_event: KeyEvent){
+    fn on_key(&mut self, key_event: KeyEvent){
 
     }
 
-    fn on_mouse(&mut self, events: &mut Vec<URL>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
 }

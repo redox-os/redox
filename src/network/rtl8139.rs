@@ -19,18 +19,17 @@ pub struct RTL8139 {
 static mut RTL8139_TX: u16 = 0;
 
 impl SessionModule for RTL8139 {
-    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
+    fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             if cfg!(debug_network){
                 d("RTL8139 handle\n");
             }
 
-            self.on_poll(events);
+            self.on_poll();
         }
     }
 
-    #[allow(unused_variables)]
-    fn on_poll(&mut self, events: &mut Vec<URL>){
+    fn on_poll(&mut self){
         unsafe {
             let base = self.base as u16;
 

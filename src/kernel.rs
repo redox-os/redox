@@ -20,6 +20,7 @@ extern crate mopa;
 
 use core::fmt;
 use core::mem::size_of;
+use core::mem::swap;
 use core::ptr;
 
 use common::pio::*;
@@ -46,6 +47,7 @@ use schemes::random::*;
 mod common {
     pub mod debug;
     pub mod elf;
+    pub mod event;
     pub mod memory;
     pub mod pci;
     pub mod pio;
@@ -112,6 +114,7 @@ mod usb {
 }
 
 static mut session_ptr: *mut Session = 0 as *mut Session;
+static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
 
 unsafe fn init(){
     serial_init();
@@ -125,6 +128,9 @@ unsafe fn init(){
 
     session_ptr = alloc(size_of::<Session>()) as *mut Session;
     *session_ptr = Session::new();
+    events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
+    *events_ptr = Vec::new();
+
     let session = &mut *session_ptr;
 
     session.items.insert(0, Rc::new(FileManager::new()));
@@ -144,29 +150,14 @@ unsafe fn init(){
     session.modules.push(Rc::new(RandomScheme));
 
     URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
-        d("\nfile://background.bmp return\n");
         let mut vec: Vec<u8> = Vec::new();
-        d("Read to end start\n");
         match resource.read_to_end(&mut vec) {
             Option::Some(0) => d("No background data\n"),
             Option::Some(len) => {
-                d("Background load ");
-                dh(vec.as_ptr() as usize);
-                d(" ");
-                dd(vec.len());
-                dl();
-
                 (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize);
-
-                d("Background is ");
-                dd((*session_ptr).display.background.size.width);
-                d(" x ");
-                dd((*session_ptr).display.background.size.height);
-                dl();
             },
             Option::None => d("Background load error\n")
         }
-        d("Read to end end\n");
     });
 }
 
@@ -232,6 +223,9 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     let session = &mut *session_ptr;
                     session.open_async(url, callback);
                 },
+                0x3 => {
+                    (*events_ptr).push(*(ebx as *const Event));
+                }
                 _ => {
                     d("System Call");
                     d(" EAX:");
@@ -249,14 +243,24 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0xFF => { // main loop
             init();
 
+            let session = &mut *session_ptr;
+            (*events_ptr).push(RedrawEvent {
+                redraw: REDRAW_ALL
+            }.to_event());
             loop {
-                (*session_ptr).on_poll();
-                (*session_ptr).handle_events();
-                (*session_ptr).redraw();
-                (*session_ptr).handle_events();
+                asm!("cli");
+                while (*events_ptr).len() > 0 {
+                    session.on_poll();
+
+                    let mut events_copy: Vec<Event> = Vec::new();
+                    swap(&mut events_copy, &mut *(events_ptr));
+
+                    session.handle_events(&mut events_copy);
+
+                    session.redraw();
+                }
                 asm!("sti");
                 asm!("hlt");
-                asm!("cli"); // TODO: Allow preempting
             }
         },
         0x0 => exception("Divide by zero exception"),

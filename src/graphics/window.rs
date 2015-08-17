@@ -1,6 +1,5 @@
+use common::event::*;
 use common::string::*;
-
-use drivers::mouse::*;
 
 use graphics::color::*;
 use graphics::display::*;

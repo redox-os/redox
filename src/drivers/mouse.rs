@@ -1,14 +1,5 @@
+use common::event::*;
 use common::pio::*;
-
-#[derive(Copy, Clone)]
-pub struct MouseEvent {
-    pub x: isize,
-    pub y: isize,
-    pub left_button: bool,
-    pub right_button: bool,
-    pub middle_button: bool,
-    pub valid: bool
-}
 
 static mut mouse_cycle: usize = 0;
 static mut mouse_byte: [u8; 3] = [0, 0, 0];

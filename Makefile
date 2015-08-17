@@ -28,14 +28,14 @@ kernel.rlib: src/kernel.rs liballoc.rlib libmopa.rlib
 kernel.bin: kernel.rlib liballoc.rlib libmopa.rlib
 	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< liballoc.rlib libmopa.rlib
 
-example.rlib: src/program.rs filesystem/example.rs liballoc.rlib libmopa.rlib
-	sed 's|APPLICATION_PATH|../filesystem/example.rs|' src/program.rs > src/program.gen
+terminal.rlib: src/program.rs filesystem/terminal.rs liballoc.rlib libmopa.rlib
+	sed 's|APPLICATION_PATH|../filesystem/terminal.rs|' src/program.rs > src/program.gen
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
 
-filesystem/example.bin: example.rlib liballoc.rlib libmopa.rlib
+filesystem/terminal.bin: terminal.rlib liballoc.rlib libmopa.rlib
 	$(LD) -m elf_i386 -o $@ -T src/program.ld $< liballoc.rlib libmopa.rlib
 
-src/filesystem.gen: filesystem/example.bin
+src/filesystem.gen: filesystem/terminal.bin
 	find filesystem -type f -o -type l | cut -d '/' -f2- | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen

@@ -23,15 +23,13 @@ pub struct IDE {
 }
 
 impl SessionModule for IDE {
-    #[allow(unused_variables)]
-    fn on_irq(&mut self, events: &mut Vec<URL>, irq: u8){
+    fn on_irq(&mut self, irq: u8){
         if irq == 0xE || irq == 0xF {
-            self.on_poll(events);
+            self.on_poll();
         }
     }
 
-    #[allow(unused_variables)]
-    fn on_poll(&mut self, events: &mut Vec<URL>){
+    fn on_poll(&mut self){
         unsafe {
             let base = self.base as u16;
 
