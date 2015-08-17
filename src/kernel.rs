@@ -255,9 +255,11 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     let mut events_copy: Vec<Event> = Vec::new();
                     swap(&mut events_copy, &mut *(events_ptr));
 
+                    asm!("sti");
+                    //Can preempt event handling and redraw
                     session.handle_events(&mut events_copy);
-
                     session.redraw();
+                    asm!("cli");
                 }
                 asm!("sti");
                 asm!("hlt");
