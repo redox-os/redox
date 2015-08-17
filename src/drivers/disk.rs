@@ -88,14 +88,16 @@ pub struct PRDTE {
 
 pub struct Disk{
     base: u16,
-    ctrl: u16
+    ctrl: u16,
+    master: bool
 }
 
 impl Disk {
     pub fn new() -> Disk{
         Disk{
             base: 0x1F0,
-            ctrl: 0x3F4
+            ctrl: 0x3F4,
+            master: true
         }
     }
 
@@ -156,7 +158,11 @@ impl Disk {
 
             }
 
-            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            if self.master {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            }else{
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            }
 
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
             self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
@@ -223,7 +229,11 @@ impl Disk {
 
                 }
 
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                if self.master {
+                    self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                }else{
+                    self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                }
 
                 self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
@@ -253,7 +263,11 @@ impl Disk {
 
             }
 
-            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            if self.master {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            }else{
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            }
 
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
             self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
