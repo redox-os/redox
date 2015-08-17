@@ -17,6 +17,7 @@ pub enum ResourceSeek {
     Current(isize),
 }
 
+#[derive(Copy, Clone)]
 pub enum ResourceType {
     None,
     Array,
@@ -165,7 +166,7 @@ impl URL {
                 : "intel");
         }
     }
-
+    
     pub fn path_string(&self) -> String{
         let mut ret = String::new();
 
@@ -229,13 +230,15 @@ pub struct NoneResource;
 impl Resource for NoneResource {}
 
 pub struct VecResource {
+    resource_type: ResourceType,
     vec: Vec<u8>,
     seek: usize
 }
 
 impl VecResource {
-    pub fn new(vec: Vec<u8>) -> VecResource {
+    pub fn new(resource_type: ResourceType, vec: Vec<u8>) -> VecResource {
         return VecResource {
+            resource_type: resource_type,
             vec: vec,
             seek: 0
         };
@@ -244,7 +247,7 @@ impl VecResource {
 
 impl Resource for VecResource {
     fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+        return self.resource_type;
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

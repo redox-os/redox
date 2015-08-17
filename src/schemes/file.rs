@@ -1,4 +1,3 @@
-use core::clone::Clone;
 use core::mem::size_of;
 
 use common::memory::*;
@@ -18,7 +17,7 @@ impl SessionModule for FileScheme {
         unsafe{
             let unfs = UnFS::new();
 
-            let mut path = url.path_string();
+            let path = url.path_string();
 
             let mut ret: Box<Resource> = box NoneResource;
 
@@ -51,7 +50,7 @@ impl SessionModule for FileScheme {
                     }
                 }
 
-                ret = box VecResource::new(list.to_utf8());
+                ret = box VecResource::new(ResourceType::Dir, list.to_utf8());
             }
 
             return ret;
@@ -62,14 +61,7 @@ impl SessionModule for FileScheme {
         unsafe{
             let unfs = UnFS::new();
 
-            let mut path = String::new();
-            for part in url.path.iter(){
-                if path.len() > 0 {
-                    path = path + "/" + part.clone();
-                }else{
-                    path = part.clone();
-                }
-            }
+            let path = url.path_string();
 
             let node = unfs.node(path.clone());
 
@@ -106,7 +98,7 @@ impl SessionModule for FileScheme {
                     }
                 }
 
-                callback(box VecResource::new(list.to_utf8()));
+                callback(box VecResource::new(ResourceType::Dir, list.to_utf8()));
             }
         }
     }

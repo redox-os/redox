@@ -1,6 +1,3 @@
-use core::clone::Clone;
-use core::option::Option;
-
 use graphics::color::*;
 use graphics::size::*;
 use graphics::window::*;
@@ -54,19 +51,29 @@ impl Application {
                     self.append(echo);
                 }else if *cmd == "exit".to_string() {
                     self.window.closed = true;
+                }else if *cmd == "open".to_string() {
+                    match args.get(1) {
+                        Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
+                        Option::None => ()
+                    }
                 }else if *cmd == "url".to_string() {
                     let mut url = URL::new();
 
                     match args.get(1) {
-                        Option::Some(arg) => {
-                            url = URL::from_string(arg.clone());
-                        },
+                        Option::Some(arg) => url = URL::from_string(arg.clone()),
                         Option::None => ()
                     }
 
-                    self.append(url.to_string());
+                    self.append("URL: ".to_string() + url.to_string());
 
                     let mut resource = url.open();
+
+                    match resource.stat() {
+                        ResourceType::File => self.append("Type: File".to_string()),
+                        ResourceType::Dir => self.append("Type: Dir".to_string()),
+                        ResourceType::Array => self.append("Type: Array".to_string()),
+                        _ => self.append("Type: None".to_string())
+                    }
 
                     let mut vec: Vec<u8> = Vec::new();
                     match resource.read_to_end(&mut vec) {
@@ -75,7 +82,7 @@ impl Application {
                         Option::None => self.append("Failed to read".to_string())
                     }
                 }else{
-                    self.append("Commands:  echo  exit  url".to_string());
+                    self.append("Commands:  echo  exit  open  url".to_string());
                 }
             },
             Option::None => ()
@@ -88,7 +95,7 @@ impl SessionItem for Application {
     fn new() -> Application {
         Application {
             window: Window{
-                point: Point::new(220, 100),
+                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
                 size: Size::new(576, 400),
                 title: String::from_str("Terminal"),
                 title_color: Color::new(0, 0, 0),
@@ -116,7 +123,7 @@ impl SessionItem for Application {
         }
     }
 
-    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+    fn draw(&mut self, display: &Display) -> bool{
         if self.window.draw(display) {
             let scroll = self.scroll;
 
@@ -191,9 +198,10 @@ impl SessionItem for Application {
 
             if row >= rows {
                 self.scroll.y += row - rows + 1;
-                events.push(box RedrawEvent {
+
+                RedrawEvent {
                     redraw: REDRAW_ALL
-                });
+                }.trigger();
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
@@ -208,7 +216,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+    fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
@@ -256,7 +264,7 @@ impl SessionItem for Application {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
 }

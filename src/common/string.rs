@@ -203,6 +203,14 @@ impl String {
         }
     }
 
+    pub fn from_num_radix_signed(num: isize, radix: usize) -> String {
+        if num >= 0 {
+            return String::from_num_radix(num as usize, radix);
+        }else{
+            return "-".to_string() + String::from_num_radix((-num) as usize, radix);
+        }
+    }
+
     pub fn from_char(c: char) -> String {
         if c == '\0' {
             return String::new();
@@ -221,6 +229,10 @@ impl String {
 
     pub fn from_num(num: usize) -> String {
         String::from_num_radix(num, 10)
+    }
+
+    pub fn from_num_signed(num: isize) -> String {
+        String::from_num_radix_signed(num, 10)
     }
 
     pub fn substr(&self, start: usize, len: usize) -> String {
@@ -354,8 +366,20 @@ impl String {
         num
     }
 
+    pub fn to_num_radix_signed(&self, radix: usize) -> isize {
+        if self[0] == '-' {
+            return -(self.substr(1, self.len() - 1).to_num_radix(radix) as isize);
+        }else{
+            return self.to_num_radix(radix) as isize;
+        }
+    }
+
     pub fn to_num(&self) -> usize {
         self.to_num_radix(10)
+    }
+
+    pub fn to_num_signed(&self) -> isize {
+        self.to_num_radix_signed(10)
     }
 
     pub fn d(&self){
@@ -469,5 +493,12 @@ impl Add<usize> for String {
     type Output = String;
     fn add(self, other: usize) -> String {
         self + String::from_num(other)
+    }
+}
+
+impl Add<isize> for String {
+    type Output = String;
+    fn add(self, other: isize) -> String {
+        self + String::from_num_signed(other)
     }
 }

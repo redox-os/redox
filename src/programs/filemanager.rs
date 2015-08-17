@@ -1,18 +1,10 @@
-use core::clone::Clone;
-use core::option::Option;
-
-use common::debug::*;
-
 use filesystems::unfs::*;
 
 use graphics::color::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::editor::*;
-use programs::executor::*;
 use programs::common::*;
-use programs::viewer::*;
 
 pub struct FileManager {
     window: Window,
@@ -65,7 +57,7 @@ impl SessionItem for FileManager {
     }
 
     #[allow(unused_variables)]
-    fn draw(&mut self, display: &Display, events: &mut Vec<Box<Any>>) -> bool{
+    fn draw(&mut self, display: &Display) -> bool{
         if ! self.window.draw(display) {
             return false;
         }
@@ -109,7 +101,7 @@ impl SessionItem for FileManager {
     }
 
     #[allow(unused_variables)]
-    fn on_key(&mut self, events: &mut Vec<Box<Any>>, key_event: KeyEvent){
+    fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.selected = -1,
@@ -128,28 +120,7 @@ impl SessionItem for FileManager {
                 '\n' => {
                     if self.selected >= 0 && self.selected < self.files.len() as isize {
                         match self.files.get(self.selected as usize) {
-                            Option::Some(file) => {
-                                if file.ends_with(".md".to_string()) || file.ends_with(".rs".to_string()){
-                                    events.push(box OpenEvent {
-                                        item: Rc::new(Editor::new()),
-                                        url: URL::from_string("file:///".to_string() + file.clone())
-                                    });
-                                }else if file.ends_with(".bin".to_string()){
-                                    events.push(box OpenEvent {
-                                        item: Rc::new(Executor::new()),
-                                        url: URL::from_string("file:///".to_string() + file.clone())
-                                    });
-                                }else if file.ends_with(".bmp".to_string()){
-                                    events.push(box OpenEvent {
-                                        item: Rc::new(Viewer::new()),
-                                        url: URL::from_string("file:///".to_string() + file.clone())
-                                    });
-                                }else{
-                                    d("No program found: ");
-                                    file.d();
-                                    dl();
-                                }
-                            },
+                            Option::Some(file) => OpenEvent{ url_string: "file:///".to_string() + file.clone() }.trigger(),
                             Option::None => ()
                         }
                     }
@@ -169,7 +140,7 @@ impl SessionItem for FileManager {
     }
 
     #[allow(unused_variables)]
-    fn on_mouse(&mut self, events: &mut Vec<Box<Any>>, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
             if ! self.window.shaded {
                 let mut i = 0;

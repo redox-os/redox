@@ -53,6 +53,15 @@ pub fn dd(num: usize){
     db('0' as u8 + (num % 10) as u8);
 }
 
+pub fn ds(num: isize){
+    if num >= 0 {
+        dd(num as usize);
+    }else{
+        dc('-');
+        dd((-num) as usize);
+    }
+}
+
 pub fn dc(character: char){
     db(character as u8);
 }
@@ -64,5 +73,17 @@ pub fn dl(){
 pub fn d(text: &str){
     for character in text.chars() {
         dc(character);
+    }
+}
+
+pub fn dt(){
+    unsafe{
+        let low: u32;
+        let high: u32;
+        asm!("rdtsc" : "={eax}"(low), "={edx}"(high));
+        dd(high as usize);
+        d(":");
+        dd(low as usize);
+        dl();
     }
 }
