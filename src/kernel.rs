@@ -114,6 +114,7 @@ mod schemes {
 }
 
 mod usb {
+    pub mod ehci;
     pub mod xhci;
 }
 
