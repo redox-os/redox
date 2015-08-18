@@ -225,7 +225,7 @@ impl Disk {
         d("  Drive Size: ");
         let sectors = (*destination.offset(100) as u64) | ((*destination.offset(101) as u64) << 16) | ((*destination.offset(102) as u64) << 32) | ((*destination.offset(103) as u64) << 48);
         dd((sectors / 2048) as usize);
-        d(" MB");
+        d(" MB\n");
 
         unalloc(destination as usize);
 
