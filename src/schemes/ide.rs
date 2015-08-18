@@ -72,7 +72,7 @@ impl SessionModule for IDE {
                                 d(" ");
                                 dd(request.count as usize);
 
-                                let disk = Disk::new();
+                                let disk = Disk::primary_master();
                                 disk.read_dma(request.sector, request.count, request.destination, base);
                             },
                             Option::None => ()
@@ -132,7 +132,7 @@ impl SessionModule for IDE {
             if count > 0 {
                 let destination = alloc(count as usize * 512);
                 if destination > 0 {
-                    let disk = Disk::new();
+                    let disk = Disk::primary_master();
                     disk.read(sector, count, destination);
                     return box VecResource::new(ResourceType::File, Vec::<u8> {
                         data: destination as *mut u8,
@@ -144,7 +144,7 @@ impl SessionModule for IDE {
 
         return box NoneResource;
     }
-
+/*
     #[allow(unused_variables)]
     fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
         let mut request = IDERequest {
@@ -187,7 +187,7 @@ impl SessionModule for IDE {
                     if self.requests.len() == 1 {
                         match self.requests.get(0) {
                             Option::Some(request) => {
-                                let disk = Disk::new();
+                                let disk = Disk::primary_master();
                                 disk.read_dma(request.sector, request.count, request.destination, self.base as u16);
                             },
                             Option::None => ()
@@ -197,6 +197,7 @@ impl SessionModule for IDE {
             }
         }
     }
+*/
 }
 
 impl IDE {

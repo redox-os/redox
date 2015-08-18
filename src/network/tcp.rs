@@ -130,7 +130,7 @@ impl Response for TCP {
                             let tcp_header = self.header;
                             let tcp_options = self.options.clone();
                             let tcp_dst_ip = self.src_ip;
-                            let tcp_data = self.data.clone();
+                            let tcp_data_len = self.data.len();
                             URL::from_string("http://".to_string() + path).open_async(box move |mut resource: Box<Resource>|{
                                 let mut vec: Vec<u8> = Vec::new();
 
@@ -142,7 +142,7 @@ impl Response for TCP {
                                 let mut response = TCP {
                                     header: tcp_header,
                                     options: tcp_options.clone(),
-                                    data: Vec::new(),
+                                    data: vec,
                                     src_ip: IP_ADDR,
                                     dst_ip: tcp_dst_ip
                                 };
@@ -150,10 +150,8 @@ impl Response for TCP {
                                 response.header.src = tcp_header.dst;
                                 response.header.dst = tcp_header.src;
                                 response.header.flags.set(tcp_header.flags.get() | TCP_FIN);
-                                response.header.ack_num.set(tcp_header.sequence.get() + tcp_data.len() as u32);
+                                response.header.ack_num.set(tcp_header.sequence.get() + tcp_data_len as u32);
                                 response.header.sequence.set(tcp_header.ack_num.get());
-
-                                response.data = vec;
 
                                 response.header.checksum.data = 0;
 

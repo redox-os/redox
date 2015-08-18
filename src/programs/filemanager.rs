@@ -1,5 +1,3 @@
-use filesystems::unfs::*;
-
 use graphics::color::*;
 use graphics::size::*;
 use graphics::window::*;
@@ -16,16 +14,26 @@ impl SessionItem for FileManager {
     fn new() -> FileManager {
         let mut size = Size::new(0, 0);
 
-        let files = UnFS::new().list("".to_string());
+        let mut files: Vec<String> = Vec::new();
 
-        if size.height < files.len() * 16 {
-            size.height = files.len() * 16;
+        let mut resource = URL::from_string("file:///".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+
+        match resource.read_to_end(&mut vec) {
+            Option::Some(len) => (),
+            Option::None => ()
         }
 
-        for file in files.iter() {
+        for file in String::from_utf8(&vec).split("\n".to_string()){
             if size.width < (file.len() + 1) * 8 {
                 size.width = (file.len() + 1) * 8 ;
             }
+            files.push(file.clone());
+        }
+
+        if size.height < files.len() * 16 {
+            size.height = files.len() * 16;
         }
 
         let ret = FileManager {
