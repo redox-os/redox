@@ -26,11 +26,14 @@ use core::ptr;
 use common::pio::*;
 use common::memory::*;
 
+use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
 use drivers::mouse::mouse_init;
 use drivers::pci::*;
 use drivers::ps2::*;
 use drivers::serial::*;
+
+use filesystems::unfs::*;
 
 use graphics::bmp::*;
 use graphics::color::*;
@@ -114,14 +117,37 @@ mod usb {
     pub mod xhci;
 }
 
+static mut debug_display: *mut Display = 0 as *mut Display;
+static mut debug_point: Point = Point{ x: 0, y: 0 };
+static mut debug_draw: bool = false;
+static mut debug_redraw: bool = false;
+
 static mut session_ptr: *mut Session = 0 as *mut Session;
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
-static mut debug_point: Point = Point{ x: 0, y: 16 };
+
+unsafe fn test_disk(disk: Disk){
+    if disk.identify() {
+        d("  Disk Found\n");
+
+        let unfs = UnFS::from_disk(disk);
+        if unfs.valid() {
+            d("  UnFS Filesystem\n");
+        }else{
+            d("  Unknown Filesystem\n");
+        }
+    }else{
+        d("  Disk Not Found\n");
+    }
+}
 
 unsafe fn init(font_data: usize, cursor_data: usize){
+    debug_display = 0 as *mut Display;
+    debug_point = Point{ x: 0, y: 0 };
+    debug_draw = false;
+    debug_redraw = false;
+
     session_ptr = 0 as *mut Session;
     events_ptr = 0 as *mut Vec<Event>;
-    debug_point = Point{ x: 0, y: 16 };
 
     debug_init();
 
@@ -132,16 +158,20 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     page_init();
     cluster_init();
 
+    debug_display = alloc(size_of::<Session>()) as *mut Display;
+    ptr::write(debug_display, Display::new());
+    (*debug_display).fonts = font_data;
+    (*debug_display).set(Color::new(0, 0, 0));
+    debug_draw = true;
+
     session_ptr = alloc(size_of::<Session>()) as *mut Session;
-    *session_ptr = Session::new();
+    ptr::write(session_ptr, Session::new());
     events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
-    *events_ptr = Vec::new();
+    ptr::write(events_ptr, Vec::new());
 
     let session = &mut *session_ptr;
     session.display.fonts = font_data;
     session.display.cursor = BMP::from_data(cursor_data);
-
-    //session.items.insert(0, Rc::new(FileManager::new()));
 
     keyboard_init();
     mouse_init();
@@ -151,7 +181,22 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     pci_init(session);
 
-    session.modules.push(Rc::new(FileScheme));
+    d("Primary Master\n");
+    test_disk(Disk::primary_master());
+
+    d("Primary Slave\n");
+    test_disk(Disk::primary_slave());
+
+    d("Secondary Master\n");
+    test_disk(Disk::secondary_master());
+
+    d("Secondary Slave\n");
+    test_disk(Disk::secondary_slave());
+
+    session.modules.push(Rc::new(FileScheme{
+        unfs: UnFS::from_disk(Disk::primary_master())
+    }));
+
     session.modules.push(Rc::new(HTTPScheme));
     session.modules.push(Rc::new(MemoryScheme));
     session.modules.push(Rc::new(PCIScheme));
@@ -169,6 +214,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
         }
     });
     */
+
+    session.items.insert(0, Rc::new(FileManager::new()));
 }
 
 fn dr(reg: &str, value: u32){
@@ -216,13 +263,26 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x80 => { // kernel calls
             match eax {
                 0x0 => { //Debug
-                    if session_ptr as usize > 0 {
+                    if debug_display as usize > 0 {
                         if ebx == 10 {
                             debug_point.x = 0;
                             debug_point.y += 16;
+                            debug_redraw = true;
                         }else{
-                            (*session_ptr).display.char_onscreen(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
+                            (*debug_display).char(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
                             debug_point.x += 8;
+                        }
+                        if debug_point.x >= (*debug_display).width as isize {
+                            debug_point.x = 0;
+                            debug_point.y += 16;
+                        }
+                        while debug_point.y + 16 > (*debug_display).height as isize {
+                            (*debug_display).scroll(16);
+                            debug_point.y -= 16;
+                        }
+                        if debug_draw && debug_redraw {
+                            debug_redraw = false;
+                            (*debug_display).flip();
                         }
                     }else{
                         outb(0x3F8, ebx as u8);
@@ -265,13 +325,8 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         },
         0xFF => { // main loop
             init(eax as usize, ebx as usize);
-            asm!("cli");
-            asm!("hlt");
 
             let session = &mut *session_ptr;
-            (*events_ptr).push(RedrawEvent {
-                redraw: REDRAW_ALL
-            }.to_event());
             loop {
                 //Polling must take place without interrupts to avoid interruption during I/O logic
                 asm!("cli");
@@ -282,10 +337,30 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                         let mut events_copy: Vec<Event> = Vec::new();
                         swap(&mut events_copy, &mut *events_ptr);
 
-                    //Can preempt event handling and redraw
-                    asm!("sti");
-                        session.handle_events(&mut events_copy);
-                        session.redraw();
+                        for event in events_copy.iter() {
+                            if event.code == 'k' && event.b == 0x3B && event.c > 0 {
+                                debug_draw = true;
+                                debug_redraw = true;
+                            }
+                            if event.code == 'k' && event.b == 0x3C && event.c > 0 {
+                                debug_draw = false;
+                                (*events_ptr).push(RedrawEvent {
+                                    redraw: REDRAW_ALL
+                                }.to_event());
+                            }
+                        }
+
+                    if debug_draw {
+                        if debug_display as usize > 0 && debug_redraw {
+                            debug_redraw = false;
+                            (*debug_display).flip();
+                        }
+                    }else{
+                        //Can preempt event handling and redraw
+                        //asm!("sti");
+                            session.handle_events(&mut events_copy);
+                            session.redraw();
+                    }
 
                     //Checking for new events must take place without interrupts to avoid pushes of events
                     asm!("cli");

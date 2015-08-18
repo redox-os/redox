@@ -93,11 +93,35 @@ pub struct Disk{
 }
 
 impl Disk {
-    pub fn new() -> Disk{
+    pub fn primary_master() -> Disk{
         Disk{
             base: 0x1F0,
             ctrl: 0x3F4,
             master: true
+        }
+    }
+
+    pub fn primary_slave() -> Disk{
+        Disk{
+            base: 0x1F0,
+            ctrl: 0x3F4,
+            master: false
+        }
+    }
+
+    pub fn secondary_master() -> Disk{
+        Disk{
+            base: 0x170,
+            ctrl: 0x374,
+            master: true
+        }
+    }
+
+    pub fn secondary_slave() -> Disk{
+        Disk{
+            base: 0x170,
+            ctrl: 0x374,
+            master: false
         }
     }
 
@@ -151,6 +175,63 @@ impl Disk {
         return 0;
     }
 
+    pub unsafe fn identify(&self) -> bool{
+        if self.ide_read(ATA_REG_STATUS) == 0xFF{
+            d("  Floating Bus\n");
+
+            return false;
+        }
+
+        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+        }
+
+        if self.master {
+            self.ide_write(ATA_REG_HDDEVSEL, 0xA0);
+        }else{
+            self.ide_write(ATA_REG_HDDEVSEL, 0xB0);
+        }
+
+        self.ide_write(ATA_REG_SECCOUNT0, 0);
+        self.ide_write(ATA_REG_LBA0, 0);
+        self.ide_write(ATA_REG_LBA1, 0);
+        self.ide_write(ATA_REG_LBA2, 0);
+
+        self.ide_write(ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
+
+        let status = self.ide_read(ATA_REG_STATUS);
+        d("  Status: ");
+        dbh(status);
+        dl();
+
+        if status == 0 {
+            return false;
+        }
+
+        let err = self.ide_poll(true);
+        if err > 0 {
+            d("  Error: ");
+            dbh(err);
+            dl();
+
+            return false;
+        }
+
+        let destination = alloc(512) as *mut u16;
+        for word in 0..256 {
+            *destination.offset(word) = inw(self.base + ATA_REG_DATA);
+        }
+
+        d("  Drive Size: ");
+        let sectors = (*destination.offset(100) as u64) | ((*destination.offset(101) as u64) << 16) | ((*destination.offset(102) as u64) << 32) | ((*destination.offset(103) as u64) << 48);
+        dd((sectors / 2048) as usize);
+        d(" MB");
+
+        unalloc(destination as usize);
+
+        return true;
+    }
+
     //TODO: Make sure count is not zero!
     pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8{
         if destination > 0 {
@@ -194,63 +275,57 @@ impl Disk {
     pub unsafe fn read_dma(&self, lba: u64, count: u16, destination: usize, busmaster: u16) -> u8{
         if destination > 0 {
             //Allocate PDTR
-            let mut prdt = ind(busmaster + 4) as usize;
-
-            if prdt == 0 {
-                let size = count as usize * 512;
-                let entries = (size + 65535)/65536;
-                prdt = alloc(size_of::<PRDTE>() * entries);
-                for i in 0..entries {
-                    if i == entries - 1 {
-                        *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
-                            ptr: (destination + i * 65536) as u32,
-                            size: (size % 65536) as u16,
-                            reserved: 0x8000
-                        };
-                    }else{
-                        *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
-                            ptr: (destination + i * 65536) as u32,
-                            size: 0,
-                            reserved: 0
-                        };
-                    }
-                }
-
-                outd(busmaster + 4, prdt as u32);
-
-                //Set read bit
-                outb(busmaster, 8);
-
-                //Clear interrupt, error bit
-                outb(busmaster + 2, 0);
-
-                //DMA Transfer Command
-                while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-                }
-
-                if self.master {
-                    self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            let size = count as usize * 512;
+            let entries = (size + 65535)/65536;
+            let prdt = alloc(size_of::<PRDTE>() * entries);
+            for i in 0..entries {
+                if i == entries - 1 {
+                    *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
+                        ptr: (destination + i * 65536) as u32,
+                        size: (size % 65536) as u16,
+                        reserved: 0x8000
+                    };
                 }else{
-                    self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                    *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
+                        ptr: (destination + i * 65536) as u32,
+                        size: 0,
+                        reserved: 0
+                    };
                 }
-
-                self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
-
-                self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
-
-                //Engage bus mastering
-                outb(busmaster, inb(busmaster) | 1);
-            }else{
-                d("Operation Running!\n");
             }
+
+            outd(busmaster + 4, prdt as u32);
+
+            //Set read bit
+            outb(busmaster, 8);
+
+            //Clear interrupt, error bit
+            outb(busmaster + 2, 0);
+
+            //DMA Transfer Command
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+            }
+
+            if self.master {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            }else{
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            }
+
+            self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
+
+            self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
+            self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+
+            //Engage bus mastering
+            outb(busmaster, inb(busmaster) | 1);
         }
 
         return 0;

@@ -132,6 +132,16 @@ impl Display {
         }
     }
 
+    pub fn scroll(&self, rows: usize){
+        if rows > 0 && rows < self.height {
+            let offset = rows * self.bytesperrow;
+            unsafe{
+                Display::copy_run(self.offscreen + offset, self.offscreen, self.size - offset);
+                Display::set_run(0, self.offscreen + self.size - offset, offset);
+            }
+        }
+    }
+
     pub fn flip(&self){
         unsafe{
             Display::copy_run(self.offscreen, self.onscreen, self.size);

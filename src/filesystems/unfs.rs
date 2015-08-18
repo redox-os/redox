@@ -1,5 +1,6 @@
 use core::clone::Clone;
 use core::mem::size_of;
+use core::ptr;
 
 use common::memory::*;
 use common::string::*;
@@ -51,19 +52,25 @@ pub struct SectorList {
 
 pub struct UnFS {
     pub disk: Disk,
-    pub header: &'static Header
+    pub header: Header
 }
 
 impl UnFS {
-    pub fn new() -> UnFS{
+    pub fn from_disk(disk: Disk) -> UnFS{
         unsafe{
-            return UnFS::from_disk(Disk::new());
+            let header_ptr = alloc(size_of::<Header>()) as *const Header;
+            disk.read(1, 1, header_ptr as usize);
+            let ret = UnFS { disk:disk, header: ptr::read(header_ptr) };
+            unalloc(header_ptr as usize);
+            return ret;
         }
     }
 
-    pub unsafe fn from_disk(disk: Disk) -> UnFS{
-        // TODO: Do not use header loaded in memory
-        UnFS { disk:disk, header: &*(0x7E00 as *const Header) }
+    pub fn valid(&self) -> bool {
+        return self.header.signature[0] == 'U' as u8
+            && self.header.signature[1] == 'n' as u8
+            && self.header.signature[2] == 'F' as u8
+            && self.header.signature[3] == 'S' as u8;
     }
 
     pub unsafe fn node(&self, filename: String) -> *const Node{

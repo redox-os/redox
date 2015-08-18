@@ -21,9 +21,9 @@ static mut RTL8139_TX: u16 = 0;
 impl SessionModule for RTL8139 {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            if cfg!(debug_network){
+            //if cfg!(debug_network){
                 d("RTL8139 handle\n");
-            }
+            //}
 
             self.on_poll();
         }
@@ -41,7 +41,7 @@ impl SessionModule for RTL8139 {
                 let frame_addr = receive_buffer + capr + 4;
                 let frame_len = *((receive_buffer + capr + 2) as *const u16) as usize;
 
-                if cfg!(debug_network){
+                //if cfg!(debug_network){
                     d(" CAPR ");
                     dd(capr);
                     d(" CBR ");
@@ -50,7 +50,7 @@ impl SessionModule for RTL8139 {
                     d(" len ");
                     dd(frame_len);
                     dl();
-                }
+                //}
 
                 match EthernetII::from_bytes(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4)){
                     Option::Some(frame) => {
@@ -88,7 +88,7 @@ impl SessionModule for RTL8139 {
                 outw(base + 0x38, (capr as u16) - 16);
             }
 
-            outw(base + 0x3E, 0x0001);
+            outw(base + 0x3E, 0x1);
         }
     }
 }
@@ -120,13 +120,11 @@ impl RTL8139 {
 
         let receive_buffer = alloc(10240);
         outd(base + 0x30, receive_buffer as u32);
-        outw(base + 0x38, 0);
-        outw(base + 0x3A, 0);
 
-        outw(base + 0x3C, 0x0001);
+        outw(base + 0x3C, 0x1);
 
         outd(base + 0x44, 0xf | (1 << 7));
 
-        outb(base + 0x37, 0x0C);
+        outb(base + 0x37, 0xC);
     }
 }
