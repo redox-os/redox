@@ -202,7 +202,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-    /*
     URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
         let mut vec: Vec<u8> = Vec::new();
         match resource.read_to_end(&mut vec) {
@@ -213,7 +212,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
             Option::None => d("Background load error\n")
         }
     });
-    */
 
     session.items.insert(0, Rc::new(FileManager::new()));
 }
