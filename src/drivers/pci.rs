@@ -11,6 +11,7 @@ use programs::session::*;
 
 use schemes::ide::*;
 
+use usb::ehci::*;
 use usb::xhci::*;
 
 pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: usize, class_id: usize, subclass_id: usize, interface_id: usize, vendor_code: usize, device_code: usize){
@@ -44,9 +45,16 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
         }else if interface_id == 0x20{
             let base = pci_read(bus, slot, func, 0x10);
 
-            d("EHCI Controller on ");
-            dh(base & 0xFFFFFFF0);
-            dl();
+            let module = Rc::new(EHCI {
+                bus: bus,
+                slot: slot,
+                func: func,
+                base: base & 0xFFFFFFF0,
+                memory_mapped: base & 1 == 0,
+                irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
+            });
+            module.init();
+            session.modules.push(module);
         }else if interface_id == 0x10{
             let base = pci_read(bus, slot, func, 0x10);
 
