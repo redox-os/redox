@@ -10,13 +10,13 @@ boot: ; dl comes with disk
     mov ss, ax
     ; initialize stack
     mov sp, 0x7bfe
-    
+
     mov [disk], dl
 
     mov si, name
     call print
     call print_line
-    
+
     mov bh, 0
     mov bl, [disk]
     call print_num
@@ -29,7 +29,7 @@ boot: ; dl comes with disk
     call load
 
     jmp startup
-    
+
 load:
     cmp cx, 127
     jbe .good_size
@@ -41,30 +41,30 @@ load:
     add ax, 127
     add dx, 127*512/16
     sub cx, 127
-    
+
     jmp load
 .good_size:
     mov [DAPACK.addr], ax
     mov [DAPACK.buf], bx
     mov [DAPACK.count], cx
     mov [DAPACK.seg], dx
-    
+
     mov si, .msg
     call print
     call print_line
-    
+
     mov bx, [DAPACK.addr]
     call print_num
     call print_line
-    
+
     mov bx, [DAPACK.buf]
     call print_num
     call print_line
-    
+
     mov bx, [DAPACK.count]
     call print_num
     call print_line
-    
+
     mov bx, [DAPACK.seg]
     call print_num
     call print_line
@@ -76,37 +76,37 @@ load:
     jc error
     ret
 .msg: db "Loading",0
-    
+
 print_char:
     mov ah, 0x0e
     int 0x10
     ret
-    
+
 print_num:
     mov cx, 4
 .loop:
     mov al, bh
     shr al, 4
     and al, 0xF
-    
+
     cmp al, 0xA
     jb .below_a
-    
+
     add al, 'A' - '0' - 0xA
 .below_a:
     add al, '0'
-    
+
     push cx
     push bx
     call print_char
     pop bx
     pop cx
-    
+
     shl bx, 4
     loop .loop
-    
+
     ret
-    
+
 print_line:
     mov si, line
     call print
@@ -158,40 +158,40 @@ unfs_header:
     db 'F'
     db 'S'
 .version:
-    dd 1
-.root_sector_list:
-    dq (unfs_root_sector_list - boot)/512
-.free_space_lba:
-    dq 0
+    dd 0xFFFFFFFF
 .name:
     db "Root Filesystem",0
+align 256, db 0
+.extents:
+    dq (unfs_root_node_list - boot)/512
+    dq (unfs_root_node_list.end - unfs_root_node_list)/512
 
     align 512, db 0
 .end:
 
 startup:
-    ; a20
-    in al, 0x92
-    or al, 2
-    out 0x92, al
+  ; a20
+  in al, 0x92
+  or al, 2
+  out 0x92, al
 
-    call vesa
+  call vesa
 
-    call initialize.fpu
-    call initialize.sse
-    call initialize.pic
+  call initialize.fpu
+  call initialize.sse
+  call initialize.pic
 
-    ; load protected mode GDT and IDT
-    cli
-    lgdt [gdtr]
-    lidt [idtr]
-    ; set protected mode bit of cr0
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
+  ; load protected mode GDT and IDT
+  cli
+  lgdt [gdtr]
+  lidt [idtr]
+  ; set protected mode bit of cr0
+  mov eax, cr0
+  or eax, 1
+  mov cr0, eax
 
-    ; far jump to load CS with 32 bit segment
-    jmp 0x08:protected_mode
+  ; far jump to load CS with 32 bit segment
+  jmp 0x08:protected_mode
 
 %include "asm/vesa.asm"
 %include "asm/initialize.asm"
@@ -248,54 +248,26 @@ kernel_file:
   incbin "kernel.bin"
   align 512, db 0
 
-  .font:
-      incbin "unifont.font"
-      align 512, db 0
+.font:
+  incbin "unifont.font"
+  align 512, db 0
 
-  .cursor:
-      incbin "cursor.bmp"
-      align 512, db 0
-.end:
-
-unfs_root_sector_list:
-.parent:
-    dq 0
-.fragment_number:
-    dq 0
-.last_fragment:
-    dq 0
-.next_fragment:
-    dq 0
-.extents:
-    dq (unfs_root_node_list - boot)/512
-    dq (unfs_root_node_list.end - unfs_root_node_list)/512
-
-    align 512, db 0
+.cursor:
+  incbin "cursor.bmp"
+  align 512, db 0
 .end:
 
 unfs_root_node_list:
 %macro file 2+
     unfs_node.%1:
-    .parent_collection:
-        dq (unfs_root_sector_list - boot)/512
-    .data_sector_list:
-        dq (unfs_sector_list.%1 - boot)/512
-    .data_size:
-        dq (unfs_data.%1.end - unfs_data.%1)
-    .user_id:
-        dq 0
-    .group_id:
-        dq 0
-    .mode:
-        dq 0
-    .create_time:
-        dq 0
-    .modify_time:
-        dq 0
-    .access_time:
-        dq 0
     .name:
         db %2,0
+
+        align 256, db 0
+
+    .extents:
+        dq (unfs_data.%1 - boot)/512
+        dq (unfs_data.%1.end - unfs_data.%1)/512
 
         align 512, db 0
     .end:
@@ -304,25 +276,9 @@ unfs_root_node_list:
 %include "filesystem.gen"
 
 %unmacro file 2+
-
 unfs_root_node_list.end:
 
 %macro file 2+
-unfs_sector_list.%1:
-.parent_node:
-    dq (unfs_node.%1 - boot)/512
-.fragment_number:
-    dq 0
-.last_fragment:
-    dq 0
-.next_fragment:
-    dq 0
-.extents:
-    dq (unfs_data.%1 - boot)/512
-    dq (unfs_data.%1.end - unfs_data.%1)/512
-
-    align 512, db 0
-.end:
 unfs_data.%1:
     incbin %2
     align 512, db 0
