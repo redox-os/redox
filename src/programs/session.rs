@@ -223,7 +223,7 @@ impl Session {
                         self.current_item = 0;
                         match self.items.get(0) {
                             Option::Some(item) => unsafe{
-                                Rc::unsafe_get_mut(&item).load(&url);
+                                Rc::unsafe_get_mut(item).load(&url);
                             },
                             Option::None => ()
                         }

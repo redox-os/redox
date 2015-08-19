@@ -16,16 +16,13 @@ pub use self::SearchResult::*;
 pub use self::ForceResult::*;
 pub use self::TraversalItem::*;
 
-#[cfg(stage0)]
-use core::prelude::v1::*;
-
 use core::cmp::Ordering::{Greater, Less, Equal};
 use core::intrinsics::arith_offset;
 use core::iter::Zip;
 use core::marker::PhantomData;
 use core::ops::{Deref, DerefMut, Index, IndexMut};
 use core::ptr::Unique;
-use core::{slice, mem, ptr, cmp, raw};
+use core::{slice, mem, ptr, cmp};
 use alloc::heap::{self, EMPTY};
 
 use borrow::Borrow;
@@ -357,7 +354,10 @@ impl<K, V> Node<K, V> {
 
     #[inline]
     pub fn as_slices_mut<'a>(&'a mut self) -> (&'a mut [K], &'a mut [V]) {
-        unsafe { mem::transmute(self.as_slices()) }
+        unsafe {(
+            slice::from_raw_parts_mut(*self.keys, self.len()),
+            slice::from_raw_parts_mut(*self.vals, self.len()),
+        )}
     }
 
     #[inline]
@@ -372,10 +372,7 @@ impl<K, V> Node<K, V> {
                     None => heap::EMPTY as *const Node<K,V>,
                     Some(ref p) => **p as *const Node<K,V>,
                 };
-                mem::transmute(raw::Slice {
-                    data: data,
-                    len: self.len() + 1
-                })
+                slice::from_raw_parts(data, self.len() + 1)
             }
         };
         NodeSlice {
@@ -390,7 +387,29 @@ impl<K, V> Node<K, V> {
 
     #[inline]
     pub fn as_slices_internal_mut<'b>(&'b mut self) -> MutNodeSlice<'b, K, V> {
-        unsafe { mem::transmute(self.as_slices_internal()) }
+        let len = self.len();
+        let is_leaf = self.is_leaf();
+        let keys = unsafe { slice::from_raw_parts_mut(*self.keys, len) };
+        let vals = unsafe { slice::from_raw_parts_mut(*self.vals, len) };
+        let edges: &mut [_] = if is_leaf {
+            &mut []
+        } else {
+            unsafe {
+                let data = match self.edges {
+                    None => heap::EMPTY as *mut Node<K,V>,
+                    Some(ref mut p) => **p as *mut Node<K,V>,
+                };
+                slice::from_raw_parts_mut(data, len + 1)
+            }
+        };
+        MutNodeSlice {
+            keys: keys,
+            vals: vals,
+            edges: edges,
+            head_is_edge: true,
+            tail_is_edge: true,
+            has_edges: !is_leaf,
+        }
     }
 
     #[inline]

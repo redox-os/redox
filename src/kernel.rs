@@ -25,6 +25,7 @@ use core::ptr;
 
 use common::pio::*;
 use common::memory::*;
+use common::paging::*;
 
 use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
@@ -53,6 +54,7 @@ mod common {
     pub mod elf;
     pub mod event;
     pub mod memory;
+    pub mod paging;
     pub mod pci;
     pub mod pio;
     pub mod random;
@@ -410,20 +412,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
         outb(0x20, 0x20);
     }
-}
-
-#[lang = "panic_fmt"]
-pub extern fn panic_fmt(fmt: fmt::Arguments, file: &'static str, line: u32) -> ! {
-    d("PANIC: ");
-    d(file);
-    d(": ");
-    dh(line as usize);
-    dl();
-    unsafe{
-        asm!("cli");
-        asm!("hlt");
-    }
-    loop{}
 }
 
 #[no_mangle]
