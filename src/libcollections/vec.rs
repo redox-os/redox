@@ -32,7 +32,8 @@
 //! let v = vec![0; 10]; // ten zeroes
 //! ```
 //!
-//! You can `push` values onto the end of a vector (which will grow the vector as needed):
+//! You can `push` values onto the end of a vector (which will grow the vector
+//! as needed):
 //!
 //! ```
 //! let mut v = vec![1, 2];
@@ -58,9 +59,6 @@
 
 #![stable(feature = "rust1", since = "1.0.0")]
 
-#[cfg(stage0)]
-use core::prelude::v1::*;
-
 use alloc::raw_vec::RawVec;
 use alloc::boxed::Box;
 use alloc::heap::EMPTY;
@@ -69,7 +67,6 @@ use core::fmt;
 use core::hash::{self, Hash};
 use core::intrinsics::{arith_offset, assume, drop_in_place};
 use core::iter::FromIterator;
-use core::marker::PhantomData;
 use core::mem;
 use core::ops::{Index, IndexMut, Deref};
 use core::ops;
@@ -180,12 +177,13 @@ impl<T> Vec<T> {
 
     /// Constructs a new, empty `Vec<T>` with the specified capacity.
     ///
-    /// The vector will be able to hold exactly `capacity` elements without reallocating. If
-    /// `capacity` is 0, the vector will not allocate.
+    /// The vector will be able to hold exactly `capacity` elements without
+    /// reallocating. If `capacity` is 0, the vector will not allocate.
     ///
-    /// It is important to note that this function does not specify the *length* of the returned
-    /// vector, but only the *capacity*. (For an explanation of the difference between length and
-    /// capacity, see the main `Vec<T>` docs above, 'Capacity and reallocation'.)
+    /// It is important to note that this function does not specify the *length*
+    /// of the returned vector, but only the *capacity*. (For an explanation of
+    /// the difference between length and capacity, see the main `Vec<T>` docs
+    /// above, 'Capacity and reallocation'.)
     ///
     /// # Examples
     ///
@@ -261,24 +259,6 @@ impl<T> Vec<T> {
             buf: RawVec::from_raw_parts(ptr, capacity),
             len: length,
         }
-    }
-
-    /// Creates a vector by copying the elements from a raw pointer.
-    ///
-    /// This function will copy `elts` contiguous elements starting at `ptr`
-    /// into a new allocation owned by the returned `Vec<T>`. The elements of
-    /// the buffer are copied into the vector without cloning, as if
-    /// `ptr::read()` were called on them.
-    #[inline]
-    #[unstable(feature = "vec_from_raw_buf",
-               reason = "may be better expressed via composition")]
-    #[deprecated(since = "1.2.0",
-                 reason = "use slice::from_raw_parts + .to_vec() instead")]
-    pub unsafe fn from_raw_buf(ptr: *const T, elts: usize) -> Vec<T> {
-        let mut dst = Vec::with_capacity(elts);
-        dst.set_len(elts);
-        ptr::copy_nonoverlapping(ptr, dst.as_mut_ptr(), elts);
-        dst
     }
 
     /// Returns the number of elements the vector can hold without
@@ -404,7 +384,8 @@ impl<T> Vec<T> {
     /// Equivalent to `&s[..]`.
     #[inline]
     #[unstable(feature = "convert",
-               reason = "waiting on RFC revision")]
+               reason = "waiting on RFC revision",
+               issue = "27729")]
     pub fn as_slice(&self) -> &[T] {
         self
     }
@@ -414,7 +395,8 @@ impl<T> Vec<T> {
     /// Equivalent to `&mut s[..]`.
     #[inline]
     #[unstable(feature = "convert",
-               reason = "waiting on RFC revision")]
+               reason = "waiting on RFC revision",
+               issue = "27729")]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         &mut self[..]
     }
@@ -600,7 +582,8 @@ impl<T> Vec<T> {
         }
     }
 
-    /// Removes the last element from a vector and returns it, or `None` if it is empty.
+    /// Removes the last element from a vector and returns it, or `None` if it
+    /// is empty.
     ///
     /// # Examples
     ///
@@ -641,7 +624,8 @@ impl<T> Vec<T> {
     /// ```
     #[inline]
     #[unstable(feature = "append",
-               reason = "new API, waiting for dust to settle")]
+               reason = "new API, waiting for dust to settle",
+               issue = "27765")]
     pub fn append(&mut self, other: &mut Self) {
         self.reserve(other.len());
         let len = self.len();
@@ -680,7 +664,8 @@ impl<T> Vec<T> {
     /// assert_eq!(u, &[1, 2, 3]);
     /// ```
     #[unstable(feature = "drain",
-               reason = "recently added, matches RFC")]
+               reason = "recently added, matches RFC",
+               issue = "27711")]
     pub fn drain<R>(&mut self, range: R) -> Drain<T> where R: RangeArgument<usize> {
         // Memory safety
         //
@@ -758,210 +743,6 @@ impl<T> Vec<T> {
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn is_empty(&self) -> bool { self.len() == 0 }
 
-    /// Converts a `Vec<T>` to a `Vec<U>` where `T` and `U` have the same
-    /// size and in case they are not zero-sized the same minimal alignment.
-    ///
-    /// # Panics
-    ///
-    /// Panics if `T` and `U` have differing sizes or are not zero-sized and
-    /// have differing minimal alignments.
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// #![feature(map_in_place)]
-    ///
-    /// let v = vec![0, 1, 2];
-    /// let w = v.map_in_place(|i| i + 3);
-    /// assert_eq!(&w[..], &[3, 4, 5]);
-    ///
-    /// #[derive(PartialEq, Debug)]
-    /// struct Newtype(u8);
-    /// let bytes = vec![0x11, 0x22];
-    /// let newtyped_bytes = bytes.map_in_place(|x| Newtype(x));
-    /// assert_eq!(&newtyped_bytes[..], &[Newtype(0x11), Newtype(0x22)]);
-    /// ```
-    #[unstable(feature = "map_in_place",
-               reason = "API may change to provide stronger guarantees")]
-    #[deprecated(since = "1.3.0",
-                 reason = "unclear that the API is strong enough and did \
-                           not proven itself")]
-    pub fn map_in_place<U, F>(self, mut f: F) -> Vec<U> where F: FnMut(T) -> U {
-        // FIXME: Assert statically that the types `T` and `U` have the same
-        // size.
-        assert!(mem::size_of::<T>() == mem::size_of::<U>());
-
-        let mut vec = self;
-
-        if mem::size_of::<T>() != 0 {
-            // FIXME: Assert statically that the types `T` and `U` have the
-            // same minimal alignment in case they are not zero-sized.
-
-            // These asserts are necessary because the `align_of` of the
-            // types are passed to the allocator by `Vec`.
-            assert!(mem::align_of::<T>() == mem::align_of::<U>());
-
-            // This `as isize` cast is safe, because the size of the elements of the
-            // vector is not 0, and:
-            //
-            // 1) If the size of the elements in the vector is 1, the `isize` may
-            //    overflow, but it has the correct bit pattern so that the
-            //    `.offset()` function will work.
-            //
-            //    Example:
-            //        Address space 0x0-0xF.
-            //        `u8` array at: 0x1.
-            //        Size of `u8` array: 0x8.
-            //        Calculated `offset`: -0x8.
-            //        After `array.offset(offset)`: 0x9.
-            //        (0x1 + 0x8 = 0x1 - 0x8)
-            //
-            // 2) If the size of the elements in the vector is >1, the `usize` ->
-            //    `isize` conversion can't overflow.
-            let offset = vec.len() as isize;
-            let start = vec.as_mut_ptr();
-
-            let mut pv = PartialVecNonZeroSized {
-                vec: vec,
-
-                start_t: start,
-                // This points inside the vector, as the vector has length
-                // `offset`.
-                end_t: unsafe { start.offset(offset) },
-                start_u: start as *mut U,
-                end_u: start as *mut U,
-
-                _marker: PhantomData,
-            };
-            //  start_t
-            //  start_u
-            //  |
-            // +-+-+-+-+-+-+
-            // |T|T|T|...|T|
-            // +-+-+-+-+-+-+
-            //  |           |
-            //  end_u       end_t
-
-            while pv.end_u as *mut T != pv.end_t {
-                unsafe {
-                    //  start_u start_t
-                    //  |       |
-                    // +-+-+-+-+-+-+-+-+-+
-                    // |U|...|U|T|T|...|T|
-                    // +-+-+-+-+-+-+-+-+-+
-                    //          |         |
-                    //          end_u     end_t
-
-                    let t = ptr::read(pv.start_t);
-                    //  start_u start_t
-                    //  |       |
-                    // +-+-+-+-+-+-+-+-+-+
-                    // |U|...|U|X|T|...|T|
-                    // +-+-+-+-+-+-+-+-+-+
-                    //          |         |
-                    //          end_u     end_t
-                    // We must not panic here, one cell is marked as `T`
-                    // although it is not `T`.
-
-                    pv.start_t = pv.start_t.offset(1);
-                    //  start_u   start_t
-                    //  |         |
-                    // +-+-+-+-+-+-+-+-+-+
-                    // |U|...|U|X|T|...|T|
-                    // +-+-+-+-+-+-+-+-+-+
-                    //          |         |
-                    //          end_u     end_t
-                    // We may panic again.
-
-                    // The function given by the user might panic.
-                    let u = f(t);
-
-                    ptr::write(pv.end_u, u);
-                    //  start_u   start_t
-                    //  |         |
-                    // +-+-+-+-+-+-+-+-+-+
-                    // |U|...|U|U|T|...|T|
-                    // +-+-+-+-+-+-+-+-+-+
-                    //          |         |
-                    //          end_u     end_t
-                    // We should not panic here, because that would leak the `U`
-                    // pointed to by `end_u`.
-
-                    pv.end_u = pv.end_u.offset(1);
-                    //  start_u   start_t
-                    //  |         |
-                    // +-+-+-+-+-+-+-+-+-+
-                    // |U|...|U|U|T|...|T|
-                    // +-+-+-+-+-+-+-+-+-+
-                    //            |       |
-                    //            end_u   end_t
-                    // We may panic again.
-                }
-            }
-
-            //  start_u     start_t
-            //  |           |
-            // +-+-+-+-+-+-+
-            // |U|...|U|U|U|
-            // +-+-+-+-+-+-+
-            //              |
-            //              end_t
-            //              end_u
-            // Extract `vec` and prevent the destructor of
-            // `PartialVecNonZeroSized` from running. Note that none of the
-            // function calls can panic, thus no resources can be leaked (as the
-            // `vec` member of `PartialVec` is the only one which holds
-            // allocations -- and it is returned from this function. None of
-            // this can panic.
-            unsafe {
-                let vec_len = pv.vec.len();
-                let vec_cap = pv.vec.capacity();
-                let vec_ptr = pv.vec.as_mut_ptr() as *mut U;
-                mem::forget(pv);
-                Vec::from_raw_parts(vec_ptr, vec_len, vec_cap)
-            }
-        } else {
-            // Put the `Vec` into the `PartialVecZeroSized` structure and
-            // prevent the destructor of the `Vec` from running. Since the
-            // `Vec` contained zero-sized objects, it did not allocate, so we
-            // are not leaking memory here.
-            let mut pv = PartialVecZeroSized::<T,U> {
-                num_t: vec.len(),
-                num_u: 0,
-                marker: PhantomData,
-            };
-            mem::forget(vec);
-
-            while pv.num_t != 0 {
-                unsafe {
-                    // Create a `T` out of thin air and decrement `num_t`. This
-                    // must not panic between these steps, as otherwise a
-                    // destructor of `T` which doesn't exist runs.
-                    let t = mem::uninitialized();
-                    pv.num_t -= 1;
-
-                    // The function given by the user might panic.
-                    let u = f(t);
-
-                    // Forget the `U` and increment `num_u`. This increment
-                    // cannot overflow the `usize` as we only do this for a
-                    // number of times that fits into a `usize` (and start with
-                    // `0`). Again, we should not panic between these steps.
-                    mem::forget(u);
-                    pv.num_u += 1;
-                }
-            }
-            // Create a `Vec` from our `PartialVecZeroSized` and make sure the
-            // destructor of the latter will not run. None of this can panic.
-            let mut result = Vec::new();
-            unsafe {
-                result.set_len(pv.num_u);
-                mem::forget(pv);
-            }
-            result
-        }
-    }
-
     /// Splits the collection into two at the given index.
     ///
     /// Returns a newly allocated `Self`. `self` contains elements `[0, at)`,
@@ -985,7 +766,8 @@ impl<T> Vec<T> {
     /// ```
     #[inline]
     #[unstable(feature = "split_off",
-               reason = "new API, waiting for dust to settle")]
+               reason = "new API, waiting for dust to settle",
+               issue = "27766")]
     pub fn split_off(&mut self, at: usize) -> Self {
         assert!(at <= self.len(), "`at` out of bounds");
 
@@ -1027,7 +809,8 @@ impl<T: Clone> Vec<T> {
     /// assert_eq!(vec, [1, 2]);
     /// ```
     #[unstable(feature = "vec_resize",
-               reason = "matches collection reform specification; waiting for dust to settle")]
+               reason = "matches collection reform specification; waiting for dust to settle",
+               issue = "27790")]
     pub fn resize(&mut self, new_len: usize, value: T) {
         let len = self.len();
 
@@ -1077,16 +860,17 @@ impl<T: Clone> Vec<T> {
     /// ```
     #[inline]
     #[unstable(feature = "vec_push_all",
-               reason = "likely to be replaced by a more optimized extend")]
+               reason = "likely to be replaced by a more optimized extend",
+               issue = "27744")]
     pub fn push_all(&mut self, other: &[T]) {
         self.reserve(other.len());
 
         for i in 0..other.len() {
             let len = self.len();
 
-            // Unsafe code so this can be optimised to a memcpy (or something similarly
-            // fast) when T is Copy. LLVM is easily confused, so any extra operations
-            // during the loop can prevent this optimisation.
+            // Unsafe code so this can be optimised to a memcpy (or something
+            // similarly fast) when T is Copy. LLVM is easily confused, so any
+            // extra operations during the loop can prevent this optimisation.
             unsafe {
                 ptr::write(
                     self.get_unchecked_mut(len),
@@ -1427,7 +1211,7 @@ impl<T> IntoIterator for Vec<T> {
             };
             let buf = ptr::read(&self.buf);
             mem::forget(self);
-            IntoIter { buf: buf, ptr: begin, end: end }
+            IntoIter { _buf: buf, ptr: begin, end: end }
         }
     }
 }
@@ -1611,14 +1395,12 @@ impl<'a, T> FromIterator<T> for Cow<'a, [T]> where T: Clone {
     }
 }
 
-#[allow(deprecated)]
 impl<'a, T: 'a> IntoCow<'a, [T]> for Vec<T> where T: Clone {
     fn into_cow(self) -> Cow<'a, [T]> {
         Cow::Owned(self)
     }
 }
 
-#[allow(deprecated)]
 impl<'a, T> IntoCow<'a, [T]> for &'a [T] where T: Clone {
     fn into_cow(self) -> Cow<'a, [T]> {
         Cow::Borrowed(self)
@@ -1632,28 +1414,13 @@ impl<'a, T> IntoCow<'a, [T]> for &'a [T] where T: Clone {
 /// An iterator that moves out of a vector.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct IntoIter<T> {
-    buf: RawVec<T>,
+    _buf: RawVec<T>,
     ptr: *const T,
     end: *const T
 }
 
 unsafe impl<T: Send> Send for IntoIter<T> { }
 unsafe impl<T: Sync> Sync for IntoIter<T> { }
-
-impl<T> IntoIter<T> {
-    #[inline]
-    /// Drops all items that have not yet been moved and returns the empty vector.
-    #[unstable(feature = "iter_to_vec")]
-    #[deprecated(since = "1.3.0", reason = "replaced by drain()")]
-    pub fn into_inner(mut self) -> Vec<T> {
-        unsafe {
-            for _x in self.by_ref() { }
-            let buf = ptr::read(&self.buf);
-            mem::forget(self);
-            Vec { buf: buf, len: 0 }
-        }
-    }
-}
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Iterator for IntoIter<T> {
@@ -1714,7 +1481,7 @@ impl<T> DoubleEndedIterator for IntoIter<T> {
                 } else {
                     self.end = self.end.offset(-1);
 
-                    Some(ptr::read(mem::transmute(self.end)))
+                    Some(ptr::read(self.end))
                 }
             }
         }
@@ -1735,7 +1502,7 @@ impl<T> Drop for IntoIter<T> {
 }
 
 /// A draining iterator for `Vec<T>`.
-#[unstable(feature = "drain", reason = "recently added")]
+#[unstable(feature = "drain", reason = "recently added", issue = "27711")]
 pub struct Drain<'a, T: 'a> {
     /// Index of tail to preserve
     tail_start: usize,
@@ -1803,77 +1570,3 @@ impl<'a, T> Drop for Drain<'a, T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> ExactSizeIterator for Drain<'a, T> {}
-
-////////////////////////////////////////////////////////////////////////////////
-// Partial vec, used for map_in_place
-////////////////////////////////////////////////////////////////////////////////
-
-/// An owned, partially type-converted vector of elements with non-zero size.
-///
-/// `T` and `U` must have the same, non-zero size. They must also have the same
-/// alignment.
-///
-/// When the destructor of this struct runs, all `U`s from `start_u` (incl.) to
-/// `end_u` (excl.) and all `T`s from `start_t` (incl.) to `end_t` (excl.) are
-/// destructed. Additionally the underlying storage of `vec` will be freed.
-struct PartialVecNonZeroSized<T,U> {
-    vec: Vec<T>,
-
-    start_u: *mut U,
-    end_u: *mut U,
-    start_t: *mut T,
-    end_t: *mut T,
-
-    _marker: PhantomData<U>,
-}
-
-/// An owned, partially type-converted vector of zero-sized elements.
-///
-/// When the destructor of this struct runs, all `num_t` `T`s and `num_u` `U`s
-/// are destructed.
-struct PartialVecZeroSized<T,U> {
-    num_t: usize,
-    num_u: usize,
-    marker: PhantomData<::core::cell::Cell<(T,U)>>,
-}
-
-impl<T,U> Drop for PartialVecNonZeroSized<T,U> {
-    fn drop(&mut self) {
-        unsafe {
-            // `vec` hasn't been modified until now. As it has a length
-            // currently, this would run destructors of `T`s which might not be
-            // there. So at first, set `vec`s length to `0`. This must be done
-            // at first to remain memory-safe as the destructors of `U` or `T`
-            // might cause unwinding where `vec`s destructor would be executed.
-            self.vec.set_len(0);
-
-            // We have instances of `U`s and `T`s in `vec`. Destruct them.
-            while self.start_u != self.end_u {
-                let _ = ptr::read(self.start_u); // Run a `U` destructor.
-                self.start_u = self.start_u.offset(1);
-            }
-            while self.start_t != self.end_t {
-                let _ = ptr::read(self.start_t); // Run a `T` destructor.
-                self.start_t = self.start_t.offset(1);
-            }
-            // After this destructor ran, the destructor of `vec` will run,
-            // deallocating the underlying memory.
-        }
-    }
-}
-
-impl<T,U> Drop for PartialVecZeroSized<T,U> {
-    fn drop(&mut self) {
-        unsafe {
-            // Destruct the instances of `T` and `U` this struct owns.
-            while self.num_t != 0 {
-                let _: T = mem::uninitialized(); // Run a `T` destructor.
-                self.num_t -= 1;
-            }
-            while self.num_u != 0 {
-                let _: U = mem::uninitialized(); // Run a `U` destructor.
-                self.num_u -= 1;
-            }
-        }
-    }
-}

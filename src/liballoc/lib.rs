@@ -61,17 +61,19 @@
 #![crate_name = "alloc"]
 #![crate_type = "rlib"]
 #![staged_api]
+#![allow(unused_attributes)]
 #![unstable(feature = "alloc",
             reason = "this library is unlikely to be stabilized in its current \
-                      form or name")]
-#![doc(html_logo_url = "http://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
+                      form or name",
+            issue = "27783")]
+#![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
-       html_root_url = "http://doc.rust-lang.org/nightly/",
+       html_root_url = "https://doc.rust-lang.org/nightly/",
        test(no_crate_inject))]
 #![no_std]
+#![cfg_attr(not(stage0), needs_allocator)]
 
 #![feature(allocator)]
-#![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
 #![feature(core)]
@@ -82,6 +84,7 @@
 #![feature(lang_items)]
 #![feature(no_std)]
 #![feature(nonzero)]
+#![feature(num_bits_bytes)]
 #![feature(optin_builtin_traits)]
 #![feature(placement_in_syntax)]
 #![feature(placement_new_protocol)]
@@ -93,16 +96,13 @@
 #![feature(unsize)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![cfg_attr(stage0, feature(core, core_prelude))]
+#![cfg_attr(stage0, feature(alloc_system))]
+#![cfg_attr(not(stage0), feature(needs_allocator))]
 
-#![cfg_attr(test, feature(test, alloc, rustc_private, box_raw))]
-#![cfg_attr(all(not(feature = "external_funcs"), not(feature = "external_crate")),
-            feature(libc))]
+#![cfg_attr(test, feature(test, rustc_private, box_raw))]
 
-#[cfg(all(not(feature = "external_funcs"), not(feature = "external_crate")))]
-extern crate libc;
-
-#[cfg(stage0)] #[macro_use] extern crate core;
+#[cfg(stage0)]
+extern crate alloc_system;
 
 // Allow testing this library
 
@@ -129,24 +129,14 @@ pub mod arc;
 pub mod rc;
 pub mod raw_vec;
 
-#[path="../common"]
-mod common {
-    pub mod debug;
-    pub mod memory;
-    pub mod pio;
-}
-
 /// Common out-of-memory routine
 #[cold]
 #[inline(never)]
-#[unstable(feature = "oom", reason = "not a scrutinized interface")]
-pub fn oom() {
+#[unstable(feature = "oom", reason = "not a scrutinized interface",
+           issue = "27700")]
+pub fn oom() -> ! {
     // FIXME(#14674): This really needs to do something other than just abort
     //                here, but any printing done must be *guaranteed* to not
     //                allocate.
-    unsafe {
-        ::common::debug::d("ALLOC: Out Of Memory\n");
-        asm!("cli");
-        asm!("hlt");
-    }
+    unsafe { core::intrinsics::abort() }
 }

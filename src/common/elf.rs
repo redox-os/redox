@@ -3,6 +3,7 @@ use core::ptr;
 
 use common::debug::*;
 use common::memory::*;
+use common::paging::*;
 use common::string::*;
 
 pub struct ELFHeader {
