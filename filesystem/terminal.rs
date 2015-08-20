@@ -20,10 +20,9 @@ impl Application {
     }
 
     #[allow(unused_variables)]
-    fn on_command(&mut self){
-        self.last_command = self.command.clone();
+    fn on_command(&mut self, command: &String){
         let mut args: Vec<String> = Vec::<String>::new();
-        for arg in self.command.split(" ".to_string()) {
+        for arg in command.split(" ".to_string()) {
             if arg.len() > 0 {
                 args.push(arg);
             }
@@ -53,7 +52,21 @@ impl Application {
                     self.window.closed = true;
                 }else if *cmd == "open".to_string() {
                     match args.get(1) {
-                        Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
+                        Option::Some(arg) => {
+                            if arg.ends_with(".sh".to_string()) {
+                                let mut resource = URL::from_string(arg.clone()).open();
+
+                                let mut vec: Vec<u8> = Vec::new();
+                                resource.read_to_end(&mut vec);
+
+                                let commands = String::from_utf8(&vec);
+                                for command in commands.split("\n".to_string()) {
+                                    self.on_command(&command);
+                                }
+                            }else{
+                                OpenEvent{ url_string: arg.clone() }.trigger();
+                            }
+                        }
                         Option::None => ()
                     }
                 }else if *cmd == "url".to_string() {
@@ -249,10 +262,12 @@ impl SessionItem for Application {
                 },
                 '\n' => {
                     if self.command.len() > 0 {
-                        self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";
-                        self.on_command();
+                        let command = self.command.clone();
                         self.command = String::new();
                         self.offset = 0;
+                        self.last_command = command.clone();
+                        self.output = self.output.clone() + "# ".to_string() + command.clone() + "\n";
+                        self.on_command(&command);
                     }
                 },
                 _ => {
