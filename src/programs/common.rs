@@ -1,5 +1,4 @@
 pub use alloc::boxed::*;
-pub use alloc::rc::*;
 
 pub use core::clone::Clone;
 pub use core::option::Option;
