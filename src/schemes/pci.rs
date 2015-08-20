@@ -15,25 +15,16 @@ impl SessionModule for PCIScheme {
         let mut func = -1;
         let mut reg = -1;
 
-        for i in 0..url.path.len() {
-            match url.path.get(i){
-                Option::Some(part) => match i {
-                    0 => {
-                        bus = part.to_num() as isize;
-                    },
-                    1 => {
-                        slot = part.to_num() as isize;
-                    },
-                    2 => {
-                        func = part.to_num() as isize;
-                    },
-                    3 => {
-                        reg = part.to_num() as isize;
-                    },
-                    _ => ()
-                },
-                Option::None => ()
+        let mut i = 0;
+        for part in url.path.split("\n".to_string()) {
+            match i {
+                0 => bus = part.to_num() as isize,
+                1 => slot = part.to_num() as isize,
+                2 => func = part.to_num() as isize,
+                3 => reg = part.to_num() as isize,
+                _ => ()
             }
+            i += 1;
         }
 
         if bus >= 0 && bus < 256 && slot >= 0 && slot < 32 && func >= 0 && func < 8 && reg >= 0 && reg < 256 {

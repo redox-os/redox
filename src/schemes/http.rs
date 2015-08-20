@@ -26,14 +26,12 @@ impl SessionModule for HTTPScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        let path = url.path_string();
-
         let mut html = "HTTP/1.1 200 OK\r\n".to_string()
                     + "Content-Type: text/html\r\n"
                     + "Connection: keep-alive\r\n"
                     + "\r\n";
 
-        if path == "readme".to_string() {
+        if url.path == "readme".to_string() {
             html = html + "<title>Readme - Redox</title>\n";
         }else{
             html = html + "<title>Home - Redox</title>\n";
@@ -53,7 +51,7 @@ impl SessionModule for HTTPScheme {
             html = html + "    <div class='collapse navbar-collapse' id='navbar-collapse'>\n";
             html = html + "      <ul class='nav navbar-nav navbar-right'>\n";
 
-            if path == "readme".to_string() {
+            if url.path == "readme".to_string() {
                 html = html + "        <li><a href='/'>Home</a></li>\n";
                 html = html + "        <li class='active'><a href='/readme'>Readme</a></li>\n";
             }else{
@@ -66,7 +64,7 @@ impl SessionModule for HTTPScheme {
             html = html + "  </div>\n";
             html = html + "</nav>\n";
 
-            if path == "readme".to_string() {
+            if url.path == "readme".to_string() {
                 let mut resource = URL::from_string("file:///README.md".to_string()).open();
 
                 let mut resource_data: Vec<u8> = Vec::new();
@@ -117,7 +115,7 @@ impl SessionModule for HTTPScheme {
                 html = html + "</div>\n";
             }else{
                 html = html + "<table class='table table-bordered'>\n".to_string();
-                    let mut resource = URL::from_string(path.clone()).open();
+                    let mut resource = URL::from_string(url.path.clone()).open();
 
                     let resource_type;
                     match resource.stat() {
@@ -127,7 +125,7 @@ impl SessionModule for HTTPScheme {
                         _ => resource_type = "None".to_string()
                     }
 
-                    html = html + "  <caption><h3>" + HTTPScheme::encode(path.clone()) + "</h3><h4>" + HTTPScheme::encode(resource_type) + "</h4></caption>\n";
+                    html = html + "  <caption><h3>" + HTTPScheme::encode(url.path.clone()) + "</h3><h4>" + HTTPScheme::encode(resource_type) + "</h4></caption>\n";
 
                     let mut resource_data: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut resource_data);
