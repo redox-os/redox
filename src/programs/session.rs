@@ -74,35 +74,6 @@ impl Session {
         }
     }
 
-    pub fn open_async(&self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
-        if url.scheme.len() == 0 {
-            let mut list = String::new();
-
-            for module in self.modules.iter() {
-                let scheme = module.scheme();
-                if scheme.len() > 0 {
-                    if list.len() > 0 {
-                        list = list + "\n" + scheme;
-                    }else{
-                        list = scheme;
-                    }
-                }
-            }
-
-            callback(box VecResource::new(ResourceType::Dir, list.to_utf8()));
-        }else{
-            for module in self.modules.iter() {
-                if module.scheme() == url.scheme {
-                    unsafe{
-                        Rc::unsafe_get_mut(module).open_async(url, callback);
-                    }
-                    return;
-                }
-            }
-            callback(box NoneResource);
-        }
-    }
-
     pub fn on_key(&mut self, key_event: KeyEvent){
         self.current_item = 0;
         match self.items.get(self.current_item as usize){

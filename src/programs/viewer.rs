@@ -7,8 +7,7 @@ use programs::common::*;
 
 pub struct Viewer {
     window: Window,
-    image: BMP,
-    loading: bool
+    image: BMP
 }
 
 impl SessionItem for Viewer {
@@ -34,46 +33,31 @@ impl SessionItem for Viewer {
                     valid: false
                 }
             },
-            image: BMP::new(),
-            loading: false
+            image: BMP::new()
         }
     }
 
     fn load(&mut self, url: &URL){
-        self.window.title = "Viewer Loading (".to_string() + url.to_string() + ")";
+        let mut resource = url.open();
 
-        self.image = BMP::new();
-        self.loading = true;
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
 
-        let self_ptr: *mut Viewer = self;
-        let url_copy = url.clone();
-        url.open_async(box move |mut resource: Box<Resource>|{
-            let viewer;
-            unsafe {
-                viewer = &mut *self_ptr;
-            }
+        unsafe {
+            self.image = BMP::from_data(vec.as_ptr() as usize);
+        }
+        self.window.size = self.image.size;
+        if self.window.size.width < 100 {
+            self.window.size.width = 100;
+        }
 
-            let mut vec: Vec<u8> = Vec::new();
-            match resource.read_to_end(&mut vec){
-                Option::Some(0) => (),
-                Option::Some(len) => {
-                    unsafe {
-                        viewer.image = BMP::from_data(vec.as_ptr() as usize);
-                    }
-                    viewer.window.size = viewer.image.size;
-                },
-                Option::None => ()
-            }
-
-            viewer.window.title = "Viewer (".to_string() + url_copy.to_string() + ")";
-            viewer.loading = false;
-        });
+        self.window.title = "Viewer (".to_string() + url.to_string() + ")";
     }
 
     #[allow(unused_variables)]
     fn draw(&mut self, display: &Display) -> bool{
         if ! self.window.draw(display) {
-            return self.loading;
+            return false;
         }
 
         if ! self.window.shaded {

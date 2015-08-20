@@ -6,7 +6,6 @@ use programs::common::*;
 
 pub struct Executor {
     executable: ELF,
-    loading: bool,
     mapped: AtomicUsize,
     entry: usize,
     draw: usize,
@@ -44,7 +43,6 @@ impl SessionItem for Executor {
     fn new() -> Executor {
         Executor {
             executable: ELF::new(),
-            loading: false,
             mapped: AtomicUsize::new(0),
             entry: 0,
             draw: 0,
@@ -55,36 +53,25 @@ impl SessionItem for Executor {
 
     #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
-        self.loading = true;
+        let mut resource = url.open();
 
-        let self_ptr: *mut Executor = self;
-        url.open_async(box move |mut resource: Box<Resource>|{
-            let executor;
-            unsafe{
-                executor = &mut *self_ptr;
-            }
+        let mut vec: Vec<u8> = Vec::new();
+        match resource.read_to_end(&mut vec){
+            Option::Some(_) => {
+                unsafe{
+                    self.executable = ELF::from_data(vec.as_ptr() as usize);
+                    //self.executable.d();
 
-            let mut vec: Vec<u8> = Vec::new();
-            match resource.read_to_end(&mut vec){
-                Option::Some(0) => (),
-                Option::Some(len) => {
-                    unsafe{
-                        executor.executable = ELF::from_data(vec.as_ptr() as usize);
-                        //self.executable.d();
+                    self.entry = self.executable.entry();
+                    self.draw = self.executable.symbol("draw".to_string());
+                    self.on_key = self.executable.symbol("on_key".to_string());
+                    self.on_mouse = self.executable.symbol("on_mouse".to_string());
 
-                        executor.entry = executor.executable.entry();
-                        executor.draw = executor.executable.symbol("draw".to_string());
-                        executor.on_key = executor.executable.symbol("on_key".to_string());
-                        executor.on_mouse = executor.executable.symbol("on_mouse".to_string());
-
-                        executor.entry();
-
-                        executor.loading = false;
-                    }
-                },
-                Option::None => ()
-            }
-        });
+                    self.entry();
+                }
+            },
+            Option::None => ()
+        }
     }
 
     fn draw(&mut self, display: &Display) -> bool{
@@ -99,7 +86,7 @@ impl SessionItem for Executor {
                 return ret;
             }
         }
-        return self.loading;
+        return false;
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
