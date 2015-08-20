@@ -46,7 +46,28 @@ pub struct EHCI {
 impl SessionModule for EHCI {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            d("EHCI handle\n");
+            //d("EHCI handle");
+
+            unsafe{
+                let CAPLENGTH = self.base as *mut u8;
+
+                let opbase = self.base + *CAPLENGTH as usize;
+
+                let USBSTS = (opbase + 4) as *mut u32;
+                //d(" USBSTS ");
+                //dh(*USBSTS as usize);
+
+                *USBSTS = 0b111111;
+
+                //d(" USBSTS ");
+                //dh(*USBSTS as usize);
+
+                //let FRINDEX = (opbase + 0xC) as *mut u32;
+                //d(" FRINDEX ");
+                //dh(*FRINDEX as usize);
+            }
+
+            //dl();
         }
     }
 }
@@ -65,21 +86,43 @@ impl EHCI {
 
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | 4); // Bus master
 
-        let USBCMD = self.base as *mut u32;
-        let USBSTS = (self.base + 4) as *mut u32;
-        let USBINTR = (self.base + 8) as *mut u32;
-        let FRINDEX = (self.base + 0xC) as *mut u32;
-        let CTRLDSSEGMENT = (self.base + 0x10) as *mut u32;
-        let PERIODICLISTBASE = (self.base + 0x14) as *mut u32;
-        let ASYNCLISTADDR = (self.base + 0x18) as *mut u32;
-        let CONFIGFLAG = (self.base + 0x40) as *mut u32;
-        let PORTSC = (self.base + 0x44) as *mut u32;
+        let CAPLENGTH = self.base as *mut u8;
+
+        d(" CAPLENGTH ");
+        dd(*CAPLENGTH as usize);
+
+        let opbase = self.base + *CAPLENGTH as usize;
+
+        let USBCMD = opbase as *mut u32;
+        let USBSTS = (opbase + 4) as *mut u32;
+        let USBINTR = (opbase + 8) as *mut u32;
+        let FRINDEX = (opbase + 0xC) as *mut u32;
+        let CTRLDSSEGMENT = (opbase + 0x10) as *mut u32;
+        let PERIODICLISTBASE = (opbase + 0x14) as *mut u32;
+        let ASYNCLISTADDR = (opbase + 0x18) as *mut u32;
+        let CONFIGFLAG = (opbase + 0x40) as *mut u32;
+        let PORTSC = (opbase + 0x44) as *mut u32;
+
+        *USBCMD &= 0xFFFFFFFE;
+        d(" CMD ");
+        dh(*USBCMD as usize);
+
+        d(" STS ");
+        dh(*USBSTS as usize);
 
         //*CTRLDSSEGMENT = 0;
 
-        //*USBINTR = 0b111111;
+        *USBINTR = 0b111111;
 
-        //*PERIODICLISTBASE = alloc(4096) as u32;
+        let periodiclist = alloc(4096) as *mut u32;
+
+        for i in 0..1024 {
+            *periodiclist.offset(i) = periodiclist as u32 | 1;
+        }
+        *PERIODICLISTBASE = periodiclist as u32;
+
+        *USBCMD |= 1;
+        *CONFIGFLAG = 1;
 
         d(" CMD ");
         dh(*USBCMD as usize);
@@ -88,5 +131,13 @@ impl EHCI {
         dh(*USBSTS as usize);
 
         dl();
+
+        for i in 0..16 {
+            if *PORTSC.offset(i) & 1 == 1 {
+                d("Device on port ");
+                dd(i as usize);
+                dl();
+            }
+        }
     }
 }

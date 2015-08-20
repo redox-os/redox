@@ -214,10 +214,13 @@ unsafe fn init(font_data: usize, cursor_data: usize){
             },
             Option::None => d("Background load error\n")
         }
+
+        /*
         debug_draw = false;
         (*events_ptr).push(RedrawEvent {
             redraw: REDRAW_ALL
         }.to_event());
+        */
     });
 
     session.items.insert(0, Rc::new(FileManager::new()));
