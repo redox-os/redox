@@ -7,7 +7,6 @@ use programs::common::*;
 pub struct Editor {
     window: Window,
     string: String,
-    loading: bool,
     offset: usize,
     scroll: Point
 }
@@ -36,7 +35,6 @@ impl SessionItem for Editor {
                 }
             },
             string: String::new(),
-            loading: false,
             offset: 0,
             scroll: Point::new(0, 0)
         }
@@ -44,35 +42,20 @@ impl SessionItem for Editor {
 
     #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
-        self.window.title = "Editor Loading (".to_string() + url.to_string() + ")";
+        let mut resource = url.open();
 
-        self.string = String::new();
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
         self.offset = 0;
         self.scroll = Point::new(0, 0);
-        self.loading = true;
-
-        let self_ptr: *mut Editor = self;
-        let url_copy = url.clone();
-        url.open_async(box move |mut resource: Box<Resource>|{
-            let editor;
-            unsafe {
-                editor = &mut *self_ptr;
-            }
-
-            let mut vec: Vec<u8> = Vec::new();
-            match resource.read_to_end(&mut vec){
-                Option::Some(len) => editor.string = String::from_utf8(&vec),
-                Option::None => ()
-            }
-
-            editor.window.title = "Editor (".to_string() + url_copy.to_string() + ")";
-            editor.loading = false;
-        });
+        self.string = String::from_utf8(&vec);
+        self.window.title = "Editor (".to_string() + url.to_string() + ")";
     }
 
     fn draw(&mut self, display: &Display) -> bool{
         if ! self.window.draw(display){
-            return self.loading;
+            return false;
         }
 
         if ! self.window.shaded {

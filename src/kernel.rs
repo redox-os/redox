@@ -207,23 +207,13 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.modules.push(Rc::new(PCIScheme));
     session.modules.push(Rc::new(RandomScheme));
 
-    URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
-        let mut vec: Vec<u8> = Vec::new();
-        match resource.read_to_end(&mut vec) {
-            Option::Some(0) => d("No background data\n"),
-            Option::Some(len) => {
-                (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize);
-            },
-            Option::None => d("Background load error\n")
-        }
+    let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
 
-        /*
-        debug_draw = false;
-        (*events_ptr).push(RedrawEvent {
-            redraw: REDRAW_ALL
-        }.to_event());
-        */
-    });
+    let mut vec: Vec<u8> = Vec::new();
+    match resource.read_to_end(&mut vec) {
+        Option::Some(_) => (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize),
+        Option::None => d("Background load error\n")
+    }
 
     session.items.insert(0, Rc::new(FileManager::new()));
 }
@@ -307,16 +297,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     ptr::write(ecx as *mut Box<Resource>, session.open(url));
                 },
                 0x2 => {
-                    d("Open Async: ");
-                    let url: &URL = &*(ebx as *const URL);
-                    let callback: Box<FnBox(Box<Resource>)> = ptr::read(ecx as *const Box<FnBox(Box<Resource>)>);
-                    unalloc(ecx as usize);
-                    url.d();
-
-                    let session = &mut *session_ptr;
-                    session.open_async(url, callback);
-                },
-                0x3 => {
                     (*events_ptr).push(*(ebx as *const Event));
                 }
                 _ => {

@@ -35,29 +35,4 @@ impl SessionModule for FileScheme {
             }
         }
     }
-
-    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
-        match self.unfs.node(url.path.clone()) {
-            Option::Some(node) => {
-                if node.extents[0].block > 0 && node.extents[0].length > 0{
-                    URL::from_string("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize).open_async(callback);
-                }else{
-                    callback(box NoneResource);
-                }
-            },
-            Option::None => {
-                let mut list = String::new();
-
-                for file in self.unfs.list(url.path.clone()).iter() {
-                    if list.len() > 0 {
-                        list = list + "\n" + file.clone();
-                    }else{
-                        list = file.clone();
-                    }
-                }
-
-                callback(box VecResource::new(ResourceType::Dir, list.to_utf8()));
-            }
-        }
-    }
 }

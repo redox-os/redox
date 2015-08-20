@@ -31,10 +31,6 @@ pub trait SessionModule {
     fn open(&mut self, url: &URL) -> Box<Resource> {
         return box NoneResource;
     }
-
-    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>) {
-        callback(self.open(url));
-    }
 }
 
 #[allow(unused_variables)]

@@ -39,20 +39,12 @@ pub trait Resource {
         return Option::None;
     }
 
-    fn read_async(&mut self, buf: &mut [u8], callback: Box<FnBox(Option<usize>)>){
-        callback.call_box((self.read(buf),));
-    }
-
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         return Option::None;
     }
 
     fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
         return Option::None;
-    }
-
-    fn write_async(&mut self, buf: &[u8], callback: Box<FnBox(Option<usize>)>){
-        callback.call_box((self.write(buf),));
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -156,19 +148,6 @@ impl URL {
             let resource = ptr::read(resource_ptr);
             unalloc(resource_ptr as usize);
             return resource;
-        }
-    }
-
-    pub fn open_async(&self, callback: Box<FnBox(Box<Resource>)>){
-        unsafe{
-            let url_ptr: *const URL = self;
-            let callback_ptr: *mut Box<FnBox(Box<Resource>)> = alloc(size_of::<Box<FnBox(Box<Resource>)>>()) as *mut Box<FnBox(Box<Resource>)>;
-            ptr::write(callback_ptr, callback);
-            asm!("int 0x80"
-                :
-                : "{eax}"(2), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32)
-                :
-                : "intel");
         }
     }
 
