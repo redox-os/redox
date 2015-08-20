@@ -1,37 +1,32 @@
 use core::mem::size_of;
+use core::ptr;
 
 use common::memory::*;
 use common::pci::*;
 
 use programs::common::*;
 
-struct STE {
-    pub ptr: u64,
-    pub length: u64
+struct SETUP {
+    request_type: u8,
+    request: u8,
+    value: u16,
+    index: u16,
+    len: u16
 }
 
-struct TRB {
-    pub data: u64,
-    pub status: u32,
-    pub control: u32
+struct QTD {
+    next: u32,
+    next_alt: u32,
+    token: u32,
+    buffers: [u32; 5]
 }
 
-impl TRB {
-    pub fn new() -> TRB {
-        TRB {
-           data: 0,
-           status: 0,
-           control: 0
-        }
-    }
-
-    pub fn from_type(trb_type: u32) -> TRB {
-        TRB {
-            data: 0,
-            status: 0,
-            control: (trb_type & 0x3F) << 10
-        }
-    }
+struct QueueHead {
+    next: u32,
+    characteristics: u32,
+    capabilities: u32,
+    qtd_ptr: u32,
+    qtd: QTD
 }
 
 pub struct EHCI {
@@ -103,7 +98,14 @@ impl EHCI {
         let CONFIGFLAG = (opbase + 0x40) as *mut u32;
         let PORTSC = (opbase + 0x44) as *mut u32;
 
-        *USBCMD &= 0xFFFFFFFE;
+        d(" CMD ");
+        dh(*USBCMD as usize);
+
+        d(" STS ");
+        dh(*USBSTS as usize);
+
+        *USBCMD &= 0xFFFFFFF0;
+
         d(" CMD ");
         dh(*USBCMD as usize);
 
@@ -113,13 +115,6 @@ impl EHCI {
         //*CTRLDSSEGMENT = 0;
 
         *USBINTR = 0b111111;
-
-        let periodiclist = alloc(4096) as *mut u32;
-
-        for i in 0..1024 {
-            *periodiclist.offset(i) = periodiclist as u32 | 1;
-        }
-        *PERIODICLISTBASE = periodiclist as u32;
 
         *USBCMD |= 1;
         *CONFIGFLAG = 1;
@@ -136,7 +131,110 @@ impl EHCI {
             if *PORTSC.offset(i) & 1 == 1 {
                 d("Device on port ");
                 dd(i as usize);
+                d(" ");
+                dh(*PORTSC.offset(i) as usize);
                 dl();
+
+                let out_qtd = alloc(size_of::<QTD>()) as *mut QTD;
+                ptr::write(out_qtd, QTD {
+                    next: 1,
+                    next_alt: 1,
+                    token: (1 << 31) | (0b11 << 10) | 0x80,
+                    buffers: [0, 0, 0, 0, 0]
+                });
+
+                let in_data = alloc(64) as *mut u8;
+                for i in 0..64{
+                    *in_data.offset(i) = 0;
+                }
+
+                let in_qtd = alloc(size_of::<QTD>()) as *mut QTD;
+                ptr::write(in_qtd, QTD {
+                    next: out_qtd as u32,
+                    next_alt: 1,
+                    token: (1 << 31) | (64 << 16) | (0b11 << 10) | (0b01 << 8) | 0x80,
+                    buffers: [in_data as u32, 0, 0, 0, 0]
+                });
+
+                let setup_packet = alloc(size_of::<SETUP>()) as *mut SETUP;
+                ptr::write(setup_packet, SETUP {
+                    request_type: 0b10000000,
+                    request: 6,
+                    value: 1 << 8,
+                    index: 0,
+                    len: 64
+                });
+
+                let setup_qtd = alloc(size_of::<QTD>()) as *mut QTD;
+                ptr::write(setup_qtd, QTD {
+                    next: in_qtd as u32,
+                    next_alt: 1,
+                    token: ((size_of::<SETUP>() as u32) << 16) | (0b11 << 10) | (0b10 << 8) | 0x80,
+                    buffers: [setup_packet as u32, 0, 0, 0, 0]
+                });
+
+                let queuehead = alloc(size_of::<QueueHead>()) as *mut QueueHead;
+                ptr::write(queuehead, QueueHead {
+                    next: 1,
+                    characteristics: (64 << 16) | (1 << 15) | (1 << 14) | (0b10 << 12),
+                    capabilities: (0b11 << 30),
+                    qtd_ptr: setup_qtd as u32,
+                    qtd: ptr::read(setup_qtd)
+                });
+
+                d("Prepare");
+                    d(" CMD ");
+                    dh(*USBCMD as usize);
+
+                    d(" PTR ");
+                    dh(queuehead as usize);
+                dl();
+
+                d("Send");
+                    *ASYNCLISTADDR = queuehead as u32;
+
+                    *USBCMD |= (1 << 5);
+
+                    d(" CMD ");
+                    dh(*USBCMD as usize);
+
+                    d(" STS ");
+                    dh(*USBSTS as usize);
+                dl();
+
+                loop {
+                    d("Wait");
+                        if *USBSTS & 0xA000  == 0 {
+                            break;
+                        }
+
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+                    dl();
+                }
+
+                d(" Stop");
+                    *USBCMD &= 0xFFFFFFFF - (1 << 5);
+
+                    d(" CMD ");
+                    dh(*USBCMD as usize);
+
+                    d(" STS ");
+                    dh(*USBSTS as usize);
+                dl();
+
+                d("Data");
+                for i in 0..64 {
+                    d(" ");
+                    db(*in_data.offset(i));
+                }
+                dl();
+
+                //Only detect one device for testing
+                break;
             }
         }
     }
