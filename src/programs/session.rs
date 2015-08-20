@@ -12,9 +12,8 @@ use programs::viewer::*;
 pub struct Session {
     pub display: Display,
     pub mouse_point: Point,
-    pub items: Vec<Rc<SessionItem>>,
-    pub current_item: isize,
-    pub modules: Vec<Rc<SessionModule>>,
+    pub items: Vec<Box<SessionItem>>,
+    pub modules: Vec<Box<SessionModule>>,
     pub redraw: usize
 }
 
@@ -24,7 +23,6 @@ impl Session {
             display: Display::new(),
             mouse_point: Point::new(0, 0),
             items: Vec::new(),
-            current_item: -1,
             modules: Vec::new(),
             redraw: REDRAW_ALL
         }
@@ -33,7 +31,7 @@ impl Session {
     pub fn on_irq(&mut self, irq: u8){
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_irq(irq);
+                module.on_irq(irq);
             }
         }
     }
@@ -41,7 +39,7 @@ impl Session {
     pub fn on_poll(&mut self){
         for module in self.modules.iter() {
             unsafe{
-                Rc::unsafe_get_mut(module).on_poll();
+                module.on_poll();
             }
         }
     }
@@ -66,7 +64,7 @@ impl Session {
             for module in self.modules.iter() {
                 if module.scheme() == url.scheme {
                     unsafe{
-                        return Rc::unsafe_get_mut(module).open(url);
+                        return module.open(url);
                     }
                 }
             }
@@ -75,18 +73,16 @@ impl Session {
     }
 
     pub fn on_key(&mut self, key_event: KeyEvent){
-        self.current_item = 0;
-        match self.items.get(self.current_item as usize){
+        match self.items.get(0){
             Option::Some(item) => {
                 unsafe {
-                    Rc::unsafe_get_mut(item).on_key(key_event);
+                    item.on_key(key_event);
                 }
 
                 self.redraw = max(self.redraw, REDRAW_ALL);
             },
             Option::None => ()
         }
-        self.current_item = -1;
     }
 
     pub fn on_mouse(&mut self, mouse_event: MouseEvent){
@@ -98,11 +94,10 @@ impl Session {
         let mut catcher = 0;
         let mut allow_catch = true;
         for i in 0..self.items.len() {
-            self.current_item = i as isize;
-            match self.items.get(self.current_item as usize){
+            match self.items.get(i){
                 Option::Some(item) => {
                     unsafe {
-                        if Rc::unsafe_get_mut(item).on_mouse(self.mouse_point, mouse_event, allow_catch) {
+                        if item.on_mouse(self.mouse_point, mouse_event, allow_catch) {
                             allow_catch = false;
                             catcher = i;
 
@@ -113,7 +108,6 @@ impl Session {
                 Option::None => ()
             }
         }
-        self.current_item = -1;
 
         if catcher > 0 && catcher < self.items.len() {
             match self.items.remove(catcher){
@@ -135,19 +129,18 @@ impl Session {
 
                 let mut erase_i: Vec<usize> = Vec::new();
                 for reverse_i in 0..self.items.len() {
-                    self.current_item = (self.items.len() - 1 - reverse_i) as isize;
-                    match self.items.get(self.current_item as usize) {
+                    let i = (self.items.len() - 1 - reverse_i);
+                    match self.items.get(i) {
                         Option::Some(item) => {
                             unsafe {
-                                if ! Rc::unsafe_get_mut(item).draw(&self.display) {
-                                    erase_i.push(self.current_item as usize);
+                                if ! item.draw(&self.display) {
+                                    erase_i.push(i);
                                 }
                             }
                         },
                         Option::None => ()
                     }
                 }
-                self.current_item = -1;
 
                 for i in erase_i.iter() {
                     drop(self.items.remove(*i));
@@ -176,13 +169,13 @@ impl Session {
 
                     let mut found = false;
                     if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()){
-                        self.items.insert(0, Rc::new(Editor::new()));
+                        self.items.insert(0, box Editor::new());
                         found = true;
                     }else if url_string.ends_with(".bin".to_string()){
-                        self.items.insert(0, Rc::new(Executor::new()));
+                        self.items.insert(0, box Executor::new());
                         found = true;
                     }else if url_string.ends_with(".bmp".to_string()){
-                        self.items.insert(0, Rc::new(Viewer::new()));
+                        self.items.insert(0, box Viewer::new());
                         found = true;
                     }else{
                         d("No program found: ");
@@ -191,14 +184,12 @@ impl Session {
                     }
 
                     if found {
-                        self.current_item = 0;
                         match self.items.get(0) {
                             Option::Some(item) => unsafe{
-                                Rc::unsafe_get_mut(item).load(&url);
+                                item.load(&url);
                             },
                             Option::None => ()
                         }
-                        self.current_item = -1;
                     }
                 }
                 _ => ()

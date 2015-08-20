@@ -181,8 +181,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     keyboard_init();
     mouse_init();
 
-    session.modules.push(Rc::new(PS2));
-    session.modules.push(Rc::new(Serial::new(0x3F8, 0x4)));
+    session.modules.push(box PS2);
+    session.modules.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
@@ -198,14 +198,14 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     d("Secondary Slave\n");
     test_disk(Disk::secondary_slave());
 
-    session.modules.push(Rc::new(DebugScheme));
-    session.modules.push(Rc::new(FileScheme{
+    session.modules.push(box DebugScheme);
+    session.modules.push(box FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
-    }));
-    session.modules.push(Rc::new(HTTPScheme));
-    session.modules.push(Rc::new(MemoryScheme));
-    session.modules.push(Rc::new(PCIScheme));
-    session.modules.push(Rc::new(RandomScheme));
+    });
+    session.modules.push(box HTTPScheme);
+    session.modules.push(box MemoryScheme);
+    session.modules.push(box PCIScheme);
+    session.modules.push(box RandomScheme);
 
     let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
 
@@ -215,7 +215,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
         Option::None => d("Background load error\n")
     }
 
-    session.items.insert(0, Rc::new(FileManager::new()));
+    session.items.insert(0, box FileManager::new());
 }
 
 fn dr(reg: &str, value: u32){
