@@ -43,6 +43,7 @@ use programs::filemanager::*;
 use programs::common::*;
 use programs::session::*;
 
+use schemes::debug::*;
 use schemes::file::*;
 use schemes::http::*;
 use schemes::memory::*;
@@ -107,6 +108,7 @@ mod programs {
 }
 
 mod schemes {
+    pub mod debug;
     pub mod file;
     pub mod http;
     pub mod ide;
@@ -196,10 +198,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     d("Secondary Slave\n");
     test_disk(Disk::secondary_slave());
 
+    session.modules.push(Rc::new(DebugScheme));
     session.modules.push(Rc::new(FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
     }));
-
     session.modules.push(Rc::new(HTTPScheme));
     session.modules.push(Rc::new(MemoryScheme));
     session.modules.push(Rc::new(PCIScheme));
