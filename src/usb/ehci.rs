@@ -355,9 +355,29 @@ impl EHCI {
                     dl();
 
                     d("Send");
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+
                         *ASYNCLISTADDR = queuehead as u32;
 
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+
                         *USBCMD |= (1 << 5);
+
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+
+                        *USBCMD |= 1;
 
                         d(" CMD ");
                         dh(*USBCMD as usize);
@@ -388,6 +408,12 @@ impl EHCI {
                     dl();
 
                     d("Stop");
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+
                         *USBCMD &= 0xFFFFFFFF - (1 << 5);
 
                         d(" CMD ");
@@ -400,7 +426,7 @@ impl EHCI {
                     d("Data");
                     for i in 0..64 {
                         d(" ");
-                        db(*in_data.offset(i));
+                        dbh(*in_data.offset(i));
                     }
                     dl();
 
