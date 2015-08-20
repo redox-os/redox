@@ -82,9 +82,56 @@ impl EHCI {
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | 4); // Bus master
 
         let CAPLENGTH = self.base as *mut u8;
+        let HCSPARAMS = (self.base + 4) as *mut u32;
+        let HCCPARAMS = (self.base + 8) as *mut u32;
 
         d(" CAPLENGTH ");
         dd(*CAPLENGTH as usize);
+
+        d(" HCSPARAMS ");
+        dh(*HCSPARAMS as usize);
+
+        d(" HCCPARAMS ");
+        dh(*HCCPARAMS as usize);
+
+        let ports = (*HCSPARAMS & 0b1111) as usize;
+        d(" PORTS ");
+        dd(ports);
+
+        let eecp = ((*HCCPARAMS >> 8) & 0xFF) as usize;
+        d(" EECP ");
+        dh(eecp);
+
+        dl();
+
+        if(eecp > 0){
+            //if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 16)
+            {
+                d("Taking Ownership");
+                    d(" ");
+                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+
+                    pci_write(self.bus, self.slot, self.func, eecp, pci_read(self.bus, self.slot, self.func, eecp) | (1 << 24));
+
+                    d(" ");
+                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+                dl();
+
+                d("Waiting");
+                    d(" ");
+                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+
+                    loop {
+                        if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 24) {
+                            break;
+                        }
+                    }
+
+                    d(" ");
+                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+                dl();
+            }
+        }
 
         let opbase = self.base + *CAPLENGTH as usize;
 
@@ -98,114 +145,239 @@ impl EHCI {
         let CONFIGFLAG = (opbase + 0x40) as *mut u32;
         let PORTSC = (opbase + 0x44) as *mut u32;
 
-        d(" CMD ");
-        dh(*USBCMD as usize);
+        if *USBSTS & (1 << 12) == 0 {
+            d("Halting");
+                d(" CMD ");
+                dh(*USBCMD as usize);
 
-        d(" STS ");
-        dh(*USBSTS as usize);
+                d(" STS ");
+                dh(*USBSTS as usize);
 
-        *USBCMD &= 0xFFFFFFF0;
+                *USBCMD &= 0xFFFFFFF0;
 
-        d(" CMD ");
-        dh(*USBCMD as usize);
+                d(" CMD ");
+                dh(*USBCMD as usize);
 
-        d(" STS ");
-        dh(*USBSTS as usize);
-
-        //*CTRLDSSEGMENT = 0;
-
-        *USBINTR = 0b111111;
-
-        *USBCMD |= 1;
-        *CONFIGFLAG = 1;
-
-        d(" CMD ");
-        dh(*USBCMD as usize);
-
-        d(" STS ");
-        dh(*USBSTS as usize);
-
-        dl();
-
-        for i in 0..16 {
-            if *PORTSC.offset(i) & 1 == 1 {
-                d("Device on port ");
-                dd(i as usize);
-                d(" ");
-                dh(*PORTSC.offset(i) as usize);
-                dl();
-
-                let out_qtd = alloc(size_of::<QTD>()) as *mut QTD;
-                ptr::write(out_qtd, QTD {
-                    next: 1,
-                    next_alt: 1,
-                    token: (1 << 31) | (0b11 << 10) | 0x80,
-                    buffers: [0, 0, 0, 0, 0]
-                });
-
-                let in_data = alloc(64) as *mut u8;
-                for i in 0..64{
-                    *in_data.offset(i) = 0;
+                d(" STS ");
+                dh(*USBSTS as usize);
+            dl();
+/*
+            d("Waiting");
+                loop{
+                    if *USBSTS & (1 << 12) == (1 << 12) {
+                        break;
+                    }
                 }
 
-                let in_qtd = alloc(size_of::<QTD>()) as *mut QTD;
-                ptr::write(in_qtd, QTD {
-                    next: out_qtd as u32,
-                    next_alt: 1,
-                    token: (1 << 31) | (64 << 16) | (0b11 << 10) | (0b01 << 8) | 0x80,
-                    buffers: [in_data as u32, 0, 0, 0, 0]
-                });
+                d(" CMD ");
+                dh(*USBCMD as usize);
 
-                let setup_packet = alloc(size_of::<SETUP>()) as *mut SETUP;
-                ptr::write(setup_packet, SETUP {
-                    request_type: 0b10000000,
-                    request: 6,
-                    value: 1 << 8,
-                    index: 0,
-                    len: 64
-                });
+                d(" STS ");
+                dh(*USBSTS as usize);
+            dl();
+*/
+        }
 
-                let setup_qtd = alloc(size_of::<QTD>()) as *mut QTD;
-                ptr::write(setup_qtd, QTD {
-                    next: in_qtd as u32,
-                    next_alt: 1,
-                    token: ((size_of::<SETUP>() as u32) << 16) | (0b11 << 10) | (0b10 << 8) | 0x80,
-                    buffers: [setup_packet as u32, 0, 0, 0, 0]
-                });
+        d("Resetting");
+            d(" CMD ");
+            dh(*USBCMD as usize);
 
-                let queuehead = alloc(size_of::<QueueHead>()) as *mut QueueHead;
-                ptr::write(queuehead, QueueHead {
-                    next: 1,
-                    characteristics: (64 << 16) | (1 << 15) | (1 << 14) | (0b10 << 12),
-                    capabilities: (0b11 << 30),
-                    qtd_ptr: setup_qtd as u32,
-                    qtd: ptr::read(setup_qtd)
-                });
+            d(" STS ");
+            dh(*USBSTS as usize);
 
-                d("Prepare");
-                    d(" CMD ");
-                    dh(*USBCMD as usize);
+            *USBCMD |= (1 << 1);
 
-                    d(" PTR ");
-                    dh(queuehead as usize);
+            d(" CMD ");
+            dh(*USBCMD as usize);
+
+            d(" STS ");
+            dh(*USBSTS as usize);
+        dl();
+
+        d("Waiting");
+            loop{
+                if *USBCMD & (1 << 1) == 0 {
+                    break;
+                }
+            }
+
+            d(" CMD ");
+            dh(*USBCMD as usize);
+
+            d(" STS ");
+            dh(*USBSTS as usize);
+        dl();
+
+        d("Enabling");
+            d(" CMD ");
+            dh(*USBCMD as usize);
+
+            d(" STS ");
+            dh(*USBSTS as usize);
+
+            *USBINTR = 0b111111;
+
+            *USBCMD |= 1;
+            *CONFIGFLAG = 1;
+
+            d(" CMD ");
+            dh(*USBCMD as usize);
+
+            d(" STS ");
+            dh(*USBSTS as usize);
+        dl();
+
+        d("Waiting");
+            loop{
+                if *USBSTS & (1 << 12) == 0 {
+                    break;
+                }
+            }
+
+            d(" CMD ");
+            dh(*USBCMD as usize);
+
+            d(" STS ");
+            dh(*USBSTS as usize);
+        dl();
+
+        for i in 0..ports as isize {
+            if *PORTSC.offset(i) & 1 == 1 {
+                d("Device on port ");
+                    dd(i as usize);
+                    d(" ");
+                    dh(*PORTSC.offset(i) as usize);
                 dl();
 
-                d("Send");
-                    *ASYNCLISTADDR = queuehead as u32;
+                if *PORTSC.offset(i) & (1 << 1) == (1 << 1) {
+                    d("Connection Change");
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
 
-                    *USBCMD |= (1 << 5);
+                        *PORTSC.offset(i) |= (1 << 1);
 
-                    d(" CMD ");
-                    dh(*USBCMD as usize);
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
+                    dl();
+                }
 
-                    d(" STS ");
-                    dh(*USBSTS as usize);
-                dl();
+                if *PORTSC.offset(i) & (1 << 2) == 0 {
+                    d("Reset");
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
 
-                loop {
+                        *PORTSC.offset(i) |= (1 << 8);
+
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
+
+                        *PORTSC.offset(i) &= 0xFFFFFEFF;
+
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
+                    dl();
+
                     d("Wait");
-                        if *USBSTS & 0xA000  == 0 {
-                            break;
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
+
+                        loop{
+                            if *PORTSC.offset(i) & (1 << 8) == 0 {
+                                break;
+                            }else{
+                                *PORTSC.offset(i) &= 0xFFFFFEFF;
+                            }
+                        }
+
+                        d(" ");
+                        dh(*PORTSC.offset(i) as usize);
+                    dl();
+                }
+
+                if *PORTSC.offset(i) & (1 << 2) == (1 << 2) {
+                    d("Port Enabled ");
+                    dh(*PORTSC.offset(i) as usize);
+                    dl();
+
+                    let out_qtd = alloc(size_of::<QTD>()) as *mut QTD;
+                    ptr::write(out_qtd, QTD {
+                        next: 1,
+                        next_alt: 1,
+                        token: (1 << 31) | (0b11 << 10) | 0x80,
+                        buffers: [0, 0, 0, 0, 0]
+                    });
+
+                    let in_data = alloc(64) as *mut u8;
+                    for i in 0..64{
+                        *in_data.offset(i) = 0;
+                    }
+
+                    let in_qtd = alloc(size_of::<QTD>()) as *mut QTD;
+                    ptr::write(in_qtd, QTD {
+                        next: out_qtd as u32,
+                        next_alt: 1,
+                        token: (1 << 31) | (64 << 16) | (0b11 << 10) | (0b01 << 8) | 0x80,
+                        buffers: [in_data as u32, 0, 0, 0, 0]
+                    });
+
+                    let setup_packet = alloc(size_of::<SETUP>()) as *mut SETUP;
+                    ptr::write(setup_packet, SETUP {
+                        request_type: 0b10000000,
+                        request: 6,
+                        value: 1 << 8,
+                        index: 0,
+                        len: 64
+                    });
+
+                    let setup_qtd = alloc(size_of::<QTD>()) as *mut QTD;
+                    ptr::write(setup_qtd, QTD {
+                        next: in_qtd as u32,
+                        next_alt: 1,
+                        token: ((size_of::<SETUP>() as u32) << 16) | (0b11 << 10) | (0b10 << 8) | 0x80,
+                        buffers: [setup_packet as u32, 0, 0, 0, 0]
+                    });
+
+                    let queuehead = alloc(size_of::<QueueHead>()) as *mut QueueHead;
+                    ptr::write(queuehead, QueueHead {
+                        next: 1,
+                        characteristics: (64 << 16) | (1 << 15) | (1 << 14) | (0b10 << 12),
+                        capabilities: (0b11 << 30),
+                        qtd_ptr: setup_qtd as u32,
+                        qtd: ptr::read(setup_qtd)
+                    });
+
+                    d("Prepare");
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" PTR ");
+                        dh(queuehead as usize);
+                    dl();
+
+                    d("Send");
+                        *ASYNCLISTADDR = queuehead as u32;
+
+                        *USBCMD |= (1 << 5);
+
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+                    dl();
+
+                    d("Wait");
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+                        dl();
+
+                        loop {
+                            if *USBSTS & 0xA000  == 0 {
+                                break;
+                            }
                         }
 
                         d(" CMD ");
@@ -214,27 +386,29 @@ impl EHCI {
                         d(" STS ");
                         dh(*USBSTS as usize);
                     dl();
+
+                    d("Stop");
+                        *USBCMD &= 0xFFFFFFFF - (1 << 5);
+
+                        d(" CMD ");
+                        dh(*USBCMD as usize);
+
+                        d(" STS ");
+                        dh(*USBSTS as usize);
+                    dl();
+
+                    d("Data");
+                    for i in 0..64 {
+                        d(" ");
+                        db(*in_data.offset(i));
+                    }
+                    dl();
+
+                    //Only detect one device for testing
+                    break;
+                }else{
+                    d("Device not high-speed\n");
                 }
-
-                d(" Stop");
-                    *USBCMD &= 0xFFFFFFFF - (1 << 5);
-
-                    d(" CMD ");
-                    dh(*USBCMD as usize);
-
-                    d(" STS ");
-                    dh(*USBSTS as usize);
-                dl();
-
-                d("Data");
-                for i in 0..64 {
-                    d(" ");
-                    db(*in_data.offset(i));
-                }
-                dl();
-
-                //Only detect one device for testing
-                break;
             }
         }
     }

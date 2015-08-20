@@ -202,29 +202,27 @@ impl SessionModule for IDE {
 
 impl IDE {
     pub unsafe fn init(&self){
-        d("IDE Controller on ");
+        d("IDE on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
         }else{
             d(" port mapped");
         }
-        dl();
 
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
 
         let base = self.base as u16;
 
-        d("PDTR: ");
+        d(" PDTR ");
         dh(ind(base + 0x4) as usize);
-        dl();
 
-        d("COMMAND: ");
+        d(" CMD ");
         dbh(inb(base));
-        dl();
 
-        d("STATUS: ");
+        d(" STS ");
         dbh(inb(base + 0x2));
+
         dl();
     }
 }
