@@ -47,6 +47,10 @@ pub trait Resource {
         return Option::None;
     }
 
+    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
+        return Option::None;
+    }
+
     fn write_async(&mut self, buf: &[u8], callback: Box<FnBox(Option<usize>)>){
         callback.call_box((self.write(buf),));
     }
@@ -62,7 +66,7 @@ pub struct URL {
     pub password: String,
     pub host: String,
     pub port: String,
-    pub path: Vec<String>
+    pub path: String
 }
 
 impl URL {
@@ -73,7 +77,7 @@ impl URL {
             password: String::new(),
             host: String::new(),
             port: String::new(),
-            path: Vec::new()
+            path: String::new()
         }
     }
 
@@ -131,7 +135,8 @@ impl URL {
                         url.password = String::new();
                     }
                 },
-                _ => url.path.push(part)
+                3 => url.path = part,
+                _ => url.path = url.path + "/" + part
             }
             part_i += 1;
         }
@@ -166,22 +171,6 @@ impl URL {
                 : "intel");
         }
     }
-    
-    pub fn path_string(&self) -> String{
-        let mut ret = String::new();
-
-        let mut first = true;
-        for element in self.path.iter() {
-            if first {
-                ret = element.clone();
-                first = false;
-            }else{
-                ret = ret + "/" + element.clone();
-            }
-        }
-
-        return ret;
-    }
 
     pub fn to_string(&self) -> String{
         let mut ret = self.scheme.clone() + "://";
@@ -201,7 +190,7 @@ impl URL {
             }
         }
 
-        ret = ret + "/" + self.path_string();
+        ret = ret + "/" + self.path.clone();
 
         return ret;
     }
@@ -275,7 +264,17 @@ impl Resource for VecResource {
             self.seek += 1;
             i += 1;
         }
+        while i < buf.len() {
+            self.vec.push(buf[i]);
+            self.seek += 1;
+            i += 1;
+        }
         return Option::Some(i);
+    }
+
+    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
+        self.vec.push_all(vec);
+        return Option::Some(vec.len());
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {

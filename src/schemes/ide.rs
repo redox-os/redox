@@ -113,19 +113,16 @@ impl SessionModule for IDE {
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let mut sector = 1;
-        match url.path.get(0) {
-            Option::Some(part) => {
-                sector = part.to_num() as u64;
-            },
-            Option::None => ()
-        }
-
         let mut count = 1;
-        match url.path.get(1) {
-            Option::Some(part) => {
-                count = part.to_num() as u16;
-            },
-            Option::None => ()
+
+        let mut i = 0;
+        for part in url.path.split("/".to_string()) {
+            match i {
+                0 => sector = part.to_num() as u64,
+                1 => count = part.to_num() as u16,
+                _ => ()
+            }
+            i += 1;
         }
 
         unsafe {
@@ -165,18 +162,14 @@ impl SessionModule for IDE {
             }
         };
 
-        match url.path.get(0) {
-            Option::Some(part) => {
-                request.sector = part.to_num() as u64;
-            },
-            Option::None => ()
-        }
-
-        match url.path.get(1) {
-            Option::Some(part) => {
-                request.count = part.to_num() as u16;
-            },
-            Option::None => ()
+        let mut i = 0;
+        for part in url.path.split("/".to_string()) {
+            match i {
+                0 => request.sector = part.to_num() as u64,
+                1 => request.count = part.to_num() as u16,
+                _ => ()
+            }
+            i += 1;
         }
 
         unsafe {

@@ -52,21 +52,22 @@ impl Application {
                     self.window.closed = true;
                 }else if *cmd == "open".to_string() {
                     match args.get(1) {
+                        Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
+                        Option::None => ()
+                    }
+                }else if *cmd == "run".to_string() {
+                    match args.get(1) {
                         Option::Some(arg) => {
-                            if arg.ends_with(".sh".to_string()) {
-                                let mut resource = URL::from_string(arg.clone()).open();
+                            let mut resource = URL::from_string(arg.clone()).open();
 
-                                let mut vec: Vec<u8> = Vec::new();
-                                resource.read_to_end(&mut vec);
+                            let mut vec: Vec<u8> = Vec::new();
+                            resource.read_to_end(&mut vec);
 
-                                let commands = String::from_utf8(&vec);
-                                for command in commands.split("\n".to_string()) {
-                                    self.on_command(&command);
-                                }
-                            }else{
-                                OpenEvent{ url_string: arg.clone() }.trigger();
+                            let commands = String::from_utf8(&vec);
+                            for command in commands.split("\n".to_string()) {
+                                self.on_command(&command);
                             }
-                        }
+                        },
                         Option::None => ()
                     }
                 }else if *cmd == "url".to_string() {
@@ -95,7 +96,7 @@ impl Application {
                         Option::None => self.append("Failed to read".to_string())
                     }
                 }else{
-                    self.append("Commands:  echo  exit  open  url".to_string());
+                    self.append("Commands:  echo  exit  open  run  url".to_string());
                 }
             },
             Option::None => ()

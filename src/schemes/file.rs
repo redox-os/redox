@@ -12,8 +12,7 @@ impl SessionModule for FileScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        let path = url.path_string();
-        match self.unfs.node(path.clone()) {
+        match self.unfs.node(url.path.clone()) {
             Option::Some(node) => {
                 if node.extents[0].block > 0 && node.extents[0].length > 0{
                     return URL::from_string("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize).open();
@@ -24,7 +23,7 @@ impl SessionModule for FileScheme {
             Option::None => {
                 let mut list = String::new();
 
-                for file in self.unfs.list(path.clone()).iter() {
+                for file in self.unfs.list(url.path.clone()).iter() {
                     if list.len() > 0 {
                         list = list + "\n" + file.clone();
                     }else{
@@ -38,8 +37,7 @@ impl SessionModule for FileScheme {
     }
 
     fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
-        let path = url.path_string();
-        match self.unfs.node(path.clone()) {
+        match self.unfs.node(url.path.clone()) {
             Option::Some(node) => {
                 if node.extents[0].block > 0 && node.extents[0].length > 0{
                     URL::from_string("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize).open_async(callback);
@@ -50,7 +48,7 @@ impl SessionModule for FileScheme {
             Option::None => {
                 let mut list = String::new();
 
-                for file in self.unfs.list(path.clone()).iter() {
+                for file in self.unfs.list(url.path.clone()).iter() {
                     if list.len() > 0 {
                         list = list + "\n" + file.clone();
                     }else{
