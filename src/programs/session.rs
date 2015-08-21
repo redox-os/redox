@@ -166,7 +166,7 @@ impl Session {
                     let url = URL::from_string(url_string.clone());
 
                     let mut found = false;
-                    if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()){
+                    if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
                         self.items.insert(0, box Editor::new());
                         found = true;
                     }else if url_string.ends_with(".bin".to_string()){

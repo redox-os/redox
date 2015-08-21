@@ -154,6 +154,10 @@ impl Application {
         }
         match args.get(0) {
             Option::Some(cmd) => {
+                if cmd[0] == '#' {
+                    return;
+                }
+
                 for command in self.commands.iter() {
                     if command.name == *cmd {
                         (*command.main)(&args);
