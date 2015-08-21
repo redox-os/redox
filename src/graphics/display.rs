@@ -7,7 +7,6 @@ use core::simd::*;
 use common::memory::*;
 use common::string::*;
 
-use graphics::bmp::*;
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;

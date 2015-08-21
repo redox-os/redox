@@ -40,7 +40,7 @@ pub trait SessionItem : ::mopa::Any {
 
     }
 
-    fn draw(&mut self, display: &Display) -> bool {
+    fn draw(&self, display: &Display) -> bool {
         return false;
     }
 

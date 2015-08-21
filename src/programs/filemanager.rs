@@ -11,7 +11,7 @@ pub struct FileManager {
 }
 
 impl FileManager {
-    fn draw_content(){
+    fn draw_content(&mut self){
         let content = &self.window.content;
 
         content.set(Color::new(0, 0, 0));
@@ -72,7 +72,7 @@ impl SessionItem for FileManager {
             size.height = files.len() * 16;
         }
 
-        let ret = FileManager {
+        let mut ret = FileManager {
             window: Window::new(Point::new(10, 50), size, String::from_str("File Manager")),
             files: files,
             selected: -1
@@ -83,7 +83,7 @@ impl SessionItem for FileManager {
         return ret;
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
+    fn draw(&self, display: &Display) -> bool{
         return self.window.draw(display);
     }
 
@@ -122,9 +122,9 @@ impl SessionItem for FileManager {
                     }
                 }
             }
-        }
 
-        self.draw_content();
+            self.draw_content();
+        }
     }
 
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{

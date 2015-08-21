@@ -1,4 +1,5 @@
 use core::atomic::*;
+use core::mem;
 
 use common::elf::*;
 
@@ -74,14 +75,16 @@ impl SessionItem for Executor {
         }
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
+    fn draw(&self, display: &Display) -> bool{
         unsafe {
             if self.executable.can_call(self.draw){
                 //Rediculous call mechanism
-                self.unsafe_map();
+                let self_mut: *mut Executor = mem::transmute(self);
+
+                (*self_mut).unsafe_map();
                 let fn_ptr: *const usize = &self.draw;
                 let ret = (*(fn_ptr as *const fn(&Display) -> bool))(display);
-                self.unsafe_unmap();
+                (*self_mut).unsafe_unmap();
 
                 return ret;
             }
