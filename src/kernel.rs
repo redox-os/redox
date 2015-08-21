@@ -8,7 +8,6 @@
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
-#![feature(rc_unique)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![no_std]
@@ -18,7 +17,6 @@ extern crate alloc;
 #[macro_use]
 extern crate mopa;
 
-use core::fmt;
 use core::mem::size_of;
 use core::mem::swap;
 use core::ptr;
