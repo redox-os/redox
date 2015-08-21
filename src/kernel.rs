@@ -120,12 +120,12 @@ mod usb {
     pub mod xhci;
 }
 
-static mut debug_display: *mut Display = 0 as *mut Display;
+static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
 static mut debug_point: Point = Point{ x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 
-static mut session_ptr: *mut Session = 0 as *mut Session;
+static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
 
 unsafe fn test_disk(disk: Disk){
@@ -144,12 +144,12 @@ unsafe fn test_disk(disk: Disk){
 }
 
 unsafe fn init(font_data: usize, cursor_data: usize){
-    debug_display = 0 as *mut Display;
+    debug_display = 0 as *mut Box<Display>;
     debug_point = Point{ x: 0, y: 0 };
     debug_draw = false;
     debug_redraw = false;
 
-    session_ptr = 0 as *mut Session;
+    session_ptr = 0 as *mut Box<Session>;
     events_ptr = 0 as *mut Vec<Event>;
 
     debug_init();
@@ -163,13 +163,13 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     *FONTS = font_data;
 
-    debug_display = alloc(size_of::<Session>()) as *mut Display;
-    ptr::write(debug_display, Display::root());
+    debug_display = alloc(size_of::<Box<Display>>()) as *mut Box<Display>;
+    ptr::write(debug_display, box Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
 
-    session_ptr = alloc(size_of::<Session>()) as *mut Session;
-    ptr::write(session_ptr, Session::new());
+    session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
+    ptr::write(session_ptr, box Session::new());
     events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
     ptr::write(events_ptr, Vec::new());
 
