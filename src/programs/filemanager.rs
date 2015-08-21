@@ -19,11 +19,7 @@ impl SessionItem for FileManager {
         let mut resource = URL::from_string("file:///".to_string()).open();
 
         let mut vec: Vec<u8> = Vec::new();
-
-        match resource.read_to_end(&mut vec) {
-            Option::Some(len) => (),
-            Option::None => ()
-        }
+        resource.read_to_end(&mut vec);
 
         for file in String::from_utf8(&vec).split("\n".to_string()){
             if size.width < (file.len() + 1) * 8 {
@@ -37,26 +33,7 @@ impl SessionItem for FileManager {
         }
 
         let ret = FileManager {
-            window: Window{
-                point: Point::new(10, 50),
-                size: size,
-                title: String::from_str("File Manager"),
-                title_color: Color::new(0, 0, 0),
-                border_color: Color::new(255, 255, 255),
-                content_color: Color::alpha(0, 0, 0, 196),
-                shaded: false,
-                closed: false,
-                dragging: false,
-                last_mouse_point: Point::new(0, 0),
-                last_mouse_event: MouseEvent {
-                    x: 0,
-                    y: 0,
-                    left_button: false,
-                    right_button: false,
-                    middle_button: false,
-                    valid: false
-                }
-            },
+            window: Window::new(Point::new(10, 50), size, String::from_str("File Manager")),
             files: files,
             selected: -1
         };
@@ -66,46 +43,41 @@ impl SessionItem for FileManager {
 
     #[allow(unused_variables)]
     fn draw(&mut self, display: &Display) -> bool{
-        if ! self.window.draw(display) {
-            return false;
-        }
+        self.window.content.set(Color::new(0, 0, 0));
 
-        if ! self.window.shaded {
-            let mut i = 0;
-            let mut row = 0;
-            for string in self.files.iter() {
-                let mut col = 0;
-                for c in string.chars() {
-                    if c == '\n' {
-                        col = 0;
-                        row += 1;
-                    }else if c == '\t' {
-                        col += 8 - col % 8;
+        let mut i = 0;
+        let mut row = 0;
+        for string in self.files.iter() {
+            let mut col = 0;
+            for c in string.chars() {
+                if c == '\n' {
+                    col = 0;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    let color;
+                    if i == self.selected {
+                        color = Color::new(128, 128, 128);
                     }else{
-                        let color;
-                        if i == self.selected {
-                            color = Color::new(128, 128, 128);
-                        }else{
-                            color = Color::new(255, 255, 255);
-                        }
-
-                        if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                            let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
-                            display.char(point, c, color);
-                            col += 1;
-                        }
+                        color = Color::new(255, 255, 255);
                     }
-                    if col >= self.window.size.width / 8 {
-                        col = 0;
-                        row += 1;
+
+                    if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
+                        self.window.content.char(Point::new(8*col as isize, 16*row as isize), c, color);
+                        col += 1;
                     }
                 }
-                row += 1;
-                i += 1;
+                if col >= self.window.size.width / 8 {
+                    col = 0;
+                    row += 1;
+                }
             }
+            row += 1;
+            i += 1;
         }
 
-        return true;
+        return self.window.draw(display);
     }
 
     #[allow(unused_variables)]

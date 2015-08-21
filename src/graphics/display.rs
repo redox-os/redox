@@ -1,6 +1,7 @@
 use core::cmp::min;
 use core::cmp::max;
 use core::mem::size_of;
+use core::ops::Drop;
 use core::simd::*;
 
 use common::memory::*;
@@ -49,33 +50,45 @@ pub struct VBEModeInfo {
     offscreenmemsize: u16
 }
 
+pub const FONTS: *mut usize = 0x200008 as *mut usize;
+
 pub struct Display {
     pub offscreen: usize,
     pub onscreen: usize,
     pub size: usize,
-    pub fonts: usize,
-    pub background: BMP,
-    pub cursor: BMP,
     pub bytesperrow: usize,
     pub width: usize,
-    pub height: usize
+    pub height: usize,
+    pub root: bool
 }
 
 impl Display {
-    pub fn new() -> Display {
-        unsafe{
-            let mode_info = &*(VBEMODEINFOLOCATION as *const VBEModeInfo);
+    pub unsafe fn root() -> Display {
+        let mode_info = &*(VBEMODEINFOLOCATION as *const VBEModeInfo);
 
+        Display {
+            offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
+            onscreen: mode_info.physbaseptr as usize,
+            size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
+            bytesperrow: mode_info.bytesperscanline as usize,
+            width: mode_info.xresolution as usize,
+            height: mode_info.yresolution as usize,
+            root: true
+        }
+    }
+
+    pub fn new(width: usize, height: usize) -> Display {
+        unsafe{
+            let bytesperrow = width * 4;
+            let memory_size = bytesperrow * height;
             Display {
-                offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
-                onscreen: mode_info.physbaseptr as usize,
-                size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
-                fonts: 0,
-                background: BMP::new(),
-                cursor: BMP::new(),
-                bytesperrow: mode_info.bytesperscanline as usize,
-                width: mode_info.xresolution as usize,
-                height: mode_info.yresolution as usize
+                offscreen: alloc(memory_size),
+                onscreen: 0 /*alloc(memory_size)*/,
+                size: memory_size,
+                bytesperrow: bytesperrow,
+                width:  width,
+                height: height,
+                root: false
             }
         }
     }
@@ -217,13 +230,6 @@ impl Display {
         }
     }
 
-    pub fn background(&self){
-        self.set(Color::new(64, 64, 64));
-        if self.background.data > 0 {
-            self.image(Point::new((self.width as isize - self.background.size.width as isize)/2, (self.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
-        }
-    }
-
     //TODO: SIMD to optimize
     pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize){
         let mut i = 0;
@@ -274,8 +280,8 @@ impl Display {
 
     pub fn char(&self, point: Point, character: char, color: Color){
         unsafe{
-            if self.fonts > 0 {
-                let bitmap_location = self.fonts + 16*(character as usize);
+            if *FONTS > 0 {
+                let bitmap_location = *FONTS + 16*(character as usize);
                 for row in 0..16 {
                     let row_data = *((bitmap_location + row) as *const u8);
                     for col in 0..8 {
@@ -326,8 +332,8 @@ impl Display {
 
     pub fn char_onscreen(&self, point: Point, character: char, color: Color){
         unsafe{
-            if self.fonts > 0 {
-                let bitmap_location = self.fonts + 16*(character as usize);
+            if *FONTS > 0 {
+                let bitmap_location = *FONTS + 16*(character as usize);
                 for row in 0..16 {
                     let row_data = *((bitmap_location + row) as *const u8);
                     for col in 0..8 {
@@ -340,13 +346,25 @@ impl Display {
             }
         }
     }
+    /* } Cursor hacks */
+}
 
-    pub fn cursor(&self, point: Point){
-        if self.cursor.data > 0 {
-            self.image_alpha_onscreen(point, self.cursor.data, self.cursor.size);
-        }else{
-            self.char_onscreen(Point::new(point.x - 3, point.y - 9), 'X', Color::new(255, 255, 255));
+impl Drop for Display {
+    fn drop(&mut self){
+        unsafe{
+            if self.offscreen > 0 {
+                unalloc(self.offscreen);
+                self.offscreen = 0;
+            }
+            if ! self.root && self.onscreen > 0 {
+                unalloc(self.onscreen);
+                self.onscreen = 0;
+            }
+            self.size = 0;
+            self.bytesperrow = 0;
+            self.width = 0;
+            self.height = 0;
+            self.root = false;
         }
     }
-    /* } Cursor hacks */
 }

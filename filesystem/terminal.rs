@@ -91,8 +91,7 @@ impl Application {
 
                     let mut vec: Vec<u8> = Vec::new();
                     match resource.read_to_end(&mut vec) {
-                        Option::Some(0) => (),
-                        Option::Some(len) => self.append(String::from_utf8(&vec)),
+                        Option::Some(_) => self.append(String::from_utf8(&vec)),
                         Option::None => self.append("Failed to read".to_string())
                     }
                 }else{
@@ -108,26 +107,7 @@ impl SessionItem for Application {
     #[allow(unused_variables)]
     fn new() -> Application {
         Application {
-            window: Window{
-                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
-                size: Size::new(576, 400),
-                title: String::from_str("Terminal"),
-                title_color: Color::new(0, 0, 0),
-                border_color: Color::new(192, 192, 255),
-                content_color: Color::alpha(128, 128, 160, 192),
-                shaded: false,
-                closed: false,
-                dragging: false,
-                last_mouse_point: Point::new(0, 0),
-                last_mouse_event: MouseEvent {
-                    x: 0,
-                    y: 0,
-                    left_button: false,
-                    right_button: false,
-                    middle_button: false,
-                    valid: false
-                }
-            },
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
             output: String::new(),
             last_command: String::new(),
             command: String::new(),
@@ -138,95 +118,88 @@ impl SessionItem for Application {
     }
 
     fn draw(&mut self, display: &Display) -> bool{
-        if self.window.draw(display) {
-            let scroll = self.scroll;
+        self.window.content.set(Color::new(0, 0, 0));
 
-            let mut col = -scroll.x;
-            let cols = self.window.size.width as isize / 8;
-            let mut row = -scroll.y;
-            let rows = self.window.size.height as isize / 16;
+        let scroll = self.scroll;
 
-            for c in self.output.chars(){
-                if self.wrap && col >= cols {
-                    col = -scroll.x;
-                    row += 1;
-                }
+        let mut col = -scroll.x;
+        let cols = self.window.size.width as isize / 8;
+        let mut row = -scroll.y;
+        let rows = self.window.size.height as isize / 16;
 
-                if c == '\n' {
-                    col = -scroll.x;
-                    row += 1;
-                }else if c == '\t' {
-                    col += 8 - col % 8;
-                }else{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                        display.char(point, c, Color::new(224, 224, 224));
-                    }
-                    col += 1;
-                }
-            }
-
-            if col > -scroll.x {
-                col = -scroll.x;
-                row += 1;
-            }
-
-            if col >= 0 && col < cols && row >= 0 && row < rows{
-                let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                display.char(point, '#', Color::new(255, 255, 255));
-                col += 2;
-            }
-
-            let mut i = 0;
-            for c in self.command.chars(){
-                if self.wrap && col >= cols {
-                    col = -scroll.x;
-                    row += 1;
-                }
-
-                if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                    let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                    display.char(point, '_', Color::new(255, 255, 255));
-                }
-
-                if c == '\n' {
-                    col = -scroll.x;
-                    row += 1;
-                }else if c == '\t' {
-                    col += 8 - col % 8;
-                }else{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                        display.char(point, c, Color::new(255, 255, 255));
-                    }
-                    col += 1;
-                }
-
-                i += 1;
-            }
-
+        for c in self.output.chars(){
             if self.wrap && col >= cols {
                 col = -scroll.x;
                 row += 1;
             }
 
-            if row >= rows {
-                self.scroll.y += row - rows + 1;
+            if c == '\n' {
+                col = -scroll.x;
+                row += 1;
+            }else if c == '\t' {
+                col += 8 - col % 8;
+            }else{
+                if col >= 0 && col < cols && row >= 0 && row < rows{
+                    self.window.content.char(Point::new(8 * col, 16 * row), c, Color::new(224, 224, 224));
+                }
+                col += 1;
+            }
+        }
 
-                RedrawEvent {
-                    redraw: REDRAW_ALL
-                }.trigger();
+        if col > -scroll.x {
+            col = -scroll.x;
+            row += 1;
+        }
+
+        if col >= 0 && col < cols && row >= 0 && row < rows{
+            self.window.content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
+            col += 2;
+        }
+
+        let mut i = 0;
+        for c in self.command.chars(){
+            if self.wrap && col >= cols {
+                col = -scroll.x;
+                row += 1;
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                display.char(point, '_', Color::new(255, 255, 255));
+                self.window.content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
             }
 
-            return true;
-        }else{
-            return false;
+            if c == '\n' {
+                col = -scroll.x;
+                row += 1;
+            }else if c == '\t' {
+                col += 8 - col % 8;
+            }else{
+                if col >= 0 && col < cols && row >= 0 && row < rows{
+                    self.window.content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                }
+                col += 1;
+            }
+
+            i += 1;
         }
+
+        if self.wrap && col >= cols {
+            col = -scroll.x;
+            row += 1;
+        }
+
+        if row >= rows {
+            self.scroll.y += row - rows + 1;
+
+            RedrawEvent {
+                redraw: REDRAW_ALL
+            }.trigger();
+        }
+
+        if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
+            self.window.content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
+        }
+
+        return self.window.draw(display);
     }
 
     #[allow(unused_variables)]

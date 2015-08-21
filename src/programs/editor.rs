@@ -14,26 +14,7 @@ pub struct Editor {
 impl SessionItem for Editor {
     fn new() -> Editor {
         Editor {
-            window: Window{
-                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
-                size: Size::new(576, 400),
-                title: "Editor".to_string(),
-                title_color: Color::new(0, 0, 0),
-                border_color: Color::new(255, 255, 255),
-                content_color: Color::alpha(0, 0, 0, 196),
-                shaded: false,
-                closed: false,
-                dragging: false,
-                last_mouse_point: Point::new(0, 0),
-                last_mouse_event: MouseEvent {
-                    x: 0,
-                    y: 0,
-                    left_button: false,
-                    right_button: false,
-                    middle_button: false,
-                    valid: false
-                }
-            },
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
             string: String::new(),
             offset: 0,
             scroll: Point::new(0, 0)
@@ -54,70 +35,30 @@ impl SessionItem for Editor {
     }
 
     fn draw(&mut self, display: &Display) -> bool{
-        if ! self.window.draw(display){
-            return false;
-        }
+        self.window.content.set(Color::alpha(0, 0, 0, 196));
 
-        if ! self.window.shaded {
-            let scroll = self.scroll;
-            let mut offset = 0;
+        let scroll = self.scroll;
+        let mut offset = 0;
 
-            let mut col = -scroll.x;
-            let cols = self.window.size.width as isize / 8;
+        let mut col = -scroll.x;
+        let cols = self.window.size.width as isize / 8;
 
-            let mut row = -scroll.y;
-            let rows = self.window.size.height as isize / 16;
-            for c in self.string.chars() {
-                if offset == self.offset{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        display.char(Point::new(self.window.point.x + 8*col, self.window.point.y + 16*row), '_', Color::new(128, 128, 128));
-                    }else{
-                        if col < 0 { //Too far to the left
-                            self.scroll.x += col;
-                        }else if col >= cols{ //Too far to the right
-                            self.scroll.x += col - cols;
-                        }
-                        if row < 0 { //Too far up
-                            self.scroll.y += row;
-                        }else if row >= rows{ //Too far down
-                            self.scroll.y += row - rows;
-                        }
-
-                        RedrawEvent {
-                            redraw: REDRAW_ALL
-                        }.trigger();
-                    }
-                }
-
-                if c == '\n' {
-                    col = -scroll.x;
-                    row += 1;
-                }else if c == '\t' {
-                    col += 8 - col % 8;
-                }else{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                        display.char(point, c, Color::new(255, 255, 255));
-                    }
-                    col += 1;
-                }
-
-                offset += 1;
-            }
-
-            if offset == self.offset {
+        let mut row = -scroll.y;
+        let rows = self.window.size.height as isize / 16;
+        for c in self.string.chars() {
+            if offset == self.offset{
                 if col >= 0 && col < cols && row >= 0 && row < rows{
-                    display.char(Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row), '_', Color::new(128, 128, 128));
+                    self.window.content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
                 }else{
                     if col < 0 { //Too far to the left
                         self.scroll.x += col;
                     }else if col >= cols{ //Too far to the right
-                        self.scroll.x += cols - col;
+                        self.scroll.x += col - cols;
                     }
                     if row < 0 { //Too far up
                         self.scroll.y += row;
                     }else if row >= rows{ //Too far down
-                        self.scroll.y += rows - row;
+                        self.scroll.y += row - rows;
                     }
 
                     RedrawEvent {
@@ -125,6 +66,45 @@ impl SessionItem for Editor {
                     }.trigger();
                 }
             }
+
+            if c == '\n' {
+                col = -scroll.x;
+                row += 1;
+            }else if c == '\t' {
+                col += 8 - col % 8;
+            }else{
+                if col >= 0 && col < cols && row >= 0 && row < rows{
+                    self.window.content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                }
+                col += 1;
+            }
+
+            offset += 1;
+        }
+
+        if offset == self.offset {
+            if col >= 0 && col < cols && row >= 0 && row < rows{
+                display.char(Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row), '_', Color::new(128, 128, 128));
+            }else{
+                if col < 0 { //Too far to the left
+                    self.scroll.x += col;
+                }else if col >= cols{ //Too far to the right
+                    self.scroll.x += cols - col;
+                }
+                if row < 0 { //Too far up
+                    self.scroll.y += row;
+                }else if row >= rows{ //Too far down
+                    self.scroll.y += rows - row;
+                }
+
+                RedrawEvent {
+                    redraw: REDRAW_ALL
+                }.trigger();
+            }
+        }
+
+        if ! self.window.draw(display){
+            return false;
         }
 
         return true;

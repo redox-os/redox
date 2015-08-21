@@ -163,9 +163,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     page_init();
     cluster_init();
 
+    *FONTS = font_data;
+
     debug_display = alloc(size_of::<Session>()) as *mut Display;
-    ptr::write(debug_display, Display::new());
-    (*debug_display).fonts = font_data;
+    ptr::write(debug_display, Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
 
@@ -175,8 +176,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     ptr::write(events_ptr, Vec::new());
 
     let session = &mut *session_ptr;
-    session.display.fonts = font_data;
-    session.display.cursor = BMP::from_data(cursor_data);
+    session.cursor = BMP::from_data(cursor_data);
 
     keyboard_init();
     mouse_init();
@@ -211,7 +211,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     let mut vec: Vec<u8> = Vec::new();
     match resource.read_to_end(&mut vec) {
-        Option::Some(_) => (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize),
+        Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
         Option::None => d("Background load error\n")
     }
 

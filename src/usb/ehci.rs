@@ -39,6 +39,7 @@ pub struct EHCI {
 }
 
 impl SessionModule for EHCI {
+    #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             //d("EHCI handle");
@@ -68,6 +69,7 @@ impl SessionModule for EHCI {
 }
 
 impl EHCI {
+    #[allow(non_snake_case)]
     pub unsafe fn init(&self){
         d("EHCI on: ");
         dh(self.base);
