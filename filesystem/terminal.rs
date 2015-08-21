@@ -4,9 +4,123 @@ use graphics::window::*;
 
 use programs::common::*;
 
+macro_rules! print {
+    ($stdio:ident, $text:expr) => ({
+        $stdio.write_all(&$text.to_utf8());    
+    });
+}
+
+macro_rules! println {
+    ($stdio:ident, $line:expr) => (print!($stdio, $line + "\n"));
+}
+
+pub struct Command {
+    pub name: String,
+    pub main: Box<Fn(&mut Box<VecResource>, &Vec<String>)>
+}
+
+impl Command {
+    fn vec() -> Vec<Command> {
+        let mut commands: Vec<Command> = Vec::new();
+
+        commands.push(Command {
+            name: "break".to_string(),
+            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+                unsafe{
+                    asm!("int 3" : : : : "intel");
+                }
+            }
+        });
+
+        commands.push(Command {
+            name: "echo".to_string(),
+            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+                let mut echo = String::new();
+                for i in 1..args.len() {
+                    match args.get(i) {
+                        Option::Some(arg) => {
+                            if echo.len() == 0 {
+                                echo = arg.clone();
+                            }else{
+                                echo = echo + " " + arg.clone();
+                            }
+                        },
+                        Option::None => ()
+                    }
+                }
+                println!(stdio, echo);
+            }
+        });
+
+        commands.push(Command {
+            name: "open".to_string(),
+            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+                match args.get(1) {
+                    Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
+                    Option::None => ()
+                }
+            }
+        });
+
+        commands.push(Command {
+            name: "run".to_string(),
+            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+                /*
+                match args.get(1) {
+                    Option::Some(arg) => {
+                        let mut resource = URL::from_string(arg.clone()).open();
+
+                        let mut vec: Vec<u8> = Vec::new();
+                        resource.read_to_end(&mut vec);
+
+                        let commands = String::from_utf8(&vec);
+                        for command in commands.split("\n".to_string()) {
+                            self.on_command(&command);
+                        }
+                    },
+                    Option::None => ()
+                }
+                */
+            }
+        });
+
+        commands.push(Command {
+            name: "url".to_string(),
+            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+                let mut url = URL::new();
+
+                match args.get(1) {
+                    Option::Some(arg) => url = URL::from_string(arg.clone()),
+                    Option::None => ()
+                }
+
+                println!(stdio, "URL: ".to_string() + url.to_string());
+
+                let mut resource = url.open();
+
+                match resource.stat() {
+                    ResourceType::File => println!(stdio, "Type: File".to_string()),
+                    ResourceType::Dir => println!(stdio, "Type: Dir".to_string()),
+                    ResourceType::Array => println!(stdio, "Type: Array".to_string()),
+                    _ => println!(stdio, "Type: None".to_string())
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                match resource.read_to_end(&mut vec) {
+                    Option::Some(_) => println!(stdio, String::from_utf8(&vec)),
+                    Option::None => println!(stdio, "Failed to read".to_string())
+                }
+            }
+        });
+
+        return commands;
+    }
+}
+
 pub struct Application {
     window: Window,
-    output: String,
+    commands: Vec<Command>,
+    stdio: Box<VecResource>,
     last_command: String,
     command: String,
     offset: usize,
@@ -16,7 +130,7 @@ pub struct Application {
 
 impl Application {
     fn append(&mut self, line: String) {
-        self.output = self.output.clone() + line + "\n";
+        self.stdio.write_all(&(line + "\n").to_utf8());
     }
 
     fn on_command(&mut self, command: &String){
@@ -28,74 +142,19 @@ impl Application {
         }
         match args.get(0) {
             Option::Some(cmd) => {
-                if *cmd == "break".to_string() {
-                    unsafe{
-                        asm!("int 3" : : : : "intel");
+                for command in self.commands.iter() {
+                    if command.name == *cmd {
+                        (*command.main)(&mut self.stdio, &args);
+                        return;
                     }
-                }else if *cmd == "echo".to_string() {
-                    let mut echo = String::new();
-                    for i in 1..args.len() {
-                        match args.get(i) {
-                            Option::Some(arg) => {
-                                if echo.len() == 0 {
-                                    echo = arg.clone();
-                                }else{
-                                    echo = echo + " " + arg.clone();
-                                }
-                            },
-                            Option::None => ()
-                        }
-                    }
-                    self.append(echo);
-                }else if *cmd == "exit".to_string() {
-                    self.window.closed = true;
-                }else if *cmd == "open".to_string() {
-                    match args.get(1) {
-                        Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
-                        Option::None => ()
-                    }
-                }else if *cmd == "run".to_string() {
-                    match args.get(1) {
-                        Option::Some(arg) => {
-                            let mut resource = URL::from_string(arg.clone()).open();
-
-                            let mut vec: Vec<u8> = Vec::new();
-                            resource.read_to_end(&mut vec);
-
-                            let commands = String::from_utf8(&vec);
-                            for command in commands.split("\n".to_string()) {
-                                self.on_command(&command);
-                            }
-                        },
-                        Option::None => ()
-                    }
-                }else if *cmd == "url".to_string() {
-                    let mut url = URL::new();
-
-                    match args.get(1) {
-                        Option::Some(arg) => url = URL::from_string(arg.clone()),
-                        Option::None => ()
-                    }
-
-                    self.append("URL: ".to_string() + url.to_string());
-
-                    let mut resource = url.open();
-
-                    match resource.stat() {
-                        ResourceType::File => self.append("Type: File".to_string()),
-                        ResourceType::Dir => self.append("Type: Dir".to_string()),
-                        ResourceType::Array => self.append("Type: Array".to_string()),
-                        _ => self.append("Type: None".to_string())
-                    }
-
-                    let mut vec: Vec<u8> = Vec::new();
-                    match resource.read_to_end(&mut vec) {
-                        Option::Some(_) => self.append(String::from_utf8(&vec)),
-                        Option::None => self.append("Failed to read".to_string())
-                    }
-                }else{
-                    self.append("Commands:  echo  exit  open  run  url".to_string());
                 }
+
+                let mut help = "Commands:".to_string();
+                for command in self.commands.iter() {
+                    help = help + " " + command.name.clone();
+                }
+
+                self.append(help);
             },
             Option::None => ()
         }
@@ -114,7 +173,8 @@ impl Application {
 
             content.set(Color::new(0, 0, 0));
 
-            for c in self.output.chars(){
+            let output = String::from_utf8(self.stdio.inner());
+            for c in output.chars(){
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
@@ -194,7 +254,8 @@ impl SessionItem for Application {
     fn new() -> Application {
         let mut ret = Application {
             window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
-            output: String::new(),
+            commands: Command::vec(),
+            stdio: box VecResource::new(ResourceType::File, Vec::new()),
             last_command: String::new(),
             command: String::new(),
             offset: 0,
@@ -248,7 +309,7 @@ impl SessionItem for Application {
                         self.command = String::new();
                         self.offset = 0;
                         self.last_command = command.clone();
-                        self.output = self.output.clone() + "# ".to_string() + command.clone() + "\n";
+                        self.append("# ".to_string() + command.clone());
                         self.on_command(&command);
                     }
                 },

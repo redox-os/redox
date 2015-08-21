@@ -211,6 +211,10 @@ impl VecResource {
             seek: 0
         };
     }
+
+    pub fn inner(&self) -> &Vec<u8> {
+        return &self.vec;
+    }
 }
 
 impl Resource for VecResource {
