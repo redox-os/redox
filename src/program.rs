@@ -4,7 +4,6 @@
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]

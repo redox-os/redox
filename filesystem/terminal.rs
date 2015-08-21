@@ -19,7 +19,6 @@ impl Application {
         self.output = self.output.clone() + line + "\n";
     }
 
-    #[allow(unused_variables)]
     fn on_command(&mut self, command: &String){
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in command.split(" ".to_string()) {
@@ -101,63 +100,75 @@ impl Application {
             Option::None => ()
         }
     }
-}
 
-impl SessionItem for Application {
-    #[allow(unused_variables)]
-    fn new() -> Application {
-        Application {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
-            output: String::new(),
-            last_command: String::new(),
-            command: String::new(),
-            offset: 0,
-            scroll: Point::new(0, 0),
-            wrap: true
-        }
-    }
-
-    fn draw(&mut self){
-        content.set(Color::new(0, 0, 0));
-
+    fn draw_content(&mut self){
         let scroll = self.scroll;
 
         let mut col = -scroll.x;
-        let cols = self.window.size.width as isize / 8;
+        let cols = self.window.content.width as isize / 8;
         let mut row = -scroll.y;
-        let rows = self.window.size.height as isize / 16;
+        let rows = self.window.content.height as isize / 16;
 
-        for c in self.output.chars(){
-            if self.wrap && col >= cols {
-                col = -scroll.x;
-                row += 1;
-            }
+        {
+            let content = &self.window.content;
 
-            if c == '\n' {
-                col = -scroll.x;
-                row += 1;
-            }else if c == '\t' {
-                col += 8 - col % 8;
-            }else{
-                if col >= 0 && col < cols && row >= 0 && row < rows{
-                    content.char(Point::new(8 * col, 16 * row), c, Color::new(224, 224, 224));
+            content.set(Color::new(0, 0, 0));
+
+            for c in self.output.chars(){
+                if self.wrap && col >= cols {
+                    col = -scroll.x;
+                    row += 1;
                 }
-                col += 1;
+
+                if c == '\n' {
+                    col = -scroll.x;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        content.char(Point::new(8 * col, 16 * row), c, Color::new(224, 224, 224));
+                    }
+                    col += 1;
+                }
             }
-        }
 
-        if col > -scroll.x {
-            col = -scroll.x;
-            row += 1;
-        }
+            if col > -scroll.x {
+                col = -scroll.x;
+                row += 1;
+            }
 
-        if col >= 0 && col < cols && row >= 0 && row < rows{
-            content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
-            col += 2;
-        }
+            if col >= 0 && col < cols && row >= 0 && row < rows{
+                content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
+                col += 2;
+            }
 
-        let mut i = 0;
-        for c in self.command.chars(){
+            let mut i = 0;
+            for c in self.command.chars(){
+                if self.wrap && col >= cols {
+                    col = -scroll.x;
+                    row += 1;
+                }
+
+                if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
+                    content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
+                }
+
+                if c == '\n' {
+                    col = -scroll.x;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                    }
+                    col += 1;
+                }
+
+                i += 1;
+            }
+
             if self.wrap && col >= cols {
                 col = -scroll.x;
                 row += 1;
@@ -166,43 +177,40 @@ impl SessionItem for Application {
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
                 content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
             }
-
-            if c == '\n' {
-                col = -scroll.x;
-                row += 1;
-            }else if c == '\t' {
-                col += 8 - col % 8;
-            }else{
-                if col >= 0 && col < cols && row >= 0 && row < rows{
-                    content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
-                }
-                col += 1;
-            }
-
-            i += 1;
-        }
-
-        if self.wrap && col >= cols {
-            col = -scroll.x;
-            row += 1;
         }
 
         if row >= rows {
             self.scroll.y += row - rows + 1;
 
+            self.draw_content();
             RedrawEvent {
                 redraw: REDRAW_ALL
             }.trigger();
         }
+    }
+}
 
-        if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-            content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
-        }
+impl SessionItem for Application {
+    fn new() -> Application {
+        let mut ret = Application {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
+            output: String::new(),
+            last_command: String::new(),
+            command: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0),
+            wrap: true
+        };
 
+        ret.draw_content();
+
+        return ret;
+    }
+
+    fn draw(&self, display: &Display) -> bool{
         return self.window.draw(display);
     }
 
-    #[allow(unused_variables)]
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
@@ -249,11 +257,17 @@ impl SessionItem for Application {
                     self.offset += 1;
                 }
             }
+
+            self.draw_content();
         }
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+        if self.window.on_mouse(mouse_point, mouse_event, allow_catch){
+            self.draw_content();
+            return true;
+        }else{
+            return false;
+        }
     }
 }

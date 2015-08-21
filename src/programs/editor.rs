@@ -21,10 +21,10 @@ impl Editor {
         let mut offset = 0;
 
         let mut col = -scroll.x;
-        let cols = self.window.size.width as isize / 8;
+        let cols = content.width as isize / 8;
 
         let mut row = -scroll.y;
-        let rows = self.window.size.height as isize / 16;
+        let rows = content.height as isize / 16;
         for c in self.string.chars() {
             if offset == self.offset{
                 if col >= 0 && col < cols && row >= 0 && row < rows{
@@ -64,7 +64,7 @@ impl Editor {
 
         if offset == self.offset {
             if col >= 0 && col < cols && row >= 0 && row < rows{
-                display.char(Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row), '_', Color::new(128, 128, 128));
+                content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
             }else{
                 if col < 0 { //Too far to the left
                     self.scroll.x += col;
@@ -106,9 +106,11 @@ impl SessionItem for Editor {
         self.scroll = Point::new(0, 0);
         self.string = String::from_utf8(&vec);
         self.window.title = "Editor (".to_string() + url.to_string() + ")";
+
+        self.draw_content();
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
+    fn draw(&self, display: &Display) -> bool{
         return self.window.draw(display);
     }
 
@@ -163,11 +165,18 @@ impl SessionItem for Editor {
                     self.offset += 1;
                 }
             }
+
+            self.draw_content();
         }
     }
 
     #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+        if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
+            self.draw_content();
+            return true;
+        }else{
+            return false;
+        }
     }
 }
