@@ -19,6 +19,7 @@ extern crate mopa;
 use application::Application;
 
 use core::mem::size_of;
+use core::ptr;
 
 use common::memory::*;
 
@@ -69,7 +70,14 @@ static mut application: *mut Application = 0 as *mut Application;
 #[no_mangle]
 pub unsafe fn entry(){
     application = alloc(size_of::<Application>()) as *mut Application;
-    *application = Application::new();
+    ptr::write(application, Application::new());
+}
+
+#[no_mangle]
+pub unsafe fn exit(){
+    //TODO Fix drop of application class
+    unalloc(application as usize);
+    application = 0 as *mut Application;
 }
 
 #[no_mangle]

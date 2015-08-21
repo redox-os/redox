@@ -1,5 +1,3 @@
-use alloc::rc::*;
-
 use common::debug::*;
 use common::pci::*;
 use common::vec::*;
