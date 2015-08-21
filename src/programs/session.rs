@@ -1,6 +1,7 @@
 use core::cmp::max;
 use core::cmp::min;
 
+use graphics::bmp::*;
 use graphics::color::*;
 use graphics::size::*;
 
@@ -11,6 +12,8 @@ use programs::viewer::*;
 
 pub struct Session {
     pub display: Display,
+    pub background: BMP,
+    pub cursor: BMP,
     pub mouse_point: Point,
     pub items: Vec<Box<SessionItem>>,
     pub modules: Vec<Box<SessionModule>>,
@@ -19,28 +22,28 @@ pub struct Session {
 
 impl Session {
     pub fn new() -> Session {
-        Session {
-            display: Display::new(),
-            mouse_point: Point::new(0, 0),
-            items: Vec::new(),
-            modules: Vec::new(),
-            redraw: REDRAW_ALL
+        unsafe {
+            Session {
+                display: Display::root(),
+                background: BMP::new(),
+                cursor: BMP::new(),
+                mouse_point: Point::new(0, 0),
+                items: Vec::new(),
+                modules: Vec::new(),
+                redraw: REDRAW_ALL
+            }
         }
     }
 
     pub fn on_irq(&mut self, irq: u8){
         for module in self.modules.iter() {
-            unsafe{
-                module.on_irq(irq);
-            }
+            module.on_irq(irq);
         }
     }
 
     pub fn on_poll(&mut self){
         for module in self.modules.iter() {
-            unsafe{
-                module.on_poll();
-            }
+            module.on_poll();
         }
     }
 
@@ -63,9 +66,7 @@ impl Session {
         }else{
             for module in self.modules.iter() {
                 if module.scheme() == url.scheme {
-                    unsafe{
-                        return module.open(url);
-                    }
+                    return module.open(url);
                 }
             }
             return box NoneResource;
@@ -75,9 +76,7 @@ impl Session {
     pub fn on_key(&mut self, key_event: KeyEvent){
         match self.items.get(0){
             Option::Some(item) => {
-                unsafe {
-                    item.on_key(key_event);
-                }
+                item.on_key(key_event);
 
                 self.redraw = max(self.redraw, REDRAW_ALL);
             },
@@ -96,13 +95,11 @@ impl Session {
         for i in 0..self.items.len() {
             match self.items.get(i){
                 Option::Some(item) => {
-                    unsafe {
-                        if item.on_mouse(self.mouse_point, mouse_event, allow_catch) {
-                            allow_catch = false;
-                            catcher = i;
+                    if item.on_mouse(self.mouse_point, mouse_event, allow_catch) {
+                        allow_catch = false;
+                        catcher = i;
 
-                            self.redraw = max(self.redraw, REDRAW_ALL);
-                        }
+                        self.redraw = max(self.redraw, REDRAW_ALL);
                     }
                 },
                 Option::None => ()
@@ -111,9 +108,7 @@ impl Session {
 
         if catcher > 0 && catcher < self.items.len() {
             match self.items.remove(catcher){
-                Option::Some(item) => {
-                    self.items.insert(0, item);
-                },
+                Option::Some(item) => self.items.insert(0, item),
                 Option::None => ()
             }
         }
@@ -122,7 +117,10 @@ impl Session {
     pub fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
             if self.redraw >= REDRAW_ALL {
-                self.display.background();
+                self.display.set(Color::new(64, 64, 64));
+                if self.background.data > 0 {
+                    self.display.image(Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
+                }
 
                 self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
                 self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
@@ -131,12 +129,8 @@ impl Session {
                 for reverse_i in 0..self.items.len() {
                     let i = (self.items.len() - 1 - reverse_i);
                     match self.items.get(i) {
-                        Option::Some(item) => {
-                            unsafe {
-                                if ! item.draw(&self.display) {
-                                    erase_i.push(i);
-                                }
-                            }
+                        Option::Some(item) => if ! item.draw(&self.display) {
+                            erase_i.push(i);
                         },
                         Option::None => ()
                     }
@@ -149,7 +143,11 @@ impl Session {
 
             self.display.flip();
 
-            self.display.cursor(self.mouse_point);
+            if self.cursor.data > 0 {
+                self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data, self.cursor.size);
+            }else{
+                self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
+            }
 
             self.redraw = REDRAW_NONE;
         }
@@ -185,9 +183,7 @@ impl Session {
 
                     if found {
                         match self.items.get(0) {
-                            Option::Some(item) => unsafe{
-                                item.load(&url);
-                            },
+                            Option::Some(item) => item.load(&url),
                             Option::None => ()
                         }
                     }

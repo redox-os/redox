@@ -10,9 +10,9 @@ pub struct Window {
     pub point: Point,
     pub size: Size,
     pub title: String,
+    pub content: Display,
     pub title_color: Color,
     pub border_color: Color,
-    pub content_color: Color,
     pub shaded: bool,
     pub closed: bool,
     pub dragging: bool,
@@ -21,6 +21,29 @@ pub struct Window {
 }
 
 impl Window {
+    pub fn new(point: Point, size: Size, title: String) -> Window {
+        Window {
+            point: point,
+            size: size,
+            title: title,
+            content: Display::new(size.width, size.height),
+            title_color: Color::new(0, 0, 0),
+            border_color: Color::new(255, 255, 255),
+            shaded: false,
+            closed: false,
+            dragging: false,
+            last_mouse_point: Point::new(0, 0),
+            last_mouse_event: MouseEvent {
+                x: 0,
+                y: 0,
+                left_button: false,
+                right_button: false,
+                middle_button: false,
+                valid: false
+            }
+        }
+    }
+
     pub fn draw(&self, display: &Display) -> bool {
         if self.closed {
             return false;
@@ -41,7 +64,7 @@ impl Window {
             display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize), Size::new(self.size.width + 4, 2), self.border_color);
             display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y), Size::new(2, self.size.height), self.border_color);
 
-            display.rect(Point::new(self.point.x, self.point.y), Size::new(self.size.width, self.size.height), self.content_color);
+            display.image(self.point, self.content.offscreen, Size::new(self.content.width, self.content.height));
         }
 
         return true;
