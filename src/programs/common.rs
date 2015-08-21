@@ -40,8 +40,8 @@ pub trait SessionItem : ::mopa::Any {
 
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
-        return true;
+    fn draw(&mut self, display: &Display) -> bool {
+        return false;
     }
 
     fn on_key(&mut self, key_event: KeyEvent){

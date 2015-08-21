@@ -10,6 +10,46 @@ pub struct FileManager {
     selected: isize
 }
 
+impl FileManager {
+    fn draw_content(){
+        let content = &self.window.content;
+
+        content.set(Color::new(0, 0, 0));
+
+        let mut i = 0;
+        let mut row = 0;
+        for string in self.files.iter() {
+            let mut col = 0;
+            for c in string.chars() {
+                if c == '\n' {
+                    col = 0;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    let color;
+                    if i == self.selected {
+                        color = Color::new(128, 128, 128);
+                    }else{
+                        color = Color::new(255, 255, 255);
+                    }
+
+                    if col < content.width / 8 && row < content.height / 16 {
+                        content.char(Point::new(8*col as isize, 16*row as isize), c, color);
+                        col += 1;
+                    }
+                }
+                if col >= content.width / 8 {
+                    col = 0;
+                    row += 1;
+                }
+            }
+            row += 1;
+            i += 1;
+        }
+    }
+}
+
 impl SessionItem for FileManager {
     fn new() -> FileManager {
         let mut size = Size::new(0, 0);
@@ -38,49 +78,15 @@ impl SessionItem for FileManager {
             selected: -1
         };
 
+        ret.draw_content();
+
         return ret;
     }
 
-    #[allow(unused_variables)]
     fn draw(&mut self, display: &Display) -> bool{
-        self.window.content.set(Color::new(0, 0, 0));
-
-        let mut i = 0;
-        let mut row = 0;
-        for string in self.files.iter() {
-            let mut col = 0;
-            for c in string.chars() {
-                if c == '\n' {
-                    col = 0;
-                    row += 1;
-                }else if c == '\t' {
-                    col += 8 - col % 8;
-                }else{
-                    let color;
-                    if i == self.selected {
-                        color = Color::new(128, 128, 128);
-                    }else{
-                        color = Color::new(255, 255, 255);
-                    }
-
-                    if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                        self.window.content.char(Point::new(8*col as isize, 16*row as isize), c, color);
-                        col += 1;
-                    }
-                }
-                if col >= self.window.size.width / 8 {
-                    col = 0;
-                    row += 1;
-                }
-            }
-            row += 1;
-            i += 1;
-        }
-
         return self.window.draw(display);
     }
 
-    #[allow(unused_variables)]
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
@@ -117,9 +123,10 @@ impl SessionItem for FileManager {
                 }
             }
         }
+
+        self.draw_content();
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
             if ! self.window.shaded {
@@ -151,6 +158,8 @@ impl SessionItem for FileManager {
                     i += 1;
                 }
             }
+
+            self.draw_content();
 
             return true;
         }else{

@@ -11,31 +11,11 @@ pub struct Editor {
     scroll: Point
 }
 
-impl SessionItem for Editor {
-    fn new() -> Editor {
-        Editor {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
-            string: String::new(),
-            offset: 0,
-            scroll: Point::new(0, 0)
-        }
-    }
+impl Editor {
+    fn draw_content(&mut self){
+        let content = &self.window.content;
 
-    #[allow(unused_variables)]
-    fn load(&mut self, url: &URL){
-        let mut resource = url.open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        self.offset = 0;
-        self.scroll = Point::new(0, 0);
-        self.string = String::from_utf8(&vec);
-        self.window.title = "Editor (".to_string() + url.to_string() + ")";
-    }
-
-    fn draw(&mut self, display: &Display) -> bool{
-        self.window.content.set(Color::alpha(0, 0, 0, 196));
+        content.set(Color::alpha(0, 0, 0, 196));
 
         let scroll = self.scroll;
         let mut offset = 0;
@@ -48,7 +28,7 @@ impl SessionItem for Editor {
         for c in self.string.chars() {
             if offset == self.offset{
                 if col >= 0 && col < cols && row >= 0 && row < rows{
-                    self.window.content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
+                    content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
                 }else{
                     if col < 0 { //Too far to the left
                         self.scroll.x += col;
@@ -74,7 +54,7 @@ impl SessionItem for Editor {
                 col += 8 - col % 8;
             }else{
                 if col >= 0 && col < cols && row >= 0 && row < rows{
-                    self.window.content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                    content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
                 }
                 col += 1;
             }
@@ -102,12 +82,34 @@ impl SessionItem for Editor {
                 }.trigger();
             }
         }
+    }
+}
 
-        if ! self.window.draw(display){
-            return false;
+impl SessionItem for Editor {
+    fn new() -> Editor {
+        Editor {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
+            string: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0)
         }
+    }
 
-        return true;
+    #[allow(unused_variables)]
+    fn load(&mut self, url: &URL){
+        let mut resource = url.open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        self.offset = 0;
+        self.scroll = Point::new(0, 0);
+        self.string = String::from_utf8(&vec);
+        self.window.title = "Editor (".to_string() + url.to_string() + ")";
+    }
+
+    fn draw(&mut self, display: &Display) -> bool{
+        return self.window.draw(display);
     }
 
     #[allow(unused_variables)]

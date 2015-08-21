@@ -25,18 +25,16 @@ impl SessionItem for Viewer {
             let image = BMP::from_data(vec.as_ptr() as usize);
             self.window.size = image.size;
             self.window.content = Display::new(image.size.width, image.size.height);
-            self.window.content.image(Point::new(0, 0), image.data, image.size);
+            content.image(Point::new(0, 0), image.data, image.size);
         }
 
         self.window.title = "Viewer (".to_string() + url.to_string() + ")";
     }
 
-    #[allow(unused_variables)]
     fn draw(&mut self, display: &Display) -> bool{
         return self.window.draw(display);
     }
 
-    #[allow(unused_variables)]
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
@@ -46,7 +44,6 @@ impl SessionItem for Viewer {
         }
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }
