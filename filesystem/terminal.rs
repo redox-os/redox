@@ -4,19 +4,33 @@ use graphics::window::*;
 
 use programs::common::*;
 
+/* Magic Macros { */
+use super::application;
+
+macro_rules! exec {
+    ($cmd:expr) => ({
+        unsafe {
+            (*application).on_command(&$cmd);
+        }
+    })
+}
+
 macro_rules! print {
-    ($stdio:ident, $text:expr) => ({
-        $stdio.write_all(&$text.to_utf8());    
+    ($text:expr) => ({
+        unsafe {
+            (*application).stdio.write_all(&$text.to_utf8());
+        }
     });
 }
 
 macro_rules! println {
-    ($stdio:ident, $line:expr) => (print!($stdio, $line + "\n"));
+    ($line:expr) => (print!($line + "\n"));
 }
+/* } Magic Macros */
 
 pub struct Command {
     pub name: String,
-    pub main: Box<Fn(&mut Box<VecResource>, &Vec<String>)>
+    pub main: Box<Fn(&Vec<String>)>
 }
 
 impl Command {
@@ -25,7 +39,7 @@ impl Command {
 
         commands.push(Command {
             name: "break".to_string(),
-            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+            main: box |args: &Vec<String>|{
                 unsafe{
                     asm!("int 3" : : : : "intel");
                 }
@@ -34,7 +48,7 @@ impl Command {
 
         commands.push(Command {
             name: "echo".to_string(),
-            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+            main: box |args: &Vec<String>|{
                 let mut echo = String::new();
                 for i in 1..args.len() {
                     match args.get(i) {
@@ -48,13 +62,13 @@ impl Command {
                         Option::None => ()
                     }
                 }
-                println!(stdio, echo);
+                println!(echo);
             }
         });
 
         commands.push(Command {
             name: "open".to_string(),
-            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+            main: box |args: &Vec<String>|{
                 match args.get(1) {
                     Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
                     Option::None => ()
@@ -64,8 +78,7 @@ impl Command {
 
         commands.push(Command {
             name: "run".to_string(),
-            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
-                /*
+            main: box |args: &Vec<String>|{
                 match args.get(1) {
                     Option::Some(arg) => {
                         let mut resource = URL::from_string(arg.clone()).open();
@@ -75,18 +88,17 @@ impl Command {
 
                         let commands = String::from_utf8(&vec);
                         for command in commands.split("\n".to_string()) {
-                            self.on_command(&command);
+                            exec!(command);
                         }
                     },
                     Option::None => ()
                 }
-                */
             }
         });
 
         commands.push(Command {
             name: "url".to_string(),
-            main: box |stdio: &mut Box<VecResource>, args: &Vec<String>|{
+            main: box |args: &Vec<String>|{
                 let mut url = URL::new();
 
                 match args.get(1) {
@@ -94,21 +106,21 @@ impl Command {
                     Option::None => ()
                 }
 
-                println!(stdio, "URL: ".to_string() + url.to_string());
+                println!("URL: ".to_string() + url.to_string());
 
                 let mut resource = url.open();
 
                 match resource.stat() {
-                    ResourceType::File => println!(stdio, "Type: File".to_string()),
-                    ResourceType::Dir => println!(stdio, "Type: Dir".to_string()),
-                    ResourceType::Array => println!(stdio, "Type: Array".to_string()),
-                    _ => println!(stdio, "Type: None".to_string())
+                    ResourceType::File => println!("Type: File".to_string()),
+                    ResourceType::Dir => println!("Type: Dir".to_string()),
+                    ResourceType::Array => println!("Type: Array".to_string()),
+                    _ => println!("Type: None".to_string())
                 }
 
                 let mut vec: Vec<u8> = Vec::new();
                 match resource.read_to_end(&mut vec) {
-                    Option::Some(_) => println!(stdio, String::from_utf8(&vec)),
-                    Option::None => println!(stdio, "Failed to read".to_string())
+                    Option::Some(_) => println!(String::from_utf8(&vec)),
+                    Option::None => println!("Failed to read".to_string())
                 }
             }
         });
@@ -144,7 +156,7 @@ impl Application {
             Option::Some(cmd) => {
                 for command in self.commands.iter() {
                     if command.name == *cmd {
-                        (*command.main)(&mut self.stdio, &args);
+                        (*command.main)(&args);
                         return;
                     }
                 }
@@ -243,9 +255,6 @@ impl Application {
             self.scroll.y += row - rows + 1;
 
             self.draw_content();
-            RedrawEvent {
-                redraw: REDRAW_ALL
-            }.trigger();
         }
     }
 }
