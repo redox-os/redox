@@ -117,8 +117,8 @@ impl SessionItem for Application {
         }
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
-        self.window.content.set(Color::new(0, 0, 0));
+    fn draw(&mut self){
+        content.set(Color::new(0, 0, 0));
 
         let scroll = self.scroll;
 
@@ -140,7 +140,7 @@ impl SessionItem for Application {
                 col += 8 - col % 8;
             }else{
                 if col >= 0 && col < cols && row >= 0 && row < rows{
-                    self.window.content.char(Point::new(8 * col, 16 * row), c, Color::new(224, 224, 224));
+                    content.char(Point::new(8 * col, 16 * row), c, Color::new(224, 224, 224));
                 }
                 col += 1;
             }
@@ -152,7 +152,7 @@ impl SessionItem for Application {
         }
 
         if col >= 0 && col < cols && row >= 0 && row < rows{
-            self.window.content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
+            content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
             col += 2;
         }
 
@@ -164,7 +164,7 @@ impl SessionItem for Application {
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                self.window.content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
+                content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
             }
 
             if c == '\n' {
@@ -174,7 +174,7 @@ impl SessionItem for Application {
                 col += 8 - col % 8;
             }else{
                 if col >= 0 && col < cols && row >= 0 && row < rows{
-                    self.window.content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                    content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
                 }
                 col += 1;
             }
@@ -196,7 +196,7 @@ impl SessionItem for Application {
         }
 
         if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-            self.window.content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
+            content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
         }
 
         return self.window.draw(display);
