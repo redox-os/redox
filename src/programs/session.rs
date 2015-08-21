@@ -114,39 +114,40 @@ impl Session {
         }
     }
 
-    //TODO: Optimizations
     pub fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
-            self.display.set(Color::new(64, 64, 64));
-            if self.background.data > 0 {
-                self.display.image(Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
-            }
+            if self.redraw >= REDRAW_ALL {
+                self.display.set(Color::new(64, 64, 64));
+                if self.background.data > 0 {
+                    self.display.image(Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
+                }
 
-            self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
-            self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
+                self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
+                self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
 
-            let mut erase_i: Vec<usize> = Vec::new();
-            for reverse_i in 0..self.items.len() {
-                let i = (self.items.len() - 1 - reverse_i);
-                match self.items.get(i) {
-                    Option::Some(item) => if ! item.draw(&self.display) {
-                        erase_i.push(i);
-                    },
-                    Option::None => ()
+                let mut erase_i: Vec<usize> = Vec::new();
+                for reverse_i in 0..self.items.len() {
+                    let i = (self.items.len() - 1 - reverse_i);
+                    match self.items.get(i) {
+                        Option::Some(item) => if ! item.draw(&self.display) {
+                            erase_i.push(i);
+                        },
+                        Option::None => ()
+                    }
+                }
+
+                for i in erase_i.iter() {
+                    drop(self.items.remove(*i));
                 }
             }
 
-            for i in erase_i.iter() {
-                drop(self.items.remove(*i));
-            }
+            self.display.flip();
 
             if self.cursor.data > 0 {
-                self.display.image_alpha(self.mouse_point, self.cursor.data, self.cursor.size);
+                self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data, self.cursor.size);
             }else{
-                self.display.char(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
+                self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
             }
-
-            self.display.flip();
 
             self.redraw = REDRAW_NONE;
         }
