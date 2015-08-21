@@ -81,6 +81,9 @@ impl EHCI {
         d(" IRQ: ");
         dbh(self.irq);
 
+        d(" IGNORING!!!\n");
+        return;
+
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | 4); // Bus master
 
         let CAPLENGTH = self.base as *mut u8;
