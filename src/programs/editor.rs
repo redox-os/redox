@@ -6,81 +6,104 @@ use programs::common::*;
 
 pub struct Editor {
     window: Window,
+    url: URL,
     string: String,
     offset: usize,
     scroll: Point
 }
 
 impl Editor {
+    fn reload(&mut self){
+        self.window.title = "Editor (".to_string() + self.url.to_string() + ")";
+        self.offset = 0;
+        self.scroll = Point::new(0, 0);
+
+        let mut resource = self.url.open();
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        self.string = String::from_utf8(&vec);
+    }
+
+    fn save(&mut self){
+        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Saved";
+
+        let mut resource = self.url.open();
+        resource.write_all(&self.string.to_utf8());
+    }
+
     fn draw_content(&mut self){
-        let content = &self.window.content;
+        let mut redraw = false;
 
-        content.set(Color::alpha(0, 0, 0, 196));
+        {
+            let content = &self.window.content;
 
-        let scroll = self.scroll;
-        let mut offset = 0;
+            content.set(Color::alpha(0, 0, 0, 196));
 
-        let mut col = -scroll.x;
-        let cols = content.width as isize / 8;
+            let scroll = self.scroll;
+            let mut offset = 0;
 
-        let mut row = -scroll.y;
-        let rows = content.height as isize / 16;
-        for c in self.string.chars() {
-            if offset == self.offset{
+            let mut col = -scroll.x;
+            let cols = content.width as isize / 8;
+
+            let mut row = -scroll.y;
+            let rows = content.height as isize / 16;
+            for c in self.string.chars() {
+                if offset == self.offset{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
+                    }else{
+                        if col < 0 { //Too far to the left
+                            self.scroll.x += col;
+                        }else if col >= cols{ //Too far to the right
+                            self.scroll.x += col - cols;
+                        }
+                        if row < 0 { //Too far up
+                            self.scroll.y += row;
+                        }else if row >= rows{ //Too far down
+                            self.scroll.y += row - rows;
+                        }
+
+                        redraw = true;
+                    }
+                }
+
+                if c == '\n' {
+                    col = -scroll.x;
+                    row += 1;
+                }else if c == '\t' {
+                    col += 8 - col % 8;
+                }else{
+                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                        content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                    }
+                    col += 1;
+                }
+
+                offset += 1;
+            }
+
+            if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows{
                     content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
                 }else{
                     if col < 0 { //Too far to the left
                         self.scroll.x += col;
                     }else if col >= cols{ //Too far to the right
-                        self.scroll.x += col - cols;
+                        self.scroll.x += cols - col;
                     }
                     if row < 0 { //Too far up
                         self.scroll.y += row;
                     }else if row >= rows{ //Too far down
-                        self.scroll.y += row - rows;
+                        self.scroll.y += rows - row;
                     }
 
-                    RedrawEvent {
-                        redraw: REDRAW_ALL
-                    }.trigger();
+                    redraw = true;
                 }
             }
-
-            if c == '\n' {
-                col = -scroll.x;
-                row += 1;
-            }else if c == '\t' {
-                col += 8 - col % 8;
-            }else{
-                if col >= 0 && col < cols && row >= 0 && row < rows{
-                    content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
-                }
-                col += 1;
-            }
-
-            offset += 1;
         }
 
-        if offset == self.offset {
-            if col >= 0 && col < cols && row >= 0 && row < rows{
-                content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
-            }else{
-                if col < 0 { //Too far to the left
-                    self.scroll.x += col;
-                }else if col >= cols{ //Too far to the right
-                    self.scroll.x += cols - col;
-                }
-                if row < 0 { //Too far up
-                    self.scroll.y += row;
-                }else if row >= rows{ //Too far down
-                    self.scroll.y += rows - row;
-                }
-
-                RedrawEvent {
-                    redraw: REDRAW_ALL
-                }.trigger();
-            }
+        if redraw {
+            self.draw_content();
         }
     }
 }
@@ -89,6 +112,7 @@ impl SessionItem for Editor {
     fn new() -> Editor {
         Editor {
             window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
+            url: URL::new(),
             string: String::new(),
             offset: 0,
             scroll: Point::new(0, 0)
@@ -97,16 +121,8 @@ impl SessionItem for Editor {
 
     #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
-        let mut resource = url.open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        self.offset = 0;
-        self.scroll = Point::new(0, 0);
-        self.string = String::from_utf8(&vec);
-        self.window.title = "Editor (".to_string() + url.to_string() + ")";
-
+        self.url = url.clone();
+        self.reload();
         self.draw_content();
     }
 
@@ -119,6 +135,8 @@ impl SessionItem for Editor {
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
+                0x3F => self.reload(),
+                0x40 => self.save(),
                 0x47 => self.offset = 0,
                 0x48 => for i in 1..self.offset {
                     match self.string[self.offset - i] {
@@ -148,6 +166,7 @@ impl SessionItem for Editor {
                     }
                 },
                 0x53 => if self.offset < self.string.len() {
+                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
                     self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
                 },
                 _ => ()
@@ -156,11 +175,12 @@ impl SessionItem for Editor {
             match key_event.character {
                 '\x00' => (),
                 '\x08' => if self.offset > 0 {
+                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
                     self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset -= 1;
                 },
-                '\x1B' => (),
                 _ => {
+                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
                     self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset += 1;
                 }
