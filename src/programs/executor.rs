@@ -9,6 +9,7 @@ pub struct Executor {
     executable: ELF,
     mapped: AtomicUsize,
     entry: usize,
+    exit: usize,
     draw: usize,
     on_key: usize,
     on_mouse: usize
@@ -16,6 +17,9 @@ pub struct Executor {
 
 impl Executor {
     unsafe fn entry(&mut self){
+        d("Entry ");
+        dh(self.entry);
+        dl();
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
             self.unsafe_map();
@@ -40,12 +44,30 @@ impl Executor {
     }
 }
 
+impl Drop for Executor {
+    fn drop(&mut self){
+        unsafe{
+            d("Drop ");
+            dh(self.exit);
+            dl();
+            if self.executable.can_call(self.exit){
+                //Rediculous call mechanism
+                self.unsafe_map();
+                let fn_ptr: *const usize = &self.exit;
+                (*(fn_ptr as *const fn()))();
+                self.unsafe_unmap();
+            }
+        }
+    }
+}
+
 impl SessionItem for Executor {
     fn new() -> Executor {
         Executor {
             executable: ELF::new(),
             mapped: AtomicUsize::new(0),
             entry: 0,
+            exit: 0,
             draw: 0,
             on_mouse: 0,
             on_key: 0
@@ -64,6 +86,7 @@ impl SessionItem for Executor {
                     //self.executable.d();
 
                     self.entry = self.executable.entry();
+                    self.exit = self.executable.symbol("exit".to_string());
                     self.draw = self.executable.symbol("draw".to_string());
                     self.on_key = self.executable.symbol("on_key".to_string());
                     self.on_mouse = self.executable.symbol("on_mouse".to_string());
