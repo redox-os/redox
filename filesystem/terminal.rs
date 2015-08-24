@@ -34,7 +34,7 @@ pub struct Command {
 }
 
 impl Command {
-    fn vec() -> Vec<Command> {
+    pub fn vec() -> Vec<Command> {
         let mut commands: Vec<Command> = Vec::new();
 
         commands.push(Command {
@@ -129,9 +129,20 @@ impl Command {
     }
 }
 
+pub struct Variable {
+    pub name: String,
+    pub value: String
+}
+
+pub struct Mode {
+    value: bool
+}
+
 pub struct Application {
     window: Window,
     commands: Vec<Command>,
+    variables: Vec<Variable>,
+    modes: Vec<Mode>,
     stdio: Box<VecResource>,
     last_command: String,
     command: String,
@@ -145,19 +156,139 @@ impl Application {
         self.stdio.write_all(&(line + "\n").to_utf8());
     }
 
-    fn on_command(&mut self, command: &String){
+    fn on_command(&mut self, command_string: &String){
+        //Comment
+        if command_string[0] == '#' {
+            return;
+        }
+
+        //Show variables
+        if *command_string == "$".to_string() {
+            let mut variables = "Variables:".to_string();
+            for variable in self.variables.iter() {
+                variables = variables + '\n' + variable.name.clone() + "=" + variable.value.clone();
+            }
+            self.append(variables);
+            return;
+        }
+
+        //Explode into arguments, replace variables
         let mut args: Vec<String> = Vec::<String>::new();
-        for arg in command.split(" ".to_string()) {
+        for arg in command_string.split(" ".to_string()) {
             if arg.len() > 0 {
-                args.push(arg);
+                if arg[0] == '$' {
+                    let name = arg.substr(1, arg.len() - 1);
+                    for variable in self.variables.iter() {
+                        if variable.name == name {
+                            args.push(variable.value.clone());
+                            break;
+                        }
+                    }
+                }else{
+                    args.push(arg);
+                }
             }
         }
+
+        //Execute commands
         match args.get(0) {
             Option::Some(cmd) => {
-                if cmd[0] == '#' {
+                if *cmd == "if".to_string() {
+                    let mut value = false;
+
+                    match args.get(1) {
+                        Option::Some(left) => match args.get(2) {
+                            Option::Some(cmp) => match args.get(3) {
+                                Option::Some(right) => {
+                                    if *cmp == "==".to_string() {
+                                        value = *left == *right;
+                                    }else if *cmp == "!=".to_string() {
+                                        value = *left != *right;
+                                    }else if *cmp == ">".to_string() {
+                                        value = left.to_num_signed() > right.to_num_signed();
+                                    }else if *cmp == ">=".to_string() {
+                                        value = left.to_num_signed() >= right.to_num_signed();
+                                    }else if *cmp == "<".to_string() {
+                                        value = left.to_num_signed() < right.to_num_signed();
+                                    }else if *cmp == "<=".to_string() {
+                                        value = left.to_num_signed() <= right.to_num_signed();
+                                    }else{
+                                        self.append("Unknown comparison: ".to_string() + cmp.clone());
+                                    }
+                                },
+                                Option::None => ()
+                            },
+                            Option::None => ()
+                        },
+                        Option::None => ()
+                    }
+
+                    self.modes.insert(0, Mode{
+                        value: value
+                    });
                     return;
                 }
 
+                if *cmd == "else".to_string() {
+                    let mut syntax_error = false;
+                    match self.modes.get(0) {
+                        Option::Some(mode) => mode.value = !mode.value,
+                        Option::None => syntax_error = true
+                    }
+                    if syntax_error {
+                        self.append("Syntax error: else found with no previous if".to_string());
+                    }
+                    return;
+                }
+
+                if *cmd == "fi".to_string() {
+                    let mut syntax_error = false;
+                    match self.modes.remove(0) {
+                        Option::Some(_) => (),
+                        Option::None => syntax_error = true
+                    }
+                    if syntax_error {
+                        self.append("Syntax error: fi found with no previous if".to_string())
+                    }
+                    return;
+                }
+
+                for mode in self.modes.iter() {
+                    if ! mode.value {
+                        return;
+                    }
+                }
+
+                //Set variables
+                match cmd.find("=".to_string()) {
+                    Option::Some(i) => {
+                        let name = cmd.substr(0, i);
+                        let mut value = cmd.substr(i + 1, cmd.len() - i - 1);
+
+                        for i in 1..args.len() {
+                            match args.get(i) {
+                                Option::Some(arg) => value = value + ' ' + arg.clone(),
+                                Option::None => ()
+                            }
+                        }
+
+                        for variable in self.variables.iter() {
+                            if variable.name == name {
+                                variable.value = value;
+                                return;
+                            }
+                        }
+
+                        self.variables.push(Variable{
+                            name: name,
+                            value: value
+                        });
+                        return;
+                    },
+                    Option::None => ()
+                }
+
+                //Commands
                 for command in self.commands.iter() {
                     if command.name == *cmd {
                         (*command.main)(&args);
@@ -268,6 +399,8 @@ impl SessionItem for Application {
         let mut ret = Application {
             window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
             commands: Command::vec(),
+            variables: Vec::new(),
+            modes: Vec::new(),
             stdio: box VecResource::new(ResourceType::File, Vec::new()),
             last_command: String::new(),
             command: String::new(),
