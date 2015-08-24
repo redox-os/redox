@@ -15,10 +15,8 @@
 
 #![unstable(feature = "enumset",
             reason = "matches collection reform specification, \
-                      waiting for dust to settle")]
-
-#[cfg(stage0)]
-use core::prelude::v1::*;
+                      waiting for dust to settle",
+            issue = "0")]
 
 use core::marker;
 use core::fmt;

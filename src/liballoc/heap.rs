@@ -8,7 +8,17 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use super::oom;
+#![unstable(feature = "heap_api",
+            reason = "the precise API and guarantees it provides may be tweaked \
+                      slightly, especially to possibly take into account the \
+                      types being stored to make room for a future \
+                      tracing garbage collector",
+            issue = "27700")]
+
+use core::{isize, usize};
+
+#[path="../common/memory.rs"]
+mod memory;
 
 // FIXME: #13996: mark the `allocate` and `reallocate` return value as `noalias`
 
@@ -19,10 +29,9 @@ use super::oom;
 /// Behavior is undefined if the requested size is 0 or the alignment is not a
 /// power of 2. The alignment must be no larger than the largest supported page
 /// size on the platform.
-#[allow(unused_variables)]
 #[inline]
 pub unsafe fn allocate(size: usize, align: usize) -> *mut u8 {
-    return ::common::memory::alloc(size) as *mut u8;
+    memory::alloc(size) as *mut u8
 }
 
 /// Resize the allocation referenced by `ptr` to `size` bytes.
@@ -39,10 +48,9 @@ pub unsafe fn allocate(size: usize, align: usize) -> *mut u8 {
 /// The `old_size` and `align` parameters are the parameters that were used to
 /// create the allocation referenced by `ptr`. The `old_size` parameter may be
 /// any value in range_inclusive(requested_size, usable_size).
-#[allow(unused_variables)]
 #[inline]
 pub unsafe fn reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8 {
-    return ::common::memory::realloc(ptr as usize, size) as *mut u8;
+    memory::realloc(ptr as usize, size) as *mut u8
 }
 
 /// Resize the allocation referenced by `ptr` to `size` bytes.
@@ -57,14 +65,11 @@ pub unsafe fn reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usiz
 /// The `old_size` and `align` parameters are the parameters that were used to
 /// create the allocation referenced by `ptr`. The `old_size` parameter may be
 /// any value in range_inclusive(requested_size, usable_size).
-/*
 #[inline]
 pub unsafe fn reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize,
                                  align: usize) -> usize {
-    check_size_and_alignment(size, align);
-    imp::reallocate_inplace(ptr, old_size, size, align)
+    memory::realloc_inplace(ptr as usize, size)
 }
-*/
 
 /// Deallocates the memory referenced by `ptr`.
 ///
@@ -73,25 +78,22 @@ pub unsafe fn reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize,
 /// The `old_size` and `align` parameters are the parameters that were used to
 /// create the allocation referenced by `ptr`. The `old_size` parameter may be
 /// any value in range_inclusive(requested_size, usable_size).
-#[allow(unused_variables)]
 #[inline]
 pub unsafe fn deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    ::common::memory::unalloc(ptr as usize);
+    memory::unalloc(ptr as usize);
 }
 
 /// Returns the usable size of an allocation created with the specified the
 /// `size` and `align`.
-/*
 #[inline]
 pub fn usable_size(size: usize, align: usize) -> usize {
-    imp::usable_size(size, align)
+    ((size + memory::CLUSTER_SIZE - 1)/memory::CLUSTER_SIZE) * memory::CLUSTER_SIZE
 }
-*/
 
 /// An arbitrary non-null address to represent zero-size allocations.
 ///
-/// This preserves the non-null invariant for types like `Box<T>`. The address may overlap with
-/// non-zero-size memory allocations.
+/// This preserves the non-null invariant for types like `Box<T>`. The address
+/// may overlap with non-zero-size memory allocations.
 pub const EMPTY: *mut () = 0x1 as *mut ();
 
 /// The allocator for unique pointers.
@@ -103,7 +105,7 @@ unsafe fn exchange_malloc(size: usize, align: usize) -> *mut u8 {
         EMPTY as *mut u8
     } else {
         let ptr = allocate(size, align);
-        if ptr.is_null() { oom() }
+        if ptr.is_null() { ::oom() }
         ptr
     }
 }
@@ -113,4 +115,31 @@ unsafe fn exchange_malloc(size: usize, align: usize) -> *mut u8 {
 #[inline]
 unsafe fn exchange_free(ptr: *mut u8, old_size: usize, align: usize) {
     deallocate(ptr, old_size, align);
+}
+
+#[cfg(test)]
+mod tests {
+    extern crate test;
+    use self::test::Bencher;
+    use boxed::Box;
+    use heap;
+
+    #[test]
+    fn basic_reallocate_inplace_noop() {
+        unsafe {
+            let size = 4000;
+            let ptr = heap::allocate(size, 8);
+            if ptr.is_null() { ::oom() }
+            let ret = heap::reallocate_inplace(ptr, size, size, 8);
+            heap::deallocate(ptr, size, 8);
+            assert_eq!(ret, heap::usable_size(size, 8));
+        }
+    }
+
+    #[bench]
+    fn alloc_owned_small(b: &mut Bencher) {
+        b.iter(|| {
+            let _: Box<_> = box 10;
+        })
+    }
 }

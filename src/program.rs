@@ -4,7 +4,6 @@
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
@@ -20,6 +19,7 @@ extern crate mopa;
 use application::Application;
 
 use core::mem::size_of;
+use core::ptr;
 
 use common::memory::*;
 
@@ -64,13 +64,24 @@ mod programs {
 }
 
 //Class wrappers
-
-static mut application: *mut Application = 0 as *mut Application;
+pub static mut application: *mut Box<Application> = 0 as *mut Box<Application>;
 
 #[no_mangle]
 pub unsafe fn entry(){
-    application = alloc(size_of::<Application>()) as *mut Application;
-    *application = Application::new();
+    application = alloc(size_of::<Application>()) as *mut Box<Application>;
+    if application as usize > 0 {
+        ptr::write(application, box Application::new());
+    }
+}
+
+#[no_mangle]
+pub unsafe fn exit(){
+    if application as usize > 0 {
+        drop(ptr::read(application));
+
+        unalloc(application as usize);
+        application = 0 as *mut Box<Application>;
+    }
 }
 
 #[no_mangle]

@@ -26,18 +26,12 @@ impl SessionModule for HTTPScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        let mut path = String::new();
-
-        for part in url.path.iter() {
-            path = path + "/" + part.clone();
-        }
-
         let mut html = "HTTP/1.1 200 OK\r\n".to_string()
                     + "Content-Type: text/html\r\n"
                     + "Connection: keep-alive\r\n"
                     + "\r\n";
 
-        if path == "/readme".to_string() {
+        if url.path == "readme".to_string() {
             html = html + "<title>Readme - Redox</title>\n";
         }else{
             html = html + "<title>Home - Redox</title>\n";
@@ -57,7 +51,7 @@ impl SessionModule for HTTPScheme {
             html = html + "    <div class='collapse navbar-collapse' id='navbar-collapse'>\n";
             html = html + "      <ul class='nav navbar-nav navbar-right'>\n";
 
-            if path == "/readme".to_string() {
+            if url.path == "readme".to_string() {
                 html = html + "        <li><a href='/'>Home</a></li>\n";
                 html = html + "        <li class='active'><a href='/readme'>Readme</a></li>\n";
             }else{
@@ -70,22 +64,20 @@ impl SessionModule for HTTPScheme {
             html = html + "  </div>\n";
             html = html + "</nav>\n";
 
-            if path == "/readme".to_string() {
-                let response: Vec<u8> = Vec::new();
-                html = html + "<div class='panel panel-default'>\n".to_string();
-                    if response.data as usize > 0 {
-                        let readme = String::new();
-                        /*unsafe{
-                            readme = String::from_utf8(response);
-                        }*/
+            if url.path == "readme".to_string() {
+                let mut resource = URL::from_string("file:///README.md".to_string()).open();
 
+                let mut resource_data: Vec<u8> = Vec::new();
+                resource.read_to_end(&mut resource_data);
+                html = html + "<div class='panel panel-default'>\n".to_string();
+                    if resource_data.len() > 0 {
                         html = html + "<div class='panel-heading'>\n";
                             html = html + "<h3 class='panel-title'><span class='glyphicon glyphicon-book'></span> README</h3>";
                         html = html + "</div>\n";
 
                         html = html + "<div class='panel-body'>\n";
                             let mut in_code = false;
-                            for line in readme.split("\n".to_string()){
+                            for line in String::from_utf8(&resource_data).split("\n".to_string()){
                                 if line.starts_with("# ".to_string()){
                                     html = html + "<h1>" + HTTPScheme::encode(line.substr(2, line.len() - 2)) + "</h1>\n";
                                 }else if line.starts_with("## ".to_string()){
@@ -122,33 +114,25 @@ impl SessionModule for HTTPScheme {
                     }
                 html = html + "</div>\n";
             }else{
-                let url_string = path.substr(1, path.len());
-                if url_string.len() > 0 {
-                    let url_string_copy = url_string.clone();
-                    html = html + "<table class='table table-bordered'>\n".to_string();
-                        html = html + "  <caption><h3>" + HTTPScheme::encode(url_string_copy) + "</h3></caption>\n";
-                        /*
-                        session.request(&URL::from_string(url_string), box move |response: String|{
-                                for line in response.split("\n".to_string()) {
-                                    html = html + "<tr><td>" + HTTPScheme::encode(line.clone()) + "</td></tr>\n";
-                                }
-                            html_callback(html);
-                        });
-                        */
-                    html = html + "</table>\n";
-                }else{
-                    html = html + "<table class='table table-bordered'>\n".to_string();
-                        html = html + "  <caption><h3>Schemes</h3></caption>\n";
-                        /*
-                        for module in session.modules.iter() {
-                            let scheme = module.scheme();
-                            if scheme.len() > 0 {
-                                html = html + "<tr><td><a href='/" + scheme.clone() + ":///'>" + scheme.clone() + "</a></td></tr>";
-                            }
-                        }
-                        */
-                    html = html + "</table>\n";
-                }
+                html = html + "<table class='table table-bordered'>\n".to_string();
+                    let mut resource = URL::from_string(url.path.clone()).open();
+
+                    let resource_type;
+                    match resource.stat() {
+                        ResourceType::File => resource_type = "File".to_string(),
+                        ResourceType::Dir => resource_type = "Dir".to_string(),
+                        ResourceType::Array => resource_type = "Array".to_string(),
+                        _ => resource_type = "None".to_string()
+                    }
+
+                    html = html + "  <caption><h3>" + HTTPScheme::encode(url.path.clone()) + "</h3><h4>" + HTTPScheme::encode(resource_type) + "</h4></caption>\n";
+
+                    let mut resource_data: Vec<u8> = Vec::new();
+                    resource.read_to_end(&mut resource_data);
+                    for line in String::from_utf8(&resource_data).split("\n".to_string()) {
+                        html = html + "<tr><td>" + HTTPScheme::encode(line.clone()) + "</td></tr>\n";
+                    }
+                html = html + "</table>\n";
             }
 
         html = html + "</div>\n";

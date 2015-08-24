@@ -11,35 +11,141 @@ boot: ; dl comes with disk
     ; initialize stack
     mov sp, 0x7bfe
 
-    mov si, DAPACK      ; address of "disk address packet"
-    mov ah, 0x42        ; AL is unused
-    int 0x13
-    jc error
+    mov [disk], dl
+
+    mov si, name
+    call print
+    call print_line
+
+    mov bh, 0
+    mov bl, [disk]
+    call print_num
+    call print_line
+
+    mov ax, (unfs_header - boot)/512
+    mov bx, unfs_header
+    mov cx, (kernel_file.end - unfs_header)/512
+    xor dx, dx
+    call load
 
     jmp startup
 
-error:
+load:
+    cmp cx, 127
+    jbe .good_size
+
+    pusha
+    mov cx, 127
+    call load
+    popa
+    add ax, 127
+    add dx, 127*512/16
+    sub cx, 127
+
+    jmp load
+.good_size:
+    mov [DAPACK.addr], ax
+    mov [DAPACK.buf], bx
+    mov [DAPACK.count], cx
+    mov [DAPACK.seg], dx
+
     mov si, .msg
+    call print
+    call print_line
+
+    mov bx, [DAPACK.addr]
+    call print_num
+    call print_line
+
+    mov bx, [DAPACK.buf]
+    call print_num
+    call print_line
+
+    mov bx, [DAPACK.count]
+    call print_num
+    call print_line
+
+    mov bx, [DAPACK.seg]
+    call print_num
+    call print_line
+
+    mov dl, [disk]
+    mov si, DAPACK
+    mov ah, 0x42
+    int 0x13
+    jc error
+    ret
+.msg: db "Loading",0
+
+print_char:
+    mov ah, 0x0e
+    int 0x10
+    ret
+
+print_num:
+    mov cx, 4
+.loop:
+    mov al, bh
+    shr al, 4
+    and al, 0xF
+
+    cmp al, 0xA
+    jb .below_a
+
+    add al, 'A' - '0' - 0xA
+.below_a:
+    add al, '0'
+
+    push cx
+    push bx
+    call print_char
+    pop bx
+    pop cx
+
+    shl bx, 4
+    loop .loop
+
+    ret
+
+print_line:
+    mov si, line
+    call print
+    ret
+
+print:
 .loop:
     lodsb
     or al, al
     jz .done
-    mov ah, 0x0e
-    int 0x10
+    call print_char
     jmp .loop
 .done:
-    cli
-    hlt
-    .msg db "could not read disk", 0
+    ret
+
+name: db "Redox Loader",0
+
+line: db 13,10,0
+
+error:
+  mov si, .msg
+  call print
+  call print_line
+.halt:
+  cli
+  hlt
+  jmp .halt
+.msg db "Could not read disk",13,10,0
+
+disk: db 0
 
 DAPACK:
-	db	0x10
-	db	0
-blkcnt:	dw	(kernel_file.end - unfs_header)/512		; int 13 resets this to # of blocks actually read/written
-db_add:	dw	unfs_header		; memory buffer destination address (0:7c00)
-	dw	0		; in memory page zero
-d_lba:	dd	(unfs_header - boot)/512	; put the lba to read in this spot
-	dd	0		; more storage bytes only for big lba's ( > 4 bytes )
+        db	0x10
+        db	0
+.count: dw	0	; int 13 resets this to # of blocks actually read/written
+.buf:   dw	0       ; memory buffer destination address (0:7c00)
+.seg:   dw	0	; in memory page zero
+.addr:  dd	0	; put the lba to read in this spot
+        dd	0	; more storage bytes only for big lba's ( > 4 bytes )
 
 times 510-($-$$) db 0
 db 0x55
@@ -52,40 +158,40 @@ unfs_header:
     db 'F'
     db 'S'
 .version:
-    dd 1
-.root_sector_list:
-    dq (unfs_root_sector_list - boot)/512
-.free_space_lba:
-    dq 0
+    dd 0xFFFFFFFF
 .name:
     db "Root Filesystem",0
+align 256, db 0
+.extents:
+    dq (unfs_root_node_list - boot)/512
+    dq (unfs_root_node_list.end - unfs_root_node_list)/512
 
     align 512, db 0
 .end:
 
 startup:
-    ; a20
-    in al, 0x92
-    or al, 2
-    out 0x92, al
+  ; a20
+  in al, 0x92
+  or al, 2
+  out 0x92, al
 
-    call vesa
+  call vesa
 
-    call initialize.fpu
-    call initialize.sse
-    call initialize.pic
+  call initialize.fpu
+  call initialize.sse
+  call initialize.pic
 
-    ; load protected mode GDT and IDT
-    cli
-    lgdt [gdtr]
-    lidt [idtr]
-    ; set protected mode bit of cr0
-    mov eax, cr0
-    or eax, 1
-    mov cr0, eax
+  ; load protected mode GDT and IDT
+  cli
+  lgdt [gdtr]
+  lidt [idtr]
+  ; set protected mode bit of cr0
+  mov eax, cr0
+  or eax, 1
+  mov cr0, eax
 
-    ; far jump to load CS with 32 bit segment
-    jmp 0x08:protected_mode
+  ; far jump to load CS with 32 bit segment
+  jmp 0x08:protected_mode
 
 %include "asm/vesa.asm"
 %include "asm/initialize.asm"
@@ -105,6 +211,8 @@ protected_mode:
     ;rust init
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
+    mov eax, kernel_file.font
+    mov ebx, kernel_file.cursor
     int 255
     cli
     hlt
@@ -137,49 +245,29 @@ gdt_end:
 times (0xC000-0x1000)-0x7C00-($-$$) db 0
 
 kernel_file:
-incbin "kernel.bin"
-align 512, db 0
-.end:
+  incbin "kernel.bin"
+  align 512, db 0
 
-unfs_root_sector_list:
-.parent:
-    dq 0
-.fragment_number:
-    dq 0
-.last_fragment:
-    dq 0
-.next_fragment:
-    dq 0
-.extents:
-    dq (unfs_root_node_list - boot)/512
-    dq (unfs_root_node_list.end - unfs_root_node_list)/512
+.font:
+  incbin "unifont.font"
+  align 512, db 0
 
-    align 512, db 0
+.cursor:
+  incbin "cursor.bmp"
+  align 512, db 0
 .end:
 
 unfs_root_node_list:
 %macro file 2+
     unfs_node.%1:
-    .parent_collection:
-        dq (unfs_root_sector_list - boot)/512
-    .data_sector_list:
-        dq (unfs_sector_list.%1 - boot)/512
-    .data_size:
-        dq (unfs_data.%1.end - unfs_data.%1)
-    .user_id:
-        dq 0
-    .group_id:
-        dq 0
-    .mode:
-        dq 0
-    .create_time:
-        dq 0
-    .modify_time:
-        dq 0
-    .access_time:
-        dq 0
     .name:
         db %2,0
+
+        align 256, db 0
+
+    .extents:
+        dq (unfs_data.%1 - boot)/512
+        dq (unfs_data.%1.end - unfs_data.%1)/512
 
         align 512, db 0
     .end:
@@ -188,25 +276,9 @@ unfs_root_node_list:
 %include "filesystem.gen"
 
 %unmacro file 2+
-
 unfs_root_node_list.end:
 
 %macro file 2+
-unfs_sector_list.%1:
-.parent_node:
-    dq (unfs_node.%1 - boot)/512
-.fragment_number:
-    dq 0
-.last_fragment:
-    dq 0
-.next_fragment:
-    dq 0
-.extents:
-    dq (unfs_data.%1 - boot)/512
-    dq (unfs_data.%1.end - unfs_data.%1)/512
-
-    align 512, db 0
-.end:
 unfs_data.%1:
     incbin %2
     align 512, db 0

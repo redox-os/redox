@@ -4,9 +4,146 @@ use graphics::window::*;
 
 use programs::common::*;
 
+/* Magic Macros { */
+use super::application;
+
+macro_rules! exec {
+    ($cmd:expr) => ({
+        unsafe {
+            (*application).on_command(&$cmd);
+        }
+    })
+}
+
+macro_rules! print {
+    ($text:expr) => ({
+        unsafe {
+            (*application).stdio.write_all(&$text.to_utf8());
+        }
+    });
+}
+
+macro_rules! println {
+    ($line:expr) => (print!($line + "\n"));
+}
+/* } Magic Macros */
+
+pub struct Command {
+    pub name: String,
+    pub main: Box<Fn(&Vec<String>)>
+}
+
+impl Command {
+    pub fn vec() -> Vec<Command> {
+        let mut commands: Vec<Command> = Vec::new();
+
+        commands.push(Command {
+            name: "break".to_string(),
+            main: box |args: &Vec<String>|{
+                unsafe{
+                    asm!("int 3" : : : : "intel");
+                }
+            }
+        });
+
+        commands.push(Command {
+            name: "echo".to_string(),
+            main: box |args: &Vec<String>|{
+                let mut echo = String::new();
+                for i in 1..args.len() {
+                    match args.get(i) {
+                        Option::Some(arg) => {
+                            if echo.len() == 0 {
+                                echo = arg.clone();
+                            }else{
+                                echo = echo + " " + arg.clone();
+                            }
+                        },
+                        Option::None => ()
+                    }
+                }
+                println!(echo);
+            }
+        });
+
+        commands.push(Command {
+            name: "open".to_string(),
+            main: box |args: &Vec<String>|{
+                match args.get(1) {
+                    Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
+                    Option::None => ()
+                }
+            }
+        });
+
+        commands.push(Command {
+            name: "run".to_string(),
+            main: box |args: &Vec<String>|{
+                match args.get(1) {
+                    Option::Some(arg) => {
+                        let mut resource = URL::from_string(arg.clone()).open();
+
+                        let mut vec: Vec<u8> = Vec::new();
+                        resource.read_to_end(&mut vec);
+
+                        let commands = String::from_utf8(&vec);
+                        for command in commands.split("\n".to_string()) {
+                            exec!(command);
+                        }
+                    },
+                    Option::None => ()
+                }
+            }
+        });
+
+        commands.push(Command {
+            name: "url".to_string(),
+            main: box |args: &Vec<String>|{
+                let mut url = URL::new();
+
+                match args.get(1) {
+                    Option::Some(arg) => url = URL::from_string(arg.clone()),
+                    Option::None => ()
+                }
+
+                println!("URL: ".to_string() + url.to_string());
+
+                let mut resource = url.open();
+
+                match resource.stat() {
+                    ResourceType::File => println!("Type: File".to_string()),
+                    ResourceType::Dir => println!("Type: Dir".to_string()),
+                    ResourceType::Array => println!("Type: Array".to_string()),
+                    _ => println!("Type: None".to_string())
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                match resource.read_to_end(&mut vec) {
+                    Option::Some(_) => println!(String::from_utf8(&vec)),
+                    Option::None => println!("Failed to read".to_string())
+                }
+            }
+        });
+
+        return commands;
+    }
+}
+
+pub struct Variable {
+    pub name: String,
+    pub value: String
+}
+
+pub struct Mode {
+    value: bool
+}
+
 pub struct Application {
     window: Window,
-    output: String,
+    commands: Vec<Command>,
+    variables: Vec<Variable>,
+    modes: Vec<Mode>,
+    stdio: Box<VecResource>,
     last_command: String,
     command: String,
     offset: usize,
@@ -16,123 +153,175 @@ pub struct Application {
 
 impl Application {
     fn append(&mut self, line: String) {
-        self.output = self.output.clone() + line + "\n";
+        self.stdio.write_all(&(line + "\n").to_utf8());
     }
 
-    #[allow(unused_variables)]
-    fn on_command(&mut self){
-        self.last_command = self.command.clone();
-        let mut args: Vec<String> = Vec::<String>::new();
-        for arg in self.command.split(" ".to_string()) {
-            if arg.len() > 0 {
-                args.push(arg);
-            }
+    fn on_command(&mut self, command_string: &String){
+        //Comment
+        if command_string[0] == '#' {
+            return;
         }
-        match args.get(0) {
-            Option::Some(cmd) => {
-                if *cmd == "break".to_string() {
-                    unsafe{
-                        asm!("int 3" : : : : "intel");
-                    }
-                }else if *cmd == "echo".to_string() {
-                    let mut echo = String::new();
-                    for i in 1..args.len() {
-                        match args.get(i) {
-                            Option::Some(arg) => {
-                                if echo.len() == 0 {
-                                    echo = arg.clone();
-                                }else{
-                                    echo = echo + " " + arg.clone();
-                                }
-                            },
-                            Option::None => ()
+
+        //Show variables
+        if *command_string == "$".to_string() {
+            let mut variables = "Variables:".to_string();
+            for variable in self.variables.iter() {
+                variables = variables + '\n' + variable.name.clone() + "=" + variable.value.clone();
+            }
+            self.append(variables);
+            return;
+        }
+
+        //Explode into arguments, replace variables
+        let mut args: Vec<String> = Vec::<String>::new();
+        for arg in command_string.split(" ".to_string()) {
+            if arg.len() > 0 {
+                if arg[0] == '$' {
+                    let name = arg.substr(1, arg.len() - 1);
+                    for variable in self.variables.iter() {
+                        if variable.name == name {
+                            args.push(variable.value.clone());
+                            break;
                         }
                     }
-                    self.append(echo);
-                }else if *cmd == "exit".to_string() {
-                    self.window.closed = true;
-                }else if *cmd == "open".to_string() {
-                    match args.get(1) {
-                        Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
-                        Option::None => ()
-                    }
-                }else if *cmd == "url".to_string() {
-                    let mut url = URL::new();
-
-                    match args.get(1) {
-                        Option::Some(arg) => url = URL::from_string(arg.clone()),
-                        Option::None => ()
-                    }
-
-                    self.append("URL: ".to_string() + url.to_string());
-
-                    let mut resource = url.open();
-
-                    match resource.stat() {
-                        ResourceType::File => self.append("Type: File".to_string()),
-                        ResourceType::Dir => self.append("Type: Dir".to_string()),
-                        ResourceType::Array => self.append("Type: Array".to_string()),
-                        _ => self.append("Type: None".to_string())
-                    }
-
-                    let mut vec: Vec<u8> = Vec::new();
-                    match resource.read_to_end(&mut vec) {
-                        Option::Some(0) => (),
-                        Option::Some(len) => self.append(String::from_utf8(&vec)),
-                        Option::None => self.append("Failed to read".to_string())
-                    }
                 }else{
-                    self.append("Commands:  echo  exit  open  url".to_string());
+                    args.push(arg);
                 }
+            }
+        }
+
+        //Execute commands
+        match args.get(0) {
+            Option::Some(cmd) => {
+                if *cmd == "if".to_string() {
+                    let mut value = false;
+
+                    match args.get(1) {
+                        Option::Some(left) => match args.get(2) {
+                            Option::Some(cmp) => match args.get(3) {
+                                Option::Some(right) => {
+                                    if *cmp == "==".to_string() {
+                                        value = *left == *right;
+                                    }else if *cmp == "!=".to_string() {
+                                        value = *left != *right;
+                                    }else if *cmp == ">".to_string() {
+                                        value = left.to_num_signed() > right.to_num_signed();
+                                    }else if *cmp == ">=".to_string() {
+                                        value = left.to_num_signed() >= right.to_num_signed();
+                                    }else if *cmp == "<".to_string() {
+                                        value = left.to_num_signed() < right.to_num_signed();
+                                    }else if *cmp == "<=".to_string() {
+                                        value = left.to_num_signed() <= right.to_num_signed();
+                                    }else{
+                                        self.append("Unknown comparison: ".to_string() + cmp.clone());
+                                    }
+                                },
+                                Option::None => ()
+                            },
+                            Option::None => ()
+                        },
+                        Option::None => ()
+                    }
+
+                    self.modes.insert(0, Mode{
+                        value: value
+                    });
+                    return;
+                }
+
+                if *cmd == "else".to_string() {
+                    let mut syntax_error = false;
+                    match self.modes.get(0) {
+                        Option::Some(mode) => mode.value = !mode.value,
+                        Option::None => syntax_error = true
+                    }
+                    if syntax_error {
+                        self.append("Syntax error: else found with no previous if".to_string());
+                    }
+                    return;
+                }
+
+                if *cmd == "fi".to_string() {
+                    let mut syntax_error = false;
+                    match self.modes.remove(0) {
+                        Option::Some(_) => (),
+                        Option::None => syntax_error = true
+                    }
+                    if syntax_error {
+                        self.append("Syntax error: fi found with no previous if".to_string())
+                    }
+                    return;
+                }
+
+                for mode in self.modes.iter() {
+                    if ! mode.value {
+                        return;
+                    }
+                }
+
+                //Set variables
+                match cmd.find("=".to_string()) {
+                    Option::Some(i) => {
+                        let name = cmd.substr(0, i);
+                        let mut value = cmd.substr(i + 1, cmd.len() - i - 1);
+
+                        for i in 1..args.len() {
+                            match args.get(i) {
+                                Option::Some(arg) => value = value + ' ' + arg.clone(),
+                                Option::None => ()
+                            }
+                        }
+
+                        for variable in self.variables.iter() {
+                            if variable.name == name {
+                                variable.value = value;
+                                return;
+                            }
+                        }
+
+                        self.variables.push(Variable{
+                            name: name,
+                            value: value
+                        });
+                        return;
+                    },
+                    Option::None => ()
+                }
+
+                //Commands
+                for command in self.commands.iter() {
+                    if command.name == *cmd {
+                        (*command.main)(&args);
+                        return;
+                    }
+                }
+
+                let mut help = "Commands:".to_string();
+                for command in self.commands.iter() {
+                    help = help + " " + command.name.clone();
+                }
+
+                self.append(help);
             },
             Option::None => ()
         }
     }
-}
 
-impl SessionItem for Application {
-    #[allow(unused_variables)]
-    fn new() -> Application {
-        Application {
-            window: Window{
-                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
-                size: Size::new(576, 400),
-                title: String::from_str("Terminal"),
-                title_color: Color::new(0, 0, 0),
-                border_color: Color::new(192, 192, 255),
-                content_color: Color::alpha(128, 128, 160, 192),
-                shaded: false,
-                closed: false,
-                dragging: false,
-                last_mouse_point: Point::new(0, 0),
-                last_mouse_event: MouseEvent {
-                    x: 0,
-                    y: 0,
-                    left_button: false,
-                    right_button: false,
-                    middle_button: false,
-                    valid: false
-                }
-            },
-            output: String::new(),
-            last_command: String::new(),
-            command: String::new(),
-            offset: 0,
-            scroll: Point::new(0, 0),
-            wrap: true
-        }
-    }
+    fn draw_content(&mut self){
+        let scroll = self.scroll;
 
-    fn draw(&mut self, display: &Display) -> bool{
-        if self.window.draw(display) {
-            let scroll = self.scroll;
+        let mut col = -scroll.x;
+        let cols = self.window.content.width as isize / 8;
+        let mut row = -scroll.y;
+        let rows = self.window.content.height as isize / 16;
 
-            let mut col = -scroll.x;
-            let cols = self.window.size.width as isize / 8;
-            let mut row = -scroll.y;
-            let rows = self.window.size.height as isize / 16;
+        {
+            let content = &self.window.content;
 
-            for c in self.output.chars(){
+            content.set(Color::new(0, 0, 0));
+
+            let output = String::from_utf8(self.stdio.inner());
+            for c in output.chars(){
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
@@ -145,8 +334,7 @@ impl SessionItem for Application {
                     col += 8 - col % 8;
                 }else{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
-                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                        display.char(point, c, Color::new(224, 224, 224));
+                        content.char(Point::new(8 * col, 16 * row), c, Color::new(224, 224, 224));
                     }
                     col += 1;
                 }
@@ -158,8 +346,7 @@ impl SessionItem for Application {
             }
 
             if col >= 0 && col < cols && row >= 0 && row < rows{
-                let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                display.char(point, '#', Color::new(255, 255, 255));
+                content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
                 col += 2;
             }
 
@@ -171,8 +358,7 @@ impl SessionItem for Application {
                 }
 
                 if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                    let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                    display.char(point, '_', Color::new(255, 255, 255));
+                    content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
                 }
 
                 if c == '\n' {
@@ -182,8 +368,7 @@ impl SessionItem for Application {
                     col += 8 - col % 8;
                 }else{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
-                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                        display.char(point, c, Color::new(255, 255, 255));
+                        content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
                     }
                     col += 1;
                 }
@@ -196,26 +381,43 @@ impl SessionItem for Application {
                 row += 1;
             }
 
-            if row >= rows {
-                self.scroll.y += row - rows + 1;
-
-                RedrawEvent {
-                    redraw: REDRAW_ALL
-                }.trigger();
-            }
-
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                display.char(point, '_', Color::new(255, 255, 255));
+                content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
             }
+        }
 
-            return true;
-        }else{
-            return false;
+        if row >= rows {
+            self.scroll.y += row - rows + 1;
+
+            self.draw_content();
         }
     }
+}
 
-    #[allow(unused_variables)]
+impl SessionItem for Application {
+    fn new() -> Application {
+        let mut ret = Application {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
+            commands: Command::vec(),
+            variables: Vec::new(),
+            modes: Vec::new(),
+            stdio: box VecResource::new(ResourceType::File, Vec::new()),
+            last_command: String::new(),
+            command: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0),
+            wrap: true
+        };
+
+        ret.draw_content();
+
+        return ret;
+    }
+
+    fn draw(&self, display: &Display) -> bool{
+        return self.window.draw(display);
+    }
+
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
@@ -249,10 +451,12 @@ impl SessionItem for Application {
                 },
                 '\n' => {
                     if self.command.len() > 0 {
-                        self.output = self.output.clone() + "# ".to_string() + self.command.clone() + "\n";
-                        self.on_command();
+                        let command = self.command.clone();
                         self.command = String::new();
                         self.offset = 0;
+                        self.last_command = command.clone();
+                        self.append("# ".to_string() + command.clone());
+                        self.on_command(&command);
                     }
                 },
                 _ => {
@@ -260,11 +464,17 @@ impl SessionItem for Application {
                     self.offset += 1;
                 }
             }
+
+            self.draw_content();
         }
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+        if self.window.on_mouse(mouse_point, mouse_event, allow_catch){
+            self.draw_content();
+            return true;
+        }else{
+            return false;
+        }
     }
 }

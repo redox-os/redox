@@ -112,7 +112,7 @@
 //!     //                  7
 //!     //          +-----------------+
 //!     //          |                 |
-//!     //          v   1        2    |
+//!     //          v   1        2    |  2
 //!     //          0 -----> 1 -----> 3 ---> 4
 //!     //          |        ^        ^      ^
 //!     //          |        | 1      |      |
@@ -150,9 +150,6 @@
 
 #![allow(missing_docs)]
 #![stable(feature = "rust1", since = "1.0.0")]
-
-#[cfg(stage0)]
-use core::prelude::v1::*;
 
 use core::iter::{FromIterator};
 use core::mem::swap;
@@ -550,7 +547,8 @@ impl<T: Ord> BinaryHeap<T> {
     #[inline]
     #[unstable(feature = "drain",
                reason = "matches collection reform specification, \
-                         waiting for dust to settle")]
+                         waiting for dust to settle",
+               issue = "27711")]
     pub fn drain(&mut self) -> Drain<T> {
         Drain { iter: self.data.drain(..) }
     }
@@ -688,7 +686,7 @@ impl<T> DoubleEndedIterator for IntoIter<T> {
 impl<T> ExactSizeIterator for IntoIter<T> {}
 
 /// An iterator that drains a `BinaryHeap`.
-#[unstable(feature = "drain", reason = "recent addition")]
+#[unstable(feature = "drain", reason = "recent addition", issue = "27711")]
 pub struct Drain<'a, T: 'a> {
     iter: vec::Drain<'a, T>,
 }

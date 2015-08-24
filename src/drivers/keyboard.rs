@@ -1,3 +1,4 @@
+use common::debug::*;
 use common::event::*;
 use common::pio::*;
 
@@ -48,11 +49,78 @@ pub static mut keyboard_status: KeyboardStatus = KeyboardStatus {
     caps_lock_toggle: false
 };
 
+unsafe fn keyboard_wait0(){
+    while (inb(0x64) & 1) == 0 {}
+}
+
+unsafe fn keyboard_wait1(){
+    while (inb(0x64) & 2) == 2 {}
+}
+
 pub unsafe fn keyboard_init(){
     keyboard_status.lshift = false;
     keyboard_status.rshift = false;
     keyboard_status.caps_lock = false;
     keyboard_status.caps_lock_toggle = false;
+
+    d("Clear buffer:");
+    while (inb(0x64) & 0x1) == 1 {
+        dc(' ');
+        dbh(inb(0x60));
+    }
+    dl();
+
+    d("Enable Keyboard:");
+        keyboard_wait1();
+        outb(0x64, 0x20);
+        keyboard_wait0();
+        let mut status = inb(0x60);
+        dc(' ');
+        dbh(status);
+        status = (status & 0b00110111) | 1 | 0b10000;
+        dc(' ');
+        dbh(status);
+        keyboard_wait1();
+        outb(0x64, 0x60);
+        keyboard_wait1();
+        outb(0x60, status);
+    dl();
+
+    d("Set Defaults:");
+        keyboard_wait1();
+        outb(0x60, 0xF6);
+        keyboard_wait0();
+        dc(' ');
+        dbh(inb(0x60));
+    dl();
+
+    d("Set LEDS:");
+        keyboard_wait1();
+        outb(0x60, 0xED);
+        keyboard_wait0();
+        dc(' ');
+        dbh(inb(0x60));
+
+        keyboard_wait1();
+        outb(0x60, 0);
+        keyboard_wait0();
+        dc(' ');
+        dbh(inb(0x60));
+    dl();
+
+    d("Set Scancode Map:");
+        keyboard_wait1();
+        outb(0x60, 0xF0);
+        keyboard_wait0();
+        dc(' ');
+        dbh(inb(0x60));
+
+        keyboard_wait1();
+        outb(0x60, 1);
+        keyboard_wait0();
+        dc(' ');
+        dbh(inb(0x60));
+    dl();
 }
 
 pub fn keyboard_interrupt() -> KeyEvent{
@@ -93,7 +161,7 @@ fn char_for_scancode(scancode: u8, shift: bool) -> char{
 	character
 }
 
-const SCANCODES: [[char; 2]; 58]= [
+static SCANCODES: [[char; 2]; 58]= [
     ['\x00','\x00'],
     ['\x1B','\x1B'],
     ['1','!'],

@@ -265,6 +265,17 @@ impl String {
         }
     }
 
+    pub fn find(&self, other: String) -> Option<usize> {
+        if self.len() >= other.len() {
+            for i in 0..self.len() + 1 - other.len() {
+                if self.substr(i, other.len()) == other {
+                    return Option::Some(i);
+                }
+            }
+        }
+        return Option::None;
+    }
+
     pub fn starts_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
             return self.substr(0, other.len()) == other;

@@ -1,5 +1,4 @@
 pub use alloc::boxed::*;
-pub use alloc::rc::*;
 
 pub use core::clone::Clone;
 pub use core::option::Option;
@@ -31,10 +30,6 @@ pub trait SessionModule {
     fn open(&mut self, url: &URL) -> Box<Resource> {
         return box NoneResource;
     }
-
-    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>) {
-        callback(self.open(url));
-    }
 }
 
 #[allow(unused_variables)]
@@ -45,8 +40,8 @@ pub trait SessionItem : ::mopa::Any {
 
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
-        return true;
+    fn draw(&self, display: &Display) -> bool {
+        return false;
     }
 
     fn on_key(&mut self, key_event: KeyEvent){

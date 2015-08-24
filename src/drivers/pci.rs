@@ -1,5 +1,3 @@
-use alloc::rc::*;
-
 use common::debug::*;
 use common::pci::*;
 use common::vec::*;
@@ -11,42 +9,50 @@ use programs::session::*;
 
 use schemes::ide::*;
 
+use usb::ehci::*;
 use usb::xhci::*;
 
 pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: usize, class_id: usize, subclass_id: usize, interface_id: usize, vendor_code: usize, device_code: usize){
     if class_id == 0x01 && subclass_id == 0x01{
         let base = pci_read(bus, slot, func, 0x20);
 
-        let module = Rc::new(IDE {
+        let module = box IDE {
             bus: bus,
             slot: slot,
             func: func,
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
             requests: Vec::new()
-        });
+        };
         module.init();
         session.modules.push(module);
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
             let base = pci_read(bus, slot, func, 0x10);
 
-            let module = Rc::new(XHCI {
+            let module = box XHCI {
                 bus: bus,
                 slot: slot,
                 func: func,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,
                 irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
-            });
+            };
             module.init();
             session.modules.push(module);
         }else if interface_id == 0x20{
             let base = pci_read(bus, slot, func, 0x10);
 
-            d("EHCI Controller on ");
-            dh(base & 0xFFFFFFF0);
-            dl();
+            let module = box EHCI {
+                bus: bus,
+                slot: slot,
+                func: func,
+                base: base & 0xFFFFFFF0,
+                memory_mapped: base & 1 == 0,
+                irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
+            };
+            module.init();
+            session.modules.push(module);
         }else if interface_id == 0x10{
             let base = pci_read(bus, slot, func, 0x10);
 
@@ -67,14 +73,14 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             0x10EC => match device_code{ // REALTEK
                 0x8139 => {
                     let base = pci_read(bus, slot, func, 0x10);
-                    let module = Rc::new(RTL8139 {
+                    let module = box RTL8139 {
                         bus: bus,
                         slot: slot,
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
-                    });
+                    };
                     module.init();
                     session.modules.push(module);
                 },
@@ -83,14 +89,14 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             0x8086 => match device_code{ // INTEL
                 0x100E => {
                     let base = pci_read(bus, slot, 0, 0x10);
-                    let module = Rc::new(Intel8254x {
+                    let module = box Intel8254x {
                         bus: bus,
                         slot: slot,
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
-                    });
+                    };
                     module.init();
                     session.modules.push(module);
                 },
@@ -120,19 +126,20 @@ pub unsafe fn pci_init(session: &mut Session){
                     dh(data);
                     d(", ");
                     dh(class_id);
-                    dl();
 
                     for i in 0..6 {
-                        d("    ");
-                        dd(i);
-                        d(": ");
-                        dh(pci_read(bus, slot, func, i*4 + 0x10));
-                        dl();
+                        let bar = pci_read(bus, slot, func, i*4 + 0x10);
+                        if bar > 0 {
+                            d(" BAR");
+                            dd(i);
+                            d(": ");
+                            dh(bar);
+                        }
                     }
 
-                    pci_device(session, bus, slot, func, (class_id >> 24) & 0xFF, (class_id >> 16) & 0xFF, (class_id >> 8) & 0xFF, data & 0xFFFF, (data >> 16) & 0xFFFF);
-
                     dl();
+
+                    pci_device(session, bus, slot, func, (class_id >> 24) & 0xFF, (class_id >> 16) & 0xFF, (class_id >> 8) & 0xFF, data & 0xFFFF, (data >> 16) & 0xFFFF);
                 }
             }
         }

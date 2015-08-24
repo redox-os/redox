@@ -2,7 +2,7 @@ use common::pio::*;
 
 use core::str::StrExt;
 
-pub unsafe fn serial_init(){
+pub unsafe fn debug_init(){
     outb(0x3F8 + 1, 0x00);
     outb(0x3F8 + 3, 0x80);
     outb(0x3F8 + 0, 0x03);
@@ -15,7 +15,11 @@ pub unsafe fn serial_init(){
 
 pub fn db(byte: u8){
     unsafe{
-        outb(0x3F8, byte);
+        asm!("int 0x80"
+            :
+            : "{eax}"(0), "{ebx}"(byte as usize)
+            :
+            : "intel");
     }
 }
 

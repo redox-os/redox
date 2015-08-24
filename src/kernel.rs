@@ -8,7 +8,6 @@
 #![feature(fundamental)]
 #![feature(lang_items)]
 #![feature(no_std)]
-#![feature(rc_unique)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![no_std]
@@ -18,26 +17,31 @@ extern crate alloc;
 #[macro_use]
 extern crate mopa;
 
-use core::fmt;
 use core::mem::size_of;
 use core::mem::swap;
 use core::ptr;
 
 use common::pio::*;
 use common::memory::*;
+use common::paging::*;
 
+use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
 use drivers::mouse::mouse_init;
 use drivers::pci::*;
 use drivers::ps2::*;
 use drivers::serial::*;
 
+use filesystems::unfs::*;
+
 use graphics::bmp::*;
+use graphics::color::*;
 
 use programs::filemanager::*;
 use programs::common::*;
 use programs::session::*;
 
+use schemes::debug::*;
 use schemes::file::*;
 use schemes::http::*;
 use schemes::memory::*;
@@ -49,6 +53,7 @@ mod common {
     pub mod elf;
     pub mod event;
     pub mod memory;
+    pub mod paging;
     pub mod pci;
     pub mod pio;
     pub mod random;
@@ -101,6 +106,7 @@ mod programs {
 }
 
 mod schemes {
+    pub mod debug;
     pub mod file;
     pub mod http;
     pub mod ide;
@@ -110,14 +116,43 @@ mod schemes {
 }
 
 mod usb {
+    pub mod ehci;
     pub mod xhci;
 }
 
-static mut session_ptr: *mut Session = 0 as *mut Session;
+static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
+static mut debug_point: Point = Point{ x: 0, y: 0 };
+static mut debug_draw: bool = false;
+static mut debug_redraw: bool = false;
+
+static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
 
-unsafe fn init(){
-    serial_init();
+unsafe fn test_disk(disk: Disk){
+    if disk.identify() {
+        d("  Disk Found\n");
+
+        let unfs = UnFS::from_disk(disk);
+        if unfs.valid() {
+            d("  UnFS Filesystem\n");
+        }else{
+            d("  Unknown Filesystem\n");
+        }
+    }else{
+        d("  Disk Not Found\n");
+    }
+}
+
+unsafe fn init(font_data: usize, cursor_data: usize){
+    debug_display = 0 as *mut Box<Display>;
+    debug_point = Point{ x: 0, y: 0 };
+    debug_draw = false;
+    debug_redraw = false;
+
+    session_ptr = 0 as *mut Box<Session>;
+    events_ptr = 0 as *mut Vec<Event>;
+
+    debug_init();
 
     dd(size_of::<usize>() * 8);
     d(" bits");
@@ -126,39 +161,59 @@ unsafe fn init(){
     page_init();
     cluster_init();
 
-    session_ptr = alloc(size_of::<Session>()) as *mut Session;
-    *session_ptr = Session::new();
+    *FONTS = font_data;
+
+    debug_display = alloc(size_of::<Box<Display>>()) as *mut Box<Display>;
+    ptr::write(debug_display, box Display::root());
+    (*debug_display).set(Color::new(0, 0, 0));
+    debug_draw = true;
+
+    session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
+    ptr::write(session_ptr, box Session::new());
     events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
-    *events_ptr = Vec::new();
+    ptr::write(events_ptr, Vec::new());
 
     let session = &mut *session_ptr;
-
-    session.items.insert(0, Rc::new(FileManager::new()));
+    session.cursor = BMP::from_data(cursor_data);
 
     keyboard_init();
     mouse_init();
 
-    session.modules.push(Rc::new(PS2));
-    session.modules.push(Rc::new(Serial::new(0x3F8, 0x4)));
+    session.modules.push(box PS2);
+    session.modules.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
-    session.modules.push(Rc::new(FileScheme));
-    session.modules.push(Rc::new(HTTPScheme));
-    session.modules.push(Rc::new(MemoryScheme));
-    session.modules.push(Rc::new(PCIScheme));
-    session.modules.push(Rc::new(RandomScheme));
+    d("Primary Master\n");
+    test_disk(Disk::primary_master());
 
-    URL::from_string("file:///background.bmp".to_string()).open_async(box |mut resource: Box<Resource>|{
-        let mut vec: Vec<u8> = Vec::new();
-        match resource.read_to_end(&mut vec) {
-            Option::Some(0) => d("No background data\n"),
-            Option::Some(len) => {
-                (*session_ptr).display.background = BMP::from_data(vec.as_ptr() as usize);
-            },
-            Option::None => d("Background load error\n")
-        }
+    d("Primary Slave\n");
+    test_disk(Disk::primary_slave());
+
+    d("Secondary Master\n");
+    test_disk(Disk::secondary_master());
+
+    d("Secondary Slave\n");
+    test_disk(Disk::secondary_slave());
+
+    session.modules.push(box DebugScheme);
+    session.modules.push(box FileScheme{
+        unfs: UnFS::from_disk(Disk::primary_master())
     });
+    session.modules.push(box HTTPScheme);
+    session.modules.push(box MemoryScheme);
+    session.modules.push(box PCIScheme);
+    session.modules.push(box RandomScheme);
+
+    let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
+
+    let mut vec: Vec<u8> = Vec::new();
+    match resource.read_to_end(&mut vec) {
+        Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
+        Option::None => d("Background load error\n")
+    }
+
+    session.items.insert(0, box FileManager::new());
 }
 
 fn dr(reg: &str, value: u32){
@@ -205,6 +260,32 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => { // kernel calls
             match eax {
+                0x0 => { //Debug
+                    if debug_display as usize > 0 {
+                        if ebx == 10 {
+                            debug_point.x = 0;
+                            debug_point.y += 16;
+                            debug_redraw = true;
+                        }else{
+                            (*debug_display).char(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
+                            debug_point.x += 8;
+                        }
+                        if debug_point.x >= (*debug_display).width as isize {
+                            debug_point.x = 0;
+                            debug_point.y += 16;
+                        }
+                        while debug_point.y + 16 > (*debug_display).height as isize {
+                            (*debug_display).scroll(16);
+                            debug_point.y -= 16;
+                        }
+                        if debug_draw && debug_redraw {
+                            debug_redraw = false;
+                            (*debug_display).flip();
+                        }
+                    }else{
+                        outb(0x3F8, ebx as u8);
+                    }
+                }
                 0x1 => {
                     d("Open: ");
                     let url: &URL = &*(ebx as *const URL);
@@ -214,16 +295,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     ptr::write(ecx as *mut Box<Resource>, session.open(url));
                 },
                 0x2 => {
-                    d("Open Async: ");
-                    let url: &URL = &*(ebx as *const URL);
-                    let callback: Box<FnBox(Box<Resource>)> = ptr::read(ecx as *const Box<FnBox(Box<Resource>)>);
-                    unalloc(ecx as usize);
-                    url.d();
-
-                    let session = &mut *session_ptr;
-                    session.open_async(url, callback);
-                },
-                0x3 => {
                     (*events_ptr).push(*(ebx as *const Event));
                 }
                 _ => {
@@ -241,12 +312,9 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             }
         },
         0xFF => { // main loop
-            init();
+            init(eax as usize, ebx as usize);
 
             let session = &mut *session_ptr;
-            (*events_ptr).push(RedrawEvent {
-                redraw: REDRAW_ALL
-            }.to_event());
             loop {
                 //Polling must take place without interrupts to avoid interruption during I/O logic
                 asm!("cli");
@@ -257,10 +325,30 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                         let mut events_copy: Vec<Event> = Vec::new();
                         swap(&mut events_copy, &mut *events_ptr);
 
-                    //Can preempt event handling and redraw
-                    asm!("sti");
-                        session.handle_events(&mut events_copy);
-                        session.redraw();
+                        for event in events_copy.iter() {
+                            if event.code == 'k' && event.b == 0x3B && event.c > 0 {
+                                debug_draw = true;
+                                debug_redraw = true;
+                            }
+                            if event.code == 'k' && event.b == 0x3C && event.c > 0 {
+                                debug_draw = false;
+                                (*events_ptr).push(RedrawEvent {
+                                    redraw: REDRAW_ALL
+                                }.to_event());
+                            }
+                        }
+
+                    if debug_draw {
+                        if debug_display as usize > 0 && debug_redraw {
+                            debug_redraw = false;
+                            (*debug_display).flip();
+                        }
+                    }else{
+                        //Can preempt event handling and redraw
+                        //asm!("sti");
+                            session.handle_events(&mut events_copy);
+                            session.redraw();
+                    }
 
                     //Checking for new events must take place without interrupts to avoid pushes of events
                     asm!("cli");
@@ -307,20 +395,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
         outb(0x20, 0x20);
     }
-}
-
-#[lang = "panic_fmt"]
-pub extern fn panic_fmt(fmt: fmt::Arguments, file: &'static str, line: u32) -> ! {
-    d("PANIC: ");
-    d(file);
-    d(": ");
-    dh(line as usize);
-    dl();
-    unsafe{
-        asm!("cli");
-        asm!("hlt");
-    }
-    loop{}
 }
 
 #[no_mangle]
