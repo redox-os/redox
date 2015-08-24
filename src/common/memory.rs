@@ -54,7 +54,7 @@ pub unsafe fn cluster_init(){
         if entry.len > 0 && entry.class == 1 {
             for cluster in 0..CLUSTER_COUNT {
                 let address = cluster_to_address(cluster);
-                if address >= entry.base as usize && (address + CLUSTER_SIZE) <= (entry.base + entry.len) as usize {
+                if address as u64 >= entry.base && (address as u64 + CLUSTER_SIZE as u64) <= (entry.base + entry.len) {
                     set_cluster(cluster, 0);
                 }
             }
