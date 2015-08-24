@@ -19,7 +19,7 @@ impl Event {
             let event_ptr: *const Event = self;
             asm!("int 0x80"
                 :
-                : "{eax}"(3), "{ebx}"(event_ptr as u32)
+                : "{eax}"(2), "{ebx}"(event_ptr as u32)
                 :
                 : "intel");
         }

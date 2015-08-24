@@ -21,9 +21,6 @@
 
 #![stable(feature = "rust1", since = "1.0.0")]
 
-#[cfg(stage0)]
-use core::prelude::v1::*;
-
 use alloc::boxed::Box;
 use core::cmp::Ordering;
 use core::fmt;
@@ -804,7 +801,8 @@ impl<'a, A> IterMut<'a, A> {
     /// ```
     #[inline]
     #[unstable(feature = "linked_list_extras",
-               reason = "this is probably better handled by a cursor type -- we'll see")]
+               reason = "this is probably better handled by a cursor type -- we'll see",
+               issue = "27794")]
     pub fn insert_next(&mut self, elt: A) {
         self.insert_next_node(box Node::new(elt))
     }
@@ -828,7 +826,8 @@ impl<'a, A> IterMut<'a, A> {
     /// ```
     #[inline]
     #[unstable(feature = "linked_list_extras",
-               reason = "this is probably better handled by a cursor type -- we'll see")]
+               reason = "this is probably better handled by a cursor type -- we'll see",
+               issue = "27794")]
     pub fn peek_next(&mut self) -> Option<&mut A> {
         if self.nelem == 0 {
             return None

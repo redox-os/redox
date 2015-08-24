@@ -71,9 +71,6 @@
 
 use boxed::Box;
 
-#[cfg(stage0)]
-use core::prelude::v1::*;
-
 use core::atomic;
 use core::atomic::Ordering::{Relaxed, Release, Acquire, SeqCst};
 use core::fmt;
@@ -140,7 +137,8 @@ impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<Arc<U>> for Arc<T> {}
 /// used to break cycles between `Arc` pointers.
 #[unsafe_no_drop_flag]
 #[unstable(feature = "arc_weak",
-           reason = "Weak pointers may not belong in this module.")]
+           reason = "Weak pointers may not belong in this module.",
+           issue = "27718")]
 pub struct Weak<T: ?Sized> {
     // FIXME #12808: strange name to try to avoid interfering with
     // field accesses of the contained type via Deref
@@ -193,7 +191,7 @@ impl<T> Arc<T> {
             weak: atomic::AtomicUsize::new(1),
             data: data,
         };
-        Arc { _ptr: unsafe { NonZero::new(mem::transmute(x)) } }
+        Arc { _ptr: unsafe { NonZero::new(Box::into_raw(x)) } }
     }
 }
 
@@ -212,7 +210,8 @@ impl<T: ?Sized> Arc<T> {
     /// let weak_five = five.downgrade();
     /// ```
     #[unstable(feature = "arc_weak",
-               reason = "Weak pointers may not belong in this module.")]
+               reason = "Weak pointers may not belong in this module.",
+               issue = "27718")]
     pub fn downgrade(&self) -> Weak<T> {
         loop {
             // This Relaxed is OK because we're checking the value in the CAS
@@ -237,14 +236,14 @@ impl<T: ?Sized> Arc<T> {
 
     /// Get the number of weak references to this value.
     #[inline]
-    #[unstable(feature = "arc_counts")]
+    #[unstable(feature = "arc_counts", issue = "27718")]
     pub fn weak_count(this: &Arc<T>) -> usize {
         this.inner().weak.load(SeqCst) - 1
     }
 
     /// Get the number of strong references to this value.
     #[inline]
-    #[unstable(feature = "arc_counts")]
+    #[unstable(feature = "arc_counts", issue = "27718")]
     pub fn strong_count(this: &Arc<T>) -> usize {
         this.inner().strong.load(SeqCst)
     }
@@ -274,18 +273,6 @@ impl<T: ?Sized> Arc<T> {
         }
     }
 }
-
-/// Get the number of weak references to this value.
-#[inline]
-#[unstable(feature = "arc_counts")]
-#[deprecated(since = "1.2.0", reason = "renamed to Arc::weak_count")]
-pub fn weak_count<T: ?Sized>(this: &Arc<T>) -> usize { Arc::weak_count(this) }
-
-/// Get the number of strong references to this value.
-#[inline]
-#[unstable(feature = "arc_counts")]
-#[deprecated(since = "1.2.0", reason = "renamed to Arc::strong_count")]
-pub fn strong_count<T: ?Sized>(this: &Arc<T>) -> usize { Arc::strong_count(this) }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> Clone for Arc<T> {
@@ -364,7 +351,7 @@ impl<T: Clone> Arc<T> {
     /// let mut_five = Arc::make_unique(&mut five);
     /// ```
     #[inline]
-    #[unstable(feature = "arc_unique")]
+    #[unstable(feature = "arc_unique", issue = "27718")]
     pub fn make_unique(this: &mut Arc<T>) -> &mut T {
         // Note that we hold both a strong reference and a weak reference.
         // Thus, releasing our strong reference only will not, by itself, cause
@@ -442,7 +429,7 @@ impl<T: ?Sized> Arc<T> {
     /// # }
     /// ```
     #[inline]
-    #[unstable(feature = "arc_unique")]
+    #[unstable(feature = "arc_unique", issue = "27718")]
     pub fn get_mut(this: &mut Arc<T>) -> Option<&mut T> {
         if this.is_unique() {
             // This unsafety is ok because we're guaranteed that the pointer
@@ -485,13 +472,6 @@ impl<T: ?Sized> Arc<T> {
             false
         }
     }
-}
-
-#[inline]
-#[unstable(feature = "arc_unique")]
-#[deprecated(since = "1.2", reason = "use Arc::get_mut instead")]
-pub fn get_mut<T: ?Sized>(this: &mut Arc<T>) -> Option<&mut T> {
-    Arc::get_mut(this)
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -563,7 +543,8 @@ impl<T: ?Sized> Drop for Arc<T> {
 }
 
 #[unstable(feature = "arc_weak",
-           reason = "Weak pointers may not belong in this module.")]
+           reason = "Weak pointers may not belong in this module.",
+           issue = "27718")]
 impl<T: ?Sized> Weak<T> {
     /// Upgrades a weak reference to a strong reference.
     ///
@@ -611,7 +592,8 @@ impl<T: ?Sized> Weak<T> {
 }
 
 #[unstable(feature = "arc_weak",
-           reason = "Weak pointers may not belong in this module.")]
+           reason = "Weak pointers may not belong in this module.",
+           issue = "27718")]
 impl<T: ?Sized> Clone for Weak<T> {
     /// Makes a clone of the `Weak<T>`.
     ///
@@ -863,7 +845,7 @@ mod tests {
     use std::sync::atomic::Ordering::{Acquire, SeqCst};
     use std::thread;
     use std::vec::Vec;
-    use super::{Arc, Weak, get_mut, weak_count, strong_count};
+    use super::{Arc, Weak};
     use std::sync::Mutex;
 
     struct Canary(*mut atomic::AtomicUsize);
@@ -901,43 +883,39 @@ mod tests {
 
     #[test]
     fn test_arc_get_mut() {
-        unsafe {
-            let mut x = Arc::new(3);
-            *get_mut(&mut x).unwrap() = 4;
-            assert_eq!(*x, 4);
-            let y = x.clone();
-            assert!(get_mut(&mut x).is_none());
-            drop(y);
-            assert!(get_mut(&mut x).is_some());
-            let _w = x.downgrade();
-            assert!(get_mut(&mut x).is_none());
-        }
+        let mut x = Arc::new(3);
+        *Arc::get_mut(&mut x).unwrap() = 4;
+        assert_eq!(*x, 4);
+        let y = x.clone();
+        assert!(Arc::get_mut(&mut x).is_none());
+        drop(y);
+        assert!(Arc::get_mut(&mut x).is_some());
+        let _w = x.downgrade();
+        assert!(Arc::get_mut(&mut x).is_none());
     }
 
     #[test]
     fn test_cowarc_clone_make_unique() {
-        unsafe {
-            let mut cow0 = Arc::new(75);
-            let mut cow1 = cow0.clone();
-            let mut cow2 = cow1.clone();
+        let mut cow0 = Arc::new(75);
+        let mut cow1 = cow0.clone();
+        let mut cow2 = cow1.clone();
 
-            assert!(75 == *Arc::make_unique(&mut cow0));
-            assert!(75 == *Arc::make_unique(&mut cow1));
-            assert!(75 == *Arc::make_unique(&mut cow2));
+        assert!(75 == *Arc::make_unique(&mut cow0));
+        assert!(75 == *Arc::make_unique(&mut cow1));
+        assert!(75 == *Arc::make_unique(&mut cow2));
 
-            *Arc::make_unique(&mut cow0) += 1;
-            *Arc::make_unique(&mut cow1) += 2;
-            *Arc::make_unique(&mut cow2) += 3;
+        *Arc::make_unique(&mut cow0) += 1;
+        *Arc::make_unique(&mut cow1) += 2;
+        *Arc::make_unique(&mut cow2) += 3;
 
-            assert!(76 == *cow0);
-            assert!(77 == *cow1);
-            assert!(78 == *cow2);
+        assert!(76 == *cow0);
+        assert!(77 == *cow1);
+        assert!(78 == *cow2);
 
-            // none should point to the same backing memory
-            assert!(*cow0 != *cow1);
-            assert!(*cow0 != *cow2);
-            assert!(*cow1 != *cow2);
-        }
+        // none should point to the same backing memory
+        assert!(*cow0 != *cow1);
+        assert!(*cow0 != *cow2);
+        assert!(*cow1 != *cow2);
     }
 
     #[test]
@@ -950,9 +928,7 @@ mod tests {
         assert!(75 == *cow1);
         assert!(75 == *cow2);
 
-        unsafe {
-            *Arc::make_unique(&mut cow0) += 1;
-        }
+        *Arc::make_unique(&mut cow0) += 1;
 
         assert!(76 == *cow0);
         assert!(75 == *cow1);
@@ -973,9 +949,7 @@ mod tests {
         assert!(75 == *cow0);
         assert!(75 == *cow1_weak.upgrade().unwrap());
 
-        unsafe {
-            *Arc::make_unique(&mut cow0) += 1;
-        }
+        *Arc::make_unique(&mut cow0) += 1;
 
         assert!(76 == *cow0);
         assert!(cow1_weak.upgrade().is_none());
@@ -1031,40 +1005,40 @@ mod tests {
     #[test]
     fn test_strong_count() {
         let a = Arc::new(0u32);
-        assert!(strong_count(&a) == 1);
+        assert!(Arc::strong_count(&a) == 1);
         let w = a.downgrade();
-        assert!(strong_count(&a) == 1);
+        assert!(Arc::strong_count(&a) == 1);
         let b = w.upgrade().expect("");
-        assert!(strong_count(&b) == 2);
-        assert!(strong_count(&a) == 2);
+        assert!(Arc::strong_count(&b) == 2);
+        assert!(Arc::strong_count(&a) == 2);
         drop(w);
         drop(a);
-        assert!(strong_count(&b) == 1);
+        assert!(Arc::strong_count(&b) == 1);
         let c = b.clone();
-        assert!(strong_count(&b) == 2);
-        assert!(strong_count(&c) == 2);
+        assert!(Arc::strong_count(&b) == 2);
+        assert!(Arc::strong_count(&c) == 2);
     }
 
     #[test]
     fn test_weak_count() {
         let a = Arc::new(0u32);
-        assert!(strong_count(&a) == 1);
-        assert!(weak_count(&a) == 0);
+        assert!(Arc::strong_count(&a) == 1);
+        assert!(Arc::weak_count(&a) == 0);
         let w = a.downgrade();
-        assert!(strong_count(&a) == 1);
-        assert!(weak_count(&a) == 1);
+        assert!(Arc::strong_count(&a) == 1);
+        assert!(Arc::weak_count(&a) == 1);
         let x = w.clone();
-        assert!(weak_count(&a) == 2);
+        assert!(Arc::weak_count(&a) == 2);
         drop(w);
         drop(x);
-        assert!(strong_count(&a) == 1);
-        assert!(weak_count(&a) == 0);
+        assert!(Arc::strong_count(&a) == 1);
+        assert!(Arc::weak_count(&a) == 0);
         let c = a.clone();
-        assert!(strong_count(&a) == 2);
-        assert!(weak_count(&a) == 0);
+        assert!(Arc::strong_count(&a) == 2);
+        assert!(Arc::weak_count(&a) == 0);
         let d = c.downgrade();
-        assert!(weak_count(&c) == 1);
-        assert!(strong_count(&c) == 2);
+        assert!(Arc::weak_count(&c) == 1);
+        assert!(Arc::strong_count(&c) == 2);
 
         drop(a);
         drop(c);

@@ -8,10 +8,13 @@ RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
-QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139
+QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive
 #-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 
 all: harddrive.bin
+
+doc: kernel.rlib
+	rustdoc --target i686-unknown-linux-gnu src/kernel.rs --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
 
 liballoc.rlib: src/liballoc/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<

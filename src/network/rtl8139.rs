@@ -88,7 +88,7 @@ impl SessionModule for RTL8139 {
                 outw(base + 0x38, (capr as u16) - 16);
             }
 
-            outw(base + 0x3E, 0x0001);
+            outw(base + 0x3E, 0x1);
         }
     }
 }
@@ -104,29 +104,50 @@ impl RTL8139 {
         }
         d(" IRQ: ");
         dbh(self.irq);
-        dl();
 
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
 
         let base = self.base as u16;
 
-        outb(base + 0x52, 0x00);
+        outb(base + 0x52, 0);
 
         outb(base + 0x37, 0x10);
-        while inb(base + 0x37) & 0x10 != 0 {
-        }
+        while inb(base + 0x37) & 0x10 != 0 {}
 
         RTL8139_TX = 0;
 
         let receive_buffer = alloc(10240);
         outd(base + 0x30, receive_buffer as u32);
-        outw(base + 0x38, 0);
-        outw(base + 0x3A, 0);
+        d(" RBSTART: ");
+        dh(ind(base + 0x30) as usize);
 
-        outw(base + 0x3C, 0x0001);
+        outw(base + 0x3C, 0x1);
+        d(" IMR: ");
+        dh(inw(base + 0x3C) as usize);
 
-        outd(base + 0x44, 0xf | (1 << 7));
+        outb(base + 0x37, 0xC);
+        d(" CMD: ");
+        dbh(inb(base + 0x37));
 
-        outb(base + 0x37, 0x0C);
+        outd(base + 0x44, 0x8F);
+        d(" RCR: ");
+        dh(ind(base + 0x44) as usize);
+
+        d(" MAC: ");
+        let mac_low = ind(base);
+        let mac_high = ind(base + 4);
+        let mac = MACAddr{
+            bytes: [
+                mac_low as u8,
+                (mac_low >> 8) as u8,
+                (mac_low >> 16) as u8,
+                (mac_low >> 24) as u8,
+                mac_high as u8,
+                (mac_high >> 8) as u8
+            ]
+        };
+        mac.d();
+
+        dl();
     }
 }

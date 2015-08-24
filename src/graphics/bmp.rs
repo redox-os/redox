@@ -1,6 +1,5 @@
 use core::ops::Drop;
 
-use common::debug::*;
 use common::memory::*;
 
 use graphics::color::*;
@@ -23,10 +22,6 @@ impl BMP {
         let data;
         let size;
         unsafe {
-            dc(*(file_data as *const u8) as char);
-            dc(*((file_data + 1) as *const u8) as char);
-            dl();
-
             if file_data > 0
                 && *(file_data as *const u8) == 'B' as u8
                 && *((file_data + 1) as *const u8) == 'M' as u8

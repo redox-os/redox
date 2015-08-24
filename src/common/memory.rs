@@ -1,45 +1,14 @@
 use core::cmp::min;
 use core::mem::size_of;
 
-const PAGE_DIRECTORY: usize = 0x300000;
-const PAGE_TABLE_SIZE: usize = 1024;
-const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
-const PAGE_SIZE: usize = 4*1024;
+pub const PAGE_DIRECTORY: usize = 0x300000;
+pub const PAGE_TABLE_SIZE: usize = 1024;
+pub const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
+pub const PAGE_SIZE: usize = 4*1024;
 
-pub unsafe fn set_page(virtual_address: usize, physical_address: usize){
-    let page = virtual_address / PAGE_SIZE;
-    let table = page / PAGE_TABLE_SIZE;
-    let entry = page % PAGE_TABLE_SIZE;
-    let entry_address = PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * 4;
-
-    *(entry_address as *mut u32) = (physical_address as u32 & 0xFFFFF000) | 1;
-
-    asm!("invlpg [$0]" : : "{eax}"(virtual_address) : : "intel");
-}
-
-pub unsafe fn identity_page(virtual_address: usize){
-    set_page(virtual_address, virtual_address);
-}
-
-pub unsafe fn page_init(){
-    for table_i in 0..PAGE_TABLE_SIZE {
-        *((PAGE_DIRECTORY + table_i * 4) as *mut u32) = (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * 4) as u32 | 1;
-
-        for entry_i in 0..PAGE_TABLE_SIZE {
-            identity_page((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE);
-        }
-    }
-
-    asm!("mov cr3, $0\n
-        mov $0, cr0\n
-        or $0, 0x80000000\n
-        mov cr0, $0\n"
-        : : "{eax}"(PAGE_DIRECTORY) : : "intel");
-}
-
-const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * 4 ;
-const CLUSTER_COUNT: usize = 1024*1024; // 4 GiB
-const CLUSTER_SIZE: usize = 4*1024; // Of 4 K chunks
+pub const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * 4 ;
+pub const CLUSTER_COUNT: usize = 1024*1024; // 4 GiB
+pub const CLUSTER_SIZE: usize = 4*1024; // Of 4 K chunks
 
 unsafe fn cluster(number: usize) -> usize{
     if number < CLUSTER_COUNT {
@@ -180,6 +149,15 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
             unalloc(ptr);
         }
         return new;
+    }
+}
+
+pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
+    let old_size = alloc_size(ptr);
+    if size <= old_size {
+        return size;
+    }else{
+        return old_size;
     }
 }
 

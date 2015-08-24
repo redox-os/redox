@@ -6,88 +6,51 @@ use programs::common::*;
 
 pub struct Editor {
     window: Window,
+    url: URL,
     string: String,
-    loading: bool,
     offset: usize,
     scroll: Point
 }
 
-impl SessionItem for Editor {
-    fn new() -> Editor {
-        Editor {
-            window: Window{
-                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
-                size: Size::new(576, 400),
-                title: "Editor".to_string(),
-                title_color: Color::new(0, 0, 0),
-                border_color: Color::new(255, 255, 255),
-                content_color: Color::alpha(0, 0, 0, 196),
-                shaded: false,
-                closed: false,
-                dragging: false,
-                last_mouse_point: Point::new(0, 0),
-                last_mouse_event: MouseEvent {
-                    x: 0,
-                    y: 0,
-                    left_button: false,
-                    right_button: false,
-                    middle_button: false,
-                    valid: false
-                }
-            },
-            string: String::new(),
-            loading: false,
-            offset: 0,
-            scroll: Point::new(0, 0)
-        }
-    }
-
-    #[allow(unused_variables)]
-    fn load(&mut self, url: &URL){
-        self.window.title = "Editor Loading (".to_string() + url.to_string() + ")";
-
-        self.string = String::new();
+impl Editor {
+    fn reload(&mut self){
+        self.window.title = "Editor (".to_string() + self.url.to_string() + ")";
         self.offset = 0;
         self.scroll = Point::new(0, 0);
-        self.loading = true;
 
-        let self_ptr: *mut Editor = self;
-        let url_copy = url.clone();
-        url.open_async(box move |mut resource: Box<Resource>|{
-            let editor;
-            unsafe {
-                editor = &mut *self_ptr;
-            }
-
-            let mut vec: Vec<u8> = Vec::new();
-            match resource.read_to_end(&mut vec){
-                Option::Some(len) => editor.string = String::from_utf8(&vec),
-                Option::None => ()
-            }
-
-            editor.window.title = "Editor (".to_string() + url_copy.to_string() + ")";
-            editor.loading = false;
-        });
+        let mut resource = self.url.open();
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        self.string = String::from_utf8(&vec);
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
-        if ! self.window.draw(display){
-            return self.loading;
-        }
+    fn save(&mut self){
+        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Saved";
 
-        if ! self.window.shaded {
+        let mut resource = self.url.open();
+        resource.write_all(&self.string.to_utf8());
+    }
+
+    fn draw_content(&mut self){
+        let mut redraw = false;
+
+        {
+            let content = &self.window.content;
+
+            content.set(Color::alpha(0, 0, 0, 196));
+
             let scroll = self.scroll;
             let mut offset = 0;
 
             let mut col = -scroll.x;
-            let cols = self.window.size.width as isize / 8;
+            let cols = content.width as isize / 8;
 
             let mut row = -scroll.y;
-            let rows = self.window.size.height as isize / 16;
+            let rows = content.height as isize / 16;
             for c in self.string.chars() {
                 if offset == self.offset{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
-                        display.char(Point::new(self.window.point.x + 8*col, self.window.point.y + 16*row), '_', Color::new(128, 128, 128));
+                        content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
                     }else{
                         if col < 0 { //Too far to the left
                             self.scroll.x += col;
@@ -100,9 +63,7 @@ impl SessionItem for Editor {
                             self.scroll.y += row - rows;
                         }
 
-                        RedrawEvent {
-                            redraw: REDRAW_ALL
-                        }.trigger();
+                        redraw = true;
                     }
                 }
 
@@ -113,8 +74,7 @@ impl SessionItem for Editor {
                     col += 8 - col % 8;
                 }else{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
-                        let point = Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row);
-                        display.char(point, c, Color::new(255, 255, 255));
+                        content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
                     }
                     col += 1;
                 }
@@ -124,7 +84,7 @@ impl SessionItem for Editor {
 
             if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows{
-                    display.char(Point::new(self.window.point.x + 8 * col, self.window.point.y + 16 * row), '_', Color::new(128, 128, 128));
+                    content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
                 }else{
                     if col < 0 { //Too far to the left
                         self.scroll.x += col;
@@ -137,14 +97,37 @@ impl SessionItem for Editor {
                         self.scroll.y += rows - row;
                     }
 
-                    RedrawEvent {
-                        redraw: REDRAW_ALL
-                    }.trigger();
+                    redraw = true;
                 }
             }
         }
 
-        return true;
+        if redraw {
+            self.draw_content();
+        }
+    }
+}
+
+impl SessionItem for Editor {
+    fn new() -> Editor {
+        Editor {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
+            url: URL::new(),
+            string: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0)
+        }
+    }
+
+    #[allow(unused_variables)]
+    fn load(&mut self, url: &URL){
+        self.url = url.clone();
+        self.reload();
+        self.draw_content();
+    }
+
+    fn draw(&self, display: &Display) -> bool{
+        return self.window.draw(display);
     }
 
     #[allow(unused_variables)]
@@ -152,6 +135,8 @@ impl SessionItem for Editor {
         if key_event.pressed {
             match key_event.scancode {
                 0x01 => self.window.closed = true,
+                0x3F => self.reload(),
+                0x40 => self.save(),
                 0x47 => self.offset = 0,
                 0x48 => for i in 1..self.offset {
                     match self.string[self.offset - i] {
@@ -181,6 +166,7 @@ impl SessionItem for Editor {
                     }
                 },
                 0x53 => if self.offset < self.string.len() {
+                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
                     self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
                 },
                 _ => ()
@@ -189,20 +175,28 @@ impl SessionItem for Editor {
             match key_event.character {
                 '\x00' => (),
                 '\x08' => if self.offset > 0 {
+                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
                     self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset -= 1;
                 },
-                '\x1B' => (),
                 _ => {
+                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
                     self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
                     self.offset += 1;
                 }
             }
+
+            self.draw_content();
         }
     }
 
     #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+        if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
+            self.draw_content();
+            return true;
+        }else{
+            return false;
+        }
     }
 }

@@ -39,20 +39,20 @@ pub trait Resource {
         return Option::None;
     }
 
-    fn read_async(&mut self, buf: &mut [u8], callback: Box<FnBox(Option<usize>)>){
-        callback.call_box((self.read(buf),));
-    }
-
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         return Option::None;
     }
 
-    fn write_async(&mut self, buf: &[u8], callback: Box<FnBox(Option<usize>)>){
-        callback.call_box((self.write(buf),));
+    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
+        return Option::None;
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         return Option::None;
+    }
+
+    fn flush(&mut self) -> bool {
+        return true;
     }
 }
 
@@ -62,7 +62,7 @@ pub struct URL {
     pub password: String,
     pub host: String,
     pub port: String,
-    pub path: Vec<String>
+    pub path: String
 }
 
 impl URL {
@@ -73,7 +73,7 @@ impl URL {
             password: String::new(),
             host: String::new(),
             port: String::new(),
-            path: Vec::new()
+            path: String::new()
         }
     }
 
@@ -131,7 +131,8 @@ impl URL {
                         url.password = String::new();
                     }
                 },
-                _ => url.path.push(part)
+                3 => url.path = part,
+                _ => url.path = url.path + "/" + part
             }
             part_i += 1;
         }
@@ -154,35 +155,6 @@ impl URL {
         }
     }
 
-    pub fn open_async(&self, callback: Box<FnBox(Box<Resource>)>){
-        unsafe{
-            let url_ptr: *const URL = self;
-            let callback_ptr: *mut Box<FnBox(Box<Resource>)> = alloc(size_of::<Box<FnBox(Box<Resource>)>>()) as *mut Box<FnBox(Box<Resource>)>;
-            ptr::write(callback_ptr, callback);
-            asm!("int 0x80"
-                :
-                : "{eax}"(2), "{ebx}"(url_ptr as u32), "{ecx}"(callback_ptr as u32)
-                :
-                : "intel");
-        }
-    }
-    
-    pub fn path_string(&self) -> String{
-        let mut ret = String::new();
-
-        let mut first = true;
-        for element in self.path.iter() {
-            if first {
-                ret = element.clone();
-                first = false;
-            }else{
-                ret = ret + "/" + element.clone();
-            }
-        }
-
-        return ret;
-    }
-
     pub fn to_string(&self) -> String{
         let mut ret = self.scheme.clone() + "://";
 
@@ -201,7 +173,7 @@ impl URL {
             }
         }
 
-        ret = ret + "/" + self.path_string();
+        ret = ret + "/" + self.path.clone();
 
         return ret;
     }
@@ -243,6 +215,10 @@ impl VecResource {
             seek: 0
         };
     }
+
+    pub fn inner(&self) -> &Vec<u8> {
+        return &self.vec;
+    }
 }
 
 impl Resource for VecResource {
@@ -274,6 +250,36 @@ impl Resource for VecResource {
             self.vec.set(self.seek, buf[i]);
             self.seek += 1;
             i += 1;
+        }
+        while i < buf.len() {
+            self.vec.push(buf[i]);
+            self.seek += 1;
+            i += 1;
+        }
+        return Option::Some(i);
+    }
+
+    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
+        let mut i = 0;
+        while i < vec.len() && self.seek < self.vec.len() {
+            match vec.get(i) {
+                Option::Some(b) => {
+                    self.vec.set(self.seek, *b);
+                    self.seek += 1;
+                    i += 1;
+                },
+                Option::None => break
+            }
+        }
+        while i < vec.len() {
+            match vec.get(i) {
+                Option::Some(b) => {
+                    self.vec.push(*b);
+                    self.seek += 1;
+                    i += 1;
+                },
+                Option::None => break
+            }
         }
         return Option::Some(i);
     }

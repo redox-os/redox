@@ -1,92 +1,40 @@
 use graphics::bmp::*;
-use graphics::color::*;
 use graphics::size::*;
 use graphics::window::*;
 
 use programs::common::*;
 
 pub struct Viewer {
-    window: Window,
-    image: BMP,
-    loading: bool
+    window: Window
 }
 
 impl SessionItem for Viewer {
     fn new() -> Viewer {
         Viewer {
-            window: Window{
-                point: Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize),
-                size: Size::new(640, 480),
-                title: "Viewer".to_string(),
-                title_color: Color::new(255, 255, 255),
-                border_color: Color::new(0, 0, 0),
-                content_color: Color::alpha(0, 0, 0, 0),
-                shaded: false,
-                closed: false,
-                dragging: false,
-                last_mouse_point: Point::new(0, 0),
-                last_mouse_event: MouseEvent {
-                    x: 0,
-                    y: 0,
-                    left_button: false,
-                    right_button: false,
-                    middle_button: false,
-                    valid: false
-                }
-            },
-            image: BMP::new(),
-            loading: false
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string())
         }
     }
 
     fn load(&mut self, url: &URL){
-        self.window.title = "Viewer Loading (".to_string() + url.to_string() + ")";
+        let mut resource = url.open();
 
-        self.image = BMP::new();
-        self.loading = true;
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
 
-        let self_ptr: *mut Viewer = self;
-        let url_copy = url.clone();
-        url.open_async(box move |mut resource: Box<Resource>|{
-            let viewer;
-            unsafe {
-                viewer = &mut *self_ptr;
-            }
-
-            let mut vec: Vec<u8> = Vec::new();
-            match resource.read_to_end(&mut vec){
-                Option::Some(0) => (),
-                Option::Some(len) => {
-                    unsafe {
-                        viewer.image = BMP::from_data(vec.as_ptr() as usize);
-                    }
-                    viewer.window.size = viewer.image.size;
-                },
-                Option::None => ()
-            }
-
-            viewer.window.title = "Viewer (".to_string() + url_copy.to_string() + ")";
-            viewer.loading = false;
-        });
-    }
-
-    #[allow(unused_variables)]
-    fn draw(&mut self, display: &Display) -> bool{
-        if ! self.window.draw(display) {
-            return self.loading;
+        unsafe {
+            let image = BMP::from_data(vec.as_ptr() as usize);
+            self.window.size = image.size;
+            self.window.content = Display::new(image.size.width, image.size.height);
+            self.window.content.image(Point::new(0, 0), image.data, image.size);
         }
 
-        if ! self.window.shaded {
-            // TODO: Improve speed!
-            if ! self.window.shaded {
-                display.image(self.window.point, self.image.data, self.image.size);
-            }
-        }
-
-        return true;
+        self.window.title = "Viewer (".to_string() + url.to_string() + ")";
     }
 
-    #[allow(unused_variables)]
+    fn draw(&self, display: &Display) -> bool{
+        return self.window.draw(display);
+    }
+
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
@@ -96,7 +44,6 @@ impl SessionItem for Viewer {
         }
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
     }

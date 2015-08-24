@@ -1,4 +1,5 @@
 use core::atomic::*;
+use core::mem;
 
 use common::elf::*;
 
@@ -6,9 +7,9 @@ use programs::common::*;
 
 pub struct Executor {
     executable: ELF,
-    loading: bool,
     mapped: AtomicUsize,
     entry: usize,
+    exit: usize,
     draw: usize,
     on_key: usize,
     on_mouse: usize
@@ -16,6 +17,9 @@ pub struct Executor {
 
 impl Executor {
     unsafe fn entry(&mut self){
+        d("Entry ");
+        dh(self.entry);
+        dl();
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
             self.unsafe_map();
@@ -40,13 +44,30 @@ impl Executor {
     }
 }
 
+impl Drop for Executor {
+    fn drop(&mut self){
+        unsafe{
+            d("Drop ");
+            dh(self.exit);
+            dl();
+            if self.executable.can_call(self.exit){
+                //Rediculous call mechanism
+                self.unsafe_map();
+                let fn_ptr: *const usize = &self.exit;
+                (*(fn_ptr as *const fn()))();
+                self.unsafe_unmap();
+            }
+        }
+    }
+}
+
 impl SessionItem for Executor {
     fn new() -> Executor {
         Executor {
             executable: ELF::new(),
-            loading: false,
             mapped: AtomicUsize::new(0),
             entry: 0,
+            exit: 0,
             draw: 0,
             on_mouse: 0,
             on_key: 0
@@ -55,51 +76,43 @@ impl SessionItem for Executor {
 
     #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
-        self.loading = true;
+        let mut resource = url.open();
 
-        let self_ptr: *mut Executor = self;
-        url.open_async(box move |mut resource: Box<Resource>|{
-            let executor;
-            unsafe{
-                executor = &mut *self_ptr;
-            }
+        let mut vec: Vec<u8> = Vec::new();
+        match resource.read_to_end(&mut vec){
+            Option::Some(_) => {
+                unsafe{
+                    self.executable = ELF::from_data(vec.as_ptr() as usize);
+                    //self.executable.d();
 
-            let mut vec: Vec<u8> = Vec::new();
-            match resource.read_to_end(&mut vec){
-                Option::Some(0) => (),
-                Option::Some(len) => {
-                    unsafe{
-                        executor.executable = ELF::from_data(vec.as_ptr() as usize);
-                        //self.executable.d();
+                    self.entry = self.executable.entry();
+                    self.exit = self.executable.symbol("exit".to_string());
+                    self.draw = self.executable.symbol("draw".to_string());
+                    self.on_key = self.executable.symbol("on_key".to_string());
+                    self.on_mouse = self.executable.symbol("on_mouse".to_string());
 
-                        executor.entry = executor.executable.entry();
-                        executor.draw = executor.executable.symbol("draw".to_string());
-                        executor.on_key = executor.executable.symbol("on_key".to_string());
-                        executor.on_mouse = executor.executable.symbol("on_mouse".to_string());
-
-                        executor.entry();
-
-                        executor.loading = false;
-                    }
-                },
-                Option::None => ()
-            }
-        });
+                    self.entry();
+                }
+            },
+            Option::None => ()
+        }
     }
 
-    fn draw(&mut self, display: &Display) -> bool{
+    fn draw(&self, display: &Display) -> bool{
         unsafe {
             if self.executable.can_call(self.draw){
                 //Rediculous call mechanism
-                self.unsafe_map();
+                let self_mut: *mut Executor = mem::transmute(self);
+
+                (*self_mut).unsafe_map();
                 let fn_ptr: *const usize = &self.draw;
                 let ret = (*(fn_ptr as *const fn(&Display) -> bool))(display);
-                self.unsafe_unmap();
+                (*self_mut).unsafe_unmap();
 
                 return ret;
             }
         }
-        return self.loading;
+        return false;
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
