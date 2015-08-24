@@ -130,17 +130,18 @@ static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
 
 unsafe fn test_disk(disk: Disk){
     if disk.identify() {
-        d("  Disk Found\n");
+        d(" Disk Found");
 
         let unfs = UnFS::from_disk(disk);
         if unfs.valid() {
-            d("  UnFS Filesystem\n");
+            d(" UnFS Filesystem");
         }else{
-            d("  Unknown Filesystem\n");
+            d(" Unknown Filesystem");
         }
     }else{
-        d("  Disk Not Found\n");
+        d(" Disk Not Found");
     }
+    dl();
 }
 
 unsafe fn init(font_data: usize, cursor_data: usize){
@@ -184,16 +185,16 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     pci_init(session);
 
-    d("Primary Master\n");
+    d("Primary Master:");
     test_disk(Disk::primary_master());
 
-    d("Primary Slave\n");
+    d("Primary Slave:");
     test_disk(Disk::primary_slave());
 
-    d("Secondary Master\n");
+    d("Secondary Master:");
     test_disk(Disk::secondary_master());
 
-    d("Secondary Slave\n");
+    d("Secondary Slave:");
     test_disk(Disk::secondary_slave());
 
     session.modules.push(box DebugScheme);

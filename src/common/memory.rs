@@ -10,6 +10,15 @@ pub const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SI
 pub const CLUSTER_COUNT: usize = 1024*1024; // 4 GiB
 pub const CLUSTER_SIZE: usize = 4*1024; // Of 4 K chunks
 
+struct MemoryMapEntry {
+    base: u64,
+    len: u64,
+    class: u32,
+    acpi: u32
+}
+
+const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
+
 unsafe fn cluster(number: usize) -> usize{
     if number < CLUSTER_COUNT {
         return *((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize);
@@ -33,9 +42,23 @@ unsafe fn cluster_to_address(number: usize) -> usize {
 }
 
 pub unsafe fn cluster_init(){
-    // TODO: Automatic memory detection
-    for i in 0..CLUSTER_COUNT {
-        set_cluster(i, 0);
+    //First, set all clusters to the not present value
+    for cluster in 0..CLUSTER_COUNT {
+        set_cluster(cluster, 0xFFFFFFFF);
+    }
+
+    //Next, set all valid clusters to the free value
+    //TODO: Optimize this function
+    for i in 0..((0x7B00 - 0x500)/size_of::<MemoryMapEntry>()) {
+        let entry = &*MEMORY_MAP.offset(i as isize);
+        if entry.len > 0 && entry.class == 1 {
+            for cluster in 0..CLUSTER_COUNT {
+                let address = cluster_to_address(cluster);
+                if address >= entry.base as usize && (address + CLUSTER_SIZE) <= (entry.base + entry.len) as usize {
+                    set_cluster(cluster, 0);
+                }
+            }
+        }
     }
 }
 
@@ -175,7 +198,7 @@ pub fn memory_used() -> usize{
     let mut ret = 0;
     unsafe{
         for i in 0..CLUSTER_COUNT {
-            if cluster(i) != 0 {
+            if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
                 ret += CLUSTER_SIZE;
             }
         }

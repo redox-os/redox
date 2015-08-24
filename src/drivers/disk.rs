@@ -177,7 +177,7 @@ impl Disk {
 
     pub unsafe fn identify(&self) -> bool{
         if self.ide_read(ATA_REG_STATUS) == 0xFF{
-            d("  Floating Bus\n");
+            d(" Floating Bus");
 
             return false;
         }
@@ -200,9 +200,8 @@ impl Disk {
         self.ide_write(ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
 
         let status = self.ide_read(ATA_REG_STATUS);
-        d("  Status: ");
+        d(" Status: ");
         dbh(status);
-        dl();
 
         if status == 0 {
             return false;
@@ -210,9 +209,8 @@ impl Disk {
 
         let err = self.ide_poll(true);
         if err > 0 {
-            d("  Error: ");
+            d(" Error: ");
             dbh(err);
-            dl();
 
             return false;
         }
@@ -222,10 +220,10 @@ impl Disk {
             *destination.offset(word) = inw(self.base + ATA_REG_DATA);
         }
 
-        d("  Drive Size: ");
+        d(" Size: ");
         let sectors = (*destination.offset(100) as u64) | ((*destination.offset(101) as u64) << 16) | ((*destination.offset(102) as u64) << 32) | ((*destination.offset(103) as u64) << 48);
         dd((sectors / 2048) as usize);
-        d(" MB\n");
+        d(" MB");
 
         unalloc(destination as usize);
 
