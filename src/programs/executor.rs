@@ -17,9 +17,6 @@ pub struct Executor {
 
 impl Executor {
     unsafe fn entry(&mut self){
-        d("Entry ");
-        dh(self.entry);
-        dl();
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
             self.unsafe_map();
@@ -47,9 +44,6 @@ impl Executor {
 impl Drop for Executor {
     fn drop(&mut self){
         unsafe{
-            d("Drop ");
-            dh(self.exit);
-            dl();
             if self.executable.can_call(self.exit){
                 //Rediculous call mechanism
                 self.unsafe_map();

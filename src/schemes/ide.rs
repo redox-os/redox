@@ -247,10 +247,8 @@ impl SessionModule for IDE {
             i += 1;
         }
 
-        unsafe {
-            if count > 0 {
-                return box IDEResource::new(Disk::primary_master(), sector, count);
-            }
+        if count > 0 {
+            return box IDEResource::new(Disk::primary_master(), sector, count);
         }
 
         return box NoneResource;

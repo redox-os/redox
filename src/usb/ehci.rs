@@ -109,7 +109,7 @@ impl EHCI {
 
         dl();
 
-        if(eecp > 0){
+        if eecp > 0 {
             //if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 16)
             {
                 d("Taking Ownership");

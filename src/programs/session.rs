@@ -127,7 +127,7 @@ impl Session {
 
                 let mut erase_i: Vec<usize> = Vec::new();
                 for reverse_i in 0..self.items.len() {
-                    let i = (self.items.len() - 1 - reverse_i);
+                    let i = self.items.len() - 1 - reverse_i;
                     match self.items.get(i) {
                         Option::Some(item) => if ! item.draw(&self.display) {
                             erase_i.push(i);
