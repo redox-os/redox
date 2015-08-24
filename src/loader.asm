@@ -175,6 +175,8 @@ startup:
   or al, 2
   out 0x92, al
 
+  call memory_map
+
   call vesa
 
   call initialize.fpu
@@ -193,6 +195,7 @@ startup:
   ; far jump to load CS with 32 bit segment
   jmp 0x08:protected_mode
 
+%include "asm/memory_map.asm"
 %include "asm/vesa.asm"
 %include "asm/initialize.asm"
 
