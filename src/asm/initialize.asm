@@ -21,6 +21,24 @@ initialize:
 	mov cr4, eax
 	ret
 
+.pit:
+	;initialize the PIT
+	mov ax, 5966 ;this is the divider for the PIT
+	out 0x40, al
+	rol ax, 8
+	out 0x40, al
+	;enable rtc interrupt
+	mov al, 0xB
+	out 0x70, al
+	rol ax, 8
+	in al, 0x71
+	rol ax, 8
+	out 0x70, al
+	rol ax, 8
+	or al, 0x40
+	out 0x71, al
+	ret
+
 .pic:	;sets up IRQs at int 20-2F
 	mov al, 0x11
 	out 0x20, al

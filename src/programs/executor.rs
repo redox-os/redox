@@ -16,6 +16,18 @@ pub struct Executor {
 }
 
 impl Executor {
+    pub fn new() -> Executor {
+        Executor {
+            executable: ELF::new(),
+            mapped: AtomicUsize::new(0),
+            entry: 0,
+            exit: 0,
+            draw: 0,
+            on_mouse: 0,
+            on_key: 0
+        }
+    }
+
     unsafe fn entry(&mut self){
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
@@ -56,19 +68,6 @@ impl Drop for Executor {
 }
 
 impl SessionItem for Executor {
-    fn new() -> Executor {
-        Executor {
-            executable: ELF::new(),
-            mapped: AtomicUsize::new(0),
-            entry: 0,
-            exit: 0,
-            draw: 0,
-            on_mouse: 0,
-            on_key: 0
-        }
-    }
-
-    #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
         let mut resource = url.open();
 

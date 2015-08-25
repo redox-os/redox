@@ -17,7 +17,7 @@ impl Resource for DebugResource {
 
 pub struct DebugScheme;
 
-impl SessionModule for DebugScheme {
+impl SessionItem for DebugScheme {
     fn scheme(&self) -> String {
         return "debug".to_string();
     }

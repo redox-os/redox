@@ -6,7 +6,7 @@ pub struct FileScheme{
     pub unfs: UnFS
 }
 
-impl SessionModule for FileScheme {
+impl SessionItem for FileScheme {
     fn scheme(&self) -> String {
         return "file".to_string();
     }

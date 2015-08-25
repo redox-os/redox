@@ -14,7 +14,23 @@ pub use graphics::display::*;
 pub use graphics::point::*;
 
 #[allow(unused_variables)]
-pub trait SessionModule {
+pub trait SessionItem : ::mopa::Any {
+    fn load(&mut self, url: &URL){
+
+    }
+
+    fn draw(&self, display: &Display) -> bool {
+        return true;
+    }
+
+    fn on_key(&mut self, key_event: KeyEvent){
+
+    }
+
+    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return false;
+    }
+
     fn on_irq(&mut self, irq: u8){
 
     }
@@ -29,27 +45,6 @@ pub trait SessionModule {
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
         return box NoneResource;
-    }
-}
-
-#[allow(unused_variables)]
-pub trait SessionItem : ::mopa::Any {
-    fn new() -> Self where Self:Sized;
-
-    fn load(&mut self, url: &URL){
-
-    }
-
-    fn draw(&self, display: &Display) -> bool {
-        return false;
-    }
-
-    fn on_key(&mut self, key_event: KeyEvent){
-
-    }
-
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return false;
     }
 }
 mopafy!(SessionItem, core=core, alloc=alloc);

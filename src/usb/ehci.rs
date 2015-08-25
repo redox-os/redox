@@ -38,7 +38,7 @@ pub struct EHCI {
     pub irq: u8
 }
 
-impl SessionModule for EHCI {
+impl SessionItem for EHCI {
     #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {

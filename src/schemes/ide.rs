@@ -1,3 +1,6 @@
+use alloc::arc::*;
+
+use core::atomic::*;
 use core::cmp::max;
 use core::cmp::min;
 
@@ -144,7 +147,7 @@ pub struct IDE {
     pub requests: Vec<IDERequest>
 }
 
-impl SessionModule for IDE {
+impl SessionItem for IDE {
     fn on_irq(&mut self, irq: u8){
         if irq == 0xE || irq == 0xF {
             self.on_poll();
@@ -232,7 +235,7 @@ impl SessionModule for IDE {
     fn scheme(&self) -> String {
         return "ide".to_string();
     }
-
+/* PIO
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let mut sector = 1;
         let mut count = 1;
@@ -253,24 +256,18 @@ impl SessionModule for IDE {
 
         return box NoneResource;
     }
-/*
-    #[allow(unused_variables)]
-    fn open_async(&mut self, url: &URL, callback: Box<FnBox(Box<Resource>)>){
+*/
+
+    fn open(&mut self, url: &URL) -> Box<Resource> {
+        let data: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0xFFFFFFFF));
+        let data_callback = data.clone();
+
         let mut request = IDERequest {
             sector: 1,
             count: 1,
             destination: 0,
             callback: box move |destination: usize|{
-                if destination > 0 {
-                    unsafe{
-                        callback(box VecResource::new(ResourceType::File, Vec::<u8> {
-                            data: destination as *mut u8,
-                            length: alloc_size(destination)
-                        }));
-                    }
-                }else{
-                    callback(box NoneResource);
-                }
+                data_callback.store(destination, Ordering::SeqCst);
             }
         };
 
@@ -300,9 +297,27 @@ impl SessionModule for IDE {
                     }
                 }
             }
+
+            while data.load(Ordering::SeqCst) == 0xFFFFFFFF {
+                asm!("pushf
+                    sti
+                    hlt
+                    popf
+                    "
+                    : : : : "intel");
+            }
+
+            let destination = data.load(Ordering::SeqCst);
+            if destination > 0 {
+                return box VecResource::new(ResourceType::File, Vec::<u8> {
+                    data: destination as *mut u8,
+                    length: alloc_size(destination)
+                });
+            }else{
+                return box NoneResource;
+            }
         }
     }
-*/
 }
 
 impl IDE {

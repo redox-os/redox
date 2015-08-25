@@ -20,7 +20,7 @@ fn stack_free() -> usize {
     }
 }
 
-impl SessionModule for MemoryScheme {
+impl SessionItem for MemoryScheme {
     fn scheme(&self) -> String {
         return "memory".to_string();
     }

@@ -25,7 +25,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             requests: Vec::new()
         };
         module.init();
-        session.modules.push(module);
+        session.items.push(module);
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
             let base = pci_read(bus, slot, func, 0x10);
@@ -39,7 +39,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                 irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
             };
             module.init();
-            session.modules.push(module);
+            session.items.push(module);
         }else if interface_id == 0x20{
             let base = pci_read(bus, slot, func, 0x10);
 
@@ -52,7 +52,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                 irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
             };
             module.init();
-            session.modules.push(module);
+            session.items.push(module);
         }else if interface_id == 0x10{
             let base = pci_read(bus, slot, func, 0x10);
 
@@ -82,7 +82,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
                     };
                     module.init();
-                    session.modules.push(module);
+                    session.items.push(module);
                 },
                 _ => ()
             },
@@ -98,7 +98,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
                     };
                     module.init();
-                    session.modules.push(module);
+                    session.items.push(module);
                 },
                 _ => ()
             },

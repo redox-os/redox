@@ -11,6 +11,38 @@ pub struct FileManager {
 }
 
 impl FileManager {
+    pub fn new() -> FileManager {
+        let mut size = Size::new(0, 0);
+
+        let mut files: Vec<String> = Vec::new();
+
+        let mut resource = URL::from_string("file:///".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        for file in String::from_utf8(&vec).split("\n".to_string()){
+            if size.width < (file.len() + 1) * 8 {
+                size.width = (file.len() + 1) * 8 ;
+            }
+            files.push(file.clone());
+        }
+
+        if size.height < files.len() * 16 {
+            size.height = files.len() * 16;
+        }
+
+        let mut ret = FileManager {
+            window: Window::new(Point::new(10, 50), size, String::from_str("File Manager")),
+            files: files,
+            selected: -1
+        };
+
+        ret.draw_content();
+
+        return ret;
+    }
+
     fn draw_content(&mut self){
         let content = &self.window.content;
 
@@ -51,38 +83,6 @@ impl FileManager {
 }
 
 impl SessionItem for FileManager {
-    fn new() -> FileManager {
-        let mut size = Size::new(0, 0);
-
-        let mut files: Vec<String> = Vec::new();
-
-        let mut resource = URL::from_string("file:///".to_string()).open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        for file in String::from_utf8(&vec).split("\n".to_string()){
-            if size.width < (file.len() + 1) * 8 {
-                size.width = (file.len() + 1) * 8 ;
-            }
-            files.push(file.clone());
-        }
-
-        if size.height < files.len() * 16 {
-            size.height = files.len() * 16;
-        }
-
-        let mut ret = FileManager {
-            window: Window::new(Point::new(10, 50), size, String::from_str("File Manager")),
-            files: files,
-            selected: -1
-        };
-
-        ret.draw_content();
-
-        return ret;
-    }
-
     fn draw(&self, display: &Display) -> bool{
         return self.window.draw(display);
     }
