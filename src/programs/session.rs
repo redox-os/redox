@@ -168,43 +168,41 @@ impl Session {
         }
     }
 
-    pub fn handle_events(&mut self, events: &mut Vec<Event>){
-        for event in events.iter() {
-            match event.code {
-                'm' => self.on_mouse(MouseEvent::from_event(event)),
-                'k' => self.on_key(KeyEvent::from_event(event)),
-                'r' => self.redraw = max(self.redraw, RedrawEvent::from_event(event).redraw),
-                'o' => {
-                    self.redraw = max(self.redraw, REDRAW_ALL);
+    pub fn event(&mut self, mut event: Event){
+        match event.code {
+            'm' => self.on_mouse(MouseEvent::from_event(&mut event)),
+            'k' => self.on_key(KeyEvent::from_event(&mut event)),
+            'r' => self.redraw = max(self.redraw, RedrawEvent::from_event(&mut event).redraw),
+            'o' => {
+                self.redraw = max(self.redraw, REDRAW_ALL);
 
-                    let url_string = OpenEvent::from_event(event).url_string;
-                    let url = URL::from_string(url_string.clone());
+                let url_string = OpenEvent::from_event(&mut event).url_string;
+                let url = URL::from_string(url_string.clone());
 
-                    let mut found = false;
-                    if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
-                        self.items.insert(0, box Editor::new());
-                        found = true;
-                    }else if url_string.ends_with(".bin".to_string()){
-                        self.items.insert(0, box Executor::new());
-                        found = true;
-                    }else if url_string.ends_with(".bmp".to_string()){
-                        self.items.insert(0, box Viewer::new());
-                        found = true;
-                    }else{
-                        d("No program found: ");
-                        url.d();
-                        dl();
-                    }
+                let mut found = false;
+                if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
+                    self.items.insert(0, box Editor::new());
+                    found = true;
+                }else if url_string.ends_with(".bin".to_string()){
+                    self.items.insert(0, box Executor::new());
+                    found = true;
+                }else if url_string.ends_with(".bmp".to_string()){
+                    self.items.insert(0, box Viewer::new());
+                    found = true;
+                }else{
+                    d("No program found: ");
+                    url.d();
+                    dl();
+                }
 
-                    if found {
-                        match self.items.get(0) {
-                            Option::Some(item) => item.load(&url),
-                            Option::None => ()
-                        }
+                if found {
+                    match self.items.get(0) {
+                        Option::Some(item) => item.load(&url),
+                        Option::None => ()
                     }
                 }
-                _ => ()
             }
+            _ => ()
         }
     }
 }
