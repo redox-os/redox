@@ -127,8 +127,8 @@ impl SessionItem for FileManager {
         }
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        if self.window.on_mouse(mouse_event, allow_catch) {
             if ! self.window.shaded {
                 let mut i = 0;
                 let mut row = 0;
@@ -143,7 +143,7 @@ impl SessionItem for FileManager {
                         }else{
                             if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
                                 let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
-                                if mouse_point.x >= point.x && mouse_point.x < point.x + 8 && mouse_point.y >= point.y && mouse_point.y < point.y + 16 {
+                                if mouse_event.x >= point.x && mouse_event.x < point.x + 8 && mouse_event.y >= point.y && mouse_event.y < point.y + 16 {
                                     self.selected = i;
                                 }
                                 col += 1;

@@ -469,8 +469,8 @@ impl SessionItem for Application {
         }
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        if self.window.on_mouse(mouse_point, mouse_event, allow_catch){
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        if self.window.on_mouse(mouse_event, allow_catch){
             self.draw_content();
             return true;
         }else{

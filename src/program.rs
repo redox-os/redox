@@ -101,9 +101,9 @@ pub unsafe fn on_key(key_event: KeyEvent){
 }
 
 #[no_mangle]
-pub unsafe fn on_mouse(mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+pub unsafe fn on_mouse(mouse_event: MouseEvent, allow_catch: bool) -> bool{
     if application as usize > 0 {
-        return (*application).on_mouse(mouse_point, mouse_event, allow_catch);
+        return (*application).on_mouse(mouse_event, allow_catch);
     }else{
         return false;
     }

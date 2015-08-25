@@ -120,13 +120,13 @@ impl SessionItem for Executor {
         }
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         unsafe {
             if self.executable.can_call(self.on_mouse){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_mouse;
-                let ret = (*(fn_ptr as *const fn(Point, MouseEvent, bool) -> bool))(mouse_point, mouse_event, allow_catch);
+                let ret = (*(fn_ptr as *const fn(MouseEvent, bool) -> bool))(mouse_event, allow_catch);
                 self.unsafe_unmap();
                 return ret;
             }

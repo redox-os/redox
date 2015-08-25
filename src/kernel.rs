@@ -18,6 +18,7 @@ extern crate alloc;
 extern crate mopa;
 
 use core::cmp::max;
+use core::cmp::min;
 use core::mem::size_of;
 use core::mem::swap;
 use core::ptr;
@@ -255,9 +256,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     contexts_ptr = alloc(size_of::<Vec<Context>>()) as *mut Vec<Context>;
     ptr::write(contexts_ptr, Vec::new());
 
-    let contexts = &mut *contexts_ptr;
-    contexts.push(Context::root());
-
     session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
     ptr::write(session_ptr, box Session::new());
 
@@ -296,12 +294,14 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
 
-    (*contexts_ptr).push(Context::new(event_loop as usize, &Vec::new()));
-    (*contexts_ptr).push(Context::new(redraw_loop as usize, &Vec::new()));
+    let contexts = &mut *contexts_ptr;
+    contexts.push(Context::root());
+    contexts.push(Context::new(event_loop as usize, &Vec::new()));
+    contexts.push(Context::new(redraw_loop as usize, &Vec::new()));
 
     let mut debug_loop_args: Vec<usize> = Vec::new();
     debug_loop_args.push(0xDEADBEEF);
-    (*contexts_ptr).push(Context::new(debug_loop as usize, &debug_loop_args));
+    contexts.push(Context::new(debug_loop as usize, &debug_loop_args));
 }
 
 fn dr(reg: &str, value: u32){
@@ -392,8 +392,15 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                     ptr::write(ecx as *mut Box<Resource>, session.open(url));
                 },
                 0x2 => {
-                    let event = *(ebx as *const Event);
+                    let mut event = *(ebx as *const Event);
 
+                    if event.code == 'm' {
+                        event.a = max(0, min((*session_ptr).display.width as isize - 1, (*session_ptr).mouse_point.x + event.a));
+                        event.b = max(0, min((*session_ptr).display.height as isize - 1, (*session_ptr).mouse_point.y + event.b));
+                        (*session_ptr).mouse_point.x = event.a;
+                        (*session_ptr).mouse_point.y = event.b;
+                        (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_CURSOR);
+                    }
                     if event.code == 'k' && event.b == 0x3B && event.c > 0 {
                         debug_draw = true;
                         debug_redraw = true;

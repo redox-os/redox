@@ -12,10 +12,10 @@ use programs::filemanager::*;
 use programs::viewer::*;
 
 pub struct Session {
-    display: Display,
+    pub display: Display,
     pub background: BMP,
     pub cursor: BMP,
-    mouse_point: Point,
+    pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
     pub redraw: usize
@@ -93,9 +93,6 @@ impl Session {
     }
 
     fn on_mouse(&mut self, mouse_event: MouseEvent){
-        self.mouse_point.x = max(0, min(self.display.width as isize - 1, self.mouse_point.x + mouse_event.x));
-        self.mouse_point.y = max(0, min(self.display.height as isize - 1, self.mouse_point.y + mouse_event.y));
-
         self.redraw = max(self.redraw, REDRAW_CURSOR);
 
         let mut catcher = 0;
@@ -103,7 +100,7 @@ impl Session {
         for i in 0..self.items.len() {
             match self.items.get(i){
                 Option::Some(item) => {
-                    if item.on_mouse(self.mouse_point, mouse_event, allow_catch) {
+                    if item.on_mouse(mouse_event, allow_catch) {
                         allow_catch = false;
                         catcher = i;
 
@@ -123,7 +120,7 @@ impl Session {
 
         //Not caught, can be caught by task bar
         if allow_catch {
-            if mouse_event.left_button && !self.last_mouse_event.left_button && self.mouse_point.y <= 16 {
+            if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y <= 16 {
                 self.items.insert(0, box FileManager::new());
                 self.redraw = max(self.redraw, REDRAW_ALL);
             }

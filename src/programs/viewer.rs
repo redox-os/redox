@@ -46,7 +46,7 @@ impl SessionItem for Viewer {
         }
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_point, mouse_event, allow_catch);
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        return self.window.on_mouse(mouse_event, allow_catch);
     }
 }

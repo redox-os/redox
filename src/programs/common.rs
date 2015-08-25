@@ -34,7 +34,7 @@ pub trait SessionItem : ::mopa::Any {
 
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         return false;
     }
 
