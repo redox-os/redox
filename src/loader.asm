@@ -181,6 +181,7 @@ startup:
 
   call initialize.fpu
   call initialize.sse
+  call initialize.pit
   call initialize.pic
 
   ; load protected mode GDT and IDT

@@ -20,7 +20,7 @@ impl HTTPScheme {
     }
 }
 
-impl SessionModule for HTTPScheme {
+impl SessionItem for HTTPScheme {
     fn scheme(&self) -> String {
         return "http".to_string();
     }

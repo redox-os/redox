@@ -152,6 +152,25 @@ pub struct Application {
 }
 
 impl Application {
+    pub fn new() -> Application {
+        let mut ret = Application {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
+            commands: Command::vec(),
+            variables: Vec::new(),
+            modes: Vec::new(),
+            stdio: box VecResource::new(ResourceType::File, Vec::new()),
+            last_command: String::new(),
+            command: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0),
+            wrap: true
+        };
+
+        ret.draw_content();
+
+        return ret;
+    }
+
     fn append(&mut self, line: String) {
         self.stdio.write_all(&(line + "\n").to_utf8());
     }
@@ -395,25 +414,6 @@ impl Application {
 }
 
 impl SessionItem for Application {
-    fn new() -> Application {
-        let mut ret = Application {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
-            commands: Command::vec(),
-            variables: Vec::new(),
-            modes: Vec::new(),
-            stdio: box VecResource::new(ResourceType::File, Vec::new()),
-            last_command: String::new(),
-            command: String::new(),
-            offset: 0,
-            scroll: Point::new(0, 0),
-            wrap: true
-        };
-
-        ret.draw_content();
-
-        return ret;
-    }
-
     fn draw(&self, display: &Display) -> bool{
         return self.window.draw(display);
     }

@@ -8,13 +8,15 @@ pub struct Viewer {
     window: Window
 }
 
-impl SessionItem for Viewer {
-    fn new() -> Viewer {
+impl Viewer {
+    pub fn new() -> Viewer {
         Viewer {
             window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string())
         }
     }
+}
 
+impl SessionItem for Viewer {
     fn load(&mut self, url: &URL){
         let mut resource = url.open();
 

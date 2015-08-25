@@ -13,6 +13,16 @@ pub struct Editor {
 }
 
 impl Editor {
+    pub fn new() -> Editor {
+        Editor {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
+            url: URL::new(),
+            string: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0)
+        }
+    }
+
     fn reload(&mut self){
         self.window.title = "Editor (".to_string() + self.url.to_string() + ")";
         self.offset = 0;
@@ -109,17 +119,6 @@ impl Editor {
 }
 
 impl SessionItem for Editor {
-    fn new() -> Editor {
-        Editor {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
-            url: URL::new(),
-            string: String::new(),
-            offset: 0,
-            scroll: Point::new(0, 0)
-        }
-    }
-
-    #[allow(unused_variables)]
     fn load(&mut self, url: &URL){
         self.url = url.clone();
         self.reload();
@@ -130,7 +129,6 @@ impl SessionItem for Editor {
         return self.window.draw(display);
     }
 
-    #[allow(unused_variables)]
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
@@ -190,7 +188,6 @@ impl SessionItem for Editor {
         }
     }
 
-    #[allow(unused_variables)]
     fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
             self.draw_content();

@@ -21,6 +21,7 @@ use core::mem::size_of;
 use core::mem::swap;
 use core::ptr;
 
+use common::context::*;
 use common::pio::*;
 use common::memory::*;
 use common::paging::*;
@@ -49,6 +50,7 @@ use schemes::pci::*;
 use schemes::random::*;
 
 mod common {
+    pub mod context;
     pub mod debug;
     pub mod elf;
     pub mod event;
@@ -125,6 +127,9 @@ static mut debug_point: Point = Point{ x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 
+static mut contexts_ptr: *mut Vec<Context> = 0 as *mut Vec<Context>;
+static mut context_i: usize = 0;
+
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
 
@@ -150,6 +155,9 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     debug_draw = false;
     debug_redraw = false;
 
+    contexts_ptr = 0 as *mut Vec<Context>;
+    context_i = 0;
+
     session_ptr = 0 as *mut Box<Session>;
     events_ptr = 0 as *mut Vec<Event>;
 
@@ -169,6 +177,12 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
 
+    contexts_ptr = alloc(size_of::<Vec<Context>>()) as *mut Vec<Context>;
+    ptr::write(contexts_ptr, Vec::new());
+
+    let contexts = &mut *contexts_ptr;
+    contexts.push(Context::root());
+
     session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
     ptr::write(session_ptr, box Session::new());
     events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
@@ -180,8 +194,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     keyboard_init();
     mouse_init();
 
-    session.modules.push(box PS2);
-    session.modules.push(box Serial::new(0x3F8, 0x4));
+    session.items.push(box PS2);
+    session.items.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
@@ -197,14 +211,14 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     d("Secondary Slave:");
     test_disk(Disk::secondary_slave());
 
-    session.modules.push(box DebugScheme);
-    session.modules.push(box FileScheme{
+    session.items.push(box DebugScheme);
+    session.items.push(box FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
     });
-    session.modules.push(box HTTPScheme);
-    session.modules.push(box MemoryScheme);
-    session.modules.push(box PCIScheme);
-    session.modules.push(box RandomScheme);
+    session.items.push(box HTTPScheme);
+    session.items.push(box MemoryScheme);
+    session.items.push(box PCIScheme);
+    session.items.push(box RandomScheme);
 
     let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
 
@@ -215,6 +229,58 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     }
 
     session.items.insert(0, box FileManager::new());
+}
+
+pub unsafe extern "C" fn main() -> ! {
+    loop {
+        asm!("cli");
+        (*session_ptr).on_poll();
+
+        let mut events_copy: Vec<Event> = Vec::new();
+        swap(&mut events_copy, &mut *events_ptr);
+
+        for event in events_copy.iter() {
+            if event.code == 'k' && event.b == 0x3B && event.c > 0 {
+                debug_draw = true;
+                debug_redraw = true;
+            }
+            if event.code == 'k' && event.b == 0x3C && event.c > 0 {
+                debug_draw = false;
+                (*events_ptr).push(RedrawEvent {
+                    redraw: REDRAW_ALL
+                }.to_event());
+            }
+        }
+
+        (*session_ptr).handle_events(&mut events_copy);
+
+        asm!("sti");
+        asm!("hlt");
+    }
+}
+
+pub unsafe extern "C" fn poll() -> ! {
+    loop {
+        asm!("cli");
+        asm!("sti");
+        asm!("hlt");
+    }
+}
+
+pub unsafe extern "C" fn redraw() -> ! {
+    loop {
+        asm!("cli");
+        if debug_draw {
+            if debug_redraw {
+                debug_redraw = false;
+                (*debug_display).flip();
+            }
+        }else{
+            (*session_ptr).redraw();
+        }
+        asm!("sti");
+        asm!("hlt");
+    }
 }
 
 fn dr(reg: &str, value: u32){
@@ -249,7 +315,29 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
     };
 
     match interrupt {
-        0x20 => (), //timer
+        0x20 => { // Context switch timer
+            outb(0x20, 0x20);
+
+            if contexts_ptr as usize > 0 {
+                let contexts = &*contexts_ptr;
+                let current_i = context_i;
+                context_i += 1;
+                if context_i >= contexts.len(){
+                    context_i -= contexts.len();
+                }
+                if context_i != current_i {
+                    match contexts.get(current_i){
+                        Option::Some(current) => match contexts.get(context_i) {
+                            Option::Some(next) => {
+                                current.swap(next);
+                            },
+                            Option::None => ()
+                        },
+                        Option::None => ()
+                    }
+                }
+            }
+        },
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
@@ -314,53 +402,8 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         },
         0xFF => { // main loop
             init(eax as usize, ebx as usize);
-
-            let session = &mut *session_ptr;
-            loop {
-                //Polling must take place without interrupts to avoid interruption during I/O logic
-                asm!("cli");
-                    session.on_poll();
-                loop {
-                    //Copying the events must take place without interrupts to avoid pushes of events
-                    asm!("cli");
-                        let mut events_copy: Vec<Event> = Vec::new();
-                        swap(&mut events_copy, &mut *events_ptr);
-
-                        for event in events_copy.iter() {
-                            if event.code == 'k' && event.b == 0x3B && event.c > 0 {
-                                debug_draw = true;
-                                debug_redraw = true;
-                            }
-                            if event.code == 'k' && event.b == 0x3C && event.c > 0 {
-                                debug_draw = false;
-                                (*events_ptr).push(RedrawEvent {
-                                    redraw: REDRAW_ALL
-                                }.to_event());
-                            }
-                        }
-
-                    if debug_draw {
-                        if debug_display as usize > 0 && debug_redraw {
-                            debug_redraw = false;
-                            (*debug_display).flip();
-                        }
-                    }else{
-                        //Can preempt event handling and redraw
-                        //asm!("sti");
-                            session.handle_events(&mut events_copy);
-                            session.redraw();
-                    }
-
-                    //Checking for new events must take place without interrupts to avoid pushes of events
-                    asm!("cli");
-                        if (*events_ptr).len() == 0 {
-                            break;
-                        }
-                }
-                //On no new events, halt
-                asm!("sti");
-                asm!("hlt");
-            }
+            (*contexts_ptr).push(Context::new(redraw));
+            main();
         },
         0x0 => exception("Divide by zero exception"),
         0x1 => exception("Debug exception"),
@@ -389,7 +432,8 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         }
     }
 
-    if interrupt >= 0x20 && interrupt < 0x30 {
+    //TODO: Move up
+    if interrupt >= 0x21 && interrupt < 0x30 {
         if interrupt >= 0x28 {
             outb(0xA0, 0x20);
         }

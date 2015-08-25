@@ -7,7 +7,7 @@ use programs::common::*;
 
 pub struct PS2;
 
-impl SessionModule for PS2 {
+impl SessionItem for PS2 {
     fn on_irq(&mut self, irq: u8){
         if irq == 0x1 || irq == 0xC {
             self.on_poll();

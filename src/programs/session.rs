@@ -11,13 +11,12 @@ use programs::executor::*;
 use programs::viewer::*;
 
 pub struct Session {
-    pub display: Display,
+    display: Display,
     pub background: BMP,
     pub cursor: BMP,
-    pub mouse_point: Point,
+    mouse_point: Point,
     pub items: Vec<Box<SessionItem>>,
-    pub modules: Vec<Box<SessionModule>>,
-    pub redraw: usize
+    redraw: usize
 }
 
 impl Session {
@@ -29,21 +28,20 @@ impl Session {
                 cursor: BMP::new(),
                 mouse_point: Point::new(0, 0),
                 items: Vec::new(),
-                modules: Vec::new(),
                 redraw: REDRAW_ALL
             }
         }
     }
 
     pub fn on_irq(&mut self, irq: u8){
-        for module in self.modules.iter() {
-            module.on_irq(irq);
+        for item in self.items.iter() {
+            item.on_irq(irq);
         }
     }
 
     pub fn on_poll(&mut self){
-        for module in self.modules.iter() {
-            module.on_poll();
+        for item in self.items.iter() {
+            item.on_poll();
         }
     }
 
@@ -51,8 +49,8 @@ impl Session {
         if url.scheme.len() == 0 {
             let mut list = String::new();
 
-            for module in self.modules.iter() {
-                let scheme = module.scheme();
+            for item in self.items.iter() {
+                let scheme = item.scheme();
                 if scheme.len() > 0 {
                     if list.len() > 0 {
                         list = list + "\n" + scheme;
@@ -64,16 +62,16 @@ impl Session {
 
             return box VecResource::new(ResourceType::Dir, list.to_utf8());
         }else{
-            for module in self.modules.iter() {
-                if module.scheme() == url.scheme {
-                    return module.open(url);
+            for item in self.items.iter() {
+                if item.scheme() == url.scheme {
+                    return item.open(url);
                 }
             }
             return box NoneResource;
         }
     }
 
-    pub fn on_key(&mut self, key_event: KeyEvent){
+    fn on_key(&mut self, key_event: KeyEvent){
         match self.items.get(0){
             Option::Some(item) => {
                 item.on_key(key_event);
@@ -84,7 +82,7 @@ impl Session {
         }
     }
 
-    pub fn on_mouse(&mut self, mouse_event: MouseEvent){
+    fn on_mouse(&mut self, mouse_event: MouseEvent){
         self.mouse_point.x = max(0, min(self.display.width as isize - 1, self.mouse_point.x + mouse_event.x));
         self.mouse_point.y = max(0, min(self.display.height as isize - 1, self.mouse_point.y + mouse_event.y));
 
