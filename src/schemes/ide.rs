@@ -299,12 +299,7 @@ impl SessionItem for IDE {
             }
 
             while data.load(Ordering::SeqCst) == 0xFFFFFFFF {
-                asm!("pushf
-                    sti
-                    hlt
-                    popf
-                    "
-                    : : : : "intel");
+                sched_yield();
             }
 
             let destination = data.load(Ordering::SeqCst);

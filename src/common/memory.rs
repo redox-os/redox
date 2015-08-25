@@ -49,7 +49,7 @@ pub unsafe fn cluster_init(){
 
     //Next, set all valid clusters to the free value
     //TODO: Optimize this function
-    for i in 0..((0x7B00 - 0x500)/size_of::<MemoryMapEntry>()) {
+    for i in 0..((0x5000 - 0x500)/size_of::<MemoryMapEntry>()) {
         let entry = &*MEMORY_MAP.offset(i as isize);
         if entry.len > 0 && entry.class == 1 {
             for cluster in 0..CLUSTER_COUNT {

@@ -33,7 +33,7 @@ impl FileManager {
         }
 
         let mut ret = FileManager {
-            window: Window::new(Point::new(10, 50), size, String::from_str("File Manager")),
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, String::from_str("File Manager")),
             files: files,
             selected: -1
         };
@@ -90,7 +90,7 @@ impl SessionItem for FileManager {
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
-                0x01 => self.selected = -1,
+                0x01 => self.window.closed = true,
                 0x47 => self.selected = 0,
                 0x48 => if self.selected > 0 {
                             self.selected -= 1;

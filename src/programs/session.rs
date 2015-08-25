@@ -8,6 +8,7 @@ use graphics::size::*;
 use programs::common::*;
 use programs::editor::*;
 use programs::executor::*;
+use programs::filemanager::*;
 use programs::viewer::*;
 
 pub struct Session {
@@ -15,8 +16,9 @@ pub struct Session {
     pub background: BMP,
     pub cursor: BMP,
     mouse_point: Point,
+    last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
-    redraw: usize
+    pub redraw: usize
 }
 
 impl Session {
@@ -27,6 +29,14 @@ impl Session {
                 background: BMP::new(),
                 cursor: BMP::new(),
                 mouse_point: Point::new(0, 0),
+                last_mouse_event: MouseEvent {
+                    x: 0,
+                    y: 0,
+                    left_button: false,
+                    middle_button: false,
+                    right_button: false,
+                    valid: false
+                },
                 items: Vec::new(),
                 redraw: REDRAW_ALL
             }
@@ -110,6 +120,16 @@ impl Session {
                 Option::None => ()
             }
         }
+
+        //Not caught, can be caught by task bar
+        if allow_catch {
+            if mouse_event.left_button && !self.last_mouse_event.left_button && self.mouse_point.y <= 16 {
+                self.items.insert(0, box FileManager::new());
+                self.redraw = max(self.redraw, REDRAW_ALL);
+            }
+        }
+
+        self.last_mouse_event = mouse_event;
     }
 
     pub fn redraw(&mut self){

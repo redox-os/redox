@@ -17,6 +17,7 @@ extern crate alloc;
 #[macro_use]
 extern crate mopa;
 
+use core::cmp::max;
 use core::mem::size_of;
 use core::mem::swap;
 use core::ptr;
@@ -38,7 +39,6 @@ use filesystems::unfs::*;
 use graphics::bmp::*;
 use graphics::color::*;
 
-use programs::filemanager::*;
 use programs::common::*;
 use programs::session::*;
 
@@ -131,7 +131,75 @@ static mut contexts_ptr: *mut Vec<Context> = 0 as *mut Vec<Context>;
 static mut context_i: usize = 0;
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
+
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
+
+pub unsafe extern "C" fn event_loop() -> ! {
+    let session = &mut *session_ptr;
+    loop {
+        asm!("cli");
+        session.on_poll();
+
+        let mut events_copy: Vec<Event> = Vec::new();
+        swap(&mut events_copy, &mut *events_ptr);
+        asm!("sti");
+
+        session.handle_events(&mut events_copy);
+
+        sched_yield();
+    }
+}
+
+pub unsafe extern "C" fn redraw_loop() -> ! {
+    let session = &mut *session_ptr;
+
+    {
+        let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        match resource.read_to_end(&mut vec) {
+            Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
+            Option::None => d("Background load error\n")
+        }
+    }
+
+    loop {
+        asm!("cli");
+        if debug_draw {
+            if debug_redraw {
+                debug_redraw = false;
+                (*debug_display).flip();
+            }
+        }else{
+            session.redraw();
+        }
+        asm!("sti");
+
+        sched_yield();
+    }
+}
+
+unsafe fn context_switch(){
+    if contexts_ptr as usize > 0 {
+        let contexts = &*contexts_ptr;
+        let current_i = context_i;
+        context_i += 1;
+        if context_i >= contexts.len(){
+            context_i -= contexts.len();
+        }
+        if context_i != current_i {
+            match contexts.get(current_i){
+                Option::Some(current) => match contexts.get(context_i) {
+                    Option::Some(next) => {
+                        current.swap(next);
+                    },
+                    Option::None => ()
+                },
+                Option::None => ()
+            }
+        }
+    }
+}
 
 unsafe fn test_disk(disk: Disk){
     if disk.identify() {
@@ -159,6 +227,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     context_i = 0;
 
     session_ptr = 0 as *mut Box<Session>;
+
     events_ptr = 0 as *mut Vec<Event>;
 
     debug_init();
@@ -185,6 +254,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
     ptr::write(session_ptr, box Session::new());
+
     events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
     ptr::write(events_ptr, Vec::new());
 
@@ -220,67 +290,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
 
-    let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
-
-    let mut vec: Vec<u8> = Vec::new();
-    match resource.read_to_end(&mut vec) {
-        Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
-        Option::None => d("Background load error\n")
-    }
-
-    session.items.insert(0, box FileManager::new());
-}
-
-pub unsafe extern "C" fn main() -> ! {
-    loop {
-        asm!("cli");
-        (*session_ptr).on_poll();
-
-        let mut events_copy: Vec<Event> = Vec::new();
-        swap(&mut events_copy, &mut *events_ptr);
-
-        for event in events_copy.iter() {
-            if event.code == 'k' && event.b == 0x3B && event.c > 0 {
-                debug_draw = true;
-                debug_redraw = true;
-            }
-            if event.code == 'k' && event.b == 0x3C && event.c > 0 {
-                debug_draw = false;
-                (*events_ptr).push(RedrawEvent {
-                    redraw: REDRAW_ALL
-                }.to_event());
-            }
-        }
-
-        (*session_ptr).handle_events(&mut events_copy);
-
-        asm!("sti");
-        asm!("hlt");
-    }
-}
-
-pub unsafe extern "C" fn poll() -> ! {
-    loop {
-        asm!("cli");
-        asm!("sti");
-        asm!("hlt");
-    }
-}
-
-pub unsafe extern "C" fn redraw() -> ! {
-    loop {
-        asm!("cli");
-        if debug_draw {
-            if debug_redraw {
-                debug_redraw = false;
-                (*debug_display).flip();
-            }
-        }else{
-            (*session_ptr).redraw();
-        }
-        asm!("sti");
-        asm!("hlt");
-    }
+    (*contexts_ptr).push(Context::new(event_loop));
+    (*contexts_ptr).push(Context::new(redraw_loop));
 }
 
 fn dr(reg: &str, value: u32){
@@ -309,35 +320,22 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         dr("EBP", ebp);
         dr("ESP", esp);
 
-        asm!("cli");
-        asm!("hlt");
-        loop{}
+        loop {
+            asm!("cli");
+            asm!("hlt");
+        }
     };
 
-    match interrupt {
-        0x20 => { // Context switch timer
-            outb(0x20, 0x20);
+    if interrupt >= 0x20 && interrupt < 0x30 {
+        if interrupt >= 0x28 {
+            outb(0xA0, 0x20);
+        }
 
-            if contexts_ptr as usize > 0 {
-                let contexts = &*contexts_ptr;
-                let current_i = context_i;
-                context_i += 1;
-                if context_i >= contexts.len(){
-                    context_i -= contexts.len();
-                }
-                if context_i != current_i {
-                    match contexts.get(current_i){
-                        Option::Some(current) => match contexts.get(context_i) {
-                            Option::Some(next) => {
-                                current.swap(next);
-                            },
-                            Option::None => ()
-                        },
-                        Option::None => ()
-                    }
-                }
-            }
-        },
+        outb(0x20, 0x20);
+    }
+
+    match interrupt {
+        0x20 => context_switch(), // Context switch timer
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
@@ -384,8 +382,20 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                     ptr::write(ecx as *mut Box<Resource>, session.open(url));
                 },
                 0x2 => {
-                    (*events_ptr).push(*(ebx as *const Event));
-                }
+                    let event = *(ebx as *const Event);
+
+                    if event.code == 'k' && event.b == 0x3B && event.c > 0 {
+                        debug_draw = true;
+                        debug_redraw = true;
+                    }
+                    if event.code == 'k' && event.b == 0x3C && event.c > 0 {
+                        debug_draw = false;
+                        (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_ALL);
+                    }
+
+                    (*events_ptr).push(event);
+                },
+                0x3 => context_switch(),
                 _ => {
                     d("System Call");
                     d(" EAX:");
@@ -400,11 +410,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
                 }
             }
         },
-        0xFF => { // main loop
-            init(eax as usize, ebx as usize);
-            (*contexts_ptr).push(Context::new(redraw));
-            main();
-        },
+        0xFF => init(eax as usize, ebx as usize),
         0x0 => exception("Divide by zero exception"),
         0x1 => exception("Debug exception"),
         0x2 => exception("Non-maskable interrupt"),
@@ -430,15 +436,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dh(interrupt as usize);
             dl();
         }
-    }
-
-    //TODO: Move up
-    if interrupt >= 0x21 && interrupt < 0x30 {
-        if interrupt >= 0x28 {
-            outb(0xA0, 0x20);
-        }
-
-        outb(0x20, 0x20);
     }
 }
 

@@ -13,8 +13,11 @@ QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehc
 
 all: harddrive.bin
 
-doc: kernel.rlib
-	rustdoc --target i686-unknown-linux-gnu src/kernel.rs --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
+kernel.list: kernel.bin
+	objdump -D $< > $@
+
+doc: src/kernel.rs
+	rustdoc --target i686-unknown-linux-gnu $< --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
 
 liballoc.rlib: src/liballoc/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<
