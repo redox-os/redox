@@ -1,5 +1,3 @@
-use core::atomic::*;
-
 use common::debug::*;
 use common::memory::*;
 use common::vec::*;
@@ -18,16 +16,18 @@ pub unsafe extern "cdecl" fn context_fail() -> ! {
 pub struct Context {
     pub stack: usize,
     pub stack_ptr: u32,
-    pub block: AtomicUsize
+    pub fx: usize
 }
 
 impl Context {
     pub unsafe fn root() -> Context {
-        Context {
+        let ret = Context {
             stack: 0,
             stack_ptr: 0,
-            block: AtomicUsize::new(0)
-        }
+            fx: alloc(512)
+        };
+
+        return ret;
     }
 
     pub unsafe fn new(call: usize, args: &Vec<usize>) -> Context {
@@ -36,7 +36,7 @@ impl Context {
         let mut ret = Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
-            block: AtomicUsize::new(0)
+            fx: alloc(512)
         };
 
         let ebp = ret.stack_ptr;
@@ -92,6 +92,12 @@ impl Drop for Context {
         if self.stack > 0 {
             unsafe {
                 unalloc(self.stack);
+            }
+        }
+
+        if self.fx > 0 {
+            unsafe {
+                unalloc(self.fx);
             }
         }
     }

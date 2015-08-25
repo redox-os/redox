@@ -16,7 +16,6 @@ pub struct Window {
     pub shaded: bool,
     pub closed: bool,
     pub dragging: bool,
-    pub last_mouse_point: Point,
     pub last_mouse_event: MouseEvent
 }
 
@@ -32,7 +31,6 @@ impl Window {
             shaded: false,
             closed: false,
             dragging: false,
-            last_mouse_point: Point::new(0, 0),
             last_mouse_event: MouseEvent {
                 x: 0,
                 y: 0,
@@ -70,25 +68,25 @@ impl Window {
         return true;
     }
 
-    pub fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         let mut caught = false;
 
         if allow_catch {
             if mouse_event.left_button {
                 if ! self.shaded
-                    && mouse_point.x >= self.point.x - 2
-                    && mouse_point.x < self.point.x + self.size.width as isize + 4
-                    && mouse_point.y >= self.point.y - 18
-                    && mouse_point.y < self.point.y + self.size.height as isize + 2
+                    && mouse_event.x >= self.point.x - 2
+                    && mouse_event.x < self.point.x + self.size.width as isize + 4
+                    && mouse_event.y >= self.point.y - 18
+                    && mouse_event.y < self.point.y + self.size.height as isize + 2
                 {
                     caught = true;
                 }
 
                 if !self.last_mouse_event.left_button
-                    && mouse_point.x >= self.point.x - 2
-                    && mouse_point.x < self.point.x + self.size.width as isize + 4
-                    && mouse_point.y >= self.point.y - 18
-                    && mouse_point.y < self.point.y
+                    && mouse_event.x >= self.point.x - 2
+                    && mouse_event.x < self.point.x + self.size.width as isize + 4
+                    && mouse_event.y >= self.point.y - 18
+                    && mouse_event.y < self.point.y
                 {
                     self.dragging = true;
                     caught = true;
@@ -99,19 +97,19 @@ impl Window {
 
             if mouse_event.right_button {
                 if ! self.shaded
-                    && mouse_point.x >= self.point.x - 2
-                    && mouse_point.x < self.point.x + self.size.width as isize + 4
-                    && mouse_point.y >= self.point.y - 18
-                    && mouse_point.y < self.point.y + self.size.height as isize + 2
+                    && mouse_event.x >= self.point.x - 2
+                    && mouse_event.x < self.point.x + self.size.width as isize + 4
+                    && mouse_event.y >= self.point.y - 18
+                    && mouse_event.y < self.point.y + self.size.height as isize + 2
                 {
                     caught = true;
                 }
 
                 if !self.last_mouse_event.right_button
-                    && mouse_point.x >= self.point.x - 2
-                    && mouse_point.x < self.point.x + self.size.width as isize + 4
-                    && mouse_point.y >= self.point.y - 18
-                    && mouse_point.y < self.point.y
+                    && mouse_event.x >= self.point.x - 2
+                    && mouse_event.x < self.point.x + self.size.width as isize + 4
+                    && mouse_event.y >= self.point.y - 18
+                    && mouse_event.y < self.point.y
                 {
                     self.shaded = !self.shaded;
                     caught = true;
@@ -119,15 +117,14 @@ impl Window {
             }
 
             if self.dragging {
-                self.point.x += mouse_point.x - self.last_mouse_point.x;
-                self.point.y += mouse_point.y - self.last_mouse_point.y;
+                self.point.x += mouse_event.x - self.last_mouse_event.x;
+                self.point.y += mouse_event.y - self.last_mouse_event.y;
                 caught = true;
             }
         }else{
             self.dragging = false;
         }
 
-        self.last_mouse_point = mouse_point;
         self.last_mouse_event = mouse_event;
 
         return caught;
