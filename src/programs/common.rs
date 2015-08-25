@@ -13,6 +13,13 @@ pub use common::vec::*;
 pub use graphics::display::*;
 pub use graphics::point::*;
 
+pub fn sched_yield(){
+    unsafe {
+        asm!("int 0x80"
+            : : "{eax}"(3) : : "intel");
+    }
+}
+
 #[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
     fn load(&mut self, url: &URL){

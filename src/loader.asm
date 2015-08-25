@@ -218,8 +218,11 @@ protected_mode:
     mov eax, kernel_file.font
     mov ebx, kernel_file.cursor
     int 255
-    cli
+;This is actually the idle process
+.lp:
+    sti
     hlt
+    jmp .lp
 
 gdtr:
     dw (gdt_end - gdt) + 1  ; size

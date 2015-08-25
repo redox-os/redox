@@ -11,8 +11,6 @@ use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
 
-const VBEMODEINFOLOCATION: usize = 0x5200;
-
 #[derive(Copy, Clone)]
 pub struct VBEModeInfo {
     attributes: u16,
@@ -49,6 +47,8 @@ pub struct VBEModeInfo {
     offscreenmemsize: u16
 }
 
+const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
+
 pub const FONTS: *mut usize = 0x200008 as *mut usize;
 
 pub struct Display {
@@ -63,7 +63,7 @@ pub struct Display {
 
 impl Display {
     pub unsafe fn root() -> Display {
-        let mode_info = &*(VBEMODEINFOLOCATION as *const VBEModeInfo);
+        let mode_info = &*VBEMODEINFO;
 
         Display {
             offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
