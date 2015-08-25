@@ -31,6 +31,7 @@ mod application;
 mod common {
     pub mod debug;
     pub mod event;
+    pub mod queue;
     pub mod memory;
     pub mod pci;
     pub mod pio;

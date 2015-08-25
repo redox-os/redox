@@ -55,6 +55,7 @@ mod common {
     pub mod debug;
     pub mod elf;
     pub mod event;
+    pub mod queue;
     pub mod memory;
     pub mod paging;
     pub mod pci;
@@ -133,27 +134,33 @@ static mut context_i: usize = 0;
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
-static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
+static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
+
+pub unsafe extern "cdecl" fn poll_loop() -> ! {
+    let session = &mut *session_ptr;
+    loop {
+        asm!("cli");
+        session.on_poll();
+        asm!("sti");
+        sched_yield();
+    }
+}
 
 pub unsafe extern "cdecl" fn event_loop() -> ! {
     let session = &mut *session_ptr;
     loop {
         asm!("cli");
-        session.on_poll();
-
-        let mut events_copy: Vec<Event> = Vec::new();
-        swap(&mut events_copy, &mut *events_ptr);
+        match (*events_ptr).pop() {
+            Option::Some(event) => session.event(event),
+            Option::None => ()
+        }
         asm!("sti");
-
-        session.handle_events(&mut events_copy);
-
         sched_yield();
     }
 }
 
 pub unsafe extern "cdecl" fn redraw_loop() -> ! {
     let session = &mut *session_ptr;
-
     {
         let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
 
@@ -163,7 +170,6 @@ pub unsafe extern "cdecl" fn redraw_loop() -> ! {
             Option::None => d("Background load error\n")
         }
     }
-
     loop {
         asm!("cli");
         if debug_draw {
@@ -235,7 +241,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     session_ptr = 0 as *mut Box<Session>;
 
-    events_ptr = 0 as *mut Vec<Event>;
+    events_ptr = 0 as *mut Queue<Event>;
 
     debug_init();
 
@@ -259,8 +265,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
     ptr::write(session_ptr, box Session::new());
 
-    events_ptr = alloc(size_of::<Vec<Event>>()) as *mut Vec<Event>;
-    ptr::write(events_ptr, Vec::new());
+    events_ptr = alloc(size_of::<Queue<Event>>()) as *mut Queue<Event>;
+    ptr::write(events_ptr, Queue::new());
 
     let session = &mut *session_ptr;
     session.cursor = BMP::from_data(cursor_data);
@@ -296,6 +302,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     let contexts = &mut *contexts_ptr;
     contexts.push(Context::root());
+    contexts.push(Context::new(poll_loop as usize, &Vec::new()));
     contexts.push(Context::new(event_loop as usize, &Vec::new()));
     contexts.push(Context::new(redraw_loop as usize, &Vec::new()));
 
@@ -410,7 +417,9 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                         (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_ALL);
                     }
 
+                    asm!("cli");
                     (*events_ptr).push(event);
+                    asm!("sti");
                 },
                 0x3 => context_switch(),
                 _ => {

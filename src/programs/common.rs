@@ -5,6 +5,7 @@ pub use core::option::Option;
 
 pub use common::debug::*;
 pub use common::event::*;
+pub use common::queue::*;
 pub use common::random::*;
 pub use common::resource::*;
 pub use common::string::*;
