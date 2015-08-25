@@ -134,7 +134,7 @@ static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
 static mut events_ptr: *mut Vec<Event> = 0 as *mut Vec<Event>;
 
-pub unsafe extern "C" fn event_loop() -> ! {
+pub unsafe extern "cdecl" fn event_loop() -> ! {
     let session = &mut *session_ptr;
     loop {
         asm!("cli");
@@ -150,7 +150,7 @@ pub unsafe extern "C" fn event_loop() -> ! {
     }
 }
 
-pub unsafe extern "C" fn redraw_loop() -> ! {
+pub unsafe extern "cdecl" fn redraw_loop() -> ! {
     let session = &mut *session_ptr;
 
     {
@@ -177,6 +177,12 @@ pub unsafe extern "C" fn redraw_loop() -> ! {
 
         sched_yield();
     }
+}
+
+pub unsafe extern "cdecl" fn debug_loop(arg: u32){
+    dh(arg as usize);
+    dl();
+    //Returns to test context delete
 }
 
 unsafe fn context_switch(){
@@ -290,8 +296,12 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
 
-    (*contexts_ptr).push(Context::new(event_loop));
-    (*contexts_ptr).push(Context::new(redraw_loop));
+    (*contexts_ptr).push(Context::new(event_loop as usize, &Vec::new()));
+    (*contexts_ptr).push(Context::new(redraw_loop as usize, &Vec::new()));
+
+    let mut debug_loop_args: Vec<usize> = Vec::new();
+    debug_loop_args.push(0xDEADBEEF);
+    (*contexts_ptr).push(Context::new(debug_loop as usize, &debug_loop_args));
 }
 
 fn dr(reg: &str, value: u32){
@@ -303,7 +313,7 @@ fn dr(reg: &str, value: u32){
 
 #[no_mangle]
 //Take regs for kernel calls and exceptions
-pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, eax: u32, eip: u32, eflags: u32) {
+pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, eax: u32, eip: u32, eflags: u32) {
     let exception = |name: &str|{
         d(name);
         dl();
