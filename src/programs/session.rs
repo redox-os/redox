@@ -1,6 +1,5 @@
-use core::cmp::max;
-
 use common::context::*;
+use common::memory::*;
 
 use graphics::bmp::*;
 use graphics::color::*;
@@ -12,13 +11,15 @@ use programs::executor::*;
 use programs::filemanager::*;
 use programs::viewer::*;
 
+pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
+
 pub struct Session {
     pub display: Display,
     pub background: BMP,
     pub cursor: BMP,
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
-    pub items: Vec<Box<SessionItem>>,
+    pub items: Vec<Arc<SessionItem>>,
     pub redraw: usize
 }
 
@@ -46,13 +47,17 @@ impl Session {
 
     pub fn on_irq(&mut self, irq: u8){
         for item in self.items.iter() {
-            item.on_irq(irq);
+            unsafe{
+                Arc::unsafe_get_mut(item).on_irq(irq);
+            }
         }
     }
 
     pub fn on_poll(&mut self){
         for item in self.items.iter() {
-            item.on_poll();
+            unsafe{
+                Arc::unsafe_get_mut(item).on_poll();
+            }
         }
     }
 
@@ -75,7 +80,9 @@ impl Session {
         }else{
             for item in self.items.iter() {
                 if item.scheme() == url.scheme {
-                    return item.open(url);
+                    unsafe{
+                        return Arc::unsafe_get_mut(item).open(url);
+                    }
                 }
             }
             return box NoneResource;
@@ -85,7 +92,9 @@ impl Session {
     fn on_key(&mut self, key_event: KeyEvent){
         match self.items.get(0){
             Option::Some(item) => {
-                item.on_key(key_event);
+                unsafe{
+                    Arc::unsafe_get_mut(item).on_key(key_event);
+                }
 
                 self.redraw = max(self.redraw, REDRAW_ALL);
             },
@@ -101,11 +110,13 @@ impl Session {
         for i in 0..self.items.len() {
             match self.items.get(i){
                 Option::Some(item) => {
-                    if item.on_mouse(mouse_event, allow_catch) {
-                        allow_catch = false;
-                        catcher = i;
+                    unsafe{
+                        if Arc::unsafe_get_mut(item).on_mouse(mouse_event, allow_catch) {
+                            allow_catch = false;
+                            catcher = i;
 
-                        self.redraw = max(self.redraw, REDRAW_ALL);
+                            self.redraw = max(self.redraw, REDRAW_ALL);
+                        }
                     }
                 },
                 Option::None => ()
@@ -122,7 +133,7 @@ impl Session {
         //Not caught, can be caught by task bar
         if allow_catch {
             if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y <= 16 {
-                self.items.insert(0, box FileManager::new());
+                self.items.insert(0, Arc::new(FileManager::new()));
                 self.redraw = max(self.redraw, REDRAW_ALL);
             }
         }
@@ -182,13 +193,17 @@ impl Session {
 
                 let mut found = false;
                 if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
-                    self.items.insert(0, box Editor::new());
+                    d("Alloc Editor\n");
+                    let editor = Arc::new(Editor::new());
+                    d("Insert Editor\n");
+                    self.items.insert(0, editor);
+                    d("Editor Inserted\n");
                     found = true;
                 }else if url_string.ends_with(".bin".to_string()){
-                    self.items.insert(0, box Executor::new());
+                    self.items.insert(0, Arc::new(Executor::new()));
                     found = true;
                 }else if url_string.ends_with(".bmp".to_string()){
-                    self.items.insert(0, box Viewer::new());
+                    self.items.insert(0, Arc::new(Viewer::new()));
                     found = true;
                 }else{
                     d("No program found: ");
@@ -198,7 +213,25 @@ impl Session {
 
                 if found {
                     match self.items.get(0) {
-                        Option::Some(item) => item.load(&url),
+                        Option::Some(item) => {
+                            unsafe{
+                                d("New Item!\n");
+
+                                Arc::unsafe_get_mut(item).load(&url);
+
+                                d("Clone\n");
+                                let item_ptr: *mut Arc<SessionItem> = alloc_type();
+                                ptr::write(item_ptr, item.clone());
+
+                                d("Create item\n");
+                                dh(item_ptr as usize);
+                                dl();
+
+                                let mut item_main_args: Vec<usize> = Vec::new();
+                                item_main_args.push(item_ptr as usize);
+                                (*contexts_ptr).push(Context::new(item_main as usize, &item_main_args));
+                            }
+                        }
                         Option::None => ()
                     }
                 }

@@ -1,6 +1,3 @@
-use core::mem::size_of;
-use core::ptr;
-
 use common::memory::*;
 use common::pci::*;
 

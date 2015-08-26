@@ -1,8 +1,4 @@
-use alloc::arc::*;
-
-use core::atomic::*;
-use core::cmp::max;
-use core::cmp::min;
+use core::sync::atomic::*;
 
 use common::memory::*;
 use common::pci::*;

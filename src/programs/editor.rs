@@ -13,6 +13,7 @@ pub struct Editor {
 }
 
 impl Editor {
+    #[inline(never)]
     pub fn new() -> Editor {
         Editor {
             window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),

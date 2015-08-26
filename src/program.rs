@@ -18,9 +18,6 @@ extern crate mopa;
 
 use application::Application;
 
-use core::mem::size_of;
-use core::ptr;
-
 use common::memory::*;
 
 use programs::common::*;
@@ -112,43 +109,75 @@ pub unsafe fn on_mouse(mouse_event: MouseEvent, allow_catch: bool) -> bool{
     }
 }
 
+/* Externs { */
+#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
-    unsafe {
-        if src < dst {
-            let mut i = len;
-            while i > 0 {
-                i -= 1;
-                *dst.offset(i) = *src.offset(i);
-            }
-        }else{
-            let mut i = 0;
-            while i < len {
-                *dst.offset(i) = *src.offset(i);
-                i += 1;
-            }
+pub unsafe extern fn __rust_allocate(size: usize, align: usize) -> *mut u8{
+    return alloc(size) as *mut u8;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize){
+    return unalloc(ptr as usize);
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8{
+    return realloc(ptr as usize, size) as *mut u8;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> usize{
+    return realloc_inplace(ptr as usize, size);
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_usable_size(size: usize, align: usize) -> usize{
+    return ((size + CLUSTER_SIZE - 1)/CLUSTER_SIZE) * CLUSTER_SIZE;
+}
+
+#[no_mangle]
+pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: isize) -> isize {
+    for i in 0..len {
+        let c_a = ptr::read(a.offset(i));
+        let c_b = ptr::read(b.offset(i));
+        if c_a != c_b{
+            return c_a as isize - c_b as isize;
+        }
+    }
+    return 0;
+}
+
+#[no_mangle]
+pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: isize){
+    if src < dst {
+        let mut i = len;
+        while i > 0 {
+            i -= 1;
+            ptr::write(dst.offset(i), ptr::read(src.offset(i)));
+        }
+    }else{
+        for i in 0..len {
+            ptr::write(dst.offset(i), ptr::read(src.offset(i)));
         }
     }
 }
 
 #[no_mangle]
-pub extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: isize){
-    unsafe {
-        let mut i = 0;
-        while i < len {
-            *dst.offset(i) = *src.offset(i);
-            i += 1;
-        }
+pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: isize){
+    for i in 0..len {
+        ptr::write(dst.offset(i), ptr::read(src.offset(i)));
     }
 }
 
 #[no_mangle]
-pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
-    unsafe {
-        let mut i = 0;
-        while i < len {
-            *src.offset(i) = c as u8;
-            i += 1;
-        }
+pub unsafe extern fn memset(src: *mut u8, c: i32, len: isize) {
+    for i in 0..len {
+        ptr::write(src.offset(i), c as u8);
     }
 }
+/* } Externs */

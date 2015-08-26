@@ -69,12 +69,12 @@
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/nightly/",
+       issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
        test(no_crate_inject))]
 #![no_std]
 #![cfg_attr(not(stage0), needs_allocator)]
 
 #![feature(allocator)]
-#![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
 #![feature(core)]
@@ -129,12 +129,6 @@ mod boxed_test;
 pub mod arc;
 pub mod rc;
 pub mod raw_vec;
-
-#[path="../common/"]
-mod common{
-    pub mod memory;
-    pub mod scheduler;
-}
 
 /// Common out-of-memory routine
 #[cold]
