@@ -24,9 +24,9 @@ use core::mem::swap;
 use core::ptr;
 
 use common::context::*;
-use common::pio::*;
 use common::memory::*;
 use common::paging::*;
+use common::pio::*;
 
 use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
@@ -57,11 +57,13 @@ mod common {
     pub mod event;
     pub mod queue;
     pub mod memory;
+    pub mod mutex;
     pub mod paging;
     pub mod pci;
     pub mod pio;
     pub mod random;
     pub mod resource;
+    pub mod scheduler;
     pub mod string;
     pub mod vec;
 }
@@ -129,12 +131,12 @@ static mut debug_point: Point = Point{ x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 
-static mut contexts_ptr: *mut Vec<Context> = 0 as *mut Vec<Context>;
+static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
 static mut context_i: usize = 0;
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
-static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
+static mut events_ptr: *mut Box<Mutex<Queue<Event>>> = 0 as *mut Box<Mutex<Queue<Event>>>;
 
 pub unsafe extern "cdecl" fn poll_loop() -> ! {
     let session = &mut *session_ptr;
@@ -148,9 +150,11 @@ pub unsafe extern "cdecl" fn poll_loop() -> ! {
 
 pub unsafe extern "cdecl" fn event_loop() -> ! {
     let session = &mut *session_ptr;
+    let events = &mut *events_ptr;
     loop {
+        let event_option = events.lock().pop();
         asm!("cli");
-        match (*events_ptr).pop() {
+        match event_option {
             Option::Some(event) => session.event(event),
             Option::None => ()
         }
@@ -173,9 +177,10 @@ pub unsafe extern "cdecl" fn redraw_loop() -> ! {
     loop {
         asm!("cli");
         if debug_draw {
+            let display = &*(*debug_display);
             if debug_redraw {
                 debug_redraw = false;
-                (*debug_display).flip();
+                display.flip();
             }
         }else{
             session.redraw();
@@ -194,7 +199,7 @@ pub unsafe extern "cdecl" fn debug_loop(arg: u32){
 
 unsafe fn context_switch(){
     if contexts_ptr as usize > 0 {
-        let contexts = &*contexts_ptr;
+        let contexts = &*(*contexts_ptr);
         let current_i = context_i;
         context_i += 1;
         if context_i >= contexts.len(){
@@ -236,12 +241,12 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     debug_draw = false;
     debug_redraw = false;
 
-    contexts_ptr = 0 as *mut Vec<Context>;
+    contexts_ptr = 0 as *mut Box<Vec<Context>>;
     context_i = 0;
 
     session_ptr = 0 as *mut Box<Session>;
 
-    events_ptr = 0 as *mut Queue<Event>;
+    events_ptr = 0 as *mut Box<Mutex<Queue<Event>>>;
 
     debug_init();
 
@@ -254,19 +259,19 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     *FONTS = font_data;
 
-    debug_display = alloc(size_of::<Box<Display>>()) as *mut Box<Display>;
+    debug_display = alloc_type();
     ptr::write(debug_display, box Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
 
-    contexts_ptr = alloc(size_of::<Vec<Context>>()) as *mut Vec<Context>;
-    ptr::write(contexts_ptr, Vec::new());
+    contexts_ptr = alloc_type();
+    ptr::write(contexts_ptr, box Vec::new());
 
-    session_ptr = alloc(size_of::<Box<Session>>()) as *mut Box<Session>;
+    session_ptr = alloc_type();
     ptr::write(session_ptr, box Session::new());
 
-    events_ptr = alloc(size_of::<Queue<Event>>()) as *mut Queue<Event>;
-    ptr::write(events_ptr, Queue::new());
+    events_ptr = alloc_type();
+    ptr::write(events_ptr, box Mutex::new(Queue::new()));
 
     let session = &mut *session_ptr;
     session.cursor = BMP::from_data(cursor_data);
@@ -300,7 +305,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
 
-    let contexts = &mut *contexts_ptr;
+    let contexts = &mut *(*contexts_ptr);
     contexts.push(Context::root());
     contexts.push(Context::new(poll_loop as usize, &Vec::new()));
     contexts.push(Context::new(event_loop as usize, &Vec::new()));
@@ -365,26 +370,23 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x80 => { // kernel calls
             match eax {
                 0x0 => { //Debug
-                    if debug_display as usize > 0 {
+                    if false && debug_display as usize > 0 {
+                        let display = &*(*debug_display);
                         if ebx == 10 {
                             debug_point.x = 0;
                             debug_point.y += 16;
                             debug_redraw = true;
                         }else{
-                            (*debug_display).char(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
+                            display.char(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
                             debug_point.x += 8;
                         }
-                        if debug_point.x >= (*debug_display).width as isize {
+                        if debug_point.x >= display.width as isize {
                             debug_point.x = 0;
                             debug_point.y += 16;
                         }
-                        while debug_point.y + 16 > (*debug_display).height as isize {
-                            (*debug_display).scroll(16);
+                        while debug_point.y + 16 > display.height as isize {
+                            display.scroll(16);
                             debug_point.y -= 16;
-                        }
-                        if debug_draw && debug_redraw {
-                            debug_redraw = false;
-                            (*debug_display).flip();
                         }
                     }else{
                         outb(0x3F8, ebx as u8);
@@ -417,9 +419,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                         (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_ALL);
                     }
 
-                    asm!("cli");
-                    (*events_ptr).push(event);
-                    asm!("sti");
+                    (*events_ptr).lock().push(event);
                 },
                 0x3 => context_switch(),
                 _ => {

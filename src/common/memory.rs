@@ -93,6 +93,10 @@ pub unsafe fn alloc(size: usize) -> usize{
     }
 }
 
+pub unsafe fn alloc_type<T>() -> *mut T {
+    return alloc(size_of::<T>()) as *mut T;
+}
+
 pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
     if size > 0 {
         let mut number = 0;
