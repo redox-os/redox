@@ -443,21 +443,17 @@ impl SessionItem for Application {
 
             match key_event.character {
                 '\x00' => (),
-                '\x08' => {
-                    if self.offset > 0 {
-                        self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
-                        self.offset -= 1;
-                    }
+                '\x08' => if self.offset > 0 {
+                    self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
+                    self.offset -= 1;
                 },
-                '\n' => {
-                    if self.command.len() > 0 {
-                        let command = self.command.clone();
-                        self.command = String::new();
-                        self.offset = 0;
-                        self.last_command = command.clone();
-                        self.append("# ".to_string() + command.clone());
-                        self.on_command(&command);
-                    }
+                '\n' => if self.command.len() > 0 {
+                    let command = self.command.clone();
+                    self.command = String::new();
+                    self.offset = 0;
+                    self.last_command = command.clone();
+                    self.append("# ".to_string() + command.clone());
+                    self.on_command(&command);
                 },
                 _ => {
                     self.command = self.command.substr(0, self.offset) + key_event.character + self.command.substr(self.offset, self.command.len() - self.offset);

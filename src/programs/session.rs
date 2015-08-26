@@ -1,5 +1,7 @@
 use core::cmp::max;
 
+use common::context::*;
+
 use graphics::bmp::*;
 use graphics::color::*;
 use graphics::size::*;

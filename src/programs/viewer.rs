@@ -5,13 +5,51 @@ use graphics::window::*;
 use programs::common::*;
 
 pub struct Viewer {
-    window: Window
+    window: Window,
+    events: Queue<Event>
 }
 
 impl Viewer {
     pub fn new() -> Viewer {
         Viewer {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string())
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string()),
+            events: Queue::new()
+        }
+    }
+
+    pub fn main(&mut self){
+        loop {
+            let event_option;
+            unsafe{
+                let enable = start_no_ints();
+
+                event_option = self.events.pop();
+
+                end_no_ints(enable);
+            }
+
+            match event_option {
+                Option::Some(event_const) => {
+                    let mut event = event_const;
+                    match event.code {
+                        'm' => {
+                            let mouse_event = MouseEvent::from_event(&mut event);
+                            self.window.on_mouse(mouse_event, true);
+                        },
+                        'k' => {
+                            let key_event = KeyEvent::from_event(&mut event);
+                            if key_event.pressed {
+                                match key_event.scancode {
+                                    0x01 => self.window.closed = true,
+                                    _ => ()
+                                }
+                            }
+                        },
+                        _ => ()
+                    }
+                },
+                Option::None => sched_yield()
+            }
         }
     }
 }
@@ -38,15 +76,11 @@ impl SessionItem for Viewer {
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
-        if key_event.pressed {
-            match key_event.scancode {
-                0x01 => self.window.closed = true,
-                _ => ()
-            }
-        }
+        self.events.push(key_event.to_event());
     }
 
     fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_event, allow_catch);
+        self.events.push(mouse_event.to_event());
+        return true;
     }
 }
