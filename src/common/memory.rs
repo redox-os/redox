@@ -1,6 +1,8 @@
 use core::cmp::min;
 use core::mem::size_of;
 
+use common::scheduler::*;
+
 pub const PAGE_DIRECTORY: usize = 0x300000;
 pub const PAGE_TABLE_SIZE: usize = 1024;
 pub const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
@@ -62,10 +64,16 @@ pub unsafe fn cluster_init(){
     }
 }
 
-pub unsafe fn alloc(size: usize) -> usize{
+pub unsafe fn alloc(size: usize) -> usize {
+    let mut ret = 0;
+
+    //Memory allocation must be atomic
+    let reenable = start_no_ints();
+
     if size > 0 {
         let mut number = 0;
         let mut count = 0;
+
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 {
                 if count == 0 {
@@ -84,13 +92,14 @@ pub unsafe fn alloc(size: usize) -> usize{
             for i in number..number + count {
                 set_cluster(i, address);
             }
-            return address;
-        }else{
-            return 0;
+            ret = address;
         }
-    }else{
-        return 0;
     }
+
+    //Memory allocation must be atomic
+    end_no_ints(reenable);
+
+    return ret;
 }
 
 pub unsafe fn alloc_type<T>() -> *mut T {
@@ -98,6 +107,11 @@ pub unsafe fn alloc_type<T>() -> *mut T {
 }
 
 pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
+    let mut ret = 0;
+
+    //Memory allocation must be atomic
+    let reenable = start_no_ints();
+
     if size > 0 {
         let mut number = 0;
         let mut count = 0;
@@ -123,17 +137,21 @@ pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
             for i in number..number + count {
                 set_cluster(i, address);
             }
-            return address;
-        }else{
-            return 0;
+            ret = address;
         }
-    }else{
-        return 0;
     }
+
+    //Memory allocation must be atomic
+    end_no_ints(reenable);
+
+    return ret;
 }
 
 pub unsafe fn alloc_size(ptr: usize) -> usize {
     let mut size = 0;
+
+    //Memory allocation must be atomic
+    let reenable = start_no_ints();
 
     if ptr > 0 {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
@@ -143,7 +161,26 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
         }
     }
 
+    //Memory allocation must be atomic
+    end_no_ints(reenable);
+
     return size;
+}
+
+pub unsafe fn unalloc(ptr: usize){
+    //Memory allocation must be atomic
+    let reenable = start_no_ints();
+
+    if ptr > 0 {
+        for i in address_to_cluster(ptr)..CLUSTER_COUNT {
+            if cluster(i) == ptr {
+                set_cluster(i, 0);
+            }
+        }
+    }
+
+    //Memory allocation must be atomic
+    end_no_ints(reenable);
 }
 
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
@@ -188,24 +225,20 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
     }
 }
 
-pub unsafe fn unalloc(ptr: usize){
-    if ptr > 0 {
-        for i in address_to_cluster(ptr)..CLUSTER_COUNT {
-            if cluster(i) == ptr {
-                set_cluster(i, 0);
-            }
-        }
-    }
-}
-
 pub fn memory_used() -> usize{
     let mut ret = 0;
     unsafe{
+        //Memory allocation must be atomic
+        let reenable = start_no_ints();
+
         for i in 0..CLUSTER_COUNT {
             if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
                 ret += CLUSTER_SIZE;
             }
         }
+
+        //Memory allocation must be atomic
+        end_no_ints(reenable);
     }
     return ret;
 }
@@ -213,11 +246,17 @@ pub fn memory_used() -> usize{
 pub fn memory_free() -> usize{
     let mut ret = 0;
     unsafe{
+        //Memory allocation must be atomic
+        let reenable = start_no_ints();
+
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 {
                 ret += CLUSTER_SIZE;
             }
         }
+
+        //Memory allocation must be atomic
+        end_no_ints(reenable);
     }
     return ret;
 }

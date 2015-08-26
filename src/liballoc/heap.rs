@@ -15,10 +15,7 @@
                       tracing garbage collector",
             issue = "27700")]
 
-use core::{isize, usize};
-
-#[path="../common/memory.rs"]
-mod memory;
+use common::memory;
 
 // FIXME: #13996: mark the `allocate` and `reallocate` return value as `noalias`
 
