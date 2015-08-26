@@ -201,6 +201,8 @@ pub unsafe extern "cdecl" fn debug_loop(arg: u32){
 }
 
 unsafe fn context_switch(){
+    let reenable = start_no_ints();
+
     if contexts_ptr as usize > 0 {
         let contexts = &*(*contexts_ptr);
         let current_i = context_i;
@@ -220,6 +222,8 @@ unsafe fn context_switch(){
             }
         }
     }
+
+    end_no_ints(reenable);
 }
 
 unsafe fn test_disk(disk: Disk){
