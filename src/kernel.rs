@@ -164,6 +164,7 @@ pub unsafe extern "cdecl" fn event_loop() -> ! {
         }
 
         end_no_ints(reenable);
+
         sched_yield();
     }
 }
