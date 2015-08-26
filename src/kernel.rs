@@ -423,15 +423,11 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                         (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_ALL);
                     }
 
-                    let flags: u32;
-                    asm!("pushfd
-                        cli
-                        popfd"
-                        : "={eax}"(flags) : : : "intel");
+                    let reenable = start_no_ints();
+
                     (*events_ptr).push(event);
-                    if flags & (1 << 9) == (1 << 9){
-                        asm!("sti");
-                    }
+                    
+                    end_no_ints(reenable);
                 },
                 0x3 => context_switch(),
                 _ => {
