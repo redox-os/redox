@@ -1,5 +1,4 @@
 use core::cmp::max;
-use core::cmp::min;
 
 use graphics::bmp::*;
 use graphics::color::*;

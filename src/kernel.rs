@@ -20,7 +20,6 @@ extern crate mopa;
 use core::cmp::max;
 use core::cmp::min;
 use core::mem::size_of;
-use core::mem::swap;
 use core::ptr;
 
 use common::context::*;
@@ -426,7 +425,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                     let reenable = start_no_ints();
 
                     (*events_ptr).push(event);
-                    
+
                     end_no_ints(reenable);
                 },
                 0x3 => context_switch(),

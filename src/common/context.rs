@@ -73,6 +73,12 @@ impl Context {
 
     #[inline(never)]
     pub unsafe fn swap(&mut self, other: &mut Context){
+        asm!("fxsave [edi]
+            fxrstor [esi]"
+            :
+            : "{edi}"(self.fx), "{esi}"(other.fx)
+            :
+            : "intel", "volatile");
         asm!("pushfd
             pushad
             mov [edi], esp

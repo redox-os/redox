@@ -1,5 +1,6 @@
 *.bin
 *.gen
+*.list
 *.o
 *.pcap
 *.rlib
