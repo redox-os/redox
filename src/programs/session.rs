@@ -193,11 +193,7 @@ impl Session {
 
                 let mut found = false;
                 if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
-                    d("Alloc Editor\n");
-                    let editor = Arc::new(Editor::new());
-                    d("Insert Editor\n");
-                    self.items.insert(0, editor);
-                    d("Editor Inserted\n");
+                    self.items.insert(0, Arc::new(Editor::new()));
                     found = true;
                 }else if url_string.ends_with(".bin".to_string()){
                     self.items.insert(0, Arc::new(Executor::new()));
@@ -215,17 +211,10 @@ impl Session {
                     match self.items.get(0) {
                         Option::Some(item) => {
                             unsafe{
-                                d("New Item!\n");
-
                                 Arc::unsafe_get_mut(item).load(&url);
 
-                                d("Clone\n");
                                 let item_ptr: *mut Arc<SessionItem> = alloc_type();
                                 ptr::write(item_ptr, item.clone());
-
-                                d("Create item\n");
-                                dh(item_ptr as usize);
-                                dl();
 
                                 let mut item_main_args: Vec<usize> = Vec::new();
                                 item_main_args.push(item_ptr as usize);

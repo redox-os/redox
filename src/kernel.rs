@@ -503,10 +503,10 @@ pub unsafe extern fn __rust_usable_size(size: usize, align: usize) -> usize{
 }
 
 #[no_mangle]
-pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: isize) -> isize {
+pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
     for i in 0..len {
-        let c_a = ptr::read(a.offset(i));
-        let c_b = ptr::read(b.offset(i));
+        let c_a = ptr::read(a.offset(i as isize));
+        let c_b = ptr::read(b.offset(i as isize));
         if c_a != c_b{
             return c_a as isize - c_b as isize;
         }
@@ -515,31 +515,41 @@ pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: isize) -> isize {
 }
 
 #[no_mangle]
-pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: isize){
+pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: usize){
     if src < dst {
-        let mut i = len;
-        while i > 0 {
-            i -= 1;
-            ptr::write(dst.offset(i), ptr::read(src.offset(i)));
-        }
+        asm!("std
+            rep movsb"
+            :
+            : "{edi}"(dst.offset(len as isize - 1)), "{esi}"(src.offset(len as isize - 1)), "{ecx}"(len)
+            : "cc", "memory"
+            : "intel");
     }else{
-        for i in 0..len {
-            ptr::write(dst.offset(i), ptr::read(src.offset(i)));
-        }
+        asm!("cld
+            rep movsb"
+            :
+            : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
+            : "cc", "memory"
+            : "intel");
     }
 }
 
 #[no_mangle]
-pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: isize){
-    for i in 0..len {
-        ptr::write(dst.offset(i), ptr::read(src.offset(i)));
-    }
+pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: usize){
+    asm!("cld
+        rep movsb"
+        :
+        : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
+        : "cc", "memory"
+        : "intel");
 }
 
 #[no_mangle]
-pub unsafe extern fn memset(src: *mut u8, c: i32, len: isize) {
-    for i in 0..len {
-        ptr::write(src.offset(i), c as u8);
-    }
+pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
+    asm!("cld
+        rep stosb"
+        :
+        : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
+        : "cc", "memory"
+        : "intel");
 }
 /* } Externs */
