@@ -74,6 +74,7 @@
 #![cfg_attr(not(stage0), needs_allocator)]
 
 #![feature(allocator)]
+#![feature(asm)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]
 #![feature(core)]
@@ -128,6 +129,12 @@ mod boxed_test;
 pub mod arc;
 pub mod rc;
 pub mod raw_vec;
+
+#[path="../common/"]
+mod common{
+    pub mod memory;
+    pub mod scheduler;
+}
 
 /// Common out-of-memory routine
 #[cold]

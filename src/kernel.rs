@@ -136,14 +136,17 @@ static mut context_i: usize = 0;
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
-static mut events_ptr: *mut Box<Mutex<Queue<Event>>> = 0 as *mut Box<Mutex<Queue<Event>>>;
+static mut events_ptr: *mut Box<Queue<Event>> = 0 as *mut Box<Queue<Event>>;
 
 pub unsafe extern "cdecl" fn poll_loop() -> ! {
     let session = &mut *session_ptr;
     loop {
-        asm!("cli");
+        let reenable = start_no_ints();
+
         session.on_poll();
-        asm!("sti");
+
+        end_no_ints(reenable);
+
         sched_yield();
     }
 }
@@ -152,13 +155,16 @@ pub unsafe extern "cdecl" fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     loop {
-        let event_option = events.lock().pop();
-        asm!("cli");
-        match event_option {
-            Option::Some(event) => session.event(event),
-            Option::None => ()
+        let reenable = start_no_ints();
+
+        loop{
+            match events.pop() {
+                Option::Some(event) => session.event(event),
+                Option::None => break
+            }
         }
-        asm!("sti");
+
+        end_no_ints(reenable);
         sched_yield();
     }
 }
@@ -175,7 +181,6 @@ pub unsafe extern "cdecl" fn redraw_loop() -> ! {
         }
     }
     loop {
-        asm!("cli");
         if debug_draw {
             let display = &*(*debug_display);
             if debug_redraw {
@@ -185,7 +190,6 @@ pub unsafe extern "cdecl" fn redraw_loop() -> ! {
         }else{
             session.redraw();
         }
-        asm!("sti");
 
         sched_yield();
     }
@@ -246,7 +250,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     session_ptr = 0 as *mut Box<Session>;
 
-    events_ptr = 0 as *mut Box<Mutex<Queue<Event>>>;
+    events_ptr = 0 as *mut Box<Queue<Event>>;
 
     debug_init();
 
@@ -271,7 +275,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     ptr::write(session_ptr, box Session::new());
 
     events_ptr = alloc_type();
-    ptr::write(events_ptr, box Mutex::new(Queue::new()));
+    ptr::write(events_ptr, box Queue::new());
 
     let session = &mut *session_ptr;
     session.cursor = BMP::from_data(cursor_data);
@@ -370,7 +374,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x80 => { // kernel calls
             match eax {
                 0x0 => { //Debug
-                    if false && debug_display as usize > 0 {
+                    if debug_display as usize > 0 {
                         let display = &*(*debug_display);
                         if ebx == 10 {
                             debug_point.x = 0;
@@ -388,9 +392,9 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                             display.scroll(16);
                             debug_point.y -= 16;
                         }
-                    }else{
-                        outb(0x3F8, ebx as u8);
                     }
+
+                    outb(0x3F8, ebx as u8);
                 }
                 0x1 => {
                     d("Open: ");
@@ -419,7 +423,15 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                         (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_ALL);
                     }
 
-                    (*events_ptr).lock().push(event);
+                    let flags: u32;
+                    asm!("pushfd
+                        cli
+                        popfd"
+                        : "={eax}"(flags) : : : "intel");
+                    (*events_ptr).push(event);
+                    if flags & (1 << 9) == (1 << 9){
+                        asm!("sti");
+                    }
                 },
                 0x3 => context_switch(),
                 _ => {
