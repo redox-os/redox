@@ -1,8 +1,7 @@
 use common::debug::*;
 use common::memory::*;
+use common::scheduler::*;
 use common::vec::*;
-
-use programs::common::sched_yield;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 

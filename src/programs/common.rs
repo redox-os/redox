@@ -6,20 +6,15 @@ pub use core::option::Option;
 pub use common::debug::*;
 pub use common::event::*;
 pub use common::queue::*;
+pub use common::mutex::*;
 pub use common::random::*;
 pub use common::resource::*;
+pub use common::scheduler::*;
 pub use common::string::*;
 pub use common::vec::*;
 
 pub use graphics::display::*;
 pub use graphics::point::*;
-
-pub fn sched_yield(){
-    unsafe {
-        asm!("int 0x80"
-            : : "{eax}"(3) : : "intel");
-    }
-}
 
 #[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
