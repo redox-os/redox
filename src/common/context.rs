@@ -1,3 +1,5 @@
+use core::ptr;
+
 use common::debug::*;
 use common::memory::*;
 use common::scheduler::*;
@@ -25,6 +27,10 @@ impl Context {
             stack_ptr: 0,
             fx: alloc(512)
         };
+
+        for i in 0..512 {
+            ptr::write((ret.fx + i) as *mut u8, 0);
+        }
 
         return ret;
     }
@@ -62,6 +68,10 @@ impl Context {
         ret.push(ebp); //EBP
         ret.push(0); //ESI
         ret.push(0); //EDI
+
+        for i in 0..512 {
+            ptr::write((ret.fx + i) as *mut u8, 0);
+        }
 
         return ret;
     }

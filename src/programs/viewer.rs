@@ -16,8 +16,10 @@ impl Viewer {
             events: Queue::new()
         }
     }
+}
 
-    pub fn main(&mut self){
+impl SessionItem for Viewer {
+    fn main(&mut self){
         loop {
             let event_option;
             unsafe{
@@ -52,9 +54,7 @@ impl Viewer {
             }
         }
     }
-}
 
-impl SessionItem for Viewer {
     fn load(&mut self, url: &URL){
         let mut resource = url.open();
 

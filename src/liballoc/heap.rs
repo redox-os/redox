@@ -15,7 +15,26 @@
                       tracing garbage collector",
             issue = "27700")]
 
-use common::memory;
+use core::{isize, usize};
+
+#[allow(improper_ctypes)]
+extern {
+    #[allocator]
+    fn __rust_allocate(size: usize, align: usize) -> *mut u8;
+    fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize);
+    fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize,
+                         align: usize) -> *mut u8;
+    fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize,
+                               align: usize) -> usize;
+    fn __rust_usable_size(size: usize, align: usize) -> usize;
+}
+
+#[inline(always)]
+fn check_size_and_alignment(size: usize, align: usize) {
+    debug_assert!(size != 0);
+    debug_assert!(size <= isize::MAX as usize, "Tried to allocate too much: {} bytes", size);
+    debug_assert!(usize::is_power_of_two(align), "Invalid alignment of allocation: {}", align);
+}
 
 // FIXME: #13996: mark the `allocate` and `reallocate` return value as `noalias`
 
@@ -28,7 +47,8 @@ use common::memory;
 /// size on the platform.
 #[inline]
 pub unsafe fn allocate(size: usize, align: usize) -> *mut u8 {
-    memory::alloc(size) as *mut u8
+    check_size_and_alignment(size, align);
+    __rust_allocate(size, align)
 }
 
 /// Resize the allocation referenced by `ptr` to `size` bytes.
@@ -47,7 +67,8 @@ pub unsafe fn allocate(size: usize, align: usize) -> *mut u8 {
 /// any value in range_inclusive(requested_size, usable_size).
 #[inline]
 pub unsafe fn reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8 {
-    memory::realloc(ptr as usize, size) as *mut u8
+    check_size_and_alignment(size, align);
+    __rust_reallocate(ptr, old_size, size, align)
 }
 
 /// Resize the allocation referenced by `ptr` to `size` bytes.
@@ -65,7 +86,8 @@ pub unsafe fn reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usiz
 #[inline]
 pub unsafe fn reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize,
                                  align: usize) -> usize {
-    memory::realloc_inplace(ptr as usize, size)
+    check_size_and_alignment(size, align);
+    __rust_reallocate_inplace(ptr, old_size, size, align)
 }
 
 /// Deallocates the memory referenced by `ptr`.
@@ -77,14 +99,14 @@ pub unsafe fn reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize,
 /// any value in range_inclusive(requested_size, usable_size).
 #[inline]
 pub unsafe fn deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    memory::unalloc(ptr as usize);
+    __rust_deallocate(ptr, old_size, align)
 }
 
 /// Returns the usable size of an allocation created with the specified the
 /// `size` and `align`.
 #[inline]
 pub fn usable_size(size: usize, align: usize) -> usize {
-    ((size + memory::CLUSTER_SIZE - 1)/memory::CLUSTER_SIZE) * memory::CLUSTER_SIZE
+    unsafe { __rust_usable_size(size, align) }
 }
 
 /// An arbitrary non-null address to represent zero-size allocations.

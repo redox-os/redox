@@ -1,6 +1,6 @@
-use core::atomic::{AtomicBool, Ordering};
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
+use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::debug::*;
 use common::scheduler::*;

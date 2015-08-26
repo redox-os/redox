@@ -1,5 +1,5 @@
-use core::atomic::*;
 use core::mem;
+use core::sync::atomic::*;
 
 use common::elf::*;
 

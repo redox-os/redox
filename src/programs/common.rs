@@ -1,7 +1,12 @@
+pub use alloc::arc::*;
 pub use alloc::boxed::*;
 
+pub use core::cmp::max;
+pub use core::cmp::min;
 pub use core::clone::Clone;
+pub use core::mem::size_of;
 pub use core::option::Option;
+pub use core::ptr;
 
 pub use common::debug::*;
 pub use common::event::*;
@@ -16,8 +21,20 @@ pub use common::vec::*;
 pub use graphics::display::*;
 pub use graphics::point::*;
 
+pub unsafe extern "cdecl" fn item_main(item_ptr: usize){
+    d("item_main\n");
+    dh(item_ptr);
+    dl();
+    let mut session_item = ptr::read(item_ptr as *mut Arc<SessionItem>);
+    Arc::unsafe_get_mut(&mut session_item).main();
+}
+
 #[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
+    fn main(&mut self){
+        d("No main!\n");
+    }
+
     fn load(&mut self, url: &URL){
 
     }
