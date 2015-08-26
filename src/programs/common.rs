@@ -22,9 +22,6 @@ pub use graphics::display::*;
 pub use graphics::point::*;
 
 pub unsafe extern "cdecl" fn item_main(item_ptr: usize){
-    d("item_main\n");
-    dh(item_ptr);
-    dl();
     let mut session_item = ptr::read(item_ptr as *mut Arc<SessionItem>);
     Arc::unsafe_get_mut(&mut session_item).main();
 }

@@ -49,6 +49,9 @@ harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
 run: harddrive.bin
 	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -net user -hda $<
 
+run_gdb: harddrive.bin
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -s -S -sdl -net user -hda $<
+
 run_no_kvm: harddrive.bin
 	$(QEMU) $(QEMU_FLAGS) -sdl -net user -hda $<
 
