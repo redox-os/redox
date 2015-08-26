@@ -1,7 +1,21 @@
 pub fn sched_yield(){
     unsafe {
         asm!("int 0x80"
-            : : "{eax}"(3) : : "intel");
+            :
+            : "{eax}"(3)
+            :
+            : "intel");
+    }
+}
+
+pub fn sched_exit() {
+    // TODO: Wrap in no ints?
+    unsafe {
+        asm!("int 0x80"
+            :
+            : "{eax}"(4)
+            :
+            : "intel");
     }
 }
 

@@ -20,7 +20,7 @@ impl Viewer {
 
 impl SessionItem for Viewer {
     fn main(&mut self){
-        loop {
+        while ! self.window.closed {
             let event_option;
             unsafe{
                 let enable = start_no_ints();
