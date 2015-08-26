@@ -221,6 +221,36 @@ unsafe fn context_switch(){
     end_no_ints(reenable);
 }
 
+unsafe fn context_remove(){
+    let reenable = start_no_ints();
+
+    if contexts_ptr as usize > 0 {
+        let contexts = &mut *(*contexts_ptr);
+
+        if contexts.len() > 1 && context_i > 1 {
+            let current_option = contexts.remove(context_i);
+
+            d("Removed context ");
+            dd(context_i);
+            dl();
+            if context_i >= contexts.len() {
+                context_i -= contexts.len();
+            }
+            match current_option {
+                Option::Some(mut current) => match contexts.get(context_i) {
+                    Option::Some(next) => {
+                        current.swap(next);
+                    },
+                    Option::None => ()
+                },
+                Option::None => ()
+            }
+        }
+    }
+
+    end_no_ints(reenable);
+}
+
 unsafe fn test_disk(disk: Disk){
     if disk.identify() {
         d(" Disk Found");
@@ -428,6 +458,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                     end_no_ints(reenable);
                 },
                 0x3 => context_switch(),
+                0x4 => context_remove(),
                 _ => {
                     d("System Call");
                     d(" EAX:");

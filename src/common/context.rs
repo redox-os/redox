@@ -8,9 +8,8 @@ use common::vec::*;
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
 pub unsafe extern "cdecl" fn context_fail() -> ! {
-    d("Context Returned!\n");
     loop{
-        sched_yield();
+        sched_exit();
     }
 }
 
