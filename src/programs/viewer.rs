@@ -56,7 +56,7 @@ impl SessionItem for Viewer {
 
             match event_option {
                 Option::Some(_) => (),
-                Option::None => ()//sched_yield()
+                Option::None => sys_yield()
             }
         }
     }

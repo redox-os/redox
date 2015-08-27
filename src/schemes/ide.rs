@@ -293,7 +293,7 @@ impl SessionItem for IDE {
             }
 
             while data.load(Ordering::SeqCst) == 0xFFFFFFFF {
-                sched_yield();
+                sys_yield();
             }
 
             let destination = data.load(Ordering::SeqCst);

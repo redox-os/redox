@@ -22,6 +22,8 @@ pub use common::vec::*;
 pub use graphics::display::*;
 pub use graphics::point::*;
 
+pub use syscall::call::*;
+
 #[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
     fn main(&mut self, url: URL){

@@ -3,9 +3,13 @@ use alloc::boxed::*;
 use core::ptr;
 
 use common::debug::*;
+use common::event::*;
+use common::queue::*;
 use common::memory::*;
 use common::scheduler::*;
 use common::vec::*;
+
+use syscall::call::sys_exit;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
@@ -18,72 +22,42 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
     box_fn();
 }
 
-pub unsafe extern "cdecl" fn context_sched_exit() -> !{
+pub unsafe extern "cdecl" fn context_exit() -> !{
     loop {
-        sched_exit();
+        sys_exit();
     }
 }
+/* TODO
+pub unsafe fn context_event_wait() -> Event {
+    loop{
+        let mut event_option = Option::None;
 
-pub unsafe fn context_switch(){
-    let reenable = start_no_ints();
+        let reenable = start_no_ints();
 
-    if contexts_ptr as usize > 0 {
-        let contexts = &*(*contexts_ptr);
-        let current_i = context_i;
-        context_i += 1;
-        if context_i >= contexts.len(){
-            context_i -= contexts.len();
-        }
-        if context_i != current_i {
-            match contexts.get(current_i){
-                Option::Some(current) => match contexts.get(context_i) {
-                    Option::Some(next) => {
-                        current.switch(next);
-                    },
-                    Option::None => ()
-                },
+        if contexts_ptr as usize > 0 {
+            let contexts = &mut *(*contexts_ptr);
+
+            match context.get(context_i) {
+                Option::Some(current) => event_option = current.events.pop(),
                 Option::None => ()
             }
         }
-    }
 
-    end_no_ints(reenable);
-}
+        end_no_ints(reenable);
 
-pub unsafe fn context_exit(){
-    let reenable = start_no_ints();
-
-    if contexts_ptr as usize > 0 {
-        let contexts = &mut *(*contexts_ptr);
-
-        if contexts.len() > 1 && context_i > 1 {
-            let current_option = contexts.remove(context_i);
-
-            d("Removed context ");
-            dd(context_i);
-            dl();
-            if context_i >= contexts.len() {
-                context_i -= contexts.len();
-            }
-            match current_option {
-                Option::Some(mut current) => match contexts.get(context_i) {
-                    Option::Some(next) => {
-                        current.switch(next);
-                    },
-                    Option::None => ()
-                },
-                Option::None => ()
-            }
+        match event_option {
+            Option::Some(event) => return event,
+            Option::None => sys_yield()
         }
     }
-
-    end_no_ints(reenable);
 }
-
+*/
 pub struct Context {
     pub stack: usize,
     pub stack_ptr: u32,
-    pub fx: usize
+    pub fx: usize,
+    pub events: Queue<Event>
+
 }
 
 impl Context {
@@ -91,7 +65,8 @@ impl Context {
         let ret = Context {
             stack: 0,
             stack_ptr: 0,
-            fx: alloc(512)
+            fx: alloc(512),
+            events: Queue::new()
         };
 
         for i in 0..512 {
@@ -107,7 +82,8 @@ impl Context {
         let mut ret = Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
-            fx: alloc(512)
+            fx: alloc(512),
+            events: Queue::new()
         };
 
         let ebp = ret.stack_ptr;
@@ -116,7 +92,7 @@ impl Context {
             ret.push(*arg as u32);
         }
 
-        ret.push(context_sched_exit as u32); //If the function call returns, we will exit
+        ret.push(context_exit as u32); //If the function call returns, we will exit
         ret.push(call as u32); //We will ret into this function call
 
         ret.push(0); //EDI is a param
