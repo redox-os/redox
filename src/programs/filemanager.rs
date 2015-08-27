@@ -79,6 +79,12 @@ impl FileManager {
             row += 1;
             i += 1;
         }
+
+        content.flip();
+        
+        RedrawEvent {
+            redraw: REDRAW_ALL
+        }.to_event().trigger();
     }
 }
 

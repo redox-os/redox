@@ -7,6 +7,7 @@ pub use core::clone::Clone;
 pub use core::mem::size_of;
 pub use core::option::Option;
 pub use core::ptr;
+pub use core::sync::atomic::*;
 
 pub use common::debug::*;
 pub use common::event::*;
@@ -21,19 +22,20 @@ pub use common::vec::*;
 pub use graphics::display::*;
 pub use graphics::point::*;
 
-pub unsafe extern "cdecl" fn item_main(item_ptr: usize){
+pub unsafe extern "cdecl" fn item_main(item_ptr: usize, url_ptr: usize){
     let mut session_item = ptr::read(item_ptr as *mut Arc<SessionItem>);
-    Arc::unsafe_get_mut(&mut session_item).main();
+    ::common::memory::unalloc(item_ptr);
+
+    let url = ptr::read(url_ptr as *mut URL);
+    ::common::memory::unalloc(url_ptr);
+
+    Arc::unsafe_get_mut(&mut session_item).main(url);
 }
 
 #[allow(unused_variables)]
 pub trait SessionItem : ::mopa::Any {
-    fn main(&mut self){
+    fn main(&mut self, url: URL){
         d("No main!\n");
-    }
-
-    fn load(&mut self, url: &URL){
-
     }
 
     fn draw(&self, display: &Display) -> bool {

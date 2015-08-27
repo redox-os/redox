@@ -160,14 +160,14 @@ pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: usize){
             :
             : "{edi}"(dst.offset(len as isize - 1)), "{esi}"(src.offset(len as isize - 1)), "{ecx}"(len)
             : "cc", "memory"
-            : "intel");
+            : "intel", "volatile");
     }else{
         asm!("cld
             rep movsb"
             :
             : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
             : "cc", "memory"
-            : "intel");
+            : "intel", "volatile");
     }
 }
 
@@ -178,7 +178,7 @@ pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: usize){
         :
         : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
         : "cc", "memory"
-        : "intel");
+        : "intel", "volatile");
 }
 
 #[no_mangle]
@@ -188,6 +188,6 @@ pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
         :
         : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
         : "cc", "memory"
-        : "intel");
+        : "intel", "volatile");
 }
 /* } Externs */

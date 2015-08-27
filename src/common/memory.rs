@@ -80,14 +80,14 @@ pub unsafe fn alloc(size: usize) -> usize {
                     number = i;
                 }
                 count += 1;
-                if count*CLUSTER_SIZE > size {
+                if count * CLUSTER_SIZE > size {
                     break;
                 }
             }else{
                 count = 0;
             }
         }
-        if count*CLUSTER_SIZE > size {
+        if count * CLUSTER_SIZE > size {
             let address = cluster_to_address(number);
             for i in number..number + count {
                 set_cluster(i, address);
@@ -104,47 +104,6 @@ pub unsafe fn alloc(size: usize) -> usize {
 
 pub unsafe fn alloc_type<T>() -> *mut T {
     return alloc(size_of::<T>()) as *mut T;
-}
-
-pub unsafe fn alloc_aligned(size: usize, alignment: usize) -> usize{
-    let mut ret = 0;
-
-    //Memory allocation must be atomic
-    let reenable = start_no_ints();
-
-    if size > 0 {
-        let mut number = 0;
-        let mut count = 0;
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                if count == 0 {
-                    if cluster_to_address(i) % alignment == 0 {
-                        number = i;
-                    }else{
-                        continue;
-                    }
-                }
-                count += 1;
-                if count*CLUSTER_SIZE > size {
-                    break;
-                }
-            }else{
-                count = 0;
-            }
-        }
-        if count*CLUSTER_SIZE > size {
-            let address = cluster_to_address(number);
-            for i in number..number + count {
-                set_cluster(i, address);
-            }
-            ret = address;
-        }
-    }
-
-    //Memory allocation must be atomic
-    end_no_ints(reenable);
-
-    return ret;
 }
 
 pub unsafe fn alloc_size(ptr: usize) -> usize {

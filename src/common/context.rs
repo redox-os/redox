@@ -7,7 +7,7 @@ use common::vec::*;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
-pub unsafe extern "cdecl" fn context_fail() -> ! {
+pub unsafe extern "cdecl" fn context_exit() -> ! {
     loop{
         sched_exit();
     }
@@ -49,7 +49,7 @@ impl Context {
             ret.push(*arg as u32);
         }
 
-        ret.push(context_fail as u32); //If the function call returns, we will fail
+        ret.push(context_exit as u32); //If the function call returns, we will exit
         ret.push(call as u32); //We will ret into this function call
 
         ret.push(0); //EDI is a param

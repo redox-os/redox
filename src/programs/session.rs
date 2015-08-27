@@ -11,8 +11,6 @@ use programs::executor::*;
 use programs::filemanager::*;
 use programs::viewer::*;
 
-pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
-
 pub struct Session {
     pub display: Display,
     pub background: BMP,
@@ -211,14 +209,16 @@ impl Session {
                     match self.items.get(0) {
                         Option::Some(item) => {
                             unsafe{
-                                Arc::unsafe_get_mut(item).load(&url);
-
                                 let item_ptr: *mut Arc<SessionItem> = alloc_type();
                                 ptr::write(item_ptr, item.clone());
 
+                                let url_ptr: *mut URL = alloc_type();
+                                ptr::write(url_ptr, url.clone());
+
                                 let mut item_main_args: Vec<usize> = Vec::new();
+                                item_main_args.push(url_ptr as usize);
                                 item_main_args.push(item_ptr as usize);
-                                (*contexts_ptr).push(Context::new(item_main as usize, &item_main_args));
+                                (*::contexts_ptr).push(Context::new(item_main as usize, &item_main_args));
                             }
                         }
                         Option::None => ()

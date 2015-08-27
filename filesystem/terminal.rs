@@ -403,6 +403,12 @@ impl Application {
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
                 content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
             }
+
+            content.flip();
+
+            RedrawEvent {
+                redraw: REDRAW_ALL
+            }.to_event().trigger();
         }
 
         if row >= rows {
