@@ -125,14 +125,11 @@ static mut debug_point: Point = Point{ x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 
-pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
-pub static mut context_i: usize = 0;
-
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
 static mut events_ptr: *mut Box<Queue<Event>> = 0 as *mut Box<Queue<Event>>;
 
-pub unsafe extern "cdecl" fn poll_loop() -> ! {
+unsafe fn poll_loop() -> ! {
     let session = &mut *session_ptr;
     loop {
         let reenable = start_no_ints();
@@ -145,7 +142,7 @@ pub unsafe extern "cdecl" fn poll_loop() -> ! {
     }
 }
 
-pub unsafe extern "cdecl" fn event_loop() -> ! {
+unsafe fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     loop {
@@ -164,7 +161,7 @@ pub unsafe extern "cdecl" fn event_loop() -> ! {
     }
 }
 
-pub unsafe extern "cdecl" fn redraw_loop() -> ! {
+unsafe fn redraw_loop() -> ! {
     let session = &mut *session_ptr;
     {
         let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
@@ -188,68 +185,6 @@ pub unsafe extern "cdecl" fn redraw_loop() -> ! {
 
         sched_yield();
     }
-}
-
-pub unsafe extern "cdecl" fn debug_loop(arg: u32){
-    dh(arg as usize);
-    dl();
-    //Returns to test context delete
-}
-
-unsafe fn context_switch(){
-    let reenable = start_no_ints();
-
-    if contexts_ptr as usize > 0 {
-        let contexts = &*(*contexts_ptr);
-        let current_i = context_i;
-        context_i += 1;
-        if context_i >= contexts.len(){
-            context_i -= contexts.len();
-        }
-        if context_i != current_i {
-            match contexts.get(current_i){
-                Option::Some(current) => match contexts.get(context_i) {
-                    Option::Some(next) => {
-                        current.swap(next);
-                    },
-                    Option::None => ()
-                },
-                Option::None => ()
-            }
-        }
-    }
-
-    end_no_ints(reenable);
-}
-
-unsafe fn context_remove(){
-    let reenable = start_no_ints();
-
-    if contexts_ptr as usize > 0 {
-        let contexts = &mut *(*contexts_ptr);
-
-        if contexts.len() > 1 && context_i > 1 {
-            let current_option = contexts.remove(context_i);
-
-            d("Removed context ");
-            dd(context_i);
-            dl();
-            if context_i >= contexts.len() {
-                context_i -= contexts.len();
-            }
-            match current_option {
-                Option::Some(mut current) => match contexts.get(context_i) {
-                    Option::Some(next) => {
-                        current.swap(next);
-                    },
-                    Option::None => ()
-                },
-                Option::None => ()
-            }
-        }
-    }
-
-    end_no_ints(reenable);
 }
 
 unsafe fn test_disk(disk: Disk){
@@ -338,15 +273,16 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(Arc::new(PCIScheme));
     session.items.push(Arc::new(RandomScheme));
 
-    let contexts = &mut *(*contexts_ptr);
-    contexts.push(Context::root());
-    contexts.push(Context::new(poll_loop as usize, &Vec::new()));
-    contexts.push(Context::new(event_loop as usize, &Vec::new()));
-    contexts.push(Context::new(redraw_loop as usize, &Vec::new()));
-
-    let mut debug_loop_args: Vec<usize> = Vec::new();
-    debug_loop_args.push(0xDEADBEEF);
-    contexts.push(Context::new(debug_loop as usize, &debug_loop_args));
+    (*contexts_ptr).push(Context::root());
+    Context::spawn(box move ||{
+        poll_loop();
+    });
+    Context::spawn(box move ||{
+        event_loop();
+    });
+    Context::spawn(box move ||{
+        redraw_loop();
+    });
 }
 
 fn dr(reg: &str, value: u32){
@@ -459,7 +395,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
                     end_no_ints(reenable);
                 },
                 0x3 => context_switch(),
-                0x4 => context_remove(),
+                0x4 => context_exit(),
                 _ => {
                     d("System Call");
                     d(" EAX:");

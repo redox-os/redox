@@ -209,16 +209,11 @@ impl Session {
                     match self.items.get(0) {
                         Option::Some(item) => {
                             unsafe{
-                                let item_ptr: *mut Arc<SessionItem> = alloc_type();
-                                ptr::write(item_ptr, item.clone());
-
-                                let url_ptr: *mut URL = alloc_type();
-                                ptr::write(url_ptr, url.clone());
-
-                                let mut item_main_args: Vec<usize> = Vec::new();
-                                item_main_args.push(url_ptr as usize);
-                                item_main_args.push(item_ptr as usize);
-                                (*::contexts_ptr).push(Context::new(item_main as usize, &item_main_args));
+                                let mut item_clone = item.clone();
+                                let url_clone = url.clone();
+                                Context::spawn(box move ||{
+                                    Arc::unsafe_get_mut(&mut item_clone).main(url_clone);
+                                });
                             }
                         }
                         Option::None => ()
