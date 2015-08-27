@@ -1,5 +1,4 @@
 use core::mem;
-use core::sync::atomic::*;
 
 use common::elf::*;
 
@@ -68,13 +67,15 @@ impl Drop for Executor {
 }
 
 impl SessionItem for Executor {
-    fn load(&mut self, url: &URL){
+    fn main(&mut self, url: URL){
         let mut resource = url.open();
 
         let mut vec: Vec<u8> = Vec::new();
         match resource.read_to_end(&mut vec){
             Option::Some(_) => {
                 unsafe{
+                    let reenable = start_no_ints();
+
                     self.executable = ELF::from_data(vec.as_ptr() as usize);
                     //self.executable.d();
 
@@ -85,6 +86,12 @@ impl SessionItem for Executor {
                     self.on_mouse = self.executable.symbol("on_mouse".to_string());
 
                     self.entry();
+
+                    RedrawEvent {
+                        redraw: REDRAW_ALL
+                    }.to_event().trigger();
+
+                    end_no_ints(reenable);
                 }
             },
             Option::None => ()
@@ -105,7 +112,7 @@ impl SessionItem for Executor {
                 return ret;
             }
         }
-        return false;
+        return true;
     }
 
     fn on_key(&mut self, key_event: KeyEvent){

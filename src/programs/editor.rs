@@ -6,6 +6,8 @@ use programs::common::*;
 
 pub struct Editor {
     window: Window,
+    events: Queue<Event>,
+    closed: AtomicBool,
     url: URL,
     string: String,
     offset: usize,
@@ -17,6 +19,8 @@ impl Editor {
     pub fn new() -> Editor {
         Editor {
             window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
+            events: Queue::new(),
+            closed: AtomicBool::new(false),
             url: URL::new(),
             string: String::new(),
             offset: 0,
@@ -111,6 +115,12 @@ impl Editor {
                     redraw = true;
                 }
             }
+
+            content.flip();
+
+            RedrawEvent {
+                redraw: REDRAW_ALL
+            }.to_event().trigger();
         }
 
         if redraw {
@@ -120,81 +130,102 @@ impl Editor {
 }
 
 impl SessionItem for Editor {
-    fn load(&mut self, url: &URL){
-        self.url = url.clone();
+    fn main(&mut self, url: URL){
+        self.url = url;
         self.reload();
         self.draw_content();
+
+        while ! self.closed.load(Ordering::SeqCst) {
+            let event_option;
+            unsafe{
+                let enable = start_no_ints();
+                event_option = self.events.pop();
+                end_no_ints(enable);
+            }
+
+            match event_option {
+                Option::Some(event_const) => {
+                    let mut event = event_const;
+                    match event.code {
+                        'k' => {
+                            let key_event = KeyEvent::from_event(&mut event);
+                            if key_event.pressed {
+                                match key_event.scancode {
+                                    0x3F => self.reload(),
+                                    0x40 => self.save(),
+                                    0x47 => self.offset = 0,
+                                    0x48 => for i in 1..self.offset {
+                                        match self.string[self.offset - i] {
+                                            '\0' => break,
+                                            '\n' => {
+                                                self.offset = self.offset - i;
+                                                break;
+                                            },
+                                            _ => ()
+                                        }
+                                    },
+                                    0x4B => if self.offset > 0 {
+                                                self.offset -= 1;
+                                            },
+                                    0x4D => if self.offset < self.string.len() {
+                                                self.offset += 1;
+                                            },
+                                    0x4F => self.offset = self.string.len(),
+                                    0x50 => for i in self.offset + 1..self.string.len() {
+                                        match self.string[i] {
+                                            '\0' => break,
+                                            '\n' => {
+                                                self.offset = i;
+                                                break;
+                                            },
+                                            _ => ()
+                                        }
+                                    },
+                                    0x53 => if self.offset < self.string.len() {
+                                        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                        self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
+                                    },
+                                    _ => ()
+                                }
+
+                                match key_event.character {
+                                    '\x00' => (),
+                                    '\x08' => if self.offset > 0 {
+                                        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                        self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
+                                        self.offset -= 1;
+                                    },
+                                    _ => {
+                                        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                        self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
+                                        self.offset += 1;
+                                    }
+                                }
+
+                                self.draw_content();
+                            }
+                        },
+                        _ => ()
+                    }
+                },
+                Option::None => sched_yield()
+            }
+        }
     }
 
     fn draw(&self, display: &Display) -> bool{
-        return self.window.draw(display);
+        self.window.draw(display);
+        return ! self.closed.load(Ordering::SeqCst);
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
-        if key_event.pressed {
-            match key_event.scancode {
-                0x01 => self.window.closed = true,
-                0x3F => self.reload(),
-                0x40 => self.save(),
-                0x47 => self.offset = 0,
-                0x48 => for i in 1..self.offset {
-                    match self.string[self.offset - i] {
-                        '\0' => break,
-                        '\n' => {
-                            self.offset = self.offset - i;
-                            break;
-                        },
-                        _ => ()
-                    }
-                },
-                0x4B => if self.offset > 0 {
-                            self.offset -= 1;
-                        },
-                0x4D => if self.offset < self.string.len() {
-                            self.offset += 1;
-                        },
-                0x4F => self.offset = self.string.len(),
-                0x50 => for i in self.offset + 1..self.string.len() {
-                    match self.string[i] {
-                        '\0' => break,
-                        '\n' => {
-                            self.offset = i;
-                            break;
-                        },
-                        _ => ()
-                    }
-                },
-                0x53 => if self.offset < self.string.len() {
-                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                    self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
-                },
-                _ => ()
-            }
-
-            match key_event.character {
-                '\x00' => (),
-                '\x08' => if self.offset > 0 {
-                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                    self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
-                    self.offset -= 1;
-                },
-                _ => {
-                    self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                    self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
-                    self.offset += 1;
-                }
-            }
-
-            self.draw_content();
+        if key_event.pressed && key_event.scancode == 1 {
+            self.closed.store(true, Ordering::SeqCst);
         }
+        self.events.push(key_event.to_event());
     }
 
     fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        if self.window.on_mouse(mouse_event, allow_catch) {
-            self.draw_content();
-            return true;
-        }else{
-            return false;
-        }
+        return self.window.on_mouse(mouse_event, allow_catch);
     }
 }

@@ -1,5 +1,3 @@
-use core::sync::atomic::*;
-
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;

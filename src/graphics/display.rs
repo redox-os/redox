@@ -5,6 +5,7 @@ use core::ops::Drop;
 use core::simd::*;
 
 use common::memory::*;
+use common::scheduler::*;
 use common::string::*;
 
 use graphics::color::*;
@@ -65,7 +66,7 @@ impl Display {
     pub unsafe fn root() -> Display {
         let mode_info = &*VBEMODEINFO;
 
-        Display {
+        let ret = Display {
             offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
@@ -73,22 +74,32 @@ impl Display {
             width: mode_info.xresolution as usize,
             height: mode_info.yresolution as usize,
             root: true
-        }
+        };
+
+        ret.set(Color::new(0, 0, 0));
+        ret.flip();
+
+        return ret;
     }
 
     pub fn new(width: usize, height: usize) -> Display {
         unsafe{
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
-            Display {
+            let ret = Display {
                 offscreen: alloc(memory_size),
-                onscreen: 0 /*alloc(memory_size)*/,
+                onscreen: alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width:  width,
                 height: height,
                 root: false
-            }
+            };
+
+            ret.set(Color::new(0, 0, 0));
+            ret.flip();
+
+            return ret;
         }
     }
 
@@ -156,7 +167,9 @@ impl Display {
 
     pub fn flip(&self){
         unsafe{
+            let reenable = start_no_ints();
             Display::copy_run(self.offscreen, self.onscreen, self.size);
+            end_no_ints(reenable);
         }
     }
 
