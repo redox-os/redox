@@ -63,6 +63,11 @@ mod programs {
     pub mod common;
 }
 
+mod syscall {
+    pub mod call;
+    pub mod common;
+}
+
 //Class wrappers
 pub static mut application: *mut Box<Application> = 0 as *mut Box<Application>;
 

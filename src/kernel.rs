@@ -44,6 +44,9 @@ use schemes::memory::*;
 use schemes::pci::*;
 use schemes::random::*;
 
+use syscall::common::*;
+use syscall::handle::*;
+
 mod common {
     pub mod context;
     pub mod debug;
@@ -115,6 +118,12 @@ mod schemes {
     pub mod random;
 }
 
+mod syscall {
+    pub mod call;
+    pub mod common;
+    pub mod handle;
+}
+
 mod usb {
     pub mod ehci;
     pub mod xhci;
@@ -138,7 +147,7 @@ unsafe fn poll_loop() -> ! {
 
         end_no_ints(reenable);
 
-        sched_yield();
+        sys_yield();
     }
 }
 
@@ -157,7 +166,7 @@ unsafe fn event_loop() -> ! {
 
         end_no_ints(reenable);
 
-        sched_yield();
+        sys_yield();
     }
 }
 
@@ -183,7 +192,7 @@ unsafe fn redraw_loop() -> ! {
             session.redraw();
         }
 
-        sched_yield();
+        sys_yield();
     }
 }
 
@@ -295,26 +304,28 @@ fn dr(reg: &str, value: u32){
 #[no_mangle]
 //Take regs for kernel calls and exceptions
 pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, eax: u32, eip: u32, eflags: u32) {
-    let exception = |name: &str|{
-        d(name);
-        dl();
+    macro_rules! exception {
+        ($name:expr) => ({
+            d($name);
+            dl();
 
-        dr("INT", interrupt);
-        dr("EIP", eip);
-        dr("EFLAGS", eflags);
-        dr("EAX", eax);
-        dr("EBX", ebx);
-        dr("ECX", ecx);
-        dr("EDX", edx);
-        dr("EDI", edi);
-        dr("ESI", esi);
-        dr("EBP", ebp);
-        dr("ESP", esp);
+            dr("INT", interrupt);
+            dr("EIP", eip);
+            dr("EFLAGS", eflags);
+            dr("EAX", eax);
+            dr("EBX", ebx);
+            dr("ECX", ecx);
+            dr("EDX", edx);
+            dr("EDI", edi);
+            dr("ESI", esi);
+            dr("EBP", ebp);
+            dr("ESP", esp);
 
-        loop {
-            asm!("cli");
-            asm!("hlt");
-        }
+            loop {
+                asm!("cli");
+                asm!("hlt");
+            }
+        })
     };
 
     if interrupt >= 0x20 && interrupt < 0x30 {
@@ -326,111 +337,39 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
     }
 
     match interrupt {
-        0x20 => context_switch(), // Context switch timer
+        0x20 => syscall_handle(SYS_YIELD, 0, 0, 0), // Context switch timer
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
+        0x28 => (*session_ptr).on_irq(0x8), //RTC
         0x29 => (*session_ptr).on_irq(0x9), //pci
         0x2A => (*session_ptr).on_irq(0xA), //pci
         0x2B => (*session_ptr).on_irq(0xB), //pci
         0x2C => (*session_ptr).on_irq(0xC), //mouse
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => { // kernel calls
-            match eax {
-                0x0 => { //Debug
-                    if debug_display as usize > 0 {
-                        let display = &*(*debug_display);
-                        if ebx == 10 {
-                            debug_point.x = 0;
-                            debug_point.y += 16;
-                            debug_redraw = true;
-                        }else{
-                            display.char(debug_point, (ebx as u8) as char, Color::new(255, 255, 255));
-                            debug_point.x += 8;
-                        }
-                        if debug_point.x >= display.width as isize {
-                            debug_point.x = 0;
-                            debug_point.y += 16;
-                        }
-                        while debug_point.y + 16 > display.height as isize {
-                            display.scroll(16);
-                            debug_point.y -= 16;
-                        }
-                    }
-
-                    outb(0x3F8, ebx as u8);
-                }
-                0x1 => {
-                    d("Open: ");
-                    let url: &URL = &*(ebx as *const URL);
-                    url.d();
-
-                    let session = &mut *session_ptr;
-                    ptr::write(ecx as *mut Box<Resource>, session.open(url));
-                },
-                0x2 => {
-                    let mut event = *(ebx as *const Event);
-
-                    if event.code == 'm' {
-                        event.a = max(0, min((*session_ptr).display.width as isize - 1, (*session_ptr).mouse_point.x + event.a));
-                        event.b = max(0, min((*session_ptr).display.height as isize - 1, (*session_ptr).mouse_point.y + event.b));
-                        (*session_ptr).mouse_point.x = event.a;
-                        (*session_ptr).mouse_point.y = event.b;
-                        (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_CURSOR);
-                    }
-                    if event.code == 'k' && event.b == 0x3B && event.c > 0 {
-                        debug_draw = true;
-                        debug_redraw = true;
-                    }
-                    if event.code == 'k' && event.b == 0x3C && event.c > 0 {
-                        debug_draw = false;
-                        (*session_ptr).redraw = max((*session_ptr).redraw, REDRAW_ALL);
-                    }
-
-                    let reenable = start_no_ints();
-
-                    (*events_ptr).push(event);
-
-                    end_no_ints(reenable);
-                },
-                0x3 => context_switch(),
-                0x4 => context_exit(),
-                _ => {
-                    d("System Call");
-                    d(" EAX:");
-                    dh(eax as usize);
-                    d(" EBX:");
-                    dh(ebx as usize);
-                    d(" ECX:");
-                    dh(ecx as usize);
-                    d(" EDX:");
-                    dh(edx as usize);
-                    dl();
-                }
-            }
-        },
+        0x80 => syscall_handle(eax, ebx, ecx, edx),
         0xFF => init(eax as usize, ebx as usize),
-        0x0 => exception("Divide by zero exception"),
-        0x1 => exception("Debug exception"),
-        0x2 => exception("Non-maskable interrupt"),
-        0x3 => exception("Breakpoint exception"),
-        0x4 => exception("Overflow exception"),
-        0x5 => exception("Bound range exceeded exception"),
-        0x6 => exception("Invalid opcode exception"),
-        0x7 => exception("Device not available exception"),
-        0x8 => exception("Double fault"),
-        0xA => exception("Invalid TSS exception"),
-        0xB => exception("Segment not present exception"),
-        0xC => exception("Stack-segment fault"),
-        0xD => exception("General protection fault"),
-        0xE => exception("Page fault"),
-        0x10 => exception("x87 floating-point exception"),
-        0x11 => exception("Alignment check exception"),
-        0x12 => exception("Machine check exception"),
-        0x13 => exception("SIMD floating-point exception"),
-        0x14 => exception("Virtualization exception"),
-        0x1E => exception("Security exception"),
+        0x0 => exception!("Divide by zero exception"),
+        0x1 => exception!("Debug exception"),
+        0x2 => exception!("Non-maskable interrupt"),
+        0x3 => exception!("Breakpoint exception"),
+        0x4 => exception!("Overflow exception"),
+        0x5 => exception!("Bound range exceeded exception"),
+        0x6 => exception!("Invalid opcode exception"),
+        0x7 => exception!("Device not available exception"),
+        0x8 => exception!("Double fault"),
+        0xA => exception!("Invalid TSS exception"),
+        0xB => exception!("Segment not present exception"),
+        0xC => exception!("Stack-segment fault"),
+        0xD => exception!("General protection fault"),
+        0xE => exception!("Page fault"),
+        0x10 => exception!("x87 floating-point exception"),
+        0x11 => exception!("Alignment check exception"),
+        0x12 => exception!("Machine check exception"),
+        0x13 => exception!("SIMD floating-point exception"),
+        0x14 => exception!("Virtualization exception"),
+        0x1E => exception!("Security exception"),
         _ => {
             d("Interrupt: ");
             dh(interrupt as usize);

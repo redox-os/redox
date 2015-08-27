@@ -208,7 +208,7 @@ impl SessionItem for Editor {
                         _ => ()
                     }
                 },
-                Option::None => sched_yield()
+                Option::None => sys_yield()
             }
         }
     }

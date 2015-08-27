@@ -3,7 +3,8 @@ use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::debug::*;
-use common::scheduler::*;
+
+use syscall::call::sys_yield;
 
 pub struct Mutex<T: ?Sized> {
     lock: AtomicBool,
@@ -22,7 +23,7 @@ impl<T> Mutex<T> {
 impl<T: ?Sized> Mutex<T> {
     pub fn lock(&self) -> MutexGuard<T> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
-            sched_yield();
+            sys_yield();
         }
         return MutexGuard::new(&self.lock, &self.value);
     }
