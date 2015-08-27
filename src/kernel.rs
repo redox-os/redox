@@ -126,7 +126,7 @@ static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 
 pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
-static mut context_i: usize = 0;
+pub static mut context_i: usize = 0;
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
