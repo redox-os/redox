@@ -147,8 +147,8 @@ impl URL {
             asm!("int 0x80"
                 :
                 : "{eax}"(1), "{ebx}"(url_ptr as u32), "{ecx}"(resource_ptr as u32)
-                :
-                : "intel");
+                : "memory"
+                : "intel", "volatile");
             let resource = ptr::read(resource_ptr);
             unalloc(resource_ptr as usize);
             return resource;

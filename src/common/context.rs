@@ -86,7 +86,7 @@ impl Context {
             fxrstor [esi]"
             :
             : "{edi}"(self.fx), "{esi}"(other.fx)
-            :
+            : "memory"
             : "intel", "volatile");
         asm!("pushfd
             pushad
@@ -96,7 +96,7 @@ impl Context {
             popfd"
             :
             : "{edi}"(&mut self.stack_ptr), "{esi}"(&mut other.stack_ptr)
-            :
+            : "memory"
             : "intel", "volatile");
     }
 }

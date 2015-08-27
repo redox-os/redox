@@ -4,7 +4,7 @@ pub fn sched_yield(){
             :
             : "{eax}"(3)
             :
-            : "intel");
+            : "intel", "volatile");
     }
 }
 
@@ -15,7 +15,7 @@ pub fn sched_exit() {
             :
             : "{eax}"(4)
             :
-            : "intel");
+            : "intel", "volatile");
     }
 }
 
@@ -24,7 +24,10 @@ pub unsafe fn start_no_ints() -> bool {
     asm!("pushfd
         cli
         pop eax"
-        : "={eax}"(flags) : : : "intel");
+        : "={eax}"(flags)
+        :
+        :
+        : "intel", "volatile");
     return flags & (1 << 9) == (1 << 9);
 }
 
