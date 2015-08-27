@@ -1,3 +1,5 @@
+use alloc::boxed::*;
+
 use core::ptr;
 
 use common::debug::*;
@@ -7,10 +9,75 @@ use common::vec::*;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
-pub unsafe extern "cdecl" fn context_exit() -> ! {
-    loop{
+pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
+pub static mut context_i: usize = 0;
+
+pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
+    let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
+    unalloc(box_fn_ptr);
+    box_fn();
+}
+
+pub unsafe extern "cdecl" fn context_sched_exit() -> !{
+    loop {
         sched_exit();
     }
+}
+
+pub unsafe fn context_switch(){
+    let reenable = start_no_ints();
+
+    if contexts_ptr as usize > 0 {
+        let contexts = &*(*contexts_ptr);
+        let current_i = context_i;
+        context_i += 1;
+        if context_i >= contexts.len(){
+            context_i -= contexts.len();
+        }
+        if context_i != current_i {
+            match contexts.get(current_i){
+                Option::Some(current) => match contexts.get(context_i) {
+                    Option::Some(next) => {
+                        current.switch(next);
+                    },
+                    Option::None => ()
+                },
+                Option::None => ()
+            }
+        }
+    }
+
+    end_no_ints(reenable);
+}
+
+pub unsafe fn context_exit(){
+    let reenable = start_no_ints();
+
+    if contexts_ptr as usize > 0 {
+        let contexts = &mut *(*contexts_ptr);
+
+        if contexts.len() > 1 && context_i > 1 {
+            let current_option = contexts.remove(context_i);
+
+            d("Removed context ");
+            dd(context_i);
+            dl();
+            if context_i >= contexts.len() {
+                context_i -= contexts.len();
+            }
+            match current_option {
+                Option::Some(mut current) => match contexts.get(context_i) {
+                    Option::Some(next) => {
+                        current.switch(next);
+                    },
+                    Option::None => ()
+                },
+                Option::None => ()
+            }
+        }
+    }
+
+    end_no_ints(reenable);
 }
 
 pub struct Context {
@@ -49,7 +116,7 @@ impl Context {
             ret.push(*arg as u32);
         }
 
-        ret.push(context_exit as u32); //If the function call returns, we will exit
+        ret.push(context_sched_exit as u32); //If the function call returns, we will exit
         ret.push(call as u32); //We will ret into this function call
 
         ret.push(0); //EDI is a param
@@ -75,13 +142,29 @@ impl Context {
         return ret;
     }
 
+    pub fn spawn(box_fn: Box<FnBox()>) {
+        unsafe{
+            let box_fn_ptr: *mut Box<FnBox()> = alloc_type();
+            ptr::write(box_fn_ptr, box_fn);
+
+            let mut context_box_args: Vec<usize> = Vec::new();
+            context_box_args.push(box_fn_ptr as usize);
+
+            let reenable = start_no_ints();
+            if contexts_ptr as usize > 0 {
+                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args));
+            }
+            end_no_ints(reenable);
+        }
+    }
+
     pub unsafe fn push(&mut self, data: u32){
         self.stack_ptr -= 4;
         *(self.stack_ptr as *mut u32) = data;
     }
 
     #[inline(never)]
-    pub unsafe fn swap(&mut self, other: &mut Context){
+    pub unsafe fn switch(&mut self, other: &mut Context){
         asm!("fxsave [edi]
             fxrstor [esi]"
             :
