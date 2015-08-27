@@ -19,7 +19,7 @@ pub fn db(byte: u8){
             :
             : "{eax}"(0), "{ebx}"(byte as usize)
             :
-            : "intel");
+            : "intel", "volatile");
     }
 }
 

@@ -20,8 +20,8 @@ impl Event {
             asm!("int 0x80"
                 :
                 : "{eax}"(2), "{ebx}"(event_ptr as u32)
-                :
-                : "intel");
+                : "memory"
+                : "intel", "volatile");
         }
     }
 }
