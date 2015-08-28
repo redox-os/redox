@@ -28,6 +28,7 @@ use drivers::keyboard::keyboard_init;
 use drivers::mouse::mouse_init;
 use drivers::pci::*;
 use drivers::ps2::*;
+use drivers::rtc::*;
 use drivers::serial::*;
 
 use filesystems::unfs::*;
@@ -74,6 +75,7 @@ mod drivers {
     pub mod mouse;
     pub mod pci;
     pub mod ps2;
+    pub mod rtc;
     pub mod serial;
 }
 
@@ -133,6 +135,16 @@ mod usb {
     pub mod xhci;
 }
 
+static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
+static mut debug_point: Point = Point{ x: 0, y: 0 };
+static mut debug_draw: bool = false;
+static mut debug_redraw: bool = false;
+
+static mut clock_realtime: Duration = Duration {
+    secs: 0,
+    nanos: 0
+};
+
 static mut clock_monotonic: Duration = Duration {
     secs: 0,
     nanos: 0
@@ -142,11 +154,6 @@ static pit_duration: Duration = Duration {
     secs: 0,
     nanos: 4500572
 };
-
-static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
-static mut debug_point: Point = Point{ x: 0, y: 0 };
-static mut debug_draw: bool = false;
-static mut debug_redraw: bool = false;
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
@@ -227,13 +234,16 @@ unsafe fn test_disk(disk: Disk){
 }
 
 unsafe fn init(font_data: usize, cursor_data: usize){
-    clock_monotonic.secs = 0;
-    clock_monotonic.nanos = 0;
-
     debug_display = 0 as *mut Box<Display>;
     debug_point = Point{ x: 0, y: 0 };
     debug_draw = false;
     debug_redraw = false;
+
+    clock_realtime.secs = 0;
+    clock_realtime.nanos = 0;
+
+    clock_monotonic.secs = 0;
+    clock_monotonic.nanos = 0;
 
     contexts_ptr = 0 as *mut Box<Vec<Context>>;
     context_i = 0;
@@ -257,6 +267,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     ptr::write(debug_display, box Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
+
+    clock_realtime.secs = rtc_read();
 
     contexts_ptr = alloc_type();
     ptr::write(contexts_ptr, box Vec::new());
@@ -357,6 +369,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
     match interrupt {
         0x20 => {
             let reenable = start_no_ints();
+            clock_realtime = clock_realtime + pit_duration;
             clock_monotonic = clock_monotonic + pit_duration;
             end_no_ints(reenable);
             syscall_handle(SYS_YIELD, 0, 0, 0); // Context switch timer
