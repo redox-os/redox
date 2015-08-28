@@ -38,17 +38,21 @@ impl Executor {
     }
 
     unsafe fn unsafe_map(&mut self){
+        let reenable = start_no_ints();
         let mapped = self.mapped.fetch_add(1, Ordering::SeqCst);
         if self.executable.data > 0 && mapped == 0{
             self.executable.map();
         }
+        end_no_ints(reenable);
     }
 
     unsafe fn unsafe_unmap(&mut self){
+        let reenable = start_no_ints();
         let mapped = self.mapped.fetch_sub(1, Ordering::SeqCst);
         if self.executable.data > 0 && mapped == 1{
             self.executable.unmap();
         }
+        end_no_ints(reenable);
     }
 }
 
