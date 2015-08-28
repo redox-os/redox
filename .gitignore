@@ -1,6 +1,6 @@
 *.bin
 *.gen
-*.o
+*.list
 *.pcap
 *.rlib
 setup/rust/

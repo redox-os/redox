@@ -1,13 +1,13 @@
 SECTION .text
 [BITS 16]
-;Generate a memory map at 0x500 to 0x7BFF (available memory not used for kernel or bootloader)
+;Generate a memory map at 0x500 to 0x5000 (available memory not used for kernel or bootloader)
 memory_map:
 	xor ebx, ebx
 	mov di, 0x500
 .clear:
 	mov [di], ebx
 	add di, 4
-	cmp di, 0x7B00
+	cmp di, 0x5000
 	jb .clear
 
 	mov di, 0x500
@@ -22,7 +22,7 @@ memory_map:
 	je .done ; Finished
 
 	add di, 24
-	cmp di, 0x7B00
+	cmp di, 0x5000
 	jb .lp ; Still have buffer space
 .done:
 	ret

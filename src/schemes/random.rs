@@ -2,7 +2,7 @@ use programs::common::*;
 
 pub struct RandomScheme;
 
-impl SessionModule for RandomScheme {
+impl SessionItem for RandomScheme {
     fn scheme(&self) -> String {
         return "random".to_string();
     }

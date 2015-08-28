@@ -1,20 +1,23 @@
 RUSTC=rustc
-RUSTCFLAGS=-C relocation-model=dynamic-no-pic -C no-stack-check \
-	-O -Z no-landing-pads \
-	-A dead-code \
-	-W trivial-casts -W trivial-numeric-casts \
+RUSTCFLAGS=-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2 \
+	-C no-vectorize-loops -C no-vectorize-slp -C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
+	-Z no-landing-pads \
+	-W dead-code -W trivial-casts -W trivial-numeric-casts \
 	-L .
 #--cfg debug_network
 LD=ld
 AS=nasm
 QEMU=qemu-system-i386
-QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive
+QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive -d cpu_reset
 #-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 
 all: harddrive.bin
 
-doc: kernel.rlib
-	rustdoc --target i686-unknown-linux-gnu src/kernel.rs --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
+kernel.list: kernel.bin
+	objdump -C -M intel -d $< > $@
+
+doc: src/kernel.rs
+	rustdoc --target i686-unknown-linux-gnu $< --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
 
 liballoc.rlib: src/liballoc/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<
@@ -47,6 +50,9 @@ harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
 run: harddrive.bin
 	$(QEMU) $(QEMU_FLAGS) -enable-kvm -sdl -net user -hda $<
 
+run_gdb: harddrive.bin
+	$(QEMU) $(QEMU_FLAGS) -enable-kvm -s -S -sdl -net user -hda $<
+
 run_no_kvm: harddrive.bin
 	$(QEMU) $(QEMU_FLAGS) -sdl -net user -hda $<
 
@@ -65,4 +71,4 @@ run_tap_dump: harddrive.bin
 	sudo tunctl -d tap_qemu
 
 clean:
-	rm -f *.bin *.o *.rlib filesystem/*.bin src/*.gen
+	rm -f *.bin *.list *.rlib filesystem/*.bin src/*.gen

@@ -18,7 +18,7 @@ pub struct RTL8139 {
 
 static mut RTL8139_TX: u16 = 0;
 
-impl SessionModule for RTL8139 {
+impl SessionItem for RTL8139 {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             if cfg!(debug_network){

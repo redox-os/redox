@@ -2,6 +2,8 @@ use common::pio::*;
 
 use core::str::StrExt;
 
+use syscall::call::sys_debug;
+
 pub unsafe fn debug_init(){
     outb(0x3F8 + 1, 0x00);
     outb(0x3F8 + 3, 0x80);
@@ -14,13 +16,7 @@ pub unsafe fn debug_init(){
 }
 
 pub fn db(byte: u8){
-    unsafe{
-        asm!("int 0x80"
-            :
-            : "{eax}"(0), "{ebx}"(byte as usize)
-            :
-            : "intel");
-    }
+    sys_debug(byte);
 }
 
 pub fn dbh(byte: u8){

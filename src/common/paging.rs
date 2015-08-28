@@ -8,7 +8,11 @@ pub unsafe fn set_page(virtual_address: usize, physical_address: usize){
 
     *(entry_address as *mut u32) = (physical_address as u32 & 0xFFFFF000) | 1;
 
-    asm!("invlpg [$0]" : : "{eax}"(virtual_address) : : "intel");
+    asm!("invlpg [$0]"
+        :
+        : "{eax}"(virtual_address)
+        : "memory"
+        : "intel", "volatile");
 }
 
 pub unsafe fn identity_page(virtual_address: usize){
@@ -28,5 +32,8 @@ pub unsafe fn page_init(){
         mov $0, cr0\n
         or $0, 0x80000000\n
         mov cr0, $0\n"
-        : : "{eax}"(PAGE_DIRECTORY) : : "intel");
+        :
+        : "{eax}"(PAGE_DIRECTORY)
+        : "memory"
+        : "intel", "volatile");
 }

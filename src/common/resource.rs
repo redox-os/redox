@@ -11,6 +11,8 @@ use common::memory::*;
 use common::string::*;
 use common::vec::*;
 
+use syscall::call::sys_open;
+
 pub enum ResourceSeek {
     Start(usize),
     End(isize),
@@ -142,16 +144,15 @@ impl URL {
 
     pub fn open(&self) -> Box<Resource> {
         unsafe{
-            let url_ptr: *const URL = self;
-            let resource_ptr: *mut Box<Resource> = alloc(size_of::<Box<Resource>>()) as *mut Box<Resource>;
-            asm!("int 0x80"
-                :
-                : "{eax}"(1), "{ebx}"(url_ptr as u32), "{ecx}"(resource_ptr as u32)
-                :
-                : "intel");
-            let resource = ptr::read(resource_ptr);
+            let resource_ptr: *mut Box<Resource> = alloc_type();
+
+            sys_open(self, resource_ptr);
+
+            let ret = ptr::read(resource_ptr);
+
             unalloc(resource_ptr as usize);
-            return resource;
+            
+            return ret;
         }
     }
 

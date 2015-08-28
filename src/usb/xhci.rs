@@ -1,5 +1,3 @@
-use core::mem::size_of;
-
 use common::memory::*;
 use common::pci::*;
 
@@ -43,7 +41,7 @@ pub struct XHCI {
     pub irq: u8
 }
 
-impl SessionModule for XHCI {
+impl SessionItem for XHCI {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             d("XHCI handle\n");
