@@ -21,6 +21,7 @@ use common::context::*;
 use common::memory::*;
 use common::paging::*;
 use common::pio::*;
+use common::time::*;
 
 use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
@@ -43,6 +44,7 @@ use schemes::http::*;
 use schemes::memory::*;
 use schemes::pci::*;
 use schemes::random::*;
+use schemes::time::*;
 
 use syscall::common::*;
 use syscall::handle::*;
@@ -62,6 +64,7 @@ mod common {
     pub mod resource;
     pub mod scheduler;
     pub mod string;
+    pub mod time;
     pub mod vec;
 }
 
@@ -116,6 +119,7 @@ mod schemes {
     pub mod memory;
     pub mod pci;
     pub mod random;
+    pub mod time;
 }
 
 mod syscall {
@@ -128,6 +132,16 @@ mod usb {
     pub mod ehci;
     pub mod xhci;
 }
+
+static mut clock_monotonic: Duration = Duration {
+    secs: 0,
+    nanos: 0
+};
+
+static pit_duration: Duration = Duration {
+    secs: 0,
+    nanos: 4500572
+};
 
 static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
 static mut debug_point: Point = Point{ x: 0, y: 0 };
@@ -213,6 +227,9 @@ unsafe fn test_disk(disk: Disk){
 }
 
 unsafe fn init(font_data: usize, cursor_data: usize){
+    clock_monotonic.secs = 0;
+    clock_monotonic.nanos = 0;
+
     debug_display = 0 as *mut Box<Display>;
     debug_point = Point{ x: 0, y: 0 };
     debug_draw = false;
@@ -281,6 +298,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(Arc::new(MemoryScheme));
     session.items.push(Arc::new(PCIScheme));
     session.items.push(Arc::new(RandomScheme));
+    session.items.push(Arc::new(TimeScheme));
 
     (*contexts_ptr).push(Context::root());
     Context::spawn(box move ||{
@@ -337,7 +355,12 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
     }
 
     match interrupt {
-        0x20 => syscall_handle(SYS_YIELD, 0, 0, 0), // Context switch timer
+        0x20 => {
+            let reenable = start_no_ints();
+            clock_monotonic = clock_monotonic + pit_duration;
+            end_no_ints(reenable);
+            syscall_handle(SYS_YIELD, 0, 0, 0); // Context switch timer
+        }
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
