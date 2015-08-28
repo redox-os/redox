@@ -8,13 +8,15 @@ impl SessionItem for TimeScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        let clock;
+        let clock_realtime;
+        let clock_monotonic;
         unsafe{
             let reenable = start_no_ints();
-            clock = ::clock_monotonic;
+            clock_realtime = ::clock_realtime;
+            clock_monotonic = ::clock_monotonic;
             end_no_ints(reenable);
         }
 
-        return box VecResource::new(ResourceType::File, clock.to_string().to_utf8());
+        return box VecResource::new(ResourceType::File, ("Time: ".to_string() + clock_realtime.to_string() + "\nUptime: " + clock_monotonic.to_string()).to_utf8());
     }
 }
