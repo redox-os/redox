@@ -1,5 +1,4 @@
 use common::context::*;
-use common::memory::*;
 
 use graphics::bmp::*;
 use graphics::color::*;

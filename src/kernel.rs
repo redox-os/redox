@@ -150,7 +150,7 @@ static mut clock_monotonic: Duration = Duration {
     nanos: 0
 };
 
-static pit_duration: Duration = Duration {
+static PIT_DURATION: Duration = Duration {
     secs: 0,
     nanos: 4500572
 };
@@ -369,8 +369,8 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
     match interrupt {
         0x20 => {
             let reenable = start_no_ints();
-            clock_realtime = clock_realtime + pit_duration;
-            clock_monotonic = clock_monotonic + pit_duration;
+            clock_realtime = clock_realtime + PIT_DURATION;
+            clock_monotonic = clock_monotonic + PIT_DURATION;
             end_no_ints(reenable);
             syscall_handle(SYS_YIELD, 0, 0, 0); // Context switch timer
         }
