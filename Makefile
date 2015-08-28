@@ -1,5 +1,6 @@
 RUSTC=rustc
-RUSTCFLAGS=-C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
+RUSTCFLAGS=-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2 \
+	-C no-vectorize-loops -C no-vectorize-slp -C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-W dead-code -W trivial-casts -W trivial-numeric-casts \
 	-L .
