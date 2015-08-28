@@ -3,7 +3,6 @@ use alloc::boxed::*;
 use core::clone::Clone;
 use core::cmp::min;
 use core::cmp::max;
-use core::mem::size_of;
 use core::ptr;
 
 use common::debug::*;
