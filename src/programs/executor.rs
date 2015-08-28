@@ -1,4 +1,3 @@
-use core::atomic::*;
 use core::mem;
 
 use common::elf::*;
@@ -16,6 +15,18 @@ pub struct Executor {
 }
 
 impl Executor {
+    pub fn new() -> Executor {
+        Executor {
+            executable: ELF::new(),
+            mapped: AtomicUsize::new(0),
+            entry: 0,
+            exit: 0,
+            draw: 0,
+            on_mouse: 0,
+            on_key: 0
+        }
+    }
+
     unsafe fn entry(&mut self){
         if self.executable.can_call(self.entry){
             //Rediculous call mechanism
@@ -27,17 +38,21 @@ impl Executor {
     }
 
     unsafe fn unsafe_map(&mut self){
+        let reenable = start_no_ints();
         let mapped = self.mapped.fetch_add(1, Ordering::SeqCst);
         if self.executable.data > 0 && mapped == 0{
             self.executable.map();
         }
+        end_no_ints(reenable);
     }
 
     unsafe fn unsafe_unmap(&mut self){
+        let reenable = start_no_ints();
         let mapped = self.mapped.fetch_sub(1, Ordering::SeqCst);
         if self.executable.data > 0 && mapped == 1{
             self.executable.unmap();
         }
+        end_no_ints(reenable);
     }
 }
 
@@ -56,26 +71,15 @@ impl Drop for Executor {
 }
 
 impl SessionItem for Executor {
-    fn new() -> Executor {
-        Executor {
-            executable: ELF::new(),
-            mapped: AtomicUsize::new(0),
-            entry: 0,
-            exit: 0,
-            draw: 0,
-            on_mouse: 0,
-            on_key: 0
-        }
-    }
-
-    #[allow(unused_variables)]
-    fn load(&mut self, url: &URL){
+    fn main(&mut self, url: URL){
         let mut resource = url.open();
 
         let mut vec: Vec<u8> = Vec::new();
         match resource.read_to_end(&mut vec){
             Option::Some(_) => {
                 unsafe{
+                    let reenable = start_no_ints();
+
                     self.executable = ELF::from_data(vec.as_ptr() as usize);
                     //self.executable.d();
 
@@ -86,6 +90,12 @@ impl SessionItem for Executor {
                     self.on_mouse = self.executable.symbol("on_mouse".to_string());
 
                     self.entry();
+
+                    RedrawEvent {
+                        redraw: REDRAW_ALL
+                    }.to_event().trigger();
+
+                    end_no_ints(reenable);
                 }
             },
             Option::None => ()
@@ -106,7 +116,7 @@ impl SessionItem for Executor {
                 return ret;
             }
         }
-        return false;
+        return true;
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
@@ -121,13 +131,13 @@ impl SessionItem for Executor {
         }
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
         unsafe {
             if self.executable.can_call(self.on_mouse){
                 //Rediculous call mechanism
                 self.unsafe_map();
                 let fn_ptr: *const usize = &self.on_mouse;
-                let ret = (*(fn_ptr as *const fn(Point, MouseEvent, bool) -> bool))(mouse_point, mouse_event, allow_catch);
+                let ret = (*(fn_ptr as *const fn(MouseEvent, bool) -> bool))(mouse_event, allow_catch);
                 self.unsafe_unmap();
                 return ret;
             }

@@ -3,6 +3,8 @@ use core::char;
 use common::memory::*;
 use common::string::*;
 
+use syscall::call::sys_trigger;
+
 #[derive(Copy, Clone)]
 pub struct Event {
     pub code: char,
@@ -15,14 +17,7 @@ pub struct Event {
 
 impl Event {
     pub fn trigger(&self){
-        unsafe{
-            let event_ptr: *const Event = self;
-            asm!("int 0x80"
-                :
-                : "{eax}"(2), "{ebx}"(event_ptr as u32)
-                :
-                : "intel");
-        }
+        sys_trigger(self);
     }
 }
 

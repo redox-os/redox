@@ -1,6 +1,3 @@
-use core::mem::size_of;
-use core::ptr;
-
 use common::memory::*;
 use common::pci::*;
 
@@ -38,7 +35,7 @@ pub struct EHCI {
     pub irq: u8
 }
 
-impl SessionModule for EHCI {
+impl SessionItem for EHCI {
     #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {

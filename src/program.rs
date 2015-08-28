@@ -18,9 +18,6 @@ extern crate mopa;
 
 use application::Application;
 
-use core::mem::size_of;
-use core::ptr;
-
 use common::memory::*;
 
 use programs::common::*;
@@ -31,11 +28,14 @@ mod application;
 mod common {
     pub mod debug;
     pub mod event;
+    pub mod queue;
     pub mod memory;
+    pub mod mutex;
     pub mod pci;
     pub mod pio;
     pub mod random;
     pub mod resource;
+    pub mod scheduler;
     pub mod string;
     pub mod vec;
 }
@@ -60,6 +60,11 @@ mod graphics {
 }
 
 mod programs {
+    pub mod common;
+}
+
+mod syscall {
+    pub mod call;
     pub mod common;
 }
 
@@ -101,51 +106,93 @@ pub unsafe fn on_key(key_event: KeyEvent){
 }
 
 #[no_mangle]
-pub unsafe fn on_mouse(mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+pub unsafe fn on_mouse(mouse_event: MouseEvent, allow_catch: bool) -> bool{
     if application as usize > 0 {
-        return (*application).on_mouse(mouse_point, mouse_event, allow_catch);
+        return (*application).on_mouse(mouse_event, allow_catch);
     }else{
         return false;
     }
 }
 
+/* Externs { */
+#[allow(unused_variables)]
 #[no_mangle]
-pub extern "C" fn memmove(dst: *mut u8, src: *const u8, len: isize){
-    unsafe {
-        if src < dst {
-            let mut i = len;
-            while i > 0 {
-                i -= 1;
-                *dst.offset(i) = *src.offset(i);
-            }
-        }else{
-            let mut i = 0;
-            while i < len {
-                *dst.offset(i) = *src.offset(i);
-                i += 1;
-            }
+pub unsafe extern fn __rust_allocate(size: usize, align: usize) -> *mut u8{
+    return alloc(size) as *mut u8;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize){
+    return unalloc(ptr as usize);
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8{
+    return realloc(ptr as usize, size) as *mut u8;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> usize{
+    return realloc_inplace(ptr as usize, size);
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub unsafe extern fn __rust_usable_size(size: usize, align: usize) -> usize{
+    return ((size + CLUSTER_SIZE - 1)/CLUSTER_SIZE) * CLUSTER_SIZE;
+}
+
+#[no_mangle]
+pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
+    for i in 0..len {
+        let c_a = ptr::read(a.offset(i as isize));
+        let c_b = ptr::read(b.offset(i as isize));
+        if c_a != c_b{
+            return c_a as isize - c_b as isize;
         }
+    }
+    return 0;
+}
+
+#[no_mangle]
+pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: usize){
+    if src < dst {
+        asm!("std
+            rep movsb"
+            :
+            : "{edi}"(dst.offset(len as isize - 1)), "{esi}"(src.offset(len as isize - 1)), "{ecx}"(len)
+            : "cc", "memory"
+            : "intel", "volatile");
+    }else{
+        asm!("cld
+            rep movsb"
+            :
+            : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
+            : "cc", "memory"
+            : "intel", "volatile");
     }
 }
 
 #[no_mangle]
-pub extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: isize){
-    unsafe {
-        let mut i = 0;
-        while i < len {
-            *dst.offset(i) = *src.offset(i);
-            i += 1;
-        }
-    }
+pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: usize){
+    asm!("cld
+        rep movsb"
+        :
+        : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
 }
 
 #[no_mangle]
-pub extern "C" fn memset(src: *mut u8, c: i32, len: isize) {
-    unsafe {
-        let mut i = 0;
-        while i < len {
-            *src.offset(i) = c as u8;
-            i += 1;
-        }
-    }
+pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
+    asm!("cld
+        rep stosb"
+        :
+        : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
 }
+/* } Externs */

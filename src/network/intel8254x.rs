@@ -55,7 +55,7 @@ pub struct Intel8254x {
     pub irq: u8
 }
 
-impl SessionModule for Intel8254x {
+impl SessionItem for Intel8254x {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             d("Intel 8254x handle\n");

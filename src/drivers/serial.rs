@@ -20,7 +20,7 @@ impl Serial {
     }
 }
 
-impl SessionModule for Serial {
+impl SessionItem for Serial {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             unsafe{

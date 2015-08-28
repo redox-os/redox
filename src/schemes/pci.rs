@@ -4,7 +4,7 @@ use programs::common::*;
 
 pub struct PCIScheme;
 
-impl SessionModule for PCIScheme {
+impl SessionItem for PCIScheme {
     fn scheme(&self) -> String {
         return "pci".to_string();
     }

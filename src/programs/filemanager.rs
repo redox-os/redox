@@ -11,6 +11,38 @@ pub struct FileManager {
 }
 
 impl FileManager {
+    pub fn new() -> FileManager {
+        let mut size = Size::new(0, 0);
+
+        let mut files: Vec<String> = Vec::new();
+
+        let mut resource = URL::from_string("file:///".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        for file in String::from_utf8(&vec).split("\n".to_string()){
+            if size.width < (file.len() + 1) * 8 {
+                size.width = (file.len() + 1) * 8 ;
+            }
+            files.push(file.clone());
+        }
+
+        if size.height < files.len() * 16 {
+            size.height = files.len() * 16;
+        }
+
+        let mut ret = FileManager {
+            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, String::from_str("File Manager")),
+            files: files,
+            selected: -1
+        };
+
+        ret.draw_content();
+
+        return ret;
+    }
+
     fn draw_content(&mut self){
         let content = &self.window.content;
 
@@ -47,42 +79,16 @@ impl FileManager {
             row += 1;
             i += 1;
         }
+
+        content.flip();
+        
+        RedrawEvent {
+            redraw: REDRAW_ALL
+        }.to_event().trigger();
     }
 }
 
 impl SessionItem for FileManager {
-    fn new() -> FileManager {
-        let mut size = Size::new(0, 0);
-
-        let mut files: Vec<String> = Vec::new();
-
-        let mut resource = URL::from_string("file:///".to_string()).open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        for file in String::from_utf8(&vec).split("\n".to_string()){
-            if size.width < (file.len() + 1) * 8 {
-                size.width = (file.len() + 1) * 8 ;
-            }
-            files.push(file.clone());
-        }
-
-        if size.height < files.len() * 16 {
-            size.height = files.len() * 16;
-        }
-
-        let mut ret = FileManager {
-            window: Window::new(Point::new(10, 50), size, String::from_str("File Manager")),
-            files: files,
-            selected: -1
-        };
-
-        ret.draw_content();
-
-        return ret;
-    }
-
     fn draw(&self, display: &Display) -> bool{
         return self.window.draw(display);
     }
@@ -90,7 +96,7 @@ impl SessionItem for FileManager {
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed {
             match key_event.scancode {
-                0x01 => self.selected = -1,
+                0x01 => self.window.closed = true,
                 0x47 => self.selected = 0,
                 0x48 => if self.selected > 0 {
                             self.selected -= 1;
@@ -127,8 +133,8 @@ impl SessionItem for FileManager {
         }
     }
 
-    fn on_mouse(&mut self, mouse_point: Point, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        if self.window.on_mouse(mouse_point, mouse_event, allow_catch) {
+    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+        if self.window.on_mouse(mouse_event, allow_catch) {
             if ! self.window.shaded {
                 let mut i = 0;
                 let mut row = 0;
@@ -143,7 +149,7 @@ impl SessionItem for FileManager {
                         }else{
                             if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
                                 let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
-                                if mouse_point.x >= point.x && mouse_point.x < point.x + 8 && mouse_point.y >= point.y && mouse_point.y < point.y + 16 {
+                                if mouse_event.x >= point.x && mouse_event.x < point.x + 8 && mouse_event.y >= point.y && mouse_event.y < point.y + 16 {
                                     self.selected = i;
                                 }
                                 col += 1;
