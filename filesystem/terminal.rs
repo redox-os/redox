@@ -24,6 +24,29 @@ macro_rules! println {
 }
 /* } Magic Macros */
 
+#[no_mangle]
+#[inline(never)]
+pub fn url_command(args: &Vec<String>){
+    let mut resource;
+    match args.get(1) {
+        Option::Some(arg) => resource = URL::from_string(arg.clone()).open(),
+        Option::None => resource = URL::new().open()
+    }
+
+    match resource.stat() {
+        ResourceType::File => println!("Type: File".to_string()),
+        ResourceType::Dir => println!("Type: Dir".to_string()),
+        ResourceType::Array => println!("Type: Array".to_string()),
+        _ => println!("Type: None".to_string())
+    }
+
+    let mut vec: Vec<u8> = Vec::new();
+    match resource.read_to_end(&mut vec) {
+        Option::Some(_) => println!(String::from_utf8(&vec)),
+        Option::None => println!("Failed to read".to_string())
+    }
+}
+
 pub struct Command {
     pub name: String,
     pub main: Box<Fn(&Vec<String>)>
@@ -95,29 +118,7 @@ impl Command {
         commands.push(Command {
             name: "url".to_string(),
             main: box |args: &Vec<String>|{
-                let mut url = URL::new();
-
-                match args.get(1) {
-                    Option::Some(arg) => url = URL::from_string(arg.clone()),
-                    Option::None => ()
-                }
-
-                println!("URL: ".to_string() + url.to_string());
-
-                let mut resource = url.open();
-
-                match resource.stat() {
-                    ResourceType::File => println!("Type: File".to_string()),
-                    ResourceType::Dir => println!("Type: Dir".to_string()),
-                    ResourceType::Array => println!("Type: Array".to_string()),
-                    _ => println!("Type: None".to_string())
-                }
-
-                let mut vec: Vec<u8> = Vec::new();
-                match resource.read_to_end(&mut vec) {
-                    Option::Some(_) => println!(String::from_utf8(&vec)),
-                    Option::None => println!("Failed to read".to_string())
-                }
+                url_command(args);
             }
         });
 
