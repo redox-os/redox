@@ -150,7 +150,7 @@ impl URL {
             let ret = ptr::read(resource_ptr);
 
             unalloc(resource_ptr as usize);
-            
+
             return ret;
         }
     }

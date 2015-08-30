@@ -11,10 +11,8 @@ pub use core::sync::atomic::*;
 pub use common::debug::*;
 pub use common::event::*;
 pub use common::queue::*;
-pub use common::mutex::*;
 pub use common::random::*;
 pub use common::resource::*;
-pub use common::scheduler::*;
 pub use common::string::*;
 pub use common::vec::*;
 
@@ -29,7 +27,7 @@ pub use syscall::call::*;
 #[allow(unused_variables)]
 pub trait SessionItem{
     fn main(&mut self, url: URL){
-        d("No main!\n");
+        
     }
 
     fn on_irq(&mut self, irq: u8){

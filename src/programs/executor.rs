@@ -1,5 +1,6 @@
 use common::context::*;
 use common::elf::*;
+use common::scheduler::*;
 
 use programs::common::*;
 

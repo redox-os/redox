@@ -6,6 +6,7 @@ use core::ops::Add;
 use core::ops::Drop;
 use core::ops::Index;
 use core::option::Option;
+use core::ptr;
 use core::slice::SliceExt;
 use core::str::StrExt;
 
@@ -95,7 +96,7 @@ impl String {
 
             let mut i = 0;
             for c in s.chars() {
-                *data.offset(i) = c;
+                ptr::write(data.offset(i), c);
                 i += 1;
             }
 
@@ -127,7 +128,7 @@ impl String {
                 if i >= length {
                     break;
                 }
-                *data.offset(i as isize) = *c as char;
+                ptr::write(data.offset(i as isize), ptr::read(c) as char);
                 i += 1;
             }
 
@@ -146,7 +147,7 @@ impl String {
     pub unsafe fn from_c_str(s: *const u8) -> String {
         let mut length = 0;
         loop {
-            if *(((s as usize) + length) as *const u8) == 0 {
+            if ptr::read(((s as usize) + length) as *const u8) == 0 {
                 break;
             }
             length += 1;
@@ -159,7 +160,7 @@ impl String {
         let data = alloc(length * size_of::<char>());
 
         for i in 0..length {
-            *((data + i * size_of::<char>()) as *mut char) = *(((s as usize) + i) as *const u8) as char;
+            ptr::write(((data + i * size_of::<char>()) as *mut char), ptr::read((((s as usize) + i) as *const u8)) as char);
         }
 
         String {
@@ -192,7 +193,7 @@ impl String {
                     digit += '0' as u8;
                 }
 
-                *data.offset((length - 1 - i) as isize) = digit as char;
+                ptr::write(data.offset((length - 1 - i) as isize), digit as char);
                 digit_num /= radix;
             }
 
@@ -218,7 +219,7 @@ impl String {
 
         unsafe{
             let data = alloc(size_of::<char>()) as *mut char;
-            *data = c;
+            ptr::write(data, c);
 
             String {
                 data: data,
@@ -255,7 +256,7 @@ impl String {
             let data = alloc(length * size_of::<char>()) as *mut char;
 
             for k in i..j {
-                *data.offset((k - i) as isize) = *self.data.offset(k as isize);
+                ptr::write(data.offset((k - i) as isize), ptr::read(self.data.offset(k as isize)));
             }
 
             String {
@@ -341,9 +342,9 @@ impl String {
         let data = alloc(length);
 
         for i in 0..self.len() {
-            *((data + i) as *mut u8) = *(((self.data as usize) + i * size_of::<char>()) as *const char) as u8;
+            ptr::write((data + i) as *mut u8, ptr::read(((self.data as usize) + i * size_of::<char>()) as *const char) as u8);
         }
-        *((data + self.len()) as *mut u8) = 0;
+        ptr::write((data + self.len()) as *mut u8, 0);
 
         data as *const u8
     }
@@ -462,11 +463,11 @@ impl Add for String {
 
             let mut i = 0;
             for c in self.chars() {
-                *data.offset(i) = c;
+                ptr::write(data.offset(i), c);
                 i += 1;
             }
             for c in other.chars() {
-                *data.offset(i) = c;
+                ptr::write(data.offset(i), c);
                 i += 1;
             }
 

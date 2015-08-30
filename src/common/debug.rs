@@ -1,19 +1,6 @@
-use common::pio::*;
-
 use core::str::StrExt;
 
 use syscall::call::sys_debug;
-
-pub unsafe fn debug_init(){
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x80);
-    outb(0x3F8 + 0, 0x03);
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x03);
-    outb(0x3F8 + 2, 0xC7);
-    outb(0x3F8 + 4, 0x0B);
-    outb(0x3F8 + 1, 0x01);
-}
 
 pub fn db(byte: u8){
     sys_debug(byte);

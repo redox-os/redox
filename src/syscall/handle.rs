@@ -66,9 +66,13 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             end_no_ints(reenable);
         },
         SYS_OPEN => {
+            let reenable = start_no_ints();
+
             let session = &mut *::session_ptr;
             let url_ptr = ebx as *const URL;
             ptr::write(ecx as *mut Box<Resource>, session.open(&*url_ptr));
+
+            end_no_ints(reenable);
         },
         SYS_TRIGGER => {
             let mut event = *(ebx as *const Event);

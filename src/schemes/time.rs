@@ -1,5 +1,7 @@
 use programs::common::*;
 
+use common::scheduler::*;
+
 pub struct TimeScheme;
 
 impl SessionItem for TimeScheme {

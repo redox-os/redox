@@ -30,24 +30,11 @@ mod common {
     pub mod event;
     pub mod queue;
     pub mod memory;
-    pub mod mutex;
-    pub mod pci;
-    pub mod pio;
     pub mod random;
     pub mod resource;
     pub mod scheduler;
     pub mod string;
     pub mod vec;
-}
-
-mod drivers {
-    pub mod disk;
-    pub mod keyboard;
-    pub mod mouse;
-}
-
-mod filesystems {
-    pub mod unfs;
 }
 
 mod graphics {
