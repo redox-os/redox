@@ -2,10 +2,8 @@ use alloc::boxed::*;
 
 use core::ptr;
 
-use common::debug::*;
-use common::event::*;
-use common::queue::*;
 use common::memory::*;
+use common::paging::*;
 use common::scheduler::*;
 use common::vec::*;
 
@@ -27,36 +25,14 @@ pub unsafe extern "cdecl" fn context_exit() -> !{
         sys_exit();
     }
 }
-/* TODO
-pub unsafe fn context_event_wait() -> Event {
-    loop{
-        let mut event_option = Option::None;
 
-        let reenable = start_no_ints();
-
-        if contexts_ptr as usize > 0 {
-            let contexts = &mut *(*contexts_ptr);
-
-            match context.get(context_i) {
-                Option::Some(current) => event_option = current.events.pop(),
-                Option::None => ()
-            }
-        }
-
-        end_no_ints(reenable);
-
-        match event_option {
-            Option::Some(event) => return event,
-            Option::None => sys_yield()
-        }
-    }
-}
-*/
 pub struct Context {
     pub stack: usize,
     pub stack_ptr: u32,
     pub fx: usize,
-    pub events: Queue<Event>
+    pub physical_address: usize,
+    pub virtual_address: usize,
+    pub virtual_size: usize
 
 }
 
@@ -66,7 +42,9 @@ impl Context {
             stack: 0,
             stack_ptr: 0,
             fx: alloc(512),
-            events: Queue::new()
+            physical_address: 0,
+            virtual_address: 0,
+            virtual_size: 0
         };
 
         for i in 0..512 {
@@ -83,7 +61,9 @@ impl Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
             fx: alloc(512),
-            events: Queue::new()
+            physical_address: 0,
+            virtual_address: 0,
+            virtual_size: 0
         };
 
         let ebp = ret.stack_ptr;
@@ -95,8 +75,7 @@ impl Context {
         ret.push(context_exit as u32); //If the function call returns, we will exit
         ret.push(call as u32); //We will ret into this function call
 
-        ret.push(0); //EDI is a param
-        ret.push(0); //ESI is a param
+        ret.push(0); //ESI is a param used in the switch function
 
         ret.push(1 << 9); //Flags
 
@@ -139,22 +118,52 @@ impl Context {
         *(self.stack_ptr as *mut u32) = data;
     }
 
+    pub unsafe fn map(&mut self){
+        for i in 0..(self.virtual_size + 4095)/4096 {
+            set_page(self.virtual_address + i*4096, self.physical_address + i*4096);
+        }
+    }
+
+    pub unsafe fn unmap(&mut self){
+        for i in 0..(self.virtual_size + 4095)/4096 {
+            identity_page(self.virtual_address + i*4096);
+        }
+    }
+
+    pub unsafe fn remap(&mut self, other: &mut Context){
+        self.unmap();
+        other.map();
+    }
+
+    //Warning: This function MUST be inspected in disassembly for correct push/pop
+    //It should have exactly one extra push/pop of ESI
+    #[cold]
     #[inline(never)]
     pub unsafe fn switch(&mut self, other: &mut Context){
-        asm!("fxsave [edi]
-            fxrstor [esi]"
-            :
-            : "{edi}"(self.fx), "{esi}"(other.fx)
-            : "memory"
-            : "intel", "volatile");
         asm!("pushfd
             pushad
-            mov [edi], esp
-            mov esp, [esi]
+            mov [esi], esp"
+            :
+            : "{esi}"(&mut self.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+        /*
+        asm!("fxsave [esi]"
+            :
+            : "{esi}"(self.fx)
+            : "memory"
+            : "intel", "volatile");
+        asm!("fxrstor [esi]"
+            :
+            : "{esi}"(other.fx)
+            : "memory"
+            : "intel", "volatile");
+        */
+        asm!("mov esp, [esi]
             popad
             popfd"
             :
-            : "{edi}"(&mut self.stack_ptr), "{esi}"(&mut other.stack_ptr)
+            : "{esi}"(&mut other.stack_ptr)
             : "memory"
             : "intel", "volatile");
     }

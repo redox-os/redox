@@ -34,7 +34,6 @@ use drivers::serial::*;
 use filesystems::unfs::*;
 
 use graphics::bmp::*;
-use graphics::color::*;
 
 use programs::common::*;
 use programs::session::*;
@@ -285,8 +284,8 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     keyboard_init();
     mouse_init();
 
-    session.items.push(Arc::new(PS2));
-    session.items.push(Arc::new(Serial::new(0x3F8, 0x4)));
+    session.items.push(box PS2);
+    session.items.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
@@ -302,15 +301,15 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     d("Secondary Slave:");
     test_disk(Disk::secondary_slave());
 
-    session.items.push(Arc::new(DebugScheme));
-    session.items.push(Arc::new(FileScheme{
+    session.items.push(box DebugScheme);
+    session.items.push(box FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
-    }));
-    session.items.push(Arc::new(HTTPScheme));
-    session.items.push(Arc::new(MemoryScheme));
-    session.items.push(Arc::new(PCIScheme));
-    session.items.push(Arc::new(RandomScheme));
-    session.items.push(Arc::new(TimeScheme));
+    });
+    session.items.push(box HTTPScheme);
+    session.items.push(box MemoryScheme);
+    session.items.push(box PCIScheme);
+    session.items.push(box RandomScheme);
+    session.items.push(box TimeScheme);
 
     (*contexts_ptr).push(Context::root());
     Context::spawn(box move ||{

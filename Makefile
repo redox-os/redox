@@ -16,6 +16,9 @@ all: harddrive.bin
 kernel.list: kernel.bin
 	objdump -C -M intel -d $< > $@
 
+terminal.list: filesystem/terminal.bin
+	objdump -C -M intel -d $< > $@
+
 doc: src/kernel.rs
 	rustdoc --target i686-unknown-linux-gnu $< --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
 

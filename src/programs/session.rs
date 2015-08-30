@@ -1,8 +1,6 @@
 use common::context::*;
 
 use graphics::bmp::*;
-use graphics::color::*;
-use graphics::size::*;
 
 use programs::common::*;
 use programs::editor::*;
@@ -16,7 +14,8 @@ pub struct Session {
     pub cursor: BMP,
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
-    pub items: Vec<Arc<SessionItem>>,
+    pub items: Vec<Box<SessionItem>>,
+    pub windows: Vec<*mut Window>,
     pub redraw: usize
 }
 
@@ -37,6 +36,7 @@ impl Session {
                     valid: false
                 },
                 items: Vec::new(),
+                windows: Vec::new(),
                 redraw: REDRAW_ALL
             }
         }
@@ -44,17 +44,13 @@ impl Session {
 
     pub fn on_irq(&mut self, irq: u8){
         for item in self.items.iter() {
-            unsafe{
-                Arc::unsafe_get_mut(item).on_irq(irq);
-            }
+            item.on_irq(irq);
         }
     }
 
     pub fn on_poll(&mut self){
         for item in self.items.iter() {
-            unsafe{
-                Arc::unsafe_get_mut(item).on_poll();
-            }
+            item.on_poll();
         }
     }
 
@@ -77,52 +73,51 @@ impl Session {
         }else{
             for item in self.items.iter() {
                 if item.scheme() == url.scheme {
-                    unsafe{
-                        return Arc::unsafe_get_mut(item).open(url);
-                    }
+                    return item.open(url);
                 }
             }
             return box NoneResource;
         }
     }
 
-    fn on_key(&mut self, key_event: KeyEvent){
-        match self.items.get(0){
-            Option::Some(item) => {
-                unsafe{
-                    Arc::unsafe_get_mut(item).on_key(key_event);
-                }
+    fn item_main(&mut self, mut item: Box<SessionItem>, url: URL){
+        Context::spawn(box move ||{
+            item.main(url);
+        });
+    }
 
-                self.redraw = max(self.redraw, REDRAW_ALL);
+    fn on_key(&mut self, key_event: KeyEvent){
+        match self.windows.get(0){
+            Option::Some(window_ptr) => {
+                unsafe{
+                    (**window_ptr).on_key(key_event);
+                    self.redraw = max(self.redraw, REDRAW_ALL);
+                }
             },
             Option::None => ()
         }
     }
 
     fn on_mouse(&mut self, mouse_event: MouseEvent){
-        self.redraw = max(self.redraw, REDRAW_CURSOR);
-
         let mut catcher = 0;
         let mut allow_catch = true;
-        for i in 0..self.items.len() {
-            match self.items.get(i){
-                Option::Some(item) => {
-                    unsafe{
-                        if Arc::unsafe_get_mut(item).on_mouse(mouse_event, allow_catch) {
-                            allow_catch = false;
-                            catcher = i;
+        for i in 0..self.windows.len() {
+            match self.windows.get(i){
+                Option::Some(window_ptr) => unsafe{
+                    if (**window_ptr).on_mouse(mouse_event, allow_catch) {
+                        allow_catch = false;
+                        catcher = i;
 
-                            self.redraw = max(self.redraw, REDRAW_ALL);
-                        }
+                        self.redraw = max(self.redraw, REDRAW_ALL);
                     }
                 },
                 Option::None => ()
             }
         }
 
-        if catcher > 0 && catcher < self.items.len() {
-            match self.items.remove(catcher){
-                Option::Some(item) => self.items.insert(0, item),
+        if catcher > 0 && catcher < self.windows.len() {
+            match self.windows.remove(catcher){
+                Option::Some(window_ptr) => self.windows.insert(0, window_ptr),
                 Option::None => ()
             }
         }
@@ -130,8 +125,7 @@ impl Session {
         //Not caught, can be caught by task bar
         if allow_catch {
             if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y <= 16 {
-                self.items.insert(0, Arc::new(FileManager::new()));
-                self.redraw = max(self.redraw, REDRAW_ALL);
+                self.item_main(box FileManager::new(), URL::from_string("file:///".to_string()));
             }
         }
 
@@ -149,19 +143,14 @@ impl Session {
                 self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
                 self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
 
-                let mut erase_i: Vec<usize> = Vec::new();
-                for reverse_i in 0..self.items.len() {
-                    let i = self.items.len() - 1 - reverse_i;
-                    match self.items.get(i) {
-                        Option::Some(item) => if ! item.draw(&self.display) {
-                            erase_i.push(i);
+                for reverse_i in 0..self.windows.len(){
+                    let i = self.windows.len() - 1 - reverse_i;
+                    match self.windows.get(i) {
+                        Option::Some(window_ptr) => unsafe{
+                            (**window_ptr).draw(&self.display);
                         },
                         Option::None => ()
                     }
-                }
-
-                for i in erase_i.iter() {
-                    drop(self.items.remove(*i));
                 }
             }
 
@@ -178,45 +167,24 @@ impl Session {
     }
 
     pub fn event(&mut self, mut event: Event){
-        match event.code {
-            'm' => self.on_mouse(MouseEvent::from_event(&mut event)),
-            'k' => self.on_key(KeyEvent::from_event(&mut event)),
-            'r' => self.redraw = max(self.redraw, RedrawEvent::from_event(&mut event).redraw),
-            'o' => {
-                self.redraw = max(self.redraw, REDRAW_ALL);
-
-                let url_string = OpenEvent::from_event(&mut event).url_string;
+        match event.to_option() {
+            EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
+            EventOption::Key(key_event) => self.on_key(key_event),
+            EventOption::Redraw(redraw_event) => self.redraw = max(self.redraw, redraw_event.redraw),
+            EventOption::Open(open_event) => {
+                let url_string = open_event.url_string;
                 let url = URL::from_string(url_string.clone());
 
-                let mut found = false;
                 if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
-                    self.items.insert(0, Arc::new(Editor::new()));
-                    found = true;
+                    self.item_main(box Editor::new(), url);
                 }else if url_string.ends_with(".bin".to_string()){
-                    self.items.insert(0, Arc::new(Executor::new()));
-                    found = true;
+                    self.item_main(box Executor::new(), url);
                 }else if url_string.ends_with(".bmp".to_string()){
-                    self.items.insert(0, Arc::new(Viewer::new()));
-                    found = true;
+                    self.item_main(box Viewer::new(), url);
                 }else{
                     d("No program found: ");
                     url.d();
                     dl();
-                }
-
-                if found {
-                    match self.items.get(0) {
-                        Option::Some(item) => {
-                            unsafe{
-                                let mut item_clone = item.clone();
-                                let url_clone = url.clone();
-                                Context::spawn(box move ||{
-                                    Arc::unsafe_get_mut(&mut item_clone).main(url_clone);
-                                });
-                            }
-                        }
-                        Option::None => ()
-                    }
                 }
             }
             _ => ()

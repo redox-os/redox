@@ -1,10 +1,19 @@
+use alloc::boxed::*;
+
+use core::ops::DerefMut;
+
 use common::event::*;
+use common::queue::*;
+use common::scheduler::*;
 use common::string::*;
 
 use graphics::color::*;
 use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
+
+use syscall::call::sys_window_create;
+use syscall::call::sys_window_destroy;
 
 pub struct Window {
     pub point: Point,
@@ -14,14 +23,15 @@ pub struct Window {
     pub title_color: Color,
     pub border_color: Color,
     pub shaded: bool,
-    pub closed: bool,
-    pub dragging: bool,
-    pub last_mouse_event: MouseEvent
+    dragging: bool,
+    last_mouse_event: MouseEvent,
+    events: Queue<Event>,
+    ptr: *mut Window
 }
 
 impl Window {
-    pub fn new(point: Point, size: Size, title: String) -> Window {
-        Window {
+    pub fn new(point: Point, size: Size, title: String) -> Box<Window> {
+        let mut ret = box Window {
             point: point,
             size: size,
             title: title,
@@ -29,7 +39,6 @@ impl Window {
             title_color: Color::new(0, 0, 0),
             border_color: Color::new(255, 255, 255),
             shaded: false,
-            closed: false,
             dragging: false,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -38,15 +47,35 @@ impl Window {
                 right_button: false,
                 middle_button: false,
                 valid: false
-            }
+            },
+            events: Queue::new(),
+            ptr: 0 as *mut Window
+        };
+
+        ret.ptr = ret.deref_mut();
+
+        if ret.ptr as usize > 0 {
+            sys_window_create(ret.ptr);
+        }
+
+        return ret;
+    }
+
+    pub fn poll(&mut self) -> EventOption {
+        let event_option;
+        unsafe{
+            let reenable = start_no_ints();
+            event_option = self.events.pop();
+            end_no_ints(reenable);
+        }
+
+        match event_option {
+            Option::Some(event) => return event.to_option(),
+            Option::None => return EventOption::None
         }
     }
 
-    pub fn draw(&self, display: &Display) -> bool {
-        if self.closed {
-            return false;
-        }
-
+    pub fn draw(&self, display: &Display){
         display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
 
         let mut cursor = Point::new(self.point.x, self.point.y - 17);
@@ -64,8 +93,14 @@ impl Window {
 
             display.image(self.point, self.content.onscreen, Size::new(self.content.width, self.content.height));
         }
+    }
 
-        return true;
+    pub fn on_key(&mut self, key_event: KeyEvent) {
+        unsafe{
+            let reenable = start_no_ints();
+            self.events.push(key_event.to_event());
+            end_no_ints(reenable);
+        }
     }
 
     pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
@@ -127,6 +162,22 @@ impl Window {
 
         self.last_mouse_event = mouse_event;
 
+        if caught{
+            unsafe{
+                let reenable = start_no_ints();
+                self.events.push(mouse_event.to_event());
+                end_no_ints(reenable);
+            }
+        }
+
         return caught;
+    }
+}
+
+impl Drop for Window {
+    fn drop(&mut self){
+        if self.ptr as usize > 0{
+            sys_window_destroy(self.ptr);
+        }
     }
 }

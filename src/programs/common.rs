@@ -1,4 +1,3 @@
-pub use alloc::arc::*;
 pub use alloc::boxed::*;
 
 pub use core::cmp::max;
@@ -19,27 +18,18 @@ pub use common::scheduler::*;
 pub use common::string::*;
 pub use common::vec::*;
 
+pub use graphics::color::*;
 pub use graphics::display::*;
 pub use graphics::point::*;
+pub use graphics::size::*;
+pub use graphics::window::*;
 
 pub use syscall::call::*;
 
 #[allow(unused_variables)]
-pub trait SessionItem : ::mopa::Any {
+pub trait SessionItem{
     fn main(&mut self, url: URL){
         d("No main!\n");
-    }
-
-    fn draw(&self, display: &Display) -> bool {
-        return true;
-    }
-
-    fn on_key(&mut self, key_event: KeyEvent){
-
-    }
-
-    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return false;
     }
 
     fn on_irq(&mut self, irq: u8){
@@ -58,4 +48,3 @@ pub trait SessionItem : ::mopa::Any {
         return box NoneResource;
     }
 }
-mopafy!(SessionItem, core=core, alloc=alloc);

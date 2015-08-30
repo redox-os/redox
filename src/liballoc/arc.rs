@@ -487,12 +487,6 @@ impl<T: ?Sized> Arc<T> {
         }
     }
 
-    #[inline]
-    pub unsafe fn unsafe_get_mut(this: &mut Self) -> &mut T {
-        let inner = &mut **this._ptr;
-        return &mut inner.data;
-    }
-
     /// Determine whether this is the unique reference (including weak refs) to
     /// the underlying data.
     ///

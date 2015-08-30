@@ -11,6 +11,7 @@ use common::resource::*;
 use common::scheduler::*;
 
 use graphics::color::*;
+use graphics::window::*;
 
 use syscall::common::*;
 
@@ -42,24 +43,23 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
         SYS_EXIT => {
             let reenable = start_no_ints();
 
-            if contexts_ptr as usize > 0 {
-                let contexts = &mut *(*contexts_ptr);
+            let contexts = &mut *(*contexts_ptr);
 
-                if contexts.len() > 1 && context_i > 1 {
-                    let current_option = contexts.remove(context_i);
+            if contexts.len() > 1 && context_i > 1 {
+                let current_option = contexts.remove(context_i);
 
-                    if context_i >= contexts.len() {
-                        context_i -= contexts.len();
-                    }
-                    match current_option {
-                        Option::Some(mut current) => match contexts.get(context_i) {
-                            Option::Some(next) => {
-                                current.switch(next);
-                            },
-                            Option::None => ()
+                if context_i >= contexts.len() {
+                    context_i -= contexts.len();
+                }
+                match current_option {
+                    Option::Some(mut current) => match contexts.get(context_i) {
+                        Option::Some(next) => {
+                            current.remap(next);
+                            current.switch(next);
                         },
                         Option::None => ()
-                    }
+                    },
+                    Option::None => ()
                 }
             }
 
@@ -91,30 +91,60 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
 
             let reenable = start_no_ints();
 
+            //TODO: Dispatch to appropriate window
             (*::events_ptr).push(event);
+
+            end_no_ints(reenable);
+        },
+        SYS_WINDOW_CREATE => {
+            let reenable = start_no_ints();
+
+            (*::session_ptr).windows.insert(0, ebx as *mut Window);
+
+            end_no_ints(reenable);
+        },
+        SYS_WINDOW_DESTROY => {
+            let reenable = start_no_ints();
+
+            let mut i = 0;
+            while i < (*::session_ptr).windows.len() {
+                let mut remove = false;
+
+                match (*::session_ptr).windows.get(i) {
+                    Option::Some(window_ptr) => if *window_ptr == ebx as *mut Window {
+                        remove = true;
+                    }else{
+                        i += 1;
+                    },
+                    Option::None => break
+                }
+
+                if remove {
+                    (*::session_ptr).windows.remove(i);
+                }
+            }
 
             end_no_ints(reenable);
         },
         SYS_YIELD => {
             let reenable = start_no_ints();
 
-            if contexts_ptr as usize > 0 {
-                let contexts = &*(*contexts_ptr);
-                let current_i = context_i;
-                context_i += 1;
-                if context_i >= contexts.len(){
-                    context_i -= contexts.len();
-                }
-                if context_i != current_i {
-                    match contexts.get(current_i){
-                        Option::Some(current) => match contexts.get(context_i) {
-                            Option::Some(next) => {
-                                current.switch(next);
-                            },
-                            Option::None => ()
+            let contexts = &*(*contexts_ptr);
+            let current_i = context_i;
+            context_i += 1;
+            if context_i >= contexts.len(){
+                context_i -= contexts.len();
+            }
+            if context_i != current_i {
+                match contexts.get(current_i){
+                    Option::Some(current) => match contexts.get(context_i) {
+                        Option::Some(next) => {
+                            current.remap(next);
+                            current.switch(next);
                         },
                         Option::None => ()
-                    }
+                    },
+                    Option::None => ()
                 }
             }
 
