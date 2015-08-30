@@ -73,9 +73,10 @@ pub static mut application: *mut Box<Application> = 0 as *mut Box<Application>;
 
 #[no_mangle]
 pub unsafe fn entry(){
-    application = alloc(size_of::<Application>()) as *mut Box<Application>;
+    application = alloc_type();
     if application as usize > 0 {
         ptr::write(application, box Application::new());
+        (*application).main(URL::new());
     }
 }
 
@@ -86,31 +87,6 @@ pub unsafe fn exit(){
 
         unalloc(application as usize);
         application = 0 as *mut Box<Application>;
-    }
-}
-
-#[no_mangle]
-pub unsafe fn draw(display: &Display) -> bool{
-    if application as usize > 0 {
-        return (*application).draw(display);
-    }else{
-        return false;
-    }
-}
-
-#[no_mangle]
-pub unsafe fn on_key(key_event: KeyEvent){
-    if application as usize > 0{
-        (*application).on_key(key_event);
-    }
-}
-
-#[no_mangle]
-pub unsafe fn on_mouse(mouse_event: MouseEvent, allow_catch: bool) -> bool{
-    if application as usize > 0 {
-        return (*application).on_mouse(mouse_event, allow_catch);
-    }else{
-        return false;
     }
 }
 

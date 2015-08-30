@@ -5,6 +5,15 @@ use common::string::*;
 
 use syscall::call::sys_trigger;
 
+pub enum EventOption {
+    Mouse(MouseEvent),
+    Key(KeyEvent),
+    Redraw(RedrawEvent),
+    Open(OpenEvent),
+    Unknown(Event),
+    None
+}
+
 #[derive(Copy, Clone)]
 pub struct Event {
     pub code: char,
@@ -16,6 +25,17 @@ pub struct Event {
 }
 
 impl Event {
+    pub fn to_option(self) -> EventOption {
+        match self.code {
+            'm' => EventOption::Mouse(MouseEvent::from_event(self)),
+            'k' => EventOption::Key(KeyEvent::from_event(self)),
+            'r' => EventOption::Redraw(RedrawEvent::from_event(self)),
+            'o' => EventOption::Open(OpenEvent::from_event(self)),
+            '\0' => EventOption::None,
+            _ => EventOption::Unknown(self)
+        }
+    }
+
     pub fn trigger(&self){
         sys_trigger(self);
     }
@@ -43,7 +63,7 @@ impl MouseEvent {
         }
     }
 
-    pub fn from_event(event: &mut Event) -> MouseEvent {
+    pub fn from_event(event: Event) -> MouseEvent {
         MouseEvent {
             x: event.a,
             y: event.b,
@@ -78,7 +98,7 @@ impl KeyEvent {
         }
     }
 
-    pub fn from_event(event: &mut Event) -> KeyEvent {
+    pub fn from_event(event: Event) -> KeyEvent {
         match char::from_u32(event.a as u32) {
             Option::Some(character) => KeyEvent {
                 character: character,
@@ -118,7 +138,7 @@ impl RedrawEvent {
         }
     }
 
-    pub fn from_event(event: &mut Event) -> RedrawEvent {
+    pub fn from_event(event: Event) -> RedrawEvent {
         RedrawEvent {
             redraw: event.a as usize
         }
@@ -147,13 +167,12 @@ impl OpenEvent {
         }
     }
 
-    pub fn from_event(event: &mut Event) -> OpenEvent {
+    pub fn from_event(event: Event) -> OpenEvent {
         unsafe{
             let ret = OpenEvent {
                 url_string: String::from_c_str(event.a as *const u8)
             };
             unalloc(event.a as usize);
-            event.a = 0;
             return ret;
         }
     }

@@ -1,7 +1,3 @@
-use graphics::color::*;
-use graphics::size::*;
-use graphics::window::*;
-
 use programs::common::*;
 
 /* Magic Macros { */
@@ -139,7 +135,6 @@ pub struct Mode {
 }
 
 pub struct Application {
-    window: Window,
     commands: Vec<Command>,
     variables: Vec<Variable>,
     modes: Vec<Mode>,
@@ -153,8 +148,7 @@ pub struct Application {
 
 impl Application {
     pub fn new() -> Application {
-        let mut ret = Application {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), String::from_str("Terminal")),
+        return Application {
             commands: Command::vec(),
             variables: Vec::new(),
             modes: Vec::new(),
@@ -165,10 +159,6 @@ impl Application {
             scroll: Point::new(0, 0),
             wrap: true
         };
-
-        ret.draw_content();
-
-        return ret;
     }
 
     fn append(&mut self, line: String) {
@@ -326,17 +316,16 @@ impl Application {
         }
     }
 
-    fn draw_content(&mut self){
+    fn draw_content(&mut self, window: &mut Window){
         let scroll = self.scroll;
 
         let mut col = -scroll.x;
-        let cols = self.window.content.width as isize / 8;
+        let cols = window.content.width as isize / 8;
         let mut row = -scroll.y;
-        let rows = self.window.content.height as isize / 16;
+        let rows = window.content.height as isize / 16;
 
         {
-            let content = &self.window.content;
-
+            let content = &window.content;
             content.set(Color::new(0, 0, 0));
 
             let output = String::from_utf8(self.stdio.inner());
@@ -414,69 +403,73 @@ impl Application {
         if row >= rows {
             self.scroll.y += row - rows + 1;
 
-            self.draw_content();
+            self.draw_content(window);
+        }
+    }
+
+    fn on_key(&mut self, key_event: KeyEvent){
+        match key_event.scancode {
+            0x47 => self.offset = 0,
+            0x48 => {
+                self.command = self.last_command.clone();
+                self.offset = self.command.len();
+            },
+            0x4B => if self.offset > 0 {
+                self.offset -= 1;
+            },
+            0x4D => if self.offset < self.command.len() {
+                self.offset += 1;
+            },
+            0x4F => self.offset = self.command.len(),
+            0x50 => {
+                self.command = String::new();
+                self.offset = self.command.len();
+            },
+            _ => ()
+        }
+
+        match key_event.character {
+            '\x00' => (),
+            '\x08' => if self.offset > 0 {
+                self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
+                self.offset -= 1;
+            },
+            '\n' => if self.command.len() > 0 {
+                let command = self.command.clone();
+                self.command = String::new();
+                self.offset = 0;
+                self.last_command = command.clone();
+                self.append("# ".to_string() + command.clone());
+                self.on_command(&command);
+            },
+            _ => {
+                self.command = self.command.substr(0, self.offset) + key_event.character + self.command.substr(self.offset, self.command.len() - self.offset);
+                self.offset += 1;
+            }
         }
     }
 }
 
 impl SessionItem for Application {
-    fn draw(&self, display: &Display) -> bool{
-        return self.window.draw(display);
-    }
+    fn main(&mut self, url: URL){
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Terminal".to_string());
 
-    fn on_key(&mut self, key_event: KeyEvent){
-        if key_event.pressed {
-            match key_event.scancode {
-                0x01 => self.window.closed = true,
-                0x47 => self.offset = 0,
-                0x48 => {
-                    self.command = self.last_command.clone();
-                    self.offset = self.command.len();
+        self.draw_content(&mut window);
+
+        loop {
+            match window.poll() {
+                EventOption::Key(key_event) => {
+                    if key_event.pressed{
+                        if key_event.scancode == 1 {
+                            break;
+                        }
+
+                        self.on_key(key_event);
+                        self.draw_content(&mut window);
+                    }
                 },
-                0x4B => if self.offset > 0 {
-                    self.offset -= 1;
-                },
-                0x4D => if self.offset < self.command.len() {
-                    self.offset += 1;
-                },
-                0x4F => self.offset = self.command.len(),
-                0x50 => {
-                    self.command = String::new();
-                    self.offset = self.command.len();
-                },
-                _ => ()
+                _ => sys_yield()
             }
-
-            match key_event.character {
-                '\x00' => (),
-                '\x08' => if self.offset > 0 {
-                    self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
-                    self.offset -= 1;
-                },
-                '\n' => if self.command.len() > 0 {
-                    let command = self.command.clone();
-                    self.command = String::new();
-                    self.offset = 0;
-                    self.last_command = command.clone();
-                    self.append("# ".to_string() + command.clone());
-                    self.on_command(&command);
-                },
-                _ => {
-                    self.command = self.command.substr(0, self.offset) + key_event.character + self.command.substr(self.offset, self.command.len() - self.offset);
-                    self.offset += 1;
-                }
-            }
-
-            self.draw_content();
-        }
-    }
-
-    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        if self.window.on_mouse(mouse_event, allow_catch){
-            self.draw_content();
-            return true;
-        }else{
-            return false;
         }
     }
 }

@@ -86,6 +86,7 @@ impl Display {
         unsafe{
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
+
             let ret = Display {
                 offscreen: alloc(memory_size),
                 onscreen: alloc(memory_size),

@@ -1,13 +1,6 @@
-use graphics::color::*;
-use graphics::size::*;
-use graphics::window::*;
-
 use programs::common::*;
 
 pub struct Editor {
-    window: Window,
-    events: Queue<Event>,
-    closed: AtomicBool,
     url: URL,
     string: String,
     offset: usize,
@@ -18,9 +11,6 @@ impl Editor {
     #[inline(never)]
     pub fn new() -> Editor {
         Editor {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor".to_string()),
-            events: Queue::new(),
-            closed: AtomicBool::new(false),
             url: URL::new(),
             string: String::new(),
             offset: 0,
@@ -28,8 +18,8 @@ impl Editor {
         }
     }
 
-    fn reload(&mut self){
-        self.window.title = "Editor (".to_string() + self.url.to_string() + ")";
+    fn reload(&mut self, window: &mut Window){
+        window.title = "Editor (".to_string() + self.url.to_string() + ")";
         self.offset = 0;
         self.scroll = Point::new(0, 0);
 
@@ -39,18 +29,18 @@ impl Editor {
         self.string = String::from_utf8(&vec);
     }
 
-    fn save(&mut self){
-        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Saved";
+    fn save(&mut self, window: &mut Window){
+        window.title = "Editor (".to_string() + self.url.to_string() + ") Saved";
 
         let mut resource = self.url.open();
         resource.write_all(&self.string.to_utf8());
     }
 
-    fn draw_content(&mut self){
+    fn draw_content(&mut self, window: &mut Window){
         let mut redraw = false;
 
         {
-            let content = &self.window.content;
+            let content = &window.content;
 
             content.set(Color::alpha(0, 0, 0, 196));
 
@@ -124,108 +114,82 @@ impl Editor {
         }
 
         if redraw {
-            self.draw_content();
+            self.draw_content(window);
         }
     }
 }
 
 impl SessionItem for Editor {
     fn main(&mut self, url: URL){
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor (Loading)".to_string());
+
         self.url = url;
-        self.reload();
-        self.draw_content();
 
-        while ! self.closed.load(Ordering::SeqCst) {
-            let event_option;
-            unsafe{
-                let enable = start_no_ints();
-                event_option = self.events.pop();
-                end_no_ints(enable);
-            }
+        self.reload(&mut window);
+        self.draw_content(&mut window);
 
-            match event_option {
-                Option::Some(event_const) => {
-                    let mut event = event_const;
-                    match event.code {
-                        'k' => {
-                            let key_event = KeyEvent::from_event(&mut event);
-                            if key_event.pressed {
-                                match key_event.scancode {
-                                    0x3F => self.reload(),
-                                    0x40 => self.save(),
-                                    0x47 => self.offset = 0,
-                                    0x48 => for i in 1..self.offset {
-                                        match self.string[self.offset - i] {
-                                            '\0' => break,
-                                            '\n' => {
-                                                self.offset = self.offset - i;
-                                                break;
-                                            },
-                                            _ => ()
-                                        }
-                                    },
-                                    0x4B => if self.offset > 0 {
-                                                self.offset -= 1;
-                                            },
-                                    0x4D => if self.offset < self.string.len() {
-                                                self.offset += 1;
-                                            },
-                                    0x4F => self.offset = self.string.len(),
-                                    0x50 => for i in self.offset + 1..self.string.len() {
-                                        match self.string[i] {
-                                            '\0' => break,
-                                            '\n' => {
-                                                self.offset = i;
-                                                break;
-                                            },
-                                            _ => ()
-                                        }
-                                    },
-                                    0x53 => if self.offset < self.string.len() {
-                                        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                                        self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
+        loop {
+            match window.poll() {
+                EventOption::Key(key_event) => {
+                    if key_event.pressed {
+                        match key_event.scancode {
+                            0x01 => break,
+                            0x3F => self.reload(&mut window),
+                            0x40 => self.save(&mut window),
+                            0x47 => self.offset = 0,
+                            0x48 => for i in 1..self.offset {
+                                match self.string[self.offset - i] {
+                                    '\0' => break,
+                                    '\n' => {
+                                        self.offset = self.offset - i;
+                                        break;
                                     },
                                     _ => ()
                                 }
-
-                                match key_event.character {
-                                    '\x00' => (),
-                                    '\x08' => if self.offset > 0 {
-                                        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                                        self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
+                            },
+                            0x4B => if self.offset > 0 {
                                         self.offset -= 1;
                                     },
-                                    _ => {
-                                        self.window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                                        self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
+                            0x4D => if self.offset < self.string.len() {
                                         self.offset += 1;
-                                    }
+                                    },
+                            0x4F => self.offset = self.string.len(),
+                            0x50 => for i in self.offset + 1..self.string.len() {
+                                match self.string[i] {
+                                    '\0' => break,
+                                    '\n' => {
+                                        self.offset = i;
+                                        break;
+                                    },
+                                    _ => ()
                                 }
+                            },
+                            0x53 => if self.offset < self.string.len() {
+                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
+                            },
+                            _ => ()
+                        }
 
-                                self.draw_content();
+                        match key_event.character {
+                            '\x00' => (),
+                            '\x08' => if self.offset > 0 {
+                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
+                                self.offset -= 1;
+                            },
+                            _ => {
+                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
+                                self.offset += 1;
                             }
-                        },
-                        _ => ()
+                        }
+
+                        self.draw_content(&mut window);
                     }
                 },
-                Option::None => sys_yield()
+                _ => sys_yield()
             }
         }
-    }
-
-    fn draw(&self, display: &Display) -> bool{
-        self.window.draw(display);
-        return ! self.closed.load(Ordering::SeqCst);
-    }
-
-    fn on_key(&mut self, key_event: KeyEvent){
-        if key_event.pressed && key_event.scancode == 1 {
-            self.closed.store(true, Ordering::SeqCst);
-        }
-        self.events.push(key_event.to_event());
-    }
-
-    fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
-        return self.window.on_mouse(mouse_event, allow_catch);
     }
 }

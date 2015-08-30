@@ -3,7 +3,6 @@ use core::ptr;
 
 use common::debug::*;
 use common::memory::*;
-use common::paging::*;
 use common::string::*;
 
 pub struct ELFHeader {
@@ -61,7 +60,7 @@ pub struct ELFSymbol {
     pub sh_index: u16
 }
 
-const LOAD_ADDR: usize = 0x80000000;
+pub const LOAD_ADDR: usize = 0x80000000;
 
 pub struct ELF {
     pub data: usize
@@ -284,22 +283,6 @@ impl ELF {
             dl();
         }else{
             d("Empty ELF File\n");
-        }
-    }
-
-    pub unsafe fn map(&self){
-        // Setup 4 MB upper mem space to map to program
-        for i in 0..1024 {
-            let virtual_address = LOAD_ADDR + i*4096;
-            let physical_address = self.data + i*4096 + 4096;
-            set_page(virtual_address, physical_address/*extra 4096 to handle null segment*/);
-        }
-    }
-
-    pub unsafe fn unmap(&self){
-        // Reset 4 MB upper mem space to identity
-        for i in 0..1024 {
-            identity_page(LOAD_ADDR + i*4096);
         }
     }
 

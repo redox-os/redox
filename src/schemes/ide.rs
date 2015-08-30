@@ -1,3 +1,5 @@
+use alloc::arc::*;
+
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
@@ -251,7 +253,7 @@ impl SessionItem for IDE {
         return box NoneResource;
     }
 */
-
+/* DMA */
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let data: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0xFFFFFFFF));
         let data_callback = data.clone();
