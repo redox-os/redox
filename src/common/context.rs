@@ -147,18 +147,19 @@ impl Context {
             : "{esi}"(&mut self.stack_ptr)
             : "memory"
             : "intel", "volatile");
-        /*
+
         asm!("fxsave [esi]"
             :
             : "{esi}"(self.fx)
             : "memory"
             : "intel", "volatile");
+
         asm!("fxrstor [esi]"
             :
             : "{esi}"(other.fx)
             : "memory"
             : "intel", "volatile");
-        */
+        
         asm!("mov esp, [esi]
             popad
             popfd"
