@@ -24,29 +24,6 @@ macro_rules! println {
 }
 /* } Magic Macros */
 
-#[no_mangle]
-#[inline(never)]
-pub fn url_command(args: &Vec<String>){
-    let mut resource;
-    match args.get(1) {
-        Option::Some(arg) => resource = URL::from_string(arg.clone()).open(),
-        Option::None => resource = URL::new().open()
-    }
-
-    match resource.stat() {
-        ResourceType::File => println!("Type: File".to_string()),
-        ResourceType::Dir => println!("Type: Dir".to_string()),
-        ResourceType::Array => println!("Type: Array".to_string()),
-        _ => println!("Type: None".to_string())
-    }
-
-    let mut vec: Vec<u8> = Vec::new();
-    match resource.read_to_end(&mut vec) {
-        Option::Some(_) => println!(String::from_utf8(&vec)),
-        Option::None => println!("Failed to read".to_string())
-    }
-}
-
 pub struct Command {
     pub name: String,
     pub main: Box<Fn(&Vec<String>)>
@@ -69,14 +46,16 @@ impl Command {
             name: "echo".to_string(),
             main: box |args: &Vec<String>|{
                 let mut echo = String::new();
+                let mut first = true;
                 for i in 1..args.len() {
                     match args.get(i) {
                         Option::Some(arg) => {
-                            if echo.len() == 0 {
-                                echo = arg.clone();
+                            if first {
+                                first = false
                             }else{
-                                echo = echo + " " + arg.clone();
+                                echo = echo + " ";
                             }
+                            echo = echo + arg;
                         },
                         Option::None => ()
                     }
@@ -100,7 +79,10 @@ impl Command {
             main: box |args: &Vec<String>|{
                 match args.get(1) {
                     Option::Some(arg) => {
-                        let mut resource = URL::from_string(arg.clone()).open();
+                        let url = URL::from_string(&arg);
+                        println!(url.to_string());
+
+                        let mut resource = url.open();
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);
@@ -118,7 +100,26 @@ impl Command {
         commands.push(Command {
             name: "url".to_string(),
             main: box |args: &Vec<String>|{
-                url_command(args);
+                let url;
+                match args.get(1) {
+                    Option::Some(arg) => url = URL::from_string(&arg),
+                    Option::None => url = URL::new()
+                }
+                println!(url.to_string());
+
+                let mut resource = url.open();
+                match resource.stat() {
+                    ResourceType::File => println!("Type: File".to_string()),
+                    ResourceType::Dir => println!("Type: Dir".to_string()),
+                    ResourceType::Array => println!("Type: Array".to_string()),
+                    _ => println!("Type: None".to_string())
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                match resource.read_to_end(&mut vec) {
+                    Option::Some(_) => println!(String::from_utf8(&vec)),
+                    Option::None => println!("Failed to read".to_string())
+                }
             }
         });
 
@@ -162,8 +163,9 @@ impl Application {
         };
     }
 
-    fn append(&mut self, line: String) {
-        self.stdio.write_all(&(line + "\n").to_utf8());
+    fn append(&mut self, line: &String) {
+        self.stdio.write_all(&line.to_utf8());
+        self.stdio.write_all(&"\n".to_string().to_utf8());
     }
 
     fn on_command(&mut self, command_string: &String){
@@ -176,9 +178,9 @@ impl Application {
         if *command_string == "$".to_string() {
             let mut variables = "Variables:".to_string();
             for variable in self.variables.iter() {
-                variables = variables + '\n' + variable.name.clone() + "=" + variable.value.clone();
+                variables = variables + '\n' + &variable.name + "=" + &variable.value;
             }
-            self.append(variables);
+            self.append(&variables);
             return;
         }
 
@@ -223,7 +225,8 @@ impl Application {
                                     }else if *cmp == "<=".to_string() {
                                         value = left.to_num_signed() <= right.to_num_signed();
                                     }else{
-                                        self.append("Unknown comparison: ".to_string() + cmp.clone());
+                                        self.stdio.write_all(&"Unknown comparison: ".to_string().to_utf8());
+                                        self.append(cmp);
                                     }
                                 },
                                 Option::None => ()
@@ -246,7 +249,7 @@ impl Application {
                         Option::None => syntax_error = true
                     }
                     if syntax_error {
-                        self.append("Syntax error: else found with no previous if".to_string());
+                        self.append(&"Syntax error: else found with no previous if".to_string());
                     }
                     return;
                 }
@@ -258,7 +261,7 @@ impl Application {
                         Option::None => syntax_error = true
                     }
                     if syntax_error {
-                        self.append("Syntax error: fi found with no previous if".to_string())
+                        self.append(&"Syntax error: fi found with no previous if".to_string())
                     }
                     return;
                 }
@@ -308,10 +311,10 @@ impl Application {
 
                 let mut help = "Commands:".to_string();
                 for command in self.commands.iter() {
-                    help = help + " " + command.name.clone();
+                    help = help + " " + &command.name;
                 }
 
-                self.append(help);
+                self.append(&help);
             },
             Option::None => ()
         }
@@ -440,7 +443,8 @@ impl Application {
                 self.command = String::new();
                 self.offset = 0;
                 self.last_command = command.clone();
-                self.append("# ".to_string() + command.clone());
+                self.stdio.write_all(&"# ".to_string().to_utf8());
+                self.append(&command);
                 self.on_command(&command);
             },
             _ => {
@@ -469,7 +473,8 @@ impl SessionItem for Application {
                         self.draw_content(&mut window);
                     }
                 },
-                _ => sys_yield()
+                EventOption::None => sys_yield(),
+                _ => ()
             }
         }
     }

@@ -15,7 +15,7 @@ impl SessionItem for FileScheme {
         match self.unfs.node(url.path.clone()) {
             Option::Some(node) => {
                 if node.extents[0].block > 0 && node.extents[0].length > 0{
-                    return URL::from_string("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize).open();
+                    return URL::from_string(&("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize)).open();
                 }else{
                     return box NoneResource;
                 }
