@@ -79,7 +79,10 @@ impl Command {
             main: box |args: &Vec<String>|{
                 match args.get(1) {
                     Option::Some(arg) => {
-                        let mut resource = URL::from_string(&arg).open();
+                        let url = URL::from_string(&arg);
+                        println!(url.to_string());
+
+                        let mut resource = url.open();
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);
@@ -102,7 +105,6 @@ impl Command {
                     Option::Some(arg) => url = URL::from_string(&arg),
                     Option::None => url = URL::new()
                 }
-
                 println!(url.to_string());
 
                 let mut resource = url.open();

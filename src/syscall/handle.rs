@@ -69,13 +69,13 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             let reenable = start_no_ints();
 
             let session = &mut *::session_ptr;
-            let url_ptr = ebx as *const URL;
-            ptr::write(ecx as *mut Box<Resource>, session.open(&*url_ptr));
+            let url = &*(ebx as *const URL);
+            ptr::write(ecx as *mut Box<Resource>, session.open(url));
 
             end_no_ints(reenable);
         },
         SYS_TRIGGER => {
-            let mut event = *(ebx as *const Event);
+            let mut event = (*(ebx as *const Event)).clone();
 
             if event.code == 'm' {
                 event.a = max(0, min((*::session_ptr).display.width as isize - 1, (*::session_ptr).mouse_point.x + event.a));
