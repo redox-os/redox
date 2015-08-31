@@ -1,9 +1,7 @@
 use core::clone::Clone;
 use core::cmp::PartialEq;
 use core::iter::Iterator;
-use core::mem::size_of;
 use core::ops::Add;
-use core::ops::Drop;
 use core::ops::Index;
 use core::option::Option;
 use core::ptr;
@@ -71,71 +69,42 @@ impl <'a> Iterator for Split<'a> {
 }
 
 pub struct String {
-    pub data: *const char,
-    pub length: usize
+    pub vec: Vec<char>
 }
 
 impl String {
     pub fn new() -> String {
         String {
-            data: 0 as *const char,
-            length: 0
+            vec: Vec::new()
         }
     }
 
     // TODO FromStr trait
     pub fn from_str(s: &str) -> String {
-        let length = s.chars().count();
+        let mut vec: Vec<char> = Vec::new();
 
-        if length == 0 {
-            return String::new();
+        for c in s.chars() {
+            vec.push(c);
         }
 
-        unsafe {
-            let data = alloc(length * size_of::<char>()) as *mut char;
-
-            let mut i = 0;
-            for c in s.chars() {
-                ptr::write(data.offset(i), c);
-                i += 1;
-            }
-
-            String {
-                data: data,
-                length: length
-            }
+        String {
+            vec: vec
         }
     }
 
     pub fn from_c_slice(s: &[u8]) -> String {
-        let mut length = 0;
-        for c in s {
-            if *c == 0 {
+        let mut vec: Vec<char> = Vec::new();
+
+        for b in s {
+            let c = *b as char;
+            if c == '\0' {
                 break;
             }
-            length += 1;
+            vec.push(c);
         }
 
-        if length == 0 {
-            return String::new();
-        }
-
-        unsafe {
-            let data = alloc(length * size_of::<char>()) as *mut char;
-
-            let mut i = 0;
-            for c in s {
-                if i >= length {
-                    break;
-                }
-                ptr::write(data.offset(i as isize), ptr::read(c) as char);
-                i += 1;
-            }
-
-            String {
-                data: data,
-                length: length
-            }
+        String {
+            vec: vec
         }
     }
 
@@ -145,27 +114,20 @@ impl String {
     }
 
     pub unsafe fn from_c_str(s: *const u8) -> String {
-        let mut length = 0;
+        let mut vec: Vec<char> = Vec::new();
+
+        let mut i = 0;
         loop {
-            if ptr::read(((s as usize) + length) as *const u8) == 0 {
+            let c = ptr::read(s.offset(i)) as char;
+            if c == '\0' {
                 break;
             }
-            length += 1;
-        }
-
-        if length == 0 {
-            return String::new();
-        }
-
-        let data = alloc(length * size_of::<char>());
-
-        for i in 0..length {
-            ptr::write(((data + i * size_of::<char>()) as *mut char), ptr::read((((s as usize) + i) as *const u8)) as char);
+            vec.push(c);
+            i += 1;
         }
 
         String {
-            data: data as *const char,
-            length: length
+            vec: vec
         }
     }
 
@@ -181,26 +143,23 @@ impl String {
             length += 1;
         }
 
-        unsafe {
-            let data = alloc(length * size_of::<char>()) as *mut char;
+        let mut vec: Vec<char> = Vec::new();
 
-            let mut digit_num = num;
-            for i in 0..length {
-                let mut digit = (digit_num % radix) as u8;
-                if digit > 9 {
-                    digit += 'A' as u8 - 10;
-                }else{
-                    digit += '0' as u8;
-                }
-
-                ptr::write(data.offset((length - 1 - i) as isize), digit as char);
-                digit_num /= radix;
+        let mut digit_num = num;
+        for i in 0..length {
+            let mut digit = (digit_num % radix) as u8;
+            if digit > 9 {
+                digit += 'A' as u8 - 10;
+            }else{
+                digit += '0' as u8;
             }
 
-            String {
-                data: data,
-                length: length
-            }
+            vec.insert(0, digit as char);
+            digit_num /= radix;
+        }
+
+        String {
+            vec: vec
         }
     }
 
@@ -218,12 +177,11 @@ impl String {
         }
 
         unsafe{
-            let data = alloc(size_of::<char>()) as *mut char;
-            ptr::write(data, c);
+            let mut vec: Vec<char> = Vec::new();
+            vec.push(c);
 
             String {
-                data: data,
-                length: 1
+                vec: vec
             }
         }
     }
@@ -247,22 +205,14 @@ impl String {
             j = self.len();
         }
 
-        let length = j - i;
-        if length == 0 {
-            return String::new();
+        let mut vec: Vec<char> = Vec::new();
+
+        for k in i..j {
+            vec.push(self[k]);
         }
 
-        unsafe {
-            let data = alloc(length * size_of::<char>()) as *mut char;
-
-            for k in i..j {
-                ptr::write(data.offset((k - i) as isize), ptr::read(self.data.offset(k as isize)));
-            }
-
-            String {
-                data: data,
-                length: length
-            }
+        String {
+            vec: vec
         }
     }
 
@@ -294,7 +244,7 @@ impl String {
     }
 
     pub fn len(&self) -> usize {
-        self.length
+        self.vec.len()
     }
 
     pub fn chars(&self) -> Chars {
@@ -339,12 +289,12 @@ impl String {
     pub unsafe fn to_c_str(&self) -> *const u8 {
         let length = self.len() + 1;
 
-        let data = alloc(length);
+        let data = alloc(length) as *mut u8;
 
         for i in 0..self.len() {
-            ptr::write((data + i) as *mut u8, ptr::read(((self.data as usize) + i * size_of::<char>()) as *const char) as u8);
+            ptr::write(data.offset(i as isize), self[i] as u8);
         }
-        ptr::write((data + self.len()) as *mut u8, 0);
+        ptr::write(data.offset(self.len() as isize), 0);
 
         data as *const u8
     }
@@ -406,13 +356,9 @@ static NULL_CHAR: char = '\0';
 impl Index<usize> for String {
     type Output = char;
     fn index<'a>(&'a self, i: usize) -> &'a Self::Output {
-        if i >= self.len() {
-            // Failure condition
-            return &NULL_CHAR;
-        }else{
-            unsafe{
-                return &*(((self.data as usize) + i * size_of::<char>()) as *const char);
-            }
+        match self.vec.get(i) {
+            Option::Some(c) => return c,
+            Option::None => return &NULL_CHAR
         }
     }
 }
@@ -439,42 +385,18 @@ impl Clone for String {
     }
 }
 
-impl Drop for String {
-    fn drop(&mut self){
-        unsafe {
-            unalloc(self.data as usize);
-            self.data = 0 as *const char;
-            self.length = 0;
-        }
-    }
-}
-
 impl Add for String {
     type Output = String;
     fn add(self, other: String) -> String {
-        let length = self.length + other.length;
+        let mut vec: Vec<char> = self.vec.clone();
 
-        if length == 0 {
-            return String::new();
+        let mut i = 0;
+        for c in other.chars() {
+            vec.push(c);
         }
 
-        unsafe {
-            let data = alloc(length * size_of::<char>()) as *mut char;
-
-            let mut i = 0;
-            for c in self.chars() {
-                ptr::write(data.offset(i), c);
-                i += 1;
-            }
-            for c in other.chars() {
-                ptr::write(data.offset(i), c);
-                i += 1;
-            }
-
-            String {
-                data: data,
-                length: length
-            }
+        String {
+            vec: vec
         }
     }
 }
