@@ -130,7 +130,7 @@ impl Response for TCP {
                         let tcp_options = self.options.clone();
                         let tcp_dst_ip = self.src_ip;
                         let tcp_data_len = self.data.len();
-                        let mut resource = URL::from_string("http://".to_string() + path).open();
+                        let mut resource = URL::from_string(&("http://".to_string() + path)).open();
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);

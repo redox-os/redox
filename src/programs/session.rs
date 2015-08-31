@@ -125,7 +125,7 @@ impl Session {
         //Not caught, can be caught by task bar
         if allow_catch {
             if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y <= 16 {
-                self.item_main(box FileManager::new(), URL::from_string("file:///".to_string()));
+                self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
             }
         }
 
@@ -173,7 +173,7 @@ impl Session {
             EventOption::Redraw(redraw_event) => self.redraw = max(self.redraw, redraw_event.redraw),
             EventOption::Open(open_event) => {
                 let url_string = open_event.url_string;
-                let url = URL::from_string(url_string.clone());
+                let url = URL::from_string(&url_string);
 
                 if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
                     self.item_main(box Editor::new(), url);
