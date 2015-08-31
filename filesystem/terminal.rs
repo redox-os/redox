@@ -29,7 +29,7 @@ macro_rules! println {
 pub fn url_command(args: &Vec<String>){
     let mut resource;
     match args.get(1) {
-        Option::Some(arg) => resource = URL::from_string(arg.clone()).open(),
+        Option::Some(arg) => resource = URL::from_string(&arg).open(),
         Option::None => resource = URL::new().open()
     }
 
@@ -100,7 +100,7 @@ impl Command {
             main: box |args: &Vec<String>|{
                 match args.get(1) {
                     Option::Some(arg) => {
-                        let mut resource = URL::from_string(arg.clone()).open();
+                        let mut resource = URL::from_string(&arg).open();
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);
@@ -162,8 +162,9 @@ impl Application {
         };
     }
 
-    fn append(&mut self, line: String) {
-        self.stdio.write_all(&(line + "\n").to_utf8());
+    fn append(&mut self, line: &String) {
+        self.stdio.write_all(&line.to_utf8());
+        self.stdio.write_all(&"\n".to_string().to_utf8());
     }
 
     fn on_command(&mut self, command_string: &String){
@@ -176,9 +177,9 @@ impl Application {
         if *command_string == "$".to_string() {
             let mut variables = "Variables:".to_string();
             for variable in self.variables.iter() {
-                variables = variables + '\n' + variable.name.clone() + "=" + variable.value.clone();
+                variables = variables + '\n' + &variable.name + "=" + &variable.value;
             }
-            self.append(variables);
+            self.append(&variables);
             return;
         }
 
@@ -223,7 +224,8 @@ impl Application {
                                     }else if *cmp == "<=".to_string() {
                                         value = left.to_num_signed() <= right.to_num_signed();
                                     }else{
-                                        self.append("Unknown comparison: ".to_string() + cmp.clone());
+                                        self.stdio.write_all(&"Unknown comparison: ".to_string().to_utf8());
+                                        self.append(cmp);
                                     }
                                 },
                                 Option::None => ()
@@ -246,7 +248,7 @@ impl Application {
                         Option::None => syntax_error = true
                     }
                     if syntax_error {
-                        self.append("Syntax error: else found with no previous if".to_string());
+                        self.append(&"Syntax error: else found with no previous if".to_string());
                     }
                     return;
                 }
@@ -258,7 +260,7 @@ impl Application {
                         Option::None => syntax_error = true
                     }
                     if syntax_error {
-                        self.append("Syntax error: fi found with no previous if".to_string())
+                        self.append(&"Syntax error: fi found with no previous if".to_string())
                     }
                     return;
                 }
@@ -308,10 +310,10 @@ impl Application {
 
                 let mut help = "Commands:".to_string();
                 for command in self.commands.iter() {
-                    help = help + " " + command.name.clone();
+                    help = help + " " + &command.name;
                 }
 
-                self.append(help);
+                self.append(&help);
             },
             Option::None => ()
         }
@@ -440,7 +442,8 @@ impl Application {
                 self.command = String::new();
                 self.offset = 0;
                 self.last_command = command.clone();
-                self.append("# ".to_string() + command.clone());
+                self.stdio.write_all(&"# ".to_string().to_utf8());
+                self.append(&command);
                 self.on_command(&command);
             },
             _ => {
@@ -469,7 +472,8 @@ impl SessionItem for Application {
                         self.draw_content(&mut window);
                     }
                 },
-                _ => sys_yield()
+                EventOption::None => sys_yield(),
+                _ => ()
             }
         }
     }

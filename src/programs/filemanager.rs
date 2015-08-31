@@ -12,7 +12,7 @@ impl FileManager {
 
         let mut files: Vec<String> = Vec::new();
 
-        let mut resource = URL::from_string("file:///".to_string()).open();
+        let mut resource = URL::from_string(&"file:///".to_string()).open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -160,7 +160,8 @@ impl SessionItem for FileManager {
 
                     self.draw_content();
                 },
-                _ => sys_yield()
+                EventOption::None => sys_yield(),
+                _ => ()
             }
         }
     }
