@@ -290,6 +290,15 @@ impl String {
                 d("Unhandled to_utf8 code ");
                 dh(u);
                 dl();
+                unsafe{ dh(self.vec.as_ptr() as usize); }
+                d(" ");
+                dd(self.vec.len());
+                d(" to ");
+                unsafe{ dh(vec.as_ptr() as usize); }
+                d(" ");
+                dd(vec.len());
+                dl();
+                break;
             }
         }
 
@@ -401,6 +410,13 @@ impl<'a> Add<&'a String> for String {
         self.vec.push_all(&other.vec);
 
         self
+    }
+}
+
+impl<'a> Add<&'a mut String> for String {
+    type Output = String;
+    fn add(mut self, other: &'a mut String) -> String {
+        self + &*other
     }
 }
 
