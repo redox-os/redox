@@ -1,6 +1,8 @@
 use core::cmp::min;
 use core::cmp::max;
 use core::mem::size_of;
+use core::mem::swap;
+use core::mem::transmute;
 use core::ops::Drop;
 use core::simd::*;
 
@@ -169,7 +171,12 @@ impl Display {
     pub fn flip(&self){
         unsafe{
             let reenable = start_no_ints();
-            Display::copy_run(self.offscreen, self.onscreen, self.size);
+            if self.root {
+                Display::copy_run(self.offscreen, self.onscreen, self.size);
+            }else{
+                let self_mut: *mut Display = transmute(self);
+                swap(&mut (*self_mut).offscreen, &mut (*self_mut).onscreen);
+            }
             end_no_ints(reenable);
         }
     }
