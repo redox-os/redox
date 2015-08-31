@@ -39,6 +39,7 @@ use graphics::bmp::*;
 use programs::common::*;
 use programs::session::*;
 
+use schemes::context::*;
 use schemes::debug::*;
 use schemes::file::*;
 use schemes::http::*;
@@ -114,6 +115,7 @@ mod programs {
 }
 
 mod schemes {
+    pub mod context;
     pub mod debug;
     pub mod file;
     pub mod http;
@@ -313,6 +315,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     d("Secondary Slave:");
     test_disk(Disk::secondary_slave());
 
+    session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
     session.items.push(box FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
