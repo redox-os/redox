@@ -5,29 +5,13 @@ use common::scheduler::*;
 use programs::common::*;
 
 pub struct Executor {
-    executable: ELF,
-    entry: usize,
-    exit: usize
+    executable: ELF
 }
 
 impl Executor {
     pub fn new() -> Executor {
         Executor {
-            executable: ELF::new(),
-            entry: 0,
-            exit: 0
-        }
-    }
-}
-
-impl Drop for Executor {
-    fn drop(&mut self){
-        unsafe{
-            if self.executable.can_call(self.exit){
-                //Rediculous call mechanism
-                let fn_ptr: *const usize = &self.exit;
-                (*(fn_ptr as *const fn()))();
-            }
+            executable: ELF::new()
         }
     }
 }
@@ -37,40 +21,48 @@ impl SessionItem for Executor {
         let mut resource = url.open();
 
         let mut vec: Vec<u8> = Vec::new();
-        match resource.read_to_end(&mut vec){
-            Option::Some(_) => {
-                unsafe{
-                    self.executable = ELF::from_data(vec.as_ptr() as usize);
-                    //self.executable.d();
+        resource.read_to_end(&mut vec);
 
-                    // Setup 4 MB upper mem space to map to program
-                    let reenable = start_no_ints();
+        unsafe{
+            self.executable = ELF::from_data(vec.as_ptr() as usize);
+            //self.executable.d();
 
-                    let contexts = &mut *(*contexts_ptr);
+            // Setup 4 MB upper mem space to map to program
+            let reenable = start_no_ints();
 
-                    match contexts.get(context_i) {
-                        Option::Some(mut current) => {
-                            current.physical_address = self.executable.data + 4096; /*Extra 4096 for null segment*/
-                            current.virtual_address = LOAD_ADDR;
-                            current.virtual_size = 4 * 1024 * 1024; // 4 MB
-                            current.map();
-                        },
-                        Option::None => ()
-                    }
+            let contexts = &mut *(*contexts_ptr);
 
-                    end_no_ints(reenable);
+            match contexts.get(context_i) {
+                Option::Some(mut current) => {
+                    current.physical_address = self.executable.data + 4096; /*Extra 4096 for null segment*/
+                    current.virtual_address = LOAD_ADDR;
+                    current.virtual_size = 4 * 1024 * 1024; // 4 MB
+                    current.map();
+                },
+                Option::None => ()
+            }
 
-                    self.entry = self.executable.entry();
-                    self.exit = self.executable.symbol("exit".to_string());
+            end_no_ints(reenable);
 
-                    if self.executable.can_call(self.entry){
-                        //Rediculous call mechanism
-                        let fn_ptr: *const usize = &self.entry;
-                        (*(fn_ptr as *const fn()))();
-                    }
-                }
-            },
-            Option::None => ()
+            let entry = self.executable.entry();
+            if self.executable.can_call(entry){
+                //Rediculous call mechanism
+                let fn_ptr: *const usize = &entry;
+                (*(fn_ptr as *const extern "cdecl" fn()))();
+            }
+        }
+    }
+}
+
+impl Drop for Executor {
+    fn drop(&mut self){
+        unsafe{
+            let exit = self.executable.symbol("exit".to_string());
+            if self.executable.can_call(exit){
+                //Rediculous call mechanism
+                let fn_ptr: *const usize = &exit;
+                (*(fn_ptr as *const extern "cdecl" fn()))();
+            }
         }
     }
 }

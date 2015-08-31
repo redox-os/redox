@@ -65,7 +65,7 @@ impl SessionItem for HTTPScheme {
             html = html + "</nav>\n";
 
             if url.path == "readme".to_string() {
-                let mut resource = URL::from_string("file:///README.md".to_string()).open();
+                let mut resource = URL::from_string(&"file:///README.md".to_string()).open();
 
                 let mut resource_data: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut resource_data);
@@ -115,7 +115,7 @@ impl SessionItem for HTTPScheme {
                 html = html + "</div>\n";
             }else{
                 html = html + "<table class='table table-bordered'>\n".to_string();
-                    let mut resource = URL::from_string(url.path.clone()).open();
+                    let mut resource = URL::from_string(&url.path).open();
 
                     let resource_type;
                     match resource.stat() {

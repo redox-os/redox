@@ -78,7 +78,7 @@ impl URL {
         }
     }
 
-    pub fn from_string(url_string: String) -> URL {
+    pub fn from_string(url_string: &String) -> URL {
         let mut url = URL::new();
 
         //Split by /
@@ -159,21 +159,21 @@ impl URL {
         let mut ret = self.scheme.clone() + "://";
 
         if self.user.len() > 0 {
-            ret = ret + self.user.clone();
+            ret = ret + &self.user;
             if self.password.len() > 0 {
-                ret = ret + ":" + self.password.clone();
+                ret = ret + ":" + &self.password;
             }
             ret = ret + "@";
         }
 
         if self.host.len() > 0 {
-            ret = ret + self.host.clone();
+            ret = ret + &self.host;
             if self.port.len() > 0 {
-                ret = ret + ":" + self.port.clone();
+                ret = ret + ":" + &self.port;
             }
         }
 
-        ret = ret + "/" + self.path.clone();
+        ret = ret + "/" + &self.path;
 
         return ret;
     }

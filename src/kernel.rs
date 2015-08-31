@@ -194,7 +194,7 @@ unsafe fn event_loop() -> ! {
 unsafe fn redraw_loop() -> ! {
     let session = &mut *session_ptr;
     {
-        let mut resource = URL::from_string("file:///background.bmp".to_string()).open();
+        let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
 
         let mut vec: Vec<u8> = Vec::new();
         match resource.read_to_end(&mut vec) {

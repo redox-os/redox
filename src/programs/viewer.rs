@@ -44,8 +44,9 @@ impl SessionItem for Viewer {
                     if key_event.pressed && key_event.scancode == 1 {
                         break;
                     }
-                }
-                _ => sys_yield()
+                },
+                EventOption::None => sys_yield(),
+                _ => ()
             }
         }
     }

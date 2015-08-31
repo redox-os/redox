@@ -108,9 +108,21 @@ impl String {
         }
     }
 
-    pub fn from_utf8(vec: &Vec<u8>) -> String {
-        // TODO
-        return String::from_c_slice(vec.as_slice());
+    pub fn from_utf8(utf_vec: &Vec<u8>) -> String {
+        let mut vec: Vec<char> = Vec::new();
+
+        //TODO: better UTF support
+        for b in utf_vec.iter() {
+            let c = *b as char;
+            if c == '\0' {
+                break;
+            }
+            vec.push(c);
+        }
+
+        String {
+            vec: vec
+        }
     }
 
     pub unsafe fn from_c_str(s: *const u8) -> String {
@@ -176,13 +188,11 @@ impl String {
             return String::new();
         }
 
-        unsafe{
-            let mut vec: Vec<char> = Vec::new();
-            vec.push(c);
+        let mut vec: Vec<char> = Vec::new();
+        vec.push(c);
 
-            String {
-                vec: vec
-            }
+        String {
+            vec: vec
         }
     }
 
@@ -296,7 +306,7 @@ impl String {
         }
         ptr::write(data.offset(self.len() as isize), 0);
 
-        data as *const u8
+        return data;
     }
 
     pub fn to_num_radix(&self, radix: usize) -> usize {
@@ -385,54 +395,46 @@ impl Clone for String {
     }
 }
 
-impl Add for String {
-    type Output = String;
-    fn add(self, other: String) -> String {
-        let mut vec: Vec<char> = self.vec.clone();
-
-        let mut i = 0;
-        for c in other.chars() {
-            vec.push(c);
-        }
-
-        String {
-            vec: vec
-        }
-    }
-}
-
 impl<'a> Add<&'a String> for String {
     type Output = String;
-    fn add(self, other: &'a String) -> String {
-        self + other.clone()
+    fn add(mut self, other: &'a String) -> String {
+        self.vec.push_all(&other.vec);
+
+        self
     }
 }
 
+impl Add for String {
+    type Output = String;
+    fn add(mut self, other: String) -> String {
+        self + &other
+    }
+}
 
 impl<'a> Add<&'a str> for String {
     type Output = String;
-    fn add(self, other: &'a str) -> String {
+    fn add(mut self, other: &'a str) -> String {
         self + String::from_str(other)
     }
 }
 
 impl Add<char> for String {
     type Output = String;
-    fn add(self, other: char) -> String {
+    fn add(mut self, other: char) -> String {
         self + String::from_char(other)
     }
 }
 
 impl Add<usize> for String {
     type Output = String;
-    fn add(self, other: usize) -> String {
+    fn add(mut self, other: usize) -> String {
         self + String::from_num(other)
     }
 }
 
 impl Add<isize> for String {
     type Output = String;
-    fn add(self, other: isize) -> String {
+    fn add(mut self, other: isize) -> String {
         self + String::from_num_signed(other)
     }
 }

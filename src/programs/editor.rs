@@ -188,7 +188,8 @@ impl SessionItem for Editor {
                         self.draw_content(&mut window);
                     }
                 },
-                _ => sys_yield()
+                EventOption::None => sys_yield(),
+                _ => ()
             }
         }
     }
