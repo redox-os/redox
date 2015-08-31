@@ -24,29 +24,6 @@ macro_rules! println {
 }
 /* } Magic Macros */
 
-#[no_mangle]
-#[inline(never)]
-pub fn url_command(args: &Vec<String>){
-    let mut resource;
-    match args.get(1) {
-        Option::Some(arg) => resource = URL::from_string(&arg).open(),
-        Option::None => resource = URL::new().open()
-    }
-
-    match resource.stat() {
-        ResourceType::File => println!("Type: File".to_string()),
-        ResourceType::Dir => println!("Type: Dir".to_string()),
-        ResourceType::Array => println!("Type: Array".to_string()),
-        _ => println!("Type: None".to_string())
-    }
-
-    let mut vec: Vec<u8> = Vec::new();
-    match resource.read_to_end(&mut vec) {
-        Option::Some(_) => println!(String::from_utf8(&vec)),
-        Option::None => println!("Failed to read".to_string())
-    }
-}
-
 pub struct Command {
     pub name: String,
     pub main: Box<Fn(&Vec<String>)>
@@ -69,14 +46,16 @@ impl Command {
             name: "echo".to_string(),
             main: box |args: &Vec<String>|{
                 let mut echo = String::new();
+                let mut first = true;
                 for i in 1..args.len() {
                     match args.get(i) {
                         Option::Some(arg) => {
-                            if echo.len() == 0 {
-                                echo = arg.clone();
+                            if first {
+                                first = false
                             }else{
-                                echo = echo + " " + arg.clone();
+                                echo = echo + " ";
                             }
+                            echo = echo + arg;
                         },
                         Option::None => ()
                     }
@@ -118,7 +97,27 @@ impl Command {
         commands.push(Command {
             name: "url".to_string(),
             main: box |args: &Vec<String>|{
-                url_command(args);
+                let url;
+                match args.get(1) {
+                    Option::Some(arg) => url = URL::from_string(&arg),
+                    Option::None => url = URL::new()
+                }
+
+                println!(url.to_string());
+
+                let mut resource = url.open();
+                match resource.stat() {
+                    ResourceType::File => println!("Type: File".to_string()),
+                    ResourceType::Dir => println!("Type: Dir".to_string()),
+                    ResourceType::Array => println!("Type: Array".to_string()),
+                    _ => println!("Type: None".to_string())
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                match resource.read_to_end(&mut vec) {
+                    Option::Some(_) => println!(String::from_utf8(&vec)),
+                    Option::None => println!("Failed to read".to_string())
+                }
             }
         });
 

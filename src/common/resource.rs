@@ -138,6 +138,11 @@ impl URL {
             part_i += 1;
         }
 
+        url_string.d();
+        dl();
+        url.to_string().d();
+        dl();
+
         return url;
     }
 
