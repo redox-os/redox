@@ -59,10 +59,12 @@ pub trait Resource {
 
 pub struct URL {
     pub scheme: String,
+    /*
     pub user: String,
     pub password: String,
     pub host: String,
     pub port: String,
+    */
     pub path: String
 }
 
@@ -70,10 +72,12 @@ impl URL {
     pub fn new() -> URL {
         URL {
             scheme: String::new(),
+            /*
             user: String::new(),
             password: String::new(),
             host: String::new(),
             port: String::new(),
+            */
             path: String::new()
         }
     }
@@ -104,6 +108,7 @@ impl URL {
                 }
                 1 => (),
                 2 => {
+                    /*
                     let mut host_part_i = 0;
                     for host_part in part.split("@".to_string()){
                         let mut host_subpart_i = 0;
@@ -131,17 +136,13 @@ impl URL {
                         url.port = url.password;
                         url.password = String::new();
                     }
+                    */
                 },
                 3 => url.path = part,
                 _ => url.path = url.path + "/" + part
             }
             part_i += 1;
         }
-
-        url_string.d();
-        dl();
-        url.to_string().d();
-        dl();
 
         return url;
     }
@@ -160,9 +161,10 @@ impl URL {
         }
     }
 
-    pub fn to_string(&self) -> String{
+    pub fn to_string(&self) -> String {
         let mut ret = self.scheme.clone() + "://";
 
+        /*
         if self.user.len() > 0 {
             ret = ret + &self.user;
             if self.password.len() > 0 {
@@ -177,8 +179,11 @@ impl URL {
                 ret = ret + ":" + &self.port;
             }
         }
+        */
 
-        ret = ret + "/" + &self.path;
+        if self.path.len() > 0 {
+            ret = ret + "/" + &self.path;
+        }
 
         return ret;
     }
@@ -193,10 +198,12 @@ impl Clone for URL {
     fn clone(&self) -> URL{
         URL {
             scheme: self.scheme.clone(),
+            /*
             user: self.user.clone(),
             password: self.password.clone(),
             host: self.host.clone(),
             port: self.port.clone(),
+            */
             path: self.path.clone()
         }
     }

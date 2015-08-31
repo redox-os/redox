@@ -26,7 +26,13 @@ impl Editor {
         let mut resource = self.url.open();
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
+        self.url.to_string().d();
+        d(" ");
+        dd(vec.len());
+        dl();
         self.string = String::from_utf8(&vec);
+        self.string.d();
+        dl();
     }
 
     fn save(&mut self, window: &mut Window){

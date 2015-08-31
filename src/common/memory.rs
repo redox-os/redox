@@ -1,5 +1,6 @@
 use core::cmp::min;
 use core::mem::size_of;
+use core::ptr;
 
 use common::scheduler::*;
 
@@ -23,7 +24,7 @@ const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
 unsafe fn cluster(number: usize) -> usize{
     if number < CLUSTER_COUNT {
-        return *((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize);
+        return ptr::read((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize);
     }else{
         return 0;
     }
@@ -31,7 +32,7 @@ unsafe fn cluster(number: usize) -> usize{
 
 unsafe fn set_cluster(number: usize, address: usize){
     if number < CLUSTER_COUNT {
-        *((CLUSTER_ADDRESS + number * size_of::<usize>()) as *mut usize) = address;
+        ptr::write((CLUSTER_ADDRESS + number * size_of::<usize>()) as *mut usize, address);
     }
 }
 
@@ -143,36 +144,35 @@ pub unsafe fn unalloc(ptr: usize){
 }
 
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
+    let mut ret = 0;
+
+    //Memory allocation must be atomic
+    let reenable = start_no_ints();
+
     if size == 0 {
         if ptr > 0 {
             unalloc(ptr);
         }
-        return 0;
-    }
-
-    let old_size = alloc_size(ptr);
-    if size <= old_size {
-        return ptr;
     }else{
-        let new = alloc(size);
-        if ptr > 0 {
-            if new > 0 {
-                let copy_size = min(old_size, size);
+        let old_size = alloc_size(ptr);
+        if size <= old_size {
+            ret = ptr;
+        }else{
+            ret = alloc(size);
+            if ptr > 0 {
+                if ret > 0 {
+                    let copy_size = min(old_size, size);
 
-                let mut i = 0;
-                while i < copy_size - size_of::<usize>() {
-                    *(new as *mut usize).offset(i as isize) = *(ptr as *const usize).offset(i as isize);
-                    i += size_of::<usize>();
+                    ::memmove(ret as *mut u8, ptr as *const u8, copy_size);
                 }
-                while i < copy_size {
-                    *(new as *mut u8).offset(i as isize) = *(ptr as *const u8).offset(i as isize);
-                    i += size_of::<u8>();
-                }
+                unalloc(ptr);
             }
-            unalloc(ptr);
         }
-        return new;
     }
+
+    end_no_ints(reenable);
+
+    return ret;
 }
 
 pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
