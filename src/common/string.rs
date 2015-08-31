@@ -408,49 +408,51 @@ impl<'a> Add<&'a String> for String {
     type Output = String;
     fn add(mut self, other: &'a String) -> String {
         self.vec.push_all(&other.vec);
-
-        self
+        return self;
     }
 }
 
 impl<'a> Add<&'a mut String> for String {
     type Output = String;
     fn add(mut self, other: &'a mut String) -> String {
-        self + &*other
+        self.vec.push_all(&other.vec);
+        return self;
     }
 }
 
 impl Add for String {
     type Output = String;
     fn add(mut self, other: String) -> String {
-        self + &other
+        self.vec.push_all(&other.vec);
+        return self;
     }
 }
 
 impl<'a> Add<&'a str> for String {
     type Output = String;
-    fn add(mut self, other: &'a str) -> String {
-        self + String::from_str(other)
+    fn add(self, other: &'a str) -> String {
+        return self + String::from_str(other);
     }
 }
 
 impl Add<char> for String {
     type Output = String;
     fn add(mut self, other: char) -> String {
-        self + String::from_char(other)
+        self.vec.push(other);
+        return self;
     }
 }
 
 impl Add<usize> for String {
     type Output = String;
-    fn add(mut self, other: usize) -> String {
-        self + String::from_num(other)
+    fn add(self, other: usize) -> String {
+        return self + String::from_num(other);
     }
 }
 
 impl Add<isize> for String {
     type Output = String;
-    fn add(mut self, other: isize) -> String {
-        self + String::from_num_signed(other)
+    fn add(self, other: isize) -> String {
+        return self + String::from_num_signed(other);
     }
 }

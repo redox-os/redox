@@ -14,13 +14,17 @@ macro_rules! exec {
 macro_rules! print {
     ($text:expr) => ({
         unsafe {
-            (*application).stdio.write_all(&$text.to_utf8());
+            (*application).print(&$text);
         }
     });
 }
 
 macro_rules! println {
-    ($line:expr) => (print!($line + "\n"));
+    ($text:expr) => ({
+        unsafe {
+            (*application).println(&$text);
+        }
+    });
 }
 /* } Magic Macros */
 
@@ -140,7 +144,7 @@ pub struct Application {
     commands: Vec<Command>,
     variables: Vec<Variable>,
     modes: Vec<Mode>,
-    stdio: Box<VecResource>,
+    output: String,
     last_command: String,
     command: String,
     offset: usize,
@@ -154,7 +158,7 @@ impl Application {
             commands: Command::vec(),
             variables: Vec::new(),
             modes: Vec::new(),
-            stdio: box VecResource::new(ResourceType::File, Vec::new()),
+            output: String::new(),
             last_command: String::new(),
             command: String::new(),
             offset: 0,
@@ -163,9 +167,13 @@ impl Application {
         };
     }
 
-    fn append(&mut self, line: &String) {
-        self.stdio.write_all(&line.to_utf8());
-        self.stdio.write_all(&"\n".to_string().to_utf8());
+    fn print(&mut self, text: &String){
+        self.output.vec.push_all(&text.vec);
+    }
+
+    fn println(&mut self, text: &String){
+        self.print(text);
+        self.output.vec.push('\n');
     }
 
     fn on_command(&mut self, command_string: &String){
@@ -180,7 +188,7 @@ impl Application {
             for variable in self.variables.iter() {
                 variables = variables + '\n' + &variable.name + "=" + &variable.value;
             }
-            self.append(&variables);
+            self.println(&variables);
             return;
         }
 
@@ -225,8 +233,7 @@ impl Application {
                                     }else if *cmp == "<=".to_string() {
                                         value = left.to_num_signed() <= right.to_num_signed();
                                     }else{
-                                        self.stdio.write_all(&"Unknown comparison: ".to_string().to_utf8());
-                                        self.append(cmp);
+                                        self.println(&("Unknown comparison: ".to_string() + cmp));
                                     }
                                 },
                                 Option::None => ()
@@ -249,7 +256,7 @@ impl Application {
                         Option::None => syntax_error = true
                     }
                     if syntax_error {
-                        self.append(&"Syntax error: else found with no previous if".to_string());
+                        self.println(&"Syntax error: else found with no previous if".to_string());
                     }
                     return;
                 }
@@ -261,7 +268,7 @@ impl Application {
                         Option::None => syntax_error = true
                     }
                     if syntax_error {
-                        self.append(&"Syntax error: fi found with no previous if".to_string())
+                        self.println(&"Syntax error: fi found with no previous if".to_string());
                     }
                     return;
                 }
@@ -311,10 +318,9 @@ impl Application {
 
                 let mut help = "Commands:".to_string();
                 for command in self.commands.iter() {
-                    help = help + " " + &command.name;
+                    help = help + ' ' + &command.name;
                 }
-
-                self.append(&help);
+                self.println(&help);
             },
             Option::None => ()
         }
@@ -332,8 +338,7 @@ impl Application {
             let content = &window.content;
             content.set(Color::new(0, 0, 0));
 
-            let output = String::from_utf8(self.stdio.inner());
-            for c in output.chars(){
+            for c in self.output.chars(){
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
@@ -443,8 +448,7 @@ impl Application {
                 self.command = String::new();
                 self.offset = 0;
                 self.last_command = command.clone();
-                self.stdio.write_all(&"# ".to_string().to_utf8());
-                self.append(&command);
+                self.println(&("# ".to_string() + &command));
                 self.on_command(&command);
             },
             _ => {
