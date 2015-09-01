@@ -123,29 +123,25 @@ impl Response for TCP {
                             }
                             break;
                         }
-
-                        let tcp_header = self.header;
-                        let tcp_options = self.options.clone();
-                        let tcp_dst_ip = self.src_ip;
-                        let tcp_data_len = self.data.len();
+;
                         let mut resource = URL::from_string(&("http://".to_string() + path)).open();
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);
 
                         let mut response = TCP {
-                            header: tcp_header,
-                            options: tcp_options.clone(),
+                            header: self.header,
+                            options: self.options.clone(),
                             data: vec,
                             src_ip: IP_ADDR,
-                            dst_ip: tcp_dst_ip
+                            dst_ip: self.src_ip
                         };
 
-                        response.header.src = tcp_header.dst;
-                        response.header.dst = tcp_header.src;
-                        response.header.flags.set(tcp_header.flags.get() | TCP_FIN);
-                        response.header.ack_num.set(tcp_header.sequence.get() + tcp_data_len as u32);
-                        response.header.sequence.set(tcp_header.ack_num.get());
+                        response.header.src = self.header.dst;
+                        response.header.dst = self.header.src;
+                        response.header.flags.set(self.header.flags.get() | TCP_FIN);
+                        response.header.ack_num.set(self.header.sequence.get() + self.data.len() as u32);
+                        response.header.sequence.set(self.header.ack_num.get());
 
                         response.header.checksum.data = 0;
 
