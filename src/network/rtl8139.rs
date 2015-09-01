@@ -13,10 +13,10 @@ pub struct RTL8139 {
     pub func: usize,
     pub base: usize,
     pub memory_mapped: bool,
-    pub irq: u8
+    pub irq: u8,
+    pub inbound: Queue<Vec<u8>>,
+    pub outbound: Queue<Vec<u8>>
 }
-
-static mut RTL8139_TX: u16 = 0;
 
 impl SessionItem for RTL8139 {
     fn on_irq(&mut self, irq: u8){
@@ -52,32 +52,7 @@ impl SessionItem for RTL8139 {
                     dl();
                 }
 
-                match EthernetII::from_bytes(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4)){
-                    Option::Some(frame) => {
-                        frame.respond(box move |responses: Vec<Vec<u8>>|{
-                            for response in responses.iter() {
-                                if cfg!(debug_network){
-                                    d("RTL8139 send ");
-                                    dd(RTL8139_TX as usize);
-                                    dl();
-                                }
-
-                                outd(base + 0x20 + RTL8139_TX*4, response.as_ptr() as u32);
-                                outd(base + 0x10 + RTL8139_TX*4, response.len() as u32 & 0x1FFF);
-
-                                while ind(base + 0x10 + RTL8139_TX*4) & (1 << 13) == 0 {
-                                    //Waiting for move out of memory
-                                    if cfg!(debug_network){
-                                        d("RTL8139 waiting for DMA\n");
-                                    }
-                                }
-
-                                RTL8139_TX = (RTL8139_TX + 1) % 4;
-                            }
-                        });
-                    },
-                    Option::None => ()
-                }
+                self.inbound.push(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4));
 
                 capr = capr + frame_len + 4;
                 capr = (capr + 3) & (0xFFFFFFFF - 3);
@@ -88,7 +63,42 @@ impl SessionItem for RTL8139 {
                 outw(base + 0x38, (capr as u16) - 16);
             }
 
-            outw(base + 0x3E, 0x1);
+            //TODO: Allow preemption of this loop
+            loop {
+                match self.inbound.pop() {
+                    Option::Some(bytes) => match EthernetII::from_bytes(bytes){
+                        Option::Some(frame) => self.outbound.vec.push_all(&frame.respond()),
+                        Option::None => ()
+                    },
+                    Option::None => break
+                }
+            }
+
+            let tsd = [ind(base + 0x10), ind(base + 0x14), ind(base + 0x18), ind(base + 0x1C)];
+            for i in 0..tsd.len() {
+                if tsd[i] & (1 << 13) == (1 << 13) {
+                    match self.outbound.pop() {
+                        Option::Some(bytes) => {
+                            if cfg!(debug_network){
+                                d("RTL8139 send ");
+                                dd(i);
+                                dl();
+                            }
+
+                            outd(base + 0x20 + (i as u16)*4, bytes.as_ptr() as u32);
+                            outd(base + 0x10 + (i as u16)*4, bytes.len() as u32 & 0x1FFF);
+                        },
+                        Option::None => break
+                    }
+                }
+            }
+
+
+            let interrupt_status = inw(base + 0x3E);
+
+            if interrupt_status != 0 {
+                outw(base + 0x3E, interrupt_status);
+            }
         }
     }
 }
@@ -114,14 +124,12 @@ impl RTL8139 {
         outb(base + 0x37, 0x10);
         while inb(base + 0x37) & 0x10 != 0 {}
 
-        RTL8139_TX = 0;
-
         let receive_buffer = alloc(10240);
         outd(base + 0x30, receive_buffer as u32);
         d(" RBSTART: ");
         dh(ind(base + 0x30) as usize);
 
-        outw(base + 0x3C, 0x1);
+        outw(base + 0x3C, 5);
         d(" IMR: ");
         dh(inw(base + 0x3C) as usize);
 

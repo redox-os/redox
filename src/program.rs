@@ -13,9 +13,6 @@
 
 extern crate alloc;
 
-#[macro_use]
-extern crate mopa;
-
 use application::Application;
 
 use common::memory::*;

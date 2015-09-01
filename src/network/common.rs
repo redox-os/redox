@@ -1,16 +1,14 @@
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::vec::*;
 
 pub trait Response {
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>);
+    fn respond(&self) -> Vec<Vec<u8>>;
 }
 
 pub trait FromBytes{
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self>;
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self:Sized;
 }
 
 pub trait ToBytes{

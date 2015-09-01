@@ -2,8 +2,6 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::vec::*;
 
@@ -49,13 +47,14 @@ impl ToBytes for ICMP {
 
 impl Response for ICMP {
     #[allow(unused_variables)]
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self) -> Vec<Vec<u8>>{
         if cfg!(debug_network){
             d("        ");
             self.d();
             dl();
         }
 
+        let mut ret: Vec<Vec<u8>> = Vec::new();
         if self.header._type == 0x08 {
             if cfg!(debug_network){
                 d("            Echo Reply\n");
@@ -78,10 +77,9 @@ impl Response for ICMP {
                 );
             }
 
-            let mut ret: Vec<Vec<u8>> = Vec::new();
             ret.push(response.to_bytes());
-            callback(ret);
         }
+        return ret;
     }
 }
 

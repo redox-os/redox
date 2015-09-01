@@ -37,14 +37,21 @@ kernel.rlib: src/kernel.rs liballoc.rlib libmopa.rlib
 kernel.bin: kernel.rlib liballoc.rlib libmopa.rlib
 	$(LD) -m elf_i386 -o $@ -T src/kernel.ld $< liballoc.rlib libmopa.rlib
 
-terminal.rlib: src/program.rs filesystem/terminal.rs liballoc.rlib libmopa.rlib
+httpd.rlib: src/program.rs filesystem/httpd.rs liballoc.rlib
+	sed 's|APPLICATION_PATH|../filesystem/httpd.rs|' src/program.rs > src/program.gen
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern alloc=liballoc.rlib
+
+filesystem/httpd.bin: httpd.rlib liballoc.rlib
+	$(LD) -m elf_i386 -o $@ -T src/program.ld $< liballoc.rlib
+
+terminal.rlib: src/program.rs filesystem/terminal.rs liballoc.rlib
 	sed 's|APPLICATION_PATH|../filesystem/terminal.rs|' src/program.rs > src/program.gen
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern alloc=liballoc.rlib --extern mopa=libmopa.rlib
+	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern alloc=liballoc.rlib
 
-filesystem/terminal.bin: terminal.rlib liballoc.rlib libmopa.rlib
-	$(LD) -m elf_i386 -o $@ -T src/program.ld $< liballoc.rlib libmopa.rlib
+filesystem/terminal.bin: terminal.rlib liballoc.rlib
+	$(LD) -m elf_i386 -o $@ -T src/program.ld $< liballoc.rlib
 
-src/filesystem.gen: filesystem/terminal.bin
+src/filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
 	find filesystem -type f -o -type l | cut -d '/' -f2- | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen

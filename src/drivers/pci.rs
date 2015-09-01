@@ -1,5 +1,6 @@
 use common::debug::*;
 use common::pci::*;
+use common::queue::*;
 use common::vec::*;
 
 use network::intel8254x::*;
@@ -79,7 +80,9 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
-                        irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
+                        irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF,
+                        inbound: Queue::new(),
+                        outbound: Queue::new()
                     };
                     module.init();
                     session.items.push(module);

@@ -2,8 +2,6 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::vec::*;
 
@@ -63,7 +61,8 @@ impl ToBytes for IPv4 {
 }
 
 impl Response for IPv4 {
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self) -> Vec<Vec<u8>> {
+        let mut ret: Vec<Vec<u8>> = Vec::new();
         if self.header.dst.equals(IP_ADDR) || self.header.dst.equals(BROADCAST_IP_ADDR){
             if cfg!(debug_network){
                 d("    ");
@@ -71,53 +70,49 @@ impl Response for IPv4 {
                 dl();
             }
 
-            let ipv4_header = self.header;
-            let ipv4_options = self.options.clone();
-            let ipv4_callback = box move |responses: Vec<Vec<u8>>|{
-                let mut ret: Vec<Vec<u8>> = Vec::new();
-                for response in responses.iter() {
-                    let mut packet = IPv4 {
-                        header: ipv4_header,
-                        options: ipv4_options.clone(),
-                        data: response.clone()
-                    };
-
-                    packet.header.dst = ipv4_header.src;
-                    packet.header.src = IP_ADDR;
-                    packet.header.len.set((size_of::<IPv4Header>() + packet.options.len() + packet.data.len()) as u16);
-
-                    unsafe{
-                        packet.header.checksum.data = 0;
-
-                        let header_ptr: *const IPv4Header = &packet.header;
-                        packet.header.checksum.data = Checksum::compile(
-                            Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
-                            Checksum::sum(packet.options.as_ptr() as usize, packet.options.len())
-                        );
-                    }
-
-                    ret.push(packet.to_bytes());
-                }
-                callback(ret);
-            };
-
+            let responses: Vec<Vec<u8>>;
             match self.header.proto {
                 0x01 => match ICMP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => packet.respond(ipv4_callback),
-                    Option::None => ()
+                    Option::Some(packet) => responses = packet.respond(),
+                    Option::None => responses = Vec::new()
                 },
                 //Must copy source IP and destination IP for checksum
                 0x06 => match TCP::from_bytes_ipv4(self.data.clone(), self.header.src, self.header.dst) {
-                    Option::Some(packet) => packet.respond(ipv4_callback),
-                    Option::None => ()
+                    Option::Some(packet) => responses = packet.respond(),
+                    Option::None => responses = Vec::new()
                 },
                 0x11 => match UDP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => packet.respond(ipv4_callback),
-                    Option::None => ()
+                    Option::Some(packet) => responses = packet.respond(),
+                    Option::None => responses = Vec::new()
                 },
-                _ => ()
+                _ => responses = Vec::new()
+            }
+
+            for response in responses.iter() {
+                let mut packet = IPv4 {
+                    header: self.header,
+                    options: self.options.clone(),
+                    data: response.clone()
+                };
+
+                packet.header.dst = self.header.src;
+                packet.header.src = IP_ADDR;
+                packet.header.len.set((size_of::<IPv4Header>() + packet.options.len() + packet.data.len()) as u16);
+
+                unsafe{
+                    packet.header.checksum.data = 0;
+
+                    let header_ptr: *const IPv4Header = &packet.header;
+                    packet.header.checksum.data = Checksum::compile(
+                        Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
+                        Checksum::sum(packet.options.as_ptr() as usize, packet.options.len())
+                    );
+                }
+
+                ret.push(packet.to_bytes());
             }
         }
+        return ret;
     }
 }
 
