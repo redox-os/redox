@@ -1,6 +1,8 @@
 use core::option::Option;
 
 use common::debug::*;
+use common::memory::*;
+use common::net::*;
 use common::vec::*;
 
 pub trait Response {
@@ -104,31 +106,6 @@ pub static MAC_ADDR: MACAddr = MACAddr {
     bytes: [0x52, 0x54, 0x00, 0x12, 0x34, 0x56]
 };
 
-#[derive(Copy, Clone)]
-pub struct IPv4Addr {
-    pub bytes: [u8; 4]
-}
-
-impl IPv4Addr {
-    pub fn equals(&self, other: IPv4Addr) -> bool {
-        for i in 0..4 {
-            if self.bytes[i] != other.bytes[i] {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    pub fn d(&self){
-        for i in 0..4 {
-            if i > 0 {
-                d(".");
-            }
-            dd(self.bytes[i] as usize);
-        }
-    }
-}
-
 pub static BROADCAST_IP_ADDR: IPv4Addr = IPv4Addr {
     bytes: [10, 85, 85, 255]
 };
@@ -136,22 +113,6 @@ pub static BROADCAST_IP_ADDR: IPv4Addr = IPv4Addr {
 pub static IP_ADDR: IPv4Addr = IPv4Addr {
     bytes: [10, 85, 85, 2]
 };
-
-#[derive(Copy, Clone)]
-pub struct IPv6Addr {
-    pub bytes: [u8; 16]
-}
-
-impl IPv6Addr {
-    pub fn d(&self){
-        for i in 0..16 {
-            if i > 0 && i % 2 == 0 {
-                d(":");
-            }
-            dbh(self.bytes[i]);
-        }
-    }
-}
 
 #[derive(Copy, Clone)]
 pub struct Checksum {

@@ -15,6 +15,7 @@ pub struct Session {
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
+    pub tcp_listeners: Vec<*mut TcpListener>,
     pub windows: Vec<*mut Window>,
     pub redraw: usize
 }
@@ -36,6 +37,7 @@ impl Session {
                     valid: false
                 },
                 items: Vec::new(),
+                tcp_listeners: Vec::new(),
                 windows: Vec::new(),
                 redraw: REDRAW_ALL
             }
