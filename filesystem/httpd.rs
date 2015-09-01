@@ -20,6 +20,17 @@ impl SessionItem for Application {
 
         println!("Starting HTTPD Server".to_string());
 
+        match TcpListener::bind(80){
+            Result::Ok(listener) => {
+                println!("Listening for Connections".to_string());
+                match listener.accept() {
+                    Result::Ok(stream) => println!("Incoming Stream".to_string()),
+                    Result::Err(e) => println!(e)
+                }
+            },
+            Result::Err(e) => println!(e)
+        }
+
         loop {
             match window.poll() {
                 EventOption::Key(key_event) => {
