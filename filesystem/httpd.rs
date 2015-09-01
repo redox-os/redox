@@ -21,15 +21,33 @@ impl SessionItem for Application {
         println!("Starting HTTPD Server".to_string());
 
         match TcpListener::bind(80){
-            Result::Ok(listener) => {
+            Result::Ok(mut listener) => {
                 println!("Listening for Connections".to_string());
-                match listener.accept() {
-                    Result::Ok(stream) => println!("Incoming Stream".to_string()),
-                    Result::Err(e) => println!(e)
+                loop {
+                    match listener.poll() {
+                        Option::Some(stream) => {
+                            println!("Incoming Stream from ".to_string() + stream.address.to_string() + ":" + stream.port as usize);
+                        }
+                        Option::None => ()
+                    }
+
+                    match window.poll() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed{
+                                if key_event.scancode == 1 {
+                                    break;
+                                }
+                            }
+                        },
+                        EventOption::None => sys_yield(),
+                        _ => ()
+                    }
                 }
             },
             Result::Err(e) => println!(e)
         }
+
+        println!("Closed HTTPD Server".to_string());
 
         loop {
             match window.poll() {

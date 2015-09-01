@@ -3,6 +3,7 @@ use core::mem::size_of;
 use core::option::Option;
 
 use common::debug::*;
+use common::net::*;
 use common::random::*;
 use common::resource::*;
 use common::string::*;
@@ -48,6 +49,26 @@ const TCP_RST: u16 = 1 << 2;
 const TCP_PSH: u16 = 1 << 3;
 const TCP_ACK: u16 = 1 << 4;
 
+impl TCP {
+    fn checksum(&mut self){
+        self.header.checksum.data = 0;
+
+        let proto = n16::new(0x06);
+        let segment_len = n16::new((size_of::<TCPHeader>() + self.options.len() + self.data.len()) as u16);
+        unsafe{
+            self.header.checksum.data = Checksum::compile(
+                Checksum::sum((&self.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                Checksum::sum((&self.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                Checksum::sum((&self.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                Checksum::sum(self.options.as_ptr() as usize, self.options.len()) +
+                Checksum::sum(self.data.as_ptr() as usize, self.data.len())
+            );
+        }
+    }
+}
+
 #[allow(trivial_casts)]
 impl Response for TCP {
     fn respond(&self) -> Vec<Vec<u8>>{
@@ -59,10 +80,15 @@ impl Response for TCP {
 
         let mut ret: Vec<Vec<u8>> = Vec::new();
 
-        let allow;
-        match self.header.dst.get() {
-            80 => allow = true,
-            _ => allow = false
+        let mut allow = false;
+        unsafe{
+            for listener_ptr in (*::session_ptr).tcp_listeners.iter() {
+                let listener = &mut **listener_ptr;
+                if listener.port == self.header.dst.get() {
+                    allow = true;
+                    break;
+                }
+            }
         }
 
         if allow {
@@ -84,85 +110,46 @@ impl Response for TCP {
                 response.header.ack_num.set(self.header.sequence.get() + 1);
                 response.header.sequence.set(rand() as u32);
 
-                unsafe{
-                    response.header.checksum.data = 0;
-
-                    let proto = n16::new(0x06);
-                    let segment_len = n16::new((size_of::<TCPHeader>() + response.options.len() + response.data.len()) as u16);
-                    response.header.checksum.data = Checksum::compile(
-                        Checksum::sum((&response.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                        Checksum::sum((&response.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                        Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                        Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                        Checksum::sum((&response.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
-                        Checksum::sum(response.options.as_ptr() as usize, response.options.len()) +
-                        Checksum::sum(response.data.as_ptr() as usize, response.data.len())
-                    );
-                }
+                response.checksum();
 
                 ret.push(response.to_bytes());
             }else if self.header.flags.get() & TCP_PSH != 0{
                 if cfg!(debug_network){
                     d("            TCP PSH\n");
                 }
-                //Send TCP_ACK_PSH_FIN in one statement
-                match self.header.dst.get() {
-                    80 => {
-                        let request = String::from_c_slice(self.data.as_slice());
 
-                        let mut path = "/".to_string();
-
-                        for row in request.split("\r\n".to_string()) {
-                            let mut i = 0;
-                            for col in row.split(" ".to_string()) {
-                                match i {
-                                    1 => path = col,
-                                    _ => ()
-                                }
-                                i += 1;
-                            }
+                unsafe{
+                    for listener_ptr in (*::session_ptr).tcp_listeners.iter() {
+                        let listener = &mut **listener_ptr;
+                        if listener.port == self.header.dst.get() {
+                            listener.streams.push(box TcpStream {
+                                address: self.src_ip,
+                                port: self.header.src.get()
+                            });
                             break;
                         }
-;
-                        let mut resource = URL::from_string(&("http://".to_string() + path)).open();
-
-                        let mut vec: Vec<u8> = Vec::new();
-                        resource.read_to_end(&mut vec);
-
-                        let mut response = TCP {
-                            header: self.header,
-                            options: self.options.clone(),
-                            data: vec,
-                            src_ip: IP_ADDR,
-                            dst_ip: self.src_ip
-                        };
-
-                        response.header.src = self.header.dst;
-                        response.header.dst = self.header.src;
-                        response.header.flags.set(self.header.flags.get() | TCP_FIN);
-                        response.header.ack_num.set(self.header.sequence.get() + self.data.len() as u32);
-                        response.header.sequence.set(self.header.ack_num.get());
-
-                        response.header.checksum.data = 0;
-
-                        let proto = n16::new(0x06);
-                        let segment_len = n16::new((size_of::<TCPHeader>() + response.options.len() + response.data.len()) as u16);
-                        unsafe{
-                            response.header.checksum.data = Checksum::compile(
-                                Checksum::sum((&response.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                Checksum::sum((&response.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                                Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                Checksum::sum((&response.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
-                                Checksum::sum(response.options.as_ptr() as usize, response.options.len()) +
-                                Checksum::sum(response.data.as_ptr() as usize, response.data.len())
-                            );
-                        }
-
-                        ret.push(response.to_bytes());
-                    },
-                    _ => ()
+                    }
                 }
+
+                //Send TCP_ACK_PSH_FIN in one statement
+                //TODO Data
+                let mut response = TCP {
+                    header: self.header,
+                    options: self.options.clone(),
+                    data: Vec::new(),
+                    src_ip: IP_ADDR,
+                    dst_ip: self.src_ip
+                };
+
+                response.header.src = self.header.dst;
+                response.header.dst = self.header.src;
+                response.header.flags.set(self.header.flags.get() | TCP_FIN);
+                response.header.ack_num.set(self.header.sequence.get() + self.data.len() as u32);
+                response.header.sequence.set(self.header.ack_num.get());
+
+                response.checksum();
+
+                ret.push(response.to_bytes());
             }
         }else{
             if self.header.flags.get() & TCP_SYN != 0 {
@@ -183,21 +170,7 @@ impl Response for TCP {
                 response.header.ack_num.set(self.header.sequence.get() + 1);
                 response.header.sequence.set(rand() as u32);
 
-                unsafe{
-                    response.header.checksum.data = 0;
-
-                    let proto = n16::new(0x06);
-                    let segment_len = n16::new((size_of::<TCPHeader>() + response.options.len() + response.data.len()) as u16);
-                    response.header.checksum.data = Checksum::compile(
-                        Checksum::sum((&response.src_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                        Checksum::sum((&response.dst_ip as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                        Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                        Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                        Checksum::sum((&response.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
-                        Checksum::sum(response.options.as_ptr() as usize, response.options.len()) +
-                        Checksum::sum(response.data.as_ptr() as usize, response.data.len())
-                    );
-                }
+                response.checksum();
 
                 ret.push(response.to_bytes());
             }

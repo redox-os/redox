@@ -36,6 +36,8 @@ use filesystems::unfs::*;
 
 use graphics::bmp::*;
 
+use network::common::*;
+
 use programs::common::*;
 use programs::session::*;
 
