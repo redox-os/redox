@@ -49,7 +49,7 @@ impl <T> Vec<T> {
     pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Vec<T> {
         let data = alloc(size_of::<T>() * len);
 
-        ptr::copy(ptr, data as *mut T, size_of::<T>() * len);
+        ptr::copy(ptr, data as *mut T, len);
 
         Vec::<T> {
             data: data as *mut T,
