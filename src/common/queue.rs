@@ -2,7 +2,7 @@ use common::vec::*;
 
 //A FIFO Queue
 pub struct Queue<T> {
-    vec: Vec<T>
+    pub vec: Vec<T>
 }
 
 impl<T> Queue<T> {

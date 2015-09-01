@@ -2,8 +2,6 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::vec::*;
 
@@ -53,8 +51,8 @@ impl ToBytes for ARP {
 }
 
 impl Response for ARP {
-    #[allow(unused_variables)]
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self) -> Vec<Vec<u8>> {
+        let mut ret: Vec<Vec<u8>> = Vec::new();
         if self.header.dst_ip.equals(IP_ADDR) {
             if cfg!(debug_network){
                 d("    ");
@@ -76,11 +74,10 @@ impl Response for ARP {
                 response.header.src_mac = MAC_ADDR;
                 response.header.src_ip = IP_ADDR;
 
-                let mut ret: Vec<Vec<u8>> = Vec::new();
                 ret.push(response.to_bytes());
-                callback(ret);
             }
         }
+        return ret;
     }
 }
 

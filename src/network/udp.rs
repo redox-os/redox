@@ -1,8 +1,6 @@
 use core::mem::size_of;
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::vec::*;
 
@@ -48,10 +46,12 @@ impl ToBytes for UDP {
 
 impl Response for UDP {
     #[allow(unused_variables)]
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self) -> Vec<Vec<u8>>{
         d("            ");
         self.d();
         dl();
+
+        return Vec::new();
     }
 }
 

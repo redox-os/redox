@@ -2,8 +2,6 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::vec::*;
 
@@ -49,41 +47,39 @@ impl ToBytes for EthernetII {
 }
 
 impl Response for EthernetII {
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self) -> Vec<Vec<u8>>{
+        let mut ret: Vec<Vec<u8>> = Vec::new();
         if self.header.dst.equals(MAC_ADDR) || self.header.dst.equals(BROADCAST_MAC_ADDR) {
             if cfg!(debug_network){
                 self.d();
                 dl();
             }
 
-            let ethernet_header = self.header;
-            let ethernet_callback = box move |responses: Vec<Vec<u8>>|{
-                let mut ret: Vec<Vec<u8>> = Vec::new();
-                for response in responses.iter() {
-                    ret.push(EthernetII {
-                        header: EthernetIIHeader {
-                            src: MAC_ADDR,
-                            dst: ethernet_header.src,
-                            _type: ethernet_header._type
-                        },
-                        data: response.clone()
-                    }.to_bytes());
-                }
-                callback(ret);
-            };
-
+            let responses: Vec<Vec<u8>>;
             match self.header._type.get() {
                 0x0800 => match IPv4::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => packet.respond(ethernet_callback),
-                    Option::None => ()
+                    Option::Some(packet) => responses = packet.respond(),
+                    Option::None => responses = Vec::new()
                 },
                 0x0806 => match ARP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => packet.respond(ethernet_callback),
-                    Option::None => ()
+                    Option::Some(packet) => responses = packet.respond(),
+                    Option::None => responses = Vec::new()
                 },
-                _ => ()
+                _ => responses = Vec::new()
+            }
+
+            for response in responses.iter() {
+                ret.push(EthernetII {
+                    header: EthernetIIHeader {
+                        src: MAC_ADDR,
+                        dst: self.header.src,
+                        _type: self.header._type
+                    },
+                    data: response.clone()
+                }.to_bytes());
             }
         }
+        return ret;
     }
 }
 

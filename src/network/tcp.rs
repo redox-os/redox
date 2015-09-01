@@ -2,8 +2,6 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
-use alloc::boxed::*;
-
 use common::debug::*;
 use common::random::*;
 use common::resource::*;
@@ -52,12 +50,14 @@ const TCP_ACK: u16 = 1 << 4;
 
 #[allow(trivial_casts)]
 impl Response for TCP {
-    fn respond(&self, callback: Box<FnBox(Vec<Vec<u8>>)>){
+    fn respond(&self) -> Vec<Vec<u8>>{
         if cfg!(debug_network){
             d("            ");
             self.d();
             dl();
         }
+
+        let mut ret: Vec<Vec<u8>> = Vec::new();
 
         let allow;
         match self.header.dst.get() {
@@ -100,9 +100,7 @@ impl Response for TCP {
                     );
                 }
 
-                let mut ret: Vec<Vec<u8>> = Vec::new();
                 ret.push(response.to_bytes());
-                callback(ret);
             }else if self.header.flags.get() & TCP_PSH != 0{
                 if cfg!(debug_network){
                     d("            TCP PSH\n");
@@ -165,9 +163,7 @@ impl Response for TCP {
                             );
                         }
 
-                        let mut ret: Vec<Vec<u8>> = Vec::new();
                         ret.push(response.to_bytes());
-                        callback(ret);
                     },
                     _ => ()
                 }
@@ -207,11 +203,11 @@ impl Response for TCP {
                     );
                 }
 
-                let mut ret: Vec<Vec<u8>> = Vec::new();
                 ret.push(response.to_bytes());
-                callback(ret);
             }
         }
+
+        return ret;
     }
 }
 
