@@ -59,6 +59,7 @@ mod common {
     pub mod queue;
     pub mod memory;
     pub mod mutex;
+    pub mod net;
     pub mod paging;
     pub mod pci;
     pub mod pio;
