@@ -125,15 +125,14 @@ impl Response for TCP {
                             listener.streams.push(box TcpStream {
                                 address: self.src_ip,
                                 port: self.header.src.get(),
-                                data: self.data.clone()
+                                data: self.data.clone(),
+                                response: Vec::new()
                             });
                             break;
                         }
                     }
                 }
 
-                //Send TCP_ACK_PSH_FIN in one statement
-                //TODO Data
                 let mut response = TCP {
                     header: self.header,
                     options: self.options.clone(),
