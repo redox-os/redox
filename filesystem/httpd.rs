@@ -18,15 +18,16 @@ impl SessionItem for Application {
             });
         }
 
-        println!("Starting HTTPD Server".to_string());
+        println!("Starting HTTP Server".to_string());
 
         match TcpListener::bind(80){
             Result::Ok(mut listener) => {
-                println!("Listening for Connections".to_string());
+                println!("Listening for connections".to_string());
                 loop {
                     match listener.poll() {
                         Option::Some(stream) => {
-                            println!("Incoming Stream from ".to_string() + stream.address.to_string() + ":" + stream.port as usize);
+                            println!("Incoming stream from ".to_string() + stream.address.to_string() + ":" + stream.port as usize);
+                            println!(String::from_utf8(&stream.data));
                         }
                         Option::None => ()
                     }
@@ -43,11 +44,12 @@ impl SessionItem for Application {
                         _ => ()
                     }
                 }
+                println!("Stopped listening for connections".to_string());
             },
             Result::Err(e) => println!(e)
         }
 
-        println!("Closed HTTPD Server".to_string());
+        println!("Closed HTTP Server".to_string());
 
         loop {
             match window.poll() {

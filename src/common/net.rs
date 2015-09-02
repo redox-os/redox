@@ -7,6 +7,7 @@ use common::debug::*;
 use common::queue::*;
 use common::scheduler::*;
 use common::string::*;
+use common::vec::*;
 
 use syscall::call::sys_tcp_listener_create;
 use syscall::call::sys_tcp_listener_destroy;
@@ -67,7 +68,8 @@ impl IPv6Addr {
 
 pub struct TcpStream{
     pub address: IPv4Addr,
-    pub port: u16
+    pub port: u16,
+    pub data: Vec<u8>,
 }
 
 pub struct TcpListener {
