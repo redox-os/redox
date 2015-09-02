@@ -124,7 +124,8 @@ impl Response for TCP {
                         if listener.port == self.header.dst.get() {
                             listener.streams.push(box TcpStream {
                                 address: self.src_ip,
-                                port: self.header.src.get()
+                                port: self.header.src.get(),
+                                data: self.data.clone()
                             });
                             break;
                         }
