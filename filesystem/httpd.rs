@@ -25,9 +25,10 @@ impl SessionItem for Application {
                 println!("Listening for connections".to_string());
                 loop {
                     match listener.poll() {
-                        Option::Some(stream) => {
+                        Option::Some(mut stream) => {
                             println!("Incoming stream from ".to_string() + stream.address.to_string() + ":" + stream.port as usize);
                             println!(String::from_utf8(&stream.data));
+                            stream.response = "Test".to_string().to_utf8();
                         }
                         Option::None => ()
                     }

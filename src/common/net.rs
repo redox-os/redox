@@ -70,6 +70,7 @@ pub struct TcpStream{
     pub address: IPv4Addr,
     pub port: u16,
     pub data: Vec<u8>,
+    pub response: Vec<u8>
 }
 
 pub struct TcpListener {
