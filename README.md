@@ -10,10 +10,14 @@ cd setup
 ```
 - Make the project
 ```bash
-make clean && make
+make
 ```
 
 ## Running on Ubuntu
+- Install Qemu
+```bash
+sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
+```
 - Run Qemu (without network bridge):
 ```bash
 make run
@@ -33,13 +37,14 @@ cd setup
 ```
 - Make the project
 ```bash
-make clean && make
+make
 ```
 
 ## Running on OS X
+- Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
 - Run Qemu (without network bridge or KVM):
 ```bash
-make run_no_kvm
+make run_virtualbox
 ```
 
 ## Building on Windows
@@ -52,7 +57,7 @@ windows\make
 ```
 
 ## Running on Windows
-- Install Virtualbox from https://www.virtualbox.org/wiki/Downloads
+- Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
 - Make sure to install to C:\Program Files\Oracle\VirtualBox or edit the Makefile VBM path
 - Run Virtualbox (without network bridge or KVM):
 ```bash
