@@ -50,3 +50,9 @@ make run_no_kvm
 cd <REDOX REPOSITORY>
 windows\make
 ```
+
+## Running on Windows
+- Run Qemu (without network bridge or KVM):
+```bash
+windows\make run_no_kvm
+```
