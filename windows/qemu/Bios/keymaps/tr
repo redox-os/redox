@@ -1,0 +1,123 @@
+# generated from XKB map tr
+include common
+map 0x41f
+exclam 0x02 shift
+onesuperior 0x02 altgr
+exclamdown 0x02 shift altgr
+apostrophe 0x03 shift
+at 0x03 altgr
+oneeighth 0x03 shift altgr
+dead_circumflex 0x04 shift
+numbersign 0x04 altgr
+sterling 0x04 shift altgr
+plus 0x05 shift
+dollar 0x05 altgr
+percent 0x06 shift
+onehalf 0x06 altgr
+threeeighths 0x06 shift altgr
+ampersand 0x07 shift
+asciicircum 0x07 altgr
+fiveeighths 0x07 shift altgr
+slash 0x08 shift
+braceleft 0x08 altgr
+seveneighths 0x08 shift altgr
+parenleft 0x09 shift
+bracketleft 0x09 altgr
+trademark 0x09 shift altgr
+parenright 0x0a shift
+bracketright 0x0a altgr
+plusminus 0x0a shift altgr
+equal 0x0b shift
+braceright 0x0b altgr
+degree 0x0b shift altgr
+asterisk 0x0c
+question 0x0c shift
+backslash 0x0c altgr
+questiondown 0x0c shift altgr
+minus 0x0d
+underscore 0x0d shift
+dead_cedilla 0x0d altgr
+dead_ogonek 0x0d shift altgr
+at 0x10 altgr
+Greek_OMEGA 0x10 shift altgr
+lstroke 0x11 altgr
+Lstroke 0x11 shift altgr
+EuroSign 0x12 altgr
+paragraph 0x13 altgr
+registered 0x13 shift altgr
+tslash 0x14 altgr
+Tslash 0x14 shift altgr
+leftarrow 0x15 altgr
+yen 0x15 shift altgr
+downarrow 0x16 altgr
+uparrow 0x16 shift altgr
+idotless 0x17
+I 0x17 shift
+rightarrow 0x17 altgr
+oslash 0x18 altgr
+Ooblique 0x18 shift altgr
+thorn 0x19 altgr
+THORN 0x19 shift altgr
+gbreve 0x1a
+Gbreve 0x1a shift
+dead_diaeresis 0x1a altgr
+dead_abovering 0x1a shift altgr
+udiaeresis 0x1b
+Udiaeresis 0x1b shift
+asciitilde 0x1b altgr
+dead_macron 0x1b shift altgr
+ae 0x1e altgr
+AE 0x1e shift altgr
+ssharp 0x1f altgr
+section 0x1f shift altgr
+eth 0x20 altgr
+ETH 0x20 shift altgr
+dstroke 0x21 altgr
+ordfeminine 0x21 shift altgr
+eng 0x22 altgr
+ENG 0x22 shift altgr
+hstroke 0x23 altgr
+Hstroke 0x23 shift altgr
+kra 0x25 altgr
+ampersand 0x25 shift altgr
+lstroke 0x26 altgr
+Lstroke 0x26 shift altgr
+scedilla 0x27
+Scedilla 0x27 shift
+dead_acute 0x27 altgr
+dead_doubleacute 0x27 shift altgr
+i 0x28
+Iabovedot 0x28 shift
+dead_circumflex 0x28 altgr
+dead_caron 0x28 shift altgr
+backslash 0x29
+quotedbl 0x29 shift
+asciitilde 0x29 altgr
+comma 0x2b
+semicolon 0x2b shift
+bar 0x2b altgr
+dead_breve 0x2b shift altgr
+guillemotleft 0x2c altgr
+less 0x2c shift altgr
+guillemotright 0x2d altgr
+greater 0x2d shift altgr
+cent 0x2e altgr
+copyright 0x2e shift altgr
+leftdoublequotemark 0x2f altgr
+grave 0x2f shift altgr
+rightdoublequotemark 0x30 altgr
+apostrophe 0x30 shift altgr
+mu 0x32 altgr
+masculine 0x32 shift altgr
+odiaeresis 0x33
+Odiaeresis 0x33 shift
+less 0x33 altgr
+multiply 0x33 shift altgr
+ccedilla 0x34
+Ccedilla 0x34 shift
+greater 0x34 altgr
+division 0x34 shift altgr
+period 0x35
+colon 0x35 shift
+dead_belowdot 0x35 altgr
+dead_abovedot 0x35 shift altgr

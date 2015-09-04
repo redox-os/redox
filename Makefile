@@ -4,18 +4,18 @@ RUSTCFLAGS=-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow
 	-Z no-landing-pads \
 	-A dead-code -W trivial-casts -W trivial-numeric-casts \
 	-L .
-LD=ld
-LDARGS=-m elf_i386
 AS=nasm
 AWK=awk
 CUT=cut
 FIND=find
-SED=sed
-SORT=sort
+LD=ld
+LDARGS=-m elf_i386
 QEMU=qemu-system-i386
 QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive
 #-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 RM=rm -f
+SED=sed
+SORT=sort
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
@@ -24,9 +24,11 @@ ifeq ($(OS),Windows_NT)
 	AWK=windows/awk
 	CUT=windows/cut
 	FIND=windows/find
+	QEMU=windows/qemu/qemu-system-i386w
+	QEMU_FLAGS=-L windows/qemu/Bios
+	RM=windows/rm -f
 	SED=windows/sed
 	SORT=windows/sort
-	RM=windows/rm -f
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)

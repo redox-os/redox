@@ -1,0 +1,94 @@
+include common
+
+# Czech qwertz layout
+# comments are czech descriptions of the characters
+
+# -----------
+#  First row
+# -----------
+
+# strednik, kolecko
+semicolon 0x29
+dead_abovering 0x29 shift
+
+# numbers
+plus 0x2
+1 0x2 shift
+ecaron 0x3
+2 0x3 shift
+scaron 0x4
+3 0x4 shift
+ccaron 0x5
+4 0x5 shift
+rcaron 0x6
+5 0x6 shift
+zcaron 0x7
+6 0x7 shift
+yacute 0x8
+7 0x8 shift
+aacute 0x9
+8 0x9 shift
+iacute 0xa
+9 0xa shift
+eacute 0xb
+0 0xb shift
+
+# rovnitko
+equal 0x0c
+percent 0x0c shift
+
+# carka, hacek
+dead_acute 0x0d
+dead_caron 0x0d shift
+
+# ------------
+#  Second row
+# ------------
+
+z 0x15 addupper
+
+# u s carkou, zpetne lomitko
+uacute 0x1a
+slash 0x1a shift
+
+# prava zavorka, leva zavorka
+parenright 0x1b
+parenleft 0x1b shift
+
+# -----------
+#  Third row
+# -----------
+
+# u s krouzkem, uvozovky
+uring 0x27
+quotedbl 0x27 shift
+
+# paragraf, vykricnik
+section 0x28
+exclam 0x28 shift
+
+# vodorovna dvojtecka, apostrof
+dead_diaeresis 0x2b
+apostrophe 0x2b shift
+
+# ------------
+#  Fourth row
+# ------------
+
+# zpetne lomitko, roura
+backslash 0x2b
+bar 0x2b shift
+
+y 0x2c addupper
+
+# carka, otaznik
+comma 0x33
+question 0x33 shift
+
+# tecka, dvojtecka
+period 0x34
+colon 0x34 shift
+
+# minus, podtrzitko
+minus 0x35
+underscore 0x35 shift
