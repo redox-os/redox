@@ -4,3 +4,4 @@
 *.pcap
 *.rlib
 setup/rust/
+!windows/qemu/Bios/*
