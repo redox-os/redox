@@ -23,6 +23,25 @@ make run
 make run_tap
 ```
 
+## Building on OS X
+- Install MacPorts
+- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+```bash
+cd setup
+./osx.sh
+./binary.sh
+```
+- Make the project
+```bash
+make clean && make
+```
+
+## Running on OS X
+- Run Qemu (without network bridge or KVM):
+```bash
+make run_no_kvm
+```
+
 ## Building on Windows
 - Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
 - Make sure to select Add to PATH
