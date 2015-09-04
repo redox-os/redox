@@ -4,12 +4,17 @@ RUSTCFLAGS=-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow
 	-Z no-landing-pads \
 	-A dead-code -W trivial-casts -W trivial-numeric-casts \
 	-L .
-LD=i386-elf-ld
+LD=ld
 LDARGS=-m elf_i386
 AS=nasm
 QEMU=qemu-system-i386
 QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive
 #-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
+
+UNAME := $(shell uname)
+ifeq ($(UNAME), Darwin)
+    LD=i386-elf-ld
+endif
 
 all: harddrive.bin
 
