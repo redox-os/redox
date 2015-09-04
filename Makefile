@@ -16,6 +16,8 @@ QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehc
 RM=rm -f
 SED=sed
 SORT=sort
+VB=virtualbox
+VBM=VBoxManage
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
@@ -29,6 +31,8 @@ ifeq ($(OS),Windows_NT)
 	RM=windows/rm -f
 	SED=windows/sed
 	SORT=windows/sort
+	VB="C:/Program Files/Oracle/VirtualBox/VirtualBox"
+	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
@@ -108,5 +112,20 @@ run_tap_dump: harddrive.bin
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 
+run_virtualbox: harddrive.bin
+	echo "Delete VM"
+	-$(VBM) unregistervm Redox --delete
+	echo "Create VM"
+	$(VBM) createvm --name Redox --register
+	$(VBM) modifyvm Redox --memory 512
+	$(VBM) modifyvm Redox --vram 64
+	echo "Create Disk"
+	$(VBM) convertfromraw $< harddrive.vdi
+	echo "Attach Disk"
+	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
+	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium harddrive.vdi
+	echo "Run VM"
+	$(VB) --startvm Redox
+
 clean:
-	$(RM) *.bin *.list *.pcap *.rlib filesystem/*.bin src/*.gen
+	$(RM) *.bin *.list *.pcap *.rlib *.vdi filesystem/*.bin src/*.gen

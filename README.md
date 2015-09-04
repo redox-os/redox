@@ -52,7 +52,9 @@ windows\make
 ```
 
 ## Running on Windows
-- Run Qemu (without network bridge or KVM):
+- Install Virtualbox from https://www.virtualbox.org/wiki/Downloads
+- Make sure to install to C:\Program Files\Oracle\VirtualBox or edit the Makefile VBM path
+- Run Virtualbox (without network bridge or KVM):
 ```bash
-windows\make run_no_kvm
+windows\make run_virtualbox
 ```
