@@ -231,7 +231,7 @@ impl SessionItem for IDE {
     fn scheme(&self) -> String {
         return "ide".to_string();
     }
-/* PIO
+/* PIO */
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let mut sector = 1;
         let mut count = 1;
@@ -252,8 +252,7 @@ impl SessionItem for IDE {
 
         return box NoneResource;
     }
-*/
-/* DMA */
+/* DMA
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let data: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0xFFFFFFFF));
         let data_callback = data.clone();
@@ -309,6 +308,7 @@ impl SessionItem for IDE {
             }
         }
     }
+*/
 }
 
 impl IDE {
@@ -325,7 +325,7 @@ impl IDE {
 
         let base = self.base as u16;
 
-        d(" PDTR ");
+        d(" PRDT ");
         dh(ind(base + 0x4) as usize);
 
         d(" CMD ");

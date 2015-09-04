@@ -148,17 +148,10 @@ impl String {
             return String::new();
         }
 
-        let mut length = 1;
-        let mut length_num = num;
-        while length_num >= radix {
-            length_num /= radix;
-            length += 1;
-        }
-
         let mut vec: Vec<char> = Vec::new();
 
         let mut digit_num = num;
-        for i in 0..length {
+        loop {
             let mut digit = (digit_num % radix) as u8;
             if digit > 9 {
                 digit += 'A' as u8 - 10;
@@ -167,6 +160,11 @@ impl String {
             }
 
             vec.insert(0, digit as char);
+
+            if digit_num < radix {
+                break;
+            }
+
             digit_num /= radix;
         }
 

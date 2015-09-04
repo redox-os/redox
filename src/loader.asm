@@ -9,7 +9,7 @@ boot: ; dl comes with disk
     mov es, ax
     mov ss, ax
     ; initialize stack
-    mov sp, 0x7bfe
+    mov sp, 0x7BF0
 
     mov [disk], dl
 
@@ -28,19 +28,23 @@ boot: ; dl comes with disk
     xor dx, dx
     call load
 
+    mov si, finished
+    call print
+    call print_line
+
     jmp startup
 
 load:
-    cmp cx, 127
+    cmp cx, 64
     jbe .good_size
 
     pusha
-    mov cx, 127
+    mov cx, 64
     call load
     popa
-    add ax, 127
-    add dx, 127*512/16
-    sub cx, 127
+    add ax, 64
+    add dx, 64*512/16
+    sub cx, 64
 
     jmp load
 .good_size:
@@ -49,24 +53,30 @@ load:
     mov [DAPACK.count], cx
     mov [DAPACK.seg], dx
 
-    mov si, .msg
+    mov si, loading
     call print
     call print_line
 
     mov bx, [DAPACK.addr]
     call print_num
-    call print_line
 
-    mov bx, [DAPACK.buf]
-    call print_num
-    call print_line
+    mov al, '#'
+    call print_char
 
     mov bx, [DAPACK.count]
     call print_num
+
     call print_line
 
     mov bx, [DAPACK.seg]
     call print_num
+
+    mov al, ':'
+    call print_char
+
+    mov bx, [DAPACK.buf]
+    call print_num
+
     call print_line
 
     mov dl, [disk]
@@ -75,7 +85,6 @@ load:
     int 0x13
     jc error
     ret
-.msg: db "Loading",0
 
 print_char:
     mov ah, 0x0e
@@ -122,19 +131,20 @@ print:
 .done:
     ret
 
-name: db "Redox Loader",0
-
-line: db 13,10,0
-
 error:
-  mov si, .msg
+  mov si, errored
   call print
   call print_line
 .halt:
   cli
   hlt
   jmp .halt
-.msg db "Could not read disk",13,10,0
+
+name: db "Redox Loader",0
+loading: db "Loading",0
+errored: db "Could not read disk",0
+finished: db "Finished",0
+line: db 13,10,0
 
 disk: db 0
 
@@ -142,7 +152,7 @@ DAPACK:
         db	0x10
         db	0
 .count: dw	0	; int 13 resets this to # of blocks actually read/written
-.buf:   dw	0       ; memory buffer destination address (0:7c00)
+.buf:   dw	0 ; memory buffer destination address (0:7c00)
 .seg:   dw	0	; in memory page zero
 .addr:  dd	0	; put the lba to read in this spot
         dd	0	; more storage bytes only for big lba's ( > 4 bytes )

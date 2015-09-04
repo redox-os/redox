@@ -109,4 +109,4 @@ run_tap_dump: harddrive.bin
 	sudo tunctl -d tap_qemu
 
 clean:
-	$(RM) *.bin *.list *.rlib filesystem/*.bin src/*.gen
+	$(RM) *.bin *.list *.pcap *.rlib filesystem/*.bin src/*.gen

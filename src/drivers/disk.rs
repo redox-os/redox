@@ -272,7 +272,7 @@ impl Disk {
 
     pub unsafe fn read_dma(&self, lba: u64, count: u16, destination: usize, busmaster: u16) -> u8{
         if destination > 0 {
-            //Allocate PDTR
+            //Allocate PRDT
             let size = count as usize * 512;
             let entries = (size + 65535)/65536;
             let prdt = alloc(size_of::<PRDTE>() * entries);

@@ -128,6 +128,7 @@ impl SessionItem for FileManager {
                     }
                 },
                 EventOption::Mouse(mouse_event) => {
+                    let mut redraw = false;
                     if ! self.window.shaded {
                         let mut i = 0;
                         let mut row = 0;
@@ -144,6 +145,7 @@ impl SessionItem for FileManager {
                                         let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
                                         if mouse_event.x >= point.x && mouse_event.x < point.x + 8 && mouse_event.y >= point.y && mouse_event.y < point.y + 16 {
                                             self.selected = i;
+                                            redraw = true;
                                         }
                                         col += 1;
                                     }
@@ -158,7 +160,9 @@ impl SessionItem for FileManager {
                         }
                     }
 
-                    self.draw_content();
+                    if redraw {
+                        self.draw_content();
+                    }
                 },
                 EventOption::None => sys_yield(),
                 _ => ()

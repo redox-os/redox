@@ -1,7 +1,6 @@
 use core::option::Option;
 
 use common::debug::*;
-use common::memory::*;
 use common::net::*;
 use common::vec::*;
 
