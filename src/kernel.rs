@@ -14,9 +14,6 @@
 
 extern crate alloc;
 
-#[macro_use]
-extern crate mopa;
-
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
