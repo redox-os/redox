@@ -44,4 +44,9 @@ make run_no_kvm
 
 ## Building on Windows
 - Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
-- Make sure to select Add to PATH
+- The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
+- Open the Rust nightly shell
+```bash
+cd <REDOX REPOSITORY>
+windows\make
+```

@@ -7,13 +7,31 @@ RUSTCFLAGS=-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow
 LD=ld
 LDARGS=-m elf_i386
 AS=nasm
+AWK=awk
+CUT=cut
+FIND=find
+SED=sed
+SORT=sort
 QEMU=qemu-system-i386
 QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive
 #-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
+RM=rm -f
 
-UNAME := $(shell uname)
-ifeq ($(UNAME), Darwin)
-    LD=i386-elf-ld
+ifeq ($(OS),Windows_NT)
+	SHELL=windows\sh
+	LD=windows/i386-elf-ld
+	AS=windows/nasm
+	AWK=windows/awk
+	CUT=windows/cut
+	FIND=windows/find
+	SED=windows/sed
+	SORT=windows/sort
+	RM=windows/rm -f
+else
+	UNAME := $(shell uname)
+	ifeq ($(UNAME),Darwin)
+	    LD=i386-elf-ld
+	endif
 endif
 
 all: harddrive.bin
@@ -46,21 +64,21 @@ kernel.bin: kernel.rlib libcore.rlib liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $< libcore.rlib liballoc.rlib
 
 httpd.rlib: src/program.rs filesystem/httpd.rs libcore.rlib liballoc.rlib
-	sed 's|APPLICATION_PATH|../filesystem/httpd.rs|' src/program.rs > src/program.gen
+	$(SED) "s|APPLICATION_PATH|../filesystem/httpd.rs|" src/program.rs > src/program.gen
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
 
 filesystem/httpd.bin: httpd.rlib libcore.rlib liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $< libcore.rlib liballoc.rlib
 
 terminal.rlib: src/program.rs filesystem/terminal.rs libcore.rlib liballoc.rlib
-	sed 's|APPLICATION_PATH|../filesystem/terminal.rs|' src/program.rs > src/program.gen
+	$(SED) "s|APPLICATION_PATH|../filesystem/terminal.rs|" src/program.rs > src/program.gen
 	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
 
 filesystem/terminal.bin: terminal.rlib libcore.rlib liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $< libcore.rlib liballoc.rlib
 
 src/filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
-	find filesystem -type f -o -type l | cut -d '/' -f2- | sort | awk '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
 	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<
@@ -89,4 +107,4 @@ run_tap_dump: harddrive.bin
 	sudo tunctl -d tap_qemu
 
 clean:
-	rm -f *.bin *.list *.rlib filesystem/*.bin src/*.gen
+	$(RM) *.bin *.list *.rlib filesystem/*.bin src/*.gen
