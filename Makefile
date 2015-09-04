@@ -37,6 +37,8 @@ else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 	    LD=i386-elf-ld
+			VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
+			VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	endif
 endif
 
