@@ -25,7 +25,7 @@ ifeq ($(OS),Windows_NT)
 	CUT=windows/cut
 	FIND=windows/find
 	QEMU=windows/qemu/qemu-system-i386w
-	QEMU_FLAGS=-L windows/qemu/Bios
+	QEMU_FLAGS=-L windows/qemu/Bios -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0
 	RM=windows/rm -f
 	SED=windows/sed
 	SORT=windows/sort
