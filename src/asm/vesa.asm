@@ -102,7 +102,7 @@ vesa:
 	jmp .findmode
 .getmodeinfo:
 	push esi
-	or cx, 1 << 14
+	;or cx, 1 << 14
 	mov [.currentmode], cx
 	mov ax, 0x4F01
 	mov di, VBEModeInfo
@@ -176,8 +176,8 @@ vesa:
 	xor eax, eax
 	ret
 
-.minx dw 0
-.miny dw 0
+.minx dw 640
+.miny dw 480
 .required:
 .requiredx dw 1024	;USE THESE WITH CAUTION
 .requiredy dw 768

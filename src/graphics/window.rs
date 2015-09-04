@@ -91,7 +91,11 @@ impl Window {
             display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize), Size::new(self.size.width + 4, 2), self.border_color);
             display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y), Size::new(2, self.size.height), self.border_color);
 
-            display.image(self.point, self.content.onscreen, Size::new(self.content.width, self.content.height));
+            unsafe{
+                let reenable = start_no_ints();
+                display.image(self.point, self.content.onscreen, Size::new(self.content.width, self.content.height));
+                end_no_ints(reenable);
+            }
         }
     }
 

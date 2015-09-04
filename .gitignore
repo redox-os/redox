@@ -3,6 +3,7 @@
 *.list
 *.pcap
 *.rlib
+*.vdi
 setup/rust/
 !windows/qemu/Bios/*
 windows/qemu/stderr.txt

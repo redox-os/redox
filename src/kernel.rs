@@ -33,8 +33,6 @@ use filesystems::unfs::*;
 
 use graphics::bmp::*;
 
-use network::common::*;
-
 use programs::common::*;
 use programs::session::*;
 
@@ -163,12 +161,9 @@ static mut events_ptr: *mut Box<Queue<Event>> = 0 as *mut Box<Queue<Event>>;
 
 unsafe fn poll_loop() -> ! {
     let session = &mut *session_ptr;
+
     loop {
-        let reenable = start_no_ints();
-
         session.on_poll();
-
-        end_no_ints(reenable);
 
         sys_yield();
     }
@@ -178,16 +173,18 @@ unsafe fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     loop {
-        let reenable = start_no_ints();
-
         loop{
-            match events.pop() {
+            let reenable = start_no_ints();
+
+            let event_option = events.pop();
+
+            end_no_ints(reenable);
+
+            match event_option {
                 Option::Some(event) => session.event(event),
                 Option::None => break
             }
         }
-
-        end_no_ints(reenable);
 
         sys_yield();
     }
@@ -195,15 +192,7 @@ unsafe fn event_loop() -> ! {
 
 unsafe fn redraw_loop() -> ! {
     let session = &mut *session_ptr;
-    {
-        let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
 
-        let mut vec: Vec<u8> = Vec::new();
-        match resource.read_to_end(&mut vec) {
-            Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
-            Option::None => d("Background load error\n")
-        }
-    }
     loop {
         if debug_draw {
             let display = &*(*debug_display);
@@ -247,6 +236,8 @@ unsafe fn test_disk(disk: Disk){
 }
 
 unsafe fn init(font_data: usize, cursor_data: usize){
+    start_no_ints();
+
     debug_display = 0 as *mut Box<Display>;
     debug_point = Point{ x: 0, y: 0 };
     debug_draw = false;
@@ -336,6 +327,17 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     Context::spawn(box move ||{
         redraw_loop();
     });
+
+    //Start interrupts
+    end_no_ints(true);
+
+    let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
+
+    let mut vec: Vec<u8> = Vec::new();
+    match resource.read_to_end(&mut vec) {
+        Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
+        Option::None => d("Background load error\n")
+    }
 }
 
 fn dr(reg: &str, value: u32){

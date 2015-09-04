@@ -5,8 +5,6 @@ use core::option::Option;
 use common::debug::*;
 use common::net::*;
 use common::random::*;
-use common::resource::*;
-use common::string::*;
 use common::vec::*;
 
 use network::common::*;
@@ -49,6 +47,7 @@ const TCP_RST: u16 = 1 << 2;
 const TCP_PSH: u16 = 1 << 3;
 const TCP_ACK: u16 = 1 << 4;
 
+#[allow(trivial_casts)]
 impl TCP {
     fn checksum(&mut self){
         self.header.checksum.data = 0;

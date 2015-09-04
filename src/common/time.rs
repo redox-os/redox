@@ -1,4 +1,4 @@
-use core::ops::{Add, Sub, Mul, Div};
+use core::ops::*;
 
 use common::string::*;
 

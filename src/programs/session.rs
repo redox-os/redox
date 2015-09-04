@@ -1,4 +1,5 @@
 use common::context::*;
+use common::scheduler::*;
 
 use graphics::bmp::*;
 
@@ -44,15 +45,19 @@ impl Session {
         }
     }
 
-    pub fn on_irq(&mut self, irq: u8){
+    pub unsafe fn on_irq(&mut self, irq: u8){
         for item in self.items.iter() {
+            let reenable = start_no_ints();
             item.on_irq(irq);
+            end_no_ints(reenable);
         }
     }
 
-    pub fn on_poll(&mut self){
+    pub unsafe fn on_poll(&mut self){
         for item in self.items.iter() {
+            let reenable = start_no_ints();
             item.on_poll();
+            end_no_ints(reenable);
         }
     }
 
@@ -134,7 +139,7 @@ impl Session {
         self.last_mouse_event = mouse_event;
     }
 
-    pub fn redraw(&mut self){
+    pub unsafe fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
             if self.redraw >= REDRAW_ALL {
                 self.display.set(Color::new(64, 64, 64));
@@ -148,13 +153,13 @@ impl Session {
                 for reverse_i in 0..self.windows.len(){
                     let i = self.windows.len() - 1 - reverse_i;
                     match self.windows.get(i) {
-                        Option::Some(window_ptr) => unsafe{
-                            (**window_ptr).draw(&self.display);
-                        },
+                        Option::Some(window_ptr) => (**window_ptr).draw(&self.display),
                         Option::None => ()
                     }
                 }
             }
+
+            let reenable = start_no_ints();
 
             self.display.flip();
 
@@ -165,10 +170,12 @@ impl Session {
             }
 
             self.redraw = REDRAW_NONE;
+
+            end_no_ints(reenable);
         }
     }
 
-    pub fn event(&mut self, mut event: Event){
+    pub fn event(&mut self, event: Event){
         match event.to_option() {
             EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
             EventOption::Key(key_event) => self.on_key(key_event),
