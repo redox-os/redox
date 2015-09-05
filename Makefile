@@ -10,9 +10,6 @@ CUT=cut
 FIND=find
 LD=ld
 LDARGS=-m elf_i386
-QEMU=qemu-system-i386
-QEMU_FLAGS=-serial mon:stdio -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -drive if=none,id=usb_drive,file=harddrive.bin -device usb-storage,bus=ehci.0,drive=usb_drive
-#-usb -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 RM=rm -f
 SED=sed
 SORT=sort
@@ -26,8 +23,6 @@ ifeq ($(OS),Windows_NT)
 	AWK=windows/awk
 	CUT=windows/cut
 	FIND=windows/find
-	QEMU=windows/qemu/qemu-system-i386w
-	QEMU_FLAGS=-L windows/qemu/Bios -net nic,model=rtl8139 -usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0
 	RM=windows/rm -f
 	SED=windows/sed
 	SORT=windows/sort
@@ -91,30 +86,16 @@ src/filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
 harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
 	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<
 
-run: harddrive.bin
-	$(QEMU) $(QEMU_FLAGS) -enable-kvm -net user -hda $<
-
-run_gdb: harddrive.bin
-	$(QEMU) $(QEMU_FLAGS) -enable-kvm -s -S -net user -hda $<
-
-run_no_kvm: harddrive.bin
-	$(QEMU) $(QEMU_FLAGS) -net user -hda $<
-
-run_tap: harddrive.bin
+qemu: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) $(QEMU_FLAGS) -enable-kvm -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
+	qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -net dump,file=network.pcap \
+			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 -device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0 \
+			-seriel mon:stdio -enable-kvm -hda $<
 	sudo ifconfig tap_qemu down
 	sudo tunctl -d tap_qemu
 
-run_tap_dump: harddrive.bin
-	sudo tunctl -t tap_qemu -u "${USER}"
-	sudo ifconfig tap_qemu 10.85.85.1 up
-	$(QEMU) $(QEMU_FLAGS) -enable-kvm -net dump,file=network.pcap -net tap,ifname=tap_qemu,script=no,downscript=no -hda $<
-	sudo ifconfig tap_qemu down
-	sudo tunctl -d tap_qemu
-
-run_virtualbox: harddrive.bin
+virtualbox: harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete
 	echo "Create VM"
