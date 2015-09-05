@@ -1,5 +1,5 @@
 # Redox
-Redox is a Rust based operating system, designed to be modular and well documented (TODO).
+Redox is a Rust based operating system, designed to be modular and well documented.
 
 ## Building on Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
@@ -14,17 +14,14 @@ make
 ```
 
 ## Running on Ubuntu
-- Install Qemu
+- Install VirtualBox
 ```bash
-sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
+sudo apt-get install virtualbox
 ```
-- Run Qemu (without network bridge):
-```bash
-make run
 ```
-- Run Qemu (with network bridge, requires sudo password, guest accessible at 10.85.85.2):
+- Run VirtualBox
 ```bash
-make run_tap
+make virtualbox
 ```
 
 ## Building on OS X
@@ -42,24 +39,36 @@ make
 
 ## Running on OS X
 - Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
-- Run Qemu (without network bridge or KVM):
+- Make sure it is installed for all users, in /Applications/ or edit the Makefile VBM path
+- Run VirtualBox
 ```bash
-make run_virtualbox
+make virtualbox
 ```
 
 ## Building on Windows
 - Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
 - The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
-- Open the Rust nightly shell
+- Open the Rust nightly shell in the redox repository
 ```bash
-cd <REDOX REPOSITORY>
 windows\make
 ```
 
 ## Running on Windows
 - Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
 - Make sure to install to C:\Program Files\Oracle\VirtualBox or edit the Makefile VBM path
-- Run Virtualbox (without network bridge or KVM):
+- Run VirtualBox
 ```bash
-windows\make run_virtualbox
+windows\make virtualbox
 ```
+
+## Running on Ubuntu (Qemu, Advanced)
+- Install Qemu
+```bash
+sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
+```
+```
+- Run Qemu
+```bash
+make qemu_tap
+```
+
