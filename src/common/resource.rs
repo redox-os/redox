@@ -44,10 +44,6 @@ pub trait Resource {
         return Option::None;
     }
 
-    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
-        return Option::None;
-    }
-
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         return Option::None;
     }
@@ -267,31 +263,6 @@ impl Resource for VecResource {
             self.vec.push(buf[i]);
             self.seek += 1;
             i += 1;
-        }
-        return Option::Some(i);
-    }
-
-    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
-        let mut i = 0;
-        while i < vec.len() && self.seek < self.vec.len() {
-            match vec.get(i) {
-                Option::Some(b) => {
-                    self.vec.set(self.seek, *b);
-                    self.seek += 1;
-                    i += 1;
-                },
-                Option::None => break
-            }
-        }
-        while i < vec.len() {
-            match vec.get(i) {
-                Option::Some(b) => {
-                    self.vec.push(*b);
-                    self.seek += 1;
-                    i += 1;
-                },
-                Option::None => break
-            }
         }
         return Option::Some(i);
     }

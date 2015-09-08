@@ -15,8 +15,8 @@ pub struct UDPHeader {
 }
 
 pub struct UDP {
-    header: UDPHeader,
-    data: Vec<u8>
+    pub header: UDPHeader,
+    pub data: Vec<u8>
 }
 
 impl FromBytes for UDP {
@@ -41,17 +41,6 @@ impl ToBytes for UDP {
             ret.push_all(&self.data);
             return ret;
         }
-    }
-}
-
-impl Response for UDP {
-    #[allow(unused_variables)]
-    fn respond(&self) -> Vec<Vec<u8>>{
-        d("            ");
-        self.d();
-        dl();
-
-        return Vec::new();
     }
 }
 

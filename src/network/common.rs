@@ -4,10 +4,6 @@ use common::debug::*;
 use common::net::*;
 use common::vec::*;
 
-pub trait Response {
-    fn respond(&self) -> Vec<Vec<u8>>;
-}
-
 pub trait FromBytes{
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self:Sized;
 }

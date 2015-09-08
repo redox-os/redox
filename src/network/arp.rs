@@ -51,37 +51,6 @@ impl ToBytes for ARP {
     }
 }
 
-impl Response for ARP {
-    fn respond(&self) -> Vec<Vec<u8>> {
-        let mut ret: Vec<Vec<u8>> = Vec::new();
-        if self.header.dst_ip.equals(IP_ADDR) {
-            if cfg!(debug_network){
-                d("    ");
-                self.d();
-                dl();
-            }
-
-            if self.header.oper.get() == 1 {
-                if cfg!(debug_network){
-                    d("        ARP Reply\n");
-                }
-                let mut response = ARP{
-                    header: self.header,
-                    data: self.data.clone()
-                };
-                response.header.oper.set(2);
-                response.header.dst_mac = self.header.src_mac;
-                response.header.dst_ip = self.header.src_ip;
-                response.header.src_mac = MAC_ADDR;
-                response.header.src_ip = IP_ADDR;
-
-                ret.push(response.to_bytes());
-            }
-        }
-        return ret;
-    }
-}
-
 impl ARP {
     pub fn d(&self){
         d("ARP hw ");

@@ -44,7 +44,7 @@ impl ToBytes for ICMP {
         }
     }
 }
-
+/*
 impl Response for ICMP {
     #[allow(unused_variables)]
     fn respond(&self) -> Vec<Vec<u8>>{
@@ -82,6 +82,7 @@ impl Response for ICMP {
         return ret;
     }
 }
+*/
 
 impl ICMP {
     pub fn d(&self){

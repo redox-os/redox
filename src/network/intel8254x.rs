@@ -1,6 +1,9 @@
+use core::ops::{DerefMut,Drop};
+
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
+use common::scheduler::*;
 
 use network::common::*;
 use network::ethernet::*;
@@ -89,6 +92,153 @@ struct TD {
     const TD_CMD_RS: u8 = 1 << 3;
     const TD_DD: u8 = 1;
 
+pub struct NetworkResource {
+    pub nic: *mut Intel8254x,
+    pub ptr: *mut NetworkResource,
+    pub inbound: Queue<Vec<u8>>,
+    pub outbound: Queue<Vec<u8>>
+}
+
+impl NetworkResource {
+    pub fn new(nic: &mut Intel8254x) -> Box<NetworkResource> {
+        let mut ret = box NetworkResource {
+            nic: nic,
+            ptr: 0 as *mut NetworkResource,
+            inbound: Queue::new(),
+            outbound: Queue::new()
+        };
+
+        unsafe{
+            ret.ptr = ret.deref_mut();
+
+            if ret.nic as usize > 0 && ret.ptr as usize > 0 {
+                let reenable = start_no_ints();
+
+                (*ret.nic).resources.push(ret.ptr);
+
+                end_no_ints(reenable);
+            }
+        }
+
+        return ret;
+    }
+}
+
+impl Resource for NetworkResource {
+    fn stat(&self) -> ResourceType {
+        return ResourceType::File;
+    }
+
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        loop {
+            let option;
+            unsafe{
+                let reenable = start_no_ints();
+                option = self.inbound.pop();
+                end_no_ints(reenable);
+            }
+
+            if let Option::Some(bytes) = option {
+                let mut i = 0;
+                while i < buf.len() {
+                    match bytes.get(i) {
+                        Option::Some(byte) => buf[i] = *byte,
+                        Option::None => break
+                    }
+                }
+                return Option::Some(i);
+            }
+
+            sys_yield();
+        }
+    }
+
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        d("Reading ");
+        dh(self as *mut NetworkResource as usize);
+        d(" ");
+        dh(self.ptr as usize);
+        dl();
+
+        loop {
+            let option;
+            unsafe{
+                let reenable = start_no_ints();
+                option = self.inbound.pop();
+                end_no_ints(reenable);
+            }
+
+            if let Option::Some(bytes) = option {
+                vec.push_all(&bytes);
+                return Option::Some(bytes.len());
+            }
+
+            sys_yield();
+        }
+    }
+
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        unsafe{
+            let reenable = start_no_ints();
+            self.outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
+            end_no_ints(reenable);
+
+            if self.nic as usize > 0 {
+                (*self.nic).send_outbound();
+            }
+        }
+
+        return Option::Some(buf.len());
+    }
+
+    fn flush(&mut self) -> bool {
+        loop {
+            let len;
+            unsafe{
+                let reenable = start_no_ints();
+                len = self.outbound.len();
+                end_no_ints(reenable);
+            }
+
+            if len == 0 {
+                return true;
+            }
+
+            sys_yield();
+        }
+    }
+}
+
+impl Drop for NetworkResource {
+    fn drop(&mut self){
+        if self.nic as usize > 0 && self.ptr as usize > 0 {
+            unsafe {
+                let reenable = start_no_ints();
+
+                let mut i = 0;
+                while i < (*self.nic).resources.len() {
+                    let mut remove = false;
+
+                    match (*self.nic).resources.get(i) {
+                        Option::Some(ptr) => if *ptr == self.ptr {
+                            remove = true;
+                        }else{
+                            i += 1;
+                        },
+                        Option::None => break
+                    }
+
+                    if remove {
+                        (*self.nic).resources.remove(i);
+                    }
+                }
+
+                end_no_ints(reenable);
+            }
+        }
+    }
+}
+
 pub struct Intel8254x {
     pub bus: usize,
     pub slot: usize,
@@ -96,11 +246,18 @@ pub struct Intel8254x {
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
-    pub inbound: Queue<Vec<u8>>,
-    pub outbound: Queue<Vec<u8>>
+    pub resources: Vec<*mut NetworkResource>
 }
 
 impl SessionItem for Intel8254x {
+    fn scheme(&self) -> String {
+        return "network".to_string();
+    }
+
+    fn open(&mut self, url: &URL) -> Box<Resource> {
+        return NetworkResource::new(self);
+    }
+
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             unsafe{
@@ -108,88 +265,105 @@ impl SessionItem for Intel8254x {
                 dh(self.read(ICR) as usize);
                 dl();
 
-                {
-                    let receive_ring = self.read(RDBAL) as *mut RD;
-                    let length = self.read(RDLEN);
+                self.receive_inbound();
 
-                    for tail in 0..length/16 {
-                        let rd = &mut *receive_ring.offset(tail as isize);
-                        if rd.status & RD_DD == RD_DD {
-                            dd(tail as usize);
-                            d(" ");
-                            dd(rd.length as usize);
-                            d(": ");
-                            dh(rd.status as usize);
-                            dl();
-
-                            self.inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
-                            rd.status = 0;
-                        }
-                    }
-                }
-
-                //TODO: Allow preemption of this loop
-                while let Option::Some(bytes) = self.inbound.pop() {
-                    if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
-                        self.outbound.vec.push_all(&frame.respond());
-                    }
-                }
-
-                if self.outbound.len() > 0 {
-                    let transmit_ring = self.read(TDBAL) as *mut TD;
-                    let length = self.read(TDLEN);
-                    let head = self.read(TDH);
-                    let mut tail = self.read(TDT);
-                    let original_tail = tail;
-
-                    loop {
-                        let old_tail = tail;
-
-                        tail += 1;
-                        if tail >= length / 16 {
-                            tail = 0;
-                        }
-
-                        if tail == head {
-                            break;
-                        }
-
-                        let td = &mut *transmit_ring.offset(old_tail as isize);
-                        match self.outbound.pop() {
-                            Option::Some(bytes) => {
-                                if bytes.len() <= 16384 {
-                                    d("Send ");
-                                    dd(bytes.len());
-                                    dl();
-                                    ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
-                                    td.length = bytes.len() as u16;
-                                    td.cso = 0;
-                                    td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
-                                    td.status = 0;
-                                    td.css = 0;
-                                    td.special = 0;
-                                }else{
-                                    //TODO: More than one TD
-                                    dl();
-                                    d("Intel 8254x: Frame too long for transmit: ");
-                                    dd(bytes.len());
-                                    dl();
-                                }
-                            },
-                            Option::None => break
-                        }
-                    }
-
-                    if tail != original_tail {
-                        self.write(TDT, tail);
-                    }
-                }
+                self.send_outbound();
             }
         }
     }
 }
 
 impl Intel8254x {
+    pub unsafe fn receive_inbound(&mut self) {
+        let reenable = start_no_ints();
+
+        let receive_ring = self.read(RDBAL) as *mut RD;
+        let length = self.read(RDLEN);
+
+        for tail in 0..length/16 {
+            let rd = &mut *receive_ring.offset(tail as isize);
+            if rd.status & RD_DD == RD_DD {
+                for resource in self.resources.iter() {
+                    (**resource).inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
+                }
+
+                rd.status = 0;
+            }
+        }
+
+        end_no_ints(reenable);
+    }
+
+    pub unsafe fn send_outbound(&mut self) {
+        let reenable = start_no_ints();
+
+        let mut has_outbound = false;
+        for resource in self.resources.iter() {
+            if (**resource).outbound.len() > 0 {
+                has_outbound = true;
+            }
+        }
+
+        if has_outbound {
+            let transmit_ring = self.read(TDBAL) as *mut TD;
+            let length = self.read(TDLEN);
+            let head = self.read(TDH);
+            let mut tail = self.read(TDT);
+            let original_tail = tail;
+
+            loop {
+                let old_tail = tail;
+
+                tail += 1;
+                if tail >= length / 16 {
+                    tail = 0;
+                }
+
+                if tail == head {
+                    break;
+                }
+
+                let mut found = false;
+
+                for resource in self.resources.iter() {
+                    match (**resource).outbound.pop() {
+                        Option::Some(bytes) => {
+                            if bytes.len() <= 16384 {
+                                found = true;
+
+                                let td = &mut *transmit_ring.offset(old_tail as isize);
+                                ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
+                                td.length = bytes.len() as u16;
+                                td.cso = 0;
+                                td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
+                                td.status = 0;
+                                td.css = 0;
+                                td.special = 0;
+                            }else{
+                                //TODO: More than one TD
+                                dl();
+                                d("Intel 8254x: Frame too long for transmit: ");
+                                dd(bytes.len());
+                                dl();
+                            }
+                        },
+                        Option::None => continue
+                    }
+                }
+
+                if ! found {
+                    break;
+                }
+            }
+
+            if tail != original_tail {
+                self.write(TDT, tail);
+            }
+        }
+
+        end_no_ints(reenable);
+    }
+
     pub unsafe fn read(&self, register: u32) -> u32 {
         let data;
 
@@ -199,14 +373,6 @@ impl Intel8254x {
             outd(self.base as u16, register);
             data = ind((self.base + 4) as u16);
         }
-
-/*
-        d("Read ");
-        dh(register as usize);
-        d(", result ");
-        dh(data as usize);
-        dl();
-*/
 
         return data;
     }

@@ -22,11 +22,11 @@ pub struct TCPHeader {
 }
 
 pub struct TCP {
-    header: TCPHeader,
-    options: Vec<u8>,
-    data: Vec<u8>,
-    src_ip: IPv4Addr,
-    dst_ip: IPv4Addr
+    pub header: TCPHeader,
+    pub options: Vec<u8>,
+    pub data: Vec<u8>,
+    pub src_ip: IPv4Addr,
+    pub dst_ip: IPv4Addr
 }
 
 impl ToBytes for TCP {
@@ -68,7 +68,7 @@ impl TCP {
     }
 }
 
-#[allow(trivial_casts)]
+/*
 impl Response for TCP {
     fn respond(&self) -> Vec<Vec<u8>>{
         if cfg!(debug_network){
@@ -178,6 +178,7 @@ impl Response for TCP {
         return ret;
     }
 }
+*/
 
 impl TCP {
     pub fn from_bytes_ipv4(bytes: Vec<u8>, src_ip: IPv4Addr, dst_ip: IPv4Addr) -> Option<TCP> {

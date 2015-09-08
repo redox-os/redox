@@ -26,9 +26,9 @@ pub struct IPv4Header {
 }
 
 pub struct IPv4 {
-    header: IPv4Header,
-    options: Vec<u8>,
-    data: Vec<u8>
+    pub header: IPv4Header,
+    pub options: Vec<u8>,
+    pub data: Vec<u8>
 }
 
 impl FromBytes for IPv4 {
@@ -61,6 +61,7 @@ impl ToBytes for IPv4 {
     }
 }
 
+/*
 impl Response for IPv4 {
     fn respond(&self) -> Vec<Vec<u8>> {
         let mut ret: Vec<Vec<u8>> = Vec::new();
@@ -116,6 +117,7 @@ impl Response for IPv4 {
         return ret;
     }
 }
+*/
 
 impl IPv4 {
     pub fn d(&self){

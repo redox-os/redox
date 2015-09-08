@@ -80,24 +80,6 @@ impl Resource for IDEResource {
         return Option::Some(i);
     }
 
-    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
-        let mut i = 0;
-        while i < vec.len() && self.seek < self.vec.len() {
-            match vec.get(i) {
-                Option::Some(b) => {
-                    self.vec.set(self.seek, *b);
-                    self.seek += 1;
-                    i += 1;
-                },
-                Option::None => break
-            }
-        }
-        if i > 0 {
-            self.changed = true;
-        }
-        return Option::Some(i);
-    }
-
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = min(self.seek, offset),
