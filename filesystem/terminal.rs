@@ -127,6 +127,38 @@ impl Command {
             }
         });
 
+        commands.push(Command {
+            name: "url_hex".to_string(),
+            main: box |args: &Vec<String>|{
+                let url;
+                match args.get(1) {
+                    Option::Some(arg) => url = URL::from_string(&arg),
+                    Option::None => url = URL::new()
+                }
+                println!(url.to_string());
+
+                let mut resource = url.open();
+                match resource.stat() {
+                    ResourceType::File => println!("Type: File".to_string()),
+                    ResourceType::Dir => println!("Type: Dir".to_string()),
+                    ResourceType::Array => println!("Type: Array".to_string()),
+                    _ => println!("Type: None".to_string())
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                match resource.read_to_end(&mut vec) {
+                    Option::Some(_) => {
+                        let mut line = "HEX:".to_string();
+                        for byte in vec.iter() {
+                            line = line + ' ' + String::from_num_radix(*byte as usize, 16);
+                        }
+                        println!(line);
+                    },
+                    Option::None => println!("Failed to read".to_string())
+                }
+            }
+        });
+
         return commands;
     }
 }

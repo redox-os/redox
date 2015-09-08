@@ -36,13 +36,16 @@ use graphics::bmp::*;
 use programs::common::*;
 use programs::session::*;
 
+use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
+use schemes::ethernet::*;
 use schemes::file::*;
 use schemes::http::*;
 use schemes::memory::*;
 use schemes::pci::*;
 use schemes::random::*;
+use schemes::tcp::*;
 use schemes::time::*;
 
 use syscall::common::*;
@@ -113,14 +116,17 @@ mod programs {
 }
 
 mod schemes {
+    pub mod arp;
     pub mod context;
     pub mod debug;
+    pub mod ethernet;
     pub mod file;
     pub mod http;
     pub mod ide;
     pub mod memory;
     pub mod pci;
     pub mod random;
+    pub mod tcp;
     pub mod time;
 }
 
@@ -317,6 +323,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
 
+    session.items.push(box EthernetScheme);
+    session.items.push(box ARPScheme);
+    session.items.push(box TCPScheme);
+
     (*contexts_ptr).push(Context::root());
     Context::spawn(box move ||{
         poll_loop();
@@ -326,6 +336,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     });
     Context::spawn(box move ||{
         redraw_loop();
+    });
+
+    Context::spawn(box move ||{
+        ARPScheme::reply_loop();
     });
 
     //Start interrupts

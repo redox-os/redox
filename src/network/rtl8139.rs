@@ -19,6 +19,14 @@ pub struct RTL8139 {
 }
 
 impl SessionItem for RTL8139 {
+    fn scheme(&self) -> String {
+        return "network".to_string();
+    }
+
+    fn open(&mut self, url: &URL) -> Box<Resource> {
+        return box NoneResource;
+    }
+
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             if cfg!(debug_network){
@@ -61,13 +69,6 @@ impl SessionItem for RTL8139 {
                 }
 
                 outw(base + 0x38, (capr as u16) - 16);
-            }
-
-            //TODO: Allow preemption of this loop
-            while let Option::Some(bytes) = self.inbound.pop() {
-                if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
-                    self.outbound.vec.push_all(&frame.respond());
-                }
             }
 
             if self.outbound.len() > 0 {
