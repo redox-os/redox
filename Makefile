@@ -89,7 +89,7 @@ harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
 qemu: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_qemu,script=no,downscript=no -net dump,file=network.pcap \
+	-qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_qemu,script=no,downscript=no -net dump,file=network.pcap \
 			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
 			-serial mon:stdio -enable-kvm -hda $<
 			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
@@ -101,15 +101,54 @@ virtualbox: harddrive.bin
 	-$(VBM) unregistervm Redox --delete
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
+	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 512
 	$(VBM) modifyvm Redox --vram 64
+	$(VBM) modifyvm Redox --nic1 nat
+	$(VBM) modifyvm Redox --nictype1 82540EM
+	$(VBM) modifyvm Redox --nictrace1 on
+	$(VBM) modifyvm Redox --nictracefile1 network.pcap
+	$(VBM) modifyvm Redox --uart1 0x3F8 4
+	$(VBM) modifyvm Redox --uartmode1 file serial.log
+	$(VBM) modifyvm Redox --usb on
 	echo "Create Disk"
 	$(VBM) convertfromraw $< harddrive.vdi
 	echo "Attach Disk"
 	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
 	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium harddrive.vdi
 	echo "Run VM"
-	$(VB) --startvm Redox
+	$(VB) --startvm Redox --dbg
+
+virtualbox_bridge: harddrive.bin
+	echo "Delete VM"
+	-$(VBM) unregistervm Redox --delete
+	echo "Create VM"
+	$(VBM) createvm --name Redox --register
+	echo "Create Bridge"
+	sudo tunctl -t tap_vb -u "${USER}"
+	sudo ifconfig tap_vb 10.85.85.1 up
+	echo "Set Configuration"
+	$(VBM) modifyvm Redox --memory 512
+	$(VBM) modifyvm Redox --vram 64
+	$(VBM) modifyvm Redox --nic1 bridged
+	$(VBM) modifyvm Redox --nictype1 82540EM
+	$(VBM) modifyvm Redox --nictrace1 on
+	$(VBM) modifyvm Redox --nictracefile1 network.pcap
+	$(VBM) modifyvm Redox --bridgeadapter1 tap_vb
+	$(VBM) modifyvm Redox --macaddress1 525400123456
+	$(VBM) modifyvm Redox --uart1 0x3F8 4
+	$(VBM) modifyvm Redox --uartmode1 file serial.log
+	$(VBM) modifyvm Redox --usb on
+	echo "Create Disk"
+	$(VBM) convertfromraw $< harddrive.vdi
+	echo "Attach Disk"
+	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
+	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium harddrive.vdi
+	echo "Run VM"
+	-$(VB) --startvm Redox --dbg
+	echo "Delete Bridge"
+	sudo ifconfig tap_vb down
+	sudo tunctl -d tap_vb
 
 clean:
-	$(RM) *.bin *.list *.pcap *.rlib *.vdi filesystem/*.bin src/*.gen
+	$(RM) *.bin *.list *.log *.pcap *.rlib *.vdi filesystem/*.bin src/*.gen

@@ -1,6 +1,7 @@
 *.bin
 *.gen
 *.list
+*.log
 *.pcap
 *.rlib
 *.vdi
