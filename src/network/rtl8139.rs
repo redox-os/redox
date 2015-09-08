@@ -64,31 +64,29 @@ impl SessionItem for RTL8139 {
             }
 
             //TODO: Allow preemption of this loop
-            loop {
-                match self.inbound.pop() {
-                    Option::Some(bytes) => match EthernetII::from_bytes(bytes){
-                        Option::Some(frame) => self.outbound.vec.push_all(&frame.respond()),
-                        Option::None => ()
-                    },
-                    Option::None => break
+            while let Option::Some(bytes) = self.inbound.pop() {
+                if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
+                    self.outbound.vec.push_all(&frame.respond());
                 }
             }
 
-            let tsd = [ind(base + 0x10), ind(base + 0x14), ind(base + 0x18), ind(base + 0x1C)];
-            for i in 0..tsd.len() {
-                if tsd[i] & (1 << 13) == (1 << 13) {
-                    match self.outbound.pop() {
-                        Option::Some(bytes) => {
-                            if cfg!(debug_network){
-                                d("RTL8139 send ");
-                                dd(i);
-                                dl();
-                            }
+            if self.outbound.len() > 0 {
+                let tsd = [ind(base + 0x10), ind(base + 0x14), ind(base + 0x18), ind(base + 0x1C)];
+                for i in 0..tsd.len() {
+                    if tsd[i] & (1 << 13) == (1 << 13) {
+                        match self.outbound.pop() {
+                            Option::Some(bytes) => {
+                                if cfg!(debug_network){
+                                    d("RTL8139 send ");
+                                    dd(i);
+                                    dl();
+                                }
 
-                            outd(base + 0x20 + (i as u16)*4, bytes.as_ptr() as u32);
-                            outd(base + 0x10 + (i as u16)*4, bytes.len() as u32 & 0x1FFF);
-                        },
-                        Option::None => break
+                                outd(base + 0x20 + (i as u16)*4, bytes.as_ptr() as u32);
+                                outd(base + 0x10 + (i as u16)*4, bytes.len() as u32 & 0x1FFF);
+                            },
+                            Option::None => break
+                        }
                     }
                 }
             }

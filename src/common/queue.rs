@@ -19,4 +19,8 @@ impl<T> Queue<T> {
     pub fn pop(&mut self) -> Option<T> {
         return self.vec.remove(0);
     }
+
+    pub fn len(&self) -> usize {
+        return self.vec.len();
+    }
 }

@@ -2,6 +2,9 @@ use common::memory::*;
 use common::pci::*;
 use common::pio::*;
 
+use network::common::*;
+use network::ethernet::*;
+
 use programs::common::*;
 
 const CTRL: u32 = 0x00;
@@ -22,6 +25,8 @@ const FCTTV: u32 = 0x170;
 const ICR: u32 = 0xC0;
 
 const IMS: u32 = 0xD0;
+    const IMS_TXDW: u32 = 1;
+    const IMS_TXQE: u32 = 1 << 1;
     const IMS_LSC: u32 = 1 << 2;
     const IMS_RXSEQ: u32 = 1 << 3;
     const IMS_RXDMT: u32 = 1 << 4;
@@ -30,6 +35,8 @@ const IMS: u32 = 0xD0;
 
 const RCTL: u32 = 0x100;
     const RCTL_EN: u32 = 1 << 1;
+    const RCTL_UPE: u32 = 1 << 3;
+    const RCTL_MPE: u32 = 1 << 4;
     const RCTL_LPE: u32 = 1 << 5;
     const RCTL_LBM: u32 = 1 << 6 | 1 << 7;
     const RCTL_BAM: u32 = 1 << 15;
@@ -47,6 +54,40 @@ const RDT: u32 = 0x2818;
 const RAL0: u32 = 0x5400;
 const RAH0: u32 = 0x5404;
 
+struct RD {
+    buffer: u64,
+    length: u16,
+    checksum: u16,
+    status: u8,
+    error: u8,
+    special: u16
+}
+    const RD_DD: u8 = 1;
+    const RD_EOP: u8 = 1 << 1;
+
+const TCTL: u32 = 0x400;
+    const TCTL_EN: u32 = 1 << 1;
+    const TCTL_PSP: u32 = 1 << 3;
+
+const TDBAL: u32 = 0x3800;
+const TDBAH: u32 = 0x3804;
+const TDLEN: u32 = 0x3808;
+const TDH: u32 = 0x3810;
+const TDT: u32 = 0x3818;
+
+struct TD {
+    buffer: u64,
+    length: u16,
+    cso: u8,
+    command: u8,
+    status: u8,
+    css: u8,
+    special: u16
+}
+    const TD_CMD_EOP: u8 = 1;
+    const TD_CMD_IFCS: u8 = 1 << 1;
+    const TD_CMD_RS: u8 = 1 << 3;
+    const TD_DD: u8 = 1;
 
 pub struct Intel8254x {
     pub bus: usize,
@@ -54,7 +95,9 @@ pub struct Intel8254x {
     pub func: usize,
     pub base: usize,
     pub memory_mapped: bool,
-    pub irq: u8
+    pub irq: u8,
+    pub inbound: Queue<Vec<u8>>,
+    pub outbound: Queue<Vec<u8>>
 }
 
 impl SessionItem for Intel8254x {
@@ -64,6 +107,83 @@ impl SessionItem for Intel8254x {
                 d("Intel 8254x handle: ");
                 dh(self.read(ICR) as usize);
                 dl();
+
+                {
+                    let receive_ring = self.read(RDBAL) as *mut RD;
+                    let length = self.read(RDLEN);
+
+                    for tail in 0..length/16 {
+                        let rd = &mut *receive_ring.offset(tail as isize);
+                        if rd.status & RD_DD == RD_DD {
+                            dd(tail as usize);
+                            d(" ");
+                            dd(rd.length as usize);
+                            d(": ");
+                            dh(rd.status as usize);
+                            dl();
+
+                            self.inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
+                            rd.status = 0;
+                        }
+                    }
+                }
+
+                //TODO: Allow preemption of this loop
+                while let Option::Some(bytes) = self.inbound.pop() {
+                    if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
+                        self.outbound.vec.push_all(&frame.respond());
+                    }
+                }
+
+                if self.outbound.len() > 0 {
+                    let transmit_ring = self.read(TDBAL) as *mut TD;
+                    let length = self.read(TDLEN);
+                    let head = self.read(TDH);
+                    let mut tail = self.read(TDT);
+                    let original_tail = tail;
+
+                    loop {
+                        let old_tail = tail;
+
+                        tail += 1;
+                        if tail >= length / 16 {
+                            tail = 0;
+                        }
+
+                        if tail == head {
+                            break;
+                        }
+
+                        let td = &mut *transmit_ring.offset(old_tail as isize);
+                        match self.outbound.pop() {
+                            Option::Some(bytes) => {
+                                if bytes.len() <= 16384 {
+                                    d("Send ");
+                                    dd(bytes.len());
+                                    dl();
+                                    ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
+                                    td.length = bytes.len() as u16;
+                                    td.cso = 0;
+                                    td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
+                                    td.status = 0;
+                                    td.css = 0;
+                                    td.special = 0;
+                                }else{
+                                    //TODO: More than one TD
+                                    dl();
+                                    d("Intel 8254x: Frame too long for transmit: ");
+                                    dd(bytes.len());
+                                    dl();
+                                }
+                            },
+                            Option::None => break
+                        }
+                    }
+
+                    if tail != original_tail {
+                        self.write(TDT, tail);
+                    }
+                }
             }
         }
     }
@@ -80,12 +200,13 @@ impl Intel8254x {
             data = ind((self.base + 4) as u16);
         }
 
-
+/*
         d("Read ");
         dh(register as usize);
         d(", result ");
         dh(data as usize);
         dl();
+*/
 
         return data;
     }
@@ -153,29 +274,36 @@ impl Intel8254x {
 
         // TODO: Clear statistical counters
 
-        self.write(RAL0, 0x20202020);
-        self.write(RAH0, 0x20202020);
+        self.write(RAL0, 0x12005452);
+        self.write(RAH0, 0x5634);
         /*
         MTA => 0;
         */
-        self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC);
 
         //Receive Buffer
         let receive_ring_length = 1024;
-        let receive_ring = alloc(receive_ring_length * 16);
+        let receive_ring = alloc(receive_ring_length * 16) as *mut RD;
         for i in 0..receive_ring_length {
             let receive_buffer = alloc(16384);
-            *((receive_ring + i * 16) as *mut u64) = receive_buffer as u64;
-            *((receive_ring + i * 16 + 8) as *mut u64) = 0;
+            ptr::write(receive_ring.offset(i as isize), RD {
+                buffer: receive_buffer as u64,
+                length: 0,
+                checksum: 0,
+                status: 0,
+                error: 0,
+                special: 0
+            });
         }
 
         self.write(RDBAH, 0);
         self.write(RDBAL, receive_ring as u32);
         self.write(RDLEN, (receive_ring_length * 16) as u32);
         self.write(RDH, 0);
-        self.write(RDT, (receive_ring_length * 16) as u32);
+        self.write(RDT, receive_ring_length as u32 - 1);
 
         self.flag(RCTL, RCTL_EN, true);
+        self.flag(RCTL, RCTL_UPE, true);
+        //self.flag(RCTL, RCTL_MPE, true);
         self.flag(RCTL, RCTL_LPE, true);
         self.flag(RCTL, RCTL_LBM, false);
         /* RCTL.RDMTS = Minimum threshold size ??? */
@@ -186,19 +314,35 @@ impl Intel8254x {
         self.flag(RCTL, RCTL_BSEX, true);
         self.flag(RCTL, RCTL_SECRC, true);
 
-        self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC);
+        //Transmit Buffer
+        let transmit_ring_length = 1024;
+        let transmit_ring = alloc(transmit_ring_length * 16) as *mut TD;
+        for i in 0..transmit_ring_length {
+            let transmit_buffer = alloc(16384);
+            ptr::write(transmit_ring.offset(i as isize), TD {
+                buffer: transmit_buffer as u64,
+                length: 0,
+                cso: 0,
+                command: 0,
+                status: 0,
+                css: 0,
+                special: 0
+            });
+        }
 
-        /*
+        self.write(TDBAH, 0);
+        self.write(TDBAL, transmit_ring as u32);
+        self.write(TDLEN, (transmit_ring_length * 16) as u32);
+        self.write(TDH, 0);
+        self.write(TDT, 0);
+
         self.flag(TCTL, TCTL_EN, true);
         self.flag(TCTL, TCTL_PSP, true);
-        */
         /* TCTL.CT = Collition threshold */
         /* TCTL.COLD = Collision distance */
         /* TIPG Packet Gap */
         /* TODO ... */
 
-        self.read(CTRL);
-        self.read(STATUS);
-        self.read(IMS);
+        self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC | IMS_TXQE | IMS_TXDW);
     }
 }
