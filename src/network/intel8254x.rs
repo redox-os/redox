@@ -19,6 +19,8 @@ const FCAH: u32 = 0x2C;
 const FCT: u32 = 0x30;
 const FCTTV: u32 = 0x170;
 
+const ICR: u32 = 0xC0;
+
 const IMS: u32 = 0xD0;
     const IMS_LSC: u32 = 1 << 2;
     const IMS_RXSEQ: u32 = 1 << 3;
@@ -26,13 +28,13 @@ const IMS: u32 = 0xD0;
     const IMS_RX: u32 = 1 << 6;
     const IMS_RXT: u32 = 1 << 7;
 
-
 const RCTL: u32 = 0x100;
     const RCTL_EN: u32 = 1 << 1;
     const RCTL_LPE: u32 = 1 << 5;
     const RCTL_LBM: u32 = 1 << 6 | 1 << 7;
     const RCTL_BAM: u32 = 1 << 15;
-    const RCTL_BSIZE: u32 = 1 << 16 | 1 << 17;
+    const RCTL_BSIZE1: u32 = 1 << 16;
+    const RCTL_BSIZE2: u32 = 1 << 17;
     const RCTL_BSEX: u32 = 1 << 25;
     const RCTL_SECRC: u32 = 1 << 26;
 
@@ -58,7 +60,11 @@ pub struct Intel8254x {
 impl SessionItem for Intel8254x {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            d("Intel 8254x handle\n");
+            unsafe{
+                d("Intel 8254x handle: ");
+                dh(self.read(ICR) as usize);
+                dl();
+            }
         }
     }
 }
@@ -148,18 +154,19 @@ impl Intel8254x {
         // TODO: Clear statistical counters
 
         self.write(RAL0, 0x20202020);
-        self.write(RAH0, 0x2020);
+        self.write(RAH0, 0x20202020);
         /*
         MTA => 0;
         */
         self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC);
 
         //Receive Buffer
-        let receive_ring_length = 4096;
+        let receive_ring_length = 1024;
         let receive_ring = alloc(receive_ring_length * 16);
         for i in 0..receive_ring_length {
-            let receive_buffer = alloc(4096);
+            let receive_buffer = alloc(16384);
             *((receive_ring + i * 16) as *mut u64) = receive_buffer as u64;
+            *((receive_ring + i * 16 + 8) as *mut u64) = 0;
         }
 
         self.write(RDBAH, 0);
@@ -174,7 +181,8 @@ impl Intel8254x {
         /* RCTL.RDMTS = Minimum threshold size ??? */
         /* RCTL.MO = Multicast offset */
         self.flag(RCTL, RCTL_BAM, true);
-        self.flag(RCTL, RCTL_BSIZE, true);
+        self.flag(RCTL, RCTL_BSIZE1, true);
+        self.flag(RCTL, RCTL_BSIZE2, false);
         self.flag(RCTL, RCTL_BSEX, true);
         self.flag(RCTL, RCTL_SECRC, true);
 
