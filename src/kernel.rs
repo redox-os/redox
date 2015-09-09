@@ -42,6 +42,7 @@ use schemes::debug::*;
 use schemes::ethernet::*;
 use schemes::file::*;
 use schemes::http::*;
+use schemes::icmp::*;
 use schemes::memory::*;
 use schemes::pci::*;
 use schemes::random::*;
@@ -122,6 +123,7 @@ mod schemes {
     pub mod ethernet;
     pub mod file;
     pub mod http;
+    pub mod icmp;
     pub mod ide;
     pub mod memory;
     pub mod pci;
@@ -325,6 +327,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     session.items.push(box EthernetScheme);
     session.items.push(box ARPScheme);
+    session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
 
     (*contexts_ptr).push(Context::root());
@@ -340,6 +343,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     Context::spawn(box move ||{
         ARPScheme::reply_loop();
+    });
+
+    Context::spawn(box move ||{
+        ICMPScheme::reply_loop();
     });
 
     //Start interrupts

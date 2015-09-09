@@ -154,10 +154,7 @@ impl Resource for NetworkResource {
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        d("Reading ");
         dh(self as *mut NetworkResource as usize);
-        d(" ");
-        dh(self.ptr as usize);
         dl();
 
         loop {
@@ -261,12 +258,11 @@ impl SessionItem for Intel8254x {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             unsafe{
-                d("Intel 8254x handle: ");
-                dh(self.read(ICR) as usize);
+                let icr = self.read(ICR);
+                dh(icr as usize);
                 dl();
 
                 self.receive_inbound();
-
                 self.send_outbound();
             }
         }
@@ -365,36 +361,24 @@ impl Intel8254x {
     }
 
     pub unsafe fn read(&self, register: u32) -> u32 {
-        let data;
-
         if self.memory_mapped {
-            data = *((self.base + register as usize) as *mut u32);
+            return ptr::read((self.base + register as usize) as *mut u32);
         }else{
             outd(self.base as u16, register);
-            data = ind((self.base + 4) as u16);
+            return ind((self.base + 4) as u16);
         }
-
-        return data;
     }
 
-    pub unsafe fn write(&self, register: u32, data: u32){
-        let result;
+    pub unsafe fn write(&self, register: u32, data: u32) -> u32 {
+        d("Set\n");
         if self.memory_mapped {
-            *((self.base + register as usize) as *mut u32) = data;
-            result = *((self.base + register as usize) as *mut u32);
+            ptr::write((self.base + register as usize) as *mut u32, data);
+            return ptr::read((self.base + register as usize) as *mut u32);
         }else{
             outd(self.base as u16, register);
             outd((self.base + 4) as u16, data);
-            result = ind((self.base + 4) as u16);
+            return ind((self.base + 4) as u16);
         }
-
-        d("Set ");
-        dh(register as usize);
-        d(" to ");
-        dh(data as usize);
-        d(", result ");
-        dh(result as usize);
-        dl();
     }
 
     pub unsafe fn flag(&self, register: u32, flag: u32, value: bool){
@@ -418,10 +402,6 @@ impl Intel8254x {
         dl();
 
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
-
-        self.read(CTRL);
-        self.read(STATUS);
-        self.read(IMS);
 
         //Enable auto negotiate, link, clear reset, do not Invert Loss-Of Signal
         self.flag(CTRL, CTRL_ASDE | CTRL_SLU, true);

@@ -1,5 +1,3 @@
-#[cold]
-#[inline(never)]
 pub unsafe fn start_no_ints() -> bool {
     let flags: u32;
     asm!("pushfd
