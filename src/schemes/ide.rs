@@ -45,6 +45,10 @@ impl IDEResource {
 }
 
 impl Resource for IDEResource {
+    fn url(&self) -> URL {
+        return URL::from_string(&("ide:///".to_string() + self.sector as usize + '/' + self.count as usize));
+    }
+
     fn stat(&self) -> ResourceType {
         return ResourceType::File;
     }
@@ -219,7 +223,7 @@ impl SessionItem for IDE {
         let mut count = 1;
 
         let mut i = 0;
-        for part in url.path.split("/".to_string()) {
+        for part in url.path_parts().iter() {
             match i {
                 0 => sector = part.to_num() as u64,
                 1 => count = part.to_num() as u16,
@@ -249,7 +253,7 @@ impl SessionItem for IDE {
         };
 
         let mut i = 0;
-        for part in url.path.split("/".to_string()) {
+        for part in url.path_parts().iter() {
             match i {
                 0 => request.sector = part.to_num() as u64,
                 1 => request.count = part.to_num() as u16,

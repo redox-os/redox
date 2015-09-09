@@ -3,7 +3,6 @@ use core::mem::size_of;
 use core::option::Option;
 
 use common::debug::*;
-use common::net::*;
 use common::vec::*;
 
 use network::common::*;

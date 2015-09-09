@@ -9,6 +9,10 @@ pub struct ARPResource {
 }
 
 impl Resource for ARPResource {
+    fn url(&self) -> URL {
+        return URL::from_string(&"arp://".to_string());
+    }
+
     fn stat(&self) -> ResourceType {
         return ResourceType::File;
     }
@@ -37,6 +41,10 @@ impl Resource for ARPResource {
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         d("TODO: Implement write for arp://\n");
+        return Option::None;
+    }
+
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         return Option::None;
     }
 

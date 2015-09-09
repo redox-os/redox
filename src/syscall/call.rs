@@ -1,7 +1,6 @@
 use alloc::boxed::*;
 
 use common::event::*;
-use common::net::*;
 use common::resource::*;
 
 use graphics::window::*;
@@ -28,28 +27,14 @@ pub fn sys_exit() {
     }
 }
 
-pub fn sys_open(url: &URL, resource_ptr: *mut Box<Resource>){
+pub fn sys_open(url_ptr: *const URL, resource_ptr: *mut Box<Resource>){
     unsafe{
-        let url_ptr: *const URL = url;
         syscall(SYS_OPEN, url_ptr as u32, resource_ptr as u32, 0);
     }
 }
 
-pub fn sys_tcp_listener_create(ptr: *mut TcpListener){
+pub fn sys_trigger(event_ptr: *const Event){
     unsafe{
-        syscall(SYS_TCP_LISTENER_CREATE, ptr as u32, 0, 0);
-    }
-}
-
-pub fn sys_tcp_listener_destroy(ptr: *mut TcpListener){
-    unsafe{
-        syscall(SYS_TCP_LISTENER_DESTROY, ptr as u32, 0, 0);
-    }
-}
-
-pub fn sys_trigger(event: &Event){
-    unsafe{
-        let event_ptr: *const Event = event;
         syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
     }
 }

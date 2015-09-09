@@ -20,34 +20,31 @@ impl SessionItem for Application {
 
         println!("Starting HTTP Server".to_string());
 
-        match TcpListener::bind(80){
-            Result::Ok(mut listener) => {
-                println!("Listening for connections".to_string());
-                loop {
-                    match listener.poll() {
-                        Option::Some(mut stream) => {
-                            println!("Incoming stream from ".to_string() + stream.address.to_string() + ":" + stream.port as usize);
-                            println!(String::from_utf8(&stream.data));
-                            stream.response = "Test".to_string().to_utf8();
-                        }
-                        Option::None => ()
-                    }
+        loop {
+            let mut resource = URL::from_string(&"tcp:///80".to_string()).open();
+            match resource.stat(){
+                ResourceType::File => {
+                    println!("Incoming stream from ".to_string() + resource.url().to_string());
 
-                    match window.poll() {
-                        EventOption::Key(key_event) => {
-                            if key_event.pressed{
-                                if key_event.scancode == 1 {
-                                    break;
-                                }
-                            }
-                        },
-                        EventOption::None => sys_yield(),
-                        _ => ()
+                    let mut data: Vec<u8> = Vec::new();
+                    resource.read_to_end(&mut data);
+                    println!(String::from_utf8(&data));
+                    resource.write("Test".to_string().to_utf8().as_slice());
+                },
+                _ => ()
+            }
+
+            match window.poll() {
+                EventOption::Key(key_event) => {
+                    if key_event.pressed{
+                        if key_event.scancode == 1 {
+                            break;
+                        }
                     }
-                }
-                println!("Stopped listening for connections".to_string());
-            },
-            Result::Err(e) => println!(e)
+                },
+                EventOption::None => sys_yield(),
+                _ => ()
+            }
         }
 
         println!("Closed HTTP Server".to_string());

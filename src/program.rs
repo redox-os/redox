@@ -25,7 +25,6 @@ mod application;
 mod common {
     pub mod debug;
     pub mod event;
-    pub mod net;
     pub mod queue;
     pub mod memory;
     pub mod random;

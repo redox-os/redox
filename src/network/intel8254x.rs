@@ -125,6 +125,10 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
+    fn url(&self) -> URL {
+        return URL::from_string(&"network://".to_string());
+    }
+
     fn stat(&self) -> ResourceType {
         return ResourceType::File;
     }
@@ -186,6 +190,10 @@ impl Resource for NetworkResource {
         }
 
         return Option::Some(buf.len());
+    }
+
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        return Option::None;
     }
 
     fn flush(&mut self) -> bool {
@@ -461,7 +469,7 @@ impl Intel8254x {
         self.flag(RCTL, RCTL_SECRC, true);
 
         //Transmit Buffer
-        let transmit_ring_length = 1024;
+        let transmit_ring_length = 64;
         let transmit_ring = alloc(transmit_ring_length * 16) as *mut TD;
         for i in 0..transmit_ring_length {
             let transmit_buffer = alloc(16384);
