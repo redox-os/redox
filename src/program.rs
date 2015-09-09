@@ -22,6 +22,7 @@ use programs::common::*;
 #[path="APPLICATION_PATH"]
 mod application;
 
+#[path="src/common"]
 mod common {
     pub mod debug;
     pub mod event;
@@ -34,6 +35,7 @@ mod common {
     pub mod vec;
 }
 
+#[path="src/graphics"]
 mod graphics {
     pub mod bmp;
     pub mod color;
@@ -43,10 +45,12 @@ mod graphics {
     pub mod window;
 }
 
+#[path="src/programs"]
 mod programs {
     pub mod common;
 }
 
+#[path="src/syscall"]
 mod syscall {
     pub mod call;
     pub mod common;

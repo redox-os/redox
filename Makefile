@@ -1,8 +1,9 @@
 RUSTC=rustc
-RUSTCFLAGS=-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2 \
+RUSTCFLAGS=--target i686-unknown-linux-gnu \
+	-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2 \
 	-C no-vectorize-loops -C no-vectorize-slp -C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead-code -W trivial-casts -W trivial-numeric-casts \
+	-A dead-code -A deprecated \
 	-L .
 AS=nasm
 AWK=awk
@@ -39,51 +40,39 @@ endif
 
 all: harddrive.bin
 
-kernel.list: kernel.bin
-	objdump -C -M intel -d $< > $@
-
-terminal.list: filesystem/terminal.bin
-	objdump -C -M intel -d $< > $@
-
 doc: src/kernel.rs libcore.rlib liballoc.rlib
 	rustdoc --target i686-unknown-linux-gnu $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
 
 liballoc.rlib: src/liballoc/lib.rs libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern core=libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern core=libcore.rlib
 
 libcore.rlib: src/libcore/lib.rs
-	$(RUSTC) $(RUSTCFLAGS) --cfg stage0 --target i686-unknown-linux-gnu --crate-type rlib -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --cfg stage0 --crate-type rlib -o $@ $<
 
 #libcollections.rlib: src/libcollections/lib.rs liballoc.rlib
-#	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib
+#	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib
 
 #libmopa.rlib: src/libmopa/lib.rs
-#	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --cfg 'feature = "no_std"'
+#	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --cfg 'feature = "no_std"'
 
 kernel.rlib: src/kernel.rs libcore.rlib liballoc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
 
 kernel.bin: kernel.rlib libcore.rlib liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $< libcore.rlib liballoc.rlib
 
-httpd.rlib: src/program.rs filesystem/httpd.rs libcore.rlib liballoc.rlib
-	$(SED) "s|APPLICATION_PATH|../filesystem/httpd.rs|" src/program.rs > src/program.gen
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
+kernel.list: kernel.bin
+	objdump -C -M intel -d $@ > kernel.list
 
-filesystem/httpd.bin: httpd.rlib libcore.rlib liballoc.rlib
-	$(LD) $(LDARGS) -o $@ -T src/program.ld $< libcore.rlib liballoc.rlib
+filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib
+	$(SED) "s|APPLICATION_PATH|$<|" src/program.rs > $*.gen
+	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $*.rlib $*.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
+	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib libcore.rlib liballoc.rlib
 
-terminal.rlib: src/program.rs filesystem/terminal.rs libcore.rlib liballoc.rlib
-	$(SED) "s|APPLICATION_PATH|../filesystem/terminal.rs|" src/program.rs > src/program.gen
-	$(RUSTC) $(RUSTCFLAGS) --target i686-unknown-linux-gnu --crate-type rlib -o $@ src/program.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
-
-filesystem/terminal.bin: terminal.rlib libcore.rlib liballoc.rlib
-	$(LD) $(LDARGS) -o $@ -T src/program.ld $< libcore.rlib liballoc.rlib
-
-src/filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
+filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
 	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-harddrive.bin: src/loader.asm kernel.bin src/filesystem.gen
+harddrive.bin: src/loader.asm kernel.bin filesystem.gen
 	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<
 
 qemu: harddrive.bin
@@ -151,4 +140,4 @@ virtualbox_bridge: harddrive.bin
 	sudo tunctl -d tap_vb
 
 clean:
-	$(RM) *.bin *.list *.log *.pcap *.rlib *.vdi filesystem/*.bin src/*.gen
+	$(RM) *.bin *.gen *.list *.log *.pcap *.rlib *.vdi filesystem/*.bin

@@ -1,4 +1,3 @@
-use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
@@ -6,9 +5,6 @@ use common::debug::*;
 use common::vec::*;
 
 use network::common::*;
-use network::icmp::*;
-use network::tcp::*;
-use network::udp::*;
 
 #[derive(Copy, Clone)]
 pub struct IPv4Header {

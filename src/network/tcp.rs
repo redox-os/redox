@@ -1,9 +1,7 @@
-use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
 use common::debug::*;
-use common::random::*;
 use common::vec::*;
 
 use network::common::*;
