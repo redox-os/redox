@@ -1,7 +1,4 @@
-use core::mem::swap;
-
 use network::common::*;
-use network::ipv4::*;
 use network::tcp::*;
 
 use programs::common::*;

@@ -149,6 +149,7 @@ impl Resource for NetworkResource {
                         Option::Some(byte) => buf[i] = *byte,
                         Option::None => break
                     }
+                    i += 1;
                 }
                 return Option::Some(i);
             }
