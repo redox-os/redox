@@ -78,7 +78,7 @@ harddrive.bin: src/loader.asm kernel.bin filesystem.gen
 qemu: harddrive.bin
 	sudo tunctl -t tap_qemu -u "${USER}"
 	sudo ifconfig tap_qemu 10.85.85.1 up
-	-qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_qemu,script=no,downscript=no -net dump,file=network.pcap \
+	-qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -net dump,file=network.pcap \
 			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
 			-serial mon:stdio -enable-kvm -hda $<
 			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
