@@ -170,7 +170,8 @@ pub struct RTL8139 {
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
-    pub resources: Vec<*mut RTL8139Resource>
+    pub resources: Vec<*mut RTL8139Resource>,
+    pub tx_i: usize
 }
 
 impl SessionItem for RTL8139 {
@@ -249,38 +250,47 @@ impl RTL8139 {
         if has_outbound {
             let base = self.base as u16;
 
-            for i in 0..4 {
-                if ind(base + 0x10 + (i as u16) * 4) & (1 << 13) == (1 << 13) {
+            loop {
+                if ind(base + 0x10 + (self.tx_i as u16) * 4) & (1 << 13) == (1 << 13) {
                     let mut found = false;
 
                     for resource in self.resources.iter() {
-                        match (**resource).outbound.pop() {
-                            Option::Some(bytes) => {
-                                if bytes.len() < 8192 {
-                                    found = true;
+                        if ! found {
+                            match (**resource).outbound.pop() {
+                                Option::Some(bytes) => {
+                                    if bytes.len() < 8192 {
+                                        found = true;
 
-                                    let tx_buffer = ind(base + 0x20 + (i as u16) * 4);
-                                    ::memcpy(tx_buffer as *mut u8, bytes.as_ptr(), bytes.len());
+                                        d("Send ");
+                                        dd(self.tx_i);
+                                        d(": ");
+                                        dd(bytes.len());
+                                        dl();
 
-                                    outd(base + 0x10 + (i as u16) * 4, bytes.len() as u32 & 0x1FFF);
-                                }else{
-                                    dl();
-                                    d("RTL8139: Frame too long for transmit: ");
-                                    dd(bytes.len());
-                                    dl();
-                                }
-                            },
-                            Option::None => ()
-                        }
+                                        let tx_buffer = ind(base + 0x20 + (self.tx_i as u16) * 4);
+                                        ::memcpy(tx_buffer as *mut u8, bytes.as_ptr(), bytes.len());
 
-                        if found {
-                            break;
+                                        outd(base + 0x20 + (self.tx_i as u16) * 4, tx_buffer);
+                                        outd(base + 0x10 + (self.tx_i as u16) * 4, bytes.len() as u32 & 0x1FFF);
+                                    }else{
+                                        dl();
+                                        d("RTL8139: Frame too long for transmit: ");
+                                        dd(bytes.len());
+                                        dl();
+                                    }
+                                },
+                                Option::None => continue
+                            }
                         }
                     }
 
-                    if ! found {
+                    if found {
+                        self.tx_i = (self.tx_i + 1) % 4;
+                    }else{
                         break;
                     }
+                }else{
+                    break;
                 }
             }
         }
