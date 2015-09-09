@@ -20,18 +20,29 @@ impl SessionItem for Application {
 
         println!("Starting HTTP Server".to_string());
 
-        loop {
-            let mut resource = URL::from_string(&"tcp:///80".to_string()).open();
-            match resource.stat(){
-                ResourceType::File => {
-                    println!("Incoming stream from ".to_string() + resource.url().to_string());
+        let html = "Test".to_string().to_utf8();
 
-                    let mut data: Vec<u8> = Vec::new();
-                    resource.read_to_end(&mut data);
-                    println!(String::from_utf8(&data));
-                    resource.write("Test".to_string().to_utf8().as_slice());
-                },
-                _ => ()
+        let mut response = ("HTTP/1.1 200 OK\r\n".to_string()
+                + "Content-Type: text/html; charset=UTF-8\r\n"
+                + "Content-Length: " + html.len() + "\r\n"
+                + "Connection: Close\r\n"
+                + "\r\n").to_utf8();
+        response.push_all(&html);
+
+        loop {
+            {
+                let mut resource = URL::from_string(&"tcp:///80".to_string()).open();
+                match resource.stat(){
+                    ResourceType::File => {
+                        println!("Incoming stream from ".to_string() + resource.url().to_string());
+
+                        let mut data: Vec<u8> = Vec::new();
+                        resource.read_to_end(&mut data);
+                        println!(String::from_utf8(&data));
+                        resource.write(response.as_slice());
+                    },
+                    _ => ()
+                }
             }
 
             match window.poll() {
