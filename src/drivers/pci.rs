@@ -81,8 +81,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF,
-                        inbound: Queue::new(),
-                        outbound: Queue::new()
+                        resources: Vec::new()
                     };
                     module.init();
                     session.items.push(module);
