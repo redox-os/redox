@@ -331,28 +331,30 @@ impl Intel8254x {
                 let mut found = false;
 
                 for resource in self.resources.iter() {
-                    match (**resource).outbound.pop() {
-                        Option::Some(bytes) => {
-                            if bytes.len() <= 16384 {
-                                found = true;
+                    if ! found {
+                        match (**resource).outbound.pop() {
+                            Option::Some(bytes) => {
+                                if bytes.len() < 16384 {
+                                    found = true;
 
-                                let td = &mut *transmit_ring.offset(old_tail as isize);
-                                ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
-                                td.length = bytes.len() as u16;
-                                td.cso = 0;
-                                td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
-                                td.status = 0;
-                                td.css = 0;
-                                td.special = 0;
-                            }else{
-                                //TODO: More than one TD
-                                dl();
-                                d("Intel 8254x: Frame too long for transmit: ");
-                                dd(bytes.len());
-                                dl();
-                            }
-                        },
-                        Option::None => continue
+                                    let td = &mut *transmit_ring.offset(old_tail as isize);
+                                    ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
+                                    td.length = bytes.len() as u16;
+                                    td.cso = 0;
+                                    td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
+                                    td.status = 0;
+                                    td.css = 0;
+                                    td.special = 0;
+                                }else{
+                                    //TODO: More than one TD
+                                    dl();
+                                    d("Intel 8254x: Frame too long for transmit: ");
+                                    dd(bytes.len());
+                                    dl();
+                                }
+                            },
+                            Option::None => ()
+                        }
                     }
                 }
 
