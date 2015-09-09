@@ -112,6 +112,9 @@ impl Command {
                 println!(url.to_string());
 
                 let mut resource = url.open();
+
+                println!("Canonical URL: ".to_string() + resource.url().to_string());
+
                 match resource.stat() {
                     ResourceType::File => println!("Type: File".to_string()),
                     ResourceType::Dir => println!("Type: Dir".to_string()),
@@ -138,6 +141,9 @@ impl Command {
                 println!(url.to_string());
 
                 let mut resource = url.open();
+
+                println!("Canonical URL: ".to_string() + resource.url().to_string());
+
                 match resource.stat() {
                     ResourceType::File => println!("Type: File".to_string()),
                     ResourceType::Dir => println!("Type: Dir".to_string()),

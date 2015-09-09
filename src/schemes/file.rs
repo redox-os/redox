@@ -12,7 +12,7 @@ impl SessionItem for FileScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        match self.unfs.node(url.path.clone()) {
+        match self.unfs.node(url.path()) {
             Option::Some(node) => {
                 if node.extents[0].block > 0 && node.extents[0].length > 0{
                     return URL::from_string(&("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize)).open();
@@ -23,7 +23,7 @@ impl SessionItem for FileScheme {
             Option::None => {
                 let mut list = String::new();
 
-                for file in self.unfs.list(url.path.clone()).iter() {
+                for file in self.unfs.list(url.path()).iter() {
                     if list.len() > 0 {
                         list = list + "\n" + file.clone();
                     }else{
@@ -31,7 +31,7 @@ impl SessionItem for FileScheme {
                     }
                 }
 
-                return box VecResource::new(ResourceType::Dir, list.to_utf8());
+                return box VecResource::new(url.clone(), ResourceType::Dir, list.to_utf8());
             }
         }
     }

@@ -16,7 +16,6 @@ pub struct Session {
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
-    pub tcp_listeners: Vec<*mut TcpListener>,
     pub windows: Vec<*mut Window>,
     pub redraw: usize
 }
@@ -38,7 +37,6 @@ impl Session {
                     valid: false
                 },
                 items: Vec::new(),
-                tcp_listeners: Vec::new(),
                 windows: Vec::new(),
                 redraw: REDRAW_ALL
             }
@@ -62,7 +60,7 @@ impl Session {
     }
 
     pub fn open(&self, url: &URL) -> Box<Resource>{
-        if url.scheme.len() == 0 {
+        if url.scheme().len() == 0 {
             let mut list = String::new();
 
             for item in self.items.iter() {
@@ -76,10 +74,10 @@ impl Session {
                 }
             }
 
-            return box VecResource::new(ResourceType::Dir, list.to_utf8());
+            return box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8());
         }else{
             for item in self.items.iter() {
-                if item.scheme() == url.scheme {
+                if item.scheme() == url.scheme() {
                     return item.open(url);
                 }
             }

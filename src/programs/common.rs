@@ -10,7 +10,6 @@ pub use core::sync::atomic::*;
 
 pub use common::debug::*;
 pub use common::event::*;
-pub use common::net::*;
 pub use common::queue::*;
 pub use common::random::*;
 pub use common::resource::*;
