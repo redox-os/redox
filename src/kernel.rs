@@ -327,7 +327,9 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     session.items.push(box EthernetScheme);
     session.items.push(box ARPScheme);
-    session.items.push(box IPScheme);
+    session.items.push(box IPScheme {
+        arp: Vec::new()
+    });
     session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);

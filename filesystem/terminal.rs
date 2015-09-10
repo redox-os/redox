@@ -102,6 +102,55 @@ impl Command {
         });
 
         commands.push(Command {
+            name: "send".to_string(),
+            main: box |args: &Vec<String>|{
+                let url;
+                match args.get(1) {
+                    Option::Some(arg) => url = URL::from_string(&arg),
+                    Option::None => url = URL::new()
+                }
+                println!(url.to_string());
+
+                let mut resource = url.open();
+
+                println!("Canonical URL: ".to_string() + resource.url().to_string());
+
+                match resource.stat() {
+                    ResourceType::File => println!("Type: File".to_string()),
+                    ResourceType::Dir => println!("Type: Dir".to_string()),
+                    ResourceType::Array => println!("Type: Array".to_string()),
+                    _ => println!("Type: None".to_string())
+                }
+
+                let mut vec: Vec<u8> = Vec::new();
+                for i in 2..args.len() {
+                    match args.get(i) {
+                        Option::Some(arg) => {
+                            if i == 2 {
+                                vec.push_all(&arg.to_utf8())
+                            }else{
+                                vec.push_all(&(" ".to_string() + arg).to_utf8())
+                            }
+                        },
+                        Option::None => vec = Vec::new()
+                    }
+                }
+                vec.push_all(&"\r\n\r\n".to_string().to_utf8());
+
+                match resource.write(&vec.as_slice()) {
+                    Option::Some(size) => println!("Wrote ".to_string() + size + " bytes"),
+                    Option::None => println!("Failed to write".to_string())
+                }
+
+                vec = Vec::new();
+                match resource.read_to_end(&mut vec) {
+                    Option::Some(size) => println!(String::from_utf8(&vec)),
+                    Option::None => println!("Failed to read".to_string())
+                }
+            }
+        });
+
+        commands.push(Command {
             name: "url".to_string(),
             main: box |args: &Vec<String>|{
                 let url;

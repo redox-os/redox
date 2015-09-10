@@ -40,7 +40,7 @@ impl Resource for UDPResource {
             match self.ip.read_to_end(&mut bytes) {
                 Option::Some(_) => {
                     if let Option::Some(datagram) = UDP::from_bytes(bytes) {
-                        if datagram.header.src.get() == self.peer_port && datagram.header.dst.get() == self.host_port {
+                        if datagram.header.dst.get() == self.host_port && datagram.header.src.get() == self.peer_port {
                             vec.push_all(&datagram.data);
                             return Option::Some(datagram.data.len());
                         }
@@ -48,8 +48,6 @@ impl Resource for UDPResource {
                 },
                 Option::None => return Option::None
             }
-
-            sys_yield();
         }
     }
 
@@ -104,9 +102,20 @@ impl SessionItem for UDPScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        if url.path().len() > 0 {
-            let host_port = url.path().to_num() as u16;
+        if url.host().len() > 0 && url.port().len() > 0 {
+            let peer_port = url.port().to_num() as u16;
+            let peer_addr = IPv4Addr::from_string(&url.host());
+            let host_port = (rand() % 32768 + 32768) as u16;
 
+            return box UDPResource {
+                ip: URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/11")).open(),
+                data: Vec::new(),
+                peer_addr: peer_addr,
+                peer_port: peer_port,
+                host_port: host_port
+            };
+        }else if url.path().len() > 0 {
+            let host_port = url.path().to_num() as u16;
             loop {
                 let mut ip = URL::from_string(&"ip:///11".to_string()).open();
 
@@ -115,22 +124,7 @@ impl SessionItem for UDPScheme {
                     Option::Some(_) => {
                         if let Option::Some(datagram) = UDP::from_bytes(bytes) {
                             if datagram.header.dst.get() == host_port {
-                                let mut peer_addr = IPv4Addr {
-                                    bytes: [0, 0, 0, 0]
-                                };
-
-                                let mut i = 0;
-                                for part in ip.url().host().split(".".to_string()) {
-                                    let octet = part.to_num() as u8;
-                                    match i {
-                                        0 => peer_addr.bytes[0] = octet,
-                                        1 => peer_addr.bytes[1] = octet,
-                                        2 => peer_addr.bytes[2] = octet,
-                                        3 => peer_addr.bytes[3] = octet,
-                                        _ => break
-                                    }
-                                    i += 1;
-                                }
+                                let mut peer_addr = IPv4Addr::from_string(&ip.url().host());
 
                                 return box UDPResource {
                                     ip: ip,
@@ -146,10 +140,7 @@ impl SessionItem for UDPScheme {
                 }
             }
         }else{
-            let host_port = (rand() % 32768 + 32768) as u16;
-            d("Implement UDP Client Connections: ");
-            dd(host_port as usize);
-            dl();
+            d("UDP: No remote endpoint or local port provided\n");
         }
 
         return box NoneResource;

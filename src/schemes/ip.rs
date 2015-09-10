@@ -1,5 +1,6 @@
 use core::mem::swap;
 
+use network::arp::*;
 use network::common::*;
 use network::ipv4::*;
 
@@ -40,7 +41,7 @@ impl Resource for IPResource {
             match self.link.read_to_end(&mut bytes) {
                 Option::Some(_) => {
                     if let Option::Some(packet) = IPv4::from_bytes(bytes) {
-                        if packet.header.proto == self.proto && packet.header.src.equals(self.peer_addr) && packet.header.dst.equals(IP_ADDR) {
+                        if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) && packet.header.src.equals(self.peer_addr) {
                             vec.push_all(&packet.data);
                             return Option::Some(packet.data.len());
                         }
@@ -48,8 +49,6 @@ impl Resource for IPResource {
                 },
                 Option::None => return Option::None
             }
-
-            sys_yield();
         }
     }
 
@@ -99,7 +98,14 @@ impl Resource for IPResource {
     }
 }
 
-pub struct IPScheme;
+pub struct ARPEntry {
+    ip: IPv4Addr,
+    mac: MACAddr
+}
+
+pub struct IPScheme {
+    pub arp: Vec<ARPEntry>
+}
 
 impl SessionItem for IPScheme {
     fn scheme(&self) -> String {
@@ -110,29 +116,88 @@ impl SessionItem for IPScheme {
         if url.path().len() > 0 {
             let proto = url.path().to_num_radix(16) as u8;
 
-            loop {
-                let mut link = URL::from_string(&"ethernet:///800".to_string()).open();
+            if url.host().len() > 0 {
+                let peer_addr = IPv4Addr::from_string(&url.host());
+                let mut peer_mac = BROADCAST_MAC_ADDR;
 
-                let mut bytes: Vec<u8> = Vec::new();
-                match link.read_to_end(&mut bytes) {
-                    Option::Some(_) => {
-                        if let Option::Some(packet) = IPv4::from_bytes(bytes) {
-                            if packet.header.proto == proto && packet.header.dst.equals(IP_ADDR) {
-                                return box IPResource {
-                                    link: link,
-                                    data: packet.data,
-                                    peer_addr: packet.header.src,
-                                    proto: proto,
-                                    id: (rand() % 65536) as u16
-                                };
+                for entry in self.arp.iter() {
+                    if entry.ip.equals(peer_addr) {
+                        peer_mac = entry.mac;
+                        break;
+                    }
+                }
+
+                if peer_mac.equals(BROADCAST_MAC_ADDR) {
+                    let mut link = URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/806")).open();
+
+                    let mut arp = ARP {
+                        header: ARPHeader {
+                            htype: n16::new(1),
+                            ptype: n16::new(0x800),
+                            hlen: 6,
+                            plen: 4,
+                            oper: n16::new(1),
+                            src_mac: MAC_ADDR,
+                            src_ip: IP_ADDR,
+                            dst_mac: peer_mac,
+                            dst_ip: peer_addr
+                        },
+                        data: Vec::new()
+                    };
+
+                    match link.write(arp.to_bytes().as_slice()) {
+                        Option::Some(_) => loop {
+                            let mut bytes: Vec<u8> = Vec::new();
+                            match link.read_to_end(&mut bytes) {
+                                Option::Some(_) => if let Option::Some(packet) = ARP::from_bytes(bytes) {
+                                    if packet.header.oper.get() == 2 && packet.header.src_ip.equals(peer_addr) {
+                                        peer_mac = packet.header.src_mac;
+                                        self.arp.push(ARPEntry {
+                                            ip: peer_addr,
+                                            mac: peer_mac
+                                        });
+                                        break;
+                                    }
+                                },
+                                Option::None => ()
                             }
-                        }
-                    },
-                    Option::None => break
+                        },
+                        Option::None => d("IP: ARP Write Failed!\n")
+                    }
+                }
+
+                return box IPResource {
+                    link: URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/800")).open(),
+                    data: Vec::new(),
+                    peer_addr: peer_addr,
+                    proto: proto,
+                    id: (rand() % 65536) as u16
+                };
+            }else{
+                loop {
+                    let mut link = URL::from_string(&"ethernet:///800".to_string()).open();
+
+                    let mut bytes: Vec<u8> = Vec::new();
+                    match link.read_to_end(&mut bytes) {
+                        Option::Some(_) => {
+                            if let Option::Some(packet) = IPv4::from_bytes(bytes) {
+                                if packet.header.proto == proto && packet.header.dst.equals(IP_ADDR) {
+                                    return box IPResource {
+                                        link: link,
+                                        data: packet.data,
+                                        peer_addr: packet.header.src,
+                                        proto: proto,
+                                        id: (rand() % 65536) as u16
+                                    };
+                                }
+                            }
+                        },
+                        Option::None => break
+                    }
                 }
             }
         }else{
-            d("Implement IP Client Connections\n");
+            d("IP: No protocol provided\n");
         }
 
         return box NoneResource;

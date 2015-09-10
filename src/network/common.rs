@@ -83,6 +83,29 @@ impl MACAddr {
         return true;
     }
 
+    pub fn from_string(string: &String) -> MACAddr {
+        let mut addr = MACAddr {
+            bytes: [0, 0, 0, 0, 0, 0]
+        };
+
+        let mut i = 0;
+        for part in string.split(".".to_string()) {
+            let octet = part.to_num_radix(16) as u8;
+            match i {
+                0 => addr.bytes[0] = octet,
+                1 => addr.bytes[1] = octet,
+                2 => addr.bytes[2] = octet,
+                3 => addr.bytes[3] = octet,
+                4 => addr.bytes[4] = octet,
+                5 => addr.bytes[5] = octet,
+                _ => break
+            }
+            i += 1;
+        }
+
+        return addr;
+    }
+
     pub fn to_string(&self) -> String {
         let mut string = String::new();
         for i in 0..6 {
@@ -120,6 +143,27 @@ impl IPv4Addr {
             }
         }
         return true;
+    }
+
+    pub fn from_string(string: &String) -> IPv4Addr {
+        let mut addr = IPv4Addr {
+            bytes: [0, 0, 0, 0]
+        };
+
+        let mut i = 0;
+        for part in string.split(".".to_string()) {
+            let octet = part.to_num() as u8;
+            match i {
+                0 => addr.bytes[0] = octet,
+                1 => addr.bytes[1] = octet,
+                2 => addr.bytes[2] = octet,
+                3 => addr.bytes[3] = octet,
+                _ => break
+            }
+            i += 1;
+        }
+
+        return addr;
     }
 
     pub fn to_string(&self) -> String {
