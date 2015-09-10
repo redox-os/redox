@@ -18,10 +18,19 @@ make
 ```bash
 sudo apt-get install virtualbox
 ```
-```
 - Run VirtualBox
 ```bash
 make virtualbox
+```
+
+## Running on Ubuntu (Qemu, Advanced)
+- Install Qemu
+```bash
+sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
+```
+- Run Qemu
+```bash
+make qemu_tap
 ```
 
 ## Building on OS X
@@ -60,15 +69,3 @@ windows\make
 ```bash
 windows\make virtualbox
 ```
-
-## Running on Ubuntu (Qemu, Advanced)
-- Install Qemu
-```bash
-sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
-```
-```
-- Run Qemu
-```bash
-make qemu_tap
-```
-

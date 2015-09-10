@@ -5,6 +5,7 @@ use core::cmp::min;
 use core::ptr;
 
 use common::context::*;
+use common::debug::*;
 use common::event::*;
 use common::pio::*;
 use common::resource::*;
@@ -18,6 +19,8 @@ use syscall::common::*;
 pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
     match eax {
         SYS_DEBUG => { //Debug
+            //Not interrupt-locked to avoid slowness (Maybe it should be?)
+
             if ::debug_display as usize > 0 {
                 let display = &*(*::debug_display);
                 if ebx == 10 {
@@ -66,13 +69,12 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             end_no_ints(reenable);
         },
         SYS_OPEN => {
-            let reenable = start_no_ints();
+            //Not interrupt-locked to avoid slowness
 
             let session = &mut *::session_ptr;
             let url = &*(ebx as *const URL);
-            ptr::write(ecx as *mut Box<Resource>, session.open(url));
 
-            end_no_ints(reenable);
+            ptr::write(ecx as *mut Box<Resource>, session.open(url));
         },
         SYS_TRIGGER => {
             let mut event = (*(ebx as *const Event)).clone();
