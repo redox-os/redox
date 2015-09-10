@@ -252,8 +252,7 @@ impl SessionItem for Intel8254x {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             unsafe{
-                let icr = self.read(ICR);
-                dh(icr as usize);
+                dh(self.read(ICR) as usize);
                 dl();
 
                 self.receive_inbound();
@@ -273,6 +272,16 @@ impl Intel8254x {
         for tail in 0..length/16 {
             let rd = &mut *receive_ring.offset(tail as isize);
             if rd.status & RD_DD == RD_DD {
+                d("Recv ");
+                dh(rd as *mut RD as usize);
+                d(" ");
+                dh(rd.status as usize);
+                d(" ");
+                dh(rd.buffer as usize);
+                d(" ");
+                dh(rd.length as usize);
+                dl();
+
                 for resource in self.resources.iter() {
                     (**resource).inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
                 }
@@ -323,8 +332,19 @@ impl Intel8254x {
                                     found = true;
 
                                     let td = &mut *transmit_ring.offset(old_tail as isize);
+
+                                    d("Send ");
+                                    dh(old_tail as usize);
+                                    d(" ");
+                                    dh(td.status as usize);
+                                    d(" ");
+                                    dh(td.buffer as usize);
+                                    d(" ");
+                                    dh(bytes.len() & 0x3FFF);
+                                    dl();
+
                                     ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
-                                    td.length = bytes.len() as u16;
+                                    td.length = (bytes.len() & 0x3FFF) as u16;
                                     td.cso = 0;
                                     td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
                                     td.status = 0;
