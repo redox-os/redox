@@ -271,7 +271,7 @@ impl Disk {
         return 0;
     }
 
-    pub unsafe fn read_dma(&self, lba: u64, count: u16, destination: usize, busmaster: u16) -> u8{
+    pub unsafe fn read_dma(&self, lba: u64, count: u64, destination: usize, busmaster: u16) -> u8{
         if destination > 0 {
             //Allocate PRDT
             let size = count as usize * 512;
@@ -302,26 +302,42 @@ impl Disk {
             outd(busmaster + 4, prdt as u32);
 
             //DMA Transfer Command
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+            /*
+            for i in 0..entries
+                let current_lba = lba + i as u64 * 128;
+                let current_count;
+                if i == entries - 1 {
+                    current_count = count % 128;
+                }else{
+                    current_count = 128;
+                }
+            */
 
+            {
+                let current_lba = lba;
+                let current_count = count;
+
+                while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+                }
+
+                if self.master {
+                    self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                }else{
+                    self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                }
+
+                self.ide_write(ATA_REG_SECCOUNT1, ((current_count >> 8) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA3, ((current_lba >> 24) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA4, ((current_lba >> 32) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA5, ((current_lba >> 40) & 0xFF) as u8);
+
+                self.ide_write(ATA_REG_SECCOUNT0, ((current_count >> 0) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA0, (current_lba & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA1, ((current_lba >> 8) & 0xFF) as u8);
+                self.ide_write(ATA_REG_LBA2, ((current_lba >> 16) & 0xFF) as u8);
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
             }
-
-            if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            }else{
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
-            }
-
-            self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
-
-            self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-            self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
 
             //Engage bus mastering
             outb(busmaster, 9);
