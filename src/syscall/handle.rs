@@ -5,8 +5,8 @@ use core::cmp::min;
 use core::ptr;
 
 use common::context::*;
+use common::debug::*;
 use common::event::*;
-use common::net::*;
 use common::pio::*;
 use common::resource::*;
 use common::scheduler::*;
@@ -19,6 +19,8 @@ use syscall::common::*;
 pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
     match eax {
         SYS_DEBUG => { //Debug
+            //Not interrupt-locked to avoid slowness (Maybe it should be?)
+
             if ::debug_display as usize > 0 {
                 let display = &*(*::debug_display);
                 if ebx == 10 {
@@ -67,43 +69,12 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             end_no_ints(reenable);
         },
         SYS_OPEN => {
-            let reenable = start_no_ints();
+            //Not interrupt-locked to avoid slowness
 
             let session = &mut *::session_ptr;
             let url = &*(ebx as *const URL);
+
             ptr::write(ecx as *mut Box<Resource>, session.open(url));
-
-            end_no_ints(reenable);
-        },
-        SYS_TCP_LISTENER_CREATE => {
-            let reenable = start_no_ints();
-
-            (*::session_ptr).tcp_listeners.push(ebx as *mut TcpListener);
-
-            end_no_ints(reenable);
-        },
-        SYS_TCP_LISTENER_DESTROY => {
-            let reenable = start_no_ints();
-
-            let mut i = 0;
-            while i < (*::session_ptr).tcp_listeners.len() {
-                let mut remove = false;
-
-                match (*::session_ptr).tcp_listeners.get(i) {
-                    Option::Some(ptr) => if *ptr == ebx as *mut TcpListener {
-                        remove = true;
-                    }else{
-                        i += 1;
-                    },
-                    Option::None => break
-                }
-
-                if remove {
-                    (*::session_ptr).tcp_listeners.remove(i);
-                }
-            }
-
-            end_no_ints(reenable);
         },
         SYS_TRIGGER => {
             let mut event = (*(ebx as *const Event)).clone();

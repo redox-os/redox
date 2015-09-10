@@ -45,6 +45,10 @@ impl IDEResource {
 }
 
 impl Resource for IDEResource {
+    fn url(&self) -> URL {
+        return URL::from_string(&("ide:///".to_string() + self.sector as usize + '/' + self.count as usize));
+    }
+
     fn stat(&self) -> ResourceType {
         return ResourceType::File;
     }
@@ -73,24 +77,6 @@ impl Resource for IDEResource {
             self.vec.set(self.seek, buf[i]);
             self.seek += 1;
             i += 1;
-        }
-        if i > 0 {
-            self.changed = true;
-        }
-        return Option::Some(i);
-    }
-
-    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
-        let mut i = 0;
-        while i < vec.len() && self.seek < self.vec.len() {
-            match vec.get(i) {
-                Option::Some(b) => {
-                    self.vec.set(self.seek, *b);
-                    self.seek += 1;
-                    i += 1;
-                },
-                Option::None => break
-            }
         }
         if i > 0 {
             self.changed = true;
@@ -237,7 +223,7 @@ impl SessionItem for IDE {
         let mut count = 1;
 
         let mut i = 0;
-        for part in url.path.split("/".to_string()) {
+        for part in url.path_parts().iter() {
             match i {
                 0 => sector = part.to_num() as u64,
                 1 => count = part.to_num() as u16,
@@ -267,7 +253,7 @@ impl SessionItem for IDE {
         };
 
         let mut i = 0;
-        for part in url.path.split("/".to_string()) {
+        for part in url.path_parts().iter() {
             match i {
                 0 => request.sector = part.to_num() as u64,
                 1 => request.count = part.to_num() as u16,

@@ -1,12 +1,8 @@
 use core::option::Option;
 
 use common::debug::*;
-use common::net::*;
+use common::string::*;
 use common::vec::*;
-
-pub trait Response {
-    fn respond(&self) -> Vec<Vec<u8>>;
-}
 
 pub trait FromBytes{
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self:Sized;
@@ -87,13 +83,42 @@ impl MACAddr {
         return true;
     }
 
-    pub fn d(&self){
+    pub fn from_string(string: &String) -> MACAddr {
+        let mut addr = MACAddr {
+            bytes: [0, 0, 0, 0, 0, 0]
+        };
+
+        let mut i = 0;
+        for part in string.split(".".to_string()) {
+            let octet = part.to_num_radix(16) as u8;
+            match i {
+                0 => addr.bytes[0] = octet,
+                1 => addr.bytes[1] = octet,
+                2 => addr.bytes[2] = octet,
+                3 => addr.bytes[3] = octet,
+                4 => addr.bytes[4] = octet,
+                5 => addr.bytes[5] = octet,
+                _ => break
+            }
+            i += 1;
+        }
+
+        return addr;
+    }
+
+    pub fn to_string(&self) -> String {
+        let mut string = String::new();
         for i in 0..6 {
             if i > 0 {
-                d(":");
+                string = string + '.';
             }
-            dbh(self.bytes[i]);
+            string = string + String::from_num_radix(self.bytes[i] as usize, 16);
         }
+        return string;
+    }
+
+    pub fn d(&self){
+        self.to_string().d();
     }
 }
 
@@ -101,9 +126,79 @@ pub static BROADCAST_MAC_ADDR: MACAddr = MACAddr {
     bytes: [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
 };
 
-pub static MAC_ADDR: MACAddr = MACAddr {
-    bytes: [0x52, 0x54, 0x00, 0x12, 0x34, 0x56]
+pub static mut MAC_ADDR: MACAddr = MACAddr {
+    bytes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
 };
+
+#[derive(Copy, Clone)]
+pub struct IPv4Addr {
+    pub bytes: [u8; 4]
+}
+
+impl IPv4Addr {
+    pub fn equals(&self, other: IPv4Addr) -> bool {
+        for i in 0..4 {
+            if self.bytes[i] != other.bytes[i] {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    pub fn from_string(string: &String) -> IPv4Addr {
+        let mut addr = IPv4Addr {
+            bytes: [0, 0, 0, 0]
+        };
+
+        let mut i = 0;
+        for part in string.split(".".to_string()) {
+            let octet = part.to_num() as u8;
+            match i {
+                0 => addr.bytes[0] = octet,
+                1 => addr.bytes[1] = octet,
+                2 => addr.bytes[2] = octet,
+                3 => addr.bytes[3] = octet,
+                _ => break
+            }
+            i += 1;
+        }
+
+        return addr;
+    }
+
+    pub fn to_string(&self) -> String {
+        let mut string = String::new();
+
+        for i in 0..4 {
+            if i > 0 {
+                string = string + '.';
+            }
+            string = string + self.bytes[i] as usize;
+        }
+
+        return string;
+    }
+
+    pub fn d(&self){
+        self.to_string().d();
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct IPv6Addr {
+    pub bytes: [u8; 16]
+}
+
+impl IPv6Addr {
+    pub fn d(&self){
+        for i in 0..16 {
+            if i > 0 && i % 2 == 0 {
+                d(":");
+            }
+            dbh(self.bytes[i]);
+        }
+    }
+}
 
 pub static BROADCAST_IP_ADDR: IPv4Addr = IPv4Addr {
     bytes: [10, 85, 85, 255]

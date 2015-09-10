@@ -36,14 +36,19 @@ use graphics::bmp::*;
 use programs::common::*;
 use programs::session::*;
 
+use schemes::arp::*;
 use schemes::context::*;
-use schemes::debug::*;
+use schemes::ethernet::*;
 use schemes::file::*;
 use schemes::http::*;
+use schemes::icmp::*;
+use schemes::ip::*;
 use schemes::memory::*;
 use schemes::pci::*;
 use schemes::random::*;
+use schemes::tcp::*;
 use schemes::time::*;
+use schemes::udp::*;
 
 use syscall::common::*;
 use syscall::handle::*;
@@ -56,7 +61,6 @@ mod common {
     pub mod queue;
     pub mod memory;
     pub mod mutex;
-    pub mod net;
     pub mod paging;
     pub mod pci;
     pub mod pio;
@@ -99,6 +103,7 @@ mod network {
     pub mod intel8254x;
     pub mod ipv4;
     pub mod rtl8139;
+    pub mod scheme;
     pub mod tcp;
     pub mod udp;
 }
@@ -113,15 +118,20 @@ mod programs {
 }
 
 mod schemes {
+    pub mod arp;
     pub mod context;
-    pub mod debug;
+    pub mod ethernet;
     pub mod file;
     pub mod http;
+    pub mod icmp;
     pub mod ide;
+    pub mod ip;
     pub mod memory;
     pub mod pci;
     pub mod random;
+    pub mod tcp;
     pub mod time;
+    pub mod udp;
 }
 
 mod syscall {
@@ -307,7 +317,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     test_disk(Disk::secondary_slave());
 
     session.items.push(box ContextScheme);
-    session.items.push(box DebugScheme);
     session.items.push(box FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
     });
@@ -316,6 +325,15 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
+
+    session.items.push(box EthernetScheme);
+    session.items.push(box ARPScheme);
+    session.items.push(box IPScheme {
+        arp: Vec::new()
+    });
+    session.items.push(box ICMPScheme);
+    session.items.push(box TCPScheme);
+    session.items.push(box UDPScheme);
 
     (*contexts_ptr).push(Context::root());
     Context::spawn(box move ||{
@@ -326,6 +344,14 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     });
     Context::spawn(box move ||{
         redraw_loop();
+    });
+
+    Context::spawn(box move ||{
+        ARPScheme::reply_loop();
+    });
+
+    Context::spawn(box move ||{
+        ICMPScheme::reply_loop();
     });
 
     //Start interrupts

@@ -35,7 +35,7 @@ impl Editor {
         window.title = "Editor (".to_string() + self.url.to_string() + ") Saved";
 
         let mut resource = self.url.open();
-        resource.write_all(&self.string.to_utf8());
+        resource.write(&self.string.to_utf8().as_slice());
     }
 
     fn draw_content(&mut self, window: &mut Window){
