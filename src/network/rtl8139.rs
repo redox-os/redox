@@ -63,7 +63,7 @@ impl Resource for RTL8139Resource {
                 if self.nic as usize > 0 {
                     (*self.nic).receive_inbound();
                 }
-                
+
                 let reenable = start_no_ints();
                 option = (*self.ptr).inbound.pop();
                 end_no_ints(reenable);
@@ -181,10 +181,10 @@ impl SessionItem for RTL8139 {
             unsafe {
                 let base = self.base as u16;
 
-                let interrupt_status = inw(base + 0x3E);
-                outw(base + 0x3E, interrupt_status);
-
-                dh(interrupt_status as usize);
+                let icr = inw(base + 0x3E);
+                outw(base + 0x3E, icr);
+                
+                dh(icr as usize);
                 dl();
 
                 self.receive_inbound();
@@ -208,7 +208,6 @@ impl RTL8139 {
             let frame_addr = receive_buffer + capr + 4;
             let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
             let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
-
 
             d("Recv ");
             dh(capr as usize);

@@ -75,16 +75,6 @@ filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
 harddrive.bin: src/loader.asm kernel.bin filesystem.gen
 	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<
 
-qemu: harddrive.bin
-	sudo tunctl -t tap_qemu -u "${USER}"
-	sudo ifconfig tap_qemu 10.85.85.1 up
-	-qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_qemu,script=no,downscript=no -net dump,file=network.pcap \
-			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
-			-serial mon:stdio -enable-kvm -hda $<
-			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
-	sudo ifconfig tap_qemu down
-	sudo tunctl -d tap_qemu
-
 virtualbox: harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete
@@ -108,14 +98,24 @@ virtualbox: harddrive.bin
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
-virtualbox_bridge: harddrive.bin
+qemu_tap: harddrive.bin
+	sudo tunctl -t tap_redox -u "${USER}"
+	sudo ifconfig tap_redox 10.85.85.1 up
+	-qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=network.pcap \
+			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
+			-serial mon:stdio -enable-kvm -hda $<
+			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
+	sudo ifconfig tap_redox down
+	sudo tunctl -d tap_redox
+
+virtualbox_tap: harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
 	echo "Create Bridge"
-	sudo tunctl -t tap_vb -u "${USER}"
-	sudo ifconfig tap_vb 10.85.85.1 up
+	sudo tunctl -t tap_redox -u "${USER}"
+	sudo ifconfig tap_redox 10.85.85.1 up
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 512
 	$(VBM) modifyvm Redox --vram 64
@@ -123,7 +123,7 @@ virtualbox_bridge: harddrive.bin
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --nictrace1 on
 	$(VBM) modifyvm Redox --nictracefile1 network.pcap
-	$(VBM) modifyvm Redox --bridgeadapter1 tap_vb
+	$(VBM) modifyvm Redox --bridgeadapter1 tap_redox
 	$(VBM) modifyvm Redox --macaddress1 525400123456
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file serial.log
@@ -136,8 +136,17 @@ virtualbox_bridge: harddrive.bin
 	echo "Run VM"
 	-$(VB) --startvm Redox --dbg
 	echo "Delete Bridge"
-	sudo ifconfig tap_vb down
-	sudo tunctl -d tap_vb
+	sudo ifconfig tap_redox down
+	sudo tunctl -d tap_redox
+
+arping:
+	arping -I tap_redox 10.85.85.2
+
+ping:
+	ping 10.85.85.2
+
+wireshark:
+	wireshark network.pcap
 
 clean:
 	$(RM) *.bin *.gen *.list *.log *.pcap *.rlib *.vdi filesystem/*.bin
