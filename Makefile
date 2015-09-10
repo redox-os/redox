@@ -62,7 +62,7 @@ kernel.bin: kernel.rlib libcore.rlib liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $< libcore.rlib liballoc.rlib
 
 kernel.list: kernel.bin
-	objdump -C -M intel -d $@ > kernel.list
+	objdump -C -M intel -d $< > $@
 
 filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib
 	$(SED) "s|APPLICATION_PATH|$<|" src/program.rs > $*.gen

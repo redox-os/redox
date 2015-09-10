@@ -92,18 +92,18 @@ struct TD {
     const TD_CMD_RS: u8 = 1 << 3;
     const TD_DD: u8 = 1;
 
-pub struct NetworkResource {
+pub struct Intel8254xResource {
     pub nic: *mut Intel8254x,
-    pub ptr: *mut NetworkResource,
+    pub ptr: *mut Intel8254xResource,
     pub inbound: Queue<Vec<u8>>,
     pub outbound: Queue<Vec<u8>>
 }
 
-impl NetworkResource {
-    pub fn new(nic: &mut Intel8254x) -> Box<NetworkResource> {
-        let mut ret = box NetworkResource {
+impl Intel8254xResource {
+    pub fn new(nic: &mut Intel8254x) -> Box<Intel8254xResource> {
+        let mut ret = box Intel8254xResource {
             nic: nic,
-            ptr: 0 as *mut NetworkResource,
+            ptr: 0 as *mut Intel8254xResource,
             inbound: Queue::new(),
             outbound: Queue::new()
         };
@@ -124,7 +124,7 @@ impl NetworkResource {
     }
 }
 
-impl Resource for NetworkResource {
+impl Resource for Intel8254xResource {
     fn url(&self) -> URL {
         return URL::from_string(&"network://".to_string());
     }
@@ -134,39 +134,20 @@ impl Resource for NetworkResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        loop {
-            let option;
-            unsafe{
-                let reenable = start_no_ints();
-                option = self.inbound.pop();
-                end_no_ints(reenable);
-            }
-
-            if let Option::Some(bytes) = option {
-                let mut i = 0;
-                while i < buf.len() {
-                    match bytes.get(i) {
-                        Option::Some(byte) => buf[i] = *byte,
-                        Option::None => break
-                    }
-                    i += 1;
-                }
-                return Option::Some(i);
-            }
-
-            sys_yield();
-        }
+        d("TODO: Implement read for Intel8254x\n");
+        return Option::None;
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        dh(self as *mut NetworkResource as usize);
-        dl();
-
         loop {
             let option;
             unsafe{
+                if self.nic as usize > 0 {
+                    (*self.nic).receive_inbound();
+                }
+
                 let reenable = start_no_ints();
-                option = self.inbound.pop();
+                option = (*self.ptr).inbound.pop();
                 end_no_ints(reenable);
             }
 
@@ -182,7 +163,7 @@ impl Resource for NetworkResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe{
             let reenable = start_no_ints();
-            self.outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
+            (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
             end_no_ints(reenable);
 
             if self.nic as usize > 0 {
@@ -202,12 +183,16 @@ impl Resource for NetworkResource {
             let len;
             unsafe{
                 let reenable = start_no_ints();
-                len = self.outbound.len();
+                len = (*self.ptr).outbound.len();
                 end_no_ints(reenable);
             }
 
             if len == 0 {
                 return true;
+            }else if self.nic as usize > 0 {
+                unsafe {
+                    (*self.nic).send_outbound();
+                }
             }
 
             sys_yield();
@@ -215,9 +200,9 @@ impl Resource for NetworkResource {
     }
 }
 
-impl Drop for NetworkResource {
+impl Drop for Intel8254xResource {
     fn drop(&mut self){
-        if self.nic as usize > 0 && self.ptr as usize > 0 {
+        if self.nic as usize > 0 {
             unsafe {
                 let reenable = start_no_ints();
 
@@ -252,7 +237,7 @@ pub struct Intel8254x {
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
-    pub resources: Vec<*mut NetworkResource>
+    pub resources: Vec<*mut Intel8254xResource>
 }
 
 impl SessionItem for Intel8254x {
@@ -261,7 +246,7 @@ impl SessionItem for Intel8254x {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return NetworkResource::new(self);
+        return Intel8254xResource::new(self);
     }
 
     fn on_irq(&mut self, irq: u8){
@@ -375,20 +360,16 @@ impl Intel8254x {
         if self.memory_mapped {
             return ptr::read((self.base + register as usize) as *mut u32);
         }else{
-            outd(self.base as u16, register);
-            return ind((self.base + 4) as u16);
+            return 0;
         }
     }
 
     pub unsafe fn write(&self, register: u32, data: u32) -> u32 {
-        d("Set\n");
         if self.memory_mapped {
             ptr::write((self.base + register as usize) as *mut u32, data);
             return ptr::read((self.base + register as usize) as *mut u32);
         }else{
-            outd(self.base as u16, register);
-            outd((self.base + 4) as u16, data);
-            return ind((self.base + 4) as u16);
+            return 0;
         }
     }
 
@@ -460,7 +441,6 @@ impl Intel8254x {
 
         self.flag(RCTL, RCTL_EN, true);
         self.flag(RCTL, RCTL_UPE, true);
-        //self.flag(RCTL, RCTL_MPE, true);
         self.flag(RCTL, RCTL_LPE, true);
         self.flag(RCTL, RCTL_LBM, false);
         /* RCTL.RDMTS = Minimum threshold size ??? */
