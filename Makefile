@@ -108,6 +108,16 @@ qemu_tap: harddrive.bin
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
+qemu_tap_8254x: harddrive.bin
+	sudo tunctl -t tap_redox -u "${USER}"
+	sudo ifconfig tap_redox 10.85.85.1 up
+	-qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=network.pcap \
+			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
+			-serial mon:stdio -enable-kvm -hda $<
+			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
+	sudo ifconfig tap_redox down
+	sudo tunctl -d tap_redox
+
 virtualbox_tap: harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete
@@ -124,7 +134,6 @@ virtualbox_tap: harddrive.bin
 	$(VBM) modifyvm Redox --nictrace1 on
 	$(VBM) modifyvm Redox --nictracefile1 network.pcap
 	$(VBM) modifyvm Redox --bridgeadapter1 tap_redox
-	$(VBM) modifyvm Redox --macaddress1 525400123456
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file serial.log
 	$(VBM) modifyvm Redox --usb on

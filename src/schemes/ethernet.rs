@@ -39,7 +39,10 @@ impl Resource for EthernetResource {
             match self.network.read_to_end(&mut bytes) {
                 Option::Some(_) => {
                     if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
-                        if frame.header.ethertype.get() == self.ethertype && (frame.header.dst.equals(MAC_ADDR) || frame.header.dst.equals(BROADCAST_MAC_ADDR)) && (frame.header.src.equals(self.peer_addr) || self.peer_addr.equals(BROADCAST_MAC_ADDR)) {
+                        if frame.header.ethertype.get() == self.ethertype
+                        && (unsafe { frame.header.dst.equals(MAC_ADDR) } || frame.header.dst.equals(BROADCAST_MAC_ADDR))
+                        && (frame.header.src.equals(self.peer_addr) || self.peer_addr.equals(BROADCAST_MAC_ADDR))
+                        {
                             vec.push_all(&frame.data);
                             return Option::Some(frame.data.len());
                         }
@@ -55,7 +58,7 @@ impl Resource for EthernetResource {
 
         match self.network.write(EthernetII {
             header: EthernetIIHeader {
-                src: MAC_ADDR,
+                src: unsafe { MAC_ADDR },
                 dst: self.peer_addr,
                 ethertype: n16::new(self.ethertype)
             },
@@ -101,7 +104,9 @@ impl SessionItem for EthernetScheme {
                     match network.read_to_end(&mut bytes) {
                         Option::Some(_) => {
                             if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
-                                if frame.header.ethertype.get() == ethertype && (frame.header.dst.equals(MAC_ADDR) || frame.header.dst.equals(BROADCAST_MAC_ADDR)) {
+                                if frame.header.ethertype.get() == ethertype
+                                && (unsafe { frame.header.dst.equals(MAC_ADDR) } || frame.header.dst.equals(BROADCAST_MAC_ADDR))
+                                {
                                     return box EthernetResource {
                                         network: network,
                                         data: frame.data,

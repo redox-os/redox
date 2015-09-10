@@ -103,6 +103,7 @@ mod network {
     pub mod intel8254x;
     pub mod ipv4;
     pub mod rtl8139;
+    pub mod scheme;
     pub mod tcp;
     pub mod udp;
 }

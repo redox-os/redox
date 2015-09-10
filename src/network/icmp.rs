@@ -1,4 +1,3 @@
-use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 

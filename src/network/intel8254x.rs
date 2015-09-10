@@ -1,12 +1,9 @@
-use core::ops::{DerefMut,Drop};
-
 use common::memory::*;
 use common::pci::*;
-use common::pio::*;
 use common::scheduler::*;
 
 use network::common::*;
-use network::ethernet::*;
+use network::scheme::*;
 
 use programs::common::*;
 
@@ -92,144 +89,6 @@ struct TD {
     const TD_CMD_RS: u8 = 1 << 3;
     const TD_DD: u8 = 1;
 
-pub struct Intel8254xResource {
-    pub nic: *mut Intel8254x,
-    pub ptr: *mut Intel8254xResource,
-    pub inbound: Queue<Vec<u8>>,
-    pub outbound: Queue<Vec<u8>>
-}
-
-impl Intel8254xResource {
-    pub fn new(nic: &mut Intel8254x) -> Box<Intel8254xResource> {
-        let mut ret = box Intel8254xResource {
-            nic: nic,
-            ptr: 0 as *mut Intel8254xResource,
-            inbound: Queue::new(),
-            outbound: Queue::new()
-        };
-
-        unsafe{
-            ret.ptr = ret.deref_mut();
-
-            if ret.nic as usize > 0 && ret.ptr as usize > 0 {
-                let reenable = start_no_ints();
-
-                (*ret.nic).resources.push(ret.ptr);
-
-                end_no_ints(reenable);
-            }
-        }
-
-        return ret;
-    }
-}
-
-impl Resource for Intel8254xResource {
-    fn url(&self) -> URL {
-        return URL::from_string(&"network://".to_string());
-    }
-
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
-    }
-
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        d("TODO: Implement read for Intel8254x\n");
-        return Option::None;
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        loop {
-            let option;
-            unsafe{
-                if self.nic as usize > 0 {
-                    (*self.nic).receive_inbound();
-                }
-
-                let reenable = start_no_ints();
-                option = (*self.ptr).inbound.pop();
-                end_no_ints(reenable);
-            }
-
-            if let Option::Some(bytes) = option {
-                vec.push_all(&bytes);
-                return Option::Some(bytes.len());
-            }
-
-            sys_yield();
-        }
-    }
-
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe{
-            let reenable = start_no_ints();
-            (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
-            end_no_ints(reenable);
-
-            if self.nic as usize > 0 {
-                (*self.nic).send_outbound();
-            }
-        }
-
-        return Option::Some(buf.len());
-    }
-
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn flush(&mut self) -> bool {
-        loop {
-            let len;
-            unsafe{
-                let reenable = start_no_ints();
-                len = (*self.ptr).outbound.len();
-                end_no_ints(reenable);
-            }
-
-            if len == 0 {
-                return true;
-            }else if self.nic as usize > 0 {
-                unsafe {
-                    (*self.nic).send_outbound();
-                }
-            }
-
-            sys_yield();
-        }
-    }
-}
-
-impl Drop for Intel8254xResource {
-    fn drop(&mut self){
-        if self.nic as usize > 0 {
-            unsafe {
-                let reenable = start_no_ints();
-
-                let mut i = 0;
-                while i < (*self.nic).resources.len() {
-                    let mut remove = false;
-
-                    match (*self.nic).resources.get(i) {
-                        Option::Some(ptr) => if *ptr == self.ptr {
-                            remove = true;
-                        }else{
-                            i += 1;
-                        },
-                        Option::None => break
-                    }
-
-                    if remove {
-                        (*self.nic).resources.remove(i);
-                    }
-                }
-
-                end_no_ints(reenable);
-            }
-        }
-    }
-}
-
 pub struct Intel8254x {
     pub bus: usize,
     pub slot: usize,
@@ -237,7 +96,9 @@ pub struct Intel8254x {
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
-    pub resources: Vec<*mut Intel8254xResource>
+    pub resources: Vec<*mut NetworkResource>,
+    pub inbound: Queue<Vec<u8>>,
+    pub outbound: Queue<Vec<u8>>
 }
 
 impl SessionItem for Intel8254x {
@@ -246,7 +107,7 @@ impl SessionItem for Intel8254x {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return Intel8254xResource::new(self);
+        return NetworkResource::new(self);
     }
 
     fn on_irq(&mut self, irq: u8){
@@ -254,18 +115,77 @@ impl SessionItem for Intel8254x {
             unsafe{
                 dh(self.read(ICR) as usize);
                 dl();
-
-                self.receive_inbound();
-                self.send_outbound();
             }
+
+            self.sync();
+        }
+    }
+
+    fn on_poll(&mut self){
+        self.sync();
+    }
+}
+
+impl NetworkScheme for Intel8254x {
+    fn add(&mut self, resource: *mut NetworkResource){
+        unsafe {
+            let reenable = start_no_ints();
+            self.resources.push(resource);
+            end_no_ints(reenable);
+        }
+    }
+
+    fn remove(&mut self, resource: *mut NetworkResource){
+        unsafe {
+            let reenable = start_no_ints();
+            let mut i = 0;
+            while i < self.resources.len() {
+                let mut remove = false;
+
+                match self.resources.get(i) {
+                    Option::Some(ptr) => if *ptr == resource {
+                        remove = true;
+                    }else{
+                        i += 1;
+                    },
+                    Option::None => break
+                }
+
+                if remove {
+                    self.resources.remove(i);
+                }
+            }
+            end_no_ints(reenable);
+        }
+    }
+
+    fn sync(&mut self){
+        unsafe {
+            let reenable = start_no_ints();
+
+            for resource in self.resources.iter() {
+                while let Option::Some(bytes) = (**resource).outbound.pop() {
+                    self.outbound.push(bytes);
+                }
+            }
+
+            self.send_outbound();
+
+            self.receive_inbound();
+
+            while let Option::Some(bytes) = self.inbound.pop() {
+                for resource in self.resources.iter() {
+                    (**resource).inbound.push(bytes.clone());
+                }
+            }
+
+            end_no_ints(reenable);
         }
     }
 }
 
 impl Intel8254x {
     pub unsafe fn receive_inbound(&mut self) {
-        let reenable = start_no_ints();
-
         let receive_ring = self.read(RDBAL) as *mut RD;
         let length = self.read(RDLEN);
 
@@ -282,35 +202,21 @@ impl Intel8254x {
                 dh(rd.length as usize);
                 dl();
 
-                for resource in self.resources.iter() {
-                    (**resource).inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
-                }
+                self.inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
 
                 rd.status = 0;
             }
         }
-
-        end_no_ints(reenable);
     }
 
     pub unsafe fn send_outbound(&mut self) {
-        let reenable = start_no_ints();
-
-        let mut has_outbound = false;
-        for resource in self.resources.iter() {
-            if (**resource).outbound.len() > 0 {
-                has_outbound = true;
-            }
-        }
-
-        if has_outbound {
+        while let Option::Some(bytes) = self.outbound.pop() {
             let transmit_ring = self.read(TDBAL) as *mut TD;
             let length = self.read(TDLEN);
-            let head = self.read(TDH);
-            let mut tail = self.read(TDT);
-            let original_tail = tail;
 
             loop {
+                let head = self.read(TDH);
+                let mut tail = self.read(TDT);
                 let old_tail = tail;
 
                 tail += 1;
@@ -318,62 +224,41 @@ impl Intel8254x {
                     tail = 0;
                 }
 
-                if tail == head {
-                    break;
-                }
+                if tail != head {
+                    if bytes.len() < 16384 {
+                        let td = &mut *transmit_ring.offset(old_tail as isize);
 
-                let mut found = false;
+                        d("Send ");
+                        dh(old_tail as usize);
+                        d(" ");
+                        dh(td.status as usize);
+                        d(" ");
+                        dh(td.buffer as usize);
+                        d(" ");
+                        dh(bytes.len() & 0x3FFF);
+                        dl();
 
-                for resource in self.resources.iter() {
-                    if ! found {
-                        match (**resource).outbound.pop() {
-                            Option::Some(bytes) => {
-                                if bytes.len() < 16384 {
-                                    found = true;
+                        ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
+                        td.length = (bytes.len() & 0x3FFF) as u16;
+                        td.cso = 0;
+                        td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
+                        td.status = 0;
+                        td.css = 0;
+                        td.special = 0;
 
-                                    let td = &mut *transmit_ring.offset(old_tail as isize);
-
-                                    d("Send ");
-                                    dh(old_tail as usize);
-                                    d(" ");
-                                    dh(td.status as usize);
-                                    d(" ");
-                                    dh(td.buffer as usize);
-                                    d(" ");
-                                    dh(bytes.len() & 0x3FFF);
-                                    dl();
-
-                                    ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
-                                    td.length = (bytes.len() & 0x3FFF) as u16;
-                                    td.cso = 0;
-                                    td.command = TD_CMD_EOP | TD_CMD_IFCS | TD_CMD_RS;
-                                    td.status = 0;
-                                    td.css = 0;
-                                    td.special = 0;
-                                }else{
-                                    //TODO: More than one TD
-                                    dl();
-                                    d("Intel 8254x: Frame too long for transmit: ");
-                                    dd(bytes.len());
-                                    dl();
-                                }
-                            },
-                            Option::None => ()
-                        }
+                        self.write(TDT, tail);
+                    }else{
+                        //TODO: More than one TD
+                        dl();
+                        d("Intel 8254x: Frame too long for transmit: ");
+                        dd(bytes.len());
+                        dl();
                     }
-                }
 
-                if ! found {
                     break;
                 }
-            }
-
-            if tail != original_tail {
-                self.write(TDT, tail);
             }
         }
-
-        end_no_ints(reenable);
     }
 
     pub unsafe fn read(&self, register: u32) -> u32 {
@@ -411,7 +296,6 @@ impl Intel8254x {
         }
         d(", IRQ: ");
         dbh(self.irq);
-        dl();
 
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
 
@@ -430,10 +314,26 @@ impl Intel8254x {
         //Do not use VLANs
         self.flag(CTRL, CTRL_VME, false);
 
+        d(" CTRL ");
+        dh(self.read(CTRL) as usize);
+
         // TODO: Clear statistical counters
 
-        self.write(RAL0, 0x12005452);
-        self.write(RAH0, 0x5634);
+        d(" MAC: ");
+        let mac_low = self.read(RAL0);
+        let mac_high = self.read(RAH0);
+        MAC_ADDR = MACAddr{
+            bytes: [
+                mac_low as u8,
+                (mac_low >> 8) as u8,
+                (mac_low >> 16) as u8,
+                (mac_low >> 24) as u8,
+                mac_high as u8,
+                (mac_high >> 8) as u8
+            ]
+        };
+        MAC_ADDR.d();
+
         /*
         MTA => 0;
         */
@@ -459,18 +359,6 @@ impl Intel8254x {
         self.write(RDH, 0);
         self.write(RDT, receive_ring_length as u32 - 1);
 
-        self.flag(RCTL, RCTL_EN, true);
-        self.flag(RCTL, RCTL_UPE, true);
-        self.flag(RCTL, RCTL_LPE, true);
-        self.flag(RCTL, RCTL_LBM, false);
-        /* RCTL.RDMTS = Minimum threshold size ??? */
-        /* RCTL.MO = Multicast offset */
-        self.flag(RCTL, RCTL_BAM, true);
-        self.flag(RCTL, RCTL_BSIZE1, true);
-        self.flag(RCTL, RCTL_BSIZE2, false);
-        self.flag(RCTL, RCTL_BSEX, true);
-        self.flag(RCTL, RCTL_SECRC, true);
-
         //Transmit Buffer
         let transmit_ring_length = 64;
         let transmit_ring = alloc(transmit_ring_length * 16) as *mut TD;
@@ -493,6 +381,27 @@ impl Intel8254x {
         self.write(TDH, 0);
         self.write(TDT, 0);
 
+        self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC | IMS_TXQE | IMS_TXDW);
+
+        d(" IMS ");
+        dh(self.read(IMS) as usize);
+
+        self.flag(RCTL, RCTL_EN, true);
+        self.flag(RCTL, RCTL_UPE, true);
+        //self.flag(RCTL, RCTL_MPE, true);
+        self.flag(RCTL, RCTL_LPE, true);
+        self.flag(RCTL, RCTL_LBM, false);
+        /* RCTL.RDMTS = Minimum threshold size ??? */
+        /* RCTL.MO = Multicast offset */
+        self.flag(RCTL, RCTL_BAM, true);
+        self.flag(RCTL, RCTL_BSIZE1, true);
+        self.flag(RCTL, RCTL_BSIZE2, false);
+        self.flag(RCTL, RCTL_BSEX, true);
+        self.flag(RCTL, RCTL_SECRC, true);
+
+        d(" RCTL ");
+        dh(self.read(RCTL) as usize);
+
         self.flag(TCTL, TCTL_EN, true);
         self.flag(TCTL, TCTL_PSP, true);
         /* TCTL.CT = Collition threshold */
@@ -500,6 +409,9 @@ impl Intel8254x {
         /* TIPG Packet Gap */
         /* TODO ... */
 
-        self.write(IMS, IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC | IMS_TXQE | IMS_TXDW);
+        d(" TCTL ");
+        dh(self.read(TCTL) as usize);
+
+        dl();
     }
 }
