@@ -32,7 +32,7 @@ impl Resource for TCPResource {
             match self.ip.read_to_end(&mut bytes) {
                 Option::Some(_) => {
                     if let Option::Some(segment) = TCP::from_bytes(bytes) {
-                        if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == (TCP_PSH | TCP_ACK) && segment.header.src.get() == self.peer_port && segment.header.dst.get() == self.host_port {
+                        if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == (TCP_PSH | TCP_ACK) && segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
                             //Send ACK
                             self.sequence = segment.header.ack_num.get();
                             self.acknowledge = segment.header.sequence.get() + segment.data.len() as u32;
@@ -42,14 +42,14 @@ impl Resource for TCPResource {
                                     dst: n16::new(self.peer_port),
                                     sequence: n32::new(self.sequence),
                                     ack_num: n32::new(self.acknowledge),
-                                    flags: n16::new((((size_of::<TCPHeader>() + segment.options.len()) << 10) & 0xF000) as u16 | TCP_ACK),
-                                    window_size: n16::new(segment.header.window_size.get()),
+                                    flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
+                                    window_size: n16::new(65535),
                                     checksum: Checksum {
                                         data: 0
                                     },
                                     urgent_pointer: n16::new(0)
                                 },
-                                options: segment.options,
+                                options: Vec::new(),
                                 data: Vec::new()
                             };
 
@@ -76,8 +76,6 @@ impl Resource for TCPResource {
                 },
                 Option::None => return Option::None
             }
-
-            sys_yield();
         }
     }
 
@@ -91,13 +89,13 @@ impl Resource for TCPResource {
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
                 flags: n16::new((((size_of::<TCPHeader>()) << 10) & 0xF000) as u16 | TCP_PSH | TCP_ACK),
-                window_size: n16::new(229), //TODO: Use connection window size
+                window_size: n16::new(65535),
                 checksum: Checksum {
                     data: 0
                 },
                 urgent_pointer: n16::new(0)
             },
-            options: Vec::new(), //TODO: Use connection options
+            options: Vec::new(),
             data: tcp_data
         };
 
@@ -121,7 +119,7 @@ impl Resource for TCPResource {
                 match self.ip.read_to_end(&mut bytes) {
                     Option::Some(_) => {
                         if let Option::Some(segment) = TCP::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port {
+                            if segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
                                 if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
@@ -149,6 +147,98 @@ impl Resource for TCPResource {
 }
 
 impl TCPResource {
+    pub fn client_establish(&mut self) -> bool {
+        //Send SYN
+        let mut tcp = TCP {
+            header: TCPHeader {
+                src: n16::new(self.host_port),
+                dst: n16::new(self.peer_port),
+                sequence: n32::new(self.sequence),
+                ack_num: n32::new(self.acknowledge),
+                flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_SYN),
+                window_size: n16::new(65535),
+                checksum: Checksum {
+                    data: 0
+                },
+                urgent_pointer: n16::new(0)
+            },
+            options: Vec::new(),
+            data: Vec::new()
+        };
+
+        unsafe{
+            let proto = n16::new(0x06);
+            let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+            tcp.header.checksum.data = Checksum::compile(
+                Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                Checksum::sum((&tcp.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
+                Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
+            );
+        }
+
+        match self.ip.write(&tcp.to_bytes().as_slice()) {
+            Option::Some(_) => loop { // Wait for SYN-ACK
+                let mut bytes: Vec<u8> = Vec::new();
+                match self.ip.read_to_end(&mut bytes) {
+                    Option::Some(_) => {
+                        if let Option::Some(segment) = TCP::from_bytes(bytes) {
+                            if segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
+                                if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == (TCP_SYN | TCP_ACK) {
+                                    self.sequence = segment.header.ack_num.get();
+                                    self.acknowledge = segment.header.sequence.get();
+
+                                    self.acknowledge += 1;
+                                    tcp = TCP {
+                                        header: TCPHeader {
+                                            src: n16::new(self.host_port),
+                                            dst: n16::new(self.peer_port),
+                                            sequence: n32::new(self.sequence),
+                                            ack_num: n32::new(self.acknowledge),
+                                            flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
+                                            window_size: n16::new(65535),
+                                            checksum: Checksum {
+                                                data: 0
+                                            },
+                                            urgent_pointer: n16::new(0)
+                                        },
+                                        options: Vec::new(),
+                                        data: Vec::new()
+                                    };
+
+                                    unsafe{
+                                        let proto = n16::new(0x06);
+                                        let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                                        tcp.header.checksum.data = Checksum::compile(
+                                            Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                            Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
+                                            Checksum::sum((&tcp.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                                            Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
+                                            Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
+                                        );
+                                    }
+
+                                    self.ip.write(&tcp.to_bytes().as_slice());
+
+                                    return true;
+                                }else{
+                                    return false;
+                                }
+                            }
+                        }
+                    },
+                    Option::None => return false
+                }
+            },
+            Option::None => return false
+        }
+    }
+
     //Try to establish a server connection
     pub fn server_establish(&mut self, syn: TCP) -> bool {
         //Send SYN-ACK
@@ -159,14 +249,14 @@ impl TCPResource {
                 dst: n16::new(self.peer_port),
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
-                flags: n16::new((((size_of::<TCPHeader>() + syn.options.len()) << 10) & 0xF000) as u16 | TCP_SYN | TCP_ACK),
-                window_size: n16::new(syn.header.window_size.get()),
+                flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_SYN | TCP_ACK),
+                window_size: n16::new(65535),
                 checksum: Checksum {
                     data: 0
                 },
                 urgent_pointer: n16::new(0)
             },
-            options: syn.options,
+            options: Vec::new(),
             data: Vec::new()
         };
 
@@ -190,7 +280,7 @@ impl TCPResource {
                 match self.ip.read_to_end(&mut bytes) {
                     Option::Some(_) => {
                         if let Option::Some(segment) = TCP::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port {
+                            if segment.header.dst.get() == self.host_port && segment.header.src.get() == self.peer_port {
                                 if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
@@ -219,7 +309,7 @@ impl Drop for TCPResource {
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
                 flags: n16::new((((size_of::<TCPHeader>()) << 10) & 0xF000) as u16 | TCP_FIN | TCP_ACK),
-                window_size: n16::new(229),
+                window_size: n16::new(65535),
                 checksum: Checksum {
                     data: 0
                 },
@@ -243,24 +333,7 @@ impl Drop for TCPResource {
             );
         }
 
-        match self.ip.write(&tcp.to_bytes().as_slice()) {
-            Option::Some(_) => /*loop { // Wait for ACK
-                let mut bytes: Vec<u8> = Vec::new();
-                match self.ip.read_to_end(&mut bytes) {
-                    Option::Some(_) => {
-                        if let Option::Some(segment) = TCP::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port {
-                                if (segment.header.flags.get() & TCP_FIN) == TCP_FIN {
-                                    break;
-                                }
-                            }
-                        }
-                    },
-                    Option::None => ()
-                }
-            }*/(),
-            Option::None => ()
-        }
+        self.ip.write(&tcp.to_bytes().as_slice());
     }
 }
 
@@ -272,7 +345,24 @@ impl SessionItem for TCPScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        if url.path().len() > 0 {
+        if url.host().len() > 0 && url.port().len() > 0 {
+            let peer_addr = IPv4Addr::from_string(&url.host());
+            let peer_port = url.port().to_num() as u16;
+            let host_port = (rand() % 32768 + 32768) as u16;
+
+            let mut ret = box TCPResource {
+                ip: URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/6")).open(),
+                peer_addr: peer_addr,
+                peer_port: peer_port,
+                host_port: host_port,
+                sequence: rand() as u32,
+                acknowledge: 0
+            };
+
+            if ret.client_establish() {
+                return ret;
+            }
+        }else if url.path().len() > 0 {
             let host_port = url.path().to_num() as u16;
 
             loop {
@@ -283,22 +373,7 @@ impl SessionItem for TCPScheme {
                     Option::Some(_) => {
                         if let Option::Some(segment) = TCP::from_bytes(bytes) {
                             if segment.header.dst.get() == host_port && (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_SYN {
-                                let mut peer_addr = IPv4Addr {
-                                    bytes: [0, 0, 0, 0]
-                                };
-
-                                let mut i = 0;
-                                for part in ip.url().host().split(".".to_string()) {
-                                    let octet = part.to_num() as u8;
-                                    match i {
-                                        0 => peer_addr.bytes[0] = octet,
-                                        1 => peer_addr.bytes[1] = octet,
-                                        2 => peer_addr.bytes[2] = octet,
-                                        3 => peer_addr.bytes[3] = octet,
-                                        _ => break
-                                    }
-                                    i += 1;
-                                }
+                                let peer_addr = IPv4Addr::from_string(&ip.url().host());
 
                                 let mut ret = box TCPResource {
                                     ip: ip,
@@ -319,10 +394,7 @@ impl SessionItem for TCPScheme {
                 }
             }
         }else{
-            let host_port = (rand() % 32768 + 32768) as u16;
-            d("Implement TCP Client Connections: ");
-            dd(host_port as usize);
-            dl();
+            d("TCP: No remote endpoint or local port provided\n");
         }
 
         return box NoneResource;
