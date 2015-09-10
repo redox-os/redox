@@ -98,6 +98,12 @@ virtualbox: harddrive.bin
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
+qemu: harddrive.bin
+	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=network.pcap \
+			-usb -device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
+			-serial mon:stdio -enable-kvm -hda $<
+			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
+
 qemu_tap: harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up

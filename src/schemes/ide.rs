@@ -3,115 +3,11 @@ use alloc::arc::*;
 use common::memory::*;
 use common::pci::*;
 use common::pio::*;
+use common::scheduler::*;
 
 use drivers::disk::*;
 
 use programs::common::*;
-
-struct IDEResource {
-    disk: Disk,
-    sector: u64,
-    count: u16,
-    vec: Vec<u8>,
-    seek: usize,
-    changed: bool
-}
-
-impl IDEResource {
-    fn new(disk: Disk, sector: u64, count: u16) -> IDEResource {
-        let vec;
-        unsafe{
-            let destination = alloc(count as usize * 512);
-            if destination > 0 {
-                disk.read(sector, count, destination);
-                vec = Vec {
-                    data: destination as *mut u8,
-                    length: count as usize * 512
-                };
-            }else{
-                vec = Vec::new();
-            }
-        }
-
-        return IDEResource {
-            disk: disk,
-            sector: sector,
-            count: count,
-            vec: vec,
-            seek: 0,
-            changed: false
-        };
-    }
-}
-
-impl Resource for IDEResource {
-    fn url(&self) -> URL {
-        return URL::from_string(&("ide:///".to_string() + self.sector as usize + '/' + self.count as usize));
-    }
-
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
-    }
-
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        let mut i = 0;
-        while i < buf.len() && self.seek < self.vec.len() {
-            match self.vec.get(self.seek) {
-                Option::Some(b) => buf[i] = *b,
-                Option::None => ()
-            }
-            self.seek += 1;
-            i += 1;
-        }
-        return Option::Some(i);
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        vec.push_all(&self.vec);
-        return Option::Some(self.vec.len());
-    }
-
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        let mut i = 0;
-        while i < buf.len() && self.seek < self.vec.len() {
-            self.vec.set(self.seek, buf[i]);
-            self.seek += 1;
-            i += 1;
-        }
-        if i > 0 {
-            self.changed = true;
-        }
-        return Option::Some(i);
-    }
-
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        match pos {
-            ResourceSeek::Start(offset) => self.seek = min(self.seek, offset),
-            ResourceSeek::End(offset) => self.seek = max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
-            ResourceSeek::Current(offset) => self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize
-        }
-        return Option::Some(self.seek);
-    }
-
-    fn flush(&mut self) -> bool {
-        if self.changed {
-            unsafe{
-                d("Flush IDE\n");
-                self.disk.write(self.sector, self.count, self.vec.data as usize);
-            }
-            self.changed = false;
-            return true;
-        }else{
-            return false;
-        }
-    }
-}
-
-impl Drop for IDEResource {
-    fn drop(&mut self){
-        self.flush();
-    }
-}
 
 pub struct IDERequest {
     pub sector: u64,
@@ -143,24 +39,24 @@ impl SessionItem for IDE {
             let command = inb(base);
             let status = inb(base + 2);
             if status & 4 == 4 {
-                d("IDE handle");
+                d("IDE");
 
-                if command & 1 == 1 {
+                d(" Status ");
+                dbh(status);
+
+                outb(base + 0x2, status);
+
+                d(" to ");
+                dbh(inb(base + 0x2));
+
+                if command & 1 == 1 && status & 1 == 0 {
                     d(" DMA Command ");
                     dbh(command);
 
-                    outb(base, command & 0xFE);
+                    outb(base, 0);
 
                     d(" to ");
                     dbh(inb(base));
-
-                    d(" Status ");
-                    dbh(status);
-
-                    outb(base + 0x2, 4);
-
-                    d(" to ");
-                    dbh(inb(base + 0x2));
 
                     let prdt = ind(base + 0x4) as usize;
                     outd(base + 0x4, 0);
@@ -172,7 +68,14 @@ impl SessionItem for IDE {
                         let destination = (*(prdt as *const PRDTE)).ptr as usize;
                         unalloc(prdt);
 
-                        match self.requests.get(1) {
+                        match self.requests.remove(0){
+                            Option::Some(request) => {
+                                (request.callback)(destination);
+                            },
+                            Option::None => ()
+                        }
+
+                        match self.requests.get(0) {
                             Option::Some(request) => {
                                 d(" NEXT ");
                                 dd(request.sector as usize);
@@ -184,29 +87,7 @@ impl SessionItem for IDE {
                             },
                             Option::None => ()
                         }
-
-                        match self.requests.remove(0){
-                            Option::Some(request) => {
-                                d(" REQUEST ");
-                                dh(request.destination);
-                                d(" RETURN ");
-                                dh(destination);
-                                (request.callback)(destination);
-                            },
-                            Option::None => ()
-                        }
                     }
-                }else{
-                    d(" PIO Command ");
-                    dbh(command);
-
-                    d(" Status ");
-                    dbh(status);
-
-                    outb(base + 0x2, 4);
-
-                    d(" to ");
-                    dbh(inb(base + 0x2));
                 }
 
                 dl();
@@ -217,28 +98,7 @@ impl SessionItem for IDE {
     fn scheme(&self) -> String {
         return "ide".to_string();
     }
-/* PIO */
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        let mut sector = 1;
-        let mut count = 1;
 
-        let mut i = 0;
-        for part in url.path_parts().iter() {
-            match i {
-                0 => sector = part.to_num() as u64,
-                1 => count = part.to_num() as u16,
-                _ => ()
-            }
-            i += 1;
-        }
-
-        if count > 0 {
-            return box IDEResource::new(Disk::primary_master(), sector, count);
-        }
-
-        return box NoneResource;
-    }
-/* DMA
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let data: Arc<AtomicUsize> = Arc::new(AtomicUsize::new(0xFFFFFFFF));
         let data_callback = data.clone();
@@ -262,20 +122,31 @@ impl SessionItem for IDE {
             i += 1;
         }
 
+        let url = URL::from_string(&("ide:///".to_string() + request.sector as usize + "/" + request.count as usize));
+
         unsafe {
             if request.count > 0 {
                 request.destination = alloc(request.count as usize * 512);
                 if request.destination > 0 {
+                    let reenable = start_no_ints();
                     self.requests.push(request);
                     if self.requests.len() == 1 {
                         match self.requests.get(0) {
                             Option::Some(request) => {
+                                d("IDE DMA Request ");
+                                dd(request.sector as usize);
+                                d(" ");
+                                dd(request.count as usize);
+
                                 let disk = Disk::primary_master();
                                 disk.read_dma(request.sector, request.count, request.destination, self.base as u16);
+
+                                dl();
                             },
                             Option::None => ()
                         }
                     }
+                    end_no_ints(reenable);
                 }
             }
 
@@ -285,7 +156,7 @@ impl SessionItem for IDE {
 
             let destination = data.load(Ordering::SeqCst);
             if destination > 0 {
-                return box VecResource::new(ResourceType::File, Vec::<u8> {
+                return box VecResource::new(url, ResourceType::File, Vec::<u8> {
                     data: destination as *mut u8,
                     length: alloc_size(destination)
                 });
@@ -294,7 +165,6 @@ impl SessionItem for IDE {
             }
         }
     }
-*/
 }
 
 impl IDE {

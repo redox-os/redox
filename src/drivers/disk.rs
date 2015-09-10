@@ -1,4 +1,5 @@
 use core::mem::size_of;
+use core::ptr;
 
 use common::debug::*;
 use common::memory::*;
@@ -278,27 +279,27 @@ impl Disk {
             let prdt = alloc(size_of::<PRDTE>() * entries);
             for i in 0..entries {
                 if i == entries - 1 {
-                    *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
+                    ptr::write((prdt as *mut PRDTE).offset(i as isize),  PRDTE {
                         ptr: (destination + i * 65536) as u32,
                         size: (size % 65536) as u16,
                         reserved: 0x8000
-                    };
+                    });
                 }else{
-                    *(prdt as *mut PRDTE).offset(i as isize) = PRDTE {
+                    ptr::write((prdt as *mut PRDTE).offset(i as isize), PRDTE {
                         ptr: (destination + i * 65536) as u32,
                         size: 0,
                         reserved: 0
-                    };
+                    });
                 }
             }
 
-            outd(busmaster + 4, prdt as u32);
-
-            //Set read bit
+            //Clear command
             outb(busmaster, 8);
 
-            //Clear interrupt, error bit
+            //Clear status
             outb(busmaster + 2, 0);
+
+            outd(busmaster + 4, prdt as u32);
 
             //DMA Transfer Command
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
@@ -323,7 +324,7 @@ impl Disk {
             self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
 
             //Engage bus mastering
-            outb(busmaster, inb(busmaster) | 1);
+            outb(busmaster, 9);
         }
 
         return 0;

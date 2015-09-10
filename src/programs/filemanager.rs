@@ -1,46 +1,20 @@
 use programs::common::*;
 
 pub struct FileManager {
-    window: Box<Window>,
     files: Vec<String>,
     selected: isize
 }
 
 impl FileManager {
     pub fn new() -> FileManager {
-        let mut size = Size::new(0, 0);
-
-        let mut files: Vec<String> = Vec::new();
-
-        let mut resource = URL::from_string(&"file:///".to_string()).open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        for file in String::from_utf8(&vec).split("\n".to_string()){
-            if size.width < (file.len() + 1) * 8 {
-                size.width = (file.len() + 1) * 8 ;
-            }
-            files.push(file.clone());
-        }
-
-        if size.height < files.len() * 16 {
-            size.height = files.len() * 16;
-        }
-
-        let mut ret = FileManager {
-            window: Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, String::from_str("File Manager")),
-            files: files,
+        return FileManager {
+            files: Vec::new(),
             selected: -1
         };
-
-        ret.draw_content();
-
-        return ret;
     }
 
-    fn draw_content(&mut self){
-        let content = &self.window.content;
+    fn draw_content(&mut self, window: &mut Window){
+        let content = &window.content;
 
         content.set(Color::new(0, 0, 0));
 
@@ -86,8 +60,31 @@ impl FileManager {
 
 impl SessionItem for FileManager {
     fn main(&mut self, url: URL){
+        let mut size = Size::new(0, 0);
+        {
+            let mut resource = url.open();
+
+            let mut vec: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut vec);
+
+            for file in String::from_utf8(&vec).split("\n".to_string()){
+                if size.width < (file.len() + 1) * 8 {
+                    size.width = (file.len() + 1) * 8 ;
+                }
+                self.files.push(file);
+            }
+
+            if size.height < self.files.len() * 16 {
+                size.height = self.files.len() * 16;
+            }
+        }
+
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, String::from_str("File Manager"));
+
+        self.draw_content(&mut window);
+
         loop {
-            match self.window.poll() {
+            match window.poll() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         match key_event.scancode {
@@ -124,12 +121,12 @@ impl SessionItem for FileManager {
                             }
                         }
 
-                        self.draw_content();
+                        self.draw_content(&mut window);
                     }
                 },
                 EventOption::Mouse(mouse_event) => {
                     let mut redraw = false;
-                    if ! self.window.shaded {
+                    if ! window.shaded {
                         let mut i = 0;
                         let mut row = 0;
                         for file in self.files.iter() {
@@ -141,8 +138,8 @@ impl SessionItem for FileManager {
                                 }else if c == '\t' {
                                     col += 8 - col % 8;
                                 }else{
-                                    if col < self.window.size.width / 8 && row < self.window.size.height / 16 {
-                                        let point = Point::new(self.window.point.x + 8*col as isize, self.window.point.y + 16*row as isize);
+                                    if col < window.size.width / 8 && row < window.size.height / 16 {
+                                        let point = Point::new(window.point.x + 8*col as isize, window.point.y + 16*row as isize);
                                         if mouse_event.x >= point.x && mouse_event.x < point.x + 8 && mouse_event.y >= point.y && mouse_event.y < point.y + 16 {
                                             self.selected = i;
                                             redraw = true;
@@ -150,7 +147,7 @@ impl SessionItem for FileManager {
                                         col += 1;
                                     }
                                 }
-                                if col >= self.window.size.width / 8 {
+                                if col >= window.size.width / 8 {
                                     col = 0;
                                     row += 1;
                                 }
@@ -161,7 +158,7 @@ impl SessionItem for FileManager {
                     }
 
                     if redraw {
-                        self.draw_content();
+                        self.draw_content(&mut window);
                     }
                 },
                 EventOption::None => sys_yield(),
