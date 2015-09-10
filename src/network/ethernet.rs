@@ -1,13 +1,10 @@
-use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
 use common::debug::*;
 use common::vec::*;
 
-use network::arp::*;
 use network::common::*;
-use network::ipv4::*;
 
 #[derive(Copy, Clone)]
 pub struct EthernetIIHeader {

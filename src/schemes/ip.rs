@@ -137,7 +137,7 @@ impl SessionItem for IPScheme {
                             hlen: 6,
                             plen: 4,
                             oper: n16::new(1),
-                            src_mac: MAC_ADDR,
+                            src_mac: unsafe { MAC_ADDR },
                             src_ip: IP_ADDR,
                             dst_mac: peer_mac,
                             dst_ip: peer_addr

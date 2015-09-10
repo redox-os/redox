@@ -28,7 +28,7 @@ impl ARPScheme {
                             response.header.oper.set(2);
                             response.header.dst_mac = packet.header.src_mac;
                             response.header.dst_ip = packet.header.src_ip;
-                            response.header.src_mac = MAC_ADDR;
+                            response.header.src_mac = unsafe { MAC_ADDR };
                             response.header.src_ip = IP_ADDR;
 
                             link.write(response.to_bytes().as_slice());
