@@ -124,7 +124,7 @@ impl SessionItem for UDPScheme {
                     Option::Some(_) => {
                         if let Option::Some(datagram) = UDP::from_bytes(bytes) {
                             if datagram.header.dst.get() == host_port {
-                                let mut peer_addr = IPv4Addr::from_string(&ip.url().host());
+                                let peer_addr = IPv4Addr::from_string(&ip.url().host());
 
                                 return box UDPResource {
                                     ip: ip,

@@ -52,39 +52,20 @@ impl Resource for RTL8139Resource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        loop {
-            let option;
-            unsafe{
-                let reenable = start_no_ints();
-                option = self.inbound.pop();
-                end_no_ints(reenable);
-            }
-
-            if let Option::Some(bytes) = option {
-                let mut i = 0;
-                while i < buf.len() {
-                    match bytes.get(i) {
-                        Option::Some(byte) => buf[i] = *byte,
-                        Option::None => break
-                    }
-                    i += 1;
-                }
-                return Option::Some(i);
-            }
-
-            sys_yield();
-        }
+        d("TODO: Implement read for RTL8139\n");
+        return Option::None;
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        dh(self as *mut RTL8139Resource as usize);
-        dl();
-
         loop {
             let option;
             unsafe{
+                if self.nic as usize > 0 {
+                    (*self.nic).receive_inbound();
+                }
+                
                 let reenable = start_no_ints();
-                option = self.inbound.pop();
+                option = (*self.ptr).inbound.pop();
                 end_no_ints(reenable);
             }
 
@@ -100,7 +81,7 @@ impl Resource for RTL8139Resource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe{
             let reenable = start_no_ints();
-            self.outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
+            (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
             end_no_ints(reenable);
 
             if self.nic as usize > 0 {
@@ -120,12 +101,16 @@ impl Resource for RTL8139Resource {
             let len;
             unsafe{
                 let reenable = start_no_ints();
-                len = self.outbound.len();
+                len = (*self.ptr).outbound.len();
                 end_no_ints(reenable);
             }
 
             if len == 0 {
                 return true;
+            }else if self.nic as usize > 0 {
+                unsafe {
+                    (*self.nic).send_outbound();
+                }
             }
 
             sys_yield();
@@ -135,7 +120,7 @@ impl Resource for RTL8139Resource {
 
 impl Drop for RTL8139Resource {
     fn drop(&mut self){
-        if self.nic as usize > 0 && self.ptr as usize > 0 {
+        if self.nic as usize > 0 {
             unsafe {
                 let reenable = start_no_ints();
 
@@ -163,6 +148,13 @@ impl Drop for RTL8139Resource {
     }
 }
 
+pub struct TXD {
+    pub address_port: u16,
+    pub status_port: u16,
+    pub first: bool,
+    pub buffer: usize
+}
+
 pub struct RTL8139 {
     pub bus: usize,
     pub slot: usize,
@@ -171,7 +163,8 @@ pub struct RTL8139 {
     pub memory_mapped: bool,
     pub irq: u8,
     pub resources: Vec<*mut RTL8139Resource>,
-    pub tx_i: usize
+    pub txds: Vec<TXD>,
+    pub txd_i: usize
 }
 
 impl SessionItem for RTL8139 {
@@ -188,17 +181,11 @@ impl SessionItem for RTL8139 {
             unsafe {
                 let base = self.base as u16;
 
-                loop {
-                    let interrupt_status = inw(base + 0x3E);
-                    outw(base + 0x3E, interrupt_status);
+                let interrupt_status = inw(base + 0x3E);
+                outw(base + 0x3E, interrupt_status);
 
-                    dh(interrupt_status as usize);
-                    dl();
-
-                    if interrupt_status == 0 {
-                        break;
-                    }
-                }
+                dh(interrupt_status as usize);
+                dl();
 
                 self.receive_inbound();
                 self.send_outbound();
@@ -219,7 +206,19 @@ impl RTL8139 {
 
         while capr != cbr {
             let frame_addr = receive_buffer + capr + 4;
-            let frame_len = *((receive_buffer + capr + 2) as *const u16) as usize;
+            let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
+            let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
+
+
+            d("Recv ");
+            dh(capr as usize);
+            d(" ");
+            dh(frame_status);
+            d(" ");
+            dh(frame_addr);
+            d(" ");
+            dh(frame_len);
+            dl();
 
             for resource in self.resources.iter() {
                 (**resource).inbound.push(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4));
@@ -251,46 +250,57 @@ impl RTL8139 {
             let base = self.base as u16;
 
             loop {
-                if ind(base + 0x10 + (self.tx_i as u16) * 4) & (1 << 13) == (1 << 13) {
-                    let mut found = false;
+                if let Option::Some(txd) = self.txds.get(self.txd_i) {
+                    let tx_status = ind(txd.status_port);
+                    if tx_status & (1 << 15 | 1 << 13) == (1 << 15 | 1 << 13) || (txd.first && (tx_status & 1 << 13) == (1 << 13)) {
+                        let mut found = false;
 
-                    for resource in self.resources.iter() {
-                        if ! found {
-                            match (**resource).outbound.pop() {
-                                Option::Some(bytes) => {
-                                    if bytes.len() < 8192 {
-                                        found = true;
+                        for resource in self.resources.iter() {
+                            if ! found {
+                                match (**resource).outbound.pop() {
+                                    Option::Some(bytes) => {
+                                        if bytes.len() < 4096 {
+                                            found = true;
 
-                                        d("Send ");
-                                        dd(self.tx_i);
-                                        d(": ");
-                                        dd(bytes.len());
-                                        dl();
+                                            d("Send ");
+                                            dh(txd.status_port as usize);
+                                            d(" ");
+                                            dh(tx_status as usize);
+                                            d(" ");
+                                            dh(txd.buffer);
+                                            d(" ");
+                                            dh(bytes.len() & 0xFFF);
+                                            dl();
 
-                                        let tx_buffer = ind(base + 0x20 + (self.tx_i as u16) * 4);
-                                        ::memcpy(tx_buffer as *mut u8, bytes.as_ptr(), bytes.len());
+                                            ::memcpy(txd.buffer as *mut u8, bytes.as_ptr(), bytes.len());
 
-                                        outd(base + 0x20 + (self.tx_i as u16) * 4, tx_buffer);
-                                        outd(base + 0x10 + (self.tx_i as u16) * 4, bytes.len() as u32 & 0x1FFF);
-                                    }else{
-                                        dl();
-                                        d("RTL8139: Frame too long for transmit: ");
-                                        dd(bytes.len());
-                                        dl();
-                                    }
-                                },
-                                Option::None => continue
+                                            outd(txd.address_port, txd.buffer as u32);
+                                            outd(txd.status_port, bytes.len() as u32 & 0xFFF);
+
+                                            txd.first = false;
+                                        }else{
+                                            dl();
+                                            d("RTL8139: Frame too long for transmit: ");
+                                            dd(bytes.len());
+                                            dl();
+                                        }
+                                    },
+                                    Option::None => continue
+                                }
                             }
                         }
-                    }
 
-                    if found {
-                        self.tx_i = (self.tx_i + 1) % 4;
+                        if found {
+                            self.txd_i = (self.txd_i + 1) % 4;
+                        }else{
+                            break;
+                        }
                     }else{
                         break;
                     }
                 }else{
-                    break;
+                    d("RTL8139: TXD Overflow!\n");
+                    self.txd_i = 0;
                 }
             }
         }
@@ -298,7 +308,7 @@ impl RTL8139 {
         end_no_ints(reenable);
     }
 
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&mut self){
         d("RTL8139 on: ");
         dh(self.base);
         if self.memory_mapped {
@@ -324,7 +334,12 @@ impl RTL8139 {
         dh(ind(base + 0x30) as usize);
 
         for i in 0..4 {
-            outd(base + 0x20 + (i as u16) * 4, alloc(8192) as u32);
+            self.txds.push(TXD {
+                address_port: base + 0x20 + (i as u16) * 4,
+                status_port: base + 0x10 + (i as u16) * 4,
+                first: true,
+                buffer: alloc(4096)
+            });
         }
 
         outw(base + 0x3C, 5);
@@ -335,7 +350,7 @@ impl RTL8139 {
         d(" CMD: ");
         dbh(inb(base + 0x37));
 
-        outd(base + 0x44, 0x8F);
+        outd(base + 0x44, 0x80 | (1 << 4) | (1 << 3) | (1 << 1));
         d(" RCR: ");
         dh(ind(base + 0x44) as usize);
 
