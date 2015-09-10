@@ -11,7 +11,7 @@ use programs::common::*;
 
 pub struct IDERequest {
     pub sector: u64,
-    pub count: u16,
+    pub count: u64,
     pub destination: usize,
     pub callback: Box<FnBox(usize)>
 }
@@ -116,7 +116,7 @@ impl SessionItem for IDE {
         for part in url.path_parts().iter() {
             match i {
                 0 => request.sector = part.to_num() as u64,
-                1 => request.count = part.to_num() as u16,
+                1 => request.count = part.to_num() as u64,
                 _ => ()
             }
             i += 1;
