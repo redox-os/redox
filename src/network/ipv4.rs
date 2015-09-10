@@ -1,15 +1,10 @@
-use core::clone::Clone;
 use core::mem::size_of;
 use core::option::Option;
 
 use common::debug::*;
-use common::net::*;
 use common::vec::*;
 
 use network::common::*;
-use network::icmp::*;
-use network::tcp::*;
-use network::udp::*;
 
 #[derive(Copy, Clone)]
 pub struct IPv4Header {
@@ -26,9 +21,9 @@ pub struct IPv4Header {
 }
 
 pub struct IPv4 {
-    header: IPv4Header,
-    options: Vec<u8>,
-    data: Vec<u8>
+    pub header: IPv4Header,
+    pub options: Vec<u8>,
+    pub data: Vec<u8>
 }
 
 impl FromBytes for IPv4 {
@@ -58,62 +53,6 @@ impl ToBytes for IPv4 {
             ret.push_all(&self.data);
             return ret;
         }
-    }
-}
-
-impl Response for IPv4 {
-    fn respond(&self) -> Vec<Vec<u8>> {
-        let mut ret: Vec<Vec<u8>> = Vec::new();
-        if self.header.dst.equals(IP_ADDR) || self.header.dst.equals(BROADCAST_IP_ADDR){
-            if cfg!(debug_network){
-                d("    ");
-                self.d();
-                dl();
-            }
-
-            let responses: Vec<Vec<u8>>;
-            match self.header.proto {
-                0x01 => match ICMP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(),
-                    Option::None => responses = Vec::new()
-                },
-                //Must copy source IP and destination IP for checksum
-                0x06 => match TCP::from_bytes_ipv4(self.data.clone(), self.header.src, self.header.dst) {
-                    Option::Some(packet) => responses = packet.respond(),
-                    Option::None => responses = Vec::new()
-                },
-                0x11 => match UDP::from_bytes(self.data.clone()) {
-                    Option::Some(packet) => responses = packet.respond(),
-                    Option::None => responses = Vec::new()
-                },
-                _ => responses = Vec::new()
-            }
-
-            for response in responses.iter() {
-                let mut packet = IPv4 {
-                    header: self.header,
-                    options: self.options.clone(),
-                    data: response.clone()
-                };
-
-                packet.header.dst = self.header.src;
-                packet.header.src = IP_ADDR;
-                packet.header.len.set((size_of::<IPv4Header>() + packet.options.len() + packet.data.len()) as u16);
-
-                unsafe{
-                    packet.header.checksum.data = 0;
-
-                    let header_ptr: *const IPv4Header = &packet.header;
-                    packet.header.checksum.data = Checksum::compile(
-                        Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
-                        Checksum::sum(packet.options.as_ptr() as usize, packet.options.len())
-                    );
-                }
-
-                ret.push(packet.to_bytes());
-            }
-        }
-        return ret;
     }
 }
 

@@ -74,15 +74,18 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             0x10EC => match device_code{ // REALTEK
                 0x8139 => {
                     let base = pci_read(bus, slot, func, 0x10);
-                    let module = box RTL8139 {
+                    let mut module = box RTL8139 {
                         bus: bus,
                         slot: slot,
                         func: func,
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF,
+                        resources: Vec::new(),
                         inbound: Queue::new(),
-                        outbound: Queue::new()
+                        outbound: Queue::new(),
+                        txds: Vec::new(),
+                        txd_i: 0
                     };
                     module.init();
                     session.items.push(module);
@@ -99,6 +102,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         base: base & 0xFFFFFFF0,
                         memory_mapped: base & 1 == 0,
                         irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF,
+                        resources: Vec::new(),
                         inbound: Queue::new(),
                         outbound: Queue::new()
                     };

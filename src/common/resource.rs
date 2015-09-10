@@ -3,6 +3,7 @@ use alloc::boxed::*;
 use core::clone::Clone;
 use core::cmp::min;
 use core::cmp::max;
+use core::mem::swap;
 use core::ptr;
 
 use common::debug::*;
@@ -28,123 +29,38 @@ pub enum ResourceType {
 
 #[allow(unused_variables)]
 pub trait Resource {
-    fn stat(&self) -> ResourceType {
-        return ResourceType::None;
-    }
-
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn flush(&mut self) -> bool {
-        return true;
-    }
+    fn url(&self) -> URL;
+    fn stat(&self) -> ResourceType;
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize>;
+    fn write(&mut self, buf: &[u8]) -> Option<usize>;
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize>;
+    fn flush(&mut self) -> bool;
 }
 
+//URL Parsing:
+//Split by /
+//First part is scheme, second is empty, third is user, password, host, and port, later parts are path, last part is path, query, and fragment
+    //Split third part by @, the last part is the host and port, if there is a first part it is the user and password
+        //Split these parts each by :, first part splits into user and password, the second part is split into domain and port
+    //Split the last part by ?, the first part is a path element, the last part is the query and fragment
+        //Split the last part by #, the first is the query, the second is the fragment
+            //Split the query by &
 pub struct URL {
-    pub scheme: String,
-    /*
-    pub user: String,
-    pub password: String,
-    pub host: String,
-    pub port: String,
-    */
-    pub path: String
+    pub string: String
 }
 
 impl URL {
     pub fn new() -> URL {
         URL {
-            scheme: String::new(),
-            /*
-            user: String::new(),
-            password: String::new(),
-            host: String::new(),
-            port: String::new(),
-            */
-            path: String::new()
+            string: String::new()
         }
     }
 
     pub fn from_string(url_string: &String) -> URL {
-        let mut url = URL::new();
-
-        //Split by /
-        //First part is scheme, second is empty, third is user, password, host, and port, later parts are path, last part is path, query, and fragment
-            //Split third part by @, the last part is the host and port, if there is a first part it is the user and password
-                //Split these parts each by :, first part splits into user and password, the second part is split into domain and port
-            //Split the last part by ?, the first part is a path element, the last part is the query and fragment
-                //Split the last part by #, the first is the query, the second is the fragment
-                    //Split the query by &
-
-        let mut part_i = 0;
-        for part in url_string.split("/".to_string()) {
-            match part_i {
-                0 => {
-                    let mut scheme_part_i = 0;
-                    for scheme_part in part.split(":".to_string()) {
-                        match scheme_part_i {
-                            0 => url.scheme = scheme_part,
-                            _ => ()
-                        }
-                        scheme_part_i += 1;
-                    }
-                }
-                1 => (),
-                2 => {
-                    /*
-                    let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()){
-                        let mut host_subpart_i = 0;
-                        for host_subpart in host_part.split(":".to_string()) {
-                            match host_part_i {
-                                0 => match host_subpart_i {
-                                    0 => url.user = host_subpart,
-                                    1 => url.password = host_subpart,
-                                    _ => ()
-                                },
-                                1 => match host_subpart_i {
-                                    0 => url.host = host_subpart,
-                                    1 => url.port = host_subpart,
-                                    _ => ()
-                                },
-                                _ => ()
-                            }
-                            host_subpart_i += 1;
-                        }
-                        host_part_i += 1;
-                    }
-                    if host_part_i == 1 {
-                        url.host = url.user;
-                        url.user = String::new();
-                        url.port = url.password;
-                        url.password = String::new();
-                    }
-                    */
-                },
-                3 => url.path = part,
-                _ => url.path = url.path + "/" + part
-            }
-            part_i += 1;
+        URL {
+            string: url_string.clone()
         }
-
-        return url;
     }
 
     pub fn open(&self) -> Box<Resource> {
@@ -161,35 +77,233 @@ impl URL {
         }
     }
 
+    pub fn scheme(&self) -> String {
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => {
+                        let mut scheme_part_i = 0;
+                        for scheme_part in part.split(":".to_string()) {
+                            match scheme_part_i {
+                                0 => return scheme_part,
+                                _ => break
+                            }
+                            scheme_part_i += 1;
+                        }
+                },
+                _ => break
+            }
+            part_i += 1;
+        }
+
+        return String::new();
+    }
+
+    pub fn username(&self) -> String {
+        let mut username = String::new();
+        let mut host = String::new();
+
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => (),
+                1 => (),
+                2 => {
+                    let mut host_part_i = 0;
+                    for host_part in part.split("@".to_string()){
+                        let mut host_subpart_i = 0;
+                        for host_subpart in host_part.split(":".to_string()) {
+                            match host_part_i {
+                                0 => match host_subpart_i {
+                                    0 => username = host_subpart,
+                                    _ => ()
+                                },
+                                1 => match host_subpart_i {
+                                    0 => host = host_subpart,
+                                    _ => ()
+                                },
+                                _ => ()
+                            }
+                            host_subpart_i += 1;
+                        }
+                        host_part_i += 1;
+                    }
+                    if host_part_i == 1 {
+                        swap(&mut host, &mut username);
+                    }
+                },
+                _ => break
+            }
+            part_i += 1;
+        }
+
+        return username;
+    }
+
+    pub fn password(&self) -> String {
+        let mut password = String::new();
+        let mut port = String::new();
+
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => (),
+                1 => (),
+                2 => {
+                    let mut host_part_i = 0;
+                    for host_part in part.split("@".to_string()){
+                        let mut host_subpart_i = 0;
+                        for host_subpart in host_part.split(":".to_string()) {
+                            match host_part_i {
+                                0 => match host_subpart_i {
+                                    1 => password = host_subpart,
+                                    _ => ()
+                                },
+                                1 => match host_subpart_i {
+                                    1 => port = host_subpart,
+                                    _ => ()
+                                },
+                                _ => ()
+                            }
+                            host_subpart_i += 1;
+                        }
+                        host_part_i += 1;
+                    }
+                    if host_part_i == 1 {
+                        swap(&mut port, &mut password);
+                    }
+                },
+                _ => break
+            }
+            part_i += 1;
+        }
+
+        return password;
+    }
+
+    pub fn host(&self) -> String {
+        let mut username = String::new();
+        let mut host = String::new();
+
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => (),
+                1 => (),
+                2 => {
+                    let mut host_part_i = 0;
+                    for host_part in part.split("@".to_string()){
+                        let mut host_subpart_i = 0;
+                        for host_subpart in host_part.split(":".to_string()) {
+                            match host_part_i {
+                                0 => match host_subpart_i {
+                                    0 => username = host_subpart,
+                                    _ => ()
+                                },
+                                1 => match host_subpart_i {
+                                    0 => host = host_subpart,
+                                    _ => ()
+                                },
+                                _ => ()
+                            }
+                            host_subpart_i += 1;
+                        }
+                        host_part_i += 1;
+                    }
+                    if host_part_i == 1 {
+                        swap(&mut host, &mut username);
+                    }
+                },
+                _ => break
+            }
+            part_i += 1;
+        }
+
+        return host;
+    }
+
+    pub fn port(&self) -> String {
+        let mut password = String::new();
+        let mut port = String::new();
+
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => (),
+                1 => (),
+                2 => {
+                    let mut host_part_i = 0;
+                    for host_part in part.split("@".to_string()){
+                        let mut host_subpart_i = 0;
+                        for host_subpart in host_part.split(":".to_string()) {
+                            match host_part_i {
+                                0 => match host_subpart_i {
+                                    1 => password = host_subpart,
+                                    _ => ()
+                                },
+                                1 => match host_subpart_i {
+                                    1 => port = host_subpart,
+                                    _ => ()
+                                },
+                                _ => ()
+                            }
+                            host_subpart_i += 1;
+                        }
+                        host_part_i += 1;
+                    }
+                    if host_part_i == 1 {
+                        swap(&mut port, &mut password);
+                    }
+                },
+                _ => break
+            }
+            part_i += 1;
+        }
+
+        return port;
+    }
+
+    pub fn path(&self) -> String {
+        let mut path = String::new();
+
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => (),
+                1 => (),
+                2 => (),
+                3 => path = part,
+                _ => path = path + "/" + part
+            }
+            part_i += 1;
+        }
+
+        return path;
+    }
+
+    pub fn path_parts(&self) -> Vec<String> {
+        let mut path_parts: Vec<String> = Vec::new();
+
+        let mut part_i = 0;
+        for part in self.string.split("/".to_string()) {
+            match part_i {
+                0 => (),
+                1 => (),
+                2 => (),
+                _ => path_parts.push(part)
+            }
+            part_i += 1;
+        }
+
+        return path_parts;
+    }
+
     pub fn to_string(&self) -> String {
-        let mut ret = self.scheme.clone() + "://";
-
-        /*
-        if self.user.len() > 0 {
-            ret = ret + &self.user;
-            if self.password.len() > 0 {
-                ret = ret + ":" + &self.password;
-            }
-            ret = ret + "@";
-        }
-
-        if self.host.len() > 0 {
-            ret = ret + &self.host;
-            if self.port.len() > 0 {
-                ret = ret + ":" + &self.port;
-            }
-        }
-        */
-
-        if self.path.len() > 0 {
-            ret = ret + "/" + &self.path;
-        }
-
-        return ret;
+        return self.string.clone();
     }
 
     pub fn d(&self){
-        self.to_string().d();
+        self.string.d();
         dl();
     }
 }
@@ -197,31 +311,54 @@ impl URL {
 impl Clone for URL {
     fn clone(&self) -> URL{
         URL {
-            scheme: self.scheme.clone(),
-            /*
-            user: self.user.clone(),
-            password: self.password.clone(),
-            host: self.host.clone(),
-            port: self.port.clone(),
-            */
-            path: self.path.clone()
+            string: self.string.clone()
         }
     }
 }
 
 pub struct NoneResource;
 
-impl Resource for NoneResource {}
+impl Resource for NoneResource {
+    fn url(&self) -> URL {
+        return URL::from_string(&"none://".to_string());
+    }
+
+    fn stat(&self) -> ResourceType {
+        return ResourceType::None;
+    }
+
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn flush(&mut self) -> bool {
+        return false;
+    }
+}
 
 pub struct VecResource {
+    url: URL,
     resource_type: ResourceType,
     vec: Vec<u8>,
     seek: usize
 }
 
 impl VecResource {
-    pub fn new(resource_type: ResourceType, vec: Vec<u8>) -> VecResource {
+    pub fn new(url: URL, resource_type: ResourceType, vec: Vec<u8>) -> VecResource {
         return VecResource {
+            url: url,
             resource_type: resource_type,
             vec: vec,
             seek: 0
@@ -234,6 +371,10 @@ impl VecResource {
 }
 
 impl Resource for VecResource {
+    fn url(&self) -> URL {
+        return self.url.clone();
+    }
+
     fn stat(&self) -> ResourceType {
         return self.resource_type;
     }
@@ -271,31 +412,6 @@ impl Resource for VecResource {
         return Option::Some(i);
     }
 
-    fn write_all(&mut self, vec: &Vec<u8>) -> Option<usize> {
-        let mut i = 0;
-        while i < vec.len() && self.seek < self.vec.len() {
-            match vec.get(i) {
-                Option::Some(b) => {
-                    self.vec.set(self.seek, *b);
-                    self.seek += 1;
-                    i += 1;
-                },
-                Option::None => break
-            }
-        }
-        while i < vec.len() {
-            match vec.get(i) {
-                Option::Some(b) => {
-                    self.vec.push(*b);
-                    self.seek += 1;
-                    i += 1;
-                },
-                Option::None => break
-            }
-        }
-        return Option::Some(i);
-    }
-
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = min(self.seek, offset),
@@ -303,5 +419,9 @@ impl Resource for VecResource {
             ResourceSeek::Current(offset) => self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize
         }
         return Option::Some(self.seek);
+    }
+
+    fn flush(&mut self) -> bool {
+        return true;
     }
 }

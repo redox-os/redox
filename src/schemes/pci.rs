@@ -16,7 +16,7 @@ impl SessionItem for PCIScheme {
         let mut reg = -1;
 
         let mut i = 0;
-        for part in url.path.split("\n".to_string()) {
+        for part in url.path_parts().iter() {
             match i {
                 0 => bus = part.to_num() as isize,
                 1 => slot = part.to_num() as isize,
@@ -33,7 +33,7 @@ impl SessionItem for PCIScheme {
                 data = pci_read(bus as usize, slot as usize, func as usize, reg as usize);
             }
 
-            return box VecResource::new(ResourceType::File, String::from_num(data).to_utf8());
+            return box VecResource::new(url.clone(), ResourceType::File, String::from_num(data).to_utf8());
         }else{
             return box NoneResource;
         }
