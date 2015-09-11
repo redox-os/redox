@@ -158,7 +158,7 @@ impl Session {
                         Option::None => ()
                     }
                 }
-                
+
                 for reverse_i in 0..self.windows.len(){
                     let i = self.windows.len() - 1 - reverse_i;
                     match self.windows.get(i) {

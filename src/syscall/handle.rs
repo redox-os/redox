@@ -106,6 +106,9 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             let reenable = start_no_ints();
 
             (*::session_ptr).windows.insert(0, ebx as *mut Window);
+            (*::events_ptr).push(RedrawEvent {
+                redraw: REDRAW_ALL
+            }.to_event());
 
             end_no_ints(reenable);
         },
@@ -127,6 +130,9 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
 
                 if remove {
                     (*::session_ptr).windows.remove(i);
+                    (*::events_ptr).push(RedrawEvent {
+                        redraw: REDRAW_ALL
+                    }.to_event());
                 }
             }
 
