@@ -34,7 +34,7 @@ pub struct UnFS {
 impl UnFS {
     pub fn from_disk(disk: Disk) -> UnFS{
         unsafe{
-            let header_ptr = alloc(size_of::<Header>()) as *const Header;
+            let header_ptr: *const Header = alloc_type();
             disk.read(1, 1, header_ptr as usize);
             let ret = UnFS { disk:disk, header: ptr::read(header_ptr) };
             unalloc(header_ptr as usize);
@@ -54,7 +54,7 @@ impl UnFS {
         let mut ret: Option<Node> = Option::None;
 
         unsafe{
-            let node_ptr = alloc(size_of::<Node>()) as *const Node;
+            let node_ptr: *const Node = alloc_type();
             if node_ptr as usize > 0 {
                 for extent in &self.header.extents {
                     if extent.block > 0 {
@@ -83,7 +83,7 @@ impl UnFS {
         let mut ret = Vec::<String>::new();
 
         unsafe{
-            let node_ptr = alloc(size_of::<Node>()) as *const Node;
+            let node_ptr: *const Node = alloc_type();
             if node_ptr as usize > 0 {
                 for extent in &self.header.extents {
                     if extent.block > 0 {

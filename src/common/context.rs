@@ -115,7 +115,7 @@ impl Context {
 
     pub unsafe fn push(&mut self, data: u32){
         self.stack_ptr -= 4;
-        *(self.stack_ptr as *mut u32) = data;
+        ptr::write(self.stack_ptr as *mut u32, data);
     }
 
     pub unsafe fn map(&mut self){
@@ -159,7 +159,7 @@ impl Context {
             : "{esi}"(other.fx)
             : "memory"
             : "intel", "volatile");
-        
+
         asm!("mov esp, [esi]
             popad
             popfd"
