@@ -176,11 +176,11 @@ vesa:
 	xor eax, eax
 	ret
 
-.minx dw 640
-.miny dw 480
+.minx dw 1024
+.miny dw 768
 .required:
-.requiredx dw 1024	;USE THESE WITH CAUTION
-.requiredy dw 768
+.requiredx dw 0	;USE THESE WITH CAUTION
+.requiredy dw 0
 .requiredmode dw 0
 
 .noedidmsg db "EDID not supported.",10,13,0

@@ -14,6 +14,33 @@ pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
 pub static mut context_i: usize = 0;
 
+pub unsafe fn context_switch(interrupted: bool){
+    let reenable = start_no_ints();
+
+    let contexts = &*(*contexts_ptr);
+    let current_i = context_i;
+    context_i += 1;
+    if context_i >= contexts.len(){
+        context_i -= contexts.len();
+    }
+    if context_i != current_i {
+        match contexts.get(current_i){
+            Option::Some(current) => match contexts.get(context_i) {
+                Option::Some(next) => {
+                    current.interrupted = interrupted;
+                    next.interrupted = false;
+                    current.remap(next);
+                    current.switch(next);
+                },
+                Option::None => ()
+            },
+            Option::None => ()
+        }
+    }
+
+    end_no_ints(reenable);
+}
+
 pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     unalloc(box_fn_ptr);
@@ -32,8 +59,8 @@ pub struct Context {
     pub fx: usize,
     pub physical_address: usize,
     pub virtual_address: usize,
-    pub virtual_size: usize
-
+    pub virtual_size: usize,
+    pub interrupted: bool
 }
 
 impl Context {
@@ -44,7 +71,8 @@ impl Context {
             fx: alloc(512),
             physical_address: 0,
             virtual_address: 0,
-            virtual_size: 0
+            virtual_size: 0,
+            interrupted: false
         };
 
         for i in 0..512 {
@@ -63,7 +91,8 @@ impl Context {
             fx: alloc(512),
             physical_address: 0,
             virtual_address: 0,
-            virtual_size: 0
+            virtual_size: 0,
+            interrupted: false
         };
 
         let ebp = ret.stack_ptr;
@@ -115,7 +144,7 @@ impl Context {
 
     pub unsafe fn push(&mut self, data: u32){
         self.stack_ptr -= 4;
-        *(self.stack_ptr as *mut u32) = data;
+        ptr::write(self.stack_ptr as *mut u32, data);
     }
 
     pub unsafe fn map(&mut self){
@@ -159,7 +188,7 @@ impl Context {
             : "{esi}"(other.fx)
             : "memory"
             : "intel", "volatile");
-        
+
         asm!("mov esp, [esi]
             popad
             popfd"
