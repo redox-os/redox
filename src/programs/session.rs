@@ -129,7 +129,7 @@ impl Session {
 
         //Not caught, can be caught by task bar
         if allow_catch {
-            if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y <= 16 {
+            if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y >= self.display.height as isize - 32 {
                 self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
             }
         }
@@ -145,8 +145,19 @@ impl Session {
                     self.display.image(Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
                 }
 
-                self.display.rect(Point::new(0, 0), Size::new(self.display.width, 18), Color::new(0, 0, 0));
-                self.display.text(Point::new(self.display.width as isize/ 2 - 3*8, 1), &String::from_str("Redox"), Color::new(255, 255, 255));
+                self.display.rect(Point::new(0, self.display.height as isize - 32), Size::new(self.display.width, 32), Color::new(0, 0, 0));
+                self.display.text(Point::new(8, self.display.height as isize - 24), &String::from_str("Redox"), Color::new(255, 255, 255));
+
+                for i in 0..self.windows.len() {
+                    match self.windows.get(i) {
+                        Option::Some(window_ptr) => {
+                            let chars = 16;
+                            self.display.rect(Point::new(5*8 + 2*8 + (chars*8 + 3*8) * i as isize, self.display.height as isize - 28), Size::new(chars as usize*8 + 2*8, 24), Color::new(128, 128, 128));
+                            self.display.text(Point::new(5*8 + 3*8 + (chars*8 + 3*8) * i as isize, self.display.height as isize - 24), &(**window_ptr).title.substr(0, chars as usize), Color::new(255, 255, 255));
+                        },
+                        Option::None => ()
+                    }
+                }
 
                 for reverse_i in 0..self.windows.len(){
                     let i = self.windows.len() - 1 - reverse_i;

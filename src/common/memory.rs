@@ -117,6 +117,8 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
             if cluster(i) == ptr {
                 size += CLUSTER_SIZE;
+            }else{
+                break;
             }
         }
     }
@@ -135,6 +137,8 @@ pub unsafe fn unalloc(ptr: usize){
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
             if cluster(i) == ptr {
                 set_cluster(i, 0);
+            }else{
+                break;
             }
         }
     }

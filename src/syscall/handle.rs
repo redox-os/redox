@@ -106,6 +106,9 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             let reenable = start_no_ints();
 
             (*::session_ptr).windows.insert(0, ebx as *mut Window);
+            (*::events_ptr).push(RedrawEvent {
+                redraw: REDRAW_ALL
+            }.to_event());
 
             end_no_ints(reenable);
         },
@@ -127,35 +130,15 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
 
                 if remove {
                     (*::session_ptr).windows.remove(i);
+                    (*::events_ptr).push(RedrawEvent {
+                        redraw: REDRAW_ALL
+                    }.to_event());
                 }
             }
 
             end_no_ints(reenable);
         },
-        SYS_YIELD => {
-            let reenable = start_no_ints();
-
-            let contexts = &*(*contexts_ptr);
-            let current_i = context_i;
-            context_i += 1;
-            if context_i >= contexts.len(){
-                context_i -= contexts.len();
-            }
-            if context_i != current_i {
-                match contexts.get(current_i){
-                    Option::Some(current) => match contexts.get(context_i) {
-                        Option::Some(next) => {
-                            current.remap(next);
-                            current.switch(next);
-                        },
-                        Option::None => ()
-                    },
-                    Option::None => ()
-                }
-            }
-
-            end_no_ints(reenable);
-        },
+        SYS_YIELD => context_switch(false),
         _ => ()
     }
 }
