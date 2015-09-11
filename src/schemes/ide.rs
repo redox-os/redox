@@ -45,18 +45,21 @@ impl SessionItem for IDE {
                 dbh(status);
 
                 outb(base + 0x2, status);
+                let new_status = inb(base + 0x2);
 
                 d(" to ");
-                dbh(inb(base + 0x2));
+                dbh(new_status);
 
-                if command & 1 == 1 && status & 1 == 0 {
-                    d(" DMA Command ");
-                    dbh(command);
+                d(" Command ");
+                dbh(command);
 
+                if command & 1 == 1 && new_status & 1 == 0 {
                     outb(base, 0);
 
                     d(" to ");
                     dbh(inb(base));
+
+                    d(" DMA COMPLETED");
 
                     let prdt = ind(base + 0x4) as usize;
                     outd(base + 0x4, 0);
@@ -69,9 +72,7 @@ impl SessionItem for IDE {
                         unalloc(prdt);
 
                         match self.requests.remove(0){
-                            Option::Some(request) => {
-                                (request.callback)(destination);
-                            },
+                            Option::Some(request) => (request.callback)(destination),
                             Option::None => ()
                         }
 
