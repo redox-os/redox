@@ -427,7 +427,14 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => syscall_handle(eax, ebx, ecx, edx),
-        0xFF => init(eax as usize, ebx as usize),
+        0xFF => {
+            init(eax as usize, ebx as usize);
+            loop {
+                asm!("sti");
+                asm!("hlt");
+                syscall_handle(SYS_YIELD, 0, 0, 0); // Context switch timer
+            }
+        }
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),
         0x2 => exception!("Non-maskable interrupt"),
