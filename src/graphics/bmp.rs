@@ -1,5 +1,7 @@
 use core::ops::Drop;
+use core::ptr;
 
+use common::debug::*;
 use common::memory::*;
 
 use graphics::color::*;
@@ -24,16 +26,60 @@ impl BMP {
         unsafe {
             if file_data > 0
                 && *(file_data as *const u8) == 'B' as u8
-                && *((file_data + 1) as *const u8) == 'M' as u8
+                && ptr::read((file_data + 1) as *const u8) == 'M' as u8
             {
-                let file_size = *((file_data + 0x2) as *const u32) as usize;
-                let offset = *((file_data + 0xA) as *const u32) as usize;
-                let width = *((file_data + 0x12) as *const u32) as usize;
-                let height = *((file_data + 0x16) as *const u32) as usize;
-                let depth = *((file_data + 0x1C) as *const u16) as usize;
+                let file_size = ptr::read((file_data + 0x2) as *const u32) as usize;
+                let offset = ptr::read((file_data + 0xA) as *const u32) as usize;
+                let header_size = ptr::read((file_data + 0xE) as *const u32) as usize;
+                d("Size ");
+                dd(header_size);
+                dl();
+                let width = ptr::read((file_data + 0x12) as *const u32) as usize;
+                d("Width ");
+                dd(width);
+                dl();
+                let height = ptr::read((file_data + 0x16) as *const u32) as usize;
+                d("Height ");
+                dd(height);
+                dl();
+                let depth = ptr::read((file_data + 0x1C) as *const u16) as usize;
+                d("Depth ");
+                dd(depth);
+                dl();
 
                 let bytes = (depth + 7)/8;
                 let row_bytes = (depth * width + 31)/32 * 4;
+
+                let mut red_mask = 0xFF0000;
+                let mut green_mask = 0xFF00;
+                let mut blue_mask = 0xFF;
+                let mut alpha_mask = 0xFF000000;
+                if ptr::read((file_data + 0x1E) as *const u32) == 3 {
+                    red_mask = ptr::read((file_data + 0x36) as *const u32) as usize;
+                    green_mask = ptr::read((file_data + 0x3A) as *const u32) as usize;
+                    blue_mask = ptr::read((file_data + 0x3E) as *const u32) as usize;
+                    alpha_mask = ptr::read((file_data + 0x42) as *const u32) as usize;
+                }
+
+                let mut red_shift = 0;
+                while red_mask > 0 && red_shift < 32 && (red_mask >> red_shift) & 1 == 0 {
+                    red_shift += 1;
+                }
+
+                let mut green_shift = 0;
+                while green_mask > 0 && green_shift < 32 && (green_mask >> green_shift) & 1 == 0 {
+                    green_shift += 1;
+                }
+
+                let mut blue_shift = 0;
+                while blue_mask > 0 && blue_shift < 32 && (blue_mask >> blue_shift) & 1 == 0 {
+                    blue_shift += 1;
+                }
+
+                let mut alpha_shift = 0;
+                while alpha_mask > 0 && alpha_shift < 32 && (alpha_mask >> alpha_shift) & 1 == 0 {
+                    alpha_shift += 1;
+                }
 
                 data = alloc(width * height * 4);
                 size = Size {
@@ -46,15 +92,19 @@ impl BMP {
 
                         let pixel_data;
                         if pixel_offset < file_size {
-                            pixel_data = *((file_data + pixel_offset) as *const u32);
+                            pixel_data = ptr::read((file_data + pixel_offset) as *const u32) as usize;
                         }else{
                             pixel_data = 0;
                         }
 
+                        let red = ((pixel_data & red_mask) >> red_shift) as u8;
+                        let green = ((pixel_data & green_mask) >> green_shift) as u8;
+                        let blue = ((pixel_data & blue_mask) >> blue_shift) as u8;
                         if bytes == 3 {
-                            *((data + (y*width + x)*4) as *mut u32) = Color::new((pixel_data >> 16) as u8, (pixel_data >> 8) as u8, pixel_data as u8).data;
+                            ptr::write((data + (y*width + x)*4) as *mut u32, Color::new(red, green, blue).data);
                         }else if bytes == 4 {
-                            *((data + (y*width + x)*4) as *mut u32) = Color::alpha((pixel_data >> 24) as u8, (pixel_data >> 16) as u8, (pixel_data >> 8) as u8, pixel_data as u8).data;
+                            let alpha = ((pixel_data & alpha_mask) >> alpha_shift) as u8;
+                            ptr::write((data + (y*width + x)*4) as *mut u32, Color::alpha(red, green, blue, alpha).data);
                         }
                     }
                 }
