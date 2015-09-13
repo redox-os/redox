@@ -105,36 +105,14 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
         SYS_WINDOW_CREATE => {
             let reenable = start_no_ints();
 
-            (*::session_ptr).windows.insert(0, ebx as *mut Window);
-            (*::events_ptr).push(RedrawEvent {
-                redraw: REDRAW_ALL
-            }.to_event());
+            (*::session_ptr).add_window(ebx as *mut Window);
 
             end_no_ints(reenable);
         },
         SYS_WINDOW_DESTROY => {
             let reenable = start_no_ints();
 
-            let mut i = 0;
-            while i < (*::session_ptr).windows.len() {
-                let mut remove = false;
-
-                match (*::session_ptr).windows.get(i) {
-                    Option::Some(window_ptr) => if *window_ptr == ebx as *mut Window {
-                        remove = true;
-                    }else{
-                        i += 1;
-                    },
-                    Option::None => break
-                }
-
-                if remove {
-                    (*::session_ptr).windows.remove(i);
-                    (*::events_ptr).push(RedrawEvent {
-                        redraw: REDRAW_ALL
-                    }.to_event());
-                }
-            }
+            (*::session_ptr).remove_window(ebx as *mut Window);
 
             end_no_ints(reenable);
         },

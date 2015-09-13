@@ -22,7 +22,8 @@ pub struct Window {
     pub content: Display,
     pub title_color: Color,
     pub border_color: Color,
-    pub shaded: bool,
+    pub focused: bool,
+    pub minimized: bool,
     dragging: bool,
     last_mouse_event: MouseEvent,
     events: Queue<Event>,
@@ -36,9 +37,10 @@ impl Window {
             size: size,
             title: title,
             content: Display::new(size.width, size.height),
-            title_color: Color::new(0, 0, 0),
-            border_color: Color::new(255, 255, 255),
-            shaded: false,
+            title_color: Color::new(255, 255, 255),
+            border_color: Color::new(64, 64, 64),
+            focused: false,
+            minimized: false,
             dragging: false,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -75,18 +77,28 @@ impl Window {
         }
     }
 
-    pub fn draw(&self, display: &Display){
-        display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
-
-        let mut cursor = Point::new(self.point.x, self.point.y - 17);
-        for c in self.title.chars() {
-            if cursor.x + 8 <= self.point.x + self.size.width as isize {
-                display.char(cursor, c, self.title_color);
-            }
-            cursor.x += 8;
+    pub fn draw(&mut self, display: &Display){
+        if self.focused {
+            self.border_color = Color::new(128, 128, 128);
+        }else{
+            self.border_color = Color::new(64, 64, 64);
         }
 
-        if !self.shaded {
+        if self.minimized {
+            self.title_color = Color::new(0, 0, 0);
+        }else{
+            self.title_color = Color::new(255, 255, 255);
+
+            display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
+
+            let mut cursor = Point::new(self.point.x, self.point.y - 17);
+            for c in self.title.chars() {
+                if cursor.x + 8 <= self.point.x + self.size.width as isize {
+                    display.char(cursor, c, self.title_color);
+                }
+                cursor.x += 8;
+            }
+
             display.rect(Point::new(self.point.x - 2, self.point.y), Size::new(2, self.size.height), self.border_color);
             display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize), Size::new(self.size.width + 4, 2), self.border_color);
             display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y), Size::new(2, self.size.height), self.border_color);
@@ -112,7 +124,7 @@ impl Window {
 
         if allow_catch {
             if mouse_event.left_button {
-                if ! self.shaded
+                if ! self.minimized
                     && mouse_event.x >= self.point.x - 2
                     && mouse_event.x < self.point.x + self.size.width as isize + 4
                     && mouse_event.y >= self.point.y - 18
@@ -135,7 +147,7 @@ impl Window {
             }
 
             if mouse_event.right_button {
-                if ! self.shaded
+                if ! self.minimized
                     && mouse_event.x >= self.point.x - 2
                     && mouse_event.x < self.point.x + self.size.width as isize + 4
                     && mouse_event.y >= self.point.y - 18
@@ -150,7 +162,7 @@ impl Window {
                     && mouse_event.y >= self.point.y - 18
                     && mouse_event.y < self.point.y
                 {
-                    self.shaded = !self.shaded;
+                    self.minimized = !self.minimized;
                     caught = true;
                 }
             }

@@ -126,7 +126,7 @@ impl SessionItem for FileManager {
                 },
                 EventOption::Mouse(mouse_event) => {
                     let mut redraw = false;
-                    if ! window.shaded {
+                    if ! window.minimized {
                         let mut i = 0;
                         let mut row = 0;
                         for file in self.files.iter() {
