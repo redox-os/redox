@@ -385,12 +385,20 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     //Start interrupts
     end_no_ints(true);
 
-    let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
+    {
+        let mut resource = URL::from_string(&"file:///oxygen/computer.bmp".to_string()).open();
 
-    let mut vec: Vec<u8> = Vec::new();
-    match resource.read_to_end(&mut vec) {
-        Option::Some(_) => session.background = BMP::from_data(vec.as_ptr() as usize),
-        Option::None => d("Background load error\n")
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        session.icon = BMP::from_data(vec.as_ptr() as usize)
+    }
+
+    {
+        let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        session.background = BMP::from_data(vec.as_ptr() as usize)
     }
 }
 

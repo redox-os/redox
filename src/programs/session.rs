@@ -13,6 +13,7 @@ pub struct Session {
     pub display: Display,
     pub background: BMP,
     pub cursor: BMP,
+    pub icon: BMP,
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
@@ -27,6 +28,7 @@ impl Session {
                 display: Display::root(),
                 background: BMP::new(),
                 cursor: BMP::new(),
+                icon: BMP::new(),
                 mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
@@ -129,7 +131,7 @@ impl Session {
 
         //Not caught, can be caught by task bar
         if allow_catch {
-            if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.y >= self.display.height as isize - 32 {
+            if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.x <= 56 && mouse_event.y >= self.display.height as isize - 32 {
                 self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
             }
         }
@@ -146,7 +148,11 @@ impl Session {
                 }
 
                 self.display.rect(Point::new(0, self.display.height as isize - 32), Size::new(self.display.width, 32), Color::new(0, 0, 0));
-                self.display.text(Point::new(8, self.display.height as isize - 24), &String::from_str("Redox"), Color::new(255, 255, 255));
+                if self.icon.data > 0 {
+                    self.display.image_alpha(Point::new(12, self.display.height as isize - 32), self.icon.data, self.icon.size);
+                }else{
+                    self.display.text(Point::new(8, self.display.height as isize - 24), &String::from_str("Redox"), Color::new(255, 255, 255));
+                }
 
                 for i in 0..self.windows.len() {
                     match self.windows.get(i) {
