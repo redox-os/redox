@@ -18,6 +18,7 @@ pub struct Session {
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
     pub windows: Vec<*mut Window>,
+    pub windows_ordered: Vec<*mut Window>,
     pub redraw: usize
 }
 
@@ -40,7 +41,54 @@ impl Session {
                 },
                 items: Vec::new(),
                 windows: Vec::new(),
+                windows_ordered: Vec::new(),
                 redraw: REDRAW_ALL
+            }
+        }
+    }
+
+    pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window){
+        self.windows.push(add_window_ptr);
+        self.windows_ordered.push(add_window_ptr);
+        self.redraw = max(self.redraw, REDRAW_ALL);
+    }
+
+    pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window){
+        let mut i = 0;
+        while i < self.windows.len() {
+            let mut remove = false;
+
+            match self.windows.get(i) {
+                Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
+                    remove = true;
+                }else{
+                    i += 1;
+                },
+                Option::None => break
+            }
+
+            if remove {
+                self.windows.remove(i);
+                self.redraw = max(self.redraw, REDRAW_ALL);
+            }
+        }
+
+        i = 0;
+        while i < self.windows_ordered.len() {
+            let mut remove = false;
+
+            match self.windows_ordered.get(i) {
+                Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
+                    remove = true;
+                }else{
+                    i += 1;
+                },
+                Option::None => break
+            }
+
+            if remove {
+                self.windows_ordered.remove(i);
+                self.redraw = max(self.redraw, REDRAW_ALL);
             }
         }
     }
@@ -94,26 +142,27 @@ impl Session {
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
-        match self.windows.get(0){
-            Option::Some(window_ptr) => {
-                unsafe{
-                    (**window_ptr).on_key(key_event);
-                    self.redraw = max(self.redraw, REDRAW_ALL);
-                }
-            },
-            Option::None => ()
+        if self.windows.len() > 0 {
+            match self.windows.get(self.windows.len() - 1){
+                Option::Some(window_ptr) => {
+                    unsafe{
+                        (**window_ptr).on_key(key_event);
+                        self.redraw = max(self.redraw, REDRAW_ALL);
+                    }
+                },
+                Option::None => ()
+            }
         }
     }
 
     fn on_mouse(&mut self, mouse_event: MouseEvent){
-        let mut catcher = 0;
-        let mut allow_catch = true;
-        for i in 0..self.windows.len() {
+        let mut catcher = -1;
+        for reverse_i in 0..self.windows.len() {
+            let i = self.windows.len() - 1 - reverse_i;
             match self.windows.get(i){
                 Option::Some(window_ptr) => unsafe{
-                    if (**window_ptr).on_mouse(mouse_event, allow_catch) {
-                        allow_catch = false;
-                        catcher = i;
+                    if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
+                        catcher = i as isize;
 
                         self.redraw = max(self.redraw, REDRAW_ALL);
                     }
@@ -122,17 +171,48 @@ impl Session {
             }
         }
 
-        if catcher > 0 && catcher < self.windows.len() {
-            match self.windows.remove(catcher){
-                Option::Some(window_ptr) => self.windows.insert(0, window_ptr),
-                Option::None => ()
+        //Not caught, can be caught by task bar
+        if catcher < 0 {
+            if mouse_event.left_button &&  !self.last_mouse_event.left_button && mouse_event.y >= self.display.height as isize - 32 {
+                if mouse_event.x <= 56 {
+                    self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
+                }else{
+                    for i in 0..self.windows_ordered.len() {
+                        let chars = 16;
+                        let x = 5*8 + 2*8 + (chars*8 + 3*8) * i as isize;
+                        let w = chars*8 + 2*8;
+                        if mouse_event.x >= x && mouse_event.x < x + w {
+                            match self.windows_ordered.get(i) {
+                                Option::Some(window_ptr) => unsafe {
+                                    for j in 0..self.windows.len() {
+                                        match self.windows.get(j){
+                                            Option::Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
+                                                if j == self.windows.len() - 1 {
+                                                    (**window_ptr).minimized = !(**window_ptr).minimized;
+                                                }else{
+                                                    catcher = j as isize;
+                                                    (**window_ptr).minimized = false;
+                                                }
+                                                break;
+                                            },
+                                            Option::None => break
+                                        }
+                                    }
+                                    self.redraw = max(self.redraw, REDRAW_ALL);
+                                },
+                                Option::None => ()
+                            }
+                            break;
+                        }
+                    }
+                }
             }
         }
 
-        //Not caught, can be caught by task bar
-        if allow_catch {
-            if mouse_event.left_button && !self.last_mouse_event.left_button && mouse_event.x <= 56 && mouse_event.y >= self.display.height as isize - 32 {
-                self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
+        if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
+            match self.windows.remove(catcher as usize){
+                Option::Some(window_ptr) => self.windows.push(window_ptr),
+                Option::None => ()
             }
         }
 
@@ -147,6 +227,16 @@ impl Session {
                     self.display.image(Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
                 }
 
+                for i in 0..self.windows.len(){
+                    match self.windows.get(i) {
+                        Option::Some(window_ptr) => {
+                            (**window_ptr).focused = i == self.windows.len() - 1;
+                            (**window_ptr).draw(&self.display);
+                        },
+                        Option::None => ()
+                    }
+                }
+
                 self.display.rect(Point::new(0, self.display.height as isize - 32), Size::new(self.display.width, 32), Color::new(0, 0, 0));
                 if self.icon.data > 0 {
                     self.display.image_alpha(Point::new(12, self.display.height as isize - 32), self.icon.data, self.icon.size);
@@ -154,21 +244,15 @@ impl Session {
                     self.display.text(Point::new(8, self.display.height as isize - 24), &String::from_str("Redox"), Color::new(255, 255, 255));
                 }
 
-                for i in 0..self.windows.len() {
-                    match self.windows.get(i) {
+                for i in 0..self.windows_ordered.len() {
+                    match self.windows_ordered.get(i) {
                         Option::Some(window_ptr) => {
                             let chars = 16;
-                            self.display.rect(Point::new(5*8 + 2*8 + (chars*8 + 3*8) * i as isize, self.display.height as isize - 28), Size::new(chars as usize*8 + 2*8, 24), Color::new(128, 128, 128));
-                            self.display.text(Point::new(5*8 + 3*8 + (chars*8 + 3*8) * i as isize, self.display.height as isize - 24), &(**window_ptr).title.substr(0, chars as usize), Color::new(255, 255, 255));
+                            let x = 5*8 + 2*8 + (chars*8 + 3*8) * i as isize;
+                            let w = chars*8 + 2*8;
+                            self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w as usize, 32), (**window_ptr).border_color);
+                            self.display.text(Point::new(x + 8, self.display.height as isize - 24), &(**window_ptr).title.substr(0, chars as usize), (**window_ptr).title_color);
                         },
-                        Option::None => ()
-                    }
-                }
-
-                for reverse_i in 0..self.windows.len(){
-                    let i = self.windows.len() - 1 - reverse_i;
-                    match self.windows.get(i) {
-                        Option::Some(window_ptr) => (**window_ptr).draw(&self.display),
                         Option::None => ()
                     }
                 }
