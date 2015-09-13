@@ -31,21 +31,9 @@ impl BMP {
                 let file_size = ptr::read((file_data + 0x2) as *const u32) as usize;
                 let offset = ptr::read((file_data + 0xA) as *const u32) as usize;
                 let header_size = ptr::read((file_data + 0xE) as *const u32) as usize;
-                d("Size ");
-                dd(header_size);
-                dl();
                 let width = ptr::read((file_data + 0x12) as *const u32) as usize;
-                d("Width ");
-                dd(width);
-                dl();
                 let height = ptr::read((file_data + 0x16) as *const u32) as usize;
-                d("Height ");
-                dd(height);
-                dl();
                 let depth = ptr::read((file_data + 0x1C) as *const u16) as usize;
-                d("Depth ");
-                dd(depth);
-                dl();
 
                 let bytes = (depth + 7)/8;
                 let row_bytes = (depth * width + 31)/32 * 4;
