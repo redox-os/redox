@@ -43,17 +43,14 @@ all: harddrive.bin
 doc: src/kernel.rs libcore.rlib liballoc.rlib
 	rustdoc --target i686-unknown-linux-gnu $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
 
-liballoc.rlib: src/liballoc/lib.rs libcore.rlib
+liballoc.rlib: rust/liballoc/lib.rs libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern core=libcore.rlib
 
-libcore.rlib: src/libcore/lib.rs
+libcore.rlib: rust/libcore/lib.rs
 	$(RUSTC) $(RUSTCFLAGS) --cfg stage0 --crate-type rlib -o $@ $<
 
 #libcollections.rlib: src/libcollections/lib.rs liballoc.rlib
 #	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib
-
-#libmopa.rlib: src/libmopa/lib.rs
-#	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --cfg 'feature = "no_std"'
 
 kernel.rlib: src/kernel.rs libcore.rlib liballoc.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
