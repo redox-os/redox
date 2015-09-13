@@ -67,7 +67,7 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib lib
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib libcore.rlib liballoc.rlib
 
 filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
-	$(FIND) filesystem -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
+	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin filesystem.gen
 	$(AS) -f bin -o $@ -isrc/ -ifilesystem/ $<

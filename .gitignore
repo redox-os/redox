@@ -5,4 +5,5 @@
 *.pcap
 *.rlib
 *.vdi
+.DS_Store
 setup/rust/
