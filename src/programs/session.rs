@@ -157,23 +157,9 @@ impl Session {
 
     fn on_mouse(&mut self, mouse_event: MouseEvent){
         let mut catcher = -1;
-        for reverse_i in 0..self.windows.len() {
-            let i = self.windows.len() - 1 - reverse_i;
-            match self.windows.get(i){
-                Option::Some(window_ptr) => unsafe{
-                    if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
-                        catcher = i as isize;
 
-                        self.redraw = max(self.redraw, REDRAW_ALL);
-                    }
-                },
-                Option::None => ()
-            }
-        }
-
-        //Not caught, can be caught by task bar
-        if catcher < 0 {
-            if mouse_event.left_button &&  !self.last_mouse_event.left_button && mouse_event.y >= self.display.height as isize - 32 {
+        if mouse_event.y >= self.display.height as isize - 32 {
+            if mouse_event.left_button &&  !self.last_mouse_event.left_button {
                 if mouse_event.x <= 56 {
                     self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
                 }else{
@@ -209,6 +195,20 @@ impl Session {
                             break;
                         }
                     }
+                }
+            }
+        }else{
+            for reverse_i in 0..self.windows.len() {
+                let i = self.windows.len() - 1 - reverse_i;
+                match self.windows.get(i){
+                    Option::Some(window_ptr) => unsafe{
+                        if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
+                            catcher = i as isize;
+
+                            self.redraw = max(self.redraw, REDRAW_ALL);
+                        }
+                    },
+                    Option::None => ()
                 }
             }
         }
