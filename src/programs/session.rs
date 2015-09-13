@@ -177,11 +177,15 @@ impl Session {
                 if mouse_event.x <= 56 {
                     self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
                 }else{
+                    let mut chars = 32;
+                    while chars > 4 && (chars*8 + 3*4) * self.windows.len() > self.display.width {
+                        chars -= 1;
+                    }
+
                     for i in 0..self.windows_ordered.len() {
-                        let chars = 16;
-                        let x = 5*8 + 2*8 + (chars*8 + 3*8) * i as isize;
-                        let w = chars*8 + 2*8;
-                        if mouse_event.x >= x && mouse_event.x < x + w {
+                        let x = (5*8 + 2*8 + (chars*8 + 3*4) * i) as isize;
+                        let w = (chars*8 + 2*4) as usize;
+                        if mouse_event.x >= x && mouse_event.x < x + w as isize {
                             match self.windows_ordered.get(i) {
                                 Option::Some(window_ptr) => unsafe {
                                     for j in 0..self.windows.len() {
@@ -244,14 +248,18 @@ impl Session {
                     self.display.text(Point::new(8, self.display.height as isize - 24), &String::from_str("Redox"), Color::new(255, 255, 255));
                 }
 
+                let mut chars = 32;
+                while chars > 4 && (chars*8 + 3*4) * self.windows.len() > self.display.width {
+                    chars -= 1;
+                }
+
                 for i in 0..self.windows_ordered.len() {
                     match self.windows_ordered.get(i) {
                         Option::Some(window_ptr) => {
-                            let chars = 16;
-                            let x = 5*8 + 2*8 + (chars*8 + 3*8) * i as isize;
-                            let w = chars*8 + 2*8;
-                            self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w as usize, 32), (**window_ptr).border_color);
-                            self.display.text(Point::new(x + 8, self.display.height as isize - 24), &(**window_ptr).title.substr(0, chars as usize), (**window_ptr).title_color);
+                            let x = (5*8 + 2*8 + (chars*8 + 3*4) * i) as isize;
+                            let w = (chars*8 + 2*4) as usize;
+                            self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w, 32), (**window_ptr).border_color);
+                            self.display.text(Point::new(x + 4, self.display.height as isize - 24), &(**window_ptr).title.substr(0, chars as usize), (**window_ptr).title_color);
                         },
                         Option::None => ()
                     }
