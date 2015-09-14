@@ -65,10 +65,8 @@ impl SessionItem for Application {
             loop {
                 match window.poll() {
                     EventOption::Key(key_event) => {
-                        if key_event.pressed{
-                            if key_event.scancode == 1 {
-                                break;
-                            }
+                        if key_event.pressed &&  key_event.scancode == K_ESC {
+                            break;
                         }
                     },
                     EventOption::None => break,
@@ -82,10 +80,8 @@ impl SessionItem for Application {
         loop {
             match window.poll() {
                 EventOption::Key(key_event) => {
-                    if key_event.pressed{
-                        if key_event.scancode == 1 {
-                            break;
-                        }
+                    if key_event.pressed && key_event.scancode == K_ESC {
+                        break;
                     }
                 },
                 EventOption::None => sys_yield(),

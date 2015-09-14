@@ -88,35 +88,34 @@ impl SessionItem for FileManager {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         match key_event.scancode {
-                            0x01 => break,
-                            0x47 => self.selected = 0,
-                            0x48 => if self.selected > 0 {
-                                        self.selected -= 1;
-                                    },
-                            0x4F => self.selected = self.files.len() as isize - 1,
-                            0x50 => if self.selected < self.files.len() as isize - 1 {
-                                        self.selected += 1;
-                                    },
-                            _ => ()
-                        }
-                        match key_event.character {
-                            '\0' => (),
-                            '\n' => {
-                                if self.selected >= 0 && self.selected < self.files.len() as isize {
-                                    match self.files.get(self.selected as usize) {
-                                        Option::Some(file) => OpenEvent{ url_string: "file:///".to_string() + file.clone() }.trigger(),
-                                        Option::None => ()
-                                    }
-                                }
+                            K_ESC => break,
+                            K_HOME => self.selected = 0,
+                            K_UP => if self.selected > 0 {
+                                self.selected -= 1;
                             },
-                            _ => {
-                                let mut i = 0;
-                                for file in self.files.iter() {
-                                    if file[0] == key_event.character {
-                                        self.selected = i;
-                                        break;
+                            K_END => self.selected = self.files.len() as isize - 1,
+                            K_DOWN => if self.selected < self.files.len() as isize - 1 {
+                                self.selected += 1;
+                            },
+                            _ => match key_event.character {
+                                '\0' => (),
+                                '\n' => {
+                                    if self.selected >= 0 && self.selected < self.files.len() as isize {
+                                        match self.files.get(self.selected as usize) {
+                                            Option::Some(file) => OpenEvent{ url_string: "file:///".to_string() + file.clone() }.trigger(),
+                                            Option::None => ()
+                                        }
                                     }
-                                    i += 1;
+                                },
+                                _ => {
+                                    let mut i = 0;
+                                    for file in self.files.iter() {
+                                        if file[0] == key_event.character {
+                                            self.selected = i;
+                                            break;
+                                        }
+                                        i += 1;
+                                    }
                                 }
                             }
                         }

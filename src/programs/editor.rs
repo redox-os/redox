@@ -135,11 +135,20 @@ impl SessionItem for Editor {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         match key_event.scancode {
-                            0x01 => break,
-                            0x3F => self.reload(&mut window),
-                            0x40 => self.save(&mut window),
-                            0x47 => self.offset = 0,
-                            0x48 => for i in 1..self.offset {
+                            K_ESC => break,
+                            K_BKSP => if self.offset > 0 {
+                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
+                                self.offset -= 1;
+                            },
+                            K_DEL => if self.offset < self.string.len() {
+                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
+                            },
+                            K_F5 => self.reload(&mut window),
+                            K_F6 => self.save(&mut window),
+                            K_HOME => self.offset = 0,
+                            K_UP => for i in 1..self.offset {
                                 match self.string[self.offset - i] {
                                     '\0' => break,
                                     '\n' => {
@@ -149,14 +158,14 @@ impl SessionItem for Editor {
                                     _ => ()
                                 }
                             },
-                            0x4B => if self.offset > 0 {
+                            K_LEFT => if self.offset > 0 {
                                         self.offset -= 1;
                                     },
-                            0x4D => if self.offset < self.string.len() {
+                            K_RIGHT => if self.offset < self.string.len() {
                                         self.offset += 1;
                                     },
-                            0x4F => self.offset = self.string.len(),
-                            0x50 => for i in self.offset + 1..self.string.len() {
+                            K_END => self.offset = self.string.len(),
+                            K_DOWN => for i in self.offset + 1..self.string.len() {
                                 match self.string[i] {
                                     '\0' => break,
                                     '\n' => {
@@ -166,24 +175,13 @@ impl SessionItem for Editor {
                                     _ => ()
                                 }
                             },
-                            0x53 => if self.offset < self.string.len() {
-                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                                self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
-                            },
-                            _ => ()
-                        }
-
-                        match key_event.character {
-                            '\x00' => (),
-                            '\x08' => if self.offset > 0 {
-                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                                self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
-                                self.offset -= 1;
-                            },
-                            _ => {
-                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
-                                self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
-                                self.offset += 1;
+                            _ => match key_event.character {
+                                '\0' => (),
+                                _ => {
+                                    window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                    self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
+                                    self.offset += 1;
+                                }
                             }
                         }
 
