@@ -41,7 +41,7 @@ impl SessionItem for Viewer {
         loop {
             match window.poll() {
                 EventOption::Key(key_event) => {
-                    if key_event.pressed && key_event.scancode == 1 {
+                    if key_event.pressed && key_event.scancode == K_ESC {
                         break;
                     }
                 },

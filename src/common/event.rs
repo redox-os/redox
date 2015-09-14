@@ -79,6 +79,33 @@ impl MouseEvent {
     }
 }
 
+pub const K_ESC: u8 = 0x01;
+pub const K_BKSP: u8 = 0x0E;
+pub const K_TAP: u8 = 0x0F;
+pub const K_CTRL: u8 = 0x1D;
+pub const K_ALT: u8 = 0x38;
+pub const K_F1: u8 = 0x3B;
+pub const K_F2: u8 = 0x3C;
+pub const K_F3: u8 = 0x3D;
+pub const K_F4: u8 = 0x3E;
+pub const K_F5: u8 = 0x3F;
+pub const K_F6: u8 = 0x40;
+pub const K_F7: u8 = 0x41;
+pub const K_F8: u8 = 0x42;
+pub const K_F9: u8 = 0x43;
+pub const K_F10: u8 = 0x44;
+pub const K_HOME: u8 = 0x47;
+pub const K_UP: u8 = 0x48;
+pub const K_PGUP: u8 = 0x49;
+pub const K_LEFT: u8 = 0x4B;
+pub const K_RIGHT: u8 = 0x4D;
+pub const K_END: u8 = 0x4F;
+pub const K_DOWN: u8 = 0x50;
+pub const K_PGDN: u8 = 0x51;
+pub const K_DEL: u8 = 0x53;
+pub const K_F11: u8 = 0x57;
+pub const K_F12: u8 = 0x58;
+
 #[derive(Copy, Clone)]
 pub struct KeyEvent {
     pub character: char,
