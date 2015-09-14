@@ -47,6 +47,7 @@ impl Editor {
             content.set(Color::alpha(0, 0, 0, 196));
 
             let scroll = self.scroll;
+
             let mut offset = 0;
 
             let mut col = -scroll.x;
@@ -54,6 +55,7 @@ impl Editor {
 
             let mut row = -scroll.y;
             let rows = content.height as isize / 16;
+
             for c in self.string.chars() {
                 if offset == self.offset{
                     if col >= 0 && col < cols && row >= 0 && row < rows{
@@ -62,12 +64,12 @@ impl Editor {
                         if col < 0 { //Too far to the left
                             self.scroll.x += col;
                         }else if col >= cols{ //Too far to the right
-                            self.scroll.x += col - cols;
+                            self.scroll.x += cols - col + 1;
                         }
                         if row < 0 { //Too far up
                             self.scroll.y += row;
                         }else if row >= rows{ //Too far down
-                            self.scroll.y += row - rows;
+                            self.scroll.y += rows - row + 1;
                         }
 
                         redraw = true;
@@ -96,12 +98,12 @@ impl Editor {
                     if col < 0 { //Too far to the left
                         self.scroll.x += col;
                     }else if col >= cols{ //Too far to the right
-                        self.scroll.x += cols - col;
+                        self.scroll.x += cols - col + 1;
                     }
                     if row < 0 { //Too far up
                         self.scroll.y += row;
                     }else if row >= rows{ //Too far down
-                        self.scroll.y += rows - row;
+                        self.scroll.y += rows - row + 1;
                     }
 
                     redraw = true;
@@ -148,32 +150,40 @@ impl SessionItem for Editor {
                             K_F5 => self.reload(&mut window),
                             K_F6 => self.save(&mut window),
                             K_HOME => self.offset = 0,
-                            K_UP => for i in 1..self.offset {
-                                match self.string[self.offset - i] {
-                                    '\0' => break,
-                                    '\n' => {
-                                        self.offset = self.offset - i;
-                                        break;
-                                    },
-                                    _ => ()
+                            K_UP => {
+                                let mut new_offset = 0;
+                                for i in 2..self.offset {
+                                    match self.string[self.offset - i] {
+                                        '\0' => break,
+                                        '\n' => {
+                                            new_offset = self.offset - i + 1;
+                                            break;
+                                        },
+                                        _ => ()
+                                    }
                                 }
+                                self.offset = new_offset;
                             },
                             K_LEFT => if self.offset > 0 {
-                                        self.offset -= 1;
-                                    },
+                                self.offset -= 1;
+                            },
                             K_RIGHT => if self.offset < self.string.len() {
-                                        self.offset += 1;
-                                    },
+                                self.offset += 1;
+                            },
                             K_END => self.offset = self.string.len(),
-                            K_DOWN => for i in self.offset + 1..self.string.len() {
-                                match self.string[i] {
-                                    '\0' => break,
-                                    '\n' => {
-                                        self.offset = i;
-                                        break;
-                                    },
-                                    _ => ()
+                            K_DOWN => {
+                                let mut new_offset = self.string.len();
+                                for i in self.offset..self.string.len() {
+                                    match self.string[i] {
+                                        '\0' => break,
+                                        '\n' => {
+                                            new_offset = i + 1;
+                                            break;
+                                        },
+                                        _ => ()
+                                    }
                                 }
+                                self.offset = new_offset;
                             },
                             _ => match key_event.character {
                                 '\0' => (),
