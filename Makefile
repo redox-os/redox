@@ -66,7 +66,7 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib lib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $*.rlib $*.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib libcore.rlib liballoc.rlib
 
-filesystem.gen: filesystem/httpd.bin filesystem/terminal.bin
+filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin filesystem.gen

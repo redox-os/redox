@@ -23,9 +23,9 @@ initialize:
 
 ;PIT Frequency
 ;If using nanoseconds, to minimize drift, one should find a frequency as close to an integer nanosecond value in wavelength
-;Divider	Hz													Nanoseconds											Properties
-;2685			444.38795779019242706393		2250286.00003631746492922946
-;5370			222.19397889509621353196		4500572.00007263492985856020		Best For Context Switching
+;Divider	Hz								Nanoseconds							Properties
+;2685		444.38795779019242706393		2250286.00003631746492922946		Best For Context Switching
+;5370		222.19397889509621353196		4500572.00007263492985856020
 ;21029		56.73981961418358774390			17624306.99991199998882825455
 ;23714		50.31549576902532962244			19874592.99994831745375667118
 ;26399		45.19798729749864262535			22124878.99998463491868476373
@@ -40,7 +40,7 @@ initialize:
 
 .pit:
 	;initialize the PIT
-	mov ax, 5370 ;this is the divider for the PIT
+	mov ax, 2685 ;this is the divider for the PIT
 	out 0x40, al
 	rol ax, 8
 	out 0x40, al

@@ -2,6 +2,7 @@ use alloc::boxed::*;
 
 use common::event::*;
 use common::resource::*;
+use common::time::*;
 
 use graphics::window::*;
 
@@ -30,6 +31,12 @@ pub fn sys_exit() {
 pub fn sys_open(url_ptr: *const URL, resource_ptr: *mut Box<Resource>){
     unsafe{
         syscall(SYS_OPEN, url_ptr as u32, resource_ptr as u32, 0);
+    }
+}
+
+pub fn sys_time(time_ptr: *mut Duration, realtime: bool){
+    unsafe{
+        syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
     }
 }
 

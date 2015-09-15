@@ -10,6 +10,7 @@ use common::event::*;
 use common::pio::*;
 use common::resource::*;
 use common::scheduler::*;
+use common::time::*;
 
 use graphics::color::*;
 use graphics::window::*;
@@ -75,6 +76,17 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             let url = &*(ebx as *const URL);
 
             ptr::write(ecx as *mut Box<Resource>, session.open(url));
+        },
+        SYS_TIME => {
+            let reenable = start_no_ints();
+
+            if ecx == 0 {
+                ptr::write(ebx as *mut Duration, ::clock_monotonic);
+            }else{
+                ptr::write(ebx as *mut Duration, ::clock_realtime);
+            }
+
+            end_no_ints(reenable);
         },
         SYS_TRIGGER => {
             let mut event = (*(ebx as *const Event)).clone();
