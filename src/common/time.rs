@@ -2,6 +2,8 @@ use core::ops::*;
 
 use common::string::*;
 
+use syscall::call::sys_time;
+
 pub const NANOS_PER_SEC: i32 = 1000000000;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -12,12 +14,12 @@ pub struct Duration {
 
 impl Duration {
     pub fn new(mut secs: i64, mut nanos: i32) -> Duration {
-        while nanos >= NANOS_PER_SEC {
+        while nanos >= NANOS_PER_SEC || (nanos > 0 && secs < 0) {
             secs += 1;
             nanos -= NANOS_PER_SEC;
         }
 
-        while nanos < 0 {
+        while nanos < 0 && secs > 0 {
             secs -= 1;
             nanos += NANOS_PER_SEC;
         }
@@ -26,6 +28,18 @@ impl Duration {
             secs: secs,
             nanos: nanos
         };
+    }
+
+    pub fn monotonic() -> Duration {
+        let mut ret = Duration::new(0, 0);
+        sys_time(&mut ret, false);
+        return ret;
+    }
+
+    pub fn realtime() -> Duration {
+        let mut ret = Duration::new(0, 0);
+        sys_time(&mut ret, true);
+        return ret;
     }
 
     //TODO: Format decimal

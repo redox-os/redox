@@ -19,7 +19,6 @@ use common::memory::*;
 use common::paging::*;
 use common::pio::*;
 use common::scheduler::*;
-use common::time::*;
 
 use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
@@ -162,7 +161,7 @@ static mut clock_monotonic: Duration = Duration {
 
 static PIT_DURATION: Duration = Duration {
     secs: 0,
-    nanos: 4500572
+    nanos: 2250286
 };
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
@@ -400,6 +399,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
         resource.read_to_end(&mut vec);
         session.background = BMP::from_data(vec.as_ptr() as usize)
     }
+
+    debug_draw = false;
+
+    session.redraw = max(session.redraw, REDRAW_ALL);
 }
 
 fn dr(reg: &str, value: u32){
