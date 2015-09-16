@@ -2,18 +2,6 @@ use programs::common::*;
 
 use graphics::bmp::*;
 
-pub fn sleep(duration: Duration){
-    let start_time = Duration::monotonic();
-    loop {
-        let elapsed = Duration::monotonic() - start_time;
-        if elapsed > duration {
-            break;
-        }else{
-            sys_yield();
-        }
-    }
-}
-
 pub struct Sprite {
     point: Point,
     image: BMP
@@ -130,10 +118,7 @@ impl SessionItem for Application {
                 }.trigger();
             }
 
-            sleep(Duration {
-                secs: 0,
-                nanos: 1000000000/120
-            });
+            Duration::new(0, 1000000000/120).sleep();
         }
     }
 }
