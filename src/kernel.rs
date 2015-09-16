@@ -14,6 +14,8 @@
 
 extern crate alloc;
 
+use audio::wav::*;
+
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
@@ -54,6 +56,7 @@ use syscall::handle::*;
 
 mod audio {
     pub mod intelhda;
+    pub mod wav;
 }
 
 mod common {
@@ -414,8 +417,10 @@ unsafe fn init(font_data: usize, cursor_data: usize){
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
+        let wav = WAV::from_data(&vec);
+
         let mut audio = URL::from_string(&"hda://".to_string()).open();
-        audio.write(vec.as_slice());
+        audio.write(wav.data.as_slice());
     }
 }
 
