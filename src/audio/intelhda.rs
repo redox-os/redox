@@ -78,9 +78,12 @@ impl Resource for IntelHDAResource {
 
             dl();
 
-            let stream = &mut *((self.base + 0x80 + oss * 0x20) as *mut Stream);
+            let stream = &mut *((self.base + 0x80 + iss * 0x20) as *mut Stream);
 
             d("Output Stream");
+
+            d(" SizeOf ");
+            dd(size_of::<Stream>());
 
             stream.interrupt = 1;
             loop {
@@ -112,30 +115,75 @@ impl Resource for IntelHDAResource {
             d(" Format ");
             dh(stream.format as usize);
 
-            stream.cbl = (buf.len()/2) as u32;
+            let bd_addr = alloc(buf.len());
+            let bd_size = alloc_size(bd_addr);
+
+            ::memset(bd_addr as *mut u8, 0, bd_size);
+            ::memcpy(bd_addr as *mut u8, buf.as_ptr(), buf.len());
 
             let bdl = alloc(2 * size_of::<BD>()) as *mut BD;
-            (*bdl).addr = alloc(buf.len()) as u32;
-            (*bdl).addru = 0;
-            (*bdl).len = buf.len() as u32;
-            (*bdl).ioc = 1;
-            ::memcpy((*bdl).addr as *mut u8, buf.as_ptr(), buf.len());
-
-            (*bdl.offset(1)).addr = 0;
-            (*bdl.offset(1)).addru = 0;
-            (*bdl.offset(1)).len = 0;
-            (*bdl.offset(1)).ioc = 0;
+            write(bdl, BD {
+                addr: bd_addr as u32,
+                addru: 0,
+                len: bd_size as u32,
+                ioc: 1
+            });
+            write(bdl.offset(1), BD {
+                addr: bd_addr as u32,
+                addru: 0,
+                len: bd_size as u32,
+                ioc: 1
+            });
 
             stream.bdlpl = bdl as u32;
 
-            stream.lvi = 1;
+            stream.cbl = (bd_size * 2) as u32;
 
-            stream.interrupt = 1 << 1;
+            d(" CBL ");
+            dd(stream.cbl as usize);
+
+            stream.lvi = 1;
+            d(" LVI ");
+            dd(stream.lvi as usize);
+
+            stream.interrupt = 1 << 2 | 1 << 1;
 
             d(" Interrupt ");
             dh(stream.interrupt as usize);
 
             dl();
+
+            loop {
+                d(" Interrupt ");
+                dh(stream.interrupt as usize);
+
+                d(" Control ");
+                dh(stream.control as usize);
+
+                d(" Status ");
+                dh(stream.status as usize);
+
+                d(" LPIB ");
+                dd(stream.lpib as usize);
+                dl();
+
+                if stream.status & 4 == 4 {
+                    break;
+                }
+                Duration::new(1, 0).sleep();
+            }
+
+            d("Finished\n");
+            stream.interrupt = 0;
+            /*
+            stream.control = 0;
+            stream.status = 0;
+            stream.cbl = 0;
+            stream.lvi = 0;
+            stream.bdlpl = 0;
+            unalloc(bd_addr);
+            unalloc(bdl as usize);
+            */
 
             return Option::Some(buf.len());
         }
@@ -346,7 +394,7 @@ impl IntelHDA {
             return read(rirb_ptr.offset(rirb_i as isize));
         };
 
-        let mut output_stream_id = 1 << 4;
+        let mut output_stream_id = 1;
 
         let root_nodes_packed = cmd(0xF0004);
         let root_nodes_start = (root_nodes_packed >> 16) as u32;
@@ -401,6 +449,16 @@ impl IntelHDA {
 
                         d("        Output Stream (After) ");
                         dh(cmd(w_node << 20 | 0xF0600) as usize);
+                        dl();
+
+                        d("        Format (Before) ");
+                        dh(cmd(w_node << 20 | 0xA0000) as usize);
+                        dl();
+
+                        cmd(w_node << 20 | 0x20000 | 1 << 14 | 0b001 << 4 | 0b0001);
+
+                        d("        Format (After) ");
+                        dh(cmd(w_node << 20 | 0xA0000) as usize);
                         dl();
 
                         d("        Amplifier Gain/Mute (Before) ");
