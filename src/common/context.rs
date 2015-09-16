@@ -18,23 +18,25 @@ pub unsafe fn context_switch(interrupted: bool){
     let reenable = start_no_ints();
 
     let contexts = &*(*contexts_ptr);
-    let current_i = context_i;
-    context_i += 1;
-    if context_i >= contexts.len(){
-        context_i -= contexts.len();
-    }
-    if context_i != current_i {
-        match contexts.get(current_i){
-            Option::Some(current) => match contexts.get(context_i) {
-                Option::Some(next) => {
-                    current.interrupted = interrupted;
-                    next.interrupted = false;
-                    current.remap(next);
-                    current.switch(next);
+    if contexts.len() >= 2 {
+        let current_i = context_i;
+        context_i += 1;
+        if context_i >= contexts.len(){
+            context_i -= contexts.len();
+        }
+        if context_i != current_i {
+            match contexts.get(current_i){
+                Option::Some(current) => match contexts.get(context_i) {
+                    Option::Some(next) => {
+                        current.interrupted = interrupted;
+                        next.interrupted = false;
+                        current.remap(next);
+                        current.switch(next);
+                    },
+                    Option::None => ()
                 },
                 Option::None => ()
-            },
-            Option::None => ()
+            }
         }
     }
 

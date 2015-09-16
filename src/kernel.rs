@@ -52,6 +52,10 @@ use schemes::udp::*;
 use syscall::common::*;
 use syscall::handle::*;
 
+mod audio {
+    pub mod intelhda;
+}
+
 mod common {
     pub mod context;
     pub mod debug;
@@ -385,14 +389,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     end_no_ints(true);
 
     {
-        let mut resource = URL::from_string(&"file:///oxygen/computer.bmp".to_string()).open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-        session.icon = BMP::from_data(vec.as_ptr() as usize)
-    }
-
-    {
         let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
 
         let mut vec: Vec<u8> = Vec::new();
@@ -400,9 +396,27 @@ unsafe fn init(font_data: usize, cursor_data: usize){
         session.background = BMP::from_data(vec.as_ptr() as usize)
     }
 
+    {
+        let mut resource = URL::from_string(&"file:///oxygen/computer.bmp".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        session.icon = BMP::from_data(vec.as_ptr() as usize)
+    }
+
     debug_draw = false;
 
     session.redraw = max(session.redraw, REDRAW_ALL);
+
+    {
+        let mut resource = URL::from_string(&"file:///game/title.wav".to_string()).open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        let mut audio = URL::from_string(&"hda://".to_string()).open();
+        audio.write(vec.as_slice());
+    }
 }
 
 fn dr(reg: &str, value: u32){

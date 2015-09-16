@@ -1,3 +1,5 @@
+use audio::intelhda::*;
+
 use common::debug::*;
 use common::pci::*;
 use common::queue::*;
@@ -105,6 +107,19 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                         resources: Vec::new(),
                         inbound: Queue::new(),
                         outbound: Queue::new()
+                    };
+                    module.init();
+                    session.items.push(module);
+                },
+                0x2668 => {
+                    let base = pci_read(bus, slot, 0, 0x10);
+                    let module = box IntelHDA {
+                        bus: bus,
+                        slot: slot,
+                        func: func,
+                        base: base & 0xFFFFFFF0,
+                        memory_mapped: base & 1 == 0,
+                        irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
                     };
                     module.init();
                     session.items.push(module);
