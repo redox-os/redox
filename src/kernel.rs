@@ -412,7 +412,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.redraw = max(session.redraw, REDRAW_ALL);
 
     {
-        let mut resource = URL::from_string(&"file:///game/title.wav".to_string()).open();
+        let mut resource = URL::from_string(&"file:///test.wav".to_string()).open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);

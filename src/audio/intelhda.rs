@@ -110,7 +110,7 @@ impl Resource for IntelHDAResource {
             d(" Status ");
             dh(stream.status as usize);
 
-            stream.format = 1 << 14 | 0b001 << 4 | 0b0001;
+            stream.format = 0b0000000000010001;
 
             d(" Format ");
             dh(stream.format as usize);
@@ -442,8 +442,17 @@ impl IntelHDA {
                     0 => {
                         d("        Type: Output\n");
 
+                        d("        Sample Rate and Bits ");
+                        dh(cmd(w_node << 20 | 0xF000A) as usize);
+                        dl();
+
+                        d("        Sample Format ");
+                        dh(cmd(w_node << 20 | 0xF000B) as usize);
+                        dl();
+
                         d("        Output Stream (Before) ");
                         dh(cmd(w_node << 20 | 0xF0600) as usize);
+                        dl();
 
                         cmd(w_node << 20 | 0x70600 | (output_stream_id as u32) << 4);
 
@@ -455,12 +464,13 @@ impl IntelHDA {
                         dh(cmd(w_node << 20 | 0xA0000) as usize);
                         dl();
 
-                        cmd(w_node << 20 | 0x20000 | 1 << 14 | 0b001 << 4 | 0b0001);
+                        cmd(w_node << 20 | 0x20000 | 0b0000000000010001);
 
                         d("        Format (After) ");
                         dh(cmd(w_node << 20 | 0xA0000) as usize);
                         dl();
 
+                        /*
                         d("        Amplifier Gain/Mute (Before) ");
                         dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
                         d(" ");
@@ -474,6 +484,7 @@ impl IntelHDA {
                         d(" ");
                         dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
                         dl();
+                        */
 
                         output_stream_id += 1;
                     },
@@ -503,6 +514,7 @@ impl IntelHDA {
                         dh(cmd(w_node << 20 | 0xF0700) as usize);
                         dl();
 
+                        /*
                         d("        Pin EAPD/BTL (Before) ");
                         dh(cmd(w_node << 20 | 0xF0C00) as usize);
                         dl();
@@ -526,6 +538,7 @@ impl IntelHDA {
                         d(" ");
                         dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
                         dl();
+                        */
                     },
                     5 => d("        Type: Power\n"),
                     6 => d("        Type: Volume\n"),
