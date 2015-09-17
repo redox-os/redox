@@ -1,3 +1,5 @@
+use audio::wav::*;
+
 use programs::common::*;
 
 use graphics::bmp::*;
@@ -19,12 +21,11 @@ impl SessionItem for Application {
     fn main(&mut self, url: URL){
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Example Game (Loading)".to_string());
 
-
         let mut player;
         {
-            let mut image = URL::from_string(&"file:///game/ninjaroofront.bmp".to_string()).open();
+            let mut resource = URL::from_string(&"file:///game/ninjaroofront.bmp".to_string()).open();
             let mut bytes: Vec<u8> = Vec::new();
-            image.read_to_end(&mut bytes);
+            resource.read_to_end(&mut bytes);
             player = Sprite {
                 point: Point::new(200, 200),
                 image: unsafe{ BMP::from_data(bytes.as_ptr() as usize) }
@@ -32,6 +33,15 @@ impl SessionItem for Application {
         }
 
         window.title = "Example Game".to_string();
+
+        let sound;
+        {
+            let mut resource = URL::from_string(&"file:///game/wilhelm.wav".to_string()).open();
+            let mut bytes: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut bytes);
+
+            sound = WAV::from_data(&bytes);
+        }
 
         let mut keys: Vec<u8> = Vec::new();
         let mut redraw = true;
@@ -45,6 +55,10 @@ impl SessionItem for Application {
                                 K_ESC => {
                                     running = false;
                                     break;
+                                },
+                                K_CTRL => {
+                                    let mut resource = URL::from_string(&"audio://".to_string()).open();
+                                    resource.write(sound.data.as_slice());
                                 },
                                 _ => ()
                             }
