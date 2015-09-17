@@ -1,3 +1,4 @@
+use audio::ac97::*;
 use audio::intelhda::*;
 
 use common::debug::*;
@@ -110,6 +111,9 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
                     };
                     module.init();
                     session.items.push(module);
+                },
+                0x2415 => {
+                    session.items.push(AC97::new(bus, slot, func))
                 },
                 0x2668 => {
                     let base = pci_read(bus, slot, 0, 0x10);

@@ -55,6 +55,7 @@ use syscall::common::*;
 use syscall::handle::*;
 
 mod audio {
+    pub mod ac97;
     pub mod intelhda;
     pub mod wav;
 }
@@ -419,7 +420,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
         let wav = WAV::from_data(&vec);
 
-        let mut audio = URL::from_string(&"hda://".to_string()).open();
+        let mut audio = URL::from_string(&"audio://".to_string()).open();
         audio.write(wav.data.as_slice());
     }
 }
