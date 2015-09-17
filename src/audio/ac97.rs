@@ -56,6 +56,13 @@ impl Resource for AC97Resource {
             let glob_cnt = bus_master + 0x2C;
             let glob_sta = bus_master + 0x30;
 
+            loop {
+                if inb(po_cr) & 1 == 0 {
+                    break;
+                }
+                Duration::new(0, 10000000).sleep();
+            }
+
             outb(po_cr, 0);
 
             let mut bdl = ind(po_bdbar) as *mut BD;
@@ -93,7 +100,7 @@ impl Resource for AC97Resource {
                     if inb(po_civ) != lvi as u8 {
                         break;
                     }
-                    Duration::new(0, 100000000).sleep();
+                    Duration::new(0, 10000000).sleep();
                 }
 
                 dd(inb(po_civ) as usize);
@@ -140,7 +147,7 @@ impl Resource for AC97Resource {
                     outb(po_cr, 0);
                     break;
                 }
-                Duration::new(0, 100000000).sleep();
+                Duration::new(0, 10000000).sleep();
             }
 
             d("Finished ");
