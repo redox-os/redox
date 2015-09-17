@@ -78,6 +78,8 @@ harddrive.bin: src/loader.asm kernel.bin filesystem.gen
 virtualbox: harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete
+	echo "Delete Disk"
+	-$(RM) harddrive.vdi
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
@@ -132,6 +134,8 @@ qemu_tap_8254x: harddrive.bin
 virtualbox_tap: harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete
+	echo "Delete Disk"
+	-$(RM) harddrive.vdi
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
 	echo "Create Bridge"
