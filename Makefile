@@ -16,6 +16,7 @@ SED=sed
 SORT=sort
 VB=virtualbox
 VBM=VBoxManage
+VB_AUDIO="pulse"
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
@@ -29,12 +30,14 @@ ifeq ($(OS),Windows_NT)
 	SORT=windows/sort
 	VB="C:/Program Files/Oracle/VirtualBox/VirtualBox"
 	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
+	VB_AUDIO="dsound"
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 	    LD=i386-elf-ld
 			VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 			VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
+			VB_AUDIO="coreaudio"
 	endif
 endif
 
@@ -87,7 +90,7 @@ virtualbox: harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio pulse
+	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< harddrive.vdi
@@ -145,7 +148,7 @@ virtualbox_tap: harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio pulse
+	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< harddrive.vdi
