@@ -87,7 +87,7 @@ virtualbox: harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio oss
+	$(VBM) modifyvm Redox --audio pulse
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< harddrive.vdi
@@ -145,7 +145,7 @@ virtualbox_tap: harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio oss
+	$(VBM) modifyvm Redox --audio pulse
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< harddrive.vdi
