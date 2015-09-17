@@ -1,0 +1,191 @@
+use core::ptr::{read, write};
+
+use common::memory::*;
+use common::pci::*;
+use common::pio::*;
+use common::scheduler::*;
+
+use programs::common::*;
+
+struct BD {
+    ptr: u32,
+    samples: u32
+}
+
+struct AC97Resource {
+    audio: usize,
+    bus_master: usize
+}
+
+impl Resource for AC97Resource {
+    fn url(&self) -> URL {
+        return URL::from_string(&"audio://".to_string());
+    }
+
+    fn stat(&self) -> ResourceType {
+        return ResourceType::File;
+    }
+
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        unsafe {
+            let audio = self.audio as u16;
+            let master_volume = audio + 2;
+            let pcm_volume = audio + 0x18;
+
+            outw(master_volume, 0);
+            outw(pcm_volume, 0);
+
+            let bus_master = self.bus_master as u16;
+
+            let po_bdbar = bus_master + 0x10;
+            let po_civ = bus_master + 0x14;
+            let po_lvi = bus_master + 0x15;
+            let po_sr = bus_master + 0x16;
+            let po_picb = bus_master + 0x18;
+            let po_piv = bus_master + 0x1A;
+            let po_cr = bus_master + 0x1B;
+            let glob_cnt = bus_master + 0x2C;
+            let glob_sta = bus_master + 0x30;
+
+            let bdl = alloc(32 * size_of::<BD>()) as *mut BD;
+
+            outd(po_bdbar, bdl as u32);
+
+            let mut wait = false;
+            let mut position = 0;
+            let mut lvi = 0;
+            loop {
+                while wait {
+                    if inb(po_civ) != lvi as u8 {
+                        break;
+                    }
+                    Duration::new(0, 100000000).sleep();
+                }
+
+                dd(lvi as usize);
+                d(": ");
+                dd(position);
+                d(" / ");
+                dd(buf.len());
+                dl();
+
+                let bytes = min(65534 * 2, (buf.len() - position + 1));
+                let samples = bytes/2;
+
+                let buffer = alloc(bytes) as *mut u8;
+                ::memcpy(buffer, buf.as_ptr().offset(position as isize), bytes);
+
+                d("Buffer ");
+                dh(buffer as usize);
+                dl();
+
+                ptr::write(bdl.offset(lvi), BD {
+                    ptr: buffer as u32,
+                    samples: (samples & 0xFFFF) as u32
+                });
+
+                position += bytes;
+
+                if position >= buf.len() {
+                    break;
+                }
+
+                lvi += 1;
+
+                if lvi >= 32 {
+                    outb(po_lvi, 31);
+                    outb(po_cr, 1);
+
+                    wait = true;
+                    lvi = 0;
+                }
+            }
+
+            outb(po_lvi, lvi as u8);
+            outb(po_cr, 1);
+
+            loop {
+                if inb(po_civ) == lvi as u8 {
+                    outb(po_cr, 0);
+                    break;
+                }
+                Duration::new(0, 100000000).sleep();
+            }
+
+            d("Finished\n");
+        }
+
+        return Option::Some(buf.len());
+    }
+
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        return Option::None;
+    }
+
+    fn flush(&mut self) -> bool {
+        return false;
+    }
+}
+
+pub struct AC97 {
+    pub audio: usize,
+    pub bus_master: usize,
+    pub irq: u8
+}
+
+impl SessionItem for AC97 {
+    fn scheme(&self) -> String {
+        return "audio".to_string();
+    }
+
+    fn open(&mut self, url: &URL) -> Box<Resource> {
+        return box AC97Resource {
+            audio: self.audio,
+            bus_master: self.bus_master
+        };
+    }
+
+    fn on_irq(&mut self, irq: u8){
+        if irq == self.irq {
+            d("AC97 IRQ\n");
+        }
+    }
+
+    fn on_poll(&mut self){
+    }
+}
+
+impl AC97 {
+    pub unsafe fn new(bus: usize, slot: usize, func: usize) -> Box<AC97> {
+        pci_write(bus, slot, func, 0x04, pci_read(bus, slot, func, 0x04) | (1 << 2)); // Bus mastering
+
+        let mut module = box AC97 {
+            audio: pci_read(bus, slot, 0, 0x10) & 0xFFFFFFF0,
+            bus_master: pci_read(bus, slot, 0, 0x14) & 0xFFFFFFF0,
+            irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
+        };
+
+        module.init();
+
+        return module;
+    }
+
+    pub unsafe fn init(&self){
+        d("AC97 on: ");
+        dh(self.audio);
+        d(", ");
+        dh(self.bus_master);
+        d(", IRQ: ");
+        dbh(self.irq);
+
+        dl();
+    }
+}
