@@ -20,6 +20,9 @@ pub struct Application;
 impl SessionItem for Application {
     fn main(&mut self, url: URL){
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Example Game (Loading)".to_string());
+        RedrawEvent { redraw: REDRAW_ALL }.trigger();
+
+        let mut audio = URL::from_string(&"audio://".to_string()).open();
 
         let mut player;
         {
@@ -32,8 +35,6 @@ impl SessionItem for Application {
             };
         }
 
-        window.title = "Example Game".to_string();
-
         let sound;
         {
             let mut resource = URL::from_string(&"file:///game/wilhelm.wav".to_string()).open();
@@ -42,6 +43,9 @@ impl SessionItem for Application {
 
             sound = WAV::from_data(&bytes);
         }
+
+        window.title = "Example Game".to_string();
+        RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
         let mut keys: Vec<u8> = Vec::new();
         let mut redraw = true;
@@ -56,9 +60,12 @@ impl SessionItem for Application {
                                     running = false;
                                     break;
                                 },
-                                K_CTRL => {
-                                    let mut resource = URL::from_string(&"audio://".to_string()).open();
-                                    resource.write(sound.data.as_slice());
+                                K_DEL => {
+                                    window.title = "Example Game (Screaming)".to_string();
+                                    RedrawEvent { redraw: REDRAW_ALL }.trigger();
+                                    audio.write(sound.data.as_slice());
+                                    window.title = "Example Game".to_string();
+                                    RedrawEvent { redraw: REDRAW_ALL }.trigger();
                                 },
                                 _ => ()
                             }
@@ -126,13 +133,22 @@ impl SessionItem for Application {
                 player.draw(content);
 
                 content.flip();
-
-                RedrawEvent {
-                    redraw: REDRAW_ALL
-                }.trigger();
+                RedrawEvent { redraw: REDRAW_ALL }.trigger();
             }
 
             Duration::new(0, 1000000000/120).sleep();
+        }
+
+        window.title = "Example Game (Closing)".to_string();
+        RedrawEvent { redraw: REDRAW_ALL }.trigger();
+
+        {
+            let mut resource = URL::from_string(&"file:///game/game_over.wav".to_string()).open();
+            let mut bytes: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut bytes);
+
+            let game_over = WAV::from_data(&bytes);
+            audio.write(game_over.data.as_slice());
         }
     }
 }
