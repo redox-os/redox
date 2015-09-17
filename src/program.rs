@@ -22,6 +22,11 @@ use programs::common::*;
 #[path="APPLICATION_PATH"]
 mod application;
 
+#[path="src/audio"]
+mod audio {
+    pub mod wav;
+}
+
 #[path="src/common"]
 mod common {
     pub mod debug;

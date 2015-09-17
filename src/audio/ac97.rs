@@ -7,6 +7,7 @@ use common::scheduler::*;
 
 use programs::common::*;
 
+#[repr(packed)]
 struct BD {
     ptr: u32,
     samples: u32
@@ -55,13 +56,38 @@ impl Resource for AC97Resource {
             let glob_cnt = bus_master + 0x2C;
             let glob_sta = bus_master + 0x30;
 
-            let bdl = alloc(32 * size_of::<BD>()) as *mut BD;
+            outb(po_cr, 0);
 
-            outd(po_bdbar, bdl as u32);
+            let mut bdl = ind(po_bdbar) as *mut BD;
+            if bdl as usize == 0 {
+                bdl = alloc(32 * size_of::<BD>()) as *mut BD;
+                outd(po_bdbar, bdl as u32);
+            }
+
+            for i in 0..32 {
+                ptr::write(bdl.offset(i), BD {
+                    ptr: 0,
+                    samples: 0
+                });
+            }
 
             let mut wait = false;
             let mut position = 0;
-            let mut lvi = 0;
+
+
+            let mut lvi = inb(po_lvi);
+
+            let start_lvi;
+            if lvi == 0 {
+                start_lvi = 31;
+            }else{
+                start_lvi = lvi - 1;
+            }
+
+            lvi += 1;
+            if lvi >= 32 {
+                lvi = 0;
+            }
             loop {
                 while wait {
                     if inb(po_civ) != lvi as u8 {
@@ -70,6 +96,8 @@ impl Resource for AC97Resource {
                     Duration::new(0, 100000000).sleep();
                 }
 
+                dd(inb(po_civ) as usize);
+                d(" / ");
                 dd(lvi as usize);
                 d(": ");
                 dd(position);
@@ -80,15 +108,8 @@ impl Resource for AC97Resource {
                 let bytes = min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes/2;
 
-                let buffer = alloc(bytes) as *mut u8;
-                ::memcpy(buffer, buf.as_ptr().offset(position as isize), bytes);
-
-                d("Buffer ");
-                dh(buffer as usize);
-                dl();
-
-                ptr::write(bdl.offset(lvi), BD {
-                    ptr: buffer as u32,
+                ptr::write(bdl.offset(lvi as isize), BD {
+                    ptr: buf.as_ptr().offset(position as isize) as u32,
                     samples: (samples & 0xFFFF) as u32
                 });
 
@@ -101,26 +122,32 @@ impl Resource for AC97Resource {
                 lvi += 1;
 
                 if lvi >= 32 {
-                    outb(po_lvi, 31);
-                    outb(po_cr, 1);
-
-                    wait = true;
                     lvi = 0;
+                }
+
+                if lvi == start_lvi {
+                    outb(po_lvi, start_lvi);
+                    outb(po_cr, 1);
+                    wait = true;
                 }
             }
 
-            outb(po_lvi, lvi as u8);
+            outb(po_lvi, lvi);
             outb(po_cr, 1);
 
             loop {
-                if inb(po_civ) == lvi as u8 {
+                if inb(po_civ) == lvi {
                     outb(po_cr, 0);
                     break;
                 }
                 Duration::new(0, 100000000).sleep();
             }
 
-            d("Finished\n");
+            d("Finished ");
+            dd(inb(po_civ) as usize);
+            d(" / ");
+            dd(lvi as usize);
+            dl();
         }
 
         return Option::Some(buf.len());
