@@ -7,6 +7,7 @@ use common::vec::*;
 use network::common::*;
 
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct ICMPHeader {
     pub _type: u8,
     pub code: u8,

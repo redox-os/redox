@@ -3,11 +3,13 @@ use common::pci::*;
 
 use programs::common::*;
 
+#[repr(packed)]
 struct STE {
     pub ptr: u64,
     pub length: u64
 }
 
+#[repr(packed)]
 struct TRB {
     pub data: u64,
     pub status: u32,

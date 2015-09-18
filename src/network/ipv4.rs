@@ -7,6 +7,7 @@ use common::vec::*;
 use network::common::*;
 
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct IPv4Header {
     pub ver_hlen: u8,
     pub services: u8,

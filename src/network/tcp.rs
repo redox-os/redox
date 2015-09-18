@@ -7,6 +7,7 @@ use common::vec::*;
 use network::common::*;
 
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct TCPHeader {
     pub src: n16,
     pub dst: n16,

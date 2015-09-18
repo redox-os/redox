@@ -8,6 +8,7 @@ use network::scheme::*;
 
 use programs::common::*;
 
+#[repr(packed)]
 pub struct TXD {
     pub address_port: u16,
     pub status_port: u16,

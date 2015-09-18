@@ -15,6 +15,7 @@ use graphics::point::*;
 use graphics::size::*;
 
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct VBEModeInfo {
     attributes: u16,
     win_a: u8,

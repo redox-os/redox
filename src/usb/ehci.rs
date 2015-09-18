@@ -3,6 +3,7 @@ use common::pci::*;
 
 use programs::common::*;
 
+#[repr(packed)]
 struct SETUP {
     request_type: u8,
     request: u8,
@@ -11,6 +12,7 @@ struct SETUP {
     len: u16
 }
 
+#[repr(packed)]
 struct QTD {
     next: u32,
     next_alt: u32,
@@ -18,6 +20,7 @@ struct QTD {
     buffers: [u32; 5]
 }
 
+#[repr(packed)]
 struct QueueHead {
     next: u32,
     characteristics: u32,

@@ -2,6 +2,7 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::ptr;
 
+use common::debug::*;
 use common::memory::*;
 use common::string::*;
 use common::vec::*;
@@ -9,11 +10,13 @@ use common::vec::*;
 use drivers::disk::*;
 
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct Extent{
     pub block: u64,
     pub length: u64
 }
 
+#[repr(packed)]
 pub struct Header {
     pub signature: [u8; 4],
     pub version: u32,
@@ -21,6 +24,7 @@ pub struct Header {
     pub extents: [Extent; 16]
 }
 
+#[repr(packed)]
 pub struct Node {
     pub name: [u8; 256],
     pub extents: [Extent; 16]
@@ -50,7 +54,7 @@ impl UnFS {
             && self.header.version == 0xFFFFFFFF;
     }
 
-    pub fn node(&self, filename: String) -> Option<Node>{
+    pub fn node(&self, filename: &String) -> Option<Node>{
         let mut ret: Option<Node> = Option::None;
 
         unsafe{
@@ -61,7 +65,7 @@ impl UnFS {
                         for node_address in extent.block..extent.block + extent.length {
                             self.disk.read(node_address, 1, node_ptr as usize);
 
-                            if String::from_c_slice(&(*node_ptr).name) == filename {
+                            if String::from_c_slice(&(*node_ptr).name) == *filename {
                                 ret = Option::Some(ptr::read(node_ptr));
                                 break;
                             }
@@ -79,7 +83,7 @@ impl UnFS {
         return ret;
     }
 
-    pub fn list(&self, directory: String) -> Vec<String> {
+    pub fn list(&self, directory: &String) -> Vec<String> {
         let mut ret = Vec::<String>::new();
 
         unsafe{
@@ -91,7 +95,15 @@ impl UnFS {
                             self.disk.read(node_address, 1, node_ptr as usize);
 
                             let node_name = String::from_c_slice(&(*node_ptr).name);
-                            if node_name.starts_with(directory.clone()) {
+                            if directory.len() > 0 {
+                                if node_name.starts_with(directory.clone() + "/") {
+                                    directory.d();
+                                    dl();
+                                    node_name.d();
+                                    dl();
+                                    ret.push(node_name.substr(directory.len() + 1, node_name.len() - directory.len() - 1));
+                                }
+                            }else{
                                 ret.push(node_name);
                             }
                         }
