@@ -132,6 +132,18 @@ impl SessionItem for IDE {
                 request.destination = alloc(request.count as usize * 512);
                 if request.destination > 0 {
                     let reenable = start_no_ints();
+                    d("IDE PIO Request ");
+                    dd(request.sector as usize);
+                    d(" ");
+                    dd(request.count as usize);
+
+                    let disk = Disk::primary_master();
+                    disk.read(request.sector, request.count as u16, request.destination);
+                    (request.callback)(request.destination);
+
+                    dl();
+
+                    /* DMA
                     self.requests.push(request);
                     if self.requests.len() == 1 {
                         match self.requests.get(0) {
@@ -149,6 +161,7 @@ impl SessionItem for IDE {
                             Option::None => ()
                         }
                     }
+                    */
                     end_no_ints(reenable);
                 }
             }
