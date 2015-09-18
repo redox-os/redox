@@ -7,6 +7,7 @@ use programs::common::*;
 use programs::editor::*;
 use programs::executor::*;
 use programs::filemanager::*;
+use programs::player::*;
 use programs::viewer::*;
 
 pub struct Session {
@@ -295,6 +296,8 @@ impl Session {
                     self.item_main(box Editor::new(), url);
                 }else if url_string.ends_with(".bin".to_string()){
                     self.item_main(box Executor::new(), url);
+                }else if url_string.ends_with(".wav".to_string()){
+                    self.item_main(box Player::new(), url);
                 }else if url_string.ends_with(".bmp".to_string()){
                     self.item_main(box Viewer::new(), url);
                 }else{
