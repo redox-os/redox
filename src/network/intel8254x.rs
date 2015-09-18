@@ -54,6 +54,7 @@ const RDT: u32 = 0x2818;
 const RAL0: u32 = 0x5400;
 const RAH0: u32 = 0x5404;
 
+#[repr(packed)]
 struct RD {
     buffer: u64,
     length: u16,
@@ -75,6 +76,7 @@ const TDLEN: u32 = 0x3808;
 const TDH: u32 = 0x3810;
 const TDT: u32 = 0x3818;
 
+#[repr(packed)]
 struct TD {
     buffer: u64,
     length: u16,

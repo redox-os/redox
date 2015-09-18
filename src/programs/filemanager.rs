@@ -79,7 +79,7 @@ impl SessionItem for FileManager {
             }
         }
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, String::from_str("File Manager"));
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, "File Manager (".to_string() + url.to_string() + ")");
 
         self.draw_content(&mut window);
 
@@ -102,7 +102,7 @@ impl SessionItem for FileManager {
                                 '\n' => {
                                     if self.selected >= 0 && self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => OpenEvent{ url_string: "file:///".to_string() + file.clone() }.trigger(),
+                                            Option::Some(file) => OpenEvent{ url_string: url.to_string() + file.clone() }.trigger(),
                                             Option::None => ()
                                         }
                                     }

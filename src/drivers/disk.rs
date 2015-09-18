@@ -81,6 +81,7 @@ const ATA_REG_CONTROL: u16 = 0x0C;
 const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
 
+#[repr(packed)]
 pub struct PRDTE {
     pub ptr: u32,
     pub size: u16,
@@ -276,7 +277,7 @@ impl Disk {
             //Allocate PRDT
             let size = count as usize * 512;
             let entries = (size + 65535)/65536;
-            let prdt = alloc(size_of::<PRDTE>() * entries);
+            let prdt = alloc_aligned(size_of::<PRDTE>() * entries, 65536);
             for i in 0..entries {
                 if i == entries - 1 {
                     ptr::write((prdt as *mut PRDTE).offset(i as isize),  PRDTE {

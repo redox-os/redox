@@ -7,6 +7,7 @@ use common::vec::*;
 use network::common::*;
 
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct ARPHeader {
     pub htype: n16,
     pub ptype: n16,

@@ -5,6 +5,7 @@ use common::debug::*;
 use common::memory::*;
 use common::string::*;
 
+#[repr(packed)]
 pub struct ELFHeader {
     pub magic: [u8; 4],
     pub class: u8,
@@ -27,6 +28,7 @@ pub struct ELFHeader {
     pub sh_str_index: u16
 }
 
+#[repr(packed)]
 pub struct ELFSegment {
     pub _type: u32,
     pub off: u32,
@@ -38,6 +40,7 @@ pub struct ELFSegment {
     pub align: u32
 }
 
+#[repr(packed)]
 pub struct ELFSection {
     pub name: u32,
     pub _type: u32,
@@ -51,6 +54,7 @@ pub struct ELFSection {
     pub ent_len: u32
 }
 
+#[repr(packed)]
 pub struct ELFSymbol {
     pub name: u32,
     pub value: u32,

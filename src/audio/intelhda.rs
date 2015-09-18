@@ -6,6 +6,7 @@ use common::scheduler::*;
 
 use programs::common::*;
 
+#[repr(packed)]
 struct Stream {
     interrupt: u8,
     reserved: u8,
@@ -28,6 +29,7 @@ struct Stream {
     bdlpu: u32
 }
 
+#[repr(packed)]
 struct BD {
     addr: u32,
     addru: u32,
