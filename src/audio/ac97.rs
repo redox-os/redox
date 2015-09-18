@@ -41,8 +41,8 @@ impl Resource for AC97Resource {
             let master_volume = audio + 2;
             let pcm_volume = audio + 0x18;
 
-            outw(master_volume, 0);
-            outw(pcm_volume, 0);
+            outw(master_volume, 0x808);
+            outw(pcm_volume, 0x808);
 
             let bus_master = self.bus_master as u16;
 

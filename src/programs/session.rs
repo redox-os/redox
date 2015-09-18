@@ -143,7 +143,9 @@ impl Session {
     }
 
     fn on_key(&mut self, key_event: KeyEvent){
-        if self.windows.len() > 0 {
+        if key_event.pressed && key_event.scancode == K_F3 {
+            self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
+        }else if self.windows.len() > 0 {
             match self.windows.get(self.windows.len() - 1){
                 Option::Some(window_ptr) => {
                     unsafe{
