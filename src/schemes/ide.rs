@@ -61,18 +61,20 @@ impl SessionItem for IDE {
 
                     d(" DMA COMPLETED");
 
-                    let prdt = ind(base + 0x4) as usize;
+                    //WARNING: This should be stored in request.prdt
+                    let prdt = ind(base + 0x4) as usize & 0xFFFF0000;
                     outd(base + 0x4, 0);
 
                     d(" PRDT ");
                     dh(prdt);
 
                     if prdt > 0 {
+                        //WARNING: This should be compared to request.destination
                         let destination = (*(prdt as *const PRDTE)).ptr as usize;
                         unalloc(prdt);
 
                         match self.requests.remove(0){
-                            Option::Some(request) => (request.callback)(destination),
+                            Option::Some(request) => (request.callback)(request.destination),
                             Option::None => ()
                         }
 
