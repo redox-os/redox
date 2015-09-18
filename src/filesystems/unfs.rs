@@ -2,7 +2,6 @@ use core::clone::Clone;
 use core::mem::size_of;
 use core::ptr;
 
-use common::debug::*;
 use common::memory::*;
 use common::string::*;
 use common::vec::*;
@@ -97,10 +96,6 @@ impl UnFS {
                             let node_name = String::from_c_slice(&(*node_ptr).name);
                             if directory.len() > 0 {
                                 if node_name.starts_with(directory.clone() + "/") {
-                                    directory.d();
-                                    dl();
-                                    node_name.d();
-                                    dl();
                                     ret.push(node_name.substr(directory.len() + 1, node_name.len() - directory.len() - 1));
                                 }
                             }else{
