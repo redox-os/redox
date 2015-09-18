@@ -120,6 +120,7 @@ mod programs {
     pub mod editor;
     pub mod executor;
     pub mod filemanager;
+    pub mod player;
     pub mod session;
     pub mod viewer;
 }
@@ -411,18 +412,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     debug_draw = false;
 
     session.redraw = max(session.redraw, REDRAW_ALL);
-
-    {
-        let mut resource = URL::from_string(&"file:///test.wav".to_string()).open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        let wav = WAV::from_data(&vec);
-
-        let mut audio = URL::from_string(&"audio://".to_string()).open();
-        audio.write(wav.data.as_slice());
-    }
 }
 
 fn dr(reg: &str, value: u32){
