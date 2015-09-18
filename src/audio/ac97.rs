@@ -202,8 +202,8 @@ impl AC97 {
         pci_write(bus, slot, func, 0x04, pci_read(bus, slot, func, 0x04) | (1 << 2)); // Bus mastering
 
         let mut module = box AC97 {
-            audio: pci_read(bus, slot, 0, 0x10) & 0xFFFFFFF0,
-            bus_master: pci_read(bus, slot, 0, 0x14) & 0xFFFFFFF0,
+            audio: pci_read(bus, slot, func, 0x10) & 0xFFFFFFF0,
+            bus_master: pci_read(bus, slot, func, 0x14) & 0xFFFFFFF0,
             irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
         };
 
