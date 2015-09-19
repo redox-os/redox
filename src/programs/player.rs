@@ -1,7 +1,5 @@
 use audio::wav::*;
 
-use graphics::bmp::*;
-
 use programs::common::*;
 
 pub struct Player;
@@ -24,7 +22,7 @@ impl SessionItem for Player {
 
         let wav = WAV::from_data(&vec);
 
-        let mut audio = URL::from_string(&"audio://".to_string()).open();
+        let mut audio = URL::from_str("audio://").open();
         audio.write(wav.data.as_slice());
 
         window.title = "Player (".to_string() + url.to_string() + ")";

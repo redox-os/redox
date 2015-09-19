@@ -14,7 +14,7 @@ impl SessionItem for ARPScheme {
 impl ARPScheme {
     pub fn reply_loop(){
         loop {
-            let mut link = URL::from_string(&"ethernet:///806".to_string()).open();
+            let mut link = URL::from_str("ethernet:///806").open();
 
             let mut bytes: Vec<u8> = Vec::new();
             match link.read_to_end(&mut bytes) {

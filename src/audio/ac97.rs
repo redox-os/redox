@@ -20,7 +20,7 @@ struct AC97Resource {
 
 impl Resource for AC97Resource {
     fn url(&self) -> URL {
-        return URL::from_string(&"audio://".to_string());
+        return URL::from_str("audio://");
     }
 
     fn stat(&self) -> ResourceType {

@@ -43,7 +43,7 @@ struct IntelHDAResource {
 
 impl Resource for IntelHDAResource {
     fn url(&self) -> URL {
-        return URL::from_string(&"hda://".to_string());
+        return URL::from_str("hda://");
     }
 
     fn stat(&self) -> ResourceType {

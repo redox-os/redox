@@ -19,6 +19,6 @@ impl SessionItem for TimeScheme {
             end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_string(&"time://".to_string()), ResourceType::File, ("Time: ".to_string() + clock_realtime.to_string() + "\nUptime: " + clock_monotonic.to_string()).to_utf8());
+        return box VecResource::new(URL::from_str("time://"), ResourceType::File, ("Time: ".to_string() + clock_realtime.to_string() + "\nUptime: " + clock_monotonic.to_string()).to_utf8());
     }
 }

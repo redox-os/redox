@@ -144,7 +144,7 @@ impl Session {
 
     fn on_key(&mut self, key_event: KeyEvent){
         if key_event.pressed && key_event.scancode == K_F3 {
-            self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
+            self.item_main(box FileManager::new(), URL::from_str("file:///"));
         }else if self.windows.len() > 0 {
             match self.windows.get(self.windows.len() - 1){
                 Option::Some(window_ptr) => {
@@ -164,7 +164,7 @@ impl Session {
         if mouse_event.y >= self.display.height as isize - 32 {
             if mouse_event.left_button &&  !self.last_mouse_event.left_button {
                 if mouse_event.x <= 56 {
-                    self.item_main(box FileManager::new(), URL::from_string(&"file:///".to_string()));
+                    self.item_main(box FileManager::new(), URL::from_str("file:///"));
                 }else{
                     let mut chars = 32;
                     while chars > 4 && (chars*8 + 3*4) * self.windows.len() > self.display.width {

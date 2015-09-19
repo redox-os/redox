@@ -175,7 +175,7 @@ impl SessionItem for IPScheme {
                 };
             }else{
                 loop {
-                    let mut link = URL::from_string(&"ethernet:///800".to_string()).open();
+                    let mut link = URL::from_str("ethernet:///800").open();
 
                     let mut bytes: Vec<u8> = Vec::new();
                     match link.read_to_end(&mut bytes) {
