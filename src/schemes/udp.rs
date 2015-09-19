@@ -117,7 +117,7 @@ impl SessionItem for UDPScheme {
         }else if url.path().len() > 0 {
             let host_port = url.path().to_num() as u16;
             loop {
-                let mut ip = URL::from_string(&"ip:///11".to_string()).open();
+                let mut ip = URL::from_str("ip:///11").open();
 
                 let mut bytes: Vec<u8> = Vec::new();
                 match ip.read_to_end(&mut bytes) {

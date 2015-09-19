@@ -37,7 +37,7 @@ impl SessionItem for Application {
         println!("Starting HTTP Server".to_string());
 
         loop {
-            let mut resource = URL::from_string(&"tcp:///80".to_string()).open();
+            let mut resource = URL::from_str("tcp:///80").open();
             match resource.stat(){
                 ResourceType::File => {
                     println!("Request from ".to_string() + resource.url().to_string());
@@ -137,7 +137,7 @@ impl Application {
             html = html + "</nav>\n";
 
             if *path == "readme".to_string() {
-                let mut resource = URL::from_string(&"file:///README.md".to_string()).open();
+                let mut resource = URL::from_str("file:///README.md").open();
 
                 let mut resource_data: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut resource_data);

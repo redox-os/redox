@@ -86,7 +86,7 @@ impl SessionItem for EthernetScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource>{
-        let mut network = URL::from_string(&"network://".to_string()).open();
+        let mut network = URL::from_str("network://").open();
 
         if url.path().len() > 0 {
             let ethertype = url.path().to_num_radix(16) as u16;

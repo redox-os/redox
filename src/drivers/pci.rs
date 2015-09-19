@@ -14,6 +14,7 @@ use programs::session::*;
 use schemes::ide::*;
 
 use usb::ehci::*;
+use usb::uhci::*;
 use usb::xhci::*;
 
 pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: usize, class_id: usize, subclass_id: usize, interface_id: usize, vendor_code: usize, device_code: usize){
@@ -64,11 +65,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
             dh(base & 0xFFFFFFF0);
             dl();
         }else if interface_id == 0x00{
-            let base = pci_read(bus, slot, func, 0x20);
-
-            d("UHCI Controller on ");
-            dh(base & 0xFFFFFFF0);
-            dl();
+            session.items.push(UHCI::new(bus, slot, func));
         }else{
             d("Unknown USB interface version\n");
         }

@@ -22,11 +22,11 @@ impl SessionItem for Application {
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Example Game (Loading)".to_string());
         RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
-        let mut audio = URL::from_string(&"audio://".to_string()).open();
+        let mut audio = URL::from_str("audio://").open();
 
         let mut player;
         {
-            let mut resource = URL::from_string(&"file:///game/ninjaroofront.bmp".to_string()).open();
+            let mut resource = URL::from_str("file:///game/ninjaroofront.bmp").open();
             let mut bytes: Vec<u8> = Vec::new();
             resource.read_to_end(&mut bytes);
             player = Sprite {
@@ -37,7 +37,7 @@ impl SessionItem for Application {
 
         let sound;
         {
-            let mut resource = URL::from_string(&"file:///game/wilhelm.wav".to_string()).open();
+            let mut resource = URL::from_str("file:///game/wilhelm.wav").open();
             let mut bytes: Vec<u8> = Vec::new();
             resource.read_to_end(&mut bytes);
 
@@ -143,7 +143,7 @@ impl SessionItem for Application {
         RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
         {
-            let mut resource = URL::from_string(&"file:///game/game_over.wav".to_string()).open();
+            let mut resource = URL::from_str("file:///game/game_over.wav").open();
             let mut bytes: Vec<u8> = Vec::new();
             resource.read_to_end(&mut bytes);
 

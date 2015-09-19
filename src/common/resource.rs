@@ -57,6 +57,10 @@ impl URL {
         }
     }
 
+    pub fn from_str(url_str: &'static str) -> URL {
+        return URL::from_string(&url_str.to_string());
+    }
+
     pub fn from_string(url_string: &String) -> URL {
         URL {
             string: url_string.clone()
@@ -320,7 +324,7 @@ pub struct NoneResource;
 
 impl Resource for NoneResource {
     fn url(&self) -> URL {
-        return URL::from_string(&"none://".to_string());
+        return URL::from_str("none://");
     }
 
     fn stat(&self) -> ResourceType {

@@ -14,7 +14,7 @@ impl SessionItem for ICMPScheme {
 impl ICMPScheme {
     pub fn reply_loop(){
         loop{
-            let mut ip = URL::from_string(&"ip:///1".to_string()).open();
+            let mut ip = URL::from_str("ip:///1").open();
 
             let mut bytes: Vec<u8> = Vec::new();
             match ip.read_to_end(&mut bytes) {

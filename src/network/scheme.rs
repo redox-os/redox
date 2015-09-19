@@ -45,7 +45,7 @@ impl NetworkResource {
 
 impl Resource for NetworkResource {
     fn url(&self) -> URL {
-        return URL::from_string(&"network://".to_string());
+        return URL::from_str("network://");
     }
 
     fn stat(&self) -> ResourceType {

@@ -366,7 +366,7 @@ impl SessionItem for TCPScheme {
             let host_port = url.path().to_num() as u16;
 
             loop {
-                let mut ip = URL::from_string(&"ip:///6".to_string()).open();
+                let mut ip = URL::from_str("ip:///6").open();
 
                 let mut bytes: Vec<u8> = Vec::new();
                 match ip.read_to_end(&mut bytes) {

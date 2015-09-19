@@ -150,6 +150,7 @@ mod syscall {
 
 mod usb {
     pub mod ehci;
+    pub mod uhci;
     pub mod xhci;
 }
 
@@ -394,7 +395,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     end_no_ints(true);
 
     {
-        let mut resource = URL::from_string(&"file:///background.bmp".to_string()).open();
+        let mut resource = URL::from_str("file:///background.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -402,7 +403,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     }
 
     {
-        let mut resource = URL::from_string(&"file:///oxygen/computer.bmp".to_string()).open();
+        let mut resource = URL::from_str("file:///oxygen/computer.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);

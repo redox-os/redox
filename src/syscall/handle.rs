@@ -5,7 +5,6 @@ use core::cmp::min;
 use core::ptr;
 
 use common::context::*;
-use common::debug::*;
 use common::event::*;
 use common::pio::*;
 use common::resource::*;

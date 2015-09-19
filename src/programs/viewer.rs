@@ -24,15 +24,10 @@ impl SessionItem for Viewer {
             window.size = image.size;
             window.content = Display::new(image.size.width, image.size.height);
             window.content.image(Point::new(0, 0), image.data, image.size);
-
             window.content.flip();
-
-            RedrawEvent {
-                redraw: REDRAW_ALL
-            }.to_event().trigger();
-
-            window.title = "Viewer (".to_string() + url.to_string() + ")";
         }
+
+        window.title = "Viewer (".to_string() + url.to_string() + ")";
 
         RedrawEvent {
             redraw: REDRAW_ALL
