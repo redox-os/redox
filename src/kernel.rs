@@ -298,6 +298,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     contexts_ptr = 0 as *mut Box<Vec<Context>>;
     context_i = 0;
+    context_enabled = false;
 
     session_ptr = 0 as *mut Box<Session>;
 
@@ -323,6 +324,7 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
     contexts_ptr = alloc_type();
     ptr::write(contexts_ptr, box Vec::new());
+    (*contexts_ptr).push(Context::root());
 
     session_ptr = alloc_type();
     ptr::write(session_ptr, box Session::new());
@@ -372,7 +374,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);
 
-    (*contexts_ptr).push(Context::root());
     Context::spawn(box move ||{
         poll_loop();
     });
@@ -382,11 +383,9 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     Context::spawn(box move ||{
         redraw_loop();
     });
-
     Context::spawn(box move ||{
         ARPScheme::reply_loop();
     });
-
     Context::spawn(box move ||{
         ICMPScheme::reply_loop();
     });
@@ -479,6 +478,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x80 => syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize, ebx as usize);
+            context_enabled = true;
             idle_loop();
         }
         0x0 => exception!("Divide by zero exception"),

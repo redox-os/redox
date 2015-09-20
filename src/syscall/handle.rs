@@ -91,10 +91,8 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             let mut event = (*(ebx as *const Event)).clone();
 
             if event.code == 'm' {
-                event.a = max(0, min((*::session_ptr).display.width as isize - 1, (*::session_ptr).mouse_point.x + event.a));
-                event.b = max(0, min((*::session_ptr).display.height as isize - 1, (*::session_ptr).mouse_point.y + event.b));
-                (*::session_ptr).mouse_point.x = event.a;
-                (*::session_ptr).mouse_point.y = event.b;
+                (*::session_ptr).mouse_point.x = max(0, min((*::session_ptr).display.width as isize - 1, (*::session_ptr).mouse_point.x + event.a));
+                (*::session_ptr).mouse_point.y = max(0, min((*::session_ptr).display.height as isize - 1, (*::session_ptr).mouse_point.y + event.b));
                 (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
             }
             if event.code == 'k' && event.b == 0x3B && event.c > 0 {

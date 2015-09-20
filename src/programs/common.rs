@@ -4,6 +4,7 @@ pub use core::cmp::max;
 pub use core::cmp::min;
 pub use core::clone::Clone;
 pub use core::mem::size_of;
+pub use core::mem::size_of_val;
 pub use core::option::Option;
 pub use core::ptr;
 pub use core::sync::atomic::*;
