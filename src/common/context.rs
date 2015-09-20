@@ -13,12 +13,13 @@ pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
 pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
 pub static mut context_i: usize = 0;
+pub static mut context_enabled: bool = false;
 
 pub unsafe fn context_switch(interrupted: bool){
     let reenable = start_no_ints();
 
     let contexts = &*(*contexts_ptr);
-    if contexts.len() >= 2 {
+    if context_enabled {
         let current_i = context_i;
         context_i += 1;
         if context_i >= contexts.len(){
