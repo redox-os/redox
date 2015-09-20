@@ -1,7 +1,6 @@
 use core::ops::Drop;
 use core::ptr;
 
-use common::debug::*;
 use common::memory::*;
 
 use graphics::color::*;
@@ -20,6 +19,7 @@ impl BMP {
         }
     }
 
+    //TODO: make this not unsafe, like WAV
     pub fn from_data(file_data: usize) -> BMP {
         let data;
         let size;

@@ -6,7 +6,6 @@ use common::debug::*;
 use common::queue::*;
 use common::resource::*;
 use common::scheduler::*;
-use common::string::*;
 use common::vec::*;
 
 use syscall::call::sys_yield;
