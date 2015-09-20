@@ -1,13 +1,6 @@
-use core::ops::Drop;
-use core::ptr;
-
 use common::debug::*;
-use common::memory::*;
 use common::string::*;
 use common::vec::*;
-
-use graphics::color::*;
-use graphics::size::*;
 
 pub struct WAV {
     pub channels: u16,

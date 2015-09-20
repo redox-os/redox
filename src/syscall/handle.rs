@@ -19,7 +19,7 @@ use syscall::common::*;
 pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
     match eax {
         SYS_DEBUG => { //Debug
-            //Not interrupt-locked to avoid slowness (Maybe it should be?)
+            let reenable = start_no_ints();
 
             if ::debug_display as usize > 0 {
                 let display = &*(*::debug_display);
@@ -42,6 +42,8 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             }
 
             outb(0x3F8, ebx as u8);
+
+            end_no_ints(reenable);
         },
         SYS_EXIT => {
             let reenable = start_no_ints();
@@ -88,11 +90,15 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             end_no_ints(reenable);
         },
         SYS_TRIGGER => {
-            let mut event = (*(ebx as *const Event)).clone();
+            let mut event = ptr::read(ebx as *const Event);
+
+            let reenable = start_no_ints();
 
             if event.code == 'm' {
-                (*::session_ptr).mouse_point.x = max(0, min((*::session_ptr).display.width as isize - 1, (*::session_ptr).mouse_point.x + event.a));
-                (*::session_ptr).mouse_point.y = max(0, min((*::session_ptr).display.height as isize - 1, (*::session_ptr).mouse_point.y + event.b));
+                event.a = max(0, min((*::session_ptr).display.width as isize - 1, (*::session_ptr).mouse_point.x + event.a));
+                event.b = max(0, min((*::session_ptr).display.height as isize - 1, (*::session_ptr).mouse_point.y + event.b));
+                (*::session_ptr).mouse_point.x = event.a;
+                (*::session_ptr).mouse_point.y = event.b;
                 (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
             }
             if event.code == 'k' && event.b == 0x3B && event.c > 0 {
@@ -103,8 +109,6 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
                 ::debug_draw = false;
                 (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_ALL);
             }
-
-            let reenable = start_no_ints();
 
             //TODO: Dispatch to appropriate window
             (*::events_ptr).push(event);
