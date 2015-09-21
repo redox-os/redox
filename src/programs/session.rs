@@ -294,7 +294,7 @@ impl Session {
                 let url_string = open_event.url_string;
                 let url = URL::from_string(&url_string);
 
-                if url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
+                if url_string.ends_with(".asm".to_string()) || url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
                     self.item_main(box Editor::new(), url);
                 }else if url_string.ends_with(".bin".to_string()){
                     self.item_main(box Executor::new(), url);
@@ -307,7 +307,6 @@ impl Session {
                 }else{
                     d("No program found: ");
                     url.d();
-                    dl();
                 }
             }
             _ => ()

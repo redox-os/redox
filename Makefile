@@ -64,12 +64,19 @@ kernel.bin: kernel.rlib libcore.rlib liballoc.rlib
 kernel.list: kernel.bin
 	objdump -C -M intel -d $< > $@
 
+filesystem/linux.bin: filesystem/linux.asm src/program.ld
+	$(AS) -f elf -o linux.o $<
+	$(LD) $(LDARGS) -o $@ -T src/program.ld linux.o
+
+filesystem/linux_libc.bin: filesystem/linux_libc.c src/program.ld
+	gcc -static -m32 -o $@ $<
+
 filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib
 	$(SED) "s|APPLICATION_PATH|$<|" src/program.rs > $*.gen
 	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $*.rlib $*.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib libcore.rlib liballoc.rlib
 
-filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin
+filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin filesystem/linux.bin filesystem/linux_libc.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin filesystem.gen
