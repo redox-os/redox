@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 NEWLIB=newlib-2.2.0.20150824
 
 rm -rf bin ${NEWLIB} build-${NEWLIB} ${NEWLIB}.tar.gz
@@ -13,14 +16,14 @@ ln -s `which i386-elf-ranlib` bin/i386-elf-redox-ranlib
 export PATH=$PATH:${PWD}/bin
 
 curl ftp://sourceware.org/pub/newlib/${NEWLIB}.tar.gz -o ${NEWLIB}.tar.gz
-tar xvf ${NEWLIB}.tar.gz
+tar xf ${NEWLIB}.tar.gz
 
 cp -r newlib-redox/* ${NEWLIB}
 
 pushd ${NEWLIB}/newlib/libc/sys
-autoconf264
+autoconf
 cd redox
-autoreconf264
+autoreconf
 popd
 
 read -p "Verify"
