@@ -76,6 +76,11 @@ impl Window {
             Option::None => return EventOption::None
         }
     }
+    
+    pub fn redraw(&mut self){
+        self.content.flip();
+        RedrawEvent { redraw: REDRAW_ALL }.to_event().trigger();
+    }
 
     pub fn draw(&mut self, display: &Display){
         if self.focused {

@@ -19,6 +19,7 @@ pub use common::time::*;
 pub use common::vec::*;
 
 pub use graphics::color::*;
+pub use graphics::consolewindow::*;
 pub use graphics::display::*;
 pub use graphics::point::*;
 pub use graphics::size::*;

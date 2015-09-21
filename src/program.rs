@@ -13,7 +13,7 @@
 
 extern crate alloc;
 
-use application::Application;
+use application::main;
 
 use common::memory::*;
 
@@ -45,6 +45,7 @@ mod common {
 mod graphics {
     pub mod bmp;
     pub mod color;
+    pub mod consolewindow;
     pub mod display;
     pub mod point;
     pub mod size;
@@ -62,26 +63,9 @@ mod syscall {
     pub mod common;
 }
 
-//Class wrappers
-pub static mut application: *mut Box<Application> = 0 as *mut Box<Application>;
-
 #[no_mangle]
-pub unsafe fn entry(){
-    application = alloc_type();
-    if application as usize > 0 {
-        ptr::write(application, box Application::new());
-        (*application).main(URL::new());
-    }
-}
-
-#[no_mangle]
-pub unsafe fn exit(){
-    if application as usize > 0 {
-        drop(ptr::read(application));
-
-        unalloc(application as usize);
-        application = 0 as *mut Box<Application>;
-    }
+pub unsafe fn _start(){
+    main();
 }
 
 /* Externs { */

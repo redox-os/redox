@@ -53,16 +53,3 @@ impl SessionItem for Executor {
         }
     }
 }
-
-impl Drop for Executor {
-    fn drop(&mut self){
-        unsafe{
-            let exit = self.executable.symbol("exit".to_string());
-            if self.executable.can_call(exit){
-                //Rediculous call mechanism
-                let fn_ptr: *const usize = &exit;
-                (*(fn_ptr as *const extern "cdecl" fn()))();
-            }
-        }
-    }
-}
