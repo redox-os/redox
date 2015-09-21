@@ -11,8 +11,12 @@
 #undef errno
 extern int errno;
 
-void _exit(){
-
+void _exit(int code){
+    asm(
+		"int $0x80"
+		:
+        : "a"(1), "b"(code)
+	);
 }
 
 int close(int file){
@@ -59,7 +63,7 @@ int lseek(int file, int ptr, int dir) {
   return 0;
 }
 
-int open(const char *name, int flags, int mode) {
+int open(const char * file, int flags, ...) {
   return -1;
 }
 
@@ -71,26 +75,20 @@ caddr_t sbrk(int incr) {
   extern char _end;		/* Defined by the linker */
   static char *heap_end;
   char *prev_heap_end;
-
   if (heap_end == 0) {
     heap_end = &_end;
   }
   prev_heap_end = heap_end;
-  if (heap_end + incr > stack_ptr) {
-    write (1, "Heap and stack collision\n", 25);
-    abort ();
-  }
-
   heap_end += incr;
   return (caddr_t) prev_heap_end;
 }
 
-int stat(char *file, struct stat *st) {
-  st->st_mode = S_IFCHR;
+int stat(const char *__restrict path, struct stat *__restrict sbuf) {
+  sbuf->st_mode = S_IFCHR;
   return 0;
 }
 
-int times(struct tms *buf) {
+clock_t times(struct tms *buf) {
   return -1;
 }
 
@@ -105,14 +103,11 @@ int wait(int *status) {
 }
 
 int write(int file, char *ptr, int len) {
-  int todo;
-
-  for (todo = 0; todo < len; todo++) {
-    outbyte (*ptr++);
-  }
-  return len;
-}
-
-int gettimeofday(struct timeval *p, struct timezone *z){
-  return -1;
+    int ret;
+    asm(
+		"int $0x80"
+		: "=a"(ret)
+        : "a"(4), "b"(file), "c"(ptr), "d"(len)
+	);
+    return ret;
 }

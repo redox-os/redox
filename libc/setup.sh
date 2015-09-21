@@ -4,31 +4,46 @@ set -e
 
 NEWLIB=newlib-2.2.0.20150824
 
-rm -rf bin ${NEWLIB} build-${NEWLIB} ${NEWLIB}.tar.gz
+if [ ! -d i386-elf-redox ]
+then
+    mkdir i386-elf-redox
+    pushd i386-elf-redox
+        ln -s "`which ar`" i386-elf-redox-ar
+        ln -s "`which gcc-4.6`" i386-elf-redox-gcc
+        ln -s "`which ranlib`" i386-elf-redox-ranlib
+        ln -s "`which readelf`" i386-elf-redox-readelf
+    popd
+fi
 
-mkdir bin
-ln -s `which i386-elf-ar` bin/i386-elf-redox-ar
-ln -s `which i386-elf-as` bin/i386-elf-redox-as
-ln -s `which i386-elf-gcc` bin/i386-elf-redox-gcc
-ln -s `which i386-elf-ld` bin/i386-elf-redox-ld
-ln -s `which i386-elf-ranlib` bin/i386-elf-redox-ranlib
+export PATH="${PWD}/i386-elf-redox:$PATH"
 
-export PATH=$PATH:${PWD}/bin
+if [ ! -f "${NEWLIB}.tar.gz" ]
+then
+    curl "ftp://sourceware.org/pub/newlib/${NEWLIB}.tar.gz" -o "${NEWLIB}.tar.gz"
+fi
 
-curl ftp://sourceware.org/pub/newlib/${NEWLIB}.tar.gz -o ${NEWLIB}.tar.gz
-tar xf ${NEWLIB}.tar.gz
+if [ ! -d "${NEWLIB}" ]
+then
+    tar xvf "${NEWLIB}.tar.gz"
+fi
 
-cp -r newlib-redox/* ${NEWLIB}
+cp -r newlib-redox/* "${NEWLIB}"
 
-pushd ${NEWLIB}/newlib/libc/sys
-autoconf
-cd redox
-autoreconf
+pushd "${NEWLIB}/newlib/libc/sys"
+    aclocal-1.11 -I ../..
+    autoconf
+    automake-1.11 --cygnus Makefile
 popd
 
-read -p "Verify"
+pushd "${NEWLIB}/newlib/libc/sys/redox"
+    aclocal-1.11 -I ../../..
+    autoconf
+    automake-1.11 --cygnus Makefile
+popd
 
-mkdir build-${NEWLIB}
-cd build-${NEWLIB}
-../${NEWLIB}/configure --target=i386-elf-redox
-make all
+rm -rf "build-${NEWLIB}"
+mkdir "build-${NEWLIB}"
+pushd "build-${NEWLIB}"
+    "../${NEWLIB}/configure" --host=i686-linux-gnu --target=i386-elf-redox "CFLAGS=-m32" "LDFLAGS=-m32"
+    make all
+popd

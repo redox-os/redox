@@ -1,9 +1,8 @@
 #include <fcntl.h>
 
 extern void exit(int code);
-extern int main ();
+extern int main(int argc, char ** argv);
 
 void _start() {
-    int ex = main();
-    exit(ex);
+    exit(main(0, 0));
 }

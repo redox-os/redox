@@ -47,14 +47,15 @@ pub unsafe fn linux_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
             end_no_ints(reenable);
         },
         SYS_WRITE => {
-            let mut ptr = ecx as *const u8;
-            loop {
-                let b = ptr::read(ptr);
-                if b == 0 {
-                    break;
+            if ebx == 1 || ebx == 2 {
+                let mut ptr = ecx as *const u8;
+                for i in 0..edx as usize{
+                    db(ptr::read(ptr.offset(i as isize)));
                 }
-                db(b);
-                ptr = ptr.offset(1);
+            }else{
+                d("Write: Unknown File ");
+                dh(ebx as usize);
+                dl();
             }
         },
         _ => {

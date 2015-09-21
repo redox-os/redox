@@ -449,8 +449,8 @@ case "${host}" in
 	newlib_cflags="${newlib_cflags} -DMISSING_SYSCALL_NAMES"
 	;;
   i[3-7]86-*-redox*)
-  sys_dir=redox
-  ;;
+	sys_dir=redox
+	;;
   i[34567]86-*-sco*)
 	sys_dir=sysvi386
 	unix_dir=unix
