@@ -9,7 +9,7 @@ use graphics::window::*;
 use syscall::common::*;
 
 pub unsafe fn syscall(eax: u32, ebx: u32, ecx: u32, edx: u32){
-    asm!("int 0x80"
+    asm!("int 0x82"
         :
         : "{eax}"(eax), "{ebx}"(ebx), "{ecx}"(ecx), "{edx}"(edx)
         : "memory"

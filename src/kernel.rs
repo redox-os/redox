@@ -53,6 +53,7 @@ use schemes::udp::*;
 
 use syscall::common::*;
 use syscall::handle::*;
+use syscall::linux::*;
 
 mod audio {
     pub mod ac97;
@@ -147,6 +148,7 @@ mod syscall {
     pub mod call;
     pub mod common;
     pub mod handle;
+    pub mod linux;
 }
 
 mod usb {
@@ -476,7 +478,8 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x2C => (*session_ptr).on_irq(0xC), //mouse
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => syscall_handle(eax, ebx, ecx, edx),
+        0x80 => linux_handle(eax, ebx, ecx, edx),
+        0x82 => syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize, ebx as usize);
             context_enabled = true;
