@@ -9,7 +9,7 @@ use core::slice::SliceExt;
 
 use common::memory::*;
 
-struct VecIterator<'a, T: 'a> {
+pub struct VecIterator<'a, T: 'a> {
     vec: &'a Vec<T>,
     offset: usize
 }

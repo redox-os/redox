@@ -22,7 +22,7 @@ impl ToString for &'static str {
     }
 }
 
-struct Chars<'a> {
+pub struct Chars<'a> {
     string: &'a String,
     offset: usize
 }
@@ -40,7 +40,7 @@ impl <'a> Iterator for Chars<'a> {
     }
 }
 
-struct Split<'a> {
+pub struct Split<'a> {
     string: &'a String,
     offset: usize,
     seperator: String

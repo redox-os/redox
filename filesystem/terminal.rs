@@ -1,7 +1,9 @@
+use core::ops::DerefMut;
+
 use programs::common::*;
 
 /* Magic Macros { */
-use super::application;
+static mut application: *mut Application = 0 as *mut Application;
 
 macro_rules! exec {
     ($cmd:expr) => ({
@@ -488,13 +490,9 @@ impl Application {
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
                 content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
             }
-
-            content.flip();
-
-            RedrawEvent {
-                redraw: REDRAW_ALL
-            }.to_event().trigger();
         }
+
+        window.redraw();
 
         if row >= rows {
             self.scroll.y += row - rows + 1;
@@ -545,12 +543,9 @@ impl Application {
             }
         }
     }
-}
 
-impl SessionItem for Application {
-    fn main(&mut self, url: URL){
+    fn main(&mut self){
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Terminal".to_string());
-
         self.draw_content(&mut window);
 
         loop {
@@ -569,5 +564,15 @@ impl SessionItem for Application {
                 _ => ()
             }
         }
+    }
+}
+
+pub fn main(){
+    unsafe {
+        let mut app = box Application::new();
+        unsafe{
+            application = app.deref_mut();
+        }
+        app.main();
     }
 }
