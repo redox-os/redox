@@ -18,6 +18,8 @@ SECTIONS {
 		*(.rodata*)
 	} >highmem
 
+	_end = .;
+
 	/DISCARD/ : {
 		*(.comment)
 		*(.eh_frame)
