@@ -6,6 +6,8 @@ use common::string::*;
 use syscall::call::sys_time;
 use syscall::call::sys_yield;
 
+pub const NANOS_PER_MICRO: i32 = 1000;
+pub const NANOS_PER_MILLI: i32 = 1000000;
 pub const NANOS_PER_SEC: i32 = 1000000000;
 
 #[derive(Copy, Clone)]

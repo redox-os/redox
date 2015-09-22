@@ -60,7 +60,7 @@ impl Resource for AC97Resource {
                 if inb(po_cr) & 1 == 0 {
                     break;
                 }
-                Duration::new(0, 10000000).sleep();
+                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             }
 
             outb(po_cr, 0);
@@ -100,7 +100,7 @@ impl Resource for AC97Resource {
                     if inb(po_civ) != lvi as u8 {
                         break;
                     }
-                    Duration::new(0, 10000000).sleep();
+                    Duration::new(0, 10*NANOS_PER_MILLI).sleep();
                 }
 
                 dd(inb(po_civ) as usize);
@@ -147,7 +147,7 @@ impl Resource for AC97Resource {
                     outb(po_cr, 0);
                     break;
                 }
-                Duration::new(0, 10000000).sleep();
+                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             }
 
             d("Finished ");

@@ -1,3 +1,4 @@
+use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::{read, write};
 
 use common::context::*;
@@ -338,7 +339,7 @@ impl UHCI {
             element_ptr: setup_td as u32
         });
 
-        let frame = (inw(frnum) + 10) & 0x3FF;
+        let frame = (inw(frnum) + 2) & 0x3FF;
         write(frame_list.offset(frame as isize), queue_head as u32 | 2);
 
         loop {
@@ -350,7 +351,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 100000000).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -363,7 +364,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 100000000).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -419,7 +420,7 @@ impl UHCI {
             element_ptr: setup_td as u32
         });
 
-        let frame = (inw(frnum) + 10) & 0x3FF;
+        let frame = (inw(frnum) + 2) & 0x3FF;
         write(frame_list.offset(frame as isize), queue_head as u32 | 2);
 
         loop {
@@ -431,7 +432,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 100000000).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -444,7 +445,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 100000000).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -457,7 +458,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 100000000).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -509,60 +510,49 @@ impl UHCI {
                         let usbcmd = base;
                         let frnum = base + 0x6;
 
-                        /*
                         Context::spawn(box move ||{
                             let in_ptr = alloc(in_len) as *mut u8;
-                            for i in 0..in_len as isize {
-                                write(in_ptr.offset(i), 0);
-                            }
-
                             let in_td: *mut TD = alloc_type();
-                            write(in_td, TD {
-                                link_ptr: 1,
-                                ctrl_sts: 1 << 23,
-                                token: (in_len as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
-                                buffer: in_ptr as u32
-                            });
-
-                            let queue_head: *mut QH = alloc_type();
-                            write(queue_head, QH {
-                                head_ptr: 1,
-                                element_ptr: in_td as u32
-                            });
 
                             loop {
+                                for i in 0..in_len as isize {
+                                    volatile_store(in_ptr.offset(i), 0);
+                                }
+
+                                write(in_td, TD {
+                                    link_ptr: 1,
+                                    ctrl_sts: 1 << 25 | 1 << 23,
+                                    token: (in_len as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
+                                    buffer: in_ptr as u32
+                                });
+
                                 let reenable = start_no_ints();
-
-                                (*in_td).ctrl_sts = 1 << 23;
-                                (*queue_head).element_ptr = in_td as u32;
-
-                                let frame = (inw(frnum) + 10) & 0x3FF;
-                                write(frame_list.offset(frame as isize), queue_head as u32 | 2);
+                                    let frame = (inw(frnum) + 2) & 0x3FF;
+                                    volatile_store(frame_list.offset(frame as isize), in_td as u32);
+                                end_no_ints(reenable);
 
                                 loop {
-                                    if (*in_td).ctrl_sts & (1 << 23) == 0 {
+                                    let ctrl_sts = volatile_load(in_td).ctrl_sts;
+                                    if ctrl_sts & (1 << 23) == 0 {
                                         break;
                                     }
 
                                     sys_yield();
                                 }
 
-                                write(frame_list.offset(frame as isize), 1);
+                                volatile_store(frame_list.offset(frame as isize), 1);
 
-                                let buttons = read(in_ptr.offset(0) as *const u8) as usize;
-                                let x = read(in_ptr.offset(1) as *const u16) as usize;
-                                let y = read(in_ptr.offset(3) as *const u16) as usize;
+                                if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
+                                    let buttons = read(in_ptr.offset(0) as *const u8) as usize;
+                                    let x = read(in_ptr.offset(1) as *const u16) as usize;
+                                    let y = read(in_ptr.offset(3) as *const u16) as usize;
 
-                                let mouse_x = (x * (*::session_ptr).display.width)/32768;
-                                let mouse_y = (y * (*::session_ptr).display.height)/32768;
-                                (*::session_ptr).mouse_point.x = max(0, min((*::session_ptr).display.width as isize - 1, mouse_x as isize));
-                                (*::session_ptr).mouse_point.y = max(0, min((*::session_ptr).display.height as isize - 1, mouse_y as isize));
-                                (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
+                                    let mouse_x = (x * (*::session_ptr).display.width)/32768;
+                                    let mouse_y = (y * (*::session_ptr).display.height)/32768;
 
-                                if buttons > 0 {
-                                    d("Click ");
-                                    dd(buttons);
-                                    dl();
+                                    (*::session_ptr).mouse_point.x = max(0, min((*::session_ptr).display.width as isize - 1, mouse_x as isize));
+                                    (*::session_ptr).mouse_point.y = max(0, min((*::session_ptr).display.height as isize - 1, mouse_y as isize));
+
                                     MouseEvent {
                                         x: 0,
                                         y: 0,
@@ -573,15 +563,11 @@ impl UHCI {
                                     }.trigger();
                                 }
 
-                                end_no_ints(reenable);
-
-                                Duration::new(0, 100000000).sleep();
+                                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
                             }
 
-                            unalloc(queue_head as usize);
                             unalloc(in_td as usize);
                         });
-                        */
                     },
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
@@ -626,7 +612,7 @@ impl UHCI {
         d(" to ");
         dh(inw(usbcmd) as usize);
             let disable = start_ints();
-            Duration::new(1, 0).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         outw(usbcmd, 0);
         d(" to ");
@@ -672,7 +658,7 @@ impl UHCI {
             dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(1, 0).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 0);
@@ -680,7 +666,7 @@ impl UHCI {
             dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(1, 0).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 4);
@@ -701,7 +687,7 @@ impl UHCI {
             dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(1, 0).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 0);
@@ -709,7 +695,7 @@ impl UHCI {
             dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(1, 0).sleep();
+            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 4);

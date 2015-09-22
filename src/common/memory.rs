@@ -23,7 +23,7 @@ struct MemoryMapEntry {
 
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
-unsafe fn cluster(number: usize) -> usize{
+pub unsafe fn cluster(number: usize) -> usize{
     if number < CLUSTER_COUNT {
         return ptr::read((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize);
     }else{
@@ -31,17 +31,21 @@ unsafe fn cluster(number: usize) -> usize{
     }
 }
 
-unsafe fn set_cluster(number: usize, address: usize){
+pub unsafe fn set_cluster(number: usize, address: usize){
     if number < CLUSTER_COUNT {
         ptr::write((CLUSTER_ADDRESS + number * size_of::<usize>()) as *mut usize, address);
     }
 }
 
-unsafe fn address_to_cluster(address: usize) -> usize {
-    return (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>())/CLUSTER_SIZE;
+pub unsafe fn address_to_cluster(address: usize) -> usize {
+    if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() {
+        return (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>())/CLUSTER_SIZE;
+    }else {
+        return 0;
+    }
 }
 
-unsafe fn cluster_to_address(number: usize) -> usize {
+pub unsafe fn cluster_to_address(number: usize) -> usize {
     return CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number*CLUSTER_SIZE;
 }
 

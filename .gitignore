@@ -7,4 +7,5 @@
 *.rlib
 *.vdi
 .DS_Store
+libc/build/
 setup/rust/
