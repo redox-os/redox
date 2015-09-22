@@ -17,7 +17,7 @@ pub struct UHCI {
 impl SessionItem for UHCI {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            d("UHCI IRQ\n");
+            //d("UHCI IRQ\n");
         }
     }
 
@@ -612,7 +612,7 @@ impl UHCI {
         d(" to ");
         dh(inw(usbcmd) as usize);
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         outw(usbcmd, 0);
         d(" to ");
@@ -648,6 +648,10 @@ impl UHCI {
 
         dl();
 
+        let disable = start_ints();
+        Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+        end_ints(disable);
+
         d(" PORTSC1 ");
         dh(inw(portsc1) as usize);
         dl();
@@ -658,7 +662,7 @@ impl UHCI {
             dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 0);
@@ -666,7 +670,7 @@ impl UHCI {
             dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 4);
@@ -687,7 +691,7 @@ impl UHCI {
             dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 0);
@@ -695,7 +699,7 @@ impl UHCI {
             dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 4);

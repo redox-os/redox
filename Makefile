@@ -109,20 +109,18 @@ virtualbox: harddrive.bin
 qemu: harddrive.bin
 	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=network.pcap \
 			-usb -device usb-tablet \
+			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
 			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
-			#-device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
-			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 
 qemu_tap: harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
 	-qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=network.pcap \
 			-usb -device usb-tablet \
+			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
 			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
-			#-device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
-			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -131,10 +129,9 @@ qemu_tap_8254x: harddrive.bin
 	sudo ifconfig tap_redox 10.85.85.1 up
 	-qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=network.pcap \
 			-usb -device usb-tablet \
+			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
 			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
-			#-device usb-ehci,id=ehci -device usb-tablet,bus=ehci.0 \
-			#-device nec-usb-xhci,id=xhci -device usb-tablet,bus=xhci.0
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 

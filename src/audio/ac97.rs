@@ -189,7 +189,7 @@ impl SessionItem for AC97 {
 
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            d("AC97 IRQ\n");
+            //d("AC97 IRQ\n");
         }
     }
 

@@ -222,7 +222,7 @@ impl SessionItem for IntelHDA {
 
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            d("HDA IRQ\n");
+            //d("HDA IRQ\n");
         }
     }
 
