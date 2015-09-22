@@ -46,8 +46,8 @@ impl SessionItem for RTL8139 {
                 let isr = inw(base + 0x3E);
                 outw(base + 0x3E, isr);
 
-                dh(isr as usize);
-                dl();
+                //dh(isr as usize);
+                //dl();
             }
 
             self.sync();

@@ -64,6 +64,9 @@ impl XHCI {
         dbh(self.irq);
         dl();
 
+        return;
+
+        /*
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus master
 
         let cap_base = self.base;
@@ -230,18 +233,17 @@ impl XHCI {
                     command_ring_offset = 0;
                 }
 
-/*
-                *command_ring.offset(command_ring_offset as isize) = TRB::from_type(9);
-                command_ring_offset += 1;
-                if command_ring_offset >= command_ring_length{
-                    command_ring_offset = 0;
-                }
-*/
+                // *command_ring.offset(command_ring_offset as isize) = TRB::from_type(9);
+                //command_ring_offset += 1;
+                //if command_ring_offset >= command_ring_length{
+                //    command_ring_offset = 0;
+                //}
 
                 d("Write Doorbell\n");
                 let doorbell = db_base as *mut u32;
                 *doorbell = 0;
             }
         }
+        */
     }
 }

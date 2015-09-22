@@ -39,6 +39,11 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
                     display.scroll(16);
                     ::debug_point.y -= 16;
                 }
+                //If interrupts disabled, probably booting up
+                if !reenable && ::debug_draw && ::debug_redraw {
+                    ::debug_redraw = false;
+                    display.flip();
+                }
             }
 
             outb(0x3F8, ebx as u8);

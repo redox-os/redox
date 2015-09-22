@@ -1,5 +1,9 @@
+use core::intrinsics::{volatile_load, volatile_store};
+use core::ptr::{read, write};
+
 use common::memory::*;
 use common::pci::*;
+use common::scheduler::*;
 
 use programs::common::*;
 
@@ -81,9 +85,6 @@ impl EHCI {
         d(" IRQ: ");
         dbh(self.irq);
 
-        d(" IGNORING!!!\n");
-
-/*
         pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | 4); // Bus master
 
         let CAPLENGTH = self.base as *mut u8;
@@ -110,8 +111,7 @@ impl EHCI {
         dl();
 
         if eecp > 0 {
-            //if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 16)
-            {
+            if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 16) {
                 d("Taking Ownership");
                     d(" ");
                     dh(pci_read(self.bus, self.slot, self.func, eecp));
@@ -150,15 +150,15 @@ impl EHCI {
         let CONFIGFLAG = (opbase + 0x40) as *mut u32;
         let PORTSC = (opbase + 0x44) as *mut u32;
 
-        if *USBSTS & (1 << 12) == 0 {
+        if read(USBSTS) & (1 << 12) == 0 {
             d("Halting");
                 d(" CMD ");
-                dh(*USBCMD as usize);
+                dh(read(USBCMD) as usize);
 
                 d(" STS ");
-                dh(*USBSTS as usize);
+                dh(read(USBSTS) as usize);
 
-                *USBCMD &= 0xFFFFFFF0;
+                write(USBCMD, read(USBCMD) & 0xFFFFFFF0);
 
                 d(" CMD ");
                 dh(*USBCMD as usize);
@@ -166,144 +166,153 @@ impl EHCI {
                 d(" STS ");
                 dh(*USBSTS as usize);
             dl();
-/*
+
             d("Waiting");
                 loop{
-                    if *USBSTS & (1 << 12) == (1 << 12) {
+                    if volatile_load(USBSTS) & (1 << 12) == (1 << 12) {
                         break;
                     }
                 }
 
                 d(" CMD ");
-                dh(*USBCMD as usize);
+                dh(read(USBCMD) as usize);
 
                 d(" STS ");
-                dh(*USBSTS as usize);
+                dh(read(USBSTS) as usize);
             dl();
-*/
         }
 
         d("Resetting");
             d(" CMD ");
-            dh(*USBCMD as usize);
+            dh(read(USBCMD) as usize);
 
             d(" STS ");
-            dh(*USBSTS as usize);
+            dh(read(USBSTS) as usize);
 
-            *USBCMD |= (1 << 1);
+            write(USBCMD, read(USBCMD) | (1 << 1));
 
             d(" CMD ");
-            dh(*USBCMD as usize);
+            dh(read(USBCMD) as usize);
 
             d(" STS ");
-            dh(*USBSTS as usize);
+            dh(read(USBSTS) as usize);
         dl();
 
         d("Waiting");
             loop{
-                if *USBCMD & (1 << 1) == 0 {
+                if volatile_load(USBCMD) & (1 << 1) == 0 {
                     break;
                 }
             }
 
             d(" CMD ");
-            dh(*USBCMD as usize);
+            dh(read(USBCMD) as usize);
 
             d(" STS ");
-            dh(*USBSTS as usize);
+            dh(read(USBSTS) as usize);
         dl();
 
         d("Enabling");
             d(" CMD ");
-            dh(*USBCMD as usize);
+            dh(read(USBCMD) as usize);
 
             d(" STS ");
-            dh(*USBSTS as usize);
+            dh(read(USBSTS) as usize);
 
-            *USBINTR = 0b111111;
+            write(USBINTR, 0b111111);
 
-            *USBCMD |= 1;
-            *CONFIGFLAG = 1;
+            write(USBCMD, read(USBCMD) | 1);
+            write(CONFIGFLAG, 1);
 
             d(" CMD ");
-            dh(*USBCMD as usize);
+            dh(read(USBCMD) as usize);
 
             d(" STS ");
-            dh(*USBSTS as usize);
+            dh(read(USBSTS) as usize);
         dl();
 
         d("Waiting");
             loop{
-                if *USBSTS & (1 << 12) == 0 {
+                if volatile_load(USBSTS) & (1 << 12) == 0 {
                     break;
                 }
             }
 
             d(" CMD ");
-            dh(*USBCMD as usize);
+            dh(read(USBCMD) as usize);
 
             d(" STS ");
-            dh(*USBSTS as usize);
+            dh(read(USBSTS) as usize);
         dl();
 
+        let disable = start_ints();
+        Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+        end_ints(disable);
+
         for i in 0..ports as isize {
-            if *PORTSC.offset(i) & 1 == 1 {
+            dd(i as usize);
+            d(": ");
+            dh(read(PORTSC.offset(i)) as usize);
+            dl();
+            
+            if read(PORTSC.offset(i)) & 1 == 1 {
                 d("Device on port ");
                     dd(i as usize);
                     d(" ");
-                    dh(*PORTSC.offset(i) as usize);
+                    dh(read(PORTSC.offset(i)) as usize);
                 dl();
 
-                if *PORTSC.offset(i) & (1 << 1) == (1 << 1) {
+                if read(PORTSC.offset(i)) & (1 << 1) == (1 << 1) {
                     d("Connection Change");
                         d(" ");
-                        dh(*PORTSC.offset(i) as usize);
+                        dh(read(PORTSC.offset(i)) as usize);
 
-                        *PORTSC.offset(i) |= (1 << 1);
+                        write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 1));
 
                         d(" ");
-                        dh(*PORTSC.offset(i) as usize);
+                        dh(read(PORTSC.offset(i)) as usize);
                     dl();
                 }
 
-                if *PORTSC.offset(i) & (1 << 2) == 0 {
+                if read(PORTSC.offset(i)) & (1 << 2) == 0 {
                     d("Reset");
                         d(" ");
-                        dh(*PORTSC.offset(i) as usize);
+                        dh(read(PORTSC.offset(i)) as usize);
 
-                        *PORTSC.offset(i) |= (1 << 8);
-
-                        d(" ");
-                        dh(*PORTSC.offset(i) as usize);
-
-                        *PORTSC.offset(i) &= 0xFFFFFEFF;
+                        write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 8));
 
                         d(" ");
-                        dh(*PORTSC.offset(i) as usize);
+                        dh(read(PORTSC.offset(i)) as usize);
+
+                        write(PORTSC.offset(i), read(PORTSC.offset(i)) & 0xFFFFFEFF);
+
+                        d(" ");
+                        dh(read(PORTSC.offset(i)) as usize);
                     dl();
 
                     d("Wait");
                         d(" ");
-                        dh(*PORTSC.offset(i) as usize);
+                        dh(read(PORTSC.offset(i)) as usize);
 
                         loop{
-                            if *PORTSC.offset(i) & (1 << 8) == 0 {
+                            if volatile_load(PORTSC.offset(i)) & (1 << 8) == 0 {
                                 break;
                             }else{
-                                *PORTSC.offset(i) &= 0xFFFFFEFF;
+                                volatile_store(PORTSC.offset(i), volatile_load(PORTSC.offset(i)) & 0xFFFFFEFF);
                             }
                         }
 
                         d(" ");
-                        dh(*PORTSC.offset(i) as usize);
+                        dh(read(PORTSC.offset(i)) as usize);
                     dl();
                 }
 
-                if *PORTSC.offset(i) & (1 << 2) == (1 << 2) {
+                if read(PORTSC.offset(i)) & (1 << 2) == (1 << 2) {
                     d("Port Enabled ");
-                    dh(*PORTSC.offset(i) as usize);
+                    dh(read(PORTSC.offset(i)) as usize);
                     dl();
 
+                    /*
                     let out_qtd = alloc(size_of::<QTD>()) as *mut QTD;
                     ptr::write(out_qtd, QTD {
                         next: 1,
@@ -437,11 +446,11 @@ impl EHCI {
 
                     //Only detect one device for testing
                     break;
+                    */
                 }else{
                     d("Device not high-speed\n");
                 }
             }
         }
-        */
     }
 }
