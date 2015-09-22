@@ -119,7 +119,7 @@ pub fn main(){
 
         window.redraw();
 
-        Duration::new(0, 1000000000/120).sleep();
+        Duration::new(0, 10*NANOS_PER_MILLI).sleep();
     }
 
     window.title = "Example Game (Closing)".to_string();

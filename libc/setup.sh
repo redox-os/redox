@@ -4,6 +4,9 @@ set -e
 
 NEWLIB=newlib-2.2.0.20150824
 
+mkdir -p build
+cd build
+
 if [ ! -d i386-elf-redox ]
 then
     mkdir i386-elf-redox
@@ -27,7 +30,7 @@ then
     tar xvf "${NEWLIB}.tar.gz"
 fi
 
-cp -r newlib-redox/* "${NEWLIB}"
+cp -r ../newlib-redox/* "${NEWLIB}"
 
 pushd "${NEWLIB}/newlib/libc/sys"
     aclocal-1.11 -I ../..

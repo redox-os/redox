@@ -1,6 +1,7 @@
 #![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
@@ -313,8 +314,9 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     d(" bits");
     dl();
 
-    page_init();
+    page_bootstrap();
     cluster_init();
+    page_init();
 
     *FONTS = font_data;
 
@@ -432,6 +434,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
             d($name);
             dl();
 
+            dr("CONTEXT", context_i as u32);
             dr("INT", interrupt);
             dr("EIP", eip);
             dr("EFLAGS", eflags);
@@ -444,6 +447,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
             dr("EBP", ebp);
             dr("ESP", esp);
 
+            sys_exit();
             loop {
                 asm!("cli");
                 asm!("hlt");

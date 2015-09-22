@@ -172,7 +172,7 @@ impl Resource for IntelHDAResource {
                 if stream.status & 4 == 4 {
                     break;
                 }
-                Duration::new(1, 0).sleep();
+                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             }
 
             d("Finished\n");
@@ -298,7 +298,7 @@ impl IntelHDA {
         }
 
         let disable = start_ints();
-        Duration::new(0, 1000000).sleep();
+        Duration::new(0, 10*NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         d(" GCTL ");
