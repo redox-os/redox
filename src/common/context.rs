@@ -16,13 +16,30 @@ pub static mut context_enabled: bool = false;
 pub unsafe fn context_switch(interrupted: bool){
     let reenable = start_no_ints();
 
-    let contexts = &*(*contexts_ptr);
+    let contexts = &mut *(*contexts_ptr);
     if context_enabled {
         let current_i = context_i;
-        context_i += 1;
-        if context_i >= contexts.len(){
-            context_i -= contexts.len();
+        //The only garbage collection in Redox
+        loop {
+            context_i += 1;
+            if context_i >= contexts.len(){
+                context_i -= contexts.len();
+            }
+
+            let mut remove = false;
+            if let Option::Some(next) = contexts.get(context_i) {
+                if next.exited {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                drop(contexts.remove(context_i));
+            }else{
+                break;
+            }
         }
+
         if context_i != current_i {
             match contexts.get(current_i){
                 Option::Some(current) => match contexts.get(context_i) {
@@ -46,24 +63,13 @@ pub unsafe fn context_switch(interrupted: bool){
 pub unsafe extern "cdecl" fn context_exit() {
     let reenable = start_no_ints();
 
-    let contexts = &mut *(*contexts_ptr);
-
-    if contexts.len() > 1 && context_i > 1 {
-        let current_option = contexts.remove(context_i);
-
-        if context_i >= contexts.len() {
-            context_i -= contexts.len();
-        }
-        match current_option {
-            Option::Some(mut current) => match contexts.get(context_i) {
-                Option::Some(next) => {
-                    current.remap(next);
-                    current.switch(next);
-                },
-                Option::None => ()
-            },
+    let contexts = &*(*contexts_ptr);
+    if context_enabled && context_i > 1 {
+        match contexts.get(context_i) {
+            Option::Some(mut current) => current.exited = true,
             Option::None => ()
         }
+        context_switch(false);
     }
 
     end_no_ints(reenable);
@@ -87,7 +93,8 @@ pub struct Context {
     pub stack_ptr: u32,
     pub fx: usize,
     pub memory: Vec<ContextMemory>,
-    pub interrupted: bool
+    pub interrupted: bool,
+    pub exited: bool
 }
 
 impl Context {
@@ -97,7 +104,8 @@ impl Context {
             stack_ptr: 0,
             fx: alloc(512),
             memory: Vec::new(),
-            interrupted: false
+            interrupted: false,
+            exited: false
         };
 
         for i in 0..512 {
@@ -108,14 +116,15 @@ impl Context {
     }
 
     pub unsafe fn new(call: usize, args: &Vec<usize>) -> Context {
-        let stack = alloc(CONTEXT_STACK_SIZE);
+        let stack = alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
-            fx: alloc(512),
+            fx: stack + CONTEXT_STACK_SIZE,
             memory: Vec::new(),
-            interrupted: false
+            interrupted: false,
+            exited: false
         };
 
         let ebp = ret.stack_ptr;
@@ -228,27 +237,19 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self){
-        /*
-        while Option::Some(entry) = self.memory.pop() {
+        while let Option::Some(entry) = self.memory.remove(0) {
             if entry.cleanup {
-                d("Application forgot to free ");
-                dh(entry.physical_address);
-                dl();
-                unalloc(entry.physical_address);
+                unsafe {
+                    unalloc(entry.physical_address);
+                }
             }
         }
-        */
 
         if self.stack > 0 {
             unsafe {
                 unalloc(self.stack);
             }
-        }
-
-        if self.fx > 0 {
-            unsafe {
-                unalloc(self.fx);
-            }
+            self.stack = 0;
         }
     }
 }
