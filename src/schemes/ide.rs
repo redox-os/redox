@@ -132,6 +132,7 @@ impl SessionItem for IDE {
                 request.destination = alloc(request.count as usize * 512);
                 if request.destination > 0 {
                     let reenable = start_no_ints();
+                    
                     d("IDE PIO Request ");
                     dd(request.sector as usize);
                     d(" ");
