@@ -51,13 +51,13 @@ impl SessionItem for EHCI {
             unsafe{
                 let CAPLENGTH = self.base as *mut u8;
 
-                let opbase = self.base + *CAPLENGTH as usize;
+                let opbase = self.base + read(CAPLENGTH) as usize;
 
                 let USBSTS = (opbase + 4) as *mut u32;
                 //d(" USBSTS ");
                 //dh(*USBSTS as usize);
 
-                *USBSTS = 0b111111;
+                write(USBSTS, 0b111111);
 
                 //d(" USBSTS ");
                 //dh(*USBSTS as usize);
@@ -92,19 +92,19 @@ impl EHCI {
         let HCCPARAMS = (self.base + 8) as *mut u32;
 
         d(" CAPLENGTH ");
-        dd(*CAPLENGTH as usize);
+        dd(read(CAPLENGTH) as usize);
 
         d(" HCSPARAMS ");
-        dh(*HCSPARAMS as usize);
+        dh(read(HCSPARAMS) as usize);
 
         d(" HCCPARAMS ");
-        dh(*HCCPARAMS as usize);
+        dh(read(HCCPARAMS) as usize);
 
-        let ports = (*HCSPARAMS & 0b1111) as usize;
+        let ports = (read(HCSPARAMS) & 0b1111) as usize;
         d(" PORTS ");
         dd(ports);
 
-        let eecp = ((*HCCPARAMS >> 8) & 0xFF) as usize;
+        let eecp = ((read(HCCPARAMS) >> 8) & 0xFF) as usize;
         d(" EECP ");
         dh(eecp);
 
@@ -254,7 +254,7 @@ impl EHCI {
             d(": ");
             dh(read(PORTSC.offset(i)) as usize);
             dl();
-            
+
             if read(PORTSC.offset(i)) & 1 == 1 {
                 d("Device on port ");
                     dd(i as usize);

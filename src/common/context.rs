@@ -7,8 +7,6 @@ use common::paging::*;
 use common::scheduler::*;
 use common::vec::*;
 
-use syscall::call::sys_exit;
-
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
 pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
@@ -44,25 +42,51 @@ pub unsafe fn context_switch(interrupted: bool){
     end_no_ints(reenable);
 }
 
+//TODO: To clean up memory leak, current must be destroyed!
+pub unsafe extern "cdecl" fn context_exit() {
+    let reenable = start_no_ints();
+
+    let contexts = &mut *(*contexts_ptr);
+
+    if contexts.len() > 1 && context_i > 1 {
+        let current_option = contexts.remove(context_i);
+
+        if context_i >= contexts.len() {
+            context_i -= contexts.len();
+        }
+        match current_option {
+            Option::Some(mut current) => match contexts.get(context_i) {
+                Option::Some(next) => {
+                    current.remap(next);
+                    current.switch(next);
+                },
+                Option::None => ()
+            },
+            Option::None => ()
+        }
+    }
+
+    end_no_ints(reenable);
+}
+
 pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     unalloc(box_fn_ptr);
     box_fn();
 }
 
-pub unsafe extern "cdecl" fn context_exit() -> !{
-    loop {
-        sys_exit();
-    }
+pub struct ContextMemory {
+    pub physical_address: usize,
+    pub virtual_address: usize,
+    pub virtual_size: usize,
+    pub cleanup: bool
 }
 
 pub struct Context {
     pub stack: usize,
     pub stack_ptr: u32,
     pub fx: usize,
-    pub physical_address: usize,
-    pub virtual_address: usize,
-    pub virtual_size: usize,
+    pub memory: Vec<ContextMemory>,
     pub interrupted: bool
 }
 
@@ -72,9 +96,7 @@ impl Context {
             stack: 0,
             stack_ptr: 0,
             fx: alloc(512),
-            physical_address: 0,
-            virtual_address: 0,
-            virtual_size: 0,
+            memory: Vec::new(),
             interrupted: false
         };
 
@@ -92,9 +114,7 @@ impl Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
             fx: alloc(512),
-            physical_address: 0,
-            virtual_address: 0,
-            virtual_size: 0,
+            memory: Vec::new(),
             interrupted: false
         };
 
@@ -151,14 +171,18 @@ impl Context {
     }
 
     pub unsafe fn map(&mut self){
-        for i in 0..(self.virtual_size + 4095)/4096 {
-            set_page(self.virtual_address + i*4096, self.physical_address + i*4096);
+        for entry in self.memory.iter() {
+            for i in 0..(entry.virtual_size + 4095)/4096 {
+                set_page(entry.virtual_address + i*4096, entry.physical_address + i*4096);
+            }
         }
     }
 
     pub unsafe fn unmap(&mut self){
-        for i in 0..(self.virtual_size + 4095)/4096 {
-            identity_page(self.virtual_address + i*4096);
+        for entry in self.memory.iter() {
+            for i in 0..(entry.virtual_size + 4095)/4096 {
+                identity_page(entry.virtual_address + i*4096);
+            }
         }
     }
 
@@ -204,6 +228,17 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self){
+        /*
+        while Option::Some(entry) = self.memory.pop() {
+            if entry.cleanup {
+                d("Application forgot to free ");
+                dh(entry.physical_address);
+                dl();
+                unalloc(entry.physical_address);
+            }
+        }
+        */
+
         if self.stack > 0 {
             unsafe {
                 unalloc(self.stack);

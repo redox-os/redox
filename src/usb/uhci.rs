@@ -652,13 +652,12 @@ impl UHCI {
         Duration::new(0, 100*NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
-        d(" PORTSC1 ");
-        dh(inw(portsc1) as usize);
-        dl();
+        {
+            d(" PORTSC1 ");
+            dh(inw(portsc1) as usize);
 
-        if inw(portsc1) & 1 == 1 {
             outw(portsc1, 1 << 9);
-            d("Device Found ");
+            d(" to ");
             dh(inw(portsc1) as usize);
 
             let disable = start_ints();
@@ -673,21 +672,31 @@ impl UHCI {
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
-            outw(portsc1, 4);
-            d(" to ");
-            dh(inw(portsc1) as usize);
             dl();
 
-            self.device(frame_list, 1);
+            if inw(portsc1) & 1 == 1 {
+                d(" Device Found ");
+                dh(inw(portsc1) as usize);
+
+                outw(portsc1, 4);
+                d(" to ");
+                dh(inw(portsc1) as usize);
+                dl();
+
+                let disable = start_ints();
+                Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+                end_ints(disable);
+
+                self.device(frame_list, 1);
+            }
         }
 
-        d(" PORTSC2 ");
-        dh(inw(portsc2) as usize);
-        dl();
+        {
+            d(" PORTSC2 ");
+            dh(inw(portsc2) as usize);
 
-        if inw(portsc2) & 1 == 1 {
             outw(portsc2, 1 << 9);
-            d("Device Found ");
+            d(" to ");
             dh(inw(portsc2) as usize);
 
             let disable = start_ints();
@@ -702,12 +711,23 @@ impl UHCI {
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
-            outw(portsc2, 4);
-            d(" to ");
-            dh(inw(portsc2) as usize);
             dl();
 
-            self.device(frame_list, 2);
+            if inw(portsc2) & 1 == 1 {
+                d(" Device Found ");
+                dh(inw(portsc2) as usize);
+
+                outw(portsc2, 4);
+                d(" to ");
+                dh(inw(portsc2) as usize);
+                dl();
+
+                let disable = start_ints();
+                Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+                end_ints(disable);
+
+                self.device(frame_list, 2);
+            }
         }
     }
 }
