@@ -34,9 +34,12 @@ impl SessionItem for Executor {
 
             match contexts.get(context_i) {
                 Option::Some(mut current) => {
-                    current.physical_address = self.executable.data + 4096; /*Extra 4096 for null segment*/
-                    current.virtual_address = LOAD_ADDR;
-                    current.virtual_size = 4 * 1024 * 1024; // 4 MB
+                    current.memory.push(ContextMemory {
+                        physical_address: self.executable.data + 4096, /*Extra 4096 for null segment*/
+                        virtual_address: LOAD_ADDR,
+                        virtual_size: 4 * 1024 * 1024, // 4 MB
+                        cleanup: false //Do not cleanup on exit
+                    });
                     current.map();
                 },
                 Option::None => ()

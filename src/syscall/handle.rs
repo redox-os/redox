@@ -50,31 +50,7 @@ pub unsafe fn syscall_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
 
             end_no_ints(reenable);
         },
-        SYS_EXIT => {
-            let reenable = start_no_ints();
-
-            let contexts = &mut *(*contexts_ptr);
-
-            if contexts.len() > 1 && context_i > 1 {
-                let current_option = contexts.remove(context_i);
-
-                if context_i >= contexts.len() {
-                    context_i -= contexts.len();
-                }
-                match current_option {
-                    Option::Some(mut current) => match contexts.get(context_i) {
-                        Option::Some(next) => {
-                            current.remap(next);
-                            current.switch(next);
-                        },
-                        Option::None => ()
-                    },
-                    Option::None => ()
-                }
-            }
-
-            end_no_ints(reenable);
-        },
+        SYS_EXIT => context_exit(),
         SYS_OPEN => {
             //Not interrupt-locked to avoid slowness
 

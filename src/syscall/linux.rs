@@ -21,31 +21,7 @@ const SYS_CLOSE: u32 = 6;
 
 pub unsafe fn linux_handle(eax: u32, ebx: u32, ecx: u32, edx: u32){
     match eax {
-        SYS_EXIT => {
-            let reenable = start_no_ints();
-
-            let contexts = &mut *(*contexts_ptr);
-
-            if contexts.len() > 1 && context_i > 1 {
-                let current_option = contexts.remove(context_i);
-
-                if context_i >= contexts.len() {
-                    context_i -= contexts.len();
-                }
-                match current_option {
-                    Option::Some(mut current) => match contexts.get(context_i) {
-                        Option::Some(next) => {
-                            current.remap(next);
-                            current.switch(next);
-                        },
-                        Option::None => ()
-                    },
-                    Option::None => ()
-                }
-            }
-
-            end_no_ints(reenable);
-        },
+        SYS_EXIT => context_exit(),
         SYS_WRITE => {
             if ebx == 1 || ebx == 2 {
                 let mut ptr = ecx as *const u8;
