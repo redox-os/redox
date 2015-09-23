@@ -70,7 +70,6 @@ impl Session {
 
             if remove {
                 self.windows.remove(i);
-                self.redraw = max(self.redraw, REDRAW_ALL);
             }
         }
 
@@ -89,9 +88,10 @@ impl Session {
 
             if remove {
                 self.windows_ordered.remove(i);
-                self.redraw = max(self.redraw, REDRAW_ALL);
             }
         }
+
+        self.redraw = max(self.redraw, REDRAW_ALL);
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8){
