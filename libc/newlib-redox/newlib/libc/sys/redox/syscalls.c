@@ -11,16 +11,43 @@
 #undef errno
 extern int errno;
 
+#define SYS_DEBUG 0
+#define SYS_EXIT 1
+#define SYS_FORK 2
+#define SYS_READ 3
+#define SYS_WRITE 4
+#define SYS_OPEN 5
+#define SYS_CLOSE 6
+#define SYS_TIME 13
+#define SYS_LSEEK 19
+#define SYS_FSTAT 28
+#define SYS_YIELD 158
+
+#define SYS_TRIGGER 1000
+#define SYS_WINDOW_CREATE 1001
+#define SYS_WINDOW_DESTROY 1002
+#define SYS_READ_TO_END 1003
+#define SYS_ALLOC 1004
+#define SYS_REALLOC 1005
+#define SYS_REALLOC_INPLACE 1006
+#define SYS_UNALLOC 1007
+
+uint syscall(uint eax, uint ebx, uint ecx, uint edx) {
+    asm volatile("int $0x80"
+        : "=a"(eax)
+        : "a"(eax), "b"(ebx), "c"(ecx), "d"(edx)
+        : "memory"
+        : "intel", "volatile");
+
+    return eax;
+}
+
 void _exit(int code){
-    asm(
-		"int $0x80"
-		:
-        : "a"(1), "b"(code)
-	);
+    syscall(SYS_EXIT, (uint)code, 0, 0);
 }
 
 int close(int file){
-  return -1;
+    return (int)syscall(SYS_CLOSE, (uint)file, 0, 0);
 }
 
 char *__env[1] = { 0 };
@@ -60,15 +87,15 @@ int link(char *old, char *new) {
 }
 
 int lseek(int file, int ptr, int dir) {
-  return 0;
+  return (int)syscall(SYS_LSEEK, (uint)file, (uint)ptr, (uint)dir);
 }
 
 int open(const char * file, int flags, ...) {
-  return -1;
+  return (int)syscall(SYS_OPEN, (uint)file, (uint)flags, 0);
 }
 
 int read(int file, char *ptr, int len) {
-  return 0;
+  return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
 }
 
 caddr_t sbrk(int incr) {
@@ -103,11 +130,5 @@ int wait(int *status) {
 }
 
 int write(int file, char *ptr, int len) {
-    int ret;
-    asm(
-		"int $0x80"
-		: "=a"(ret)
-        : "a"(4), "b"(file), "c"(ptr), "d"(len)
-	);
-    return ret;
+    return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
 }
