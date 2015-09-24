@@ -290,13 +290,6 @@ impl ELF {
         }
     }
 
-    pub unsafe fn can_call(&self, address: usize) -> bool{
-        if address >= LOAD_ADDR && address < LOAD_ADDR + 1024*4096 {
-            return true;
-        }
-        return false;
-    }
-
     pub unsafe fn entry(&self) -> usize {
         if self.data > 0 {
             // TODO: Support 64-bit version
