@@ -1,2 +1,2 @@
 #!/bin/bash
-sudo apt-get install automake1.11 gcc-4.6-multilib texinfo
+sudo apt-get install automake1.11 gcc-4.6-multilib libtool-bin texinfo
