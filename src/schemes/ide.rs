@@ -39,34 +39,14 @@ impl SessionItem for IDE {
             let command = inb(base);
             let status = inb(base + 2);
             if status & 4 == 4 {
-                d("IDE");
-
-                d(" Status ");
-                dbh(status);
-
                 outb(base + 0x2, status);
                 let new_status = inb(base + 0x2);
-
-                d(" to ");
-                dbh(new_status);
-
-                d(" Command ");
-                dbh(command);
-
                 if command & 1 == 1 && new_status & 1 == 0 {
                     outb(base, 0);
-
-                    d(" to ");
-                    dbh(inb(base));
-
-                    d(" DMA COMPLETED");
 
                     //WARNING: This should be stored in request.prdt
                     let prdt = ind(base + 0x4) as usize & 0xFFFF0000;
                     outd(base + 0x4, 0);
-
-                    d(" PRDT ");
-                    dh(prdt);
 
                     if prdt > 0 {
                         //WARNING: This should be compared to request.destination
@@ -80,11 +60,6 @@ impl SessionItem for IDE {
 
                         match self.requests.get(0) {
                             Option::Some(request) => {
-                                d(" NEXT ");
-                                dd(request.sector as usize);
-                                d(" ");
-                                dd(request.count as usize);
-
                                 let disk = Disk::primary_master();
                                 disk.read_dma(request.sector, request.count, request.destination, base);
                             },
@@ -92,8 +67,6 @@ impl SessionItem for IDE {
                         }
                     }
                 }
-
-                dl();
             }
         }
     }
@@ -132,32 +105,18 @@ impl SessionItem for IDE {
                 request.destination = alloc(request.count as usize * 512);
                 if request.destination > 0 {
                     let reenable = start_no_ints();
-                    
-                    d("IDE PIO Request ");
-                    dd(request.sector as usize);
-                    d(" ");
-                    dd(request.count as usize);
 
                     let disk = Disk::primary_master();
                     disk.read(request.sector, request.count as u16, request.destination);
                     (request.callback)(request.destination);
-
-                    dl();
 
                     /* DMA
                     self.requests.push(request);
                     if self.requests.len() == 1 {
                         match self.requests.get(0) {
                             Option::Some(request) => {
-                                d("IDE DMA Request ");
-                                dd(request.sector as usize);
-                                d(" ");
-                                dd(request.count as usize);
-
                                 let disk = Disk::primary_master();
                                 disk.read_dma(request.sector, request.count, request.destination, self.base as u16);
-
-                                dl();
                             },
                             Option::None => ()
                         }

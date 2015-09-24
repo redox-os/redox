@@ -11,27 +11,17 @@
 #undef errno
 extern int errno;
 
-#define SYS_DEBUG 0
 #define SYS_EXIT 1
 #define SYS_FORK 2
 #define SYS_READ 3
 #define SYS_WRITE 4
 #define SYS_OPEN 5
 #define SYS_CLOSE 6
-#define SYS_TIME 13
 #define SYS_LSEEK 19
 #define SYS_FSTAT 28
 #define SYS_BRK 45
+#define SYS_GETTIMEOFDAY 78
 #define SYS_YIELD 158
-
-#define SYS_TRIGGER 1000
-#define SYS_WINDOW_CREATE 1001
-#define SYS_WINDOW_DESTROY 1002
-#define SYS_READ_TO_END 1003
-#define SYS_ALLOC 1004
-#define SYS_REALLOC 1005
-#define SYS_REALLOC_INPLACE 1006
-#define SYS_UNALLOC 1007
 
 uint syscall(uint eax, uint ebx, uint ecx, uint edx) {
     asm volatile("int $0x80"
@@ -70,6 +60,10 @@ int fstat(int file, struct stat *st) {
 
 int getpid() {
     return 1;
+}
+
+int gettimeofday(struct timeval *__restrict tv, void *__restrict tz){
+    return (int)syscall(SYS_GETTIMEOFDAY, (uint)tv, (uint)tz, 0);
 }
 
 int isatty(int file) {

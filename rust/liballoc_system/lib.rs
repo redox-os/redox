@@ -40,52 +40,6 @@ extern {
     fn memmove(dst: *mut u8, src: *const u8, size: usize);
 }
 
-use common::memory::*;
-
-#[path="../../src/common/"]
-mod common {
-    pub mod memory;
-    pub mod scheduler;
-}
-
-unsafe fn syscall(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
-    asm!("int 0x80"
-        : "={eax}"(eax)
-        : "{eax}"(eax), "{ebx}"(ebx), "{ecx}"(ecx), "{edx}"(edx)
-        : "memory"
-        : "intel", "volatile");
-
-    return eax;
-}
-
-#[no_mangle]
-pub extern fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
-    unsafe { alloc(size) as *mut u8 }
-}
-
-#[no_mangle]
-pub extern fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    unsafe { unalloc(ptr as usize) }
-}
-
-#[no_mangle]
-pub extern fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize,
-                                align: usize) -> *mut u8 {
-    unsafe { realloc(ptr as usize, size) as *mut u8 }
-}
-
-#[no_mangle]
-pub extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize,
-                                        size: usize, align: usize) -> usize {
-    unsafe { realloc_inplace(ptr as usize, size) as usize }
-}
-
-#[no_mangle]
-pub extern fn __rust_usable_size(size: usize, align: usize) -> usize {
-    size
-}
-
-/* TODO
 use syscall::common::*;
 
 #[path="../../src/syscall/"]
@@ -129,4 +83,3 @@ pub extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize,
 pub extern fn __rust_usable_size(size: usize, align: usize) -> usize {
     size
 }
-*/
