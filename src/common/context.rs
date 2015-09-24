@@ -2,6 +2,7 @@ use alloc::boxed::*;
 
 use core::ptr;
 
+use common::debug::*;
 use common::memory::*;
 use common::paging::*;
 use common::scheduler::*;
@@ -19,9 +20,9 @@ pub unsafe fn context_switch(interrupted: bool){
     let contexts = &mut *(*contexts_ptr);
     if context_enabled {
         let current_i = context_i;
+        context_i += 1;
         //The only garbage collection in Redox
         loop {
-            context_i += 1;
             if context_i >= contexts.len(){
                 context_i -= contexts.len();
             }
@@ -34,10 +35,17 @@ pub unsafe fn context_switch(interrupted: bool){
             }
 
             if remove {
+                d("Drop ");
+                dd(context_i);
+                dl();
                 drop(contexts.remove(context_i));
             }else{
                 break;
             }
+        }
+
+        if context_i >= contexts.len(){
+            context_i -= contexts.len();
         }
 
         if context_i != current_i {
@@ -66,13 +74,19 @@ pub unsafe extern "cdecl" fn context_exit() {
     let contexts = &*(*contexts_ptr);
     if context_enabled && context_i > 1 {
         match contexts.get(context_i) {
-            Option::Some(mut current) => current.exited = true,
+            Option::Some(mut current) => {
+                d("Exit ");
+                dd(context_i);
+                dl();
+                current.exited = true
+            },
             Option::None => ()
         }
-        context_switch(false);
     }
 
     end_no_ints(reenable);
+
+    context_switch(false);
 }
 
 pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
@@ -237,12 +251,18 @@ impl Context {
 impl Drop for Context {
     fn drop(&mut self){
         while let Option::Some(entry) = self.memory.remove(0) {
+            d("Drop Mem ");
+            dh(entry.physical_address);
+            dl();
             unsafe {
                 unalloc(entry.physical_address);
             }
         }
 
         if self.stack > 0 {
+            d("Drop Stack ");
+            dh(self.stack);
+            dl();
             unsafe {
                 unalloc(self.stack);
             }

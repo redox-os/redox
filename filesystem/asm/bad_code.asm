@@ -12,6 +12,12 @@ _start:
 	mov	eax,4
 	int	0x80
 
+	mov eax, 0xAAAAAAAA
+	mov ebx, 0xBBBBBBBB
+	mov ecx, 0xCCCCCCCC
+	mov edx, 0xDDDDDDDD
+	mov esi, 0x51515151
+	mov edi, 0xD1D1D1D1
 	call 0
 	int3
 

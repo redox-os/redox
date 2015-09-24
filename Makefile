@@ -81,7 +81,7 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib lib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $*.rlib $*.gen
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib
 
-filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin filesystem/asm/linux.bin filesystem/asm/gpe_code.bin filesystem/asm/gpe_data.bin
+filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin filesystem/asm/bad_code.bin filesystem/asm/bad_data.bin filesystem/asm/bad_segment.bin filesystem/asm/linux.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin filesystem.gen
