@@ -1,75 +1,10 @@
-#![crate_type="staticlib"]
-#![feature(alloc)]
-#![feature(asm)]
-#![feature(box_syntax)]
-#![feature(core_simd)]
-#![feature(core_slice_ext)]
-#![feature(core_str_ext)]
-#![feature(fundamental)]
-#![feature(lang_items)]
-#![feature(no_std)]
-#![feature(unboxed_closures)]
-#![feature(unsafe_no_drop_flag)]
-#![no_std]
-
-extern crate alloc;
-
-use application::main;
-
 use core::fmt;
+use core::ptr;
 
-use programs::common::*;
+use common::debug::*;
 
-#[path="APPLICATION_PATH"]
-mod application;
+use syscall::call::*;
 
-#[path="src/audio"]
-mod audio {
-    pub mod wav;
-}
-
-#[path="src/common"]
-mod common {
-    pub mod debug;
-    pub mod event;
-    pub mod queue;
-    pub mod memory;
-    pub mod random;
-    pub mod resource;
-    pub mod scheduler;
-    pub mod string;
-    pub mod time;
-    pub mod vec;
-}
-
-#[path="src/graphics"]
-mod graphics {
-    pub mod bmp;
-    pub mod color;
-    pub mod consolewindow;
-    pub mod display;
-    pub mod point;
-    pub mod size;
-    pub mod window;
-}
-
-#[path="src/programs"]
-mod programs {
-    pub mod common;
-}
-
-#[path="src/syscall"]
-mod syscall {
-    pub mod call;
-    pub mod common;
-}
-
-#[no_mangle]
-pub unsafe fn _start(){
-    main();
-}
-
-/* Externs { */
 #[lang="stack_exhausted"]
 extern fn stack_exhausted() {
 
@@ -145,4 +80,66 @@ pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
         : "cc", "memory"
         : "intel", "volatile");
 }
-/* } Externs */
+
+pub fn unsupported(){
+    unsafe{ asm!("int 3" : : : : "intel", "volatile") }
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn fmod(x: f64, y: f64) -> f64 {
+    unsupported();
+    return 0.0;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn fmodf(x: f32, y: f32) -> f32 {
+    unsupported();
+    return 0.0;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __powisf2(a: f32, x: i32) -> f32 {
+    unsupported();
+    return 0.0;
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __powidf2(a: f64, x: i32) -> f64 {
+    unsupported();
+    return 0.0;
+}
+
+#[no_mangle]
+pub extern fn __mulodi4(a: i32, b: i32, overflow: *mut i32) -> i32 {
+    let result = (a as i64) * (b as i64);
+    if result > 2 << 32 {
+        unsafe{
+            ptr::write(overflow, 1);
+        }
+    }
+    return result as i32;
+}
+
+#[no_mangle]
+pub extern fn __moddi3(a: i32, b: i32) -> i32 {
+    return a%b;
+}
+
+#[no_mangle]
+pub extern fn __divdi3(a: i32, b: i32) -> i32 {
+    return a/b;
+}
+
+#[no_mangle]
+pub extern fn __umoddi3(a: u32, b: u32) -> u32 {
+    return a%b;
+}
+
+#[no_mangle]
+pub extern fn __udivdi3(a: u32, b: u32) -> u32 {
+    return a/b;
+}

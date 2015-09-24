@@ -3,7 +3,9 @@ use core::str::StrExt;
 use syscall::call::sys_debug;
 
 pub fn db(byte: u8){
-    sys_debug(byte);
+    unsafe{
+        sys_debug(byte);
+    }
 }
 
 pub fn dbh(byte: u8){

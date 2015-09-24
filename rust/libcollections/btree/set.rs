@@ -19,6 +19,7 @@ use core::ops::{BitOr, BitAnd, BitXor, Sub};
 
 use borrow::Borrow;
 use btree_map::{BTreeMap, Keys};
+use super::Recover;
 use Bound;
 
 // FIXME(conventions): implement bounded iterators
@@ -103,6 +104,8 @@ impl<T: Ord> BTreeSet<T> {
     #[unstable(feature = "btree_b",
                reason = "probably want this to be on the type, eventually",
                issue = "27795")]
+    #[deprecated(since = "1.4.0", reason = "niche API")]
+    #[allow(deprecated)]
     pub fn with_b(b: usize) -> BTreeSet<T> {
         BTreeSet { map: BTreeMap::with_b(b) }
     }
@@ -329,6 +332,16 @@ impl<T: Ord> BTreeSet<T> {
         self.map.contains_key(value)
     }
 
+    /// Returns a reference to the value in the set, if any, that is equal to the given value.
+    ///
+    /// The value may be any borrowed form of the set's value type,
+    /// but the ordering on the borrowed form *must* match the
+    /// ordering on the value type.
+    #[unstable(feature = "set_recovery", issue = "28050")]
+    pub fn get<Q: ?Sized>(&self, value: &Q) -> Option<&T> where T: Borrow<Q>, Q: Ord {
+        Recover::get(&self.map, value)
+    }
+
     /// Returns `true` if the set has no elements in common with `other`.
     /// This is equivalent to checking for an empty intersection.
     ///
@@ -436,6 +449,13 @@ impl<T: Ord> BTreeSet<T> {
         self.map.insert(value, ()).is_none()
     }
 
+    /// Adds a value to the set, replacing the existing value, if any, that is equal to the given
+    /// one. Returns the replaced value.
+    #[unstable(feature = "set_recovery", issue = "28050")]
+    pub fn replace(&mut self, value: T) -> Option<T> {
+        Recover::replace(&mut self.map, value)
+    }
+
     /// Removes a value from the set. Returns `true` if the value was
     /// present in the set.
     ///
@@ -457,6 +477,16 @@ impl<T: Ord> BTreeSet<T> {
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn remove<Q: ?Sized>(&mut self, value: &Q) -> bool where T: Borrow<Q>, Q: Ord {
         self.map.remove(value).is_some()
+    }
+
+    /// Removes and returns the value in the set, if any, that is equal to the given one.
+    ///
+    /// The value may be any borrowed form of the set's value type,
+    /// but the ordering on the borrowed form *must* match the
+    /// ordering on the value type.
+    #[unstable(feature = "set_recovery", issue = "28050")]
+    pub fn take<Q: ?Sized>(&mut self, value: &Q) -> Option<T> where T: Borrow<Q>, Q: Ord {
+        Recover::take(&mut self.map, value)
     }
 }
 

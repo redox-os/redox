@@ -11,7 +11,7 @@ use common::memory::*;
 use common::string::*;
 use common::vec::*;
 
-use syscall::call::sys_open;
+use syscall::call::*;
 
 pub enum ResourceSeek {
     Start(usize),
@@ -67,16 +67,17 @@ impl URL {
         }
     }
 
+    pub fn to_string(&self) -> String {
+        return self.string.clone();
+    }
+
     pub fn open(&self) -> Box<Resource> {
         unsafe{
-            let resource_ptr: *mut Box<Resource> = alloc_type();
-
-            sys_open(self, resource_ptr);
-
+            let c_str = self.string.to_c_str();
+            let resource_ptr = sys_open(c_str, 0, 0) as *mut Box<Resource>;
             let ret = ptr::read(resource_ptr);
-
             unalloc(resource_ptr as usize);
-
+            unalloc(c_str as usize);
             return ret;
         }
     }
@@ -300,10 +301,6 @@ impl URL {
         }
 
         return path_parts;
-    }
-
-    pub fn to_string(&self) -> String {
-        return self.string.clone();
     }
 
     pub fn d(&self){
