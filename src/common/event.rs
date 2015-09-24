@@ -37,7 +37,9 @@ impl Event {
     }
 
     pub fn trigger(&self){
-        sys_trigger(self);
+        unsafe{
+            sys_trigger(self);
+        }
     }
 }
 

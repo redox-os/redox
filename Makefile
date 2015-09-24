@@ -1,10 +1,9 @@
 RUSTC=rustc
-RUSTCFLAGS=--target i686-unknown-linux-gnu \
-	-C target-feature=-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2 \
+RUSTCFLAGS=--target=i386-elf-redox.json \
 	-C no-vectorize-loops -C no-vectorize-slp -C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
-	-L .
+	-L.
 AS=nasm
 AWK=awk
 CUT=cut
@@ -34,32 +33,35 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
-	    LD=i386-elf-ld
-			VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
-			VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
-			VB_AUDIO="coreaudio"
+		LD=i386-elf-ld
+		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
+		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
+		VB_AUDIO="coreaudio"
 	endif
 endif
 
 all: harddrive.bin
 
 doc: src/kernel.rs libcore.rlib liballoc.rlib
-	rustdoc --target i686-unknown-linux-gnu $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
-
-liballoc.rlib: rust/liballoc/lib.rs libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern core=libcore.rlib
+	rustdoc --target=i386-elf-redox.json -L. $<
 
 libcore.rlib: rust/libcore/lib.rs
-	$(RUSTC) $(RUSTCFLAGS) --cfg stage0 --crate-type rlib -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-#libcollections.rlib: src/libcollections/lib.rs liballoc.rlib
-#	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern alloc=liballoc.rlib
+liballoc.rlib: rust/liballoc/lib.rs libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-kernel.rlib: src/kernel.rs libcore.rlib liballoc.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $@ $< --extern core=libcore.rlib --extern alloc=liballoc.rlib
+liballoc_system.rlib: rust/liballoc_system/lib.rs libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-kernel.bin: kernel.rlib libcore.rlib liballoc.rlib
-	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $< libcore.rlib liballoc.rlib
+libcollections.rlib: rust/libcollections/lib.rs libcore.rlib liballoc.rlib liballoc_system.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+kernel.rlib: src/kernel.rs libcore.rlib liballoc.rlib liballoc_system.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
+
+kernel.bin: kernel.rlib src/kernel.ld
+	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
 
 kernel.list: kernel.bin
 	objdump -C -M intel -d $< > $@
@@ -70,8 +72,8 @@ filesystem/asm/%.bin: filesystem/asm/%.asm src/program.ld
 
 filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib
 	$(SED) "s|APPLICATION_PATH|$<|" src/program.rs > $*.gen
-	$(RUSTC) $(RUSTCFLAGS) --crate-type rlib -o $*.rlib $*.gen --extern core=libcore.rlib --extern alloc=liballoc.rlib
-	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib libcore.rlib liballoc.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $*.rlib $*.gen
+	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib
 
 filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin filesystem/asm/linux.bin filesystem/asm/gpe_code.bin filesystem/asm/gpe_data.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
@@ -179,4 +181,4 @@ wireshark:
 	wireshark network.pcap
 
 clean:
-	$(RM) *.bin *.gen *.list *.log *.o *.pcap *.rlib *.vdi filesystem/*.bin filesystem/asm/*.bin
+	$(RM) -f *.bin *.gen *.list *.log *.o *.pcap *.rlib *.vdi filesystem/*.bin filesystem/asm/*.bin

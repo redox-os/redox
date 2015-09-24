@@ -1,65 +1,85 @@
-use alloc::boxed::*;
-
 use common::event::*;
-use common::resource::*;
 use common::time::*;
+use common::vec::*;
 
 use graphics::window::*;
 
 use syscall::common::*;
 
-pub unsafe fn syscall(eax: u32, ebx: u32, ecx: u32, edx: u32){
-    asm!("int 0x82"
-        :
+pub unsafe fn syscall(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
+    asm!("int 0x80"
+        : "={eax}"(eax)
         : "{eax}"(eax), "{ebx}"(ebx), "{ecx}"(ecx), "{edx}"(edx)
         : "memory"
         : "intel", "volatile");
+
+    return eax;
 }
 
-pub fn sys_debug(byte: u8){
-    unsafe{
-        syscall(SYS_DEBUG, byte as u32, 0, 0);
-    }
+pub unsafe fn sys_debug(byte: u8){
+    syscall(SYS_DEBUG, byte as u32, 0, 0);
 }
 
-pub fn sys_exit() {
-    unsafe{
-        syscall(SYS_EXIT, 0, 0, 0);
-    }
+pub unsafe fn sys_exit(status: isize) {
+    syscall(SYS_EXIT, (status as i32) as u32, 0, 0);
 }
 
-pub fn sys_open(url_ptr: *const URL, resource_ptr: *mut Box<Resource>){
-    unsafe{
-        syscall(SYS_OPEN, url_ptr as u32, resource_ptr as u32, 0);
-    }
+pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
+    return syscall(SYS_READ, fd as u32, buf as u32, count as u32) as usize;
 }
 
-pub fn sys_time(time_ptr: *mut Duration, realtime: bool){
-    unsafe{
-        syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
-    }
+//TODO: Remove
+pub unsafe fn sys_read_to_end(fd: usize, vec: *mut Vec<u8>) -> usize {
+    return syscall(SYS_READ_TO_END, fd as u32, vec as u32, 0) as usize;
 }
 
-pub fn sys_trigger(event_ptr: *const Event){
-    unsafe{
-        syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
-    }
+pub unsafe fn sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
+    return syscall(SYS_WRITE, fd as u32, buf as u32, count as u32) as usize;
 }
 
-pub fn sys_window_create(ptr: *mut Window){
-    unsafe{
-        syscall(SYS_WINDOW_CREATE, ptr as u32, 0, 0);
-    }
+pub unsafe fn sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
+    return syscall(SYS_OPEN, path as u32, (flags as i32) as u32, (mode as i32) as u32) as usize;
 }
 
-pub fn sys_window_destroy(ptr: *mut Window){
-    unsafe{
-        syscall(SYS_WINDOW_DESTROY, ptr as u32, 0, 0);
-    }
+pub unsafe fn sys_close(fd: usize) -> usize {
+    return syscall(SYS_CLOSE, fd as u32, 0, 0) as usize;
 }
 
+pub unsafe fn sys_time(time_ptr: *mut Duration, realtime: bool){
+    syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
+}
+
+//TODO: Export unsafe
 pub fn sys_yield(){
-    unsafe {
+    unsafe{
         syscall(SYS_YIELD, 0, 0, 0);
     }
+}
+
+pub unsafe fn sys_trigger(event_ptr: *const Event){
+    syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
+}
+
+pub unsafe fn sys_window_create(ptr: *mut Window){
+    syscall(SYS_WINDOW_CREATE, ptr as u32, 0, 0);
+}
+
+pub unsafe fn sys_window_destroy(ptr: *mut Window){
+    syscall(SYS_WINDOW_DESTROY, ptr as u32, 0, 0);
+}
+
+pub unsafe fn sys_alloc(size: usize) -> usize {
+    return syscall(SYS_ALLOC, size as u32, 0, 0) as usize;
+}
+
+pub unsafe fn sys_realloc(ptr: usize, size: usize) -> usize {
+    return syscall(SYS_REALLOC, ptr as u32, size as u32, 0) as usize;
+}
+
+pub unsafe fn sys_realloc_inplace(ptr: usize, size: usize) -> usize {
+    return syscall(SYS_REALLOC_INPLACE, ptr as u32, size as u32, 0) as usize;
+}
+
+pub unsafe fn sys_unalloc(ptr: usize) {
+    syscall(SYS_UNALLOC, ptr as u32, 0, 0);
 }

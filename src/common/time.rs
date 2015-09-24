@@ -36,13 +36,17 @@ impl Duration {
 
     pub fn monotonic() -> Duration {
         let mut ret = Duration::new(0, 0);
-        sys_time(&mut ret, false);
+        unsafe{
+            sys_time(&mut ret, false);
+        }
         return ret;
     }
 
     pub fn realtime() -> Duration {
         let mut ret = Duration::new(0, 0);
-        sys_time(&mut ret, true);
+        unsafe{
+            sys_time(&mut ret, true);
+        }
         return ret;
     }
 
