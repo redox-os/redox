@@ -453,8 +453,8 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("EBP", ebp);
             dr("ESP", esp);
 
+            sys_exit(-1);
             loop {
-                sys_exit(-1);
                 asm!("sti");
                 asm!("hlt");
             }

@@ -1,10 +1,10 @@
 use core::ops::Drop;
 use core::ptr;
 
-use common::memory::*;
-
 use graphics::color::*;
 use graphics::size::*;
+
+use syscall::call::*;
 
 pub struct BMP {
     pub data: usize,
@@ -69,7 +69,7 @@ impl BMP {
                     alpha_shift += 1;
                 }
 
-                data = alloc(width * height * 4);
+                data = sys_alloc(width * height * 4);
                 size = Size {
                     width: width,
                     height: height
@@ -116,7 +116,7 @@ impl Drop for BMP {
     fn drop(&mut self){
         unsafe {
             if self.data > 0 {
-                unalloc(self.data);
+                sys_unalloc(self.data);
                 self.data = 0;
                 self.size = Size {
                     width: 0,

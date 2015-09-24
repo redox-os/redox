@@ -8,7 +8,7 @@
         "arch": "x86",
         "pre-link-args": ["-m32"],
         "no-compiler-rt": true,
-        "eliminate-frame-pointer": false,
+        "eliminate-frame-pointer": true,
         "linker_is_gnu": true,
         "morestack": false
 }

@@ -21,9 +21,9 @@ pub fn panic_fmt(fmt: fmt::Arguments, file: &'static str, line: u32) -> ! {
     d(": ");
     dh(line as usize);
     dl();
-    loop {
-        unsafe {
-            sys_exit(-1);
+    unsafe{
+        sys_exit(-1);
+        loop {
             asm!("sti");
             asm!("hlt");
         }
@@ -81,6 +81,7 @@ pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
         : "intel", "volatile");
 }
 
+/*
 pub fn unsupported(){
     unsafe{ asm!("int 3" : : : : "intel", "volatile") }
 }
@@ -143,3 +144,4 @@ pub extern fn __umoddi3(a: u32, b: u32) -> u32 {
 pub extern fn __udivdi3(a: u32, b: u32) -> u32 {
     return a/b;
 }
+*/

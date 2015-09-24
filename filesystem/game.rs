@@ -1,8 +1,6 @@
-use audio::wav::*;
+use core::cmp::*;
 
-use programs::common::*;
-
-use graphics::bmp::*;
+use redox::*;
 
 pub struct Sprite {
     point: Point,
@@ -19,11 +17,11 @@ pub fn main(){
     let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Example Game (Loading)".to_string());
     window.redraw();
 
-    let mut audio = URL::from_str("audio://").open();
+    let mut audio = File::open(&"audio://".to_string());
 
     let mut player;
     {
-        let mut resource = URL::from_str("file:///game/ninjaroofront.bmp").open();
+        let mut resource = File::open(&"file:///game/ninjaroofront.bmp".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
         player = Sprite {
@@ -34,7 +32,7 @@ pub fn main(){
 
     let sound;
     {
-        let mut resource = URL::from_str("file:///game/wilhelm.wav").open();
+        let mut resource = File::open(&"file:///game/wilhelm.wav".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
 
@@ -126,7 +124,7 @@ pub fn main(){
     RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
     {
-        let mut resource = URL::from_str("file:///game/game_over.wav").open();
+        let mut resource = File::open(&"file:///game/game_over.wav".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
 
