@@ -8,11 +8,22 @@ pub unsafe fn set_page(virtual_address: usize, physical_address: usize){
     let entry = page % PAGE_TABLE_SIZE;
     let entry_address = PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * 4;
 
-    //if cluster(address_to_cluster(physical_address)) != 0xFFFFFFFF {
-        ptr::write(entry_address as *mut u32, (physical_address as u32 & 0xFFFFF000) | 1);
-    //}else{
-    //    ptr::write(entry_address as *mut u32, (physical_address as u32 & 0xFFFFF000));
-    //}
+    ptr::write(entry_address as *mut u32, (physical_address as u32 & 0xFFFFF000) | 1);
+
+    asm!("invlpg [$0]"
+        :
+        : "{eax}"(virtual_address)
+        : "memory"
+        : "intel", "volatile");
+}
+
+pub unsafe fn missing_page(virtual_address: usize){
+    let page = virtual_address / PAGE_SIZE;
+    let table = page / PAGE_TABLE_SIZE;
+    let entry = page % PAGE_TABLE_SIZE;
+    let entry_address = PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * 4;
+
+    ptr::write(entry_address as *mut u32, 0);
 
     asm!("invlpg [$0]"
         :
@@ -31,7 +42,7 @@ pub unsafe fn page_bootstrap(){
 
         for entry_i in 0..PAGE_TABLE_SIZE {
             let virtual_address = (table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE;
-            
+
             let page = virtual_address / PAGE_SIZE;
             let table = page / PAGE_TABLE_SIZE;
             let entry = page % PAGE_TABLE_SIZE;
@@ -57,4 +68,6 @@ pub unsafe fn page_init(){
             identity_page((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE);
         }
     }
+    //Missing page to catch null pointer errors
+    missing_page(0);
 }

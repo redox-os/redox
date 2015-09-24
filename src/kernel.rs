@@ -1,3 +1,4 @@
+#![crate_type="staticlib"]
 #![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
@@ -11,11 +12,14 @@
 #![feature(no_std)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
+#![feature(unwind_attributes)]
 #![no_std]
 
 extern crate alloc;
 
 use audio::wav::*;
+
+use core::fmt;
 
 use common::context::*;
 use common::memory::*;
@@ -30,6 +34,8 @@ use drivers::pci::*;
 use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
+
+pub use externs::*;
 
 use filesystems::unfs::*;
 
@@ -54,7 +60,6 @@ use schemes::udp::*;
 
 use syscall::common::*;
 use syscall::handle::*;
-use syscall::linux::*;
 
 mod audio {
     pub mod ac97;
@@ -90,6 +95,8 @@ mod drivers {
     pub mod rtc;
     pub mod serial;
 }
+
+pub mod externs;
 
 mod filesystems {
     pub mod unfs;
@@ -149,7 +156,6 @@ mod syscall {
     pub mod call;
     pub mod common;
     pub mod handle;
-    pub mod linux;
 }
 
 mod usb {
@@ -428,28 +434,55 @@ fn dr(reg: &str, value: u32){
 
 #[no_mangle]
 //Take regs for kernel calls and exceptions
-pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, eax: u32, eip: u32, eflags: u32) {
+pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, mut eax: u32, eip: u32, eflags: u32, error: u32) -> u32 {
     macro_rules! exception {
         ($name:expr) => ({
             d($name);
             dl();
 
             dr("CONTEXT", context_i as u32);
-            dr("INT", interrupt);
-            dr("EIP", eip);
             dr("EFLAGS", eflags);
+            dr("EIP", eip);
             dr("EAX", eax);
-            dr("EBX", ebx);
             dr("ECX", ecx);
             dr("EDX", edx);
-            dr("EDI", edi);
-            dr("ESI", esi);
-            dr("EBP", ebp);
+            dr("EBX", ebx);
             dr("ESP", esp);
+            dr("EBP", ebp);
+            dr("ESI", esi);
+            dr("EDI", edi);
+            dr("INT", interrupt);
 
-            sys_exit();
+            sys_exit(-1);
             loop {
-                asm!("cli");
+                asm!("sti");
+                asm!("hlt");
+            }
+        })
+    };
+
+    macro_rules! exception_error {
+        ($name:expr) => ({
+            d($name);
+            dl();
+
+            dr("CONTEXT", context_i as u32);
+            dr("EFLAGS", error);
+            dr("EIP", eflags);
+            dr("ERROR", eip);
+            dr("EAX", eax);
+            dr("ECX", ecx);
+            dr("EDX", edx);
+            dr("EBX", ebx);
+            dr("ESP", esp);
+            dr("EBP", ebp);
+            dr("ESI", esi);
+            dr("EDI", edi);
+            dr("INT", interrupt);
+
+            sys_exit(-1);
+            loop {
+                asm!("sti");
                 asm!("hlt");
             }
         })
@@ -482,8 +515,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x2C => (*session_ptr).on_irq(0xC), //mouse
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => linux_handle(eax, ebx, ecx, edx),
-        0x82 => syscall_handle(eax, ebx, ecx, edx),
+        0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize, ebx as usize);
             context_enabled = true;
@@ -497,105 +529,24 @@ pub unsafe extern "cdecl" fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32
         0x5 => exception!("Bound range exceeded exception"),
         0x6 => exception!("Invalid opcode exception"),
         0x7 => exception!("Device not available exception"),
-        0x8 => exception!("Double fault"),
-        0xA => exception!("Invalid TSS exception"),
-        0xB => exception!("Segment not present exception"),
-        0xC => exception!("Stack-segment fault"),
-        0xD => exception!("General protection fault"),
-        0xE => exception!("Page fault"),
+        0x8 => exception_error!("Double fault"),
+        0xA => exception_error!("Invalid TSS exception"),
+        0xB => exception_error!("Segment not present exception"),
+        0xC => exception_error!("Stack-segment fault"),
+        0xD => exception_error!("General protection fault"),
+        0xE => exception_error!("Page fault"),
         0x10 => exception!("x87 floating-point exception"),
-        0x11 => exception!("Alignment check exception"),
+        0x11 => exception_error!("Alignment check exception"),
         0x12 => exception!("Machine check exception"),
         0x13 => exception!("SIMD floating-point exception"),
         0x14 => exception!("Virtualization exception"),
-        0x1E => exception!("Security exception"),
+        0x1E => exception_error!("Security exception"),
         _ => {
             d("Interrupt: ");
             dh(interrupt as usize);
             dl();
         }
     }
-}
 
-/* Externs { */
-#[allow(unused_variables)]
-#[no_mangle]
-pub unsafe extern fn __rust_allocate(size: usize, align: usize) -> *mut u8{
-    return alloc(size) as *mut u8;
+    return eax;
 }
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub unsafe extern fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize){
-    return unalloc(ptr as usize);
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub unsafe extern fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8{
-    return realloc(ptr as usize, size) as *mut u8;
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub unsafe extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> usize{
-    return realloc_inplace(ptr as usize, size);
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub unsafe extern fn __rust_usable_size(size: usize, align: usize) -> usize{
-    return ((size + CLUSTER_SIZE - 1)/CLUSTER_SIZE) * CLUSTER_SIZE;
-}
-
-#[no_mangle]
-pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
-    for i in 0..len {
-        let c_a = ptr::read(a.offset(i as isize));
-        let c_b = ptr::read(b.offset(i as isize));
-        if c_a != c_b{
-            return c_a as isize - c_b as isize;
-        }
-    }
-    return 0;
-}
-
-#[no_mangle]
-pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: usize){
-    if src < dst {
-        asm!("std
-            rep movsb"
-            :
-            : "{edi}"(dst.offset(len as isize - 1)), "{esi}"(src.offset(len as isize - 1)), "{ecx}"(len)
-            : "cc", "memory"
-            : "intel", "volatile");
-    }else{
-        asm!("cld
-            rep movsb"
-            :
-            : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
-            : "cc", "memory"
-            : "intel", "volatile");
-    }
-}
-
-#[no_mangle]
-pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: usize){
-    asm!("cld
-        rep movsb"
-        :
-        : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
-        : "cc", "memory"
-        : "intel", "volatile");
-}
-
-#[no_mangle]
-pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
-    asm!("cld
-        rep stosb"
-        :
-        : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
-        : "cc", "memory"
-        : "intel", "volatile");
-}
-/* } Externs */

@@ -10,15 +10,13 @@ SECTIONS {
 		*(.text*)
 	} >highmem
 
-	.data : {
-		*(.data*)
-	} >highmem
-
 	.rodata : {
 		*(.rodata*)
 	} >highmem
 
-	_end = .;
+	.data : {
+		*(.data*)
+	} >highmem
 
 	/DISCARD/ : {
 		*(.comment)

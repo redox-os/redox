@@ -32,6 +32,8 @@ interrupts:
     pushad
     push dword [0x200000]
     call [.handler]
+    ;Put return value in stack for popad
+    mov [esp + 32], eax
     add esp, 4
     popad
     iretd

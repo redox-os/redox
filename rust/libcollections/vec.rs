@@ -65,7 +65,7 @@ use alloc::heap::EMPTY;
 use core::cmp::Ordering;
 use core::fmt;
 use core::hash::{self, Hash};
-use core::intrinsics::{arith_offset, assume, drop_in_place};
+use core::intrinsics::{arith_offset, assume, drop_in_place, needs_drop};
 use core::iter::FromIterator;
 use core::mem;
 use core::ops::{Index, IndexMut, Deref};
@@ -614,8 +614,6 @@ impl<T> Vec<T> {
     /// # Examples
     ///
     /// ```
-    /// #![feature(append)]
-    ///
     /// let mut vec = vec![1, 2, 3];
     /// let mut vec2 = vec![4, 5, 6];
     /// vec.append(&mut vec2);
@@ -623,9 +621,7 @@ impl<T> Vec<T> {
     /// assert_eq!(vec2, []);
     /// ```
     #[inline]
-    #[unstable(feature = "append",
-               reason = "new API, waiting for dust to settle",
-               issue = "27765")]
+    #[stable(feature = "append", since = "1.4.0")]
     pub fn append(&mut self, other: &mut Self) {
         self.reserve(other.len());
         let len = self.len();
@@ -765,9 +761,7 @@ impl<T> Vec<T> {
     /// assert_eq!(vec2, [2, 3]);
     /// ```
     #[inline]
-    #[unstable(feature = "split_off",
-               reason = "new API, waiting for dust to settle",
-               issue = "27766")]
+    #[stable(feature = "split_off", since = "1.4.0")]
     pub fn split_off(&mut self, at: usize) -> Self {
         assert!(at <= self.len(), "`at` out of bounds");
 
@@ -1135,7 +1129,7 @@ impl<T> ops::Deref for Vec<T> {
     fn deref(&self) -> &[T] {
         unsafe {
             let p = self.buf.ptr();
-            assume(p != 0 as *mut T);
+            assume(!p.is_null());
             slice::from_raw_parts(p, self.len)
         }
     }
@@ -1328,8 +1322,14 @@ impl<T> Drop for Vec<T> {
         // OK because exactly when this stops being a valid assumption, we
         // don't need unsafe_no_drop_flag shenanigans anymore.
         if self.buf.unsafe_no_drop_flag_needs_drop() {
-            for x in self.iter_mut() {
-                unsafe { drop_in_place(x); }
+            unsafe {
+                // The branch on needs_drop() is an -O1 performance optimization.
+                // Without the branch, dropping Vec<u8> takes linear time.
+                if needs_drop::<T>() {
+                    for x in self.iter_mut() {
+                        drop_in_place(x);
+                    }
+                }
             }
         }
         // RawVec handles deallocation

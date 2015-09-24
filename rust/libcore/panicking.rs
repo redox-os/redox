@@ -59,15 +59,12 @@ fn panic_bounds_check(file_line: &(&'static str, u32),
 
 #[cold] #[inline(never)]
 pub fn panic_fmt(fmt: fmt::Arguments, file_line: &(&'static str, u32)) -> ! {
-/*
     #[allow(improper_ctypes)]
     extern {
         #[lang = "panic_fmt"]
+        #[unwind]
         fn panic_impl(fmt: fmt::Arguments, file: &'static str, line: u32) -> !;
     }
     let (file, line) = *file_line;
     unsafe { panic_impl(fmt, file, line) }
-*/
-    unsafe { asm!("int 3" : : : : "intel") }
-    loop{}
 }

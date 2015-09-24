@@ -446,6 +446,6 @@ impl<T> Drop for RawVec<T> {
 #[inline]
 fn alloc_guard(alloc_size: usize) {
     if core::usize::BITS < 64 {
-        //assert!(alloc_size <= ::core::isize::MAX as usize, "capacity overflow");
+        assert!(alloc_size <= ::core::isize::MAX as usize, "capacity overflow");
     }
 }

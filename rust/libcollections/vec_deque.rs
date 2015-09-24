@@ -20,10 +20,12 @@
 
 use core::cmp::Ordering;
 use core::fmt;
-use core::iter::{self, repeat, FromIterator};
+use core::iter::{repeat, FromIterator};
+use core::mem;
 use core::ops::{Index, IndexMut};
 use core::ptr;
 use core::slice;
+use core::usize;
 
 use core::hash::{Hash, Hasher};
 use core::cmp;
@@ -32,6 +34,7 @@ use alloc::raw_vec::RawVec;
 
 const INITIAL_CAPACITY: usize = 7; // 2^3 - 1
 const MINIMUM_CAPACITY: usize = 1; // 2 - 1
+const MAXIMUM_ZST_CAPACITY: usize = 1 << (usize::BITS - 1); // Largest possible power of two
 
 /// `VecDeque` is a growable ring buffer, which can be used as a
 /// double-ended queue efficiently.
@@ -83,7 +86,12 @@ impl<T> VecDeque<T> {
     /// Marginally more convenient
     #[inline]
     fn cap(&self) -> usize {
-        self.buf.cap()
+        if mem::size_of::<T>() == 0 {
+            // For zero sized types, we are always at maximum capacity
+            MAXIMUM_ZST_CAPACITY
+        } else {
+            self.buf.cap()
+        }
     }
 
     /// Turn ptr into a slice
@@ -377,7 +385,7 @@ impl<T> VecDeque<T> {
     /// # Examples
     ///
     /// ```
-    /// #![feature(collections)]
+    /// #![feature(deque_extras)]
     ///
     /// use std::collections::VecDeque;
     ///
@@ -387,6 +395,9 @@ impl<T> VecDeque<T> {
     /// buf.shrink_to_fit();
     /// assert!(buf.capacity() >= 4);
     /// ```
+    #[unstable(feature = "deque_extras",
+               reason = "needs to be audited",
+               issue = "27788")]
     pub fn shrink_to_fit(&mut self) {
         // +1 since the ringbuffer always leaves one space empty
         // len + 1 can't overflow for an existing, well-formed ringbuffer.
@@ -928,7 +939,7 @@ impl<T> VecDeque<T> {
     ///
     /// # Examples
     /// ```
-    /// #![feature(collections)]
+    /// #![feature(deque_extras)]
     ///
     /// use std::collections::VecDeque;
     ///
@@ -938,6 +949,9 @@ impl<T> VecDeque<T> {
     /// buf.insert(1, 11);
     /// assert_eq!(Some(&11), buf.get(1));
     /// ```
+    #[unstable(feature = "deque_extras",
+               reason = "needs to be audited",
+               issue = "27788")]
     pub fn insert(&mut self, index: usize, value: T) {
         assert!(index <= self.len(), "index out of bounds");
         if self.is_full() {
@@ -1316,9 +1330,7 @@ impl<T> VecDeque<T> {
     /// assert_eq!(buf2.len(), 2);
     /// ```
     #[inline]
-    #[unstable(feature = "split_off",
-               reason = "new API, waiting for dust to settle",
-               issue = "27766")]
+    #[stable(feature = "split_off", since = "1.4.0")]
     pub fn split_off(&mut self, at: usize) -> Self {
         let len = self.len();
         assert!(at <= len, "`at` out of bounds");
@@ -1370,8 +1382,6 @@ impl<T> VecDeque<T> {
     /// # Examples
     ///
     /// ```
-    /// #![feature(append)]
-    ///
     /// use std::collections::VecDeque;
     ///
     /// let mut buf: VecDeque<_> = vec![1, 2, 3].into_iter().collect();
@@ -1381,9 +1391,7 @@ impl<T> VecDeque<T> {
     /// assert_eq!(buf2.len(), 0);
     /// ```
     #[inline]
-    #[unstable(feature = "append",
-               reason = "new API, waiting for dust to settle",
-               issue = "27765")]
+    #[stable(feature = "append", since = "1.4.0")]
     pub fn append(&mut self, other: &mut Self) {
         // naive impl
         self.extend(other.drain());
@@ -1409,9 +1417,7 @@ impl<T> VecDeque<T> {
     /// let v: Vec<_> = buf.into_iter().collect();
     /// assert_eq!(&v[..], &[2, 4]);
     /// ```
-    #[unstable(feature = "vec_deque_retain",
-               reason = "new API, waiting for dust to settle",
-               issue = "27767")]
+    #[stable(feature = "vec_deque_retain", since = "1.4.0")]
     pub fn retain<F>(&mut self, mut f: F) where F: FnMut(&T) -> bool {
         let len = self.len();
         let mut del = 0;
@@ -1467,6 +1473,7 @@ impl<T: Clone> VecDeque<T> {
 #[inline]
 fn wrap_index(index: usize, size: usize) -> usize {
     // size is always a power of 2
+    debug_assert!(size.is_power_of_two());
     index & (size - 1)
 }
 
@@ -1676,7 +1683,7 @@ impl<A: Eq> Eq for VecDeque<A> {}
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A: PartialOrd> PartialOrd for VecDeque<A> {
     fn partial_cmp(&self, other: &VecDeque<A>) -> Option<Ordering> {
-        iter::order::partial_cmp(self.iter(), other.iter())
+        self.iter().partial_cmp(other.iter())
     }
 }
 
@@ -1684,7 +1691,7 @@ impl<A: PartialOrd> PartialOrd for VecDeque<A> {
 impl<A: Ord> Ord for VecDeque<A> {
     #[inline]
     fn cmp(&self, other: &VecDeque<A>) -> Ordering {
-        iter::order::cmp(self.iter(), other.iter())
+        self.iter().cmp(other.iter())
     }
 }
 
@@ -2031,6 +2038,36 @@ mod tests {
                     assert_eq!(tester, expected_self);
                     assert_eq!(result, expected_other);
                 }
+            }
+        }
+    }
+
+    #[test]
+    fn test_zst_push() {
+        const N: usize = 8;
+
+        // Zero sized type
+        struct Zst;
+
+        // Test that for all possible sequences of push_front / push_back,
+        // we end up with a deque of the correct size
+
+        for len in 0..N {
+            let mut tester = VecDeque::with_capacity(len);
+            assert_eq!(tester.len(), 0);
+            assert!(tester.capacity() >= len);
+            for case in 0..(1 << len) {
+                assert_eq!(tester.len(), 0);
+                for bit in 0..len {
+                    if case & (1 << bit) != 0 {
+                        tester.push_front(Zst);
+                    } else {
+                        tester.push_back(Zst);
+                    }
+                }
+                assert_eq!(tester.len(), len);
+                assert_eq!(tester.iter().count(), len);
+                tester.clear();
             }
         }
     }

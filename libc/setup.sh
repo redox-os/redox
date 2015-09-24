@@ -47,6 +47,6 @@ popd
 rm -rf "build-${NEWLIB}"
 mkdir "build-${NEWLIB}"
 pushd "build-${NEWLIB}"
-    "../${NEWLIB}/configure" --host=i686-linux-gnu --target=i386-elf-redox "CFLAGS=-m32" "LDFLAGS=-m32"
+    "../${NEWLIB}/configure" --build=i686-linux-gnu --target=i386-elf-redox "CFLAGS=-m32" "LDFLAGS=-m32"
     make all
 popd

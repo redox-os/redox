@@ -54,10 +54,12 @@ impl Window {
             ptr: 0 as *mut Window
         };
 
-        ret.ptr = ret.deref_mut();
+        unsafe{
+            ret.ptr = ret.deref_mut();
 
-        if ret.ptr as usize > 0 {
-            sys_window_create(ret.ptr);
+            if ret.ptr as usize > 0 {
+                sys_window_create(ret.ptr);
+            }
         }
 
         return ret;
@@ -76,7 +78,7 @@ impl Window {
             Option::None => return EventOption::None
         }
     }
-    
+
     pub fn redraw(&mut self){
         self.content.flip();
         RedrawEvent { redraw: REDRAW_ALL }.to_event().trigger();
@@ -197,8 +199,10 @@ impl Window {
 
 impl Drop for Window {
     fn drop(&mut self){
-        if self.ptr as usize > 0{
-            sys_window_destroy(self.ptr);
+        unsafe{
+            if self.ptr as usize > 0{
+                sys_window_destroy(self.ptr);
+            }
         }
     }
 }

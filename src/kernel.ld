@@ -10,13 +10,13 @@ SECTIONS {
 		*(.text*)
 	} >lowmem
 
-	.data : {
-		*(.data*)
-	} >lowmem
-
 	.rodata : {
-		*(.rodata*)
-	} >lowmem
+                *(.rodata*)
+        } >lowmem
+
+        .data : {
+                *(.data*)
+        } >lowmem
 
 	/DISCARD/ : {
 		*(.comment)
