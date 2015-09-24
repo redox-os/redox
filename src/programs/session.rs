@@ -248,7 +248,7 @@ impl Session {
                 if self.icon.data > 0 {
                     self.display.image_alpha(Point::new(12, self.display.height as isize - 32), self.icon.data, self.icon.size);
                 }else{
-                    self.display.text(Point::new(8, self.display.height as isize - 24), &String::from_str("Redox"), Color::new(255, 255, 255));
+                    self.display.char(Point::new(24, self.display.height as isize - 24), 'R', Color::new(255, 255, 255));
                 }
 
                 let mut chars = 32;
@@ -259,10 +259,15 @@ impl Session {
                 for i in 0..self.windows_ordered.len() {
                     match self.windows_ordered.get(i) {
                         Option::Some(window_ptr) => {
-                            let x = (5*8 + 2*8 + (chars*8 + 3*4) * i) as isize;
+                            let mut x = (5*8 + 2*8 + (chars*8 + 3*4) * i) as isize;
                             let w = (chars*8 + 2*4) as usize;
                             self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w, 32), (**window_ptr).border_color);
-                            self.display.text(Point::new(x + 4, self.display.height as isize - 24), &(**window_ptr).title.substr(0, chars as usize), (**window_ptr).title_color);
+                            x += 4;
+
+                            for c in (**window_ptr).title.chars() {
+                                self.display.char(Point::new(x, self.display.height as isize - 24), c, (**window_ptr).title_color);
+                                x += 8;
+                            }
                         },
                         Option::None => ()
                     }
