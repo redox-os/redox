@@ -2,6 +2,7 @@ use alloc::boxed::*;
 
 use core::cmp::max;
 use core::cmp::min;
+use core::mem::size_of;
 use core::ptr;
 use core::slice;
 
@@ -59,50 +60,93 @@ pub unsafe fn do_sys_exit(status: isize) {
 }
 
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
-    let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-    match (*resource_ptr).read(slice::from_raw_parts_mut(buf, count)) {
-        Option::Some(count) => return count,
-        Option::None => return 0xFFFFFFFF
+    d("Read ");
+    dh(fd);
+    dl();
+    if fd == 0 {
+        //TODO: Read stdin
+        return 0xFFFFFFFF;
+    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
+        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
+        match (*resource_ptr).read(slice::from_raw_parts_mut(buf, count)) {
+            Option::Some(count) => return count,
+            Option::None => return 0xFFFFFFFF
+        }
+    }else{
+        return 0xFFFFFFFF;
     }
 }
 
 //TODO: Remove
 pub unsafe fn do_sys_read_to_end(fd: usize, vec: *mut Vec<u8>) -> usize {
-    let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-    match (*resource_ptr).read_to_end(&mut *vec) {
-        Option::Some(count) => return count,
-        Option::None => return 0xFFFFFFFF
+    d("Read To End ");
+    dh(fd);
+    dl();
+    if fd == 0 {
+        //TODO: Read stdin
+        return 0xFFFFFFFF;
+    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
+        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
+        match (*resource_ptr).read_to_end(&mut *vec) {
+            Option::Some(count) => return count,
+            Option::None => return 0xFFFFFFFF
+        }
+    }else{
+        return 0xFFFFFFFF;
     }
 }
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
-    if fd == 1 {
+    d("Write ");
+    dh(fd);
+    dl();
+    if fd == 1 || fd == 2 {
         for i in 0..count as isize {
             do_sys_debug(*buf.offset(i));
         }
         return count;
-    }else{
+    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
         let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
         match (*resource_ptr).write(slice::from_raw_parts(buf, count)) {
             Option::Some(count) => return count,
             Option::None => return 0xFFFFFFFF
         }
+    }else{
+        return 0xFFFFFFFF
     }
 }
 
+#[inline(never)]
 pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     let resource_ptr: *mut Box<Resource> = alloc_type();
-    ptr::write(resource_ptr, (*::session_ptr).open(&URL::from_string(&String::from_c_str(path))));
+    let path_str = String::from_c_str(path);
+    ptr::write(resource_ptr, (*::session_ptr).open(&URL::from_string(&path_str)));
+    d("Open ");
+    path_str.d();
+    d(" ");
+    dh(resource_ptr as usize);
+    dl();
     return resource_ptr as usize;
 }
 
+#[inline(never)]
 pub unsafe fn do_sys_close(fd: usize) -> usize {
-    let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-    drop(ptr::read(resource_ptr));
-    unalloc(resource_ptr as usize);
-    return 0;
+    d("Close ");
+    dh(fd);
+    dl();
+    if fd == 0 || fd == 1 || fd == 2 {
+        return 0;
+    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
+        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
+        drop(ptr::read(resource_ptr));
+        unalloc(resource_ptr as usize);
+        return 0;
+    }else{
+        return 0xFFFFFFFF;
+    }
 }
 
+#[inline(never)]
 pub unsafe fn do_sys_brk(addr: usize) -> usize {
     let mut ret = 0;
 
@@ -150,6 +194,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     return ret;
 }
 
+#[inline(never)]
 pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),

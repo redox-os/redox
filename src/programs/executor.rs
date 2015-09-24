@@ -23,18 +23,22 @@ impl SessionItem for Executor {
             let mut entry = 0;
             {
                 let mut resource = url.open();
+                drop(url);
 
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
+                drop(resource);
 
                 let executable = ELF::from_data(vec.as_ptr() as usize);
-                //self.executable.d();
+                drop(vec);
+
                 if executable.data > 0 {
                     virtual_size = alloc_size(executable.data) - 4096;
                     physical_address = alloc(virtual_size);
                     ptr::copy((executable.data + 4096) as *const u8, physical_address as *mut u8, virtual_size);
                     entry = executable.entry();
                 }
+                drop(executable);
             }
 
             if physical_address > 0 && virtual_address > 0 && virtual_size > 0 && entry >= virtual_address && entry < virtual_address + virtual_size {
