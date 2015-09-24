@@ -36,8 +36,7 @@ uint syscall(uint eax, uint ebx, uint ecx, uint edx) {
     asm volatile("int $0x80"
         : "=a"(eax)
         : "a"(eax), "b"(ebx), "c"(ecx), "d"(edx)
-        : "memory"
-        : "intel", "volatile");
+        : "memory");
 
     return eax;
 }
@@ -130,5 +129,5 @@ int wait(int *status) {
 }
 
 int write(int file, char *ptr, int len) {
-    return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
+    return (int)syscall(SYS_WRITE, (uint)file, (uint)ptr, (uint)len);
 }
