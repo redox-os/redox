@@ -121,6 +121,13 @@ qemu: harddrive.bin
 			-soundhw ac97 \
 			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
 
+qemu_no_kvm: harddrive.bin
+	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=network.pcap \
+			-usb -device usb-tablet \
+			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
+			-soundhw ac97 \
+			-serial mon:stdio -d guest_errors -hda $<
+
 qemu_tap: harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
