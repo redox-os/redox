@@ -49,6 +49,10 @@ pub unsafe fn sys_time(time_ptr: *mut Duration, realtime: bool){
     syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
 }
 
+pub unsafe fn sys_brk(addr: usize) -> usize {
+    return syscall(SYS_BRK, addr as u32, 0, 0) as usize;
+}
+
 //TODO: Export unsafe
 pub fn sys_yield(){
     unsafe{

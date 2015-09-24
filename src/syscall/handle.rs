@@ -103,6 +103,53 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
     return 0;
 }
 
+pub unsafe fn do_sys_brk(addr: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = start_no_ints();
+
+    let contexts = &*(*contexts_ptr);
+    if context_enabled && context_i > 1 {
+        if let Option::Some(mut current) = contexts.get(context_i) {
+            current.unmap();
+
+            if let Option::Some(mut entry) = current.memory.get(0) {
+                ret = entry.virtual_address + entry.virtual_size;
+
+                if addr == 0 {
+                    //Get current break
+                }else if addr >= entry.virtual_address {
+                    let request_size = addr - entry.virtual_address;
+                    let new_address = realloc(entry.physical_address, request_size);
+                    if new_address > 0 {
+                        ret = addr;
+
+                        let new_size = alloc_size(new_address);
+                        entry.physical_address = new_address;
+                        entry.virtual_size = new_size;
+                    }else{
+                        d("BRK: Realloc Failed\n");
+                    }
+                }else{
+                    d("BRK: Address not in correct space\n");
+                }
+            }else{
+                d("BRK: Memory not found\n");
+            }
+
+            current.map();
+        }else{
+            d("BRK: Context not found\n");
+        }
+    }else{
+        d("BRK: Contexts disabled\n");
+    }
+
+    end_no_ints(reenable);
+
+    return ret;
+}
+
 pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),
@@ -123,6 +170,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
 
             end_no_ints(reenable);
         },
+        SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
         SYS_YIELD => context_switch(false),
 
         SYS_TRIGGER => {

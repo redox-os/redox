@@ -84,8 +84,7 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
 pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
-    pub virtual_size: usize,
-    pub cleanup: bool
+    pub virtual_size: usize
 }
 
 pub struct Context {
@@ -238,10 +237,8 @@ impl Context {
 impl Drop for Context {
     fn drop(&mut self){
         while let Option::Some(entry) = self.memory.remove(0) {
-            if entry.cleanup {
-                unsafe {
-                    unalloc(entry.physical_address);
-                }
+            unsafe {
+                unalloc(entry.physical_address);
             }
         }
 

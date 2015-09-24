@@ -8,6 +8,7 @@ pub const SYS_CLOSE: u32 = 6;
 pub const SYS_TIME: u32 = 13;
 pub const SYS_LSEEK: u32 = 19;
 pub const SYS_FSTAT: u32 = 28;
+pub const SYS_BRK: u32 = 45;
 pub const SYS_YIELD: u32 = 158;
 
 pub const SYS_TRIGGER: u32 = 1000;

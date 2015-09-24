@@ -21,6 +21,7 @@ extern int errno;
 #define SYS_TIME 13
 #define SYS_LSEEK 19
 #define SYS_FSTAT 28
+#define SYS_BRK 45
 #define SYS_YIELD 158
 
 #define SYS_TRIGGER 1000
@@ -53,79 +54,76 @@ char *__env[1] = { 0 };
 char **environ = __env;
 
 int execve(char *name, char **argv, char **env) {
-  errno = ENOMEM;
-  return -1;
+    errno = ENOMEM;
+    return -1;
 }
 
 int fork(void) {
-  errno = EAGAIN;
-  return -1;
+    errno = EAGAIN;
+    return -1;
 }
 
 int fstat(int file, struct stat *st) {
-  st->st_mode = S_IFCHR;
-  return 0;
+    st->st_mode = S_IFCHR;
+    return 0;
 }
 
 int getpid() {
-  return 1;
+    return 1;
 }
 
 int isatty(int file) {
-  return 1;
+    return 1;
 }
 
 int kill(int pid, int sig) {
-  errno = EINVAL;
-  return -1;
+    errno = EINVAL;
+    return -1;
 }
 
 int link(char *old, char *new) {
-  errno = EMLINK;
-  return -1;
+    errno = EMLINK;
+    return -1;
 }
 
 int lseek(int file, int ptr, int dir) {
-  return (int)syscall(SYS_LSEEK, (uint)file, (uint)ptr, (uint)dir);
+    return (int)syscall(SYS_LSEEK, (uint)file, (uint)ptr, (uint)dir);
 }
 
 int open(const char * file, int flags, ...) {
-  return (int)syscall(SYS_OPEN, (uint)file, (uint)flags, 0);
+    return (int)syscall(SYS_OPEN, (uint)file, (uint)flags, 0);
 }
 
 int read(int file, char *ptr, int len) {
-  return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
+    return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
 }
 
-caddr_t sbrk(int incr) {
-  extern char _end;		/* Defined by the linker */
-  static char *heap_end;
-  char *prev_heap_end;
-  if (heap_end == 0) {
-    heap_end = &_end;
-  }
-  prev_heap_end = heap_end;
-  heap_end += incr;
-  return (caddr_t) prev_heap_end;
+void *sbrk(ptrdiff_t increment) /* SHOULD be ptrdiff_t */{
+    char * curr_brk = (char *)syscall(SYS_BRK, 0, 0, 0);
+    char * new_brk = (char *)syscall(SYS_BRK, (uint)(curr_brk + increment), 0, 0);
+    if (new_brk != curr_brk + increment){
+        return (void *) -1;
+    }
+    return curr_brk;
 }
 
 int stat(const char *__restrict path, struct stat *__restrict sbuf) {
-  sbuf->st_mode = S_IFCHR;
-  return 0;
+    sbuf->st_mode = S_IFCHR;
+    return 0;
 }
 
 clock_t times(struct tms *buf) {
-  return -1;
+    return -1;
 }
 
 int unlink(char *name) {
-  errno = ENOENT;
-  return -1;
+    errno = ENOENT;
+    return -1;
 }
 
 int wait(int *status) {
-  errno = ECHILD;
-  return -1;
+    errno = ECHILD;
+    return -1;
 }
 
 int write(int file, char *ptr, int len) {

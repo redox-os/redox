@@ -1,57 +1,65 @@
 use common::context::*;
 use common::elf::*;
+use common::memory::*;
 use common::scheduler::*;
 
 use programs::common::*;
 
-pub struct Executor {
-    executable: ELF
-}
+pub struct Executor;
 
 impl Executor {
     pub fn new() -> Executor {
-        Executor {
-            executable: ELF::new()
-        }
+        Executor
     }
 }
 
 impl SessionItem for Executor {
     fn main(&mut self, url: URL){
-        let mut resource = url.open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
         unsafe{
-            self.executable = ELF::from_data(vec.as_ptr() as usize);
-            //self.executable.d();
+            let mut physical_address = 0;
+            let virtual_address = LOAD_ADDR;
+            let mut virtual_size = 0;
 
-            // Setup 4 MB upper mem space to map to program
-            let reenable = start_no_ints();
+            let mut entry = 0;
+            {
+                let mut resource = url.open();
 
-            let contexts = &mut *(*contexts_ptr);
+                let mut vec: Vec<u8> = Vec::new();
+                resource.read_to_end(&mut vec);
 
-            match contexts.get(context_i) {
-                Option::Some(mut current) => {
-                    current.memory.push(ContextMemory {
-                        physical_address: self.executable.data + 4096, /*Extra 4096 for null segment*/
-                        virtual_address: LOAD_ADDR,
-                        virtual_size: 4 * 1024 * 1024, // 4 MB
-                        cleanup: false //Do not cleanup on exit
-                    });
-                    current.map();
-                },
-                Option::None => ()
+                let executable = ELF::from_data(vec.as_ptr() as usize);
+                //self.executable.d();
+                if executable.data > 0 {
+                    virtual_size = alloc_size(executable.data) - 4096;
+                    physical_address = alloc(virtual_size);
+                    ptr::copy((executable.data + 4096) as *const u8, physical_address as *mut u8, virtual_size);
+                    entry = executable.entry();
+                }
             }
 
-            end_no_ints(reenable);
+            if physical_address > 0 && virtual_address > 0 && virtual_size > 0 && entry >= virtual_address && entry < virtual_address + virtual_size {
+                let reenable = start_no_ints();
 
-            let entry = self.executable.entry();
-            if self.executable.can_call(entry){
-                //Rediculous call mechanism
+                let contexts = &mut *(*contexts_ptr);
+
+                match contexts.get(context_i) {
+                    Option::Some(mut current) => {
+                        current.memory.push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: virtual_address,
+                            virtual_size: virtual_size
+                        });
+                        current.map();
+                    },
+                    Option::None => ()
+                }
+
+                end_no_ints(reenable);
+
                 let fn_ptr: *const usize = &entry;
                 (*(fn_ptr as *const extern "cdecl" fn()))();
+            }else if physical_address > 0{
+                unalloc(physical_address);
             }
         }
     }
