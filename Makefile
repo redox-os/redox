@@ -54,7 +54,13 @@ liballoc.rlib: rust/liballoc/lib.rs libcore.rlib
 liballoc_system.rlib: rust/liballoc_system/lib.rs libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-libcollections.rlib: rust/libcollections/lib.rs libcore.rlib liballoc.rlib liballoc_system.rlib
+librustc_unicode.rlib: rust/librustc_unicode/lib.rs libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+libcollections.rlib: rust/libcollections/lib.rs libcore.rlib liballoc.rlib liballoc_system.rlib librustc_unicode.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+libredox.rlib: libredox/lib.rs libcore.rlib liballoc.rlib liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 kernel.rlib: src/kernel.rs libcore.rlib liballoc.rlib liballoc_system.rlib
@@ -70,7 +76,7 @@ filesystem/asm/%.bin: filesystem/asm/%.asm src/program.ld
 	$(AS) -f elf -o $*.o $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.o
 
-filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib
+filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib liballoc_system.rlib libredox.rlib
 	$(SED) "s|APPLICATION_PATH|$<|" src/program.rs > $*.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $*.rlib $*.gen
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib
