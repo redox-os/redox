@@ -1,0 +1,14 @@
+{
+        "data-layout": "e-p:32:32-f64:32:64-i64:32:64-f80:32:32-n8:16:32",
+        "llvm-target": "i686-unknown-linux-gnu",
+        "target-endian": "little",
+        "target-pointer-width": "32",
+        "features": "-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
+        "os": "none",
+        "arch": "x86",
+        "pre-link-args": ["-m32"],
+        "no-compiler-rt": true,
+        "eliminate-frame-pointer": true,
+        "linker_is_gnu": true,
+        "morestack": false
+}

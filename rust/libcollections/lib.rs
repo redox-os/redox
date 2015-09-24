@@ -26,6 +26,7 @@
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
        html_root_url = "https://doc.rust-lang.org/nightly/",
        html_playground_url = "https://play.rust-lang.org/",
+       issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
        test(no_crate_inject))]
 
 #![allow(trivial_casts)]
@@ -37,6 +38,8 @@
 #![feature(core_intrinsics)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
+#![feature(fmt_internals)]
+#![feature(fmt_radix)]
 #![feature(heap_api)]
 #![feature(iter_order)]
 #![feature(iter_arith)]
@@ -46,6 +49,8 @@
 #![feature(oom)]
 #![feature(pattern)]
 #![feature(ptr_as_ref)]
+#![feature(ref_slice)]
+#![feature(slice_bytes)]
 #![feature(slice_patterns)]
 #![feature(staged_api)]
 #![feature(step_by)]
@@ -55,6 +60,7 @@
 #![feature(unicode)]
 #![feature(unique)]
 #![feature(unsafe_no_drop_flag, filling_drop)]
+#![feature(decode_utf16)]
 #![feature(utf8_error)]
 #![cfg_attr(test, feature(rand, test))]
 
@@ -111,7 +117,7 @@ mod std {
 }
 
 /// An endpoint of a range of keys.
-#[unstable(feature = "collections_bound", issue = "27711")]
+#[unstable(feature = "collections_bound", issue = "27787")]
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
 pub enum Bound<T> {
     /// An inclusive bound.

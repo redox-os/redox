@@ -6,13 +6,13 @@ use core::mem::transmute;
 use core::ops::Drop;
 use core::simd::*;
 
-use common::memory::*;
 use common::scheduler::*;
-use common::string::*;
 
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
+
+use syscall::call::*;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -70,7 +70,7 @@ impl Display {
         let mode_info = &*VBEMODEINFO;
 
         let ret = Display {
-            offscreen: alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
+            offscreen: sys_alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
             bytesperrow: mode_info.bytesperscanline as usize,
@@ -91,8 +91,8 @@ impl Display {
             let memory_size = bytesperrow * height;
 
             let ret = Display {
-                offscreen: alloc(memory_size),
-                onscreen: alloc(memory_size),
+                offscreen: sys_alloc(memory_size),
+                onscreen: sys_alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width:  width,
@@ -316,14 +316,6 @@ impl Display {
         }
     }
 
-    pub fn text(&self, point: Point, text: &String, color: Color){
-        let mut cursor = Point::new(point.x, point.y);
-        for c in text.chars() {
-            self.char(cursor, c, color);
-            cursor.x += 8;
-        }
-    }
-
     /* Cursor hacks { */
     pub fn image_alpha_onscreen(&self, point: Point, data: usize, size: Size){
         let start_y = max(0, point.y) as usize;
@@ -374,11 +366,11 @@ impl Drop for Display {
     fn drop(&mut self){
         unsafe{
             if self.offscreen > 0 {
-                unalloc(self.offscreen);
+                sys_unalloc(self.offscreen);
                 self.offscreen = 0;
             }
             if ! self.root && self.onscreen > 0 {
-                unalloc(self.onscreen);
+                sys_unalloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

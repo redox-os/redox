@@ -1,4 +1,4 @@
-use programs::common::*;
+use redox::*;
 
 pub fn encode(text: &String) -> String{
     let mut html = String::new();
@@ -53,7 +53,7 @@ fn generate_html(path: &String) -> String{
         html = html + "</nav>\n";
 
         if *path == "readme".to_string() {
-            let mut resource = URL::from_str("file:///README.md").open();
+            let mut resource = File::open(&"file:///README.md".to_string());
 
             let mut resource_data: Vec<u8> = Vec::new();
             resource.read_to_end(&mut resource_data);
@@ -103,17 +103,9 @@ fn generate_html(path: &String) -> String{
             html = html + "</div>\n";
         }else{
             html = html + "<table class='table table-bordered'>\n".to_string();
-                let mut resource = URL::from_string(&path).open();
+                let mut resource = File::open(&path);
 
-                let resource_type;
-                match resource.stat() {
-                    ResourceType::File => resource_type = "File".to_string(),
-                    ResourceType::Dir => resource_type = "Dir".to_string(),
-                    ResourceType::Array => resource_type = "Array".to_string(),
-                    _ => resource_type = "None".to_string()
-                }
-
-                html = html + "  <caption><h3>" + encode(path) + "</h3><h4>" + encode(&resource_type) + "</h4></caption>\n";
+                html = html + "  <caption><h3>" + encode(path) + "</h3></caption>\n";
 
                 let mut resource_data: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut resource_data);
@@ -141,29 +133,24 @@ pub fn main(){
     println!("Starting HTTP Server".to_string());
 
     loop {
-        let mut resource = URL::from_str("tcp:///80").open();
-        match resource.stat(){
-            ResourceType::File => {
-                println!("Request from ".to_string() + resource.url().to_string());
+        {
+            let mut resource = File::open(&"tcp:///80".to_string());
+            println!("Request from ".to_string() + resource.url());
 
-                let mut data: Vec<u8> = Vec::new();
-                resource.read_to_end(&mut data);
-                println!(String::from_utf8(&data));
+            let mut data: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut data);
+            println!(String::from_utf8(&data));
 
-                let html = generate_html(&"readme".to_string()).to_utf8();
+            let html = generate_html(&"readme".to_string()).to_utf8();
 
-                let mut response = ("HTTP/1.1 200 OK\r\n".to_string()
-                        + "Content-Type: text/html; charset=UTF-8\r\n"
-                        + "Content-Length: " + html.len() + "\r\n"
-                        + "Connection: Close\r\n"
-                        + "\r\n").to_utf8();
-                response.push_all(&html);
+            let mut response = ("HTTP/1.1 200 OK\r\n".to_string()
+                    + "Content-Type: text/html; charset=UTF-8\r\n"
+                    + "Content-Length: " + html.len() + "\r\n"
+                    + "Connection: Close\r\n"
+                    + "\r\n").to_utf8();
+            response.push_all(&html);
 
-                resource.write(response.as_slice());
-
-                drop(resource);
-            },
-            _ => ()
+            resource.write(response.as_slice());
         }
 
         loop {

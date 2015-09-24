@@ -1,6 +1,6 @@
 use core::ops::DerefMut;
 
-use programs::common::*;
+use redox::*;
 
 /* Magic Macros { */
 static mut application: *mut Application = 0 as *mut Application;
@@ -85,10 +85,9 @@ impl Command {
             main: box |args: &Vec<String>|{
                 match args.get(1) {
                     Option::Some(arg) => {
-                        let url = URL::from_string(&arg);
-                        println!(url.to_string());
+                        println!(arg);
 
-                        let mut resource = url.open();
+                        let mut resource = File::open(&arg);
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);
@@ -106,23 +105,14 @@ impl Command {
         commands.push(Command {
             name: "send".to_string(),
             main: box |args: &Vec<String>|{
-                let url;
+                let path;
                 match args.get(1) {
-                    Option::Some(arg) => url = URL::from_string(&arg),
-                    Option::None => url = URL::new()
+                    Option::Some(arg) => path = arg.clone(),
+                    Option::None => path = String::new()
                 }
-                println!(url.to_string());
+                println!(path);
 
-                let mut resource = url.open();
-
-                println!("Canonical URL: ".to_string() + resource.url().to_string());
-
-                match resource.stat() {
-                    ResourceType::File => println!("Type: File".to_string()),
-                    ResourceType::Dir => println!("Type: Dir".to_string()),
-                    ResourceType::Array => println!("Type: Array".to_string()),
-                    _ => println!("Type: None".to_string())
-                }
+                let mut resource = File::open(&path);
 
                 let mut vec: Vec<u8> = Vec::new();
                 for i in 2..args.len() {
@@ -155,23 +145,14 @@ impl Command {
         commands.push(Command {
             name: "url".to_string(),
             main: box |args: &Vec<String>|{
-                let url;
+                let path;
                 match args.get(1) {
-                    Option::Some(arg) => url = URL::from_string(&arg),
-                    Option::None => url = URL::new()
+                    Option::Some(arg) => path = arg.clone(),
+                    Option::None => path = String::new()
                 }
-                println!(url.to_string());
+                println!(path);
 
-                let mut resource = url.open();
-
-                println!("Canonical URL: ".to_string() + resource.url().to_string());
-
-                match resource.stat() {
-                    ResourceType::File => println!("Type: File".to_string()),
-                    ResourceType::Dir => println!("Type: Dir".to_string()),
-                    ResourceType::Array => println!("Type: Array".to_string()),
-                    _ => println!("Type: None".to_string())
-                }
+                let mut resource = File::open(&path);
 
                 let mut vec: Vec<u8> = Vec::new();
                 match resource.read_to_end(&mut vec) {
@@ -184,23 +165,14 @@ impl Command {
         commands.push(Command {
             name: "url_hex".to_string(),
             main: box |args: &Vec<String>|{
-                let url;
+                let path;
                 match args.get(1) {
-                    Option::Some(arg) => url = URL::from_string(&arg),
-                    Option::None => url = URL::new()
+                    Option::Some(arg) => path = arg.clone(),
+                    Option::None => path = String::new()
                 }
-                println!(url.to_string());
+                println!(path);
 
-                let mut resource = url.open();
-
-                println!("Canonical URL: ".to_string() + resource.url().to_string());
-
-                match resource.stat() {
-                    ResourceType::File => println!("Type: File".to_string()),
-                    ResourceType::Dir => println!("Type: Dir".to_string()),
-                    ResourceType::Array => println!("Type: Array".to_string()),
-                    _ => println!("Type: None".to_string())
-                }
+                let mut resource = File::open(&path);
 
                 let mut vec: Vec<u8> = Vec::new();
                 match resource.read_to_end(&mut vec) {
@@ -570,9 +542,7 @@ impl Application {
 pub fn main(){
     unsafe {
         let mut app = box Application::new();
-        unsafe{
-            application = app.deref_mut();
-        }
+        application = app.deref_mut();
         app.main();
     }
 }

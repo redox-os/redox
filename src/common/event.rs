@@ -1,9 +1,8 @@
 use core::char;
 
-use common::memory::*;
 use common::string::*;
 
-use syscall::call::sys_trigger;
+use syscall::call::*;
 
 pub enum EventOption {
     Mouse(MouseEvent),
@@ -37,7 +36,9 @@ impl Event {
     }
 
     pub fn trigger(&self){
-        sys_trigger(self);
+        unsafe{
+            sys_trigger(self);
+        }
     }
 }
 
@@ -199,7 +200,7 @@ impl OpenEvent {
             let ret = OpenEvent {
                 url_string: String::from_c_str(event.a as *const u8)
             };
-            unalloc(event.a as usize);
+            sys_unalloc(event.a as usize);
             return ret;
         }
     }

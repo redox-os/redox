@@ -11,103 +11,115 @@
 #undef errno
 extern int errno;
 
+#define SYS_EXIT 1
+#define SYS_FORK 2
+#define SYS_READ 3
+#define SYS_WRITE 4
+#define SYS_OPEN 5
+#define SYS_CLOSE 6
+#define SYS_LSEEK 19
+#define SYS_FSTAT 28
+#define SYS_BRK 45
+#define SYS_GETTIMEOFDAY 78
+#define SYS_YIELD 158
+
+uint syscall(uint eax, uint ebx, uint ecx, uint edx) {
+    asm volatile("int $0x80"
+        : "=a"(eax)
+        : "a"(eax), "b"(ebx), "c"(ecx), "d"(edx)
+        : "memory");
+
+    return eax;
+}
+
 void _exit(int code){
-    asm(
-		"int $0x80"
-		:
-        : "a"(1), "b"(code)
-	);
+    syscall(SYS_EXIT, (uint)code, 0, 0);
 }
 
 int close(int file){
-  return -1;
+    return (int)syscall(SYS_CLOSE, (uint)file, 0, 0);
 }
 
 char *__env[1] = { 0 };
 char **environ = __env;
 
 int execve(char *name, char **argv, char **env) {
-  errno = ENOMEM;
-  return -1;
+    errno = ENOMEM;
+    return -1;
 }
 
 int fork(void) {
-  errno = EAGAIN;
-  return -1;
+    errno = EAGAIN;
+    return -1;
 }
 
 int fstat(int file, struct stat *st) {
-  st->st_mode = S_IFCHR;
-  return 0;
+    st->st_mode = S_IFCHR;
+    return 0;
 }
 
 int getpid() {
-  return 1;
+    return 1;
+}
+
+int gettimeofday(struct timeval *__restrict tv, void *__restrict tz){
+    return (int)syscall(SYS_GETTIMEOFDAY, (uint)tv, (uint)tz, 0);
 }
 
 int isatty(int file) {
-  return 1;
+    return 1;
 }
 
 int kill(int pid, int sig) {
-  errno = EINVAL;
-  return -1;
+    errno = EINVAL;
+    return -1;
 }
 
 int link(char *old, char *new) {
-  errno = EMLINK;
-  return -1;
+    errno = EMLINK;
+    return -1;
 }
 
 int lseek(int file, int ptr, int dir) {
-  return 0;
+    return (int)syscall(SYS_LSEEK, (uint)file, (uint)ptr, (uint)dir);
 }
 
 int open(const char * file, int flags, ...) {
-  return -1;
+    return (int)syscall(SYS_OPEN, (uint)file, (uint)flags, 0);
 }
 
 int read(int file, char *ptr, int len) {
-  return 0;
+    return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
 }
 
-caddr_t sbrk(int incr) {
-  extern char _end;		/* Defined by the linker */
-  static char *heap_end;
-  char *prev_heap_end;
-  if (heap_end == 0) {
-    heap_end = &_end;
-  }
-  prev_heap_end = heap_end;
-  heap_end += incr;
-  return (caddr_t) prev_heap_end;
+void *sbrk(ptrdiff_t increment) /* SHOULD be ptrdiff_t */{
+    char * curr_brk = (char *)syscall(SYS_BRK, 0, 0, 0);
+    char * new_brk = (char *)syscall(SYS_BRK, (uint)(curr_brk + increment), 0, 0);
+    if (new_brk != curr_brk + increment){
+        return (void *) -1;
+    }
+    return curr_brk;
 }
 
 int stat(const char *__restrict path, struct stat *__restrict sbuf) {
-  sbuf->st_mode = S_IFCHR;
-  return 0;
+    sbuf->st_mode = S_IFCHR;
+    return 0;
 }
 
 clock_t times(struct tms *buf) {
-  return -1;
+    return -1;
 }
 
 int unlink(char *name) {
-  errno = ENOENT;
-  return -1;
+    errno = ENOENT;
+    return -1;
 }
 
 int wait(int *status) {
-  errno = ECHILD;
-  return -1;
+    errno = ECHILD;
+    return -1;
 }
 
 int write(int file, char *ptr, int len) {
-    int ret;
-    asm(
-		"int $0x80"
-		: "=a"(ret)
-        : "a"(4), "b"(file), "c"(ptr), "d"(len)
-	);
-    return ret;
+    return (int)syscall(SYS_WRITE, (uint)file, (uint)ptr, (uint)len);
 }

@@ -7,7 +7,7 @@ use core::ptr;
 use core::slice;
 use core::slice::SliceExt;
 
-use common::memory::*;
+use syscall::call::*;
 
 pub struct VecIterator<'a, T: 'a> {
     vec: &'a Vec<T>,
@@ -47,7 +47,7 @@ impl <T> Vec<T> {
     }
 
     pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Vec<T> {
-        let data = alloc(size_of::<T>() * len);
+        let data = sys_alloc(size_of::<T>() * len);
 
         ptr::copy(ptr, data as *mut T, len);
 
@@ -79,7 +79,7 @@ impl <T> Vec<T> {
         if i <= self.length {
             self.length += 1;
             unsafe {
-                self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+                self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
                 //Move all things ahead of insert forward one
                 let mut j = self.length - 1;
@@ -106,7 +106,7 @@ impl <T> Vec<T> {
                     j += 1;
                 }
 
-                self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+                self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
                 return Option::Some(item);
             }
@@ -118,7 +118,7 @@ impl <T> Vec<T> {
     pub fn push(&mut self, value: T) {
         self.length += 1;
         unsafe{
-            self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+            self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
             ptr::write(self.data.offset(self.length as isize - 1), value);
         }
     }
@@ -151,7 +151,7 @@ impl <T> Vec<T> {
         }
 
         unsafe {
-            let data = alloc(length * size_of::<T>()) as *mut T;
+            let data = sys_alloc(length * size_of::<T>()) as *mut T;
 
             for k in i..j {
                 ptr::write(data.offset((k - i) as isize), ptr::read(self.data.offset(k as isize)));
@@ -180,7 +180,7 @@ impl<T> Vec<T> where T: Clone {
         let mut i = self.length as isize;
         self.length += vec.len();
         unsafe{
-            self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+            self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
             for value in vec.iter() {
                 ptr::write(self.data.offset(i), value.clone());
@@ -205,7 +205,7 @@ impl<T> Drop for Vec<T> {
                 ptr::read(self.data.offset(i as isize));
             }
 
-            unalloc(self.data as usize);
+            sys_unalloc(self.data as usize);
             self.data = 0 as *mut T;
             self.length = 0;
         }

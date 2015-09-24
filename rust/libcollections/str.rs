@@ -38,6 +38,7 @@ use slice::SliceConcatExt;
 use boxed::Box;
 
 pub use core::str::{FromStr, Utf8Error};
+#[allow(deprecated)]
 pub use core::str::{Lines, LinesAny, CharRange};
 pub use core::str::{Split, RSplit};
 pub use core::str::{SplitN, RSplitN};
@@ -515,16 +516,14 @@ impl str {
     /// assert_eq!(b, " 老虎 Léopard");
     /// ```
     #[inline]
-    #[unstable(feature = "str_split_at", reason = "recently added",
-               issue = "27792")]
+    #[stable(feature = "str_split_at", since = "1.4.0")]
     pub fn split_at(&self, mid: usize) -> (&str, &str) {
         core_str::StrExt::split_at(self, mid)
     }
 
     /// Divide one mutable string slice into two at an index.
     #[inline]
-    #[unstable(feature = "str_split_at", reason = "recently added",
-               issue = "27792")]
+    #[stable(feature = "str_split_at", since = "1.4.0")]
     pub fn split_at_mut(&mut self, mid: usize) -> (&mut str, &mut str) {
         core_str::StrExt::split_at_mut(self, mid)
     }
@@ -604,14 +603,14 @@ impl str {
         UnicodeStr::split_whitespace(self)
     }
 
-    /// An iterator over the lines of a string, separated by `\n`.
+    /// An iterator over the lines of a string, separated by `\n` or `\r\n`.
     ///
-    /// This does not include the empty string after a trailing `\n`.
+    /// This does not include the empty string after a trailing newline or CRLF.
     ///
     /// # Examples
     ///
     /// ```
-    /// let four_lines = "foo\nbar\n\nbaz";
+    /// let four_lines = "foo\nbar\n\r\nbaz";
     /// let v: Vec<&str> = four_lines.lines().collect();
     ///
     /// assert_eq!(v, ["foo", "bar", "", "baz"]);
@@ -620,7 +619,7 @@ impl str {
     /// Leaving off the trailing character:
     ///
     /// ```
-    /// let four_lines = "foo\nbar\n\nbaz\n";
+    /// let four_lines = "foo\r\nbar\n\nbaz\n";
     /// let v: Vec<&str> = four_lines.lines().collect();
     ///
     /// assert_eq!(v, ["foo", "bar", "", "baz"]);
@@ -654,7 +653,9 @@ impl str {
     /// assert_eq!(v, ["foo", "bar", "", "baz"]);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
+    #[deprecated(since = "1.4.0", reason = "use lines() instead now")]
     #[inline]
+    #[allow(deprecated)]
     pub fn lines_any(&self) -> LinesAny {
         core_str::StrExt::lines_any(self)
     }
@@ -1503,9 +1504,7 @@ impl str {
     }
 
     /// Converts the `Box<str>` into a `String` without copying or allocating.
-    #[unstable(feature = "box_str",
-               reason = "recently added, matches RFC",
-               issue = "27785")]
+    #[stable(feature = "box_str", since = "1.4.0")]
     pub fn into_string(self: Box<str>) -> String {
         unsafe {
             let slice = mem::transmute::<Box<str>, Box<[u8]>>(self);
