@@ -3,7 +3,11 @@
 #include <sys/time.h>
 
 int main(int argc, char ** argv){
-    printf("Test\n");
+    printf("Test %d\n", argc);
+    int i;
+    for(i = 0; i < argc; i++){
+        printf("%d: %s\n", i, argv[i]);
+    }
     struct timeval tv;
     if(gettimeofday(&tv, NULL) == 0){
         printf("Gettimeofday %d %d\n", tv.tv_sec, tv.tv_usec);

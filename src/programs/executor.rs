@@ -60,8 +60,19 @@ impl SessionItem for Executor {
 
                 end_no_ints(reenable);
 
-                let fn_ptr: *const usize = &entry;
-                (*(fn_ptr as *const extern "cdecl" fn()))();
+                //TODO: Free this
+                asm!(
+                    "push 0
+                    push edx
+                    push 0
+                    push ecx
+                    push ebx
+                    jmp eax"
+                    :
+                    : "{eax}"(entry), "{ebx}"(1), "{ecx}"("Test".to_string().to_c_str()), "{edx}"("test=test".to_string().to_c_str())
+                    : "memory"
+                    : "intel", "volatile"
+                )
             }else if physical_address > 0{
                 unalloc(physical_address);
             }

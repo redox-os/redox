@@ -35,7 +35,7 @@ pub fn console_init() {
 
 pub fn console_destroy() {
     unsafe{
-        if window as usize == 0 {
+        if window as usize > 0 {
             drop(ptr::read(window));
             sys_unalloc(window as usize);
             window = 0 as *mut Box<ConsoleWindow>;
