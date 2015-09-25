@@ -2,23 +2,80 @@
 
 set -e
 
-NEWLIB=newlib-2.2.0.20150824
-
 mkdir -p build
 cd build
 
-if [ ! -d i386-elf-redox ]
-then
-    mkdir i386-elf-redox
-    pushd i386-elf-redox
-        ln -s "`which ar`" i386-elf-redox-ar
-        ln -s "`which gcc-4.6`" i386-elf-redox-gcc
-        ln -s "`which ranlib`" i386-elf-redox-ranlib
-        ln -s "`which readelf`" i386-elf-redox-readelf
-    popd
-fi
-
-export PATH="${PWD}/i386-elf-redox:$PATH"
+PREFIX="${PWD}/prefix"
+# rm -rf "${PREFIX}"
+# mkdir -p "${PREFIX}"
+# mkdir -p "${PREFIX}/bin"
+export PATH="${PREFIX}/bin:$PATH"
+#
+SYSROOT="${PWD}/sysroot"
+# rm -rf "${SYSROOT}"
+# mkdir -p "${SYSROOT}"
+#
+# ###################BINUTILS#########################
+# BINUTILS=binutils-2.24.90
+#
+# if [ ! -f "${BINUTILS}.tar.bz2" ]
+# then
+#     curl "ftp://sourceware.org/pub/binutils/snapshots/${BINUTILS}.tar.bz2" -o "${BINUTILS}.tar.bz2"
+# fi
+#
+# if [ ! -d "${BINUTILS}" ]
+# then
+#     tar xvf "${BINUTILS}.tar.bz2"
+# fi
+#
+# cp -r ../binutils-redox/* "${BINUTILS}"
+#
+# rm -rf "build-${BINUTILS}"
+# mkdir "build-${BINUTILS}"
+# pushd "build-${BINUTILS}"
+#     "../${BINUTILS}/configure" --target=i386-elf-redox --prefix="${PREFIX}" --with-sysroot="${SYSROOT}" --disable-nls --disable-werror
+#     make -j `nproc`
+#     make -j `nproc` install
+# popd
+#
+# read -p "BINUTILS SETUP"
+#
+# ##################GCC FREESTANDING##############################
+GCC=gcc-4.6.4
+#
+# if [ ! -f "${GCC}.tar.bz2" ]
+# then
+#     curl "http://ftp.gnu.org/gnu/gcc/${GCC}/${GCC}.tar.bz2" -o "${GCC}.tar.bz2"
+# fi
+#
+# if [ ! -d "${GCC}" ]
+# then
+#     tar xvf "${GCC}.tar.bz2"
+#     pushd "${GCC}"
+#         ./contrib/download_prerequisites
+#     popd
+# fi
+#
+# cp -r ../gcc-redox/* "${GCC}"
+#
+# pushd "${GCC}/libstdc++-v3"
+#     autoconf2.64
+# popd
+#
+# rm -rf "build-freestanding-${GCC}"
+# mkdir "build-freestanding-${GCC}"
+# pushd "build-freestanding-${GCC}"
+#     "../${GCC}/configure" --target=i386-elf-redox --prefix="${PREFIX}" --disable-nls --enable-languages=c,c++ --without-headers
+#     make -j `nproc` all-gcc
+#     make -j `nproc` all-target-libgcc
+#     make -j `nproc` install-gcc
+#     make -j `nproc` install-target-libgcc
+# popd
+#
+# read -p "GCC FREESTANDING SETUP"
+#
+# ##################NEWLIB###########################
+NEWLIB=newlib-2.2.0.20150824
 
 if [ ! -f "${NEWLIB}.tar.gz" ]
 then
@@ -47,6 +104,23 @@ popd
 rm -rf "build-${NEWLIB}"
 mkdir "build-${NEWLIB}"
 pushd "build-${NEWLIB}"
-    "../${NEWLIB}/configure" --build=i686-linux-gnu --target=i386-elf-redox "CFLAGS=-m32" "LDFLAGS=-m32"
-    make all
+    "../${NEWLIB}/configure" --target=i386-elf-redox --prefix="${PREFIX}"
+    make -j `nproc` all
+    make -j `nproc` install
 popd
+
+mkdir -p "${SYSROOT}/usr"
+cp -r "${PREFIX}/i386-elf-redox/include" "${SYSROOT}/usr"
+
+######################GCC############################
+rm -rf "build-${GCC}"
+mkdir "build-${GCC}"
+pushd "build-${GCC}"
+    "../${GCC}/configure" --target=i386-elf-redox --prefix="${PREFIX}" --with-sysroot="${SYSROOT}" --disable-nls --enable-languages=c,c++
+    make -j `nproc` all-gcc
+    make -j `nproc` all-target-libgcc
+    make -j `nproc` install-gcc
+    make -j `nproc` install-target-libgcc
+popd
+
+read -p "GCC SETUP"

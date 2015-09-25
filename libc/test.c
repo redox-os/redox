@@ -1,21 +1,22 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 int main(int argc, char ** argv){
-    puts("Test");
+    printf("Test\n");
     struct timeval tv;
     if(gettimeofday(&tv, NULL) == 0){
-        puts("Gettimeofday");
+        printf("Gettimeofday %d %d\n", tv.tv_sec, tv.tv_usec);
         void* test = malloc(1024*1024);
         if(test > 0){
-            puts("Malloc");
+            printf("Malloc %x\n", test);
             free(test);
-            puts("Free");
+            printf("Free\n");
         }else{
-            puts("Malloc Failed");
+            printf("Malloc Failed\n");
         }
     }else{
-        puts("Gettimeofday Failed");
+        printf("Gettimeofday Failed\n");
     }
     return 0;
 }
