@@ -33,9 +33,10 @@ pub use graphics::window::*;
 
 pub use externs::*;
 
-pub use file::*;
-
 pub use syscall::call::*;
+
+pub use console::*;
+pub use file::*;
 
 #[path="../src/audio"]
 mod audio{
@@ -74,4 +75,6 @@ mod syscall{
     pub mod common;
 }
 
+#[macro_use]
+pub mod console;
 pub mod file;

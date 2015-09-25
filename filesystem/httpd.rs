@@ -121,15 +121,6 @@ fn generate_html(path: &String) -> String{
 }
 
 pub fn main(){
-    let mut window = ConsoleWindow::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "HTTP Server".to_string());
-
-    macro_rules! println {
-        ($text:expr) => ({
-            window.print(&($text + '\n'), Color::new(224, 224, 224));
-            window.redraw();
-        });
-    }
-
     println!("Starting HTTP Server".to_string());
 
     loop {
@@ -154,7 +145,7 @@ pub fn main(){
         }
 
         loop {
-            match window.poll() {
+            match console_window().poll() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed &&  key_event.scancode == K_ESC {
                         break;
@@ -169,7 +160,7 @@ pub fn main(){
     println!("Closed HTTP Server".to_string());
 
     loop {
-        match window.poll() {
+        match console_window().poll() {
             EventOption::Key(key_event) => {
                 if key_event.pressed && key_event.scancode == K_ESC {
                     break;
