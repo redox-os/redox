@@ -76,12 +76,18 @@ filesystem/asm/%.bin: filesystem/asm/%.asm src/program.ld
 	$(AS) -f elf -o $*.o $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.o
 
+filesystem/asm/%.list: filesystem/%.bin
+	objdump -C -M intel -d $< > $@
+
 filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld libcore.rlib liballoc.rlib liballoc_system.rlib libredox.rlib
 	$(SED) "s|APPLICATION_PATH|$<|" src/program.rs > $*.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $*.rlib $*.gen
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $*.rlib
 
-filesystem.gen: filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin filesystem/asm/bad_code.bin filesystem/asm/bad_data.bin filesystem/asm/bad_segment.bin filesystem/asm/linux.bin
+filesystem/%.list: filesystem/%.bin
+	objdump -C -M intel -d $< > $@
+
+filesystem.gen: filesystem/echo.bin filesystem/httpd.bin filesystem/game.bin filesystem/terminal.bin filesystem/asm/bad_code.bin filesystem/asm/bad_data.bin filesystem/asm/bad_segment.bin filesystem/asm/linux.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 harddrive.bin: src/loader.asm kernel.bin filesystem.gen
