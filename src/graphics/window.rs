@@ -112,7 +112,7 @@ impl Window {
 
             unsafe{
                 let reenable = start_no_ints();
-                display.image(self.point, self.content.onscreen, Size::new(self.content.width, self.content.height));
+                display.image(self.point, self.content.onscreen as *const u32, Size::new(self.content.width, self.content.height));
                 end_no_ints(reenable);
             }
         }

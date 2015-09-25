@@ -230,8 +230,8 @@ impl Session {
         if self.redraw > REDRAW_NONE {
             if self.redraw >= REDRAW_ALL {
                 self.display.set(Color::new(64, 64, 64));
-                if self.background.data > 0 {
-                    self.display.image(Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2), self.background.data, self.background.size);
+                if self.background.data.len() > 0 {
+                    self.background.draw(&self.display, Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2));
                 }
 
                 for i in 0..self.windows.len(){
@@ -245,8 +245,8 @@ impl Session {
                 }
 
                 self.display.rect(Point::new(0, self.display.height as isize - 32), Size::new(self.display.width, 32), Color::new(0, 0, 0));
-                if self.icon.data > 0 {
-                    self.display.image_alpha(Point::new(12, self.display.height as isize - 32), self.icon.data, self.icon.size);
+                if self.icon.data.len() > 0 {
+                    self.icon.draw(&self.display, Point::new(12, self.display.height as isize - 32));
                 }else{
                     self.display.char(Point::new(24, self.display.height as isize - 24), 'R', Color::new(255, 255, 255));
                 }
@@ -278,8 +278,8 @@ impl Session {
 
             self.display.flip();
 
-            if self.cursor.data > 0 {
-                self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data, self.cursor.size);
+            if self.cursor.data.len() > 0 {
+                self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
             }else{
                 self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
             }

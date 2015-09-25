@@ -226,7 +226,6 @@ protected_mode:
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
     mov eax, kernel_file.font
-    mov ebx, kernel_file.cursor
     int 255
 ;This is actually the idle process
 .lp:
@@ -267,10 +266,6 @@ kernel_file:
 
 .font:
   incbin "unifont.font"
-  align 512, db 0
-
-.cursor:
-  incbin "cursor.bmp"
   align 512, db 0
 .end:
 

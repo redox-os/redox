@@ -292,7 +292,7 @@ unsafe fn test_disk(disk: Disk){
     dl();
 }
 
-unsafe fn init(font_data: usize, cursor_data: usize){
+unsafe fn init(font_data: usize){
     start_no_ints();
 
     debug_display = 0 as *mut Box<Display>;
@@ -344,7 +344,6 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     ptr::write(events_ptr, box Queue::new());
 
     let session = &mut *session_ptr;
-    session.cursor = BMP::from_data(cursor_data);
 
     keyboard_init();
     mouse_init();
@@ -405,11 +404,11 @@ unsafe fn init(font_data: usize, cursor_data: usize){
     end_no_ints(true);
 
     {
-        let mut resource = URL::from_str("file:///background.bmp").open();
+        let mut resource = URL::from_str("file:///cursor.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
-        session.background = BMP::from_data(vec.as_ptr() as usize)
+        session.cursor = BMP::from_data(&vec);
     }
 
     {
@@ -417,7 +416,15 @@ unsafe fn init(font_data: usize, cursor_data: usize){
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
-        session.icon = BMP::from_data(vec.as_ptr() as usize)
+        session.icon = BMP::from_data(&vec)
+    }
+
+    {
+        let mut resource = URL::from_str("file:///background.bmp").open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        session.background = BMP::from_data(&vec)
     }
 
     debug_draw = false;
@@ -517,7 +524,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
-            init(eax as usize, ebx as usize);
+            init(eax as usize);
             context_enabled = true;
             idle_loop();
         }
