@@ -19,6 +19,7 @@ impl SessionItem for Executor {
             let mut physical_address = 0;
             let virtual_address = LOAD_ADDR;
             let mut virtual_size = 0;
+            let url_c_str = url.string.to_c_str();
 
             let mut entry = 0;
             {
@@ -60,16 +61,15 @@ impl SessionItem for Executor {
 
                 end_no_ints(reenable);
 
-                //TODO: Free this
+                //TODO: Free this, show environment
                 asm!(
                     "push 0
-                    push edx
                     push 0
                     push ecx
                     push ebx
                     jmp eax"
                     :
-                    : "{eax}"(entry), "{ebx}"(1), "{ecx}"("Test".to_string().to_c_str()), "{edx}"("test=test".to_string().to_c_str())
+                    : "{eax}"(entry), "{ebx}"(1), "{ecx}"(url_c_str)
                     : "memory"
                     : "intel", "volatile"
                 )
