@@ -12,9 +12,12 @@ use application::main;
 #[path="APPLICATION_PATH"]
 mod application;
 
+use redox::*;
+
 #[no_mangle]
 pub unsafe fn _start(){
-    ::redox::console::console_init();
+    console_init();
     main();
-    ::redox::console::console_destroy();
+    console_destroy();
+    sys_exit(0);
 }
