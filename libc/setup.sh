@@ -38,8 +38,6 @@ pushd "build-${BINUTILS}"
     make -j `nproc` install
 popd
 
-read -p "BINUTILS SETUP"
-
 ##################GCC FREESTANDING##############################
 GCC=gcc-4.6.4
 
@@ -71,8 +69,6 @@ pushd "build-freestanding-${GCC}"
     make -j `nproc` install-gcc
     make -j `nproc` install-target-libgcc
 popd
-
-read -p "GCC FREESTANDING SETUP"
 
 ##################NEWLIB###########################
 NEWLIB=newlib-2.2.0.20150824
@@ -123,4 +119,3 @@ pushd "build-${GCC}"
     make -j `nproc` install-target-libgcc
 popd
 
-read -p "GCC SETUP"
