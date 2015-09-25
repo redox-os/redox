@@ -19,13 +19,11 @@ impl SessionItem for Viewer {
 
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string());
 
-        unsafe {
-            let image = BMP::from_data(vec.as_ptr() as usize);
-            window.size = image.size;
-            window.content = Display::new(image.size.width, image.size.height);
-            window.content.image(Point::new(0, 0), image.data, image.size);
-            window.content.flip();
-        }
+        let image = BMP::from_data(&vec);
+        window.size = image.size;
+        window.content = Display::new(image.size.width, image.size.height);
+        image.draw(&window.content, Point::new(0, 0));
+        window.content.flip();
 
         window.title = "Viewer (".to_string() + url.to_string() + ")";
 

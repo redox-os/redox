@@ -214,7 +214,7 @@ impl Display {
         }
     }
 
-    pub fn image(&self, point: Point, data: usize, size: Size){
+    pub unsafe fn image(&self, point: Point, data: *const u32, size: Size){
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -223,17 +223,15 @@ impl Display {
         let offscreen_offset = self.offscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+        let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y{
-            unsafe{
-                Display::copy_run(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
-            }
+            Display::copy_run(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
         }
     }
     /* } Optimized */
 
-    pub fn image_alpha(&self, point: Point, data: usize, size: Size){
+    pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size){
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -242,12 +240,10 @@ impl Display {
         let offscreen_offset = self.offscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+        let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y{
-            unsafe{
-                Display::copy_run_alpha(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
-            }
+            Display::copy_run_alpha(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
         }
     }
 
@@ -317,7 +313,7 @@ impl Display {
     }
 
     /* Cursor hacks { */
-    pub fn image_alpha_onscreen(&self, point: Point, data: usize, size: Size){
+    pub unsafe fn image_alpha_onscreen(&self, point: Point, data: *const u32, size: Size){
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -326,12 +322,10 @@ impl Display {
         let onscreen_offset = self.onscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+        let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y{
-            unsafe{
-                Display::copy_run_alpha(data_offset + y * bytesperrow, onscreen_offset + y * self.bytesperrow, len);
-            }
+            Display::copy_run_alpha(data_offset + y * bytesperrow, onscreen_offset + y * self.bytesperrow, len);
         }
     }
 

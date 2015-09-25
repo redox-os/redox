@@ -4,12 +4,16 @@ use redox::*;
 
 pub struct Sprite {
     point: Point,
-    image: BMP
+    image: BMP,
+    cols: usize,
+    rows: usize,
+    col: usize,
+    row: usize
 }
 
 impl Sprite {
-    pub fn draw(&self, content: &mut Display){
-        content.image_alpha(self.point, self.image.data, self.image.size);
+    pub fn draw(&self, content: &Display){
+        self.image.draw(content, self.point);
     }
 }
 
@@ -21,12 +25,16 @@ pub fn main(){
 
     let mut player;
     {
-        let mut resource = File::open(&"file:///game/ninjaroofront.bmp".to_string());
+        let mut resource = File::open(&"file:///game/ninjaroo.bmp".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
         player = Sprite {
             point: Point::new(200, 200),
-            image: unsafe{ BMP::from_data(bytes.as_ptr() as usize) }
+            image: BMP::from_data(&bytes),
+            cols: 2,
+            rows: 8,
+            col: 0,
+            row: 0
         };
     }
 
