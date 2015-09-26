@@ -47,7 +47,7 @@ impl ConsoleWindow {
         }
     }
 
-    pub fn read(&mut self) -> String {
+    pub fn read(&mut self) -> Option<String> {
         loop {
             match self.poll() {
                 EventOption::Key(key_event) => {
@@ -78,12 +78,13 @@ impl ConsoleWindow {
                             },
                             _ => match key_event.character {
                                 '\x00' => (),
-                                '\n' => if self.command.len() > 0 {
+                                '\n' => {
                                     let command = self.command.clone();
                                     self.command = String::new();
                                     self.offset = 0;
-                                    return command;
+                                    return Option::Some(command);
                                 },
+                                '\x1B' => return Option::None,
                                 _ => {
                                     self.command = self.command.substr(0, self.offset) + key_event.character + self.command.substr(self.offset, self.command.len() - self.offset);
                                     self.offset += 1;
