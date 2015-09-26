@@ -3,12 +3,10 @@ use alloc::boxed::*;
 use core::mem::size_of;
 use core::ptr;
 
-use common::event::*;
 use common::random::*;
 use common::string::*;
 
 use graphics::consolewindow::*;
-use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
 
@@ -48,32 +46,28 @@ pub fn console_title(title: &String){
     console_window().redraw();
 }
 
-pub fn print_color(text: &String, color: Color){
-    console_window().print(text, color);
-    console_window().redraw();
+#[macro_export]
+macro_rules! print_color {
+    ($text:expr, $color:expr) => ({
+        console_window().print(&$text, $color);
+        console_window().redraw();
+    });
 }
 
-pub fn print(text: &String){
-    print_color(text, Color::new(224, 224, 224));
-}
-
-pub fn println(text: &String){
-    print(text);
-    print(&"\n".to_string());
+#[macro_export]
+macro_rules! print {
+    ($text:expr) => (print_color!($text, Color::new(224, 224, 224)));
 }
 
 #[macro_export]
 macro_rules! println {
     ($text:expr) => ({
-        println(&$text);
+        print!($text);
+        print!(&"\n".to_string());
     });
-}
-
-pub fn readln() -> String {
-    return console_window().read();
 }
 
 #[macro_export]
 macro_rules! readln {
-    () => (readln());
+    () => (console_window().read());
 }
