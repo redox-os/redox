@@ -265,7 +265,7 @@ kernel_file:
   align 512, db 0
 
 .font:
-  incbin "unifont.font"
+  incbin "ui/unifont.font"
   align 512, db 0
 .end:
 

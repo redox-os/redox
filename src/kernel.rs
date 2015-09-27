@@ -42,6 +42,7 @@ use filesystems::unfs::*;
 use graphics::bmp::*;
 
 use programs::common::*;
+use programs::package::*;
 use programs::session::*;
 
 use schemes::arp::*;
@@ -130,6 +131,7 @@ mod programs {
     pub mod editor;
     pub mod executor;
     pub mod filemanager;
+    pub mod package;
     pub mod player;
     pub mod session;
     pub mod viewer;
@@ -324,7 +326,7 @@ unsafe fn init(font_data: usize){
     cluster_init();
     page_init();
 
-    *FONTS = font_data;
+    ptr::write(FONTS, font_data);
 
     debug_display = alloc_type();
     ptr::write(debug_display, box Display::root());
@@ -404,7 +406,7 @@ unsafe fn init(font_data: usize){
     end_no_ints(true);
 
     {
-        let mut resource = URL::from_str("file:///cursor.bmp").open();
+        let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -412,7 +414,7 @@ unsafe fn init(font_data: usize){
     }
 
     {
-        let mut resource = URL::from_str("file:///oxygen/computer.bmp").open();
+        let mut resource = URL::from_str("file:///ui/places/start-here.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -420,7 +422,7 @@ unsafe fn init(font_data: usize){
     }
 
     {
-        let mut resource = URL::from_str("file:///background.bmp").open();
+        let mut resource = URL::from_str("file:///ui/background.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -430,6 +432,21 @@ unsafe fn init(font_data: usize){
     debug_draw = false;
 
     session.redraw = max(session.redraw, REDRAW_ALL);
+
+    {
+        let mut resource = URL::from_str("file:///apps").open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        for folder in String::from_utf8(&vec).split("\n".to_string()) {
+            if folder.ends_with("/".to_string()){
+                let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder.substr(0, folder.len() - 1))));
+                package.d();
+                session.packages.push(package);
+            }
+        }
+    }
 }
 
 fn dr(reg: &str, value: u32){

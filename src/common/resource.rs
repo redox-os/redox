@@ -71,6 +71,14 @@ impl URL {
         return self.string.clone();
     }
 
+    pub fn len(&self) -> usize {
+        return self.string.len();
+    }
+
+    pub fn d(&self){
+        self.string.d();
+    }
+
     pub fn open(&self) -> Box<Resource> {
         unsafe{
             let c_str = self.string.to_c_str();
@@ -301,11 +309,6 @@ impl URL {
         }
 
         return path_parts;
-    }
-
-    pub fn d(&self){
-        self.string.d();
-        dl();
     }
 }
 

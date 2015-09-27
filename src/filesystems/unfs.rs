@@ -29,9 +29,19 @@ pub struct Node {
     pub extents: [Extent; 16]
 }
 
+impl Clone for Node {
+    fn clone(&self) -> Node {
+        return Node {
+            name: self.name,
+            extents: self.extents
+        };
+    }
+}
+
 pub struct UnFS {
     pub disk: Disk,
-    pub header: Header
+    pub header: Header,
+    pub nodes: Vec<Node>
 }
 
 impl UnFS {
@@ -39,9 +49,26 @@ impl UnFS {
         unsafe{
             let header_ptr: *const Header = alloc_type();
             disk.read(1, 1, header_ptr as usize);
-            let ret = UnFS { disk:disk, header: ptr::read(header_ptr) };
+            let header = ptr::read(header_ptr);
             unalloc(header_ptr as usize);
-            return ret;
+
+            let mut nodes = Vec::new();
+            let node_ptr: *const Node = alloc_type();
+            for extent in &header.extents {
+                if extent.block > 0 {
+                    for node_address in extent.block..extent.block + extent.length {
+                        disk.read(node_address, 1, node_ptr as usize);
+                        nodes.push(ptr::read(node_ptr));
+                    }
+                }
+            }
+            unalloc(node_ptr as usize);
+
+            return UnFS {
+                disk:disk,
+                header: header,
+                nodes: nodes
+            };
         }
     }
 
@@ -54,61 +81,30 @@ impl UnFS {
     }
 
     pub fn node(&self, filename: &String) -> Option<Node>{
-        let mut ret: Option<Node> = Option::None;
-
-        unsafe{
-            let node_ptr: *const Node = alloc_type();
-            if node_ptr as usize > 0 {
-                for extent in &self.header.extents {
-                    if extent.block > 0 {
-                        for node_address in extent.block..extent.block + extent.length {
-                            self.disk.read(node_address, 1, node_ptr as usize);
-
-                            if String::from_c_slice(&(*node_ptr).name) == *filename {
-                                ret = Option::Some(ptr::read(node_ptr));
-                                break;
-                            }
-                        }
-                    }
-
-                    if ret.is_some() {
-                        break;
-                    }
-                }
-                unalloc(node_ptr as usize);
+        for node in self.nodes.iter() {
+            if String::from_c_slice(&node.name) == *filename {
+                return Option::Some(node.clone());
             }
         }
 
-        return ret;
+        return Option::None;
     }
 
     pub fn list(&self, directory: &String) -> Vec<String> {
         let mut ret = Vec::<String>::new();
 
-        unsafe{
-            let node_ptr: *const Node = alloc_type();
-            if node_ptr as usize > 0 {
-                for extent in &self.header.extents {
-                    if extent.block > 0 {
-                        for node_address in extent.block..extent.block + extent.length {
-                            self.disk.read(node_address, 1, node_ptr as usize);
-
-                            let node_name = String::from_c_slice(&(*node_ptr).name);
-                            if directory.len() > 0 {
-                                if node_name.starts_with(directory.clone() + "/") {
-                                    ret.push(node_name.substr(directory.len() + 1, node_name.len() - directory.len() - 1));
-                                }
-                            }else{
-                                ret.push(node_name);
-                            }
-                        }
-                    }
+        for node in self.nodes.iter() {
+            let node_name = String::from_c_slice(&node.name);
+            if directory.len() > 0 {
+                if node_name.starts_with(directory.clone() + "/") {
+                    ret.push(node_name.substr(directory.len() + 1, node_name.len() - directory.len() - 1));
                 }
-                unalloc(node_ptr as usize);
+            }else{
+                ret.push(node_name);
             }
         }
 
-        ret
+        return ret;
     }
 
     // TODO: Support realloc of LBAs and save function
