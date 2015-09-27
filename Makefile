@@ -10,6 +10,7 @@ CUT=cut
 FIND=find
 LD=ld
 LDARGS=-m elf_i386
+MKDIR=mkdir
 RM=rm
 SED=sed
 SORT=sort
@@ -24,6 +25,7 @@ ifeq ($(OS),Windows_NT)
 	AWK=windows/awk
 	CUT=windows/cut
 	FIND=windows/find
+	MKDIR=windows/mkdir
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
@@ -46,7 +48,7 @@ doc: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=i386-elf-redox.json -L. $<
 
 build/libcore.rlib: rust/libcore/lib.rs
-	-mkdir build
+	$(MKDIR) -p build
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 build/liballoc.rlib: rust/liballoc/lib.rs build/libcore.rlib
@@ -74,7 +76,7 @@ filesystem/kernel.list: filesystem/kernel.bin
 	objdump -C -M intel -d $< > $@
 
 filesystem/%.bin: filesystem/%.asm src/program.ld
-	-mkdir build
+	$(MKDIR) -p build
 	$(AS) -f elf -o build/`basename $*.o` $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`basename $*`.o
 
