@@ -109,17 +109,17 @@ virtualbox: build/harddrive.bin
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 network.pcap
+	$(VBM) modifyvm Redox --nictracefile1 build/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file serial.log
+	$(VBM) modifyvm Redox --uartmode1 file build/serial.log
 	$(VBM) modifyvm Redox --usb on
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
-	$(VBM) convertfromraw $< harddrive.vdi
+	$(VBM) convertfromraw $< build/harddrive.vdi
 	echo "Attach Disk"
 	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium harddrive.vdi
+	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium build/harddrive.vdi
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
