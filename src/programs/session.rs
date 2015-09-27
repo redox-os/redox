@@ -265,7 +265,7 @@ impl Session {
 
     pub unsafe fn redraw(&mut self){
         if self.redraw > REDRAW_NONE {
-            if self.redraw >= REDRAW_ALL {
+            //if self.redraw >= REDRAW_ALL {
                 self.display.set(Color::new(64, 64, 64));
                 if self.background.data.len() > 0 {
                     self.background.draw(&self.display, Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2));
@@ -285,7 +285,17 @@ impl Session {
 
                 let mut x = 0;
                 if self.icon.data.len() > 0 {
-                    self.icon.draw(&self.display, Point::new(x, self.display.height as isize - self.icon.size.height as isize));
+                    let y = self.display.height as isize - self.icon.size.height as isize;
+                    if self.mouse_point.y >= y && self.mouse_point.x >= x && self.mouse_point.x < x + self.icon.size.width as isize {
+                        self.display.rect(Point::new(x, y), self.icon.size, Color::new(128, 128, 128));
+
+                        let mut c_x = x;
+                        for c in "Start".to_string().chars() {
+                            self.display.char(Point::new(c_x, y - 16), c, Color::new(255, 255, 255));
+                            c_x += 8;
+                        }
+                    }
+                    self.icon.draw(&self.display, Point::new(x, y));
                     x += self.icon.size.width as isize;
                 }else{
                     self.display.char(Point::new(x + 4, self.display.height as isize - 24), 'R', Color::new(255, 255, 255));
@@ -294,7 +304,17 @@ impl Session {
 
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
-                        package.icon.draw(&self.display, Point::new(x, self.display.height as isize - package.icon.size.height as isize));
+                        let y = self.display.height as isize - package.icon.size.height as isize;
+                        if self.mouse_point.y >= y && self.mouse_point.x >= x && self.mouse_point.x < x + package.icon.size.width as isize {
+                            self.display.rect(Point::new(x, y), package.icon.size, Color::new(128, 128, 128));
+
+                            let mut c_x = x;
+                            for c in package.name.chars() {
+                                self.display.char(Point::new(c_x, y - 16), c, Color::new(255, 255, 255));
+                                c_x += 8;
+                            }
+                        }
+                        package.icon.draw(&self.display, Point::new(x, y));
                         x += package.icon.size.width as isize;
                     }
                 }
@@ -305,36 +325,39 @@ impl Session {
                 }
 
                 x += 4;
-                for i in 0..self.windows_ordered.len() {
-                    match self.windows_ordered.get(i) {
-                        Option::Some(window_ptr) => {
-                            let w = (chars*8 + 2*4) as usize;
-                            self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w, 32), (**window_ptr).border_color);
-                            x += 4;
+                for window_ptr in self.windows_ordered.iter() {
+                    let w = (chars*8 + 2*4) as usize;
+                    self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w, 32), (**window_ptr).border_color);
+                    x += 4;
 
-                            for i in 0..chars {
-                                let c = (**window_ptr).title[i];
-                                if c != '\0' {
-                                    self.display.char(Point::new(x, self.display.height as isize - 24), c, (**window_ptr).title_color);
-                                }
-                                x += 8;
-                            }
-                            x += 8;
-                        },
-                        Option::None => ()
+                    for i in 0..chars {
+                        let c = (**window_ptr).title[i];
+                        if c != '\0' {
+                            self.display.char(Point::new(x, self.display.height as isize - 24), c, (**window_ptr).title_color);
+                        }
+                        x += 8;
                     }
+                    x += 8;
                 }
-            }
+
+                if self.cursor.data.len() > 0 {
+                    self.display.image_alpha(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
+                }else{
+                    self.display.char(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
+                }
+            //}
 
             let reenable = start_no_ints();
 
             self.display.flip();
 
+            /*
             if self.cursor.data.len() > 0 {
                 self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
             }else{
                 self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
             }
+            */
 
             self.redraw = REDRAW_NONE;
 
