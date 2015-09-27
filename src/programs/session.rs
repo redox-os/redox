@@ -7,6 +7,7 @@ use programs::common::*;
 use programs::editor::*;
 use programs::executor::*;
 use programs::filemanager::*;
+use programs::package::*;
 use programs::player::*;
 use programs::viewer::*;
 
@@ -18,6 +19,7 @@ pub struct Session {
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
+    pub packages: Vec<Box<Package>>,
     pub windows: Vec<*mut Window>,
     pub windows_ordered: Vec<*mut Window>,
     pub redraw: usize
@@ -41,6 +43,7 @@ impl Session {
                     valid: false
                 },
                 items: Vec::new(),
+                packages: Vec::new(),
                 windows: Vec::new(),
                 windows_ordered: Vec::new(),
                 redraw: REDRAW_ALL
@@ -136,6 +139,7 @@ impl Session {
         }
     }
 
+    //TODO: Remove
     fn item_main(&mut self, mut item: Box<SessionItem>, url: URL){
         Context::spawn(box move ||{
             item.main(url);
@@ -163,40 +167,73 @@ impl Session {
 
         if mouse_event.y >= self.display.height as isize - 32 {
             if mouse_event.left_button &&  !self.last_mouse_event.left_button {
-                if mouse_event.x <= 56 {
-                    self.item_main(box FileManager::new(), URL::from_str("file:///"));
-                }else{
-                    let mut chars = 32;
-                    while chars > 4 && (chars*8 + 3*4) * self.windows.len() > self.display.width {
-                        chars -= 1;
+                let mut x = 0;
+                if self.icon.data.len() > 0 {
+                    if mouse_event.x >= x && mouse_event.x < x + self.icon.size.width as isize {
+                        self.item_main(box FileManager::new(), URL::from_str("file:///"));
                     }
+                    x += self.icon.size.width as isize;
+                }else{
+                    if mouse_event.x >= x && mouse_event.x < x + 16 {
+                        self.item_main(box FileManager::new(), URL::from_str("file:///"));
+                    }
+                    x += 16;
+                }
 
-                    for i in 0..self.windows_ordered.len() {
-                        let x = (5*8 + 2*8 + (chars*8 + 3*4) * i) as isize;
-                        let w = (chars*8 + 2*4) as usize;
-                        if mouse_event.x >= x && mouse_event.x < x + w as isize {
-                            match self.windows_ordered.get(i) {
-                                Option::Some(window_ptr) => unsafe {
-                                    for j in 0..self.windows.len() {
-                                        match self.windows.get(j){
-                                            Option::Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
-                                                if j == self.windows.len() - 1 {
-                                                    (**window_ptr).minimized = !(**window_ptr).minimized;
-                                                }else{
-                                                    catcher = j as isize;
-                                                    (**window_ptr).minimized = false;
-                                                }
-                                                break;
-                                            },
-                                            Option::None => break
-                                        }
-                                    }
-                                    self.redraw = max(self.redraw, REDRAW_ALL);
-                                },
-                                Option::None => ()
-                            }
-                            break;
+                for package in self.packages.iter() {
+                    if package.icon.data.len() > 0 {
+                        if mouse_event.x >= x && mouse_event.x < x + package.icon.size.width as isize {
+                            d("Launch package ");
+                            package.id.d();
+                            dl();
+
+                            let url = package.url.clone();
+                            let id = package.id.clone();
+                            Context::spawn(box move ||{
+                                let mut executor = box Executor::new();
+                                executor.main(URL::from_string(&(url.to_string() + "/" + &id + ".bin")));
+                            });
                         }
+                        x += package.icon.size.width as isize;
+                    }
+                }
+
+                let mut chars = 32;
+                while chars > 4 && (x as usize + (chars*8 + 3*4) * self.windows.len()) > self.display.width + 32 /* Some Extra */ {
+                    chars -= 1;
+                }
+
+                x += 4;
+                for i in 0..self.windows_ordered.len() {
+                    match self.windows_ordered.get(i) {
+                        Option::Some(window_ptr) => {
+                            let w = (chars*8 + 2*4) as usize;
+                            if mouse_event.x >= x && mouse_event.x < x + w as isize {
+                                match self.windows_ordered.get(i) {
+                                    Option::Some(window_ptr) => unsafe {
+                                        for j in 0..self.windows.len() {
+                                            match self.windows.get(j){
+                                                Option::Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
+                                                    if j == self.windows.len() - 1 {
+                                                        (**window_ptr).minimized = !(**window_ptr).minimized;
+                                                    }else{
+                                                        catcher = j as isize;
+                                                        (**window_ptr).minimized = false;
+                                                    }
+                                                    break;
+                                                },
+                                                Option::None => break
+                                            }
+                                        }
+                                        self.redraw = max(self.redraw, REDRAW_ALL);
+                                    },
+                                    Option::None => ()
+                                }
+                                break;
+                            }
+                            x += w as isize;
+                        },
+                        Option::None => ()
                     }
                 }
             }
@@ -245,29 +282,44 @@ impl Session {
                 }
 
                 self.display.rect(Point::new(0, self.display.height as isize - 32), Size::new(self.display.width, 32), Color::new(0, 0, 0));
+
+                let mut x = 0;
                 if self.icon.data.len() > 0 {
-                    self.icon.draw(&self.display, Point::new(12, self.display.height as isize - 32));
+                    self.icon.draw(&self.display, Point::new(x, self.display.height as isize - self.icon.size.height as isize));
+                    x += self.icon.size.width as isize;
                 }else{
-                    self.display.char(Point::new(24, self.display.height as isize - 24), 'R', Color::new(255, 255, 255));
+                    self.display.char(Point::new(x + 4, self.display.height as isize - 24), 'R', Color::new(255, 255, 255));
+                    x += 16;
+                }
+
+                for package in self.packages.iter() {
+                    if package.icon.data.len() > 0 {
+                        package.icon.draw(&self.display, Point::new(x, self.display.height as isize - package.icon.size.height as isize));
+                        x += package.icon.size.width as isize;
+                    }
                 }
 
                 let mut chars = 32;
-                while chars > 4 && (chars*8 + 3*4) * self.windows.len() > self.display.width {
+                while chars > 4 && (x as usize + (chars*8 + 3*4) * self.windows.len()) > self.display.width + 32 /* Some Extra */ {
                     chars -= 1;
                 }
 
+                x += 4;
                 for i in 0..self.windows_ordered.len() {
                     match self.windows_ordered.get(i) {
                         Option::Some(window_ptr) => {
-                            let mut x = (5*8 + 2*8 + (chars*8 + 3*4) * i) as isize;
                             let w = (chars*8 + 2*4) as usize;
                             self.display.rect(Point::new(x, self.display.height as isize - 32), Size::new(w, 32), (**window_ptr).border_color);
                             x += 4;
 
-                            for c in (**window_ptr).title.chars() {
-                                self.display.char(Point::new(x, self.display.height as isize - 24), c, (**window_ptr).title_color);
+                            for i in 0..chars {
+                                let c = (**window_ptr).title[i];
+                                if c != '\0' {
+                                    self.display.char(Point::new(x, self.display.height as isize - 24), c, (**window_ptr).title_color);
+                                }
                                 x += 8;
                             }
+                            x += 8;
                         },
                         Option::None => ()
                     }
