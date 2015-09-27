@@ -6,6 +6,7 @@ RUSTCFLAGS=--target=i386-elf-redox.json \
 	-L build
 AS=nasm
 AWK=awk
+BASENAME=basename
 CUT=cut
 FIND=find
 LD=ld
@@ -23,6 +24,7 @@ ifeq ($(OS),Windows_NT)
 	LD=windows/i386-elf-ld
 	AS=windows/nasm
 	AWK=windows/awk
+	BASENAME=windows/basename
 	CUT=windows/cut
 	FIND=windows/find
 	MKDIR=windows/mkdir
@@ -77,13 +79,13 @@ filesystem/kernel.list: filesystem/kernel.bin
 
 filesystem/%.bin: filesystem/%.asm src/program.ld
 	$(MKDIR) -p build
-	$(AS) -f elf -o build/`basename $*.o` $<
-	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`basename $*`.o
+	$(AS) -f elf -o build/`$(BASENAME) $*.o` $<
+	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.o
 
 filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libredox.rlib
-	$(SED) "s|APPLICATION_PATH|../$<|" src/program.rs > build/`basename $*`.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`basename $*`.rlib build/`basename $*`.gen
-	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`basename $*`.rlib
+	$(SED) "s|APPLICATION_PATH|../$<|" src/program.rs > build/`$(BASENAME) $*`.gen
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`$(BASENAME) $*`.rlib build/`$(BASENAME) $*`.gen
+	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.rlib
 
 filesystem/%.list: filesystem/%.bin
 	objdump -C -M intel -d $< > $@
