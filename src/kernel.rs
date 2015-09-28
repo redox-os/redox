@@ -106,7 +106,6 @@ mod filesystems {
 mod graphics {
     pub mod bmp;
     pub mod color;
-    pub mod consolewindow;
     pub mod display;
     pub mod point;
     pub mod size;
