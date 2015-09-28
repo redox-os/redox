@@ -374,6 +374,12 @@ impl Application {
 
     fn main(&mut self){
         console_title(&"Terminal".to_string());
+        
+        if let Option::Some(arg) = args().get(1) {
+            let command = "run ".to_string() + arg;
+            println!("# ".to_string() + &command);
+            self.on_command(&command);
+        }
 
         while let Option::Some(command) = readln!() {
             println!("# ".to_string() + &command);
