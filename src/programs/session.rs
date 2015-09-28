@@ -155,10 +155,6 @@ impl Session {
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.size.width as isize {
-                            d("Launch package ");
-                            package.id.d();
-                            dl();
-
                             execute(package.binary(), Vec::new());
                         }
                         x += package.icon.size.width as isize;

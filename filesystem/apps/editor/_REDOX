@@ -1,4 +1,5 @@
 name=Editor
+icon=file:///ui/apps/accessories-text-editor.bmp
 accept=*.md
 accept=*.asm
 accept=*.rs

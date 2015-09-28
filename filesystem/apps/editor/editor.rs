@@ -206,6 +206,6 @@ impl Editor {
 pub fn main(){
     match args().get(1) {
         Option::Some(arg) => Editor::new().main(arg.clone()),
-        Option::None => ()
+        Option::None => Editor::new().main("none://".to_string())
     }
 }

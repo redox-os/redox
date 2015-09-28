@@ -1,4 +1,5 @@
 name=Player
+icon=file:///ui/apps/preferences-desktop-sound.bmp
 accept=*.wav
 author=Jeremy Soller
 description=Audio Player for Redox

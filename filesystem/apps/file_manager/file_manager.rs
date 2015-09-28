@@ -166,11 +166,8 @@ impl FileManager {
 }
 
 pub fn main(){
-    let path;
     match args().get(1) {
-        Option::Some(arg) => path = arg.clone(),
-        Option::None => path = "file:///".to_string()
+        Option::Some(arg) => FileManager::new().main(arg.clone()),
+        Option::None => FileManager::new().main("file:///".to_string())
     }
-
-    FileManager::new().main(path);
 }
