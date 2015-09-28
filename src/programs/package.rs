@@ -1,9 +1,6 @@
-use common::context::*;
-
 use graphics::bmp::*;
 
 use programs::common::*;
-use programs::executor::*;
 
 pub struct Package {
     pub url: URL,
