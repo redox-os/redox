@@ -120,7 +120,7 @@ impl Context {
         return ret;
     }
 
-    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Context {
+    pub unsafe fn new(call: u32, args: &Vec<u32>) -> Context {
         let stack = alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = Context {
@@ -135,11 +135,10 @@ impl Context {
         let ebp = ret.stack_ptr;
 
         for arg in args.iter() {
-            ret.push(*arg as u32);
+            ret.push(*arg);
         }
 
-        ret.push(context_exit as u32); //If the function call returns, we will exit
-        ret.push(call as u32); //We will ret into this function call
+        ret.push(call); //We will ret into this function call
 
         ret.push(0); //ESI is a param used in the switch function
 
@@ -168,12 +167,13 @@ impl Context {
             let box_fn_ptr: *mut Box<FnBox()> = alloc_type();
             ptr::write(box_fn_ptr, box_fn);
 
-            let mut context_box_args: Vec<usize> = Vec::new();
-            context_box_args.push(box_fn_ptr as usize);
+            let mut context_box_args: Vec<u32> = Vec::new();
+            context_box_args.push(box_fn_ptr as u32);
+            context_box_args.push(context_exit as u32);
 
             let reenable = start_no_ints();
             if contexts_ptr as usize > 0 {
-                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args));
+                (*contexts_ptr).push(Context::new(context_box as u32, &context_box_args));
             }
             end_no_ints(reenable);
         }

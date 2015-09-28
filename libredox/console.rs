@@ -25,19 +25,15 @@ pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
     }
 }
 
-pub fn console_init() {
-    unsafe{
-        window = 0 as *mut Box<ConsoleWindow>;
-    }
+pub unsafe fn console_init() {
+    window = 0 as *mut Box<ConsoleWindow>;
 }
 
-pub fn console_destroy() {
-    unsafe{
-        if window as usize > 0 {
-            drop(ptr::read(window));
-            sys_unalloc(window as usize);
-            window = 0 as *mut Box<ConsoleWindow>;
-        }
+pub unsafe fn console_destroy() {
+    if window as usize > 0 {
+        drop(ptr::read(window));
+        sys_unalloc(window as usize);
+        window = 0 as *mut Box<ConsoleWindow>;
     }
 }
 

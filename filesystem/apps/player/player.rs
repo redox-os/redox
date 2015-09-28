@@ -1,6 +1,4 @@
-use audio::wav::*;
-
-use programs::common::*;
+use redox::*;
 
 pub struct Player;
 
@@ -8,24 +6,22 @@ impl Player {
     pub fn new() -> Player {
         Player
     }
-}
 
-impl SessionItem for Player {
-    fn main(&mut self, url: URL){
-        let mut resource = url.open();
+    fn main(&mut self, url: String){
+        let mut resource = File::open(&url);
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(480, 0), "Player (Playing ".to_string() + url.to_string() + ")");
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(480, 0), "Player (Playing ".to_string() + &url + ")");
         RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
         let wav = WAV::from_data(&vec);
 
-        let mut audio = URL::from_str("audio://").open();
+        let mut audio = File::open(&"audio://".to_string());
         audio.write(wav.data.as_slice());
 
-        window.title = "Player (".to_string() + url.to_string() + ")";
+        window.title = "Player (".to_string() + &url + ")";
         RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
         loop {
@@ -39,5 +35,12 @@ impl SessionItem for Player {
                 _ => ()
             }
         }
+    }
+}
+
+pub fn main(){
+    match args().get(1) {
+        Option::Some(arg) => Player::new().main(arg.clone()),
+        Option::None => ()
     }
 }

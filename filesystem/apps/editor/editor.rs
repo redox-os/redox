@@ -1,7 +1,7 @@
-use programs::common::*;
+use redox::*;
 
 pub struct Editor {
-    url: URL,
+    url: String,
     string: String,
     offset: usize,
     scroll: Point
@@ -11,7 +11,7 @@ impl Editor {
     #[inline(never)]
     pub fn new() -> Editor {
         Editor {
-            url: URL::new(),
+            url: String::new(),
             string: String::new(),
             offset: 0,
             scroll: Point::new(0, 0)
@@ -19,11 +19,11 @@ impl Editor {
     }
 
     fn reload(&mut self, window: &mut Window){
-        window.title = "Editor (".to_string() + self.url.to_string() + ")";
+        window.title = "Editor (".to_string() + &self.url + ")";
         self.offset = 0;
         self.scroll = Point::new(0, 0);
 
-        let mut resource = self.url.open();
+        let mut resource = File::open(&self.url);
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -32,9 +32,9 @@ impl Editor {
     }
 
     fn save(&mut self, window: &mut Window){
-        window.title = "Editor (".to_string() + self.url.to_string() + ") Saved";
+        window.title = "Editor (".to_string() + &self.url + ") Saved";
 
-        let mut resource = self.url.open();
+        let mut resource = File::open(&self.url);
         resource.write(&self.string.to_utf8().as_slice());
     }
 
@@ -121,10 +121,8 @@ impl Editor {
             self.draw_content(window);
         }
     }
-}
 
-impl SessionItem for Editor {
-    fn main(&mut self, url: URL){
+    fn main(&mut self, url: String){
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor (Loading)".to_string());
 
         self.url = url;
@@ -139,12 +137,12 @@ impl SessionItem for Editor {
                         match key_event.scancode {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
-                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                window.title = "Editor (".to_string() + &self.url + ") Changed";
                                 self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
-                                window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                window.title = "Editor (".to_string() + &self.url + ") Changed";
                                 self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
                             },
                             K_F5 => self.reload(&mut window),
@@ -188,7 +186,7 @@ impl SessionItem for Editor {
                             _ => match key_event.character {
                                 '\0' => (),
                                 _ => {
-                                    window.title = "Editor (".to_string() + self.url.to_string() + ") Changed";
+                                    window.title = "Editor (".to_string() + &self.url + ") Changed";
                                     self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
                                     self.offset += 1;
                                 }
@@ -202,5 +200,12 @@ impl SessionItem for Editor {
                 _ => ()
             }
         }
+    }
+}
+
+pub fn main(){
+    match args().get(1) {
+        Option::Some(arg) => Editor::new().main(arg.clone()),
+        Option::None => ()
     }
 }

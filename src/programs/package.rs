@@ -1,17 +1,16 @@
-use alloc::boxed::*;
-
-use common::debug::*;
-use common::resource::*;
-use common::string::*;
-use common::vec::*;
+use common::context::*;
 
 use graphics::bmp::*;
+
+use programs::common::*;
+use programs::executor::*;
 
 pub struct Package {
     pub url: URL,
     pub id: String,
     pub name: String,
     pub icon: BMP,
+    pub accepts: Vec<String>,
     pub authors: Vec<String>,
     pub descriptions: Vec<String>
 }
@@ -23,6 +22,7 @@ impl Package {
             id: String::new(),
             name: String::new(),
             icon: BMP::new(),
+            accepts: Vec::new(),
             authors: Vec::new(),
             descriptions: Vec::new()
         };
@@ -62,6 +62,8 @@ impl Package {
                     line.d();
                     dl();
                 }
+            }else if line.starts_with("accept=".to_string()) {
+                package.accepts.push(line.substr(7, line.len() - 7));
             }else if line.starts_with("author=".to_string()) {
                 package.authors.push(line.substr(7, line.len() - 7));
             }else if line.starts_with("description=".to_string()) {
@@ -74,6 +76,10 @@ impl Package {
         }
 
         return package;
+    }
+
+    pub fn binary(&self) -> URL {
+        return URL::from_string(&(self.url.to_string() + "/" + &self.id + ".bin"));
     }
 
     pub fn d(&self){
@@ -94,6 +100,12 @@ impl Package {
         d("x");
         dd(self.icon.size.height);
         dl();
+
+        for accept in self.accepts.iter() {
+            d("Accept: ");
+            accept.d();
+            dl();
+        }
 
         for author in self.authors.iter() {
             d("Author: ");

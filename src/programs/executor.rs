@@ -5,77 +5,56 @@ use common::scheduler::*;
 
 use programs::common::*;
 
-pub struct Executor;
+pub fn execute(url: URL, mut args: Vec<String>){
+    unsafe{
+        let mut physical_address = 0;
+        let virtual_address = LOAD_ADDR;
+        let mut virtual_size = 0;
+        let mut entry = 0;
+        {
+            let mut resource = url.open();
 
-impl Executor {
-    pub fn new() -> Executor {
-        Executor
-    }
-}
+            let mut vec: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut vec);
 
-impl SessionItem for Executor {
-    fn main(&mut self, url: URL){
-        unsafe{
-            let mut physical_address = 0;
-            let virtual_address = LOAD_ADDR;
-            let mut virtual_size = 0;
-            let url_c_str = url.string.to_c_str();
+            let executable = ELF::from_data(vec.as_ptr() as usize);
 
-            let mut entry = 0;
-            {
-                let mut resource = url.open();
-                drop(url);
-
-                let mut vec: Vec<u8> = Vec::new();
-                resource.read_to_end(&mut vec);
-                drop(resource);
-
-                let executable = ELF::from_data(vec.as_ptr() as usize);
-                drop(vec);
-
-                if executable.data > 0 {
-                    virtual_size = alloc_size(executable.data) - 4096;
-                    physical_address = alloc(virtual_size);
-                    ptr::copy((executable.data + 4096) as *const u8, physical_address as *mut u8, virtual_size);
-                    entry = executable.entry();
-                }
-                drop(executable);
+            if executable.data > 0 {
+                virtual_size = alloc_size(executable.data) - 4096;
+                physical_address = alloc(virtual_size);
+                ptr::copy((executable.data + 4096) as *const u8, physical_address as *mut u8, virtual_size);
+                entry = executable.entry();
             }
+        }
 
-            if physical_address > 0 && virtual_address > 0 && virtual_size > 0 && entry >= virtual_address && entry < virtual_address + virtual_size {
-                let reenable = start_no_ints();
-
-                let contexts = &mut *(*contexts_ptr);
-
-                match contexts.get(context_i) {
-                    Option::Some(mut current) => {
-                        current.memory.push(ContextMemory {
-                            physical_address: physical_address,
-                            virtual_address: virtual_address,
-                            virtual_size: virtual_size
-                        });
-                        current.map();
-                    },
-                    Option::None => ()
+        if physical_address > 0 && virtual_address > 0 && virtual_size > 0 && entry >= virtual_address && entry < virtual_address + virtual_size {
+            let mut context_args: Vec<u32> = Vec::new();
+            context_args.push(0 as u32); // ENVP
+            context_args.push(0 as u32); // ARGV NULL
+            let mut argc = 1;
+            for i in 0..args.len() {
+                if let Option::Some(arg) = args.get(args.len() - i - 1) {
+                    context_args.push(arg.to_c_str() as u32);
+                    argc += 1;
                 }
-
-                end_no_ints(reenable);
-
-                //TODO: Free this, show environment
-                asm!(
-                    "push 0
-                    push 0
-                    push ecx
-                    push ebx
-                    jmp eax"
-                    :
-                    : "{eax}"(entry), "{ebx}"(1), "{ecx}"(url_c_str)
-                    : "memory"
-                    : "intel", "volatile"
-                )
-            }else if physical_address > 0{
-                unalloc(physical_address);
             }
+            context_args.push(url.string.to_c_str() as u32);
+            context_args.push(argc as u32);
+
+            let mut context = Context::new(entry as u32, &context_args);
+            context.memory.push(ContextMemory {
+                physical_address: physical_address,
+                virtual_address: virtual_address,
+                virtual_size: virtual_size
+            });
+
+            let reenable = start_no_ints();
+            if contexts_ptr as usize > 0 {
+                (*contexts_ptr).push(context);
+            }
+            end_no_ints(reenable);
+        }else if physical_address > 0{
+            unalloc(physical_address);
         }
     }
 }
