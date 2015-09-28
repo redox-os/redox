@@ -203,4 +203,4 @@ wireshark:
 	wireshark network.pcap
 
 clean:
-	$(RM) -f build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
