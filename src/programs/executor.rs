@@ -5,7 +5,7 @@ use common::scheduler::*;
 
 use programs::common::*;
 
-pub fn execute(url: URL, args: Vec<String>){
+pub fn execute(url: &URL, args: Vec<String>){
     unsafe{
         let mut physical_address = 0;
         let virtual_address = LOAD_ADDR;
@@ -42,10 +42,24 @@ pub fn execute(url: URL, args: Vec<String>){
             context_args.push(argc as u32);
 
             let mut context = Context::new(entry as u32, &context_args);
+
             context.memory.push(ContextMemory {
                 physical_address: physical_address,
                 virtual_address: virtual_address,
                 virtual_size: virtual_size
+            });
+
+            context.files.push(ContextFile {
+                fd: 0, //STDIN
+                resource: URL::from_str("debug://").open()
+            });
+            context.files.push(ContextFile {
+                fd: 1, //STDOUT
+                resource: URL::from_str("debug://").open()
+            });
+            context.files.push(ContextFile {
+                fd: 2, //STDERR
+                resource: URL::from_str("debug://").open()
             });
 
             let reenable = start_no_ints();

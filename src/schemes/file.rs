@@ -1,3 +1,6 @@
+use common::memory::*;
+use common::scheduler::*;
+
 use filesystems::unfs::*;
 
 use programs::common::*;
@@ -15,8 +18,24 @@ impl SessionItem for FileScheme {
         let path = url.path();
         match self.unfs.node(&path) {
             Option::Some(node) => {
-                if node.extents[0].block > 0 && node.extents[0].length > 0{
-                    return URL::from_string(&("ide:///".to_string() + node.extents[0].block as usize + "/" + node.extents[0].length as usize)).open();
+                if node.extents[0].block > 0 && node.extents[0].length > 0 {
+                    unsafe {
+                        let destination = alloc(node.extents[0].length as usize);
+                        if destination > 0 {
+                            let reenable = start_no_ints();
+
+                            self.unfs.disk.read(node.extents[0].block, ((node.extents[0].length + 511)/512) as u16, destination);
+
+                            end_no_ints(reenable);
+
+                            return box VecResource::new(url.clone(), ResourceType::File, Vec::<u8> {
+                                data: destination as *mut u8,
+                                length: node.extents[0].length as usize
+                            });
+                        }else{
+                            return box NoneResource;
+                        }
+                    }
                 }else{
                     return box NoneResource;
                 }

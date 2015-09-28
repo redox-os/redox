@@ -5,19 +5,20 @@ use core::ptr;
 use common::debug::*;
 use common::memory::*;
 use common::paging::*;
+use common::resource::*;
 use common::scheduler::*;
 use common::vec::*;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
 
-pub static mut contexts_ptr: *mut Box<Vec<Context>> = 0 as *mut Box<Vec<Context>>;
+pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
 pub unsafe fn context_switch(interrupted: bool){
     let reenable = start_no_ints();
 
-    let contexts = &mut *(*contexts_ptr);
+    let contexts = &mut *contexts_ptr;
     if context_enabled {
         let current_i = context_i;
         context_i += 1;
@@ -68,7 +69,7 @@ pub unsafe fn context_switch(interrupted: bool){
 pub unsafe extern "cdecl" fn context_exit() {
     let reenable = start_no_ints();
 
-    let contexts = &*(*contexts_ptr);
+    let contexts = & *contexts_ptr;
     if context_enabled && context_i > 1 {
         match contexts.get(context_i) {
             Option::Some(mut current) => current.exited = true,
@@ -93,22 +94,29 @@ pub struct ContextMemory {
     pub virtual_size: usize
 }
 
+pub struct ContextFile {
+    pub fd: usize,
+    pub resource: Box<Resource>
+}
+
 pub struct Context {
     pub stack: usize,
     pub stack_ptr: u32,
     pub fx: usize,
     pub memory: Vec<ContextMemory>,
+    pub files: Vec<ContextFile>,
     pub interrupted: bool,
     pub exited: bool
 }
 
 impl Context {
-    pub unsafe fn root() -> Context {
-        let ret = Context {
+    pub unsafe fn root() -> Box<Context> {
+        let ret = box Context {
             stack: 0,
             stack_ptr: 0,
             fx: alloc(512),
             memory: Vec::new(),
+            files: Vec::new(),
             interrupted: false,
             exited: false
         };
@@ -120,14 +128,15 @@ impl Context {
         return ret;
     }
 
-    pub unsafe fn new(call: u32, args: &Vec<u32>) -> Context {
+    pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Context> {
         let stack = alloc(CONTEXT_STACK_SIZE + 512);
 
-        let mut ret = Context {
+        let mut ret = box Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
             fx: stack + CONTEXT_STACK_SIZE,
             memory: Vec::new(),
+            files: Vec::new(),
             interrupted: false,
             exited: false
         };
@@ -242,6 +251,10 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self){
+        while let Option::Some(file) = self.files.remove(0) {
+            drop(file);
+        }
+
         while let Option::Some(entry) = self.memory.remove(0) {
             unsafe {
                 unalloc(entry.physical_address);

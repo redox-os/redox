@@ -122,6 +122,7 @@ impl SessionItem for IDE {
                         }
                     }
                     */
+                    
                     end_no_ints(reenable);
                 }
             }
@@ -134,7 +135,7 @@ impl SessionItem for IDE {
             if destination > 0 {
                 return box VecResource::new(url, ResourceType::File, Vec::<u8> {
                     data: destination as *mut u8,
-                    length: alloc_size(destination)
+                    length: request.count as usize * 512
                 });
             }else{
                 return box NoneResource;

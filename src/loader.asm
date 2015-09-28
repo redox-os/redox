@@ -174,7 +174,7 @@ unfs_header:
 align 256, db 0
 .extents:
     dq (unfs_root_node_list - boot)/512
-    dq (unfs_root_node_list.end - unfs_root_node_list)/512
+    dq (unfs_root_node_list.end - unfs_root_node_list)
 
     align 512, db 0
 .end:
@@ -279,7 +279,7 @@ unfs_root_node_list:
 
     .extents:
         dq (unfs_data.%1 - boot)/512
-        dq (unfs_data.%1.end - unfs_data.%1)/512
+        dq (unfs_data.%1.end - unfs_data.%1)
 
         align 512, db 0
     .end:
@@ -293,8 +293,8 @@ unfs_root_node_list.end:
 %macro file 2+
 unfs_data.%1:
     incbin %2
-    align 512, db 0
 .end:
+    align 512, db 0
 %endmacro
 
 %include "filesystem.gen"
