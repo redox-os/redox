@@ -29,10 +29,6 @@ pub use syscall::call::*;
 
 #[allow(unused_variables)]
 pub trait SessionItem{
-    fn main(&mut self, url: URL){
-
-    }
-
     fn on_irq(&mut self, irq: u8){
 
     }

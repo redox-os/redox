@@ -5,7 +5,7 @@ use common::scheduler::*;
 
 use programs::common::*;
 
-pub fn execute(url: URL, mut args: Vec<String>){
+pub fn execute(url: URL, args: Vec<String>){
     unsafe{
         let mut physical_address = 0;
         let virtual_address = LOAD_ADDR;

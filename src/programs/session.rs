@@ -1,4 +1,3 @@
-use common::context::*;
 use common::scheduler::*;
 
 use graphics::bmp::*;
@@ -172,37 +171,29 @@ impl Session {
                 }
 
                 x += 4;
-                for i in 0..self.windows_ordered.len() {
-                    match self.windows_ordered.get(i) {
-                        Option::Some(window_ptr) => {
-                            let w = (chars*8 + 2*4) as usize;
-                            if mouse_event.x >= x && mouse_event.x < x + w as isize {
-                                match self.windows_ordered.get(i) {
-                                    Option::Some(window_ptr) => unsafe {
-                                        for j in 0..self.windows.len() {
-                                            match self.windows.get(j){
-                                                Option::Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
-                                                    if j == self.windows.len() - 1 {
-                                                        (**window_ptr).minimized = !(**window_ptr).minimized;
-                                                    }else{
-                                                        catcher = j as isize;
-                                                        (**window_ptr).minimized = false;
-                                                    }
-                                                    break;
-                                                },
-                                                Option::None => break
-                                            }
+                for window_ptr in self.windows_ordered.iter() {
+                    let w = (chars*8 + 2*4) as usize;
+                    if mouse_event.x >= x && mouse_event.x < x + w as isize {
+                        for j in 0..self.windows.len() {
+                            match self.windows.get(j){
+                                Option::Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
+                                    unsafe{
+                                        if j == self.windows.len() - 1 {
+                                            (**window_ptr).minimized = !(**window_ptr).minimized;
+                                        }else{
+                                            catcher = j as isize;
+                                            (**window_ptr).minimized = false;
                                         }
-                                        self.redraw = max(self.redraw, REDRAW_ALL);
-                                    },
-                                    Option::None => ()
-                                }
-                                break;
+                                    }
+                                    break;
+                                },
+                                Option::None => break
                             }
-                            x += w as isize;
-                        },
-                        Option::None => ()
+                        }
+                        self.redraw = max(self.redraw, REDRAW_ALL);
+                        break;
                     }
+                    x += w as isize;
                 }
             }
         }else{
@@ -210,10 +201,12 @@ impl Session {
                 let i = self.windows.len() - 1 - reverse_i;
                 match self.windows.get(i){
                     Option::Some(window_ptr) => unsafe{
-                        if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
-                            catcher = i as isize;
+                        if reverse_i == 0 || (mouse_event.left_button &&  !self.last_mouse_event.left_button) {
+                            if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
+                                catcher = i as isize;
 
-                            self.redraw = max(self.redraw, REDRAW_ALL);
+                                self.redraw = max(self.redraw, REDRAW_ALL);
+                            }
                         }
                     },
                     Option::None => ()
