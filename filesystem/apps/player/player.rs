@@ -13,7 +13,7 @@ impl Player {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(480, 0), "Player (Playing ".to_string() + &url + ")");
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(320, 0), "Player (Playing ".to_string() + &url + ")");
         RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
         let wav = WAV::from_data(&vec);
@@ -41,6 +41,6 @@ impl Player {
 pub fn main(){
     match args().get(1) {
         Option::Some(arg) => Player::new().main(arg.clone()),
-        Option::None => ()
+        Option::None => Player::new().main("none://".to_string())
     }
 }

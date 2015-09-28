@@ -429,9 +429,7 @@ unsafe fn init(font_data: usize){
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()){
-                let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder.substr(0, folder.len() - 1))));
-                package.d();
-                session.packages.push(package);
+                session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder.substr(0, folder.len() - 1)))));
             }
         }
     }

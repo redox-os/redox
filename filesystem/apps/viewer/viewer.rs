@@ -1,3 +1,5 @@
+use core::cmp::max;
+
 use redox::*;
 
 pub struct Viewer;
@@ -14,10 +16,13 @@ impl Viewer {
         resource.read_to_end(&mut vec);
 
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string());
+        window.content.set(Color::new(0, 0, 0));
+        window.content.flip();
 
         let image = BMP::from_data(&vec);
-        window.size = image.size;
-        window.content = Display::new(image.size.width, image.size.height);
+        window.size = Size::new(max(320, image.size.width), image.size.height);
+        window.content = Display::new(window.size.width, window.size.height);
+        window.content.set(Color::new(0, 0, 0));
         image.draw(&window.content, Point::new(0, 0));
         window.content.flip();
 
@@ -44,6 +49,6 @@ impl Viewer {
 pub fn main(){
     match args().get(1) {
         Option::Some(arg) => Viewer::new().main(arg.clone()),
-        Option::None => ()
+        Option::None => Viewer::new().main("none://".to_string())
     }
 }
