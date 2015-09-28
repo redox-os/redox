@@ -56,7 +56,7 @@ impl UnFS {
             let node_ptr: *const Node = alloc_type();
             for extent in &header.extents {
                 if extent.block > 0 {
-                    for node_address in extent.block..extent.block + extent.length {
+                    for node_address in extent.block..extent.block + (extent.length + 511)/512 {
                         disk.read(node_address, 1, node_ptr as usize);
                         nodes.push(ptr::read(node_ptr));
                     }

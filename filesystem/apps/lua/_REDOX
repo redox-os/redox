@@ -1,0 +1,7 @@
+name=Lua
+binary=lua
+icon=file:///ui/apps/preferences-plugin-script.bmp
+accept=*.lua
+author=http://www.lua.org/authors.html
+author=Jeremy Soller
+description=Lua for Redox

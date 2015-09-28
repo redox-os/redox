@@ -47,6 +47,7 @@ use programs::session::*;
 
 use schemes::arp::*;
 use schemes::context::*;
+use schemes::debug::*;
 use schemes::ethernet::*;
 use schemes::file::*;
 use schemes::http::*;
@@ -135,6 +136,7 @@ mod programs {
 mod schemes {
     pub mod arp;
     pub mod context;
+    pub mod debug;
     pub mod ethernet;
     pub mod file;
     pub mod http;
@@ -191,7 +193,7 @@ unsafe fn idle_loop() -> ! {
 
         let mut halt = true;
 
-        let contexts = &*(*contexts_ptr);
+        let contexts = & *contexts_ptr;
         for i in 1..contexts.len(){
             match contexts.get(i){
                 Option::Some(context) => if context.interrupted {
@@ -303,7 +305,7 @@ unsafe fn init(font_data: usize){
     clock_monotonic.secs = 0;
     clock_monotonic.nanos = 0;
 
-    contexts_ptr = 0 as *mut Box<Vec<Context>>;
+    contexts_ptr = 0 as *mut Vec<Box<Context>>;
     context_i = 0;
     context_enabled = false;
 
@@ -331,7 +333,7 @@ unsafe fn init(font_data: usize){
     clock_realtime.secs = rtc_read();
 
     contexts_ptr = alloc_type();
-    ptr::write(contexts_ptr, box Vec::new());
+    ptr::write(contexts_ptr, Vec::new());
     (*contexts_ptr).push(Context::root());
 
     session_ptr = alloc_type();
@@ -363,6 +365,7 @@ unsafe fn init(font_data: usize){
     test_disk(Disk::secondary_slave());
 
     session.items.push(box ContextScheme);
+    session.items.push(box DebugScheme);
     session.items.push(box FileScheme{
         unfs: UnFS::from_disk(Disk::primary_master())
     });

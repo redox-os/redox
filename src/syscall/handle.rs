@@ -60,77 +60,182 @@ pub unsafe fn do_sys_exit(status: isize) {
 }
 
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
-    if fd == 0 {
-        //TODO: Read stdin
-        return 0xFFFFFFFF;
-    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
-        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-        match (*resource_ptr).read(slice::from_raw_parts_mut(buf, count)) {
-            Option::Some(count) => return count,
-            Option::None => return 0xFFFFFFFF
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        for file in current.files.iter() {
+            if file.fd == fd {
+                end_no_ints(reenable);
+
+                if let Option::Some(count) = file.resource.read(slice::from_raw_parts_mut(buf, count)) {
+                    ret = count;
+                }
+
+                start_no_ints();
+
+                break;
+            }
         }
-    }else{
-        return 0xFFFFFFFF;
     }
+
+    end_no_ints(reenable);
+
+    return ret;
 }
 
 //TODO: Remove
 pub unsafe fn do_sys_read_to_end(fd: usize, vec: *mut Vec<u8>) -> usize {
-    if fd == 0 {
-        //TODO: Read stdin
-        return 0xFFFFFFFF;
-    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
-        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-        match (*resource_ptr).read_to_end(&mut *vec) {
-            Option::Some(count) => return count,
-            Option::None => return 0xFFFFFFFF
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        for file in current.files.iter() {
+            if file.fd == fd {
+                end_no_ints(reenable);
+
+                if let Option::Some(count) = file.resource.read_to_end(&mut *vec) {
+                    ret = count;
+                }
+
+                start_no_ints();
+
+                break;
+            }
         }
-    }else{
-        return 0xFFFFFFFF;
     }
+
+    end_no_ints(reenable);
+
+    return ret;
 }
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
-    if fd == 1 || fd == 2 {
-        for i in 0..count as isize {
-            do_sys_debug(*buf.offset(i));
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        for file in current.files.iter() {
+            if file.fd == fd {
+                end_no_ints(reenable);
+
+                if let Option::Some(count) = file.resource.write(slice::from_raw_parts(buf, count)) {
+                    ret = count;
+                }
+
+                start_no_ints();
+
+                break;
+            }
         }
-        return count;
-    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
-        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-        match (*resource_ptr).write(slice::from_raw_parts(buf, count)) {
-            Option::Some(count) => return count,
-            Option::None => return 0xFFFFFFFF
-        }
-    }else{
-        return 0xFFFFFFFF
     }
+
+    end_no_ints(reenable);
+
+    return ret;
 }
 
-#[inline(never)]
 pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
-    let resource_ptr: *mut Box<Resource> = alloc_type();
-    if resource_ptr as usize > 0 {
-        let path_str = String::from_c_str(path);
-        ptr::write(resource_ptr, (*::session_ptr).open(&URL::from_string(&path_str)));
-        return resource_ptr as usize;
-    }else{
-        return 0xFFFFFFFF;
+    let resource = (*::session_ptr).open(&URL::from_string(&String::from_c_str(path)));
+
+    let mut fd = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        fd = 0;
+        for file in current.files.iter() {
+            if file.fd >= fd {
+                fd = file.fd + 1;
+            }
+        }
+
+        current.files.push(ContextFile {
+            fd: fd,
+            resource: resource
+        });
     }
+
+    end_no_ints(reenable);
+
+    return fd;
 }
 
-#[inline(never)]
 pub unsafe fn do_sys_close(fd: usize) -> usize {
-    if fd == 0 || fd == 1 || fd == 2 {
-        return 0;
-    }else if alloc_size(fd) >= size_of::<Box<Resource>>() {
-        let resource_ptr: *mut Box<Resource> = fd as *mut Box<Resource>;
-        drop(ptr::read(resource_ptr));
-        unalloc(resource_ptr as usize);
-        return 0;
-    }else{
-        return 0xFFFFFFFF;
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        for i in 0..current.files.len() {
+            let mut remove = false;
+            if let Option::Some(file) = current.files.get(i){
+                if file.fd == fd {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                if let Option::Some(file) = current.files.remove(i) {
+                    end_no_ints(reenable);
+
+                    drop(file);
+
+                    start_no_ints();
+                }
+
+                break;
+            }
+        }
     }
+
+    end_no_ints(reenable);
+
+    return ret;
+}
+
+pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        for file in current.files.iter() {
+            if file.fd == fd {
+                end_no_ints(reenable);
+
+                match whence {
+                    0 => if let Option::Some(count) = file.resource.seek(ResourceSeek::Start(offset as usize)) {
+                        ret = count;
+                    },
+                    1 => if let Option::Some(count) = file.resource.seek(ResourceSeek::Current(offset)) {
+                        ret = count;
+                    },
+                    2 => if let Option::Some(count) = file.resource.seek(ResourceSeek::End(offset)) {
+                        ret = count;
+                    },
+                    _ => ()
+                }
+
+                start_no_ints();
+
+                break;
+            }
+        }
+    }
+
+    end_no_ints(reenable);
+
+    return ret;
 }
 
 pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
@@ -156,7 +261,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = &*(*contexts_ptr);
+    let contexts = & *contexts_ptr;
     if context_enabled && context_i > 1 {
         if let Option::Some(mut current) = contexts.get(context_i) {
             current.unmap();
@@ -209,6 +314,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_WRITE => eax = do_sys_write(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_OPEN => eax = do_sys_open(ebx as *mut u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
         SYS_CLOSE => eax = do_sys_close(ebx as usize) as u32,
+        SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
         SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize) as u32,
         SYS_YIELD => context_switch(false),

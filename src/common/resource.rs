@@ -15,8 +15,8 @@ use syscall::call::*;
 
 pub enum ResourceSeek {
     Start(usize),
-    End(isize),
     Current(isize),
+    End(isize)
 }
 
 #[derive(Copy, Clone)]
@@ -81,12 +81,7 @@ impl URL {
 
     pub fn open(&self) -> Box<Resource> {
         unsafe{
-            let c_str = self.string.to_c_str();
-            let resource_ptr = sys_open(c_str, 0, 0) as *mut Box<Resource>;
-            let ret = ptr::read(resource_ptr);
-            unalloc(resource_ptr as usize);
-            unalloc(c_str as usize);
-            return ret;
+            return (*::session_ptr).open(&self);
         }
     }
 

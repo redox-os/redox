@@ -155,7 +155,7 @@ impl Session {
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.size.width as isize {
-                            execute(package.binary(), Vec::new());
+                            execute(&package.binary, Vec::new());
                         }
                         x += package.icon.size.width as isize;
                     }
@@ -313,7 +313,7 @@ impl Session {
                 let url_string = open_event.url_string;
 
                 if url_string.ends_with(".bin".to_string()){
-                    execute(URL::from_string(&url_string), Vec::new());
+                    execute(&URL::from_string(&url_string), Vec::new());
                 }else{
                     for package in self.packages.iter() {
                         let mut accepted = false;
@@ -326,7 +326,7 @@ impl Session {
                         if accepted {
                             let mut args: Vec<String> = Vec::new();
                             args.push(url_string.clone());
-                            execute(package.binary(), args);
+                            execute(&package.binary, args);
                             break;
                         }
                     }
