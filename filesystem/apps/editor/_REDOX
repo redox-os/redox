@@ -1,0 +1,6 @@
+name=Editor
+accept=*.md
+accept=*.asm
+accept=*.rs
+author=Jeremy Soller
+description=Editor for Redox

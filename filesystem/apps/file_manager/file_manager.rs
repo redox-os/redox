@@ -1,4 +1,4 @@
-use programs::common::*;
+use redox::*;
 
 pub struct FileManager {
     files: Vec<String>,
@@ -56,13 +56,11 @@ impl FileManager {
             redraw: REDRAW_ALL
         }.to_event().trigger();
     }
-}
 
-impl SessionItem for FileManager {
-    fn main(&mut self, url: URL){
+    fn main(&mut self, path: String){
         let mut size = Size::new(0, 0);
         {
-            let mut resource = url.open();
+            let mut resource = File::open(&path);
 
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
@@ -79,7 +77,7 @@ impl SessionItem for FileManager {
             }
         }
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, "File Manager (".to_string() + url.to_string() + ")");
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, "File Manager (".to_string() + &path + ")");
 
         self.draw_content(&mut window);
 
@@ -102,7 +100,7 @@ impl SessionItem for FileManager {
                                 '\n' => {
                                     if self.selected >= 0 && self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => OpenEvent{ url_string: url.to_string() + file.clone() }.trigger(),
+                                            Option::Some(file) => OpenEvent{ url_string: path.clone() + file.clone() }.trigger(),
                                             Option::None => ()
                                         }
                                     }
@@ -165,4 +163,14 @@ impl SessionItem for FileManager {
             }
         }
     }
+}
+
+pub fn main(){
+    let path;
+    match args().get(1) {
+        Option::Some(arg) => path = arg.clone(),
+        Option::None => path = "file:///".to_string()
+    }
+
+    FileManager::new().main(path);
 }

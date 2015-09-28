@@ -36,6 +36,7 @@ pub use externs::*;
 pub use syscall::call::*;
 
 pub use console::*;
+pub use env::*;
 pub use file::*;
 
 #[path="../src/audio"]
@@ -77,4 +78,5 @@ mod syscall{
 
 #[macro_use]
 pub mod console;
+pub mod env;
 pub mod file;

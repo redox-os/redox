@@ -128,13 +128,9 @@ mod network {
 
 mod programs {
     pub mod common;
-    pub mod editor;
     pub mod executor;
-    pub mod filemanager;
     pub mod package;
-    pub mod player;
     pub mod session;
-    pub mod viewer;
 }
 
 mod schemes {
@@ -411,14 +407,6 @@ unsafe fn init(font_data: usize){
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
         session.cursor = BMP::from_data(&vec);
-    }
-
-    {
-        let mut resource = URL::from_str("file:///ui/places/start-here.bmp").open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-        session.icon = BMP::from_data(&vec)
     }
 
     {

@@ -1,0 +1,4 @@
+name=Viewer
+accept=*.bmp
+author=Jeremy Soller
+description=Image Viewer for Redox

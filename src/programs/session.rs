@@ -4,18 +4,13 @@ use common::scheduler::*;
 use graphics::bmp::*;
 
 use programs::common::*;
-use programs::editor::*;
 use programs::executor::*;
-use programs::filemanager::*;
 use programs::package::*;
-use programs::player::*;
-use programs::viewer::*;
 
 pub struct Session {
     pub display: Display,
     pub background: BMP,
     pub cursor: BMP,
-    pub icon: BMP,
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
@@ -32,7 +27,6 @@ impl Session {
                 display: Display::root(),
                 background: BMP::new(),
                 cursor: BMP::new(),
-                icon: BMP::new(),
                 mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
@@ -139,17 +133,8 @@ impl Session {
         }
     }
 
-    //TODO: Remove
-    fn item_main(&mut self, mut item: Box<SessionItem>, url: URL){
-        Context::spawn(box move ||{
-            item.main(url);
-        });
-    }
-
     fn on_key(&mut self, key_event: KeyEvent){
-        if key_event.pressed && key_event.scancode == K_F3 {
-            self.item_main(box FileManager::new(), URL::from_str("file:///"));
-        }else if self.windows.len() > 0 {
+        if self.windows.len() > 0 {
             match self.windows.get(self.windows.len() - 1){
                 Option::Some(window_ptr) => {
                     unsafe{
@@ -168,18 +153,6 @@ impl Session {
         if mouse_event.y >= self.display.height as isize - 32 {
             if mouse_event.left_button &&  !self.last_mouse_event.left_button {
                 let mut x = 0;
-                if self.icon.data.len() > 0 {
-                    if mouse_event.x >= x && mouse_event.x < x + self.icon.size.width as isize {
-                        self.item_main(box FileManager::new(), URL::from_str("file:///"));
-                    }
-                    x += self.icon.size.width as isize;
-                }else{
-                    if mouse_event.x >= x && mouse_event.x < x + 16 {
-                        self.item_main(box FileManager::new(), URL::from_str("file:///"));
-                    }
-                    x += 16;
-                }
-
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.size.width as isize {
@@ -187,12 +160,7 @@ impl Session {
                             package.id.d();
                             dl();
 
-                            let url = package.url.clone();
-                            let id = package.id.clone();
-                            Context::spawn(box move ||{
-                                let mut executor = box Executor::new();
-                                executor.main(URL::from_string(&(url.to_string() + "/" + &id + ".bin")));
-                            });
+                            execute(package.binary(), Vec::new());
                         }
                         x += package.icon.size.width as isize;
                     }
@@ -284,24 +252,6 @@ impl Session {
                 self.display.rect(Point::new(0, self.display.height as isize - 32), Size::new(self.display.width, 32), Color::new(0, 0, 0));
 
                 let mut x = 0;
-                if self.icon.data.len() > 0 {
-                    let y = self.display.height as isize - self.icon.size.height as isize;
-                    if self.mouse_point.y >= y && self.mouse_point.x >= x && self.mouse_point.x < x + self.icon.size.width as isize {
-                        self.display.rect(Point::new(x, y), self.icon.size, Color::new(128, 128, 128));
-
-                        let mut c_x = x;
-                        for c in "Start".to_string().chars() {
-                            self.display.char(Point::new(c_x, y - 16), c, Color::new(255, 255, 255));
-                            c_x += 8;
-                        }
-                    }
-                    self.icon.draw(&self.display, Point::new(x, y));
-                    x += self.icon.size.width as isize;
-                }else{
-                    self.display.char(Point::new(x + 4, self.display.height as isize - 24), 'R', Color::new(255, 255, 255));
-                    x += 16;
-                }
-
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
                         let y = self.display.height as isize - package.icon.size.height as isize;
@@ -372,21 +322,25 @@ impl Session {
             EventOption::Redraw(redraw_event) => self.redraw = max(self.redraw, redraw_event.redraw),
             EventOption::Open(open_event) => {
                 let url_string = open_event.url_string;
-                let url = URL::from_string(&url_string);
 
-                if url_string.ends_with(".asm".to_string()) || url_string.ends_with(".md".to_string()) || url_string.ends_with(".rs".to_string()) || url_string.ends_with(".sh".to_string()){
-                    self.item_main(box Editor::new(), url);
-                }else if url_string.ends_with(".bin".to_string()){
-                    self.item_main(box Executor::new(), url);
-                }else if url_string.ends_with("/".to_string()){
-                    self.item_main(box FileManager::new(), url);
-                }else if url_string.ends_with(".wav".to_string()){
-                    self.item_main(box Player::new(), url);
-                }else if url_string.ends_with(".bmp".to_string()){
-                    self.item_main(box Viewer::new(), url);
+                if url_string.ends_with(".bin".to_string()){
+                    execute(URL::from_string(&url_string), Vec::new());
                 }else{
-                    d("No program found: ");
-                    url.d();
+                    for package in self.packages.iter() {
+                        let mut accepted = false;
+                        for accept in package.accepts.iter() {
+                            if url_string.ends_with(accept.substr(1, accept.len() - 1)) {
+                                accepted = true;
+                                break;
+                            }
+                        }
+                        if accepted {
+                            let mut args: Vec<String> = Vec::new();
+                            args.push(url_string.clone());
+                            execute(package.binary(), args);
+                            break;
+                        }
+                    }
                 }
             }
             _ => ()

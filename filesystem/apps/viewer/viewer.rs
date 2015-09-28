@@ -1,6 +1,4 @@
-use graphics::bmp::*;
-
-use programs::common::*;
+use redox::*;
 
 pub struct Viewer;
 
@@ -8,11 +6,9 @@ impl Viewer {
     pub fn new() -> Viewer {
         Viewer
     }
-}
 
-impl SessionItem for Viewer {
-    fn main(&mut self, url: URL){
-        let mut resource = url.open();
+    fn main(&mut self, url: String){
+        let mut resource = File::open(&url);
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -25,7 +21,7 @@ impl SessionItem for Viewer {
         image.draw(&window.content, Point::new(0, 0));
         window.content.flip();
 
-        window.title = "Viewer (".to_string() + url.to_string() + ")";
+        window.title = "Viewer (".to_string() + &url + ")";
 
         RedrawEvent {
             redraw: REDRAW_ALL
@@ -42,5 +38,12 @@ impl SessionItem for Viewer {
                 _ => ()
             }
         }
+    }
+}
+
+pub fn main(){
+    match args().get(1) {
+        Option::Some(arg) => Viewer::new().main(arg.clone()),
+        Option::None => ()
     }
 }

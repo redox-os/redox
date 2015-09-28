@@ -1,0 +1,4 @@
+name=Player
+accept=*.wav
+author=Jeremy Soller
+description=Audio Player for Redox

@@ -90,7 +90,7 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rl
 filesystem/%.list: filesystem/%.bin
 	objdump -C -M intel -d $< > $@
 
-build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/terminal/terminal.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
+build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/editor/editor.bin filesystem/apps/file_manager/file_manager.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/player/player.bin filesystem/apps/terminal/terminal.bin filesystem/apps/viewer/viewer.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
