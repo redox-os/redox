@@ -18,6 +18,7 @@ use common::time::*;
 use common::vec::*;
 
 use graphics::color::*;
+use graphics::size::*;
 use graphics::window::*;
 
 use syscall::common::*;
@@ -27,10 +28,17 @@ pub unsafe fn do_sys_debug(byte: u8){
 
     if ::debug_display as usize > 0 {
         let display = &*(*::debug_display);
+        display.rect(::debug_point, Size::new(8, 16), Color::new(0, 0, 0));
         if byte == 10 {
             ::debug_point.x = 0;
             ::debug_point.y += 16;
-            ::debug_redraw = true;
+        }else if byte == 8 {
+            //TODO: Fix up hack for backspace
+            ::debug_point.x -= 8;
+            if ::debug_point.x < 0 {
+                ::debug_point.x = 0
+            }
+            display.rect(::debug_point, Size::new(8, 16), Color::new(0, 0, 0));
         }else{
             display.char(::debug_point, byte as char, Color::new(255, 255, 255));
             ::debug_point.x += 8;
@@ -43,6 +51,8 @@ pub unsafe fn do_sys_debug(byte: u8){
             display.scroll(16);
             ::debug_point.y -= 16;
         }
+        display.rect(::debug_point, Size::new(8, 16), Color::new(255, 255, 255));
+        ::debug_redraw = true;
         //If interrupts disabled, probably booting up
         if !reenable && ::debug_draw && ::debug_redraw {
             ::debug_redraw = false;
@@ -352,14 +362,6 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
                 (*::session_ptr).mouse_point.x = event.a;
                 (*::session_ptr).mouse_point.y = event.b;
                 (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
-            }
-            if event.code == 'k' && event.b == 0x3B && event.c > 0 {
-                ::debug_draw = true;
-                ::debug_redraw = true;
-            }
-            if event.code == 'k' && event.b == 0x3C && event.c > 0 {
-                ::debug_draw = false;
-                (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_ALL);
             }
 
             //TODO: Dispatch to appropriate window

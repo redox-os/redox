@@ -1,3 +1,5 @@
+use common::scheduler::*;
+
 use programs::common::*;
 
 pub struct DebugResource;
@@ -12,7 +14,35 @@ impl Resource for DebugResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
+        unsafe {
+            loop {
+                let reenable = start_no_ints();
+
+                if (*::debug_command).len() > 0 {
+                    break;
+                }
+
+                end_no_ints(reenable);
+
+                sys_yield();
+            }
+
+            let reenable = start_no_ints();
+
+            //TODO: Unicode
+            let mut i = 0;
+            while i < buf.len() {
+                match (*::debug_command).vec.remove(0) {
+                    Option::Some(c) => buf[i] = c as u8,
+                    Option::None => break
+                }
+                i += 1;
+            }
+
+            end_no_ints(reenable);
+
+            return Option::Some(i);
+        }
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
