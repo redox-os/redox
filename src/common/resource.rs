@@ -29,13 +29,31 @@ pub enum ResourceType {
 
 #[allow(unused_variables)]
 pub trait Resource {
+    //Required functions
     fn url(&self) -> URL;
     fn stat(&self) -> ResourceType;
     fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize>;
     fn write(&mut self, buf: &[u8]) -> Option<usize>;
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize>;
     fn flush(&mut self) -> bool;
+
+    //Helper functions
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        let mut read = 0;
+        loop {
+            let mut bytes = [0; 1024];
+            match self.read(&mut bytes) {
+                Option::Some(0) => return Option::Some(read),
+                Option::None => return Option::None,
+                Option::Some(count) => {
+                    for i in 0..count {
+                        vec.push(bytes[i]);
+                    }
+                    read += count;
+                }
+            }
+        }
+    }
 }
 
 //URL Parsing:
@@ -286,6 +304,11 @@ impl URL {
             part_i += 1;
         }
 
+        //Hack for folders
+        if part_i > 3 && self.string.ends_with("/".to_string()){
+            path = path + "/";
+        }
+
         return path;
     }
 
@@ -327,10 +350,6 @@ impl Resource for NoneResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         return Option::None;
     }
 
@@ -391,11 +410,6 @@ impl Resource for VecResource {
         return Option::Some(i);
     }
 
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        vec.push_all(&self.vec);
-        return Option::Some(self.vec.len());
-    }
-
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
@@ -413,9 +427,9 @@ impl Resource for VecResource {
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
-            ResourceSeek::Start(offset) => self.seek = min(self.seek, offset),
-            ResourceSeek::End(offset) => self.seek = max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
-            ResourceSeek::Current(offset) => self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize
+            ResourceSeek::Start(offset) => self.seek = min(self.vec.len(), offset),
+            ResourceSeek::Current(offset) => self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
+            ResourceSeek::End(offset) => self.seek = max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize
         }
         return Option::Some(self.seek);
     }

@@ -37,8 +37,6 @@ use drivers::serial::*;
 
 pub use externs::*;
 
-use filesystems::unfs::*;
-
 use graphics::bmp::*;
 
 use programs::common::*;
@@ -99,10 +97,6 @@ mod drivers {
 }
 
 pub mod externs;
-
-mod filesystems {
-    pub mod unfs;
-}
 
 mod graphics {
     pub mod bmp;
@@ -323,9 +317,9 @@ unsafe fn test_disk(disk: Disk){
     if disk.identify() {
         d(" Disk Found");
 
-        let unfs = UnFS::from_disk(disk);
-        if unfs.valid() {
-            d(" UnFS Filesystem");
+        let fs = FileSystem::from_disk(disk);
+        if fs.valid() {
+            d(" Redox Filesystem");
         }else{
             d(" Unknown Filesystem");
         }
@@ -413,7 +407,7 @@ unsafe fn init(font_data: usize){
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
     session.items.push(box FileScheme{
-        unfs: UnFS::from_disk(Disk::primary_master())
+        fs: FileSystem::from_disk(Disk::primary_master())
     });
     session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
@@ -470,14 +464,14 @@ unsafe fn init(font_data: usize){
     session.redraw = max(session.redraw, REDRAW_ALL);
 
     {
-        let mut resource = URL::from_str("file:///apps").open();
+        let mut resource = URL::from_str("file:///apps/").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()){
-                session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder.substr(0, folder.len() - 1)))));
+                session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder))));
             }
         }
     }

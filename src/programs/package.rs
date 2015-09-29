@@ -30,13 +30,13 @@ impl Package {
         if path_parts.len() > 0 {
             if let Option::Some(part) = path_parts.get(path_parts.len() - 1) {
                 package.id = part.clone();
-                package.binary = URL::from_string(&(url.to_string() + "/" + part + ".bin"));
+                package.binary = URL::from_string(&(url.to_string() + part + ".bin"));
             }
         }
 
         let info;
         {
-            let mut resource = URL::from_string(&(url.to_string() + "/_REDOX")).open();
+            let mut resource = URL::from_string(&(url.to_string() + "_REDOX")).open();
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
             info = String::from_utf8(&vec);
@@ -46,7 +46,7 @@ impl Package {
             if line.starts_with("name=".to_string()) {
                 package.name = line.substr(5, line.len() - 5);
             }else if line.starts_with("binary=".to_string()){
-                package.binary = URL::from_string(&(url.to_string() + "/" + line.substr(7, line.len() - 7)));
+                package.binary = URL::from_string(&(url.to_string() + line.substr(7, line.len() - 7)));
             }else if line.starts_with("icon=".to_string()) {
                 let mut resource = URL::from_string(&line.substr(5, line.len() - 5)).open();
                 let mut vec: Vec<u8> = Vec::new();

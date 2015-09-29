@@ -38,13 +38,18 @@ impl File {
     }
 
     pub fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        unsafe{
-            //TODO: Replace
-            let count = sys_read_to_end(self.fd, vec as *mut Vec<u8>);
-            if count == 0xFFFFFFFF {
-                return Option::None;
-            }else{
-                return Option::Some(count);
+        let mut read = 0;
+        loop {
+            let mut bytes = [0; 1024];
+            match self.read(&mut bytes) {
+                Option::Some(0) => return Option::Some(read),
+                Option::None => return Option::None,
+                Option::Some(count) => {
+                    for i in 0..count {
+                        vec.push(bytes[i]);
+                    }
+                    read += count;
+                }
             }
         }
     }

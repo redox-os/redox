@@ -60,6 +60,11 @@ pub unsafe fn do_sys_debug(byte: u8){
         }
     }
 
+    loop {
+        if inb(0x3F8 + 5) & 0x20 == 0x20 {
+            break;
+        }
+    }
     outb(0x3F8, byte);
 
     end_no_ints(reenable);
@@ -81,34 +86,6 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
                 end_no_ints(reenable);
 
                 if let Option::Some(count) = file.resource.read(slice::from_raw_parts_mut(buf, count)) {
-                    ret = count;
-                }
-
-                start_no_ints();
-
-                break;
-            }
-        }
-    }
-
-    end_no_ints(reenable);
-
-    return ret;
-}
-
-//TODO: Remove
-pub unsafe fn do_sys_read_to_end(fd: usize, vec: *mut Vec<u8>) -> usize {
-    let mut ret = 0xFFFFFFFF;
-
-    let reenable = start_no_ints();
-
-    let contexts = & *contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
-        for file in current.files.iter() {
-            if file.fd == fd {
-                end_no_ints(reenable);
-
-                if let Option::Some(count) = file.resource.read_to_end(&mut *vec) {
                     ret = count;
                 }
 
@@ -161,7 +138,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 
         let contexts = & *contexts_ptr;
         if let Option::Some(mut current) = contexts.get(context_i) {
-            path_str = current.cwd.clone() + "/" + path_str;
+            path_str = current.cwd.clone() + path_str;
         }
 
         end_no_ints(reenable);
@@ -385,7 +362,6 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         },
 
         //Misc
-        SYS_READ_TO_END => eax = do_sys_read_to_end(ebx as usize, ecx as *mut Vec<u8>) as u32,
         SYS_TIME => {
             let reenable = start_no_ints();
 
