@@ -25,7 +25,7 @@ pub fn main(){
 
     let mut player;
     {
-        let mut resource = File::open(&"file:///apps/game/ninjaroo.bmp".to_string());
+        let mut resource = File::open(&"ninjaroo.bmp".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
         player = Sprite {
@@ -40,7 +40,7 @@ pub fn main(){
 
     let sound;
     {
-        let mut resource = File::open(&"file:///apps/game/wilhelm.wav".to_string());
+        let mut resource = File::open(&"wilhelm.wav".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
 
@@ -132,7 +132,7 @@ pub fn main(){
     RedrawEvent { redraw: REDRAW_ALL }.trigger();
 
     {
-        let mut resource = File::open(&"file:///apps/game/game_over.wav".to_string());
+        let mut resource = File::open(&"game_over.wav".to_string());
         let mut bytes: Vec<u8> = Vec::new();
         resource.read_to_end(&mut bytes);
 
