@@ -7,6 +7,7 @@ use common::memory::*;
 use common::paging::*;
 use common::resource::*;
 use common::scheduler::*;
+use common::string::*;
 use common::vec::*;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
@@ -104,6 +105,7 @@ pub struct Context {
     pub stack_ptr: u32,
     pub fx: usize,
     pub memory: Vec<ContextMemory>,
+    pub cwd: String,
     pub files: Vec<ContextFile>,
     pub interrupted: bool,
     pub exited: bool
@@ -116,6 +118,7 @@ impl Context {
             stack_ptr: 0,
             fx: alloc(512),
             memory: Vec::new(),
+            cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
             exited: false
@@ -136,6 +139,7 @@ impl Context {
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
             fx: stack + CONTEXT_STACK_SIZE,
             memory: Vec::new(),
+            cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
             exited: false

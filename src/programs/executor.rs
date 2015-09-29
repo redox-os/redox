@@ -5,7 +5,7 @@ use common::scheduler::*;
 
 use programs::common::*;
 
-pub fn execute(url: &URL, args: Vec<String>){
+pub fn execute(url: &URL, wd: &URL, args: &Vec<String>){
     unsafe{
         let mut physical_address = 0;
         let virtual_address = LOAD_ADDR;
@@ -43,11 +43,14 @@ pub fn execute(url: &URL, args: Vec<String>){
 
             let mut context = Context::new(entry as u32, &context_args);
 
+            //TODO: Push arg c_strs as things to clean up
             context.memory.push(ContextMemory {
                 physical_address: physical_address,
                 virtual_address: virtual_address,
                 virtual_size: virtual_size
             });
+
+            context.cwd = wd.to_string();
 
             context.files.push(ContextFile {
                 fd: 0, //STDIN

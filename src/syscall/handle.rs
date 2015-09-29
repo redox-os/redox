@@ -142,7 +142,22 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
 }
 
 pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
-    let resource = (*::session_ptr).open(&URL::from_string(&String::from_c_str(path)));
+    let mut path_str = String::from_c_str(path);
+
+    //TODO: Handle more path derivatives
+
+    if path_str.find(":".to_string()).is_none() {
+        let reenable = start_no_ints();
+
+        let contexts = & *contexts_ptr;
+        if let Option::Some(mut current) = contexts.get(context_i) {
+            path_str = current.cwd.clone() + "/" + path_str;
+        }
+
+        end_no_ints(reenable);
+    }
+
+    let resource = (*::session_ptr).open(&URL::from_string(&path_str));
 
     let mut fd = 0xFFFFFFFF;
 
