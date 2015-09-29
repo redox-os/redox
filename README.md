@@ -34,11 +34,14 @@ make qemu_tap
 ```
 
 ## Building on OS X
-- Install MacPorts
+- Install MacPorts or Homebrew
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
-./osx.sh
+# MacPorts
+./osx-macports.sh
+# Homebrew
+./osx-homebrew.sh
 ./binary.sh
 ```
 - Make the project
