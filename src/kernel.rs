@@ -511,6 +511,22 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("EDI", edi);
             dr("INT", interrupt);
 
+            let cr0;
+            asm!("mov eax, cr0" : "={eax}"(cr0) : : : "intel", "volatile");
+            dr("CR0", cr0);
+
+            let cr2;
+            asm!("mov eax, cr2" : "={eax}"(cr2) : : : "intel", "volatile");
+            dr("CR2", cr2);
+
+            let cr3;
+            asm!("mov eax, cr3" : "={eax}"(cr3) : : : "intel", "volatile");
+            dr("CR3", cr3);
+
+            let cr4;
+            asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
+            dr("CR4", cr4);
+
             sys_exit(-1);
             loop {
                 asm!("sti");
@@ -537,6 +553,22 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("ESI", esi);
             dr("EDI", edi);
             dr("INT", interrupt);
+
+            let cr0;
+            asm!("mov eax, cr0" : "={eax}"(cr0) : : : "intel", "volatile");
+            dr("CR0", cr0);
+
+            let cr2;
+            asm!("mov eax, cr2" : "={eax}"(cr2) : : : "intel", "volatile");
+            dr("CR2", cr2);
+
+            let cr3;
+            asm!("mov eax, cr3" : "={eax}"(cr3) : : : "intel", "volatile");
+            dr("CR3", cr3);
+
+            let cr4;
+            asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
+            dr("CR4", cr4);
 
             sys_exit(-1);
             loop {

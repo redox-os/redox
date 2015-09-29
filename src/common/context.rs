@@ -104,6 +104,7 @@ pub struct Context {
     pub stack: usize,
     pub stack_ptr: u32,
     pub fx: usize,
+    pub fx_enabled: bool,
     pub memory: Vec<ContextMemory>,
     pub cwd: String,
     pub files: Vec<ContextFile>,
@@ -113,22 +114,17 @@ pub struct Context {
 
 impl Context {
     pub unsafe fn root() -> Box<Context> {
-        let ret = box Context {
+        return box Context {
             stack: 0,
             stack_ptr: 0,
             fx: alloc(512),
+            fx_enabled: false,
             memory: Vec::new(),
             cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
             exited: false
         };
-
-        for i in 0..512 {
-            ptr::write((ret.fx + i) as *mut u8, 0);
-        }
-
-        return ret;
     }
 
     pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Context> {
@@ -138,6 +134,7 @@ impl Context {
             stack: stack,
             stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
             fx: stack + CONTEXT_STACK_SIZE,
+            fx_enabled: false,
             memory: Vec::new(),
             cwd: String::new(),
             files: Vec::new(),
@@ -167,10 +164,6 @@ impl Context {
         ret.push(ebp); //EBP
         ret.push(0); //ESI
         ret.push(0); //EDI
-
-        for i in 0..512 {
-            ptr::write((ret.fx + i) as *mut u8, 0);
-        }
 
         return ret;
     }
@@ -236,12 +229,16 @@ impl Context {
             : "{esi}"(self.fx)
             : "memory"
             : "intel", "volatile");
+        self.fx_enabled = true;
 
-        asm!("fxrstor [esi]"
-            :
-            : "{esi}"(other.fx)
-            : "memory"
-            : "intel", "volatile");
+        //TODO: Clear registers
+        if other.fx_enabled {
+            asm!("fxrstor [esi]"
+                :
+                : "{esi}"(other.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
 
         asm!("mov esp, [esi]
             popad
