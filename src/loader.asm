@@ -22,9 +22,9 @@ boot: ; dl comes with disk
     call print_num
     call print_line
 
-    mov ax, (unfs_header - boot)/512
-    mov bx, unfs_header
-    mov cx, (kernel_file.end - unfs_header)/512
+    mov ax, (fs_header - boot)/512
+    mov bx, fs_header
+    mov cx, (kernel_file.end - fs_header)/512
     xor dx, dx
     call load
 
@@ -161,20 +161,17 @@ times 510-($-$$) db 0
 db 0x55
 db 0xaa
 
-unfs_header:
+fs_header:
 .signature:
-    db 'U'
-    db 'n'
-    db 'F'
-    db 'S'
+    db "REDOXFS",0
 .version:
     dd 0xFFFFFFFF
 .name:
     db "Root Filesystem",0
 align 256, db 0
 .extents:
-    dq (unfs_root_node_list - boot)/512
-    dq (unfs_root_node_list.end - unfs_root_node_list)
+    dq (fs_root_node_list - boot)/512
+    dq (fs_root_node_list.end - fs_root_node_list)
 
     align 512, db 0
 .end:
@@ -269,17 +266,17 @@ kernel_file:
   align 512, db 0
 .end:
 
-unfs_root_node_list:
+fs_root_node_list:
 %macro file 2+
-    unfs_node.%1:
+    fs_node.%1:
     .name:
         db %2,0
 
         align 256, db 0
 
     .extents:
-        dq (unfs_data.%1 - boot)/512
-        dq (unfs_data.%1.end - unfs_data.%1)
+        dq (fs_data.%1 - boot)/512
+        dq (fs_data.%1.end - fs_data.%1)
 
         align 512, db 0
     .end:
@@ -288,10 +285,10 @@ unfs_root_node_list:
 %include "filesystem.gen"
 
 %unmacro file 2+
-unfs_root_node_list.end:
+fs_root_node_list.end:
 
 %macro file 2+
-unfs_data.%1:
+fs_data.%1:
     incbin %2
 .end:
     align 512, db 0

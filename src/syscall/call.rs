@@ -1,6 +1,5 @@
 use common::event::*;
 use common::time::*;
-use common::vec::*;
 
 use graphics::window::*;
 
@@ -26,11 +25,6 @@ pub unsafe fn sys_exit(status: isize) {
 
 pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     return syscall(SYS_READ, fd as u32, buf as u32, count as u32) as usize;
-}
-
-//TODO: Remove
-pub unsafe fn sys_read_to_end(fd: usize, vec: *mut Vec<u8>) -> usize {
-    return syscall(SYS_READ_TO_END, fd as u32, vec as u32, 0) as usize;
 }
 
 pub unsafe fn sys_write(fd: usize, buf: *const u8, count: usize) -> usize {

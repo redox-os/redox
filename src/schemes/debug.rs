@@ -45,10 +45,6 @@ impl Resource for DebugResource {
         }
     }
 
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        return Option::None;
-    }
-
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         for byte in buf {
             unsafe{

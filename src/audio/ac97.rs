@@ -31,10 +31,6 @@ impl Resource for AC97Resource {
         return Option::None;
     }
 
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        return Option::None;
-    }
-
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let audio = self.audio as u16;

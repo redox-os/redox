@@ -25,5 +25,4 @@ pub const SYS_WINDOW_CREATE: u32 = 2001;
 pub const SYS_WINDOW_DESTROY: u32 = 2002;
 
 //Misc
-pub const SYS_READ_TO_END: u32 = 3000;
-pub const SYS_TIME: u32 = 3001;
+pub const SYS_TIME: u32 = 3000;

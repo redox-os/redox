@@ -24,7 +24,12 @@ impl SessionItem for Serial {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
             unsafe{
-                while inb(self.port + 5) & 1 == 0 {}
+                loop {
+                    if inb(self.port + 5) & 1 == 1 {
+                        break;
+                    }
+                }
+
                 let mut c = inb(self.port) as char;
                 let mut sc = 0;
 
@@ -40,13 +45,13 @@ impl SessionItem for Serial {
                     self.cursor_control = false;
 
                     if c == 'A'{
-                        sc = 0x48;
+                        sc = K_UP;
                     }else if c == 'B'{
-                        sc = 0x50;
+                        sc = K_DOWN;
                     }else if c == 'C'{
-                        sc = 0x4D;
+                        sc = K_RIGHT;
                     }else if c == 'D'{
-                        sc = 0x4B;
+                        sc = K_LEFT;
                     }
 
                     c = '\0';
@@ -55,11 +60,9 @@ impl SessionItem for Serial {
                     c = '\0';
                 }else if c == '\r' {
                     c = '\n';
-                    dl();
                 }else if c == '\x7F' {
-                    c = '\x08';
-                }else{
-                    dc(c);
+                    sc = K_BKSP;
+                    c = '\0';
                 }
 
                 if c != '\0' || sc != 0 {
