@@ -239,7 +239,57 @@ impl SessionItem for FileScheme {
                         seek: 0
                     };
                 },
-                Option::None => return box NoneResource
+                Option::None => {
+                    d("Creating ");
+                    path.d();
+                    dl();
+
+                    let mut name = [0; 256];
+                    for i in 0..256 {
+                        //TODO: UTF8
+                        let b = path[i] as u8;
+                        name[i] = b;
+                        if b == 0 {
+                            break;
+                        }
+                    }
+
+                    let node = Node {
+                        name: name,
+                        extents: [Extent { block: 0, length: 0 }; 16]
+                    };
+
+                    //TODO: Sync to disk
+                    let mut node_i = 0;
+                    while node_i < self.fs.nodes.len() {
+                        let mut cmp = 0;
+
+                        if let Option::Some(other_node) = self.fs.nodes.get(node_i) {
+                            for i in 0..256 {
+                                if other_node.name[i] != node.name[i] {
+                                    cmp = other_node.name[i] as isize - node.name[i] as isize;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if cmp >= 0 {
+                            break;
+                        }
+
+                        node_i += 1;
+                    }
+                    d("Insert at ");
+                    dd(node_i);
+                    dl();
+                    self.fs.nodes.insert(node_i, node.clone());
+
+                    return box FileResource {
+                        node: node,
+                        vec: Vec::new(),
+                        seek: 0
+                    };
+                }
             }
         }
     }
