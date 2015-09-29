@@ -167,6 +167,7 @@ static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
 static mut debug_point: Point = Point{ x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
+static mut debug_command: *mut String = 0 as *mut String;
 
 static mut clock_realtime: Duration = Duration {
     secs: 0,
@@ -185,7 +186,7 @@ static PIT_DURATION: Duration = Duration {
 
 static mut session_ptr: *mut Box<Session> = 0 as *mut Box<Session>;
 
-static mut events_ptr: *mut Box<Queue<Event>> = 0 as *mut Box<Queue<Event>>;
+static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
 unsafe fn idle_loop() -> ! {
     loop {
@@ -228,6 +229,7 @@ unsafe fn poll_loop() -> ! {
 unsafe fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
+    let mut cmd = String::new();
     loop {
         loop{
             let reenable = start_no_ints();
@@ -237,7 +239,49 @@ unsafe fn event_loop() -> ! {
             end_no_ints(reenable);
 
             match event_option {
-                Option::Some(event) => session.event(event),
+                Option::Some(event) => {
+                    if debug_draw {
+                        match event.to_option() {
+                            EventOption::Key(key_event) => {
+                                if key_event.pressed {
+                                    match key_event.scancode {
+                                        K_F2 => {
+                                            ::debug_draw = false;
+                                            (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_ALL);
+                                        },
+                                        K_BKSP => if cmd.len() > 0 {
+                                            db(8);
+                                            cmd.vec.pop();
+                                        },
+                                        _ => match key_event.character {
+                                            '\0' => (),
+                                            '\n' => {
+                                                let reenable = start_no_ints();
+                                                *::debug_command = cmd + '\n';
+                                                end_no_ints(reenable);
+
+                                                cmd = String::new();
+                                                dl();
+                                            }
+                                            _ => {
+                                                cmd.vec.push(key_event.character);
+                                                dc(key_event.character);
+                                            }
+                                        }
+                                    }
+                                }
+                            },
+                            _ => ()
+                        }
+                    }else{
+                        if event.code == 'k' && event.b as u8 == K_F1 && event.c > 0 {
+                            ::debug_draw = true;
+                            ::debug_redraw = true;
+                        }else{
+                            session.event(event);
+                        }
+                    }
+                },
                 Option::None => break
             }
         }
@@ -311,7 +355,7 @@ unsafe fn init(font_data: usize){
 
     session_ptr = 0 as *mut Box<Session>;
 
-    events_ptr = 0 as *mut Box<Queue<Event>>;
+    events_ptr = 0 as *mut Queue<Event>;
 
     debug_init();
 
@@ -329,6 +373,8 @@ unsafe fn init(font_data: usize){
     ptr::write(debug_display, box Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
+    debug_command = alloc_type();
+    ptr::write(debug_command, String::new());
 
     clock_realtime.secs = rtc_read();
 
@@ -340,7 +386,7 @@ unsafe fn init(font_data: usize){
     ptr::write(session_ptr, box Session::new());
 
     events_ptr = alloc_type();
-    ptr::write(events_ptr, box Queue::new());
+    ptr::write(events_ptr, Queue::new());
 
     let session = &mut *session_ptr;
 

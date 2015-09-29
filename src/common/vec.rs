@@ -123,6 +123,20 @@ impl <T> Vec<T> {
         }
     }
 
+    pub fn pop(&mut self) -> Option<T> {
+        if self.length > 0 {
+            self.length -= 1;
+            unsafe{
+                let item = ptr::read(self.data.offset(self.length as isize));
+                self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
+
+                return Option::Some(item);
+            }
+        }else{
+            return Option::None;
+        }
+    }
+
     pub fn len(&self) -> usize {
         self.length
     }
