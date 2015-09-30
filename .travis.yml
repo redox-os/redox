@@ -5,6 +5,10 @@ addons:
   apt:
     packages:
       - nasm
+  brew:
+    packages:
+      - i386-elf-binutils
+      - nasm
 os:
   - linux
   - osx
