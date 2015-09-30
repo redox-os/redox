@@ -1,5 +1,5 @@
 RUSTC=rustc
-RUSTCFLAGS=--target=i386-elf-redox.json \
+RUSTCFLAGS=--target=i686-unknown-redox-gnu.json \
 	-C no-vectorize-loops -C no-vectorize-slp -C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
@@ -38,6 +38,7 @@ else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 		LD=i386-elf-ld
+                RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 		VB_AUDIO="coreaudio"
@@ -47,7 +48,7 @@ endif
 all: build/harddrive.bin
 
 doc: src/kernel.rs build/libcore.rlib build/liballoc.rlib
-	rustdoc --target=i386-elf-redox.json -L. $<
+	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
 
 build/libcore.rlib: rust/libcore/lib.rs
 	$(MKDIR) -p build
