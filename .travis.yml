@@ -5,4 +5,7 @@ addons:
   apt:
     packages:
       - nasm
-script: make
+os:
+  - linux
+  - osx
+script: make clean && make
