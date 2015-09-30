@@ -1,6 +1,6 @@
 RUSTC=rustc
 RUSTCFLAGS=--target=i686-unknown-redox-gnu.json \
-	-C no-vectorize-loops -C no-vectorize-slp -C relocation-model=static -C code-model=kernel -C no-stack-check -C opt-level=2 \
+	-C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
 	-L build
