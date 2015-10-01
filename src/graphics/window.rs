@@ -47,8 +47,7 @@ impl Window {
                 y: 0,
                 left_button: false,
                 right_button: false,
-                middle_button: false,
-                valid: false
+                middle_button: false
             },
             events: Queue::new(),
             ptr: 0 as *mut Window

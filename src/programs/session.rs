@@ -32,8 +32,7 @@ impl Session {
                     y: 0,
                     left_button: false,
                     middle_button: false,
-                    right_button: false,
-                    valid: false
+                    right_button: false
                 },
                 items: Vec::new(),
                 packages: Vec::new(),
