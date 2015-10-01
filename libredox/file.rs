@@ -3,12 +3,15 @@ use common::vec::*;
 
 use syscall::call::*;
 
+/// A Unix-style file
 pub struct File {
     path: String,
     fd: usize
 }
 
 impl File {
+    /// Open a new file using a path
+    // TODO: Why &String and not String
     pub fn open(path: &String) -> File {
         unsafe {
             let c_str: *const u8 = path.to_c_str();
@@ -21,11 +24,13 @@ impl File {
         }
     }
 
+    /// Return the url to the file
     pub fn url(&self) -> String {
         //TODO
         self.path.clone()
     }
 
+    /// Read a file to a buffer
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         unsafe {
             let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
@@ -37,6 +42,7 @@ impl File {
         }
     }
 
+    /// Read the file to the end
     pub fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         let mut read = 0;
         loop {
@@ -54,6 +60,7 @@ impl File {
         }
     }
 
+    /// Write to the file
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let count = sys_write(self.fd, buf.as_ptr(), buf.len());
@@ -71,7 +78,9 @@ impl File {
     }
     */
 
+    /// Flush the io
     pub fn flush(&mut self) -> bool {
+        // TODO
         false
     }
 }

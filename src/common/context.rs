@@ -16,6 +16,7 @@ pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
+/// Switch context
 pub unsafe fn context_switch(interrupted: bool){
     let reenable = start_no_ints();
 
@@ -38,7 +39,7 @@ pub unsafe fn context_switch(interrupted: bool){
 
             if remove {
                 drop(contexts.remove(context_i));
-            }else{
+            } else {
                 break;
             }
         }

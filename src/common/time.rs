@@ -17,6 +17,7 @@ pub struct Duration {
 }
 
 impl Duration {
+    /// Create a new duration
     pub fn new(mut secs: i64, mut nanos: i32) -> Duration {
         while nanos >= NANOS_PER_SEC || (nanos > 0 && secs < 0) {
             secs += 1;
@@ -34,6 +35,7 @@ impl Duration {
         }
     }
 
+    /// Get the current duration
     pub fn monotonic() -> Duration {
         let mut ret = Duration::new(0, 0);
         unsafe{
@@ -42,6 +44,7 @@ impl Duration {
         ret
     }
 
+    /// Get the realtime
     pub fn realtime() -> Duration {
         let mut ret = Duration::new(0, 0);
         unsafe{
@@ -50,19 +53,21 @@ impl Duration {
         ret
     }
 
-    pub fn sleep(&self){
+    /// Sleep the duration
+    pub fn sleep(&self) {
         let start_time = Duration::monotonic();
         loop {
             let elapsed = Duration::monotonic() - start_time;
             if elapsed > *self {
                 break;
-            }else{
+            } else {
                 sys_yield();
             }
         }
     }
 
     //TODO: Format decimal
+    /// Convert to string
     pub fn to_string(&self) -> String {
         String::from_num_signed(self.secs as isize)
     }
