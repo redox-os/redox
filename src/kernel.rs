@@ -24,7 +24,6 @@ use core::fmt;
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
-use common::pio::*;
 use common::scheduler::*;
 
 use drivers::disk::*;
@@ -77,7 +76,6 @@ mod common {
     pub mod mutex;
     pub mod paging;
     pub mod pci;
-    pub mod pio;
     pub mod random;
     pub mod resource;
     pub mod scheduler;
@@ -89,8 +87,10 @@ mod common {
 mod drivers {
     pub mod disk;
     pub mod keyboard;
+    pub mod mmio;
     pub mod mouse;
     pub mod pci;
+    pub mod pio;
     pub mod ps2;
     pub mod rtc;
     pub mod serial;
