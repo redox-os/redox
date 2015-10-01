@@ -2,8 +2,9 @@ use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::{read, write};
 
 use common::memory::*;
-use common::pci::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
 
 use programs::common::*;
 

@@ -2,16 +2,15 @@ use audio::ac97::*;
 use audio::intelhda::*;
 
 use common::debug::*;
-use common::pci::*;
 use common::queue::*;
 use common::vec::*;
+
+use drivers::pciconfig::*;
 
 use network::intel8254x::*;
 use network::rtl8139::*;
 
 use programs::session::*;
-
-use schemes::ide::*;
 
 use usb::ehci::*;
 use usb::uhci::*;
@@ -20,7 +19,10 @@ use usb::xhci::*;
 pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: usize, class_id: usize, subclass_id: usize, interface_id: usize, vendor_code: usize, device_code: usize){
     if class_id == 0x01 && subclass_id == 0x01{
         let base = pci_read(bus, slot, func, 0x20);
-
+        d("IDE on ");
+        dh(base);
+        dl();
+        /*
         let module = box IDE {
             bus: bus,
             slot: slot,
@@ -31,6 +33,7 @@ pub unsafe fn pci_device(session: &mut Session, bus: usize, slot: usize, func: u
         };
         module.init();
         session.items.push(module);
+        */
     }else if class_id == 0x0C && subclass_id == 0x03{
         if interface_id == 0x30{
             let base = pci_read(bus, slot, func, 0x10);

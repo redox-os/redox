@@ -1,6 +1,7 @@
 use common::memory::*;
-use common::pci::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
 
 use network::common::*;
 use network::scheme::*;

@@ -51,7 +51,6 @@ use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::pci::*;
 use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
@@ -75,7 +74,6 @@ mod common {
     pub mod memory;
     pub mod mutex;
     pub mod paging;
-    pub mod pci;
     pub mod random;
     pub mod resource;
     pub mod scheduler;
@@ -90,6 +88,7 @@ mod drivers {
     pub mod mmio;
     pub mod mouse;
     pub mod pci;
+    pub mod pciconfig;
     pub mod pio;
     pub mod ps2;
     pub mod rtc;
@@ -135,10 +134,8 @@ mod schemes {
     pub mod file;
     pub mod http;
     pub mod icmp;
-    pub mod ide;
     pub mod ip;
     pub mod memory;
-    pub mod pci;
     pub mod random;
     pub mod tcp;
     pub mod time;
@@ -387,7 +384,7 @@ unsafe fn init(font_data: usize){
     keyboard_init();
     mouse_init();
 
-    session.items.push(box PS2);
+    session.items.push(box PS2::new());
     session.items.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
@@ -411,7 +408,6 @@ unsafe fn init(font_data: usize){
     });
     session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
-    session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
 

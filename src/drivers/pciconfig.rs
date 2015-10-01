@@ -1,17 +1,43 @@
-use common::pio::*;
+use drivers::pio::*;
 
-pub unsafe fn pci_read(bus: usize, slot: usize, function: usize, offset: usize) -> usize{
-    let address = PIO32 { port: 0xCF8 };
-    let data = PIO32 { port: 0xCFC };
-
-    outd(CONFIG_ADDRESS, ((1 << 31) | (bus << 16) | (slot << 11) | (function << 8) | (offset & 0xfc)) as u32);
-    return ind(CONFIG_DATA) as usize;
+pub struct PCIConfig {
+    bus: u8,
+    slot: u8,
+    func: u8,
+    offset: u8,
+    addr: PIO32,
+    data: PIO32
 }
 
-pub unsafe fn pci_write(bus: usize, slot: usize, function: usize, offset: usize, data: usize){
-    let address = PIO32 { port: 0xCF8 };
-    let data = PIO32 { port: 0xCFC };
+impl PCIConfig {
+    pub fn new(bus: u8, slot: u8, func: u8, offset: u8) -> PCIConfig {
+        return PCIConfig {
+            bus: bus,
+            slot: slot,
+            func: func,
+            offset: offset,
+            addr: PIO32::new(0xCF8),
+            data: PIO32::new(0xCFC)
+        };
+    }
 
-    outd(CONFIG_ADDRESS, ((1 << 31) | (bus << 16) | (slot << 11) | (function << 8) | (offset & 0xfc)) as u32);
-    outd(CONFIG_DATA, data as u32);
+    fn address(&self) -> u32 {
+        return 1 << 31
+            | (self.bus as u32 & 255) << 16
+            | (self.slot as u32 & 31) << 11
+            | (self.function as u32 & 8) << 8
+            | (offset as u32 & 0xFC);
+    }
+
+    pub unsafe fn read(&mut self) -> u32 {
+        self.addr.write(self.address());
+        return self.data.read();
+    }
+
+    pub unsafe fn write(&mut self, value: u32) {
+        self.addr.write(self.address());
+        self.data.write(value);
+    }
+
+    //TODO: Write functions to get data structures
 }

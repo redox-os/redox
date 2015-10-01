@@ -1,9 +1,10 @@
 use core::ptr::{read, write};
 
 use common::memory::*;
-use common::pci::*;
-use common::pio::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
+use drivers::pio::*;
 
 use programs::common::*;
 
