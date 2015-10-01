@@ -197,7 +197,7 @@ impl AC97 {
     pub unsafe fn new(mut pci: PCIConfig) -> Box<AC97> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let mut module = box AC97 {
+        let module = box AC97 {
             audio: pci.read(0x10) as usize & 0xFFFFFFF0,
             bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF

@@ -104,7 +104,7 @@ impl URL {
         for part in self.string.split("/".to_string()) {
             match part_i {
                 0 => {
-                        let mut scheme_part_i = 0;
+                        let scheme_part_i = 0;
                         for scheme_part in part.split(":".to_string()) {
                             match scheme_part_i {
                                 0 => return scheme_part,
