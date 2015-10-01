@@ -9,22 +9,24 @@ pub fn db(byte: u8) {
 }
 
 pub fn dbh(byte: u8) {
-    let mut high = byte / 16;
-    if high <= 9 {
-        high += '0' as u8;
-    } else {
-        high -= 10;
-        high += 'A' as u8;
-    }
+    let high = {
+        let temp: u8 = byte / 16;
+        if temp <= 9 {
+            temp + ('0' as u8)
+        } else {
+            temp - 10 + ('A' as u8)
+        }
+    };
     db(high);
 
-    let mut low = byte % 16;
-    if low <= 9 {
-        low += '0' as u8;
-    } else {
-        low -= 10;
-        low += 'A' as u8;
-    }
+    let low = {
+        let temp = byte % 16;
+        if temp <= 9 {
+            temp + ('0' as u8)
+        } else {
+            temp - 10 + ('A' as u8)
+        }
+    };
     db(low);
 }
 
