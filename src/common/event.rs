@@ -4,6 +4,7 @@ use common::string::*;
 
 use syscall::call::*;
 
+/// An optional event
 pub enum EventOption {
     Mouse(MouseEvent),
     Key(KeyEvent),
@@ -13,6 +14,7 @@ pub enum EventOption {
     None
 }
 
+/// An event
 #[derive(Copy, Clone)]
 pub struct Event {
     pub code: char,
@@ -24,6 +26,8 @@ pub struct Event {
 }
 
 impl Event {
+    /// Convert the event ot an optional event
+    // TODO: Consider doing this via a From trait.
     pub fn to_option(self) -> EventOption {
         match self.code {
             'm' => EventOption::Mouse(MouseEvent::from_event(self)),
@@ -35,13 +39,15 @@ impl Event {
         }
     }
 
+    /// Event trigger
     pub fn trigger(&self){
-        unsafe{
+        unsafe {
             sys_trigger(self);
         }
     }
 }
 
+/// A event related to the mouse
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
     pub x: isize,
@@ -53,6 +59,7 @@ pub struct MouseEvent {
 }
 
 impl MouseEvent {
+    /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         Event {
             code: 'm',
@@ -64,6 +71,7 @@ impl MouseEvent {
         }
     }
 
+    /// Convert an `Event` to a `MouseEvent`
     pub fn from_event(event: Event) -> MouseEvent {
         MouseEvent {
             x: event.a,
@@ -75,6 +83,8 @@ impl MouseEvent {
         }
     }
 
+    /// Mouse event trigger
+    #[inline]
     pub fn trigger(&self){
         self.to_event().trigger();
     }
@@ -107,6 +117,7 @@ pub const K_DEL: u8 = 0x53;
 pub const K_F11: u8 = 0x57;
 pub const K_F12: u8 = 0x58;
 
+/// A key event (such as a pressed key)
 #[derive(Copy, Clone)]
 pub struct KeyEvent {
     pub character: char,
@@ -115,6 +126,7 @@ pub struct KeyEvent {
 }
 
 impl KeyEvent {
+    /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         Event {
             code: 'k',
@@ -126,6 +138,7 @@ impl KeyEvent {
         }
     }
 
+    /// Convert from an `Event`
     pub fn from_event(event: Event) -> KeyEvent {
         match char::from_u32(event.a as u32) {
             Option::Some(character) => KeyEvent {
@@ -141,6 +154,8 @@ impl KeyEvent {
         }
     }
 
+    /// Key event trigger
+    #[inline]
     pub fn trigger(&self){
         self.to_event().trigger();
     }
@@ -150,11 +165,13 @@ pub const REDRAW_NONE: usize = 0;
 pub const REDRAW_CURSOR: usize = 1;
 pub const REDRAW_ALL: usize = 2;
 
+/// A redraw event
 pub struct RedrawEvent {
     pub redraw: usize
 }
 
 impl RedrawEvent {
+    /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         Event {
             code: 'r',
@@ -166,22 +183,28 @@ impl RedrawEvent {
         }
     }
 
+    /// Convert from an `Event`
     pub fn from_event(event: Event) -> RedrawEvent {
         RedrawEvent {
             redraw: event.a as usize
         }
     }
 
+    /// Redraw trigger
+    #[inline]
     pub fn trigger(&self){
         self.to_event().trigger();
     }
 }
 
+/// A "open event" (such as a IO request)
 pub struct OpenEvent {
+    /// The URL, see wiki.
     pub url_string: String
 }
 
 impl OpenEvent {
+    /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         unsafe {
             Event {
@@ -195,6 +218,7 @@ impl OpenEvent {
         }
     }
 
+    /// Convert from an `Event`
     pub fn from_event(event: Event) -> OpenEvent {
         unsafe {
             let ret = OpenEvent {
@@ -205,6 +229,7 @@ impl OpenEvent {
         }
     }
 
+    /// Event trigger
     pub fn trigger(&self){
         self.to_event().trigger();
     }
