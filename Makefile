@@ -102,7 +102,15 @@ build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
 
 virtualbox: build/harddrive.bin
 	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete
+	-$(VBM) unregistervm Redox --delete; \
+	if [ $$? -ne 0 ]; \
+	then \
+		if [ -d "$$HOME/VirtualBox VMs/Redox" ]; \
+		then \
+			echo "redox directory exists, deleting..."; \
+			$(RM) -rf "$$HOME/VirtualBox VMs/Redox"; \
+		fi \
+	fi
 	echo "Delete Disk"
 	-$(RM) harddrive.vdi
 	echo "Create VM"
