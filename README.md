@@ -2,7 +2,7 @@
 
 **Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
 
-## Building on Ubuntu
+## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
@@ -14,7 +14,7 @@ cd setup
 make
 ```
 
-## Running on Ubuntu
+## Running on Debian/Ubuntu
 - Install VirtualBox
 ```bash
 sudo apt-get install virtualbox
@@ -24,7 +24,7 @@ sudo apt-get install virtualbox
 make virtualbox
 ```
 
-## Running on Ubuntu (Qemu, Advanced)
+## Running on Debian/Ubuntu (Qemu, Advanced)
 - Install Qemu
 ```bash
 sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
