@@ -1,20 +1,6 @@
 use common::scheduler::*;
 use common::time::*;
 
-<<<<<<< HEAD
-unsafe fn rtc_get(reg: u8) -> u8 {
-    outb(0x70, reg);
-    inb(0x71)
-}
-
-unsafe fn rtc_wait_for_update(){
-    while rtc_get(0xA) & 0x80 != 0x80 {}
-    while rtc_get(0xA) & 0x80 == 0x80 {}
-}
-=======
-use drivers::pio::*;
->>>>>>> b42427b919da858ede453db5441ecb08d7c07649
-
 fn cvt_bcd(value: usize) -> usize {
     (value & 0xF) + ((value/16) * 10)
 }
@@ -110,10 +96,5 @@ impl RTC {
         secs += minute as i64 * 60;
         secs += second as i64;
 
-<<<<<<< HEAD
-    secs
-=======
-        return Duration::new(secs, 0);
-    }
->>>>>>> b42427b919da858ede453db5441ecb08d7c07649
+        Duration::new(secs, 0)
 }

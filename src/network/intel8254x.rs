@@ -264,30 +264,18 @@ impl Intel8254x {
 
     pub unsafe fn read(&self, register: u32) -> u32 {
         if self.memory_mapped {
-<<<<<<< HEAD
             ptr::read((self.base + register as usize) as *mut u32)
         } else {
             0
-=======
-            return ptr::read((self.base + register as usize) as *mut u32);
-        } else {
-            return 0;
->>>>>>> b42427b919da858ede453db5441ecb08d7c07649
         }
     }
 
     pub unsafe fn write(&self, register: u32, data: u32) -> u32 {
         if self.memory_mapped {
             ptr::write((self.base + register as usize) as *mut u32, data);
-<<<<<<< HEAD
             ptr::read((self.base + register as usize) as *mut u32)
         } else {
             0
-=======
-            return ptr::read((self.base + register as usize) as *mut u32);
-        } else {
-            return 0;
->>>>>>> b42427b919da858ede453db5441ecb08d7c07649
         }
     }
 

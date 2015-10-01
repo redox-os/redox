@@ -36,13 +36,8 @@ pub trait SessionItem {
 
     }
 
-<<<<<<< HEAD
     fn scheme(&self) -> String{
         String::new()
-=======
-    fn scheme(&self) -> String {
-        return String::new();
->>>>>>> b42427b919da858ede453db5441ecb08d7c07649
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
