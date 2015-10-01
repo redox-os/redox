@@ -1,9 +1,9 @@
 use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::{read, write};
 
-use common::memory::*;
-use common::pci::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
 
 use programs::common::*;
 
@@ -34,9 +34,7 @@ struct QueueHead {
 }
 
 pub struct EHCI {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8
@@ -44,11 +42,11 @@ pub struct EHCI {
 
 impl SessionItem for EHCI {
     #[allow(non_snake_case)]
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("EHCI handle");
 
-            unsafe{
+            unsafe {
                 let CAPLENGTH = self.base as *mut u8;
 
                 let opbase = self.base + read(CAPLENGTH) as usize;
@@ -74,18 +72,20 @@ impl SessionItem for EHCI {
 
 impl EHCI {
     #[allow(non_snake_case)]
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&mut self) {
         d("EHCI on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        } else {
             d(" port mapped");
         }
         d(" IRQ: ");
         dbh(self.irq);
 
-        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | 4); // Bus master
+        let pci = &mut self.pci;
+
+        pci.flag(4, 4, true); // Bus master
 
         let CAPLENGTH = self.base as *mut u8;
         let HCSPARAMS = (self.base + 4) as *mut u32;
@@ -104,36 +104,36 @@ impl EHCI {
         d(" PORTS ");
         dd(ports);
 
-        let eecp = ((read(HCCPARAMS) >> 8) & 0xFF) as usize;
+        let eecp = ((read(HCCPARAMS) >> 8) & 0xFF) as u8;
         d(" EECP ");
-        dh(eecp);
+        dh(eecp as usize);
 
         dl();
 
         if eecp > 0 {
-            if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 16) {
+            if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 16) {
                 d("Taking Ownership");
                     d(" ");
-                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+                    dh(pci.read(eecp) as usize);
 
-                    pci_write(self.bus, self.slot, self.func, eecp, pci_read(self.bus, self.slot, self.func, eecp) | (1 << 24));
+                    pci.flag(eecp, 1 << 24, true);
 
                     d(" ");
-                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+                    dh(pci.read(eecp) as usize);
                 dl();
 
                 d("Waiting");
                     d(" ");
-                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+                    dh(pci.read(eecp) as usize);
 
                     loop {
-                        if pci_read(self.bus, self.slot, self.func, eecp) & ((1 << 24) | (1 << 16)) == (1 << 24) {
+                        if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 24) {
                             break;
                         }
                     }
 
                     d(" ");
-                    dh(pci_read(self.bus, self.slot, self.func, eecp));
+                    dh(pci.read(eecp) as usize);
                 dl();
             }
         }
@@ -168,7 +168,7 @@ impl EHCI {
             dl();
 
             d("Waiting");
-                loop{
+                loop {
                     if volatile_load(USBSTS) & (1 << 12) == (1 << 12) {
                         break;
                     }
@@ -199,7 +199,7 @@ impl EHCI {
         dl();
 
         d("Waiting");
-            loop{
+            loop {
                 if volatile_load(USBCMD) & (1 << 1) == 0 {
                     break;
                 }
@@ -232,7 +232,7 @@ impl EHCI {
         dl();
 
         d("Waiting");
-            loop{
+            loop {
                 if volatile_load(USBSTS) & (1 << 12) == 0 {
                     break;
                 }
@@ -294,10 +294,10 @@ impl EHCI {
                         d(" ");
                         dh(read(PORTSC.offset(i)) as usize);
 
-                        loop{
+                        loop {
                             if volatile_load(PORTSC.offset(i)) & (1 << 8) == 0 {
                                 break;
-                            }else{
+                            } else {
                                 volatile_store(PORTSC.offset(i), volatile_load(PORTSC.offset(i)) & 0xFFFFFEFF);
                             }
                         }
@@ -322,7 +322,7 @@ impl EHCI {
                     });
 
                     let in_data = alloc(64) as *mut u8;
-                    for i in 0..64{
+                    for i in 0..64 {
                         *in_data.offset(i) = 0;
                     }
 
@@ -447,7 +447,7 @@ impl EHCI {
                     //Only detect one device for testing
                     break;
                     */
-                }else{
+                } else {
                     d("Device not high-speed\n");
                 }
             }

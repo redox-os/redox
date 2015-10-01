@@ -1,6 +1,7 @@
 use common::memory::*;
-use common::pci::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
 
 use network::common::*;
 use network::scheme::*;
@@ -92,9 +93,7 @@ struct TD {
     const TD_DD: u8 = 1;
 
 pub struct Intel8254x {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
@@ -114,7 +113,7 @@ impl SessionItem for Intel8254x {
 
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            unsafe{
+            unsafe {
                 dh(self.read(ICR) as usize);
                 dl();
             }
@@ -123,13 +122,13 @@ impl SessionItem for Intel8254x {
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
         self.sync();
     }
 }
 
 impl NetworkScheme for Intel8254x {
-    fn add(&mut self, resource: *mut NetworkResource){
+    fn add(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = start_no_ints();
             self.resources.push(resource);
@@ -137,7 +136,7 @@ impl NetworkScheme for Intel8254x {
         }
     }
 
-    fn remove(&mut self, resource: *mut NetworkResource){
+    fn remove(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = start_no_ints();
             let mut i = 0;
@@ -147,7 +146,7 @@ impl NetworkScheme for Intel8254x {
                 match self.resources.get(i) {
                     Option::Some(ptr) => if *ptr == resource {
                         remove = true;
-                    }else{
+                    } else {
                         i += 1;
                     },
                     Option::None => break
@@ -161,7 +160,7 @@ impl NetworkScheme for Intel8254x {
         }
     }
 
-    fn sync(&mut self){
+    fn sync(&mut self) {
         unsafe {
             let reenable = start_no_ints();
 
@@ -249,7 +248,7 @@ impl Intel8254x {
                         td.special = 0;
 
                         self.write(TDT, tail);
-                    }else{
+                    } else {
                         //TODO: More than one TD
                         dl();
                         d("Intel 8254x: Frame too long for transmit: ");
@@ -265,18 +264,30 @@ impl Intel8254x {
 
     pub unsafe fn read(&self, register: u32) -> u32 {
         if self.memory_mapped {
+<<<<<<< HEAD
             ptr::read((self.base + register as usize) as *mut u32)
         } else {
             0
+=======
+            return ptr::read((self.base + register as usize) as *mut u32);
+        } else {
+            return 0;
+>>>>>>> b42427b919da858ede453db5441ecb08d7c07649
         }
     }
 
     pub unsafe fn write(&self, register: u32, data: u32) -> u32 {
         if self.memory_mapped {
             ptr::write((self.base + register as usize) as *mut u32, data);
+<<<<<<< HEAD
             ptr::read((self.base + register as usize) as *mut u32)
         } else {
             0
+=======
+            return ptr::read((self.base + register as usize) as *mut u32);
+        } else {
+            return 0;
+>>>>>>> b42427b919da858ede453db5441ecb08d7c07649
         }
     }
 
@@ -288,18 +299,18 @@ impl Intel8254x {
         }
     }
 
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&mut self) {
         d("Intel 8254x on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        } else {
             d(" port mapped");
         }
         d(", IRQ: ");
         dbh(self.irq);
 
-        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
+        self.pci.flag(4, 4, true); // Bus mastering
 
         //Enable auto negotiate, link, clear reset, do not Invert Loss-Of Signal
         self.flag(CTRL, CTRL_ASDE | CTRL_SLU, true);
@@ -324,7 +335,7 @@ impl Intel8254x {
         d(" MAC: ");
         let mac_low = self.read(RAL0);
         let mac_high = self.read(RAH0);
-        MAC_ADDR = MACAddr{
+        MAC_ADDR = MACAddr {
             bytes: [
                 mac_low as u8,
                 (mac_low >> 8) as u8,

@@ -6,12 +6,8 @@ use core::cmp::max;
 use core::mem::swap;
 use core::ptr;
 
-use common::debug::*;
-use common::memory::*;
 use common::string::*;
 use common::vec::*;
-
-use syscall::call::*;
 
 /// Resource seek
 pub enum ResourceSeek {
@@ -110,13 +106,13 @@ impl URL {
     }
 
     // FIXME: Strange naming.
-    pub fn d(&self){
+    pub fn d(&self) {
         self.string.d();
     }
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Box<Resource> {
-        unsafe{
+        unsafe {
             return (*::session_ptr).open(&self);
         }
     }
@@ -127,7 +123,7 @@ impl URL {
         for part in self.string.split("/".to_string()) {
             match part_i {
                 0 => {
-                        let mut scheme_part_i = 0;
+                        let scheme_part_i = 0;
                         for scheme_part in part.split(":".to_string()) {
                             match scheme_part_i {
                                 0 => return scheme_part,
@@ -156,7 +152,7 @@ impl URL {
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()){
+                    for host_part in part.split("@".to_string()) {
                         let mut host_subpart_i = 0;
                         for host_subpart in host_part.split(":".to_string()) {
                             match host_part_i {
@@ -199,7 +195,7 @@ impl URL {
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()){
+                    for host_part in part.split("@".to_string()) {
                         let mut host_subpart_i = 0;
                         for host_subpart in host_part.split(":".to_string()) {
                             match host_part_i {
@@ -241,7 +237,7 @@ impl URL {
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()){
+                    for host_part in part.split("@".to_string()) {
                         let mut host_subpart_i = 0;
                         for host_subpart in host_part.split(":".to_string()) {
                             match host_part_i {
@@ -283,7 +279,7 @@ impl URL {
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()){
+                    for host_part in part.split("@".to_string()) {
                         let mut host_subpart_i = 0;
                         for host_subpart in host_part.split(":".to_string()) {
                             match host_part_i {
@@ -330,7 +326,7 @@ impl URL {
         }
 
         //Hack for folders
-        if part_i > 3 && self.string.ends_with("/".to_string()){
+        if part_i > 3 && self.string.ends_with("/".to_string()) {
             path = path + "/";
         }
 
@@ -357,7 +353,7 @@ impl URL {
 }
 
 impl Clone for URL {
-    fn clone(&self) -> URL{
+    fn clone(&self) -> URL {
         URL {
             string: self.string.clone()
         }

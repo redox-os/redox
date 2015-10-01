@@ -36,7 +36,7 @@ impl FromBytes for ICMP {
 
 impl ToBytes for ICMP {
     fn to_bytes(&self) -> Vec<u8> {
-        unsafe{
+        unsafe {
             let header_ptr: *const ICMPHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ICMPHeader>());
             ret.push_all(&self.data);
@@ -46,7 +46,7 @@ impl ToBytes for ICMP {
 }
 
 impl ICMP {
-    pub fn d(&self){
+    pub fn d(&self) {
         d("ICMP ");
         dbh(self.header._type);
         d(" code ");

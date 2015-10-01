@@ -40,7 +40,7 @@ impl Event {
     }
 
     /// Event trigger
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         unsafe {
             sys_trigger(self);
         }
@@ -85,7 +85,7 @@ impl MouseEvent {
 
     /// Mouse event trigger
     #[inline]
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }
@@ -156,7 +156,7 @@ impl KeyEvent {
 
     /// Key event trigger
     #[inline]
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }
@@ -192,7 +192,7 @@ impl RedrawEvent {
 
     /// Redraw trigger
     #[inline]
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }
@@ -230,7 +230,7 @@ impl OpenEvent {
     }
 
     /// Event trigger
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }

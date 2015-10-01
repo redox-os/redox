@@ -53,7 +53,7 @@ impl Resource for TCPResource {
                                 data: Vec::new()
                             };
 
-                            unsafe{
+                            unsafe {
                                 let proto = n16::new(0x06);
                                 let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                 tcp.header.checksum.data = Checksum::compile(
@@ -99,7 +99,7 @@ impl Resource for TCPResource {
             data: tcp_data
         };
 
-        unsafe{
+        unsafe {
             let proto = n16::new(0x06);
             let segment_len = n16::new((size_of::<TCPHeader>() + tcp.data.len()) as u16);
             tcp.header.checksum.data = Checksum::compile(
@@ -124,7 +124,7 @@ impl Resource for TCPResource {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
                                     return Option::Some(size);
-                                }else{
+                                } else {
                                     return Option::None;
                                 }
                             }
@@ -166,7 +166,7 @@ impl TCPResource {
             data: Vec::new()
         };
 
-        unsafe{
+        unsafe {
             let proto = n16::new(0x06);
             let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
             tcp.header.checksum.data = Checksum::compile(
@@ -209,7 +209,7 @@ impl TCPResource {
                                         data: Vec::new()
                                     };
 
-                                    unsafe{
+                                    unsafe {
                                         let proto = n16::new(0x06);
                                         let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                         tcp.header.checksum.data = Checksum::compile(
@@ -226,7 +226,7 @@ impl TCPResource {
                                     self.ip.write(&tcp.to_bytes().as_slice());
 
                                     return true;
-                                }else{
+                                } else {
                                     return false;
                                 }
                             }
@@ -260,7 +260,7 @@ impl TCPResource {
             data: Vec::new()
         };
 
-        unsafe{
+        unsafe {
             let proto = n16::new(0x06);
             let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
             tcp.header.checksum.data = Checksum::compile(
@@ -285,7 +285,7 @@ impl TCPResource {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
                                     return true;
-                                }else{
+                                } else {
                                     return false;
                                 }
                             }
@@ -300,7 +300,7 @@ impl TCPResource {
 }
 
 impl Drop for TCPResource {
-    fn drop(&mut self){
+    fn drop(&mut self) {
         //Send FIN-ACK
         let mut tcp = TCP {
             header: TCPHeader {
@@ -319,7 +319,7 @@ impl Drop for TCPResource {
             data: Vec::new()
         };
 
-        unsafe{
+        unsafe {
             let proto = n16::new(0x06);
             let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
             tcp.header.checksum.data = Checksum::compile(
@@ -344,7 +344,7 @@ impl SessionItem for TCPScheme {
         return "tcp".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_addr = IPv4Addr::from_string(&url.host());
             let peer_port = url.port().to_num() as u16;
@@ -393,7 +393,7 @@ impl SessionItem for TCPScheme {
                     Option::None => break
                 }
             }
-        }else{
+        } else {
             d("TCP: No remote endpoint or local port provided\n");
         }
 

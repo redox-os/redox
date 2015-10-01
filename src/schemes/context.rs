@@ -13,7 +13,7 @@ impl SessionItem for ContextScheme {
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let i;
         let len;
-        unsafe{
+        unsafe {
             let reenable = start_no_ints();
             i = context_i;
             len = (*contexts_ptr).len();

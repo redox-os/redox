@@ -85,7 +85,7 @@ impl SessionItem for EthernetScheme {
         return "ethernet".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         let mut network = URL::from_str("network://").open();
 
         if url.path().len() > 0 {
@@ -98,8 +98,8 @@ impl SessionItem for EthernetScheme {
                     peer_addr: MACAddr::from_string(&url.host()),
                     ethertype: ethertype
                 };
-            }else{
-                loop{
+            } else {
+                loop {
                     let mut bytes: Vec<u8> = Vec::new();
                     match network.read_to_end(&mut bytes) {
                         Option::Some(_) => {
@@ -120,7 +120,7 @@ impl SessionItem for EthernetScheme {
                     }
                 }
             }
-        }else{
+        } else {
             d("Ethernet: No ethertype provided\n");
         }
 

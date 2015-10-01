@@ -51,7 +51,7 @@ impl ToBytes for ARP {
 }
 
 impl ARP {
-    pub fn d(&self){
+    pub fn d(&self) {
         d("ARP hw ");
         dh(self.header.htype.get() as usize);
         d("#");

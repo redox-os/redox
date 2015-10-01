@@ -54,7 +54,7 @@ impl Window {
             ptr: 0 as *mut Window
         };
 
-        unsafe{
+        unsafe {
             ret.ptr = ret.deref_mut();
 
             if ret.ptr as usize > 0 {
@@ -67,7 +67,7 @@ impl Window {
 
     pub fn poll(&mut self) -> EventOption {
         let event_option;
-        unsafe{
+        unsafe {
             let reenable = start_no_ints();
             event_option = self.events.pop();
             end_no_ints(reenable);
@@ -79,21 +79,21 @@ impl Window {
         }
     }
 
-    pub fn redraw(&mut self){
+    pub fn redraw(&mut self) {
         self.content.flip();
         RedrawEvent { redraw: REDRAW_ALL }.to_event().trigger();
     }
 
-    pub fn draw(&mut self, display: &Display){
+    pub fn draw(&mut self, display: &Display) {
         if self.focused {
             self.border_color = Color::new(128, 128, 128);
-        }else{
+        } else {
             self.border_color = Color::new(64, 64, 64);
         }
 
         if self.minimized {
             self.title_color = Color::new(0, 0, 0);
-        }else{
+        } else {
             self.title_color = Color::new(255, 255, 255);
 
             display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
@@ -110,7 +110,7 @@ impl Window {
             display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize), Size::new(self.size.width + 4, 2), self.border_color);
             display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y), Size::new(2, self.size.height), self.border_color);
 
-            unsafe{
+            unsafe {
                 let reenable = start_no_ints();
                 display.image(self.point, self.content.onscreen as *const u32, Size::new(self.content.width, self.content.height));
                 end_no_ints(reenable);
@@ -119,14 +119,14 @@ impl Window {
     }
 
     pub fn on_key(&mut self, key_event: KeyEvent) {
-        unsafe{
+        unsafe {
             let reenable = start_no_ints();
             self.events.push(key_event.to_event());
             end_no_ints(reenable);
         }
     }
 
-    pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool{
+    pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool {
         let mut caught = false;
 
         if allow_catch {
@@ -149,7 +149,7 @@ impl Window {
                     self.dragging = true;
                     caught = true;
                 }
-            }else{
+            } else {
                 self.dragging = false;
             }
 
@@ -179,14 +179,14 @@ impl Window {
                 self.point.y += mouse_event.y - self.last_mouse_event.y;
                 caught = true;
             }
-        }else{
+        } else {
             self.dragging = false;
         }
 
         self.last_mouse_event = mouse_event;
 
-        if caught{
-            unsafe{
+        if caught {
+            unsafe {
                 let reenable = start_no_ints();
                 self.events.push(mouse_event.to_event());
                 end_no_ints(reenable);
@@ -198,9 +198,9 @@ impl Window {
 }
 
 impl Drop for Window {
-    fn drop(&mut self){
-        unsafe{
-            if self.ptr as usize > 0{
+    fn drop(&mut self) {
+        unsafe {
+            if self.ptr as usize > 0 {
                 sys_window_destroy(self.ptr);
             }
         }
