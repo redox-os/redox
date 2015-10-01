@@ -9,4 +9,4 @@ os:
   - linux
 script:
   - make clean
-  - make
+  - make all
