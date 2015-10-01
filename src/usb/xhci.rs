@@ -1,5 +1,7 @@
 use common::memory::*;
-use common::pci::*;
+
+use drivers::pciconfig::*;
+
 
 use programs::common::*;
 

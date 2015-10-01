@@ -10,12 +10,13 @@ use common::context::*;
 use common::debug::*;
 use common::event::*;
 use common::memory::*;
-use common::pio::*;
 use common::resource::*;
 use common::scheduler::*;
 use common::string::*;
 use common::time::*;
 use common::vec::*;
+
+use drivers::pio::*;
 
 use graphics::color::*;
 use graphics::size::*;

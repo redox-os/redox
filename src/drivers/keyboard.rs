@@ -1,6 +1,7 @@
 use common::debug::*;
 use common::event::*;
-use common::pio::*;
+
+use drivers::pio::*;
 
 pub struct KeyboardStatus {
     pub lshift: bool,
