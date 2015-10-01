@@ -121,13 +121,8 @@ impl Session {
                 }
             }
 
-<<<<<<< HEAD
             box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8())
         }else{
-=======
-            return box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8());
-        } else {
->>>>>>> b42427b919da858ede453db5441ecb08d7c07649
             for item in self.items.iter() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
