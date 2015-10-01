@@ -29,7 +29,7 @@ impl FromBytes for EthernetII {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 }
 
@@ -39,7 +39,7 @@ impl ToBytes for EthernetII {
             let header_ptr: *const EthernetIIHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<EthernetIIHeader>());
             ret.push_all(&self.data);
-            return ret;
+            ret
         }
     }
 }

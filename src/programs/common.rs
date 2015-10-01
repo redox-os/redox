@@ -37,10 +37,10 @@ pub trait SessionItem{
     }
 
     fn scheme(&self) -> String{
-        return String::new();
+        String::new()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box NoneResource;
+        box NoneResource
     }
 }

@@ -62,7 +62,7 @@ impl Window {
             }
         }
 
-        return ret;
+        ret
     }
 
     pub fn poll(&mut self) -> EventOption {
@@ -74,8 +74,8 @@ impl Window {
         }
 
         match event_option {
-            Option::Some(event) => return event.to_option(),
-            Option::None => return EventOption::None
+            Option::Some(event) => event.to_option(),
+            Option::None => EventOption::None
         }
     }
 
@@ -193,7 +193,7 @@ impl Window {
             }
         }
 
-        return caught;
+        caught
     }
 }
 

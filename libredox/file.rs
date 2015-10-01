@@ -3,40 +3,46 @@ use common::vec::*;
 
 use syscall::call::*;
 
+/// A Unix-style file
 pub struct File {
     path: String,
     fd: usize
 }
 
 impl File {
+    /// Open a new file using a path
+    // TODO: Why &String and not String
     pub fn open(path: &String) -> File {
-        unsafe{
+        unsafe {
             let c_str: *const u8 = path.to_c_str();
             let ret = File {
                 path: path.clone(),
                 fd: sys_open(c_str, 0, 0)
             };
             sys_unalloc(c_str as usize);
-            return ret;
+            ret
         }
     }
 
+    /// Return the url to the file
     pub fn url(&self) -> String {
         //TODO
-        return self.path.clone();
+        self.path.clone()
     }
 
+    /// Read a file to a buffer
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        unsafe{
+        unsafe {
             let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
             if count == 0xFFFFFFFF {
-                return Option::None;
+                Option::None
             }else{
-                return Option::Some(count);
+                Option::Some(count)
             }
         }
     }
 
+    /// Read the file to the end
     pub fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         let mut read = 0;
         loop {
@@ -54,31 +60,34 @@ impl File {
         }
     }
 
+    /// Write to the file
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe{
+        unsafe {
             let count = sys_write(self.fd, buf.as_ptr(), buf.len());
             if count == 0xFFFFFFFF {
-                return Option::None;
-            }else{
-                return Option::Some(count);
+                Option::None
+            } else {
+                Option::Some(count)
             }
         }
     }
 
     /*
     pub fn seek(&mut self, pos: Seek) -> Option<usize> {
-        return Option::None;
+        Option::None
     }
     */
 
+    /// Flush the io
     pub fn flush(&mut self) -> bool {
-        return false;
+        // TODO
+        false
     }
 }
 
 impl Drop for File {
     fn drop(&mut self){
-        unsafe{
+        unsafe {
             sys_close(self.fd);
         }
     }

@@ -99,9 +99,9 @@ impl ELF {
             }
         }
 
-        return ELF {
+        ELF {
             data: data
-        };
+        }
     }
 
     pub unsafe fn d(&self){
@@ -298,7 +298,7 @@ impl ELF {
             return header.entry as usize;
         }
 
-        return 0;
+        0
     }
 
     pub unsafe fn symbol(&self, name: String) -> usize{
@@ -339,7 +339,7 @@ impl ELF {
             dl();
         }
 
-        return 0;
+        0
     }
 }
 

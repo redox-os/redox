@@ -6,12 +6,14 @@ use common::debug::*;
 
 use syscall::call::sys_yield;
 
+/// A mutex, i.e. a form of safe shared memory between threads. See rust std's Mutex.
 pub struct Mutex<T: ?Sized> {
     lock: AtomicBool,
     value: UnsafeCell<T>
 }
 
 impl<T> Mutex<T> {
+    /// Create a new mutex with value `value`.
     pub fn new(value: T) -> Mutex<T> {
         Mutex {
             lock: AtomicBool::new(false),
@@ -21,11 +23,12 @@ impl<T> Mutex<T> {
 }
 
 impl<T: ?Sized> Mutex<T> {
+    /// Lock the mutex
     pub fn lock(&self) -> MutexGuard<T> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
             sys_yield();
         }
-        return MutexGuard::new(&self.lock, &self.value);
+        MutexGuard::new(&self.lock, &self.value)
     }
 }
 

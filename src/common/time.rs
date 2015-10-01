@@ -17,6 +17,7 @@ pub struct Duration {
 }
 
 impl Duration {
+    /// Create a new duration
     pub fn new(mut secs: i64, mut nanos: i32) -> Duration {
         while nanos >= NANOS_PER_SEC || (nanos > 0 && secs < 0) {
             secs += 1;
@@ -28,43 +29,47 @@ impl Duration {
             nanos += NANOS_PER_SEC;
         }
 
-        return Duration {
+        Duration {
             secs: secs,
             nanos: nanos
-        };
+        }
     }
 
+    /// Get the current duration
     pub fn monotonic() -> Duration {
         let mut ret = Duration::new(0, 0);
         unsafe{
             sys_time(&mut ret, false);
         }
-        return ret;
+        ret
     }
 
+    /// Get the realtime
     pub fn realtime() -> Duration {
         let mut ret = Duration::new(0, 0);
         unsafe{
             sys_time(&mut ret, true);
         }
-        return ret;
+        ret
     }
 
-    pub fn sleep(&self){
+    /// Sleep the duration
+    pub fn sleep(&self) {
         let start_time = Duration::monotonic();
         loop {
             let elapsed = Duration::monotonic() - start_time;
             if elapsed > *self {
                 break;
-            }else{
+            } else {
                 sys_yield();
             }
         }
     }
 
     //TODO: Format decimal
+    /// Convert to string
     pub fn to_string(&self) -> String {
-        return String::from_num_signed(self.secs as isize);
+        String::from_num_signed(self.secs as isize)
     }
 }
 
@@ -72,7 +77,7 @@ impl Add for Duration {
     type Output = Duration;
 
     fn add(self, other: Duration) -> Duration {
-        return Duration::new(self.secs + other.secs, self.nanos + other.nanos);
+        Duration::new(self.secs + other.secs, self.nanos + other.nanos)
     }
 }
 
@@ -80,14 +85,14 @@ impl Sub for Duration {
     type Output = Duration;
 
     fn sub(self, other: Duration) -> Duration {
-        return Duration::new(self.secs - other.secs, self.nanos - other.nanos);
+        Duration::new(self.secs - other.secs, self.nanos - other.nanos)
     }
 }
 
 impl PartialEq for Duration {
     fn eq(&self, other: &Duration) -> bool {
         let dif = *self - *other;
-        return dif.secs == 0 && dif.nanos == 0;
+        dif.secs == 0 && dif.nanos == 0
     }
 }
 
@@ -95,15 +100,15 @@ impl PartialOrd for Duration {
     fn partial_cmp(&self, other: &Duration) -> Option<Ordering> {
         let dif = *self - *other;
         if dif.secs > 0 {
-            return Option::Some(Ordering::Greater);
-        }else if dif.secs < 0 {
-            return Option::Some(Ordering::Less);
-        }else if dif.nanos > 0 {
-            return Option::Some(Ordering::Greater);
-        }else if dif.nanos < 0 {
-            return Option::Some(Ordering::Less);
-        }else{
-            return Option::Some(Ordering::Equal);
+            Option::Some(Ordering::Greater)
+        } else if dif.secs < 0 {
+            Option::Some(Ordering::Less)
+        } else if dif.nanos > 0 {
+            Option::Some(Ordering::Greater)
+        } else if dif.nanos < 0 {
+            Option::Some(Ordering::Less)
+        } else {
+            Option::Some(Ordering::Equal)
         }
     }
 }
