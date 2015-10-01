@@ -2,6 +2,8 @@ use drivers::keyboard::keyboard_interrupt;
 use drivers::mouse::mouse_interrupt;
 use drivers::pio::*;
 
+use programs::common::*;
+
 pub struct PS2 {
     status: PIO8
 }

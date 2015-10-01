@@ -17,9 +17,7 @@ pub struct TXD {
 }
 
 pub struct RTL8139 {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
@@ -130,7 +128,7 @@ impl RTL8139 {
         d(" IRQ: ");
         dbh(self.irq);
 
-        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
+        self.pci.flag(4, 4, true); // Bus mastering
 
         let base = self.base as u16;
 

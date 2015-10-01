@@ -30,7 +30,7 @@ impl RTC {
         while self.read(0xA) & 0x80 == 0x80 {}
     }
 
-    pub fn time() -> Duration {
+    pub fn time(&mut self) -> Duration {
         let mut second;
         let mut minute;
         let mut hour;
@@ -100,8 +100,4 @@ impl RTC {
 
         return Duration::new(secs, 0);
     }
-}
-
-pub unsafe fn rtc_read() -> i64 {
-
 }
