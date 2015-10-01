@@ -3,9 +3,10 @@ use core::ptr::{read, write};
 
 use common::context::*;
 use common::memory::*;
-use common::pci::*;
-use common::pio::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
+use drivers::pio::*;
 
 use programs::common::*;
 
@@ -288,12 +289,12 @@ impl HIDDescriptor {
 }
 
 impl UHCI {
-    pub unsafe fn new(bus: usize, slot: usize, func: usize) -> Box<UHCI> {
-        pci_write(bus, slot, func, 0x04, pci_read(bus, slot, func, 4) | 4); // Bus mastering
+    pub unsafe fn new(mut pci: PCIConfig) -> Box<UHCI> {
+        pci.flag(4, 4, true); // Bus mastering
 
         let mut module = box UHCI {
-            base: pci_read(bus, slot, func, 0x20) & 0xFFFFFFF0,
-            irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
+            base: pci.read(0x20) as usize & 0xFFFFFFF0,
+            irq: pci.read(0x3C) as u8 & 0xF
         };
 
         module.init();

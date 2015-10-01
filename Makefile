@@ -12,6 +12,7 @@ FIND=find
 LD=ld
 LDARGS=-m elf_i386
 MKDIR=mkdir
+OBJDUMP=objdump
 RM=rm
 SED=sed
 SORT=sort
@@ -28,6 +29,7 @@ ifeq ($(OS),Windows_NT)
 	CUT=windows/cut
 	FIND=windows/find
 	MKDIR=windows/mkdir
+	OBJDUMP=windows/objdump
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
@@ -38,6 +40,7 @@ else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 		LD=i386-elf-ld
+		OBJDUMP=i386-elf-objdump
                 RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
@@ -76,7 +79,7 @@ filesystem/kernel.bin: build/kernel.rlib src/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
 
 filesystem/kernel.list: filesystem/kernel.bin
-	objdump -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/%.bin: filesystem/%.asm src/program.ld
 	$(MKDIR) -p build
@@ -89,7 +92,7 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rl
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.rlib
 
 filesystem/%.list: filesystem/%.bin
-	objdump -C -M intel -d $< > $@
+	$(OBJDUMP -C -M intel -d $< > $@
 
 build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/editor/editor.bin filesystem/apps/file_manager/file_manager.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/player/player.bin filesystem/apps/terminal/terminal.bin filesystem/apps/viewer/viewer.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@

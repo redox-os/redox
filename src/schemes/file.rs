@@ -240,6 +240,7 @@ impl SessionItem for FileScheme {
                     };
                 },
                 Option::None => {
+                    /*
                     d("Creating ");
                     path.d();
                     dl();
@@ -289,6 +290,8 @@ impl SessionItem for FileScheme {
                         vec: Vec::new(),
                         seek: 0
                     };
+                    */
+                    return box NoneResource;
                 }
             }
         }

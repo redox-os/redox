@@ -6,12 +6,8 @@ use core::cmp::max;
 use core::mem::swap;
 use core::ptr;
 
-use common::debug::*;
-use common::memory::*;
 use common::string::*;
 use common::vec::*;
-
-use syscall::call::*;
 
 pub enum ResourceSeek {
     Start(usize),

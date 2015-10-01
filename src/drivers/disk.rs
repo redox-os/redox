@@ -3,7 +3,8 @@ use core::ptr;
 
 use common::debug::*;
 use common::memory::*;
-use common::pio::*;
+
+use drivers::pio::*;
 
 //Status port bits
 const ATA_SR_BSY: u8 = 0x80;

@@ -2,7 +2,6 @@ use alloc::boxed::*;
 
 use core::ptr;
 
-use common::debug::*;
 use common::memory::*;
 use common::paging::*;
 use common::resource::*;
