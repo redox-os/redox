@@ -5,17 +5,17 @@ use drivers::pio::*;
 static mut mouse_cycle: usize = 0;
 static mut mouse_byte: [u8; 3] = [0, 0, 0];
 
-pub unsafe fn mouse_wait0(){
+pub unsafe fn mouse_wait0() {
     while (inb(0x64) & 1) == 0 {
     }
 }
 
-pub unsafe fn mouse_wait1(){
+pub unsafe fn mouse_wait1() {
     while (inb(0x64) & 2) == 2 {
     }
 }
 
-pub unsafe fn mouse_cmd(byte: u8) -> u8{
+pub unsafe fn mouse_cmd(byte: u8) -> u8 {
     mouse_wait1();
     outb(0x64, 0xD4);
     mouse_wait1();
@@ -25,7 +25,7 @@ pub unsafe fn mouse_cmd(byte: u8) -> u8{
     return inb(0x60);
 }
 
-pub unsafe fn mouse_init(){
+pub unsafe fn mouse_init() {
     mouse_cycle = 0;
     mouse_byte = [0, 0, 0];
 
@@ -50,7 +50,7 @@ pub unsafe fn mouse_init(){
 }
 
 pub fn mouse_interrupt() -> MouseEvent {
-    unsafe{
+    unsafe {
         let mut x = 0;
         let mut y = 0;
         let mut left_button = false;
@@ -94,6 +94,6 @@ pub fn mouse_interrupt() -> MouseEvent {
             mouse_cycle = 0;
         }
 
-        MouseEvent{ x:x, y:y, left_button:left_button, right_button:right_button, middle_button:middle_button, valid:valid }
+        MouseEvent { x:x, y:y, left_button:left_button, right_button:right_button, middle_button:middle_button, valid:valid }
     }
 }

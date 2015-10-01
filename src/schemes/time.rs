@@ -12,7 +12,7 @@ impl SessionItem for TimeScheme {
     fn open(&mut self, url: &URL) -> Box<Resource> {
         let clock_realtime;
         let clock_monotonic;
-        unsafe{
+        unsafe {
             let reenable = start_no_ints();
             clock_realtime = ::clock_realtime;
             clock_monotonic = ::clock_monotonic;

@@ -12,8 +12,8 @@ impl SessionItem for ICMPScheme {
 }
 
 impl ICMPScheme {
-    pub fn reply_loop(){
-        loop{
+    pub fn reply_loop() {
+        loop {
             let mut ip = URL::from_str("ip:///1").open();
 
             let mut bytes: Vec<u8> = Vec::new();
@@ -28,7 +28,7 @@ impl ICMPScheme {
 
                             response.header._type = 0x00;
 
-                            unsafe{
+                            unsafe {
                                 response.header.checksum.data = 0;
 
                                 let header_ptr: *const ICMPHeader = &response.header;

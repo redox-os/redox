@@ -7,7 +7,7 @@ impl SessionItem for HTTPScheme {
         return "http".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         //TODO: DNS
         return URL::from_string(&("tcp://".to_string() + url.host() + ":80")).open();
     }

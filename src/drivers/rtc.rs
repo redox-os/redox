@@ -38,7 +38,7 @@ impl RTC {
         let mut month;
         let mut year;
         let register_b;
-        unsafe{
+        unsafe {
             let reenable = start_no_ints();
                 self.wait();
                 second = self.read(0) as usize;
