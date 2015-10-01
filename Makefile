@@ -48,6 +48,33 @@ else
 	endif
 endif
 
+help:
+	@echo ".########..########.########...#######..##.....##"
+	@echo ".##.....##.##.......##.....##.##.....##..##...##."
+	@echo ".##.....##.##.......##.....##.##.....##...##.##.."
+	@echo ".########..######...##.....##.##.....##....###..."
+	@echo ".##...##...##.......##.....##.##.....##...##.##.."
+	@echo ".##....##..##.......##.....##.##.....##..##...##."
+	@echo ".##.....##.########.########...#######..##.....##"
+	@echo
+	@echo "-------- Redox: A Rust Operating System ---------"
+	@echo
+	@echo "Commands:"
+	@echo
+	@echo "    make all"
+	@echo "        Build raw image of filesystem used by Redox."
+	@echo "        It create build/harddrive.bin which can be used to build"
+	@echo "        images for Your virtual machine."
+	@echo
+	@echo "    make virtualbox"
+	@echo "        Build Redox and run it inside VirtualBox machine."
+	@echo
+	@echo "    make qemu"
+	@echo "        Build Redox and run it inside KVM machine."
+	@echo
+	@echo "    make qemu_no_kvm"
+	@echo "        Build Redox and run it inside Qemu machine without KVM support."
+
 all: build/harddrive.bin
 
 doc: src/kernel.rs build/libcore.rlib build/liballoc.rlib
