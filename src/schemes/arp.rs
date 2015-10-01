@@ -12,7 +12,7 @@ impl SessionItem for ARPScheme {
 }
 
 impl ARPScheme {
-    pub fn reply_loop(){
+    pub fn reply_loop() {
         loop {
             let mut link = URL::from_str("ethernet:///806").open();
 

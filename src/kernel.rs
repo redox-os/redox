@@ -151,7 +151,7 @@ mod usb {
 }
 
 static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
-static mut debug_point: Point = Point{ x: 0, y: 0 };
+static mut debug_point: Point = Point { x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 static mut debug_command: *mut String = 0 as *mut String;
@@ -182,8 +182,8 @@ unsafe fn idle_loop() -> ! {
         let mut halt = true;
 
         let contexts = & *contexts_ptr;
-        for i in 1..contexts.len(){
-            match contexts.get(i){
+        for i in 1..contexts.len() {
+            match contexts.get(i) {
                 Option::Some(context) => if context.interrupted {
                     halt = false;
                     break;
@@ -195,7 +195,7 @@ unsafe fn idle_loop() -> ! {
         if halt {
             asm!("sti");
             asm!("hlt");
-        }else{
+        } else {
             asm!("sti");
         }
 
@@ -218,7 +218,7 @@ unsafe fn event_loop() -> ! {
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
-        loop{
+        loop {
             let reenable = start_no_ints();
 
             let event_option = events.pop();
@@ -260,11 +260,11 @@ unsafe fn event_loop() -> ! {
                             },
                             _ => ()
                         }
-                    }else{
+                    } else {
                         if event.code == 'k' && event.b as u8 == K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
-                        }else{
+                        } else {
                             session.event(event);
                         }
                     }
@@ -287,7 +287,7 @@ unsafe fn redraw_loop() -> ! {
                 debug_redraw = false;
                 display.flip();
             }
-        }else{
+        } else {
             session.redraw();
         }
 
@@ -295,7 +295,7 @@ unsafe fn redraw_loop() -> ! {
     }
 }
 
-pub unsafe fn debug_init(){
+pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x00);
     PIO8::new(0x3F8 + 3).write(0x80);
     PIO8::new(0x3F8 + 0).write(0x03);
@@ -306,27 +306,27 @@ pub unsafe fn debug_init(){
     PIO8::new(0x3F8 + 1).write(0x01);
 }
 
-unsafe fn test_disk(disk: Disk){
+unsafe fn test_disk(disk: Disk) {
     if disk.identify() {
         d(" Disk Found");
 
         let fs = FileSystem::from_disk(disk);
         if fs.valid() {
             d(" Redox Filesystem");
-        }else{
+        } else {
             d(" Unknown Filesystem");
         }
-    }else{
+    } else {
         d(" Disk Not Found");
     }
     dl();
 }
 
-unsafe fn init(font_data: usize){
+unsafe fn init(font_data: usize) {
     start_no_ints();
 
     debug_display = 0 as *mut Box<Display>;
-    debug_point = Point{ x: 0, y: 0 };
+    debug_point = Point { x: 0, y: 0 };
     debug_draw = false;
     debug_redraw = false;
 
@@ -399,7 +399,7 @@ unsafe fn init(font_data: usize){
 
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
-    session.items.push(box FileScheme{
+    session.items.push(box FileScheme {
         fs: FileSystem::from_disk(Disk::primary_master())
     });
     session.items.push(box HTTPScheme);
@@ -416,19 +416,19 @@ unsafe fn init(font_data: usize){
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);
 
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         poll_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         event_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         redraw_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         ARPScheme::reply_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         ICMPScheme::reply_loop();
     });
 
@@ -462,14 +462,14 @@ unsafe fn init(font_data: usize){
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()){
+            if folder.ends_with("/".to_string()) {
                 session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder))));
             }
         }
     }
 }
 
-fn dr(reg: &str, value: u32){
+fn dr(reg: &str, value: u32) {
     d(reg);
     d(": ");
     dh(value as usize);

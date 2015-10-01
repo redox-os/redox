@@ -7,7 +7,7 @@ use programs::common::*;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
-pub struct Extent{
+pub struct Extent {
     pub block: u64,
     pub length: u64
 }
@@ -42,8 +42,8 @@ pub struct FileSystem {
 }
 
 impl FileSystem {
-    pub fn from_disk(disk: Disk) -> FileSystem{
-        unsafe{
+    pub fn from_disk(disk: Disk) -> FileSystem {
+        unsafe {
             let header_ptr: *const Header = alloc_type();
             disk.read(1, 1, header_ptr as usize);
             let header = ptr::read(header_ptr);
@@ -81,7 +81,7 @@ impl FileSystem {
             && self.header.version == 0xFFFFFFFF;
     }
 
-    pub fn node(&self, filename: &String) -> Option<Node>{
+    pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
             if String::from_c_slice(&node.name) == *filename {
                 return Option::Some(node.clone());
@@ -194,7 +194,7 @@ impl SessionItem for FileScheme {
                         }
                         if found {
                             line = String::new();
-                        }else{
+                        } else {
                             line = dirname.clone();
                             dirs.push(dirname);
                         }
@@ -204,14 +204,14 @@ impl SessionItem for FileScheme {
                 if line.len() > 0 {
                     if list.len() > 0 {
                         list = list + '\n' + line;
-                    }else{
+                    } else {
                         list = line;
                     }
                 }
             }
 
             return box VecResource::new(url.clone(), ResourceType::Dir, list.to_utf8());
-        }else{
+        } else {
             match self.fs.node(&path) {
                 Option::Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();

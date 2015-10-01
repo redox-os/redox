@@ -36,7 +36,7 @@ impl FromBytes for UDP {
 
 impl ToBytes for UDP {
     fn to_bytes(&self) -> Vec<u8> {
-        unsafe{
+        unsafe {
             let header_ptr: *const UDPHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<UDPHeader>());
             ret.push_all(&self.data);
@@ -46,7 +46,7 @@ impl ToBytes for UDP {
 }
 
 impl UDP {
-    pub fn d(&self){
+    pub fn d(&self) {
         d("UDP from ");
         dd(self.header.src.get() as usize);
         d(" to ");

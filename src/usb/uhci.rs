@@ -16,13 +16,13 @@ pub struct UHCI {
 }
 
 impl SessionItem for UHCI {
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("UHCI IRQ\n");
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
     }
 }
 
@@ -89,7 +89,7 @@ impl DeviceDescriptor {
         };
     }
 
-    fn d(&self){
+    fn d(&self) {
         d("Device Descriptor Length ");
         dd(self.length as usize);
         d(" Type ");
@@ -139,7 +139,7 @@ impl ConfigDescriptor {
         };
     }
 
-    fn d(&self){
+    fn d(&self) {
         d("Config Descriptor Length ");
         dd(self.length as usize);
         d(" Type ");
@@ -187,7 +187,7 @@ impl InterfaceDescriptor {
         };
     }
 
-    fn d(&self){
+    fn d(&self) {
         d("Interface Descriptor Length ");
         dd(self.length as usize);
         d(" Type ");
@@ -229,7 +229,7 @@ impl EndpointDescriptor {
         };
     }
 
-    fn d(&self){
+    fn d(&self) {
         d("Endpoint Descriptor Length ");
         dd(self.length as usize);
         d(" Type ");
@@ -269,7 +269,7 @@ impl HIDDescriptor {
         };
     }
 
-    fn d(&self){
+    fn d(&self) {
         d("HID Descriptor Length ");
         dd(self.length as usize);
         d(" Type ");
@@ -292,7 +292,7 @@ impl UHCI {
     pub unsafe fn new(mut pci: PCIConfig) -> Box<UHCI> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let mut module = box UHCI {
+        let module = box UHCI {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF
         };
@@ -302,7 +302,7 @@ impl UHCI {
         return module;
     }
 
-    unsafe fn set_address(&self, frame_list: *mut u32, address: u8){
+    unsafe fn set_address(&self, frame_list: *mut u32, address: u8) {
         let base = self.base as u16;
         let usbcmd = base;
         let usbsts = base + 2;
@@ -377,7 +377,7 @@ impl UHCI {
         unalloc(in_td as usize);
     }
 
-    unsafe fn descriptor(&self, frame_list: *mut u32, address: u8, descriptor_type: u8, descriptor_index: u8, descriptor_ptr: u32, descriptor_len: u32){
+    unsafe fn descriptor(&self, frame_list: *mut u32, address: u8, descriptor_type: u8, descriptor_index: u8, descriptor_ptr: u32, descriptor_len: u32) {
         let base = self.base as u16;
         let usbcmd = base;
         let frnum = base + 6;
@@ -472,7 +472,7 @@ impl UHCI {
         unalloc(out_td as usize);
     }
 
-    unsafe fn device(&self, frame_list: *mut u32, address: u8){
+    unsafe fn device(&self, frame_list: *mut u32, address: u8) {
         self.set_address(frame_list, address);
 
         let desc_dev: *mut DeviceDescriptor = alloc_type();
@@ -511,7 +511,7 @@ impl UHCI {
                         let usbcmd = base;
                         let frnum = base + 0x6;
 
-                        Context::spawn(box move ||{
+                        Context::spawn(box move || {
                             let in_ptr = alloc(in_len) as *mut u8;
                             let in_td: *mut TD = alloc_type();
 
@@ -591,7 +591,7 @@ impl UHCI {
         unalloc(desc_dev as usize);
     }
 
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&self) {
         d("UHCI on: ");
         dh(self.base);
         d(", IRQ: ");

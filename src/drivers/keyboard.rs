@@ -11,7 +11,7 @@ pub struct KeyboardStatus {
 }
 
 impl KeyboardStatus {
-    fn evaluate(&mut self, scancode_packed: u8){
+    fn evaluate(&mut self, scancode_packed: u8) {
         if scancode_packed == 0x2A {
             self.lshift = true;
         } else if scancode_packed == 0xAA {
@@ -24,7 +24,7 @@ impl KeyboardStatus {
             if !self.caps_lock {
                 self.caps_lock = true;
                 self.caps_lock_toggle = true;
-            }else{
+            } else {
                 self.caps_lock_toggle = false;
             }
         } else if scancode_packed == 0xBA {
@@ -34,10 +34,10 @@ impl KeyboardStatus {
         }
     }
 
-    fn is_shifted(&self) -> bool{
+    fn is_shifted(&self) -> bool {
         if self.caps_lock {
             !(self.lshift || self.rshift)
-        }else{
+        } else {
             (self.lshift || self.rshift)
         }
     }
@@ -50,15 +50,15 @@ pub static mut keyboard_status: KeyboardStatus = KeyboardStatus {
     caps_lock_toggle: false
 };
 
-unsafe fn keyboard_wait0(){
+unsafe fn keyboard_wait0() {
     while (inb(0x64) & 1) == 0 {}
 }
 
-unsafe fn keyboard_wait1(){
+unsafe fn keyboard_wait1() {
     while (inb(0x64) & 2) == 2 {}
 }
 
-pub unsafe fn keyboard_init(){
+pub unsafe fn keyboard_init() {
     keyboard_status.lshift = false;
     keyboard_status.rshift = false;
     keyboard_status.caps_lock = false;
@@ -124,22 +124,22 @@ pub unsafe fn keyboard_init(){
     dl();
 }
 
-pub fn keyboard_interrupt() -> KeyEvent{
+pub fn keyboard_interrupt() -> KeyEvent {
     let scancode_packed;
-    unsafe{
+    unsafe {
         scancode_packed = inb(0x60);
     }
 
     let pressed;
     if scancode_packed < 0x80 {
         pressed = true;
-    }else{
+    } else {
         pressed = false;
     }
 
     let shift;
 
-    unsafe{
+    unsafe {
         keyboard_status.evaluate(scancode_packed);
 
         shift = keyboard_status.is_shifted();
@@ -150,7 +150,7 @@ pub fn keyboard_interrupt() -> KeyEvent{
     KeyEvent { character:char_for_scancode(scancode, shift), scancode:scancode, pressed:pressed }
 }
 
-fn char_for_scancode(scancode: u8, shift: bool) -> char{
+fn char_for_scancode(scancode: u8, shift: bool) -> char {
 	let mut character = '\x00';
 	if scancode < 58 {
         if shift {

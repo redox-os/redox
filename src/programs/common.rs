@@ -27,16 +27,16 @@ pub use graphics::window::*;
 pub use syscall::call::*;
 
 #[allow(unused_variables)]
-pub trait SessionItem{
-    fn on_irq(&mut self, irq: u8){
+pub trait SessionItem {
+    fn on_irq(&mut self, irq: u8) {
 
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
 
     }
 
-    fn scheme(&self) -> String{
+    fn scheme(&self) -> String {
         return String::new();
     }
 

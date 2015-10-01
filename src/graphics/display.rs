@@ -86,7 +86,7 @@ impl Display {
     }
 
     pub fn new(width: usize, height: usize) -> Display {
-        unsafe{
+        unsafe {
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
 
@@ -108,7 +108,7 @@ impl Display {
     }
 
     /* Optimized { */
-    pub unsafe fn set_run(data: u32, dst: usize, len: usize){
+    pub unsafe fn set_run(data: u32, dst: usize, len: usize) {
         let mut i = 0;
         //Only use 16 byte transfer if possible
         if len - (dst + i) % 16 >= size_of::<u32x4>() {
@@ -131,7 +131,7 @@ impl Display {
         }
     }
 
-    pub unsafe fn copy_run(src: usize, dst: usize, len: usize){
+    pub unsafe fn copy_run(src: usize, dst: usize, len: usize) {
         let mut i = 0;
         //Only use 16 byte transfer if possible
         if (src + i) % 16 == (dst + i) % 16 {
@@ -153,28 +153,28 @@ impl Display {
         }
     }
 
-    pub fn set(&self, color:Color){
+    pub fn set(&self, color:Color) {
         unsafe {
             Display::set_run(color.data, self.offscreen, self.size);
         }
     }
 
-    pub fn scroll(&self, rows: usize){
+    pub fn scroll(&self, rows: usize) {
         if rows > 0 && rows < self.height {
             let offset = rows * self.bytesperrow;
-            unsafe{
+            unsafe {
                 Display::copy_run(self.offscreen + offset, self.offscreen, self.size - offset);
                 Display::set_run(0, self.offscreen + self.size - offset, offset);
             }
         }
     }
 
-    pub fn flip(&self){
-        unsafe{
+    pub fn flip(&self) {
+        unsafe {
             let reenable = start_no_ints();
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
-            }else{
+            } else {
                 let self_mut: *mut Display = transmute(self);
                 swap(&mut (*self_mut).offscreen, &mut (*self_mut).onscreen);
             }
@@ -182,7 +182,7 @@ impl Display {
         }
     }
 
-    pub fn rect(&self, point: Point, size: Size, color: Color){
+    pub fn rect(&self, point: Point, size: Size, color: Color) {
         let data = color.data;
         let alpha = (color.data & 0xFF000000) >> 24;
 
@@ -195,18 +195,18 @@ impl Display {
 
             if alpha >= 255 {
                 for y in start_y..end_y {
-                    unsafe{
+                    unsafe {
                         Display::set_run(data, self.offscreen + y * self.bytesperrow + start_x, len);
                     }
                 }
-            }else{
+            } else {
                 let n_alpha = 255 - alpha;
                 let r = (((data >> 16) & 0xFF) * alpha) >> 8;
                 let g = (((data >> 8) & 0xFF) * alpha) >> 8;
                 let b = ((data & 0xFF) * alpha) >> 8;
                 let premul = (r << 16) | (g << 8) | b;
                 for y in start_y..end_y {
-                    unsafe{
+                    unsafe {
                         Display::set_run_alpha(premul, n_alpha, self.offscreen + y * self.bytesperrow + start_x, len);
                     }
                 }
@@ -214,7 +214,7 @@ impl Display {
         }
     }
 
-    pub unsafe fn image(&self, point: Point, data: *const u32, size: Size){
+    pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -225,13 +225,13 @@ impl Display {
         let bytesperrow = size.width * 4;
         let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
-        for y in start_y..end_y{
+        for y in start_y..end_y {
             Display::copy_run(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
         }
     }
     /* } Optimized */
 
-    pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size){
+    pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -242,13 +242,13 @@ impl Display {
         let bytesperrow = size.width * 4;
         let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
-        for y in start_y..end_y{
+        for y in start_y..end_y {
             Display::copy_run_alpha(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
         }
     }
 
     //TODO: SIMD to optimize
-    pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize){
+    pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize) {
         let mut i = 0;
         while len - i >= size_of::<u32>() {
             let orig = *((dst + i) as *const u32);
@@ -261,7 +261,7 @@ impl Display {
     }
 
     //TODO: SIMD to optimize
-    pub unsafe fn copy_run_alpha(src: usize, dst: usize, len: usize){
+    pub unsafe fn copy_run_alpha(src: usize, dst: usize, len: usize) {
         let mut i = 0;
         while len - i >= size_of::<u32>() {
             let new = *((src + i) as *const u32);
@@ -269,7 +269,7 @@ impl Display {
             if alpha > 0 {
                 if alpha >= 255 {
                     *((dst + i) as *mut u32) = new;
-                }else{
+                } else {
                     let n_r = (((new >> 16) & 0xFF) * alpha) >> 8;
                     let n_g = (((new >> 8) & 0xFF) * alpha) >> 8;
                     let n_b = ((new & 0xFF) * alpha) >> 8;
@@ -287,16 +287,16 @@ impl Display {
         }
     }
 
-    pub fn pixel(&self, point: Point, color: Color){
-        unsafe{
+    pub fn pixel(&self, point: Point, color: Color) {
+        unsafe {
             if point.x >= 0 && point.x < self.width as isize && point.y >= 0 && point.y < self.height as isize {
                 *((self.offscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
             }
         }
     }
 
-    pub fn char(&self, point: Point, character: char, color: Color){
-        unsafe{
+    pub fn char(&self, point: Point, character: char, color: Color) {
+        unsafe {
             if *FONTS > 0 {
                 let bitmap_location = *FONTS + 16*(character as usize);
                 for row in 0..16 {
@@ -313,7 +313,7 @@ impl Display {
     }
 
     /* Cursor hacks { */
-    pub unsafe fn image_alpha_onscreen(&self, point: Point, data: *const u32, size: Size){
+    pub unsafe fn image_alpha_onscreen(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -324,21 +324,21 @@ impl Display {
         let bytesperrow = size.width * 4;
         let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
 
-        for y in start_y..end_y{
+        for y in start_y..end_y {
             Display::copy_run_alpha(data_offset + y * bytesperrow, onscreen_offset + y * self.bytesperrow, len);
         }
     }
 
-    pub fn pixel_onscreen(&self, point: Point, color: Color){
-        unsafe{
+    pub fn pixel_onscreen(&self, point: Point, color: Color) {
+        unsafe {
             if point.x >= 0 && point.x < self.width as isize && point.y >= 0 && point.y < self.height as isize {
                 *((self.onscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
             }
         }
     }
 
-    pub fn char_onscreen(&self, point: Point, character: char, color: Color){
-        unsafe{
+    pub fn char_onscreen(&self, point: Point, character: char, color: Color) {
+        unsafe {
             if *FONTS > 0 {
                 let bitmap_location = *FONTS + 16*(character as usize);
                 for row in 0..16 {
@@ -357,8 +357,8 @@ impl Display {
 }
 
 impl Drop for Display {
-    fn drop(&mut self){
-        unsafe{
+    fn drop(&mut self) {
+        unsafe {
             if self.offscreen > 0 {
                 sys_unalloc(self.offscreen);
                 self.offscreen = 0;

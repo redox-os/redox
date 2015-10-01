@@ -66,7 +66,7 @@ impl Resource for UDPResource {
             data: udp_data
         };
 
-        unsafe{
+        unsafe {
             let proto = n16::new(0x11);
             let datagram_len = n16::new((size_of::<UDPHeader>() + udp.data.len()) as u16);
             udp.header.checksum.data = Checksum::compile(
@@ -101,7 +101,7 @@ impl SessionItem for UDPScheme {
         return "udp".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_port = url.port().to_num() as u16;
             let peer_addr = IPv4Addr::from_string(&url.host());
@@ -139,7 +139,7 @@ impl SessionItem for UDPScheme {
                     Option::None => break
                 }
             }
-        }else{
+        } else {
             d("UDP: No remote endpoint or local port provided\n");
         }
 

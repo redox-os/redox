@@ -42,11 +42,11 @@ pub struct EHCI {
 
 impl SessionItem for EHCI {
     #[allow(non_snake_case)]
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("EHCI handle");
 
-            unsafe{
+            unsafe {
                 let CAPLENGTH = self.base as *mut u8;
 
                 let opbase = self.base + read(CAPLENGTH) as usize;
@@ -72,12 +72,12 @@ impl SessionItem for EHCI {
 
 impl EHCI {
     #[allow(non_snake_case)]
-    pub unsafe fn init(&mut self){
+    pub unsafe fn init(&mut self) {
         d("EHCI on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        } else {
             d(" port mapped");
         }
         d(" IRQ: ");
@@ -168,7 +168,7 @@ impl EHCI {
             dl();
 
             d("Waiting");
-                loop{
+                loop {
                     if volatile_load(USBSTS) & (1 << 12) == (1 << 12) {
                         break;
                     }
@@ -199,7 +199,7 @@ impl EHCI {
         dl();
 
         d("Waiting");
-            loop{
+            loop {
                 if volatile_load(USBCMD) & (1 << 1) == 0 {
                     break;
                 }
@@ -232,7 +232,7 @@ impl EHCI {
         dl();
 
         d("Waiting");
-            loop{
+            loop {
                 if volatile_load(USBSTS) & (1 << 12) == 0 {
                     break;
                 }
@@ -294,10 +294,10 @@ impl EHCI {
                         d(" ");
                         dh(read(PORTSC.offset(i)) as usize);
 
-                        loop{
+                        loop {
                             if volatile_load(PORTSC.offset(i)) & (1 << 8) == 0 {
                                 break;
-                            }else{
+                            } else {
                                 volatile_store(PORTSC.offset(i), volatile_load(PORTSC.offset(i)) & 0xFFFFFEFF);
                             }
                         }
@@ -322,7 +322,7 @@ impl EHCI {
                     });
 
                     let in_data = alloc(64) as *mut u8;
-                    for i in 0..64{
+                    for i in 0..64 {
                         *in_data.offset(i) = 0;
                     }
 
@@ -447,7 +447,7 @@ impl EHCI {
                     //Only detect one device for testing
                     break;
                     */
-                }else{
+                } else {
                     d("Device not high-speed\n");
                 }
             }

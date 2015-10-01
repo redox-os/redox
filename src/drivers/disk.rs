@@ -89,46 +89,46 @@ pub struct PRDTE {
     pub reserved: u16
 }
 
-pub struct Disk{
+pub struct Disk {
     base: u16,
     ctrl: u16,
     master: bool
 }
 
 impl Disk {
-    pub fn primary_master() -> Disk{
-        Disk{
+    pub fn primary_master() -> Disk {
+        Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: true
         }
     }
 
-    pub fn primary_slave() -> Disk{
-        Disk{
+    pub fn primary_slave() -> Disk {
+        Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: false
         }
     }
 
-    pub fn secondary_master() -> Disk{
-        Disk{
+    pub fn secondary_master() -> Disk {
+        Disk {
             base: 0x170,
             ctrl: 0x374,
             master: true
         }
     }
 
-    pub fn secondary_slave() -> Disk{
-        Disk{
+    pub fn secondary_slave() -> Disk {
+        Disk {
             base: 0x170,
             ctrl: 0x374,
             master: false
         }
     }
 
-    unsafe fn ide_read(&self, reg: u16) -> u8{
+    unsafe fn ide_read(&self, reg: u16) -> u8 {
         let ret;
         if reg < 0x08 {
             ret = inb(self.base + reg - 0x00);
@@ -136,13 +136,13 @@ impl Disk {
             ret = inb(self.base + reg - 0x06);
         } else if reg < 0x0E {
             ret = inb(self.ctrl + reg - 0x0A);
-        }else{
+        } else {
             ret = 0;
         }
         ret
     }
 
-    unsafe fn ide_write(&self, reg: u16, data: u8){
+    unsafe fn ide_write(&self, reg: u16, data: u8) {
         if reg < 0x08 {
             outb(self.base + reg - 0x00, data);
         } else if reg < 0x0C {
@@ -152,7 +152,7 @@ impl Disk {
         }
     }
 
-    unsafe fn ide_poll(&self, check_error: bool) -> u8{
+    unsafe fn ide_poll(&self, check_error: bool) -> u8 {
         self.ide_read(ATA_REG_ALTSTATUS);
         self.ide_read(ATA_REG_ALTSTATUS);
         self.ide_read(ATA_REG_ALTSTATUS);
@@ -178,8 +178,8 @@ impl Disk {
         return 0;
     }
 
-    pub unsafe fn identify(&self) -> bool{
-        if self.ide_read(ATA_REG_STATUS) == 0xFF{
+    pub unsafe fn identify(&self) -> bool {
+        if self.ide_read(ATA_REG_STATUS) == 0xFF {
             d(" Floating Bus");
 
             return false;
@@ -191,7 +191,7 @@ impl Disk {
 
         if self.master {
             self.ide_write(ATA_REG_HDDEVSEL, 0xA0);
-        }else{
+        } else {
             self.ide_write(ATA_REG_HDDEVSEL, 0xB0);
         }
 
@@ -234,7 +234,7 @@ impl Disk {
     }
 
     //TODO: Make sure count is not zero!
-    pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8{
+    pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8 {
         if destination > 0 {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
@@ -242,7 +242,7 @@ impl Disk {
 
             if self.master {
                 self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            }else{
+            } else {
                 self.ide_write(ATA_REG_HDDEVSEL, 0x50);
             }
 
@@ -259,7 +259,7 @@ impl Disk {
 
             for sector in 0..count as usize {
                 let err = self.ide_poll(true);
-                if err > 0{
+                if err > 0 {
                     return err;
                 }
 
@@ -273,7 +273,7 @@ impl Disk {
         return 0;
     }
 
-    pub unsafe fn read_dma(&self, lba: u64, count: u64, destination: usize, busmaster: u16) -> u8{
+    pub unsafe fn read_dma(&self, lba: u64, count: u64, destination: usize, busmaster: u16) -> u8 {
         if destination > 0 {
             //Allocate PRDT
             let size = count as usize * 512;
@@ -286,7 +286,7 @@ impl Disk {
                         size: (size % 65536) as u16,
                         reserved: 0x8000
                     });
-                }else{
+                } else {
                     ptr::write((prdt as *mut PRDTE).offset(i as isize), PRDTE {
                         ptr: (destination + i * 65536) as u32,
                         size: 0,
@@ -310,7 +310,7 @@ impl Disk {
                 let current_count;
                 if i == entries - 1 {
                     current_count = count % 128;
-                }else{
+                } else {
                     current_count = 128;
                 }
             */
@@ -325,7 +325,7 @@ impl Disk {
 
                 if self.master {
                     self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-                }else{
+                } else {
                     self.ide_write(ATA_REG_HDDEVSEL, 0x50);
                 }
 
@@ -349,7 +349,7 @@ impl Disk {
     }
 
     //TODO: Fix and make sure count is not zero!
-    pub unsafe fn write(&self, lba: u64, count: u16, source: usize) -> u8{
+    pub unsafe fn write(&self, lba: u64, count: u16, source: usize) -> u8 {
         if source > 0 {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
@@ -357,7 +357,7 @@ impl Disk {
 
             if self.master {
                 self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            }else{
+            } else {
                 self.ide_write(ATA_REG_HDDEVSEL, 0x50);
             }
 
@@ -375,7 +375,7 @@ impl Disk {
 
             for sector in 0..count as usize {
                 let err = self.ide_poll(true);
-                if err > 0{
+                if err > 0 {
                     return err;
                 }
 

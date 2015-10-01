@@ -17,14 +17,14 @@ mod application;
 use redox::*;
 
 #[inline(never)]
-unsafe fn _start_stack(stack: *const u32){
+unsafe fn _start_stack(stack: *const u32) {
     let argc = ptr::read(stack);
     let mut args: Vec<String> = Vec::new();
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {
             args.push(String::from_c_str(arg));
-        }else{
+        } else {
             args.push(String::new());
         }
     }
@@ -39,7 +39,7 @@ unsafe fn _start_stack(stack: *const u32){
 
 #[cold]
 #[no_mangle]
-pub unsafe fn _start(){
+pub unsafe fn _start() {
     let stack: *const u32;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);

@@ -30,12 +30,12 @@ pub struct Chars<'a> {
 
 impl <'a> Iterator for Chars<'a> {
     type Item = char;
-    fn next(&mut self) -> Option<Self::Item>{
+    fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
             let ret = Option::Some(self.string[self.offset]);
             self.offset += 1;
             return ret;
-        }else{
+        } else {
             return Option::None;
         }
     }
@@ -49,21 +49,21 @@ pub struct Split<'a> {
 
 impl <'a> Iterator for Split<'a> {
     type Item = String;
-    fn next(&mut self) -> Option<Self::Item>{
+    fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
             let start = self.offset;
             let mut len = 0;
-            for i in start..self.string.len(){
-                if self.seperator == self.string.substr(i, self.seperator.len()){
+            for i in start..self.string.len() {
+                if self.seperator == self.string.substr(i, self.seperator.len()) {
                     self.offset += self.seperator.len();
                     break;
-                }else{
+                } else {
                     self.offset += 1;
                     len += 1;
                 }
             }
             return Option::Some(self.string.substr(start, len));
-        }else{
+        } else {
             return Option::None;
         }
     }
@@ -156,7 +156,7 @@ impl String {
             let mut digit = (digit_num % radix) as u8;
             if digit > 9 {
                 digit += 'A' as u8 - 10;
-            }else{
+            } else {
                 digit += '0' as u8;
             }
 
@@ -177,7 +177,7 @@ impl String {
     pub fn from_num_radix_signed(num: isize, radix: usize) -> String {
         if num >= 0 {
             return String::from_num_radix(num as usize, radix);
-        }else{
+        } else {
             return "-".to_string() + String::from_num_radix((-num) as usize, radix);
         }
     }
@@ -239,7 +239,7 @@ impl String {
     pub fn starts_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
             return self.substr(0, other.len()) == other;
-        }else{
+        } else {
             return false;
         }
     }
@@ -247,7 +247,7 @@ impl String {
     pub fn ends_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
             return self.substr(self.len() - other.len(), other.len()) == other;
-        }else{
+        } else {
             return false;
         }
     }
@@ -278,22 +278,22 @@ impl String {
             let u = c as usize;
             if u < 0x80 {
                 vec.push(u as u8);
-            }else if u < 0x800 {
+            } else if u < 0x800 {
                 vec.push(0b11000000 | ((u >> 6) as u8 & 0b00011111));
                 vec.push(0b10000000 | (u as u8 & 0b00111111));
-            }else if u < 0x10000 {
+            } else if u < 0x10000 {
                 vec.push(0b11100000 | ((u >> 12) as u8 & 0b00001111));
                 vec.push(0b10000000 | ((u >> 6) as u8 & 0b00111111));
                 vec.push(0b10000000 | (u as u8 & 0b00111111));
-            }else{
+            } else {
                 d("Unhandled to_utf8 code ");
                 dh(u);
                 dl();
-                unsafe{ dh(self.vec.as_ptr() as usize); }
+                unsafe { dh(self.vec.as_ptr() as usize); }
                 d(" ");
                 dd(self.vec.len());
                 d(" to ");
-                unsafe{ dh(vec.as_ptr() as usize); }
+                unsafe { dh(vec.as_ptr() as usize); }
                 d(" ");
                 dd(vec.len());
                 dl();
@@ -323,7 +323,7 @@ impl String {
         }
 
         let mut num = 0;
-        for c in self.chars(){
+        for c in self.chars() {
             let digit;
             if c >= '0' && c <= '9' {
                 digit = c as usize - '0' as usize
@@ -349,7 +349,7 @@ impl String {
     pub fn to_num_radix_signed(&self, radix: usize) -> isize {
         if self[0] == '-' {
             return -(self.substr(1, self.len() - 1).to_num_radix(radix) as isize);
-        }else{
+        } else {
             return self.to_num_radix(radix) as isize;
         }
     }
@@ -362,7 +362,7 @@ impl String {
         self.to_num_radix_signed(10)
     }
 
-    pub fn d(&self){
+    pub fn d(&self) {
         for c in self.chars() {
             dc(c);
         }
@@ -382,7 +382,7 @@ impl Index<usize> for String {
 }
 
 impl PartialEq for String {
-    fn eq(&self, other: &Self) -> bool{
+    fn eq(&self, other: &Self) -> bool {
         if self.len() == other.len() {
             for i in 0..self.len() {
                 if self[i] != other[i] {
@@ -391,14 +391,14 @@ impl PartialEq for String {
             }
 
             return true;
-        }else{
+        } else {
             return false;
         }
     }
 }
 
 impl Clone for String {
-    fn clone(&self) -> Self{
+    fn clone(&self) -> Self {
         return self.substr(0, self.len());
     }
 }

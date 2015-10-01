@@ -23,15 +23,15 @@ struct MemoryMapEntry {
 
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
-pub unsafe fn cluster(number: usize) -> usize{
+pub unsafe fn cluster(number: usize) -> usize {
     if number < CLUSTER_COUNT {
         return ptr::read((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize);
-    }else{
+    } else {
         return 0;
     }
 }
 
-pub unsafe fn set_cluster(number: usize, address: usize){
+pub unsafe fn set_cluster(number: usize, address: usize) {
     if number < CLUSTER_COUNT {
         ptr::write((CLUSTER_ADDRESS + number * size_of::<usize>()) as *mut usize, address);
     }
@@ -40,7 +40,7 @@ pub unsafe fn set_cluster(number: usize, address: usize){
 pub unsafe fn address_to_cluster(address: usize) -> usize {
     if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() {
         return (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>())/CLUSTER_SIZE;
-    }else {
+    } else {
         return 0;
     }
 }
@@ -49,7 +49,7 @@ pub unsafe fn cluster_to_address(number: usize) -> usize {
     return CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number*CLUSTER_SIZE;
 }
 
-pub unsafe fn cluster_init(){
+pub unsafe fn cluster_init() {
     //First, set all clusters to the not present value
     for cluster in 0..CLUSTER_COUNT {
         set_cluster(cluster, 0xFFFFFFFF);
@@ -89,7 +89,7 @@ pub unsafe fn alloc(size: usize) -> usize {
                 if count * CLUSTER_SIZE > size {
                     break;
                 }
-            }else{
+            } else {
                 count = 0;
             }
         }
@@ -127,7 +127,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
                 if count * CLUSTER_SIZE > size {
                     break;
                 }
-            }else{
+            } else {
                 count = 0;
             }
         }
@@ -160,7 +160,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
             if cluster(i) == ptr {
                 size += CLUSTER_SIZE;
-            }else{
+            } else {
                 break;
             }
         }
@@ -172,7 +172,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
     return size;
 }
 
-pub unsafe fn unalloc(ptr: usize){
+pub unsafe fn unalloc(ptr: usize) {
     //Memory allocation must be atomic
     let reenable = start_no_ints();
 
@@ -180,7 +180,7 @@ pub unsafe fn unalloc(ptr: usize){
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
             if cluster(i) == ptr {
                 set_cluster(i, 0);
-            }else{
+            } else {
                 break;
             }
         }
@@ -200,11 +200,11 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
         if ptr > 0 {
             unalloc(ptr);
         }
-    }else{
+    } else {
         let old_size = alloc_size(ptr);
         if size <= old_size {
             ret = ptr;
-        }else{
+        } else {
             ret = alloc(size);
             if ptr > 0 {
                 if ret > 0 {
@@ -226,14 +226,14 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
     let old_size = alloc_size(ptr);
     if size <= old_size {
         return size;
-    }else{
+    } else {
         return old_size;
     }
 }
 
-pub fn memory_used() -> usize{
+pub fn memory_used() -> usize {
     let mut ret = 0;
-    unsafe{
+    unsafe {
         //Memory allocation must be atomic
         let reenable = start_no_ints();
 
@@ -249,9 +249,9 @@ pub fn memory_used() -> usize{
     return ret;
 }
 
-pub fn memory_free() -> usize{
+pub fn memory_free() -> usize {
     let mut ret = 0;
-    unsafe{
+    unsafe {
         //Memory allocation must be atomic
         let reenable = start_no_ints();
 

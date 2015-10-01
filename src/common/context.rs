@@ -15,7 +15,7 @@ pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
-pub unsafe fn context_switch(interrupted: bool){
+pub unsafe fn context_switch(interrupted: bool) {
     let reenable = start_no_ints();
 
     let contexts = &mut *contexts_ptr;
@@ -24,7 +24,7 @@ pub unsafe fn context_switch(interrupted: bool){
         context_i += 1;
         //The only garbage collection in Redox
         loop {
-            if context_i >= contexts.len(){
+            if context_i >= contexts.len() {
                 context_i -= contexts.len();
             }
 
@@ -37,17 +37,17 @@ pub unsafe fn context_switch(interrupted: bool){
 
             if remove {
                 drop(contexts.remove(context_i));
-            }else{
+            } else {
                 break;
             }
         }
 
-        if context_i >= contexts.len(){
+        if context_i >= contexts.len() {
             context_i -= contexts.len();
         }
 
         if context_i != current_i {
-            match contexts.get(current_i){
+            match contexts.get(current_i) {
                 Option::Some(current) => match contexts.get(context_i) {
                     Option::Some(next) => {
                         current.interrupted = interrupted;
@@ -82,7 +82,7 @@ pub unsafe extern "cdecl" fn context_exit() {
     context_switch(false);
 }
 
-pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize){
+pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     unalloc(box_fn_ptr);
     box_fn();
@@ -168,7 +168,7 @@ impl Context {
     }
 
     pub fn spawn(box_fn: Box<FnBox()>) {
-        unsafe{
+        unsafe {
             let box_fn_ptr: *mut Box<FnBox()> = alloc_type();
             ptr::write(box_fn_ptr, box_fn);
 
@@ -184,12 +184,12 @@ impl Context {
         }
     }
 
-    pub unsafe fn push(&mut self, data: u32){
+    pub unsafe fn push(&mut self, data: u32) {
         self.stack_ptr -= 4;
         ptr::write(self.stack_ptr as *mut u32, data);
     }
 
-    pub unsafe fn map(&mut self){
+    pub unsafe fn map(&mut self) {
         for entry in self.memory.iter() {
             for i in 0..(entry.virtual_size + 4095)/4096 {
                 set_page(entry.virtual_address + i*4096, entry.physical_address + i*4096);
@@ -197,7 +197,7 @@ impl Context {
         }
     }
 
-    pub unsafe fn unmap(&mut self){
+    pub unsafe fn unmap(&mut self) {
         for entry in self.memory.iter() {
             for i in 0..(entry.virtual_size + 4095)/4096 {
                 identity_page(entry.virtual_address + i*4096);
@@ -205,7 +205,7 @@ impl Context {
         }
     }
 
-    pub unsafe fn remap(&mut self, other: &mut Context){
+    pub unsafe fn remap(&mut self, other: &mut Context) {
         self.unmap();
         other.map();
     }
@@ -214,7 +214,7 @@ impl Context {
     //It should have exactly one extra push/pop of ESI
     #[cold]
     #[inline(never)]
-    pub unsafe fn switch(&mut self, other: &mut Context){
+    pub unsafe fn switch(&mut self, other: &mut Context) {
         asm!("pushfd
             pushad
             mov [esi], esp"
@@ -250,7 +250,7 @@ impl Context {
 }
 
 impl Drop for Context {
-    fn drop(&mut self){
+    fn drop(&mut self) {
         while let Option::Some(file) = self.files.remove(0) {
             drop(file);
         }
