@@ -17,21 +17,24 @@ use syscall::call::*;
 
 static mut window: *mut Box<ConsoleWindow> = 0 as *mut Box<ConsoleWindow>;
 
+/// Create a new console window
 pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
-    unsafe{
+    unsafe {
         if window as usize == 0 {
             window = sys_alloc(size_of::<Box<ConsoleWindow>>()) as *mut Box<ConsoleWindow>;
             ptr::write(window, ConsoleWindow::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Console".to_string()));
             (*window).redraw();
         }
-        return &mut *window;
+        &mut *window
     }
 }
 
+/// Initialize console
 pub unsafe fn console_init() {
     window = 0 as *mut Box<ConsoleWindow>;
 }
 
+/// Destroy the console
 pub unsafe fn console_destroy() {
     if window as usize > 0 {
         drop(ptr::read(window));
@@ -40,11 +43,14 @@ pub unsafe fn console_destroy() {
     }
 }
 
+/// Set the title of the console window
+// TODO: Move this to a `Window` trait?
 pub fn console_title(title: &String){
     console_window().window.title = title.clone();
     console_window().redraw();
 }
 
+/// Print to console with color
 #[macro_export]
 macro_rules! print_color {
     ($text:expr, $color:expr) => ({
@@ -53,11 +59,13 @@ macro_rules! print_color {
     });
 }
 
+/// Print to console
 #[macro_export]
 macro_rules! print {
     ($text:expr) => (print_color!($text, Color::new(224, 224, 224)));
 }
 
+/// Print new line to console
 #[macro_export]
 macro_rules! println {
     ($text:expr) => ({
@@ -66,47 +74,60 @@ macro_rules! println {
     });
 }
 
+/// Read a line from the console
 #[macro_export]
 macro_rules! readln {
     () => (console_window().read());
 }
 
+/// A console char
 pub struct ConsoleChar {
     character: char,
     color: Color
 }
 
+/// A console window
 pub struct ConsoleWindow {
+    /// The window
     pub window: Box<Window>,
+    /// The char buffer
     pub output: Vec<ConsoleChar>,
+    /// The current input command
     pub command: String,
+    /// Offset
     pub offset: usize,
+    /// Scroll distance
     pub scroll: Point,
+    /// Wrap the text?
     pub wrap: bool
 }
 
 impl ConsoleWindow {
+    /// Create a new console window
     pub fn new(point: Point, size: Size, title: String) -> Box<ConsoleWindow> {
-        return box ConsoleWindow {
+        box ConsoleWindow {
             window: Window::new(point, size, title),
             output: Vec::new(),
             command: String::new(),
             offset: 0,
             scroll: Point::new(0, 0),
             wrap: true
-        };
+        }
     }
 
+    /// Poll the window
     pub fn poll(&mut self) -> EventOption {
-        return self.window.poll();
+        self.window.poll()
     }
 
+    /// Print to the window
     pub fn print(&mut self, string: &String, color: Color){
         for c in string.chars() {
             self.output.push(ConsoleChar{ character: c, color: color });
         }
     }
 
+    /// Read input
     pub fn read(&mut self) -> Option<String> {
         loop {
             match self.poll() {
@@ -160,6 +181,7 @@ impl ConsoleWindow {
         }
     }
 
+    /// Redraw the window
     pub fn redraw(&mut self){
         let scroll = self.scroll;
 
@@ -215,9 +237,9 @@ impl ConsoleWindow {
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;
-                }else if c == '\t' {
+                } else if c == '\t' {
                     col += 8 - col % 8;
-                }else{
+                } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows{
                         content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
                     }

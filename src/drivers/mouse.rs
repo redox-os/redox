@@ -21,7 +21,7 @@ pub unsafe fn mouse_cmd(byte: u8) -> u8{
     outb(0x60, byte);
 
     mouse_wait0();
-    return inb(0x60);
+    inb(0x60)
 }
 
 pub unsafe fn mouse_init(){

@@ -11,12 +11,12 @@ pub struct Serial {
 
 impl Serial {
     pub fn new(port: u16, irq: u8) -> Serial{
-        return Serial {
+        Serial {
             port: port,
             irq: irq,
             escape: false,
             cursor_control: false
-        };
+        }
     }
 }
 

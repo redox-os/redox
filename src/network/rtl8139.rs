@@ -31,11 +31,11 @@ pub struct RTL8139 {
 
 impl SessionItem for RTL8139 {
     fn scheme(&self) -> String {
-        return "network".to_string();
+        "network".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return NetworkResource::new(self);
+        NetworkResource::new(self)
     }
 
     fn on_irq(&mut self, irq: u8){

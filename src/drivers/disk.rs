@@ -174,7 +174,7 @@ impl Disk {
             }
         }
 
-        return 0;
+        0
     }
 
     pub unsafe fn identify(&self) -> bool{
@@ -229,7 +229,7 @@ impl Disk {
 
         unalloc(destination as usize);
 
-        return true;
+        true
     }
 
     //TODO: Make sure count is not zero!
@@ -269,7 +269,7 @@ impl Disk {
             }
         }
 
-        return 0;
+        0
     }
 
     pub unsafe fn read_dma(&self, lba: u64, count: u64, destination: usize, busmaster: u16) -> u8{
@@ -344,7 +344,7 @@ impl Disk {
             outb(busmaster, 9);
         }
 
-        return 0;
+        0
     }
 
     //TODO: Fix and make sure count is not zero!
@@ -387,6 +387,6 @@ impl Disk {
             }
         }
 
-        return 0;
+        0
     }
 }

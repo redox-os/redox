@@ -24,17 +24,17 @@ impl WAV {
 
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
-                Option::Some(byte) => return *byte,
-                Option::None => return 0
+                Option::Some(byte) => *byte,
+                Option::None => 0
             }
         };
 
         let getw = |i: usize| -> u16 {
-            return (get(i) as u16) + ((get(i + 1) as u16) << 8);
+            (get(i) as u16) + ((get(i + 1) as u16) << 8)
         };
 
         let getd = |i: usize| -> u32 {
-            return (get(i) as u32) + ((get(i + 1) as u32) << 8) + ((get(i + 2) as u32) << 16) + ((get(i + 3) as u32) << 24);
+            (get(i) as u32) + ((get(i + 1) as u32) << 8) + ((get(i + 2) as u32) << 16) + ((get(i + 3) as u32) << 24)
         };
 
         let gets = |start: usize, len: usize| -> String {
@@ -42,7 +42,7 @@ impl WAV {
             for i in start..start + len {
                 ret = ret + get(i) as char;
             }
-            return ret;
+            ret
         };
 
         let mut i = 0;
@@ -108,6 +108,6 @@ impl WAV {
             }
         }
 
-        return ret;
+        ret
     }
 }

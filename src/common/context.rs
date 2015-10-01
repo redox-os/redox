@@ -16,6 +16,7 @@ pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
+/// Switch context
 pub unsafe fn context_switch(interrupted: bool){
     let reenable = start_no_ints();
 
@@ -38,7 +39,7 @@ pub unsafe fn context_switch(interrupted: bool){
 
             if remove {
                 drop(contexts.remove(context_i));
-            }else{
+            } else {
                 break;
             }
         }
@@ -114,7 +115,7 @@ pub struct Context {
 
 impl Context {
     pub unsafe fn root() -> Box<Context> {
-        return box Context {
+        box Context {
             stack: 0,
             stack_ptr: 0,
             fx: alloc(512),
@@ -124,7 +125,7 @@ impl Context {
             files: Vec::new(),
             interrupted: false,
             exited: false
-        };
+        }
     }
 
     pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Context> {
@@ -165,7 +166,7 @@ impl Context {
         ret.push(0); //ESI
         ret.push(0); //EDI
 
-        return ret;
+        ret
     }
 
     pub fn spawn(box_fn: Box<FnBox()>) {

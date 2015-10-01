@@ -105,11 +105,11 @@ pub struct Intel8254x {
 
 impl SessionItem for Intel8254x {
     fn scheme(&self) -> String {
-        return "network".to_string();
+        "network".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return NetworkResource::new(self);
+        NetworkResource::new(self)
     }
 
     fn on_irq(&mut self, irq: u8){
@@ -265,25 +265,25 @@ impl Intel8254x {
 
     pub unsafe fn read(&self, register: u32) -> u32 {
         if self.memory_mapped {
-            return ptr::read((self.base + register as usize) as *mut u32);
-        }else{
-            return 0;
+            ptr::read((self.base + register as usize) as *mut u32)
+        } else {
+            0
         }
     }
 
     pub unsafe fn write(&self, register: u32, data: u32) -> u32 {
         if self.memory_mapped {
             ptr::write((self.base + register as usize) as *mut u32, data);
-            return ptr::read((self.base + register as usize) as *mut u32);
-        }else{
-            return 0;
+            ptr::read((self.base + register as usize) as *mut u32)
+        } else {
+            0
         }
     }
 
     pub unsafe fn flag(&self, register: u32, flag: u32, value: bool){
         if value {
             self.write(register, self.read(register) | flag);
-        }else{
+        } else {
             self.write(register, self.read(register) & (0xFFFFFFFF - flag));
         }
     }
