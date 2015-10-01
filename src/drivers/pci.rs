@@ -126,18 +126,18 @@ pub unsafe fn pci_init(session: &mut Session){
     for bus in 0..256 {
         for slot in 0..32 {
             for func in 0..8 {
-                let mut pci = PCIConfig::new(bus, slot, func);
+                let mut pci = PCIConfig::new(bus as u8, slot as u8, func as u8);
                 let id = pci.read(0);
 
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
                     d("Bus ");
-                    dd(bus as usize);
+                    dd(bus);
                     d(" Slot ");
-                    dd(slot as usize);
+                    dd(slot);
                     d(" Function ");
-                    dd(func as usize);
+                    dd(func);
                     d(": ");
                     dh(id as usize);
                     d(", ");
