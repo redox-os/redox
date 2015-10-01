@@ -7,7 +7,7 @@ pub fn rand() -> usize {
     }
 }
 
-pub fn srand(seed: usize){
+pub fn srand(seed: usize) {
     unsafe {
         (*NEXT) = seed as u64;
     }

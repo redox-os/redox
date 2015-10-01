@@ -35,8 +35,8 @@ impl Event {
         }
     }
 
-    pub fn trigger(&self){
-        unsafe{
+    pub fn trigger(&self) {
+        unsafe {
             sys_trigger(self);
         }
     }
@@ -75,7 +75,7 @@ impl MouseEvent {
         }
     }
 
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }
@@ -141,7 +141,7 @@ impl KeyEvent {
         }
     }
 
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }
@@ -172,7 +172,7 @@ impl RedrawEvent {
         }
     }
 
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }
@@ -183,7 +183,7 @@ pub struct OpenEvent {
 
 impl OpenEvent {
     pub fn to_event(&self) -> Event {
-        unsafe{
+        unsafe {
             Event {
                 code: 'o',
                 a: self.url_string.to_c_str() as isize,
@@ -196,7 +196,7 @@ impl OpenEvent {
     }
 
     pub fn from_event(event: Event) -> OpenEvent {
-        unsafe{
+        unsafe {
             let ret = OpenEvent {
                 url_string: String::from_c_str(event.a as *const u8)
             };
@@ -205,7 +205,7 @@ impl OpenEvent {
         }
     }
 
-    pub fn trigger(&self){
+    pub fn trigger(&self) {
         self.to_event().trigger();
     }
 }

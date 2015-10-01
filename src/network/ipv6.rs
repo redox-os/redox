@@ -11,7 +11,7 @@ pub struct IPv6 {
 }
 
 impl IPv6 {
-    pub fn d(&self){
+    pub fn d(&self) {
         d("IPv6 ");
         dh(self.next_header as usize);
         d(" from ");

@@ -49,12 +49,12 @@ impl SessionItem for XHCI {
 }
 
 impl XHCI {
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&self) {
         d("XHCI on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        }else {
             d(" port mapped");
         }
         d(" IRQ: ");
@@ -207,7 +207,7 @@ impl XHCI {
         dh(*usbcmd as usize);
         dl();
 
-        for i in 0..max_ports as usize{
+        for i in 0..max_ports as usize {
             let portsc = (op_base + 0x400 + (0x10 * i)) as *mut u32;
             d("Port ");
             dd(i + 1);
@@ -226,13 +226,13 @@ impl XHCI {
 
                 *command_ring.offset(command_ring_offset as isize) = TRB::from_type(23);
                 command_ring_offset += 1;
-                if command_ring_offset >= command_ring_length{
+                if command_ring_offset >= command_ring_length {
                     command_ring_offset = 0;
                 }
 
                 // *command_ring.offset(command_ring_offset as isize) = TRB::from_type(9);
                 //command_ring_offset += 1;
-                //if command_ring_offset >= command_ring_length{
+                //if command_ring_offset >= command_ring_length {
                 //    command_ring_offset = 0;
                 //}
 

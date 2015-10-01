@@ -83,7 +83,7 @@ impl Resource for AC97Resource {
             let start_lvi;
             if lvi == 0 {
                 start_lvi = 31;
-            }else{
+            } else {
                 start_lvi = lvi - 1;
             }
 
@@ -183,13 +183,13 @@ impl SessionItem for AC97 {
         };
     }
 
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("AC97 IRQ\n");
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
     }
 }
 

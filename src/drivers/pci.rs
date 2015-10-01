@@ -16,8 +16,8 @@ use usb::ehci::*;
 use usb::uhci::*;
 use usb::xhci::*;
 
-pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u32, subclass_id: u32, interface_id: u32, vendor_code: u32, device_code: u32){
-    if class_id == 0x01 && subclass_id == 0x01{
+pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u32, subclass_id: u32, interface_id: u32, vendor_code: u32, device_code: u32) {
+    if class_id == 0x01 && subclass_id == 0x01 {
         let base = pci.read(0x20) as usize;
         d("IDE on ");
         dh(base);
@@ -32,8 +32,8 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
         module.init();
         session.items.push(module);
         */
-    }else if class_id == 0x0C && subclass_id == 0x03{
-        if interface_id == 0x30{
+    }else if class_id == 0x0C && subclass_id == 0x03 {
+        if interface_id == 0x30 {
             let base = pci.read(0x10) as usize;
 
             let mut module = box XHCI {
@@ -44,7 +44,7 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
             };
             module.init();
             session.items.push(module);
-        }else if interface_id == 0x20{
+        } else if interface_id == 0x20 {
             let base = pci.read(0x10) as usize;
 
             let mut module = box EHCI {
@@ -55,20 +55,20 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
             };
             module.init();
             session.items.push(module);
-        }else if interface_id == 0x10{
+        } else if interface_id == 0x10 {
             let base = pci.read(0x10) as usize;
 
             d("OHCI Controller on ");
             dh(base & 0xFFFFFFF0);
             dl();
-        }else if interface_id == 0x00{
+        } else if interface_id == 0x00 {
             session.items.push(UHCI::new(pci));
-        }else{
+        } else {
             d("Unknown USB interface version\n");
         }
-    }else{
+    } else {
         match vendor_code {
-            0x10EC => match device_code{ // REALTEK
+            0x10EC => match device_code { // REALTEK
                 0x8139 => {
                     let base = pci.read(0x10) as usize;
                     let mut module = box RTL8139 {
@@ -87,7 +87,7 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
                 },
                 _ => ()
             },
-            0x8086 => match device_code{ // INTEL
+            0x8086 => match device_code { // INTEL
                 0x100E => {
                     let base = pci.read(0x10) as usize;
                     let mut module = box Intel8254x {
@@ -122,7 +122,7 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
     }
 }
 
-pub unsafe fn pci_init(session: &mut Session){
+pub unsafe fn pci_init(session: &mut Session) {
     for bus in 0..256 {
         for slot in 0..32 {
             for func in 0..8 {

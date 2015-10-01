@@ -75,7 +75,7 @@ impl Resource for IPResource {
             data: ip_data
         };
 
-        unsafe{
+        unsafe {
             let header_ptr: *const IPv4Header = &ip.header;
             ip.header.checksum.data = Checksum::compile(
                 Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
@@ -112,7 +112,7 @@ impl SessionItem for IPScheme {
         return "ip".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         if url.path().len() > 0 {
             let proto = url.path().to_num_radix(16) as u8;
 
@@ -173,7 +173,7 @@ impl SessionItem for IPScheme {
                     proto: proto,
                     id: (rand() % 65536) as u16
                 };
-            }else{
+            } else {
                 loop {
                     let mut link = URL::from_str("ethernet:///800").open();
 
@@ -196,7 +196,7 @@ impl SessionItem for IPScheme {
                     }
                 }
             }
-        }else{
+        } else {
             d("IP: No protocol provided\n");
         }
 

@@ -4,11 +4,11 @@ use common::debug::*;
 use common::string::*;
 use common::vec::*;
 
-pub trait FromBytes{
+pub trait FromBytes {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self:Sized;
 }
 
-pub trait ToBytes{
+pub trait ToBytes {
     fn to_bytes(&self) -> Vec<u8>;
 }
 
@@ -19,7 +19,7 @@ pub struct n16 {
 }
 
 impl n16 {
-    pub fn new(value: u16) -> n16{
+    pub fn new(value: u16) -> n16 {
         n16 {
             bytes: [
                 (value >> 8) as u8,
@@ -32,7 +32,7 @@ impl n16 {
         return ((self.bytes[0] as u16) << 8) | (self.bytes[1] as u16);
     }
 
-    pub fn set(&mut self, value: u16){
+    pub fn set(&mut self, value: u16) {
         self.bytes[0] = (value >> 8) as u8;
         self.bytes[1] = value as u8;
     }
@@ -45,7 +45,7 @@ pub struct n32 {
 }
 
 impl n32 {
-    pub fn new(value: u32) -> n32{
+    pub fn new(value: u32) -> n32 {
         n32 {
             bytes: [
                 (value >> 24) as u8,
@@ -60,7 +60,7 @@ impl n32 {
         return ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16) | ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32);
     }
 
-    pub fn set(&mut self, value: u32){
+    pub fn set(&mut self, value: u32) {
         self.bytes[0] = (value >> 24) as u8;
         self.bytes[1] = (value >> 16) as u8;
         self.bytes[2] = (value >> 8) as u8;
@@ -117,7 +117,7 @@ impl MACAddr {
         return string;
     }
 
-    pub fn d(&self){
+    pub fn d(&self) {
         self.to_string().d();
     }
 }
@@ -179,7 +179,7 @@ impl IPv4Addr {
         return string;
     }
 
-    pub fn d(&self){
+    pub fn d(&self) {
         self.to_string().d();
     }
 }
@@ -190,7 +190,7 @@ pub struct IPv6Addr {
 }
 
 impl IPv6Addr {
-    pub fn d(&self){
+    pub fn d(&self) {
         for i in 0..16 {
             if i > 0 && i % 2 == 0 {
                 d(":");
@@ -214,7 +214,7 @@ pub struct Checksum {
 }
 
 impl Checksum {
-    pub unsafe fn check(&self, mut ptr: usize, mut len: usize) -> bool{
+    pub unsafe fn check(&self, mut ptr: usize, mut len: usize) -> bool {
         let mut sum: usize = 0;
         while len > 1 {
             sum += *(ptr as *const u16) as usize;
@@ -233,7 +233,7 @@ impl Checksum {
         return sum == 0xFFFF;
     }
 
-    pub unsafe fn calculate(&mut self, ptr: usize, len: usize){
+    pub unsafe fn calculate(&mut self, ptr: usize, len: usize) {
         self.data = 0;
 
         let sum = Checksum::sum(ptr, len);
@@ -241,7 +241,7 @@ impl Checksum {
         self.data = Checksum::compile(sum);
     }
 
-    pub unsafe fn sum(mut ptr: usize, mut len: usize) -> usize{
+    pub unsafe fn sum(mut ptr: usize, mut len: usize) -> usize {
         let mut sum = 0;
 
         while len > 1 {
@@ -257,7 +257,7 @@ impl Checksum {
         return sum;
     }
 
-    pub unsafe fn compile(mut sum: usize) -> u16{
+    pub unsafe fn compile(mut sum: usize) -> u16 {
         while (sum >> 16) > 0 {
             sum = (sum & 0xFFFF) + (sum >> 16);
         }
