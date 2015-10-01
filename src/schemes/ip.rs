@@ -130,7 +130,7 @@ impl SessionItem for IPScheme {
                 if peer_mac.equals(BROADCAST_MAC_ADDR) {
                     let mut link = URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/806")).open();
 
-                    let mut arp = ARP {
+                    let arp = ARP {
                         header: ARPHeader {
                             htype: n16::new(1),
                             ptype: n16::new(0x800),

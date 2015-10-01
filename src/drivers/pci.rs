@@ -36,7 +36,7 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
         if interface_id == 0x30 {
             let base = pci.read(0x10) as usize;
 
-            let mut module = box XHCI {
+            let module = box XHCI {
                 pci: pci,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,

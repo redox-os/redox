@@ -292,7 +292,7 @@ impl UHCI {
     pub unsafe fn new(mut pci: PCIConfig) -> Box<UHCI> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let mut module = box UHCI {
+        let module = box UHCI {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF
         };

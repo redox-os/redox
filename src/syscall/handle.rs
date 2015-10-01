@@ -209,7 +209,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let reenable = start_no_ints();
 
     let contexts = & *contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
