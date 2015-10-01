@@ -30,7 +30,7 @@ impl FromBytes for UDP {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 }
 
@@ -40,7 +40,7 @@ impl ToBytes for UDP {
             let header_ptr: *const UDPHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<UDPHeader>());
             ret.push_all(&self.data);
-            return ret;
+            ret
         }
     }
 }

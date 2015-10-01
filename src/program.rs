@@ -24,7 +24,7 @@ unsafe fn _start_stack(stack: *const u32){
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {
             args.push(String::from_c_str(arg));
-        }else{
+        } else {
             args.push(String::new());
         }
     }

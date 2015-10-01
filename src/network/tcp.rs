@@ -45,7 +45,7 @@ impl FromBytes for TCP {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 }
 
@@ -56,7 +56,7 @@ impl ToBytes for TCP {
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<TCPHeader>());
             ret.push_all(&self.options);
             ret.push_all(&self.data);
-            return ret;
+            ret
         }
     }
 }

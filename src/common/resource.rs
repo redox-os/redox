@@ -13,12 +13,14 @@ use common::vec::*;
 
 use syscall::call::*;
 
+/// Resource seek
 pub enum ResourceSeek {
     Start(usize),
     Current(isize),
     End(isize)
 }
 
+/// A resource type
 #[derive(Copy, Clone)]
 pub enum ResourceType {
     None,
@@ -27,14 +29,21 @@ pub enum ResourceType {
     File
 }
 
+/// A system resource
 #[allow(unused_variables)]
 pub trait Resource {
     //Required functions
+    /// Return the url of this resource
     fn url(&self) -> URL;
+    /// Return the type of this resource
     fn stat(&self) -> ResourceType;
+    /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
+    /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Option<usize>;
+    /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize>;
+    /// Flush the resource
     fn flush(&mut self) -> bool;
 
     //Helper functions
@@ -64,45 +73,55 @@ pub trait Resource {
     //Split the last part by ?, the first part is a path element, the last part is the query and fragment
         //Split the last part by #, the first is the query, the second is the fragment
             //Split the query by &
+
+/// An URL, see wiki
 pub struct URL {
     pub string: String
 }
 
 impl URL {
+    /// Create a new empty URL
     pub fn new() -> URL {
         URL {
             string: String::new()
         }
     }
 
+    /// Create an URL from a string literal
     pub fn from_str(url_str: &'static str) -> URL {
         return URL::from_string(&url_str.to_string());
     }
 
+    /// Create an URL from `String`
     pub fn from_string(url_string: &String) -> URL {
         URL {
             string: url_string.clone()
         }
     }
 
+    /// Convert to string
     pub fn to_string(&self) -> String {
         return self.string.clone();
     }
 
+    /// Get the length of this URL
     pub fn len(&self) -> usize {
         return self.string.len();
     }
 
+    // FIXME: Strange naming.
     pub fn d(&self){
         self.string.d();
     }
 
+    /// Open this URL (returns a resource)
     pub fn open(&self) -> Box<Resource> {
         unsafe{
             return (*::session_ptr).open(&self);
         }
     }
 
+    /// Return the scheme of this url
     pub fn scheme(&self) -> String {
         let mut part_i = 0;
         for part in self.string.split("/".to_string()) {
@@ -125,6 +144,7 @@ impl URL {
         return String::new();
     }
 
+    /// Get the owner's username (the conventional @)
     pub fn username(&self) -> String {
         let mut username = String::new();
         let mut host = String::new();
@@ -163,9 +183,11 @@ impl URL {
             part_i += 1;
         }
 
-        return username;
+        username
     }
 
+    /// Get the password from the url
+    // TODO: Should probably be hashed?
     pub fn password(&self) -> String {
         let mut password = String::new();
         let mut port = String::new();
@@ -207,6 +229,7 @@ impl URL {
         return password;
     }
 
+    /// Get the host
     pub fn host(&self) -> String {
         let mut username = String::new();
         let mut host = String::new();
@@ -248,6 +271,7 @@ impl URL {
         return host;
     }
 
+    /// Get the post of the url
     pub fn port(&self) -> String {
         let mut password = String::new();
         let mut port = String::new();
@@ -289,6 +313,7 @@ impl URL {
         return port;
     }
 
+    /// Get the path of the url
     pub fn path(&self) -> String {
         let mut path = String::new();
 
@@ -312,6 +337,7 @@ impl URL {
         return path;
     }
 
+    /// Return the parts of the path
     pub fn path_parts(&self) -> Vec<String> {
         let mut path_parts: Vec<String> = Vec::new();
 

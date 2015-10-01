@@ -121,14 +121,14 @@ impl Session {
                 }
             }
 
-            return box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8());
+            box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8())
         }else{
             for item in self.items.iter() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
                 }
             }
-            return box NoneResource;
+            box NoneResource
         }
     }
 

@@ -9,6 +9,7 @@ use core::slice::SliceExt;
 
 use syscall::call::*;
 
+/// An iterator over a vec
 pub struct VecIterator<'a, T: 'a> {
     vec: &'a Vec<T>,
     offset: usize
@@ -20,21 +21,23 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
         match self.vec.get(self.offset) {
             Option::Some(item) => {
                 self.offset += 1;
-                return Option::Some(item);
+                Option::Some(item)
             },
             Option::None => {
-                return Option::None;
+                Option::None
             }
         }
     }
 }
 
+/// A owned, heap allocated list of elements
 pub struct Vec<T> {
     pub data: *mut T,
     pub length: usize
 }
 
 impl <T> Vec<T> {
+    /// Create a empty vector
     pub fn new() -> Vec<T> {
         Vec::<T> {
             data: 0 as *mut T,
@@ -42,10 +45,12 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Convert to pointer
     pub unsafe fn as_ptr(&self) -> *const T {
-        return self.data;
+        self.data
     }
 
+    /// Convert from a raw (unsafe) buffer
     pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Vec<T> {
         let data = sys_alloc(size_of::<T>() * len);
 
@@ -57,16 +62,18 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Get the nth element. Returns None if out of bounds.
     pub fn get(&self, i: usize) -> Option<&mut T> {
         if i >= self.length {
-            return Option::None;
-        }else{
-            unsafe{
-                return Option::Some(&mut *self.data.offset(i as isize));
+            Option::None
+        } else {
+            unsafe {
+                Option::Some(&mut *self.data.offset(i as isize))
             }
         }
     }
 
+    /// Set the nth element
     pub fn set(&self, i: usize, value: T) {
         if i <= self.length {
             unsafe {
@@ -75,6 +82,7 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Insert element at a given position
     pub fn insert(&mut self, i: usize, value: T) {
         if i <= self.length {
             self.length += 1;
@@ -93,6 +101,7 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Remove a element and return it as a Option
     pub fn remove(&mut self, i: usize) -> Option<T> {
         if i < self.length {
             self.length -= 1;
@@ -108,21 +117,23 @@ impl <T> Vec<T> {
 
                 self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
-                return Option::Some(item);
+                Option::Some(item)
             }
-        }else{
-            return Option::None;
+        } else {
+            Option::None
         }
     }
 
+    /// Push an element to a vector
     pub fn push(&mut self, value: T) {
         self.length += 1;
-        unsafe{
+        unsafe {
             self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
             ptr::write(self.data.offset(self.length as isize - 1), value);
         }
     }
 
+    /// Pop the last element
     pub fn pop(&mut self) -> Option<T> {
         if self.length > 0 {
             self.length -= 1;
@@ -130,17 +141,19 @@ impl <T> Vec<T> {
                 let item = ptr::read(self.data.offset(self.length as isize));
                 self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
-                return Option::Some(item);
+                Option::Some(item)
             }
-        }else{
-            return Option::None;
+        } else {
+            Option::None
         }
     }
 
+    /// Get the length of the vector
     pub fn len(&self) -> usize {
         self.length
     }
 
+    /// Create an iterator
     pub fn iter(&self) -> VecIterator<T> {
         VecIterator {
             vec: self,
@@ -148,6 +161,7 @@ impl <T> Vec<T> {
         }
     }
 
+    // TODO: Consider returning a slice instead
     pub fn sub(&self, start: usize, count: usize) -> Vec<T> {
         let mut i = start;
         if i > self.len() {
@@ -181,15 +195,16 @@ impl <T> Vec<T> {
     pub fn as_slice(&self) -> &[T] {
         if self.data as usize > 0 && self.length > 0 {
             unsafe{
-                return slice::from_raw_parts(self.data, self.length);
+                slice::from_raw_parts(self.data, self.length)
             }
         }else{
-            return &[]
+            &[]
         }
     }
 }
 
 impl<T> Vec<T> where T: Clone {
+    /// Append a vector to another vector
     pub fn push_all(&mut self, vec: &Vec<T>) {
         let mut i = self.length as isize;
         self.length += vec.len();
@@ -208,7 +223,7 @@ impl<T> Clone for Vec<T> where T: Clone {
     fn clone(&self) -> Vec<T> {
         let mut ret = Vec::new();
         ret.push_all(self);
-        return ret;
+        ret
     }
 }
 
