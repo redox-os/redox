@@ -113,7 +113,7 @@ impl SessionItem for Intel8254x {
 
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            unsafe{
+            unsafe {
                 dh(self.read(ICR) as usize);
                 dl();
             }
@@ -122,13 +122,13 @@ impl SessionItem for Intel8254x {
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
         self.sync();
     }
 }
 
 impl NetworkScheme for Intel8254x {
-    fn add(&mut self, resource: *mut NetworkResource){
+    fn add(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = start_no_ints();
             self.resources.push(resource);
@@ -136,7 +136,7 @@ impl NetworkScheme for Intel8254x {
         }
     }
 
-    fn remove(&mut self, resource: *mut NetworkResource){
+    fn remove(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = start_no_ints();
             let mut i = 0;
@@ -146,7 +146,7 @@ impl NetworkScheme for Intel8254x {
                 match self.resources.get(i) {
                     Option::Some(ptr) => if *ptr == resource {
                         remove = true;
-                    }else{
+                    } else {
                         i += 1;
                     },
                     Option::None => break
@@ -160,7 +160,7 @@ impl NetworkScheme for Intel8254x {
         }
     }
 
-    fn sync(&mut self){
+    fn sync(&mut self) {
         unsafe {
             let reenable = start_no_ints();
 
@@ -248,7 +248,7 @@ impl Intel8254x {
                         td.special = 0;
 
                         self.write(TDT, tail);
-                    }else{
+                    } else {
                         //TODO: More than one TD
                         dl();
                         d("Intel 8254x: Frame too long for transmit: ");
@@ -265,7 +265,7 @@ impl Intel8254x {
     pub unsafe fn read(&self, register: u32) -> u32 {
         if self.memory_mapped {
             return ptr::read((self.base + register as usize) as *mut u32);
-        }else{
+        } else {
             return 0;
         }
     }
@@ -274,7 +274,7 @@ impl Intel8254x {
         if self.memory_mapped {
             ptr::write((self.base + register as usize) as *mut u32, data);
             return ptr::read((self.base + register as usize) as *mut u32);
-        }else{
+        } else {
             return 0;
         }
     }
@@ -282,17 +282,17 @@ impl Intel8254x {
     pub unsafe fn flag(&self, register: u32, flag: u32, value: bool){
         if value {
             self.write(register, self.read(register) | flag);
-        }else{
+        } else {
             self.write(register, self.read(register) & (0xFFFFFFFF - flag));
         }
     }
 
-    pub unsafe fn init(&mut self){
+    pub unsafe fn init(&mut self) {
         d("Intel 8254x on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        } else {
             d(" port mapped");
         }
         d(", IRQ: ");
@@ -323,7 +323,7 @@ impl Intel8254x {
         d(" MAC: ");
         let mac_low = self.read(RAL0);
         let mac_high = self.read(RAH0);
-        MAC_ADDR = MACAddr{
+        MAC_ADDR = MACAddr {
             bytes: [
                 mac_low as u8,
                 (mac_low >> 8) as u8,

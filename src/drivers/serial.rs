@@ -11,7 +11,7 @@ pub struct Serial {
 }
 
 impl Serial {
-    pub fn new(port: u16, irq: u8) -> Serial{
+    pub fn new(port: u16, irq: u8) -> Serial {
         return Serial {
             data: PIO8::new(port),
             status: PIO8::new(port + 5),
@@ -23,13 +23,13 @@ impl Serial {
 }
 
 impl SessionItem for Serial {
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while unsafe{ self.status.read() } & 1 == 0 {
+            while unsafe { self.status.read() } & 1 == 0 {
                 break;
             }
 
-            let mut c = unsafe{ self.data.read() } as char;
+            let mut c = unsafe { self.data.read() } as char;
             let mut sc = 0;
 
             if self.escape {
@@ -40,16 +40,16 @@ impl SessionItem for Serial {
                 }
 
                 c = '\0';
-            }else if self.cursor_control {
+            } else if self.cursor_control {
                 self.cursor_control = false;
 
-                if c == 'A'{
+                if c == 'A' {
                     sc = K_UP;
-                }else if c == 'B'{
+                } else if c == 'B' {
                     sc = K_DOWN;
-                }else if c == 'C'{
+                } else if c == 'C' {
                     sc = K_RIGHT;
-                }else if c == 'D'{
+                } else if c == 'D' {
                     sc = K_LEFT;
                 }
 

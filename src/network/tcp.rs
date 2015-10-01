@@ -51,7 +51,7 @@ impl FromBytes for TCP {
 
 impl ToBytes for TCP {
     fn to_bytes(&self) -> Vec<u8> {
-        unsafe{
+        unsafe {
             let header_ptr: *const TCPHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<TCPHeader>());
             ret.push_all(&self.options);
@@ -62,7 +62,7 @@ impl ToBytes for TCP {
 }
 
 impl TCP {
-    pub fn d(&self){
+    pub fn d(&self) {
         d("TCP from ");
         dd(self.header.src.get() as usize);
         d(" to ");

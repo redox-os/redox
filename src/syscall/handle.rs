@@ -20,7 +20,7 @@ use graphics::window::*;
 
 use syscall::common::*;
 
-pub unsafe fn do_sys_debug(byte: u8){
+pub unsafe fn do_sys_debug(byte: u8) {
     let reenable = start_no_ints();
 
     if ::debug_display as usize > 0 {
@@ -29,14 +29,14 @@ pub unsafe fn do_sys_debug(byte: u8){
         if byte == 10 {
             ::debug_point.x = 0;
             ::debug_point.y += 16;
-        }else if byte == 8 {
+        } else if byte == 8 {
             //TODO: Fix up hack for backspace
             ::debug_point.x -= 8;
             if ::debug_point.x < 0 {
                 ::debug_point.x = 0
             }
             display.rect(::debug_point, Size::new(8, 16), Color::new(0, 0, 0));
-        }else{
+        } else {
             display.char(::debug_point, byte as char, Color::new(255, 255, 255));
             ::debug_point.x += 8;
         }
@@ -176,7 +176,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
     if let Option::Some(mut current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
             let mut remove = false;
-            if let Option::Some(file) = current.files.get(i){
+            if let Option::Some(file) = current.files.get(i) {
                 if file.fd == fd {
                     remove = true;
                 }
@@ -209,7 +209,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let reenable = start_no_ints();
 
     let contexts = & *contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
@@ -281,21 +281,21 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
                         let new_size = alloc_size(new_address);
                         entry.physical_address = new_address;
                         entry.virtual_size = new_size;
-                    }else{
+                    } else {
                         d("BRK: Realloc Failed\n");
                     }
-                }else{
+                } else {
                     d("BRK: Address not in correct space\n");
                 }
-            }else{
+            } else {
                 d("BRK: Memory not found\n");
             }
 
             current.map();
-        }else{
+        } else {
             d("BRK: Context not found\n");
         }
-    }else{
+    } else {
         d("BRK: Contexts disabled\n");
     }
 
@@ -366,7 +366,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
 
             if ecx == 0 {
                 ptr::write(ebx as *mut Duration, ::clock_monotonic);
-            }else{
+            } else {
                 ptr::write(ebx as *mut Duration, ::clock_realtime);
             }
 

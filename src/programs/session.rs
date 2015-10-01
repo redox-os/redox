@@ -44,13 +44,13 @@ impl Session {
         }
     }
 
-    pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window){
+    pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window) {
         self.windows.push(add_window_ptr);
         self.windows_ordered.push(add_window_ptr);
         self.redraw = max(self.redraw, REDRAW_ALL);
     }
 
-    pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window){
+    pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
         let mut i = 0;
         while i < self.windows.len() {
             let mut remove = false;
@@ -58,7 +58,7 @@ impl Session {
             match self.windows.get(i) {
                 Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
                     remove = true;
-                }else{
+                } else {
                     i += 1;
                 },
                 Option::None => break
@@ -76,7 +76,7 @@ impl Session {
             match self.windows_ordered.get(i) {
                 Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
                     remove = true;
-                }else{
+                } else {
                     i += 1;
                 },
                 Option::None => break
@@ -90,7 +90,7 @@ impl Session {
         self.redraw = max(self.redraw, REDRAW_ALL);
     }
 
-    pub unsafe fn on_irq(&mut self, irq: u8){
+    pub unsafe fn on_irq(&mut self, irq: u8) {
         for item in self.items.iter() {
             let reenable = start_no_ints();
             item.on_irq(irq);
@@ -98,7 +98,7 @@ impl Session {
         }
     }
 
-    pub unsafe fn on_poll(&mut self){
+    pub unsafe fn on_poll(&mut self) {
         for item in self.items.iter() {
             let reenable = start_no_ints();
             item.on_poll();
@@ -106,7 +106,7 @@ impl Session {
         }
     }
 
-    pub fn open(&self, url: &URL) -> Box<Resource>{
+    pub fn open(&self, url: &URL) -> Box<Resource> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -115,14 +115,14 @@ impl Session {
                 if scheme.len() > 0 {
                     if list.len() > 0 {
                         list = list + "\n" + scheme;
-                    }else{
+                    } else {
                         list = scheme;
                     }
                 }
             }
 
             return box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8());
-        }else{
+        } else {
             for item in self.items.iter() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
@@ -134,9 +134,9 @@ impl Session {
 
     fn on_key(&mut self, key_event: KeyEvent){
         if self.windows.len() > 0 {
-            match self.windows.get(self.windows.len() - 1){
+            match self.windows.get(self.windows.len() - 1) {
                 Option::Some(window_ptr) => {
-                    unsafe{
+                    unsafe {
                         (**window_ptr).on_key(key_event);
                         self.redraw = max(self.redraw, REDRAW_ALL);
                     }
@@ -146,7 +146,7 @@ impl Session {
         }
     }
 
-    fn on_mouse(&mut self, mouse_event: MouseEvent){
+    fn on_mouse(&mut self, mouse_event: MouseEvent) {
         let mut catcher = -1;
 
         if mouse_event.y >= self.display.height as isize - 32 {
@@ -171,12 +171,12 @@ impl Session {
                     let w = (chars*8 + 2*4) as usize;
                     if mouse_event.x >= x && mouse_event.x < x + w as isize {
                         for j in 0..self.windows.len() {
-                            match self.windows.get(j){
+                            match self.windows.get(j) {
                                 Option::Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
-                                    unsafe{
+                                    unsafe {
                                         if j == self.windows.len() - 1 {
                                             (**window_ptr).minimized = !(**window_ptr).minimized;
-                                        }else{
+                                        } else {
                                             catcher = j as isize;
                                             (**window_ptr).minimized = false;
                                         }
@@ -192,11 +192,11 @@ impl Session {
                     x += w as isize;
                 }
             }
-        }else{
+        } else {
             for reverse_i in 0..self.windows.len() {
                 let i = self.windows.len() - 1 - reverse_i;
-                match self.windows.get(i){
-                    Option::Some(window_ptr) => unsafe{
+                match self.windows.get(i) {
+                    Option::Some(window_ptr) => unsafe {
                         if reverse_i == 0 || (mouse_event.left_button &&  !self.last_mouse_event.left_button) {
                             if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
                                 catcher = i as isize;
@@ -211,7 +211,7 @@ impl Session {
         }
 
         if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
-            match self.windows.remove(catcher as usize){
+            match self.windows.remove(catcher as usize) {
                 Option::Some(window_ptr) => self.windows.push(window_ptr),
                 Option::None => ()
             }
@@ -220,7 +220,7 @@ impl Session {
         self.last_mouse_event = mouse_event;
     }
 
-    pub unsafe fn redraw(&mut self){
+    pub unsafe fn redraw(&mut self) {
         if self.redraw > REDRAW_NONE {
             //if self.redraw >= REDRAW_ALL {
                 self.display.set(Color::new(64, 64, 64));
@@ -228,7 +228,7 @@ impl Session {
                     self.background.draw(&self.display, Point::new((self.display.width as isize - self.background.size.width as isize)/2, (self.display.height as isize - self.background.size.height as isize)/2));
                 }
 
-                for i in 0..self.windows.len(){
+                for i in 0..self.windows.len() {
                     match self.windows.get(i) {
                         Option::Some(window_ptr) => {
                             (**window_ptr).focused = i == self.windows.len() - 1;
@@ -281,7 +281,7 @@ impl Session {
 
                 if self.cursor.data.len() > 0 {
                     self.display.image_alpha(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
-                }else{
+                } else {
                     self.display.char(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
                 }
             //}
@@ -293,7 +293,7 @@ impl Session {
             /*
             if self.cursor.data.len() > 0 {
                 self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
-            }else{
+            } else {
                 self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
             }
             */
@@ -304,7 +304,7 @@ impl Session {
         }
     }
 
-    pub fn event(&mut self, event: Event){
+    pub fn event(&mut self, event: Event) {
         match event.to_option() {
             EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
             EventOption::Key(key_event) => self.on_key(key_event),
@@ -312,9 +312,9 @@ impl Session {
             EventOption::Open(open_event) => {
                 let url_string = open_event.url_string;
 
-                if url_string.ends_with(".bin".to_string()){
+                if url_string.ends_with(".bin".to_string()) {
                     execute(&URL::from_string(&url_string), &URL::new(), &Vec::new());
-                }else{
+                } else {
                     for package in self.packages.iter() {
                         let mut accepted = false;
                         for accept in package.accepts.iter() {

@@ -36,7 +36,7 @@ impl Duration {
 
     pub fn monotonic() -> Duration {
         let mut ret = Duration::new(0, 0);
-        unsafe{
+        unsafe {
             sys_time(&mut ret, false);
         }
         return ret;
@@ -44,19 +44,19 @@ impl Duration {
 
     pub fn realtime() -> Duration {
         let mut ret = Duration::new(0, 0);
-        unsafe{
+        unsafe {
             sys_time(&mut ret, true);
         }
         return ret;
     }
 
-    pub fn sleep(&self){
+    pub fn sleep(&self) {
         let start_time = Duration::monotonic();
         loop {
             let elapsed = Duration::monotonic() - start_time;
             if elapsed > *self {
                 break;
-            }else{
+            } else {
                 sys_yield();
             }
         }
@@ -96,13 +96,13 @@ impl PartialOrd for Duration {
         let dif = *self - *other;
         if dif.secs > 0 {
             return Option::Some(Ordering::Greater);
-        }else if dif.secs < 0 {
+        } else if dif.secs < 0 {
             return Option::Some(Ordering::Less);
-        }else if dif.nanos > 0 {
+        } else if dif.nanos > 0 {
             return Option::Some(Ordering::Greater);
-        }else if dif.nanos < 0 {
+        } else if dif.nanos < 0 {
             return Option::Some(Ordering::Less);
-        }else{
+        } else {
             return Option::Some(Ordering::Equal);
         }
     }

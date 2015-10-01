@@ -215,23 +215,23 @@ impl SessionItem for IntelHDA {
         };
     }
 
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("HDA IRQ\n");
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
     }
 }
 
 impl IntelHDA {
-    pub unsafe fn init(&mut self){
+    pub unsafe fn init(&mut self) {
         d("Intel HDA on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        } else {
             d(" port mapped");
         }
         d(", IRQ: ");

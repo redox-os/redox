@@ -40,11 +40,11 @@ impl PCIConfig {
         self.data.write(value);
     }
 
-    pub unsafe fn flag(&mut self, offset: u8, flag: u32, toggle: bool){
+    pub unsafe fn flag(&mut self, offset: u8, flag: u32, toggle: bool) {
         let mut value = self.read(offset);
         if toggle {
             value |= flag;
-        }else{
+        } else {
             value &= 0xFFFFFFFF - flag;
         }
         self.write(offset, value);

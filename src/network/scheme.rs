@@ -32,7 +32,7 @@ impl NetworkResource {
             outbound: Queue::new()
         };
 
-        unsafe{
+        unsafe {
             ret.ptr = ret.deref_mut();
 
             (*ret.nic).add(ret.ptr);
@@ -58,7 +58,7 @@ impl Resource for NetworkResource {
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         loop {
-            unsafe{
+            unsafe {
                 (*self.nic).sync();
 
                 let reenable = start_no_ints();
@@ -76,7 +76,7 @@ impl Resource for NetworkResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe{
+        unsafe {
             let reenable = start_no_ints();
             (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
             end_no_ints(reenable);
@@ -97,7 +97,7 @@ impl Resource for NetworkResource {
 }
 
 impl Drop for NetworkResource {
-    fn drop(&mut self){
+    fn drop(&mut self) {
         unsafe {
             (*self.nic).remove(self.ptr);
         }

@@ -83,7 +83,7 @@ impl Resource for AC97Resource {
             let start_lvi;
             if lvi == 0 {
                 start_lvi = 31;
-            }else{
+            } else {
                 start_lvi = lvi - 1;
             }
 
@@ -183,13 +183,13 @@ impl SessionItem for AC97 {
         };
     }
 
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("AC97 IRQ\n");
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
     }
 }
 
@@ -197,7 +197,7 @@ impl AC97 {
     pub unsafe fn new(mut pci: PCIConfig) -> Box<AC97> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let mut module = box AC97 {
+        let module = box AC97 {
             audio: pci.read(0x10) as usize & 0xFFFFFFF0,
             bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF

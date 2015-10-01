@@ -15,7 +15,7 @@ impl BMP {
     pub fn new() -> BMP {
         BMP {
             data: Vec::new(),
-            size: Size { width: 0, height: 0}
+            size: Size { width: 0, height: 0 }
         }
     }
 
@@ -112,8 +112,8 @@ impl BMP {
         return ret;
     }
 
-    pub fn draw(&self, display: &Display, point: Point){
-        unsafe{
+    pub fn draw(&self, display: &Display, point: Point) {
+        unsafe {
             display.image_alpha(point, self.data.as_ptr(), self.size);
         }
     }

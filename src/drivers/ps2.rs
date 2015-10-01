@@ -17,13 +17,13 @@ impl PS2 {
 }
 
 impl SessionItem for PS2 {
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == 0x1 || irq == 0xC {
             self.on_poll();
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
         loop {
             let status = unsafe { self.status.read() };
             if status & 0x21 == 1 {
@@ -37,7 +37,7 @@ impl SessionItem for PS2 {
                 if mouse_event.valid {
                     mouse_event.trigger();
                 }
-            }else{
+            } else {
                 break;
             }
         }
