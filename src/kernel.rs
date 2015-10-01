@@ -23,8 +23,6 @@ use common::paging::*;
 use common::scheduler::*;
 
 use drivers::disk::*;
-use drivers::keyboard::keyboard_init;
-use drivers::mouse::mouse_init;
 use drivers::pci::*;
 use drivers::pio::*;
 use drivers::ps2::*;
@@ -80,9 +78,7 @@ mod common {
 
 mod drivers {
     pub mod disk;
-    pub mod keyboard;
     pub mod mmio;
-    pub mod mouse;
     pub mod pci;
     pub mod pciconfig;
     pub mod pio;
@@ -377,10 +373,7 @@ unsafe fn init(font_data: usize) {
 
     let session = &mut *session_ptr;
 
-    keyboard_init();
-    mouse_init();
-
-    session.items.push(box PS2::new());
+    session.items.push(PS2::new());
     session.items.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
