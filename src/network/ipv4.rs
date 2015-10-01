@@ -41,7 +41,7 @@ impl FromBytes for IPv4 {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 }
 
@@ -52,7 +52,7 @@ impl ToBytes for IPv4 {
             let mut ret = Vec::<u8>::from_raw_buf(header_ptr as *const u8, size_of::<IPv4Header>());
             ret.push_all(&self.options);
             ret.push_all(&self.data);
-            return ret;
+            ret
         }
     }
 }

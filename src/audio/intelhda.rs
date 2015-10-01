@@ -43,15 +43,15 @@ struct IntelHDAResource {
 
 impl Resource for IntelHDAResource {
     fn url(&self) -> URL {
-        return URL::from_str("hda://");
+        URL::from_str("hda://")
     }
 
     fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+        ResourceType::File
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
+        Option::None
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -183,16 +183,16 @@ impl Resource for IntelHDAResource {
             unalloc(bdl as usize);
             */
 
-            return Option::Some(buf.len());
+            Option::Some(buf.len())
         }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        Option::None
     }
 
     fn flush(&mut self) -> bool {
-        return false;
+        false
     }
 }
 
@@ -207,13 +207,13 @@ pub struct IntelHDA {
 
 impl SessionItem for IntelHDA {
     fn scheme(&self) -> String {
-        return "hda".to_string();
+        "hda".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box IntelHDAResource {
+        box IntelHDAResource {
             base: self.base
-        };
+        }
     }
 
     fn on_irq(&mut self, irq: u8){
@@ -222,12 +222,12 @@ impl SessionItem for IntelHDA {
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
     }
 }
 
 impl IntelHDA {
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&self) {
         d("Intel HDA on: ");
         dh(self.base);
         if self.memory_mapped {
@@ -389,7 +389,7 @@ impl IntelHDA {
                 }
             }
 
-            return read(rirb_ptr.offset(rirb_i as isize));
+            read(rirb_ptr.offset(rirb_i as isize))
         };
 
         let mut output_stream_id = 1;

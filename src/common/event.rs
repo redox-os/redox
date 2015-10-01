@@ -183,7 +183,7 @@ pub struct OpenEvent {
 
 impl OpenEvent {
     pub fn to_event(&self) -> Event {
-        unsafe{
+        unsafe {
             Event {
                 code: 'o',
                 a: self.url_string.to_c_str() as isize,
@@ -196,12 +196,12 @@ impl OpenEvent {
     }
 
     pub fn from_event(event: Event) -> OpenEvent {
-        unsafe{
+        unsafe {
             let ret = OpenEvent {
                 url_string: String::from_c_str(event.a as *const u8)
             };
             sys_unalloc(event.a as usize);
-            return ret;
+            ret
         }
     }
 

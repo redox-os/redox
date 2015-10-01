@@ -65,7 +65,7 @@ impl Package {
             }
         }
 
-        return package;
+        package
     }
 
     pub fn d(&self){

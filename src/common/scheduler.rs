@@ -7,7 +7,7 @@ pub unsafe fn start_no_ints() -> bool {
         :
         : "memory"
         : "intel", "volatile");
-    return flags & (1 << 9) == (1 << 9);
+    flags & (1 << 9) == (1 << 9)
 }
 
 pub unsafe fn end_no_ints(reenable: bool) {
@@ -29,7 +29,7 @@ pub unsafe fn start_ints() -> bool {
         :
         : "memory"
         : "intel", "volatile");
-    return flags & (1 << 9) != (1 << 9);
+    flags & (1 << 9) != (1 << 9)
 }
 
 pub unsafe fn end_ints(disable: bool) {

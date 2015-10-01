@@ -25,7 +25,7 @@ impl<T: ?Sized> Mutex<T> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
             sys_yield();
         }
-        return MutexGuard::new(&self.lock, &self.value);
+        MutexGuard::new(&self.lock, &self.value)
     }
 }
 

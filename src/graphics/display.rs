@@ -82,7 +82,7 @@ impl Display {
         ret.set(Color::new(0, 0, 0));
         ret.flip();
 
-        return ret;
+        ret
     }
 
     pub fn new(width: usize, height: usize) -> Display {
@@ -103,7 +103,7 @@ impl Display {
             ret.set(Color::new(0, 0, 0));
             ret.flip();
 
-            return ret;
+            ret
         }
     }
 

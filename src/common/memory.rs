@@ -25,9 +25,9 @@ const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
 pub unsafe fn cluster(number: usize) -> usize{
     if number < CLUSTER_COUNT {
-        return ptr::read((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize);
-    }else{
-        return 0;
+        ptr::read((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize)
+    } else {
+        0
     }
 }
 
@@ -39,14 +39,14 @@ pub unsafe fn set_cluster(number: usize, address: usize){
 
 pub unsafe fn address_to_cluster(address: usize) -> usize {
     if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() {
-        return (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>())/CLUSTER_SIZE;
+        (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>()) / CLUSTER_SIZE
     }else {
-        return 0;
+        0
     }
 }
 
 pub unsafe fn cluster_to_address(number: usize) -> usize {
-    return CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number*CLUSTER_SIZE;
+    CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number * CLUSTER_SIZE
 }
 
 pub unsafe fn cluster_init(){
@@ -105,7 +105,7 @@ pub unsafe fn alloc(size: usize) -> usize {
     //Memory allocation must be atomic
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
@@ -143,11 +143,11 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     //Memory allocation must be atomic
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn alloc_type<T>() -> *mut T {
-    return alloc(size_of::<T>()) as *mut T;
+    alloc(size_of::<T>()) as *mut T
 }
 
 pub unsafe fn alloc_size(ptr: usize) -> usize {
@@ -169,7 +169,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
     //Memory allocation must be atomic
     end_no_ints(reenable);
 
-    return size;
+    size
 }
 
 pub unsafe fn unalloc(ptr: usize){
@@ -219,15 +219,15 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
 
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
     let old_size = alloc_size(ptr);
     if size <= old_size {
-        return size;
-    }else{
-        return old_size;
+        size
+    } else {
+        old_size
     }
 }
 
@@ -246,7 +246,7 @@ pub fn memory_used() -> usize{
         //Memory allocation must be atomic
         end_no_ints(reenable);
     }
-    return ret;
+    ret
 }
 
 pub fn memory_free() -> usize{
@@ -264,5 +264,5 @@ pub fn memory_free() -> usize{
         //Memory allocation must be atomic
         end_no_ints(reenable);
     }
-    return ret;
+    ret
 }
