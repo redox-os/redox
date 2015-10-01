@@ -1,4 +1,5 @@
-# Redox
+![Redox](icons/transp_background_with_text.png)
+
 Redox is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
 
 ## Building on Ubuntu
