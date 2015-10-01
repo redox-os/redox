@@ -226,7 +226,7 @@ impl SessionItem for IntelHDA {
 }
 
 impl IntelHDA {
-    pub unsafe fn init(&self) {
+    pub unsafe fn init(&mut self) {
         d("Intel HDA on: ");
         dh(self.base);
         if self.memory_mapped {

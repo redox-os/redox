@@ -1,6 +1,8 @@
 use common::scheduler::*;
 use common::time::*;
 
+use drivers::pio::*;
+
 fn cvt_bcd(value: usize) -> usize {
     (value & 0xF) + ((value/16) * 10)
 }
@@ -97,4 +99,5 @@ impl RTC {
         secs += second as i64;
 
         Duration::new(secs, 0)
+    }
 }
