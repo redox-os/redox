@@ -21,7 +21,7 @@ impl RTC {
     }
 
     unsafe fn read(&mut self, reg: u8) -> u8 {
-        self.addr.write(0x70);
+        self.addr.write(reg);
         return self.data.read();
     }
 

@@ -22,9 +22,9 @@ impl PCIConfig {
 
     fn address(&self, offset: u8) -> u32 {
         return 1 << 31
-            | (self.bus as u32 & 255) << 16
-            | (self.slot as u32 & 31) << 11
-            | (self.func as u32 & 8) << 8
+            | (self.bus as u32) << 16
+            | (self.slot as u32) << 11
+            | (self.func as u32) << 8
             | (offset as u32 & 0xFC);
     }
 
