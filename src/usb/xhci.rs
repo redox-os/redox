@@ -1,7 +1,4 @@
-use common::memory::*;
-
 use drivers::pciconfig::*;
-
 
 use programs::common::*;
 
@@ -37,9 +34,7 @@ impl TRB {
 }
 
 pub struct XHCI {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8

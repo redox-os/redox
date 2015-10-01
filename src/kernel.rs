@@ -17,10 +17,6 @@
 
 extern crate alloc;
 
-use audio::wav::*;
-
-use core::fmt;
-
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
@@ -30,6 +26,7 @@ use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
 use drivers::mouse::mouse_init;
 use drivers::pci::*;
+use drivers::pio::*;
 use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
@@ -56,7 +53,6 @@ use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
 
-use syscall::common::*;
 use syscall::handle::*;
 
 mod audio {
@@ -300,14 +296,14 @@ unsafe fn redraw_loop() -> ! {
 }
 
 pub unsafe fn debug_init(){
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x80);
-    outb(0x3F8 + 0, 0x03);
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x03);
-    outb(0x3F8 + 2, 0xC7);
-    outb(0x3F8 + 4, 0x0B);
-    outb(0x3F8 + 1, 0x01);
+    PIO8::new(0x3F8 + 1).write(0x00);
+    PIO8::new(0x3F8 + 3).write(0x80);
+    PIO8::new(0x3F8 + 0).write(0x03);
+    PIO8::new(0x3F8 + 1).write(0x00);
+    PIO8::new(0x3F8 + 3).write(0x03);
+    PIO8::new(0x3F8 + 2).write(0xC7);
+    PIO8::new(0x3F8 + 4).write(0x0B);
+    PIO8::new(0x3F8 + 1).write(0x01);
 }
 
 unsafe fn test_disk(disk: Disk){
@@ -367,7 +363,7 @@ unsafe fn init(font_data: usize){
     debug_command = alloc_type();
     ptr::write(debug_command, String::new());
 
-    clock_realtime.secs = rtc_read();
+    clock_realtime = RTC::new().time();
 
     contexts_ptr = alloc_type();
     ptr::write(contexts_ptr, Vec::new());
@@ -570,10 +566,10 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
     if interrupt >= 0x20 && interrupt < 0x30 {
         if interrupt >= 0x28 {
-            outb(0xA0, 0x20);
+            PIO8::new(0xA0).write(0x20);
         }
 
-        outb(0x20, 0x20);
+        PIO8::new(0x20).write(0x20);
     }
 
     match interrupt {

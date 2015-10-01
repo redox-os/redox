@@ -4,7 +4,6 @@ use common::memory::*;
 use common::scheduler::*;
 
 use drivers::pciconfig::*;
-use drivers::pio::*;
 
 use programs::common::*;
 
@@ -199,9 +198,7 @@ impl Resource for IntelHDAResource {
 }
 
 pub struct IntelHDA {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8
@@ -229,7 +226,7 @@ impl SessionItem for IntelHDA {
 }
 
 impl IntelHDA {
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&mut self){
         d("Intel HDA on: ");
         dh(self.base);
         if self.memory_mapped {
@@ -240,7 +237,9 @@ impl IntelHDA {
         d(", IRQ: ");
         dbh(self.irq);
 
-        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
+        let pci = &mut self.pci;
+
+        pci.flag(4, 4, true); // Bus mastering
 
         let gcap = (self.base) as *mut u16;
         let gctl = (self.base + 0x8) as *mut u32;

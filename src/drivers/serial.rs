@@ -14,7 +14,7 @@ impl Serial {
     pub fn new(port: u16, irq: u8) -> Serial{
         return Serial {
             data: PIO8::new(port),
-            status: PIO::new(port + 5),
+            status: PIO8::new(port + 5),
             irq: irq,
             escape: false,
             cursor_control: false

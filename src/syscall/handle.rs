@@ -1,8 +1,5 @@
-use alloc::boxed::*;
-
 use core::cmp::max;
 use core::cmp::min;
-use core::mem::size_of;
 use core::ptr;
 use core::slice;
 
@@ -14,7 +11,6 @@ use common::resource::*;
 use common::scheduler::*;
 use common::string::*;
 use common::time::*;
-use common::vec::*;
 
 use drivers::pio::*;
 
@@ -81,7 +77,7 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     let reenable = start_no_ints();
 
     let contexts = & *contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
@@ -108,7 +104,7 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let reenable = start_no_ints();
 
     let contexts = & *contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
@@ -138,7 +134,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
         let reenable = start_no_ints();
 
         let contexts = & *contexts_ptr;
-        if let Option::Some(mut current) = contexts.get(context_i) {
+        if let Option::Some(current) = contexts.get(context_i) {
             path_str = current.cwd.clone() + path_str;
         }
 
@@ -193,6 +189,8 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
                     drop(file);
 
                     start_no_ints();
+
+                    ret = 0;
                 }
 
                 break;
