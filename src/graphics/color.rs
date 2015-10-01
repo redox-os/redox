@@ -1,6 +1,6 @@
 #[derive(Copy, Clone)]
 pub struct Color {
-	pub data: u32
+    pub data: u32
 }
 
 impl Color {

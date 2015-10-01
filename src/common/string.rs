@@ -33,7 +33,7 @@ pub struct Chars<'a> {
 
 impl <'a> Iterator for Chars<'a> {
     type Item = char;
-    fn next(&mut self) -> Option<Self::Item>{
+    fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
             let ret = Option::Some(self.string[self.offset]);
             self.offset += 1;
@@ -57,11 +57,11 @@ impl <'a> Iterator for Split<'a> {
         if self.offset < self.string.len() {
             let start = self.offset;
             let mut len = 0;
-            for i in start..self.string.len(){
-                if self.seperator == self.string.substr(i, self.seperator.len()){
+            for i in start..self.string.len() {
+                if self.seperator == self.string.substr(i, self.seperator.len()) {
                     self.offset += self.seperator.len();
                     break;
-                }else{
+                } else {
                     self.offset += 1;
                     len += 1;
                 }
@@ -307,22 +307,22 @@ impl String {
             let u = c as usize;
             if u < 0x80 {
                 vec.push(u as u8);
-            }else if u < 0x800 {
+            } else if u < 0x800 {
                 vec.push(0b11000000 | ((u >> 6) as u8 & 0b00011111));
                 vec.push(0b10000000 | (u as u8 & 0b00111111));
-            }else if u < 0x10000 {
+            } else if u < 0x10000 {
                 vec.push(0b11100000 | ((u >> 12) as u8 & 0b00001111));
                 vec.push(0b10000000 | ((u >> 6) as u8 & 0b00111111));
                 vec.push(0b10000000 | (u as u8 & 0b00111111));
-            }else{
+            } else {
                 d("Unhandled to_utf8 code ");
                 dh(u);
                 dl();
-                unsafe{ dh(self.vec.as_ptr() as usize); }
+                unsafe { dh(self.vec.as_ptr() as usize); }
                 d(" ");
                 dd(self.vec.len());
                 d(" to ");
-                unsafe{ dh(vec.as_ptr() as usize); }
+                unsafe { dh(vec.as_ptr() as usize); }
                 d(" ");
                 dd(vec.len());
                 dl();
@@ -354,7 +354,7 @@ impl String {
         }
 
         let mut num = 0;
-        for c in self.chars(){
+        for c in self.chars() {
             let digit;
             if c >= '0' && c <= '9' {
                 digit = c as usize - '0' as usize
@@ -396,7 +396,7 @@ impl String {
         self.to_num_radix_signed(10)
     }
 
-    pub fn d(&self){
+    pub fn d(&self) {
         for c in self.chars() {
             dc(c);
         }
@@ -416,7 +416,7 @@ impl Index<usize> for String {
 }
 
 impl PartialEq for String {
-    fn eq(&self, other: &Self) -> bool{
+    fn eq(&self, other: &Self) -> bool {
         if self.len() == other.len() {
             for i in 0..self.len() {
                 if self[i] != other[i] {

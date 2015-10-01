@@ -14,7 +14,7 @@ impl<T> Queue<T> {
     }
 
     /// Push element to queue
-    pub fn push(&mut self, value: T){
+    pub fn push(&mut self, value: T) {
         self.vec.push(value);
     }
 

@@ -15,7 +15,7 @@ pub unsafe fn syscall(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
     eax
 }
 
-pub unsafe fn sys_debug(byte: u8){
+pub unsafe fn sys_debug(byte: u8) {
     syscall(SYS_DEBUG, byte as u32, 0, 0);
 }
 
@@ -39,7 +39,7 @@ pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd as u32, 0, 0) as usize
 }
 
-pub unsafe fn sys_time(time_ptr: *mut Duration, realtime: bool){
+pub unsafe fn sys_time(time_ptr: *mut Duration, realtime: bool) {
     syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
 }
 
@@ -48,21 +48,21 @@ pub unsafe fn sys_brk(addr: usize) -> usize {
 }
 
 //TODO: Export unsafe
-pub fn sys_yield(){
-    unsafe{
+pub fn sys_yield() {
+    unsafe {
         syscall(SYS_YIELD, 0, 0, 0);
     }
 }
 
-pub unsafe fn sys_trigger(event_ptr: *const Event){
+pub unsafe fn sys_trigger(event_ptr: *const Event) {
     syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
 }
 
-pub unsafe fn sys_window_create(ptr: *mut Window){
+pub unsafe fn sys_window_create(ptr: *mut Window) {
     syscall(SYS_WINDOW_CREATE, ptr as u32, 0, 0);
 }
 
-pub unsafe fn sys_window_destroy(ptr: *mut Window){
+pub unsafe fn sys_window_destroy(ptr: *mut Window) {
     syscall(SYS_WINDOW_DESTROY, ptr as u32, 0, 0);
 }
 

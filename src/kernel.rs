@@ -17,20 +17,16 @@
 
 extern crate alloc;
 
-use audio::wav::*;
-
-use core::fmt;
-
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
-use common::pio::*;
 use common::scheduler::*;
 
 use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
 use drivers::mouse::mouse_init;
 use drivers::pci::*;
+use drivers::pio::*;
 use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
@@ -52,13 +48,11 @@ use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::pci::*;
 use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
 
-use syscall::common::*;
 use syscall::handle::*;
 
 mod audio {
@@ -76,8 +70,6 @@ mod common {
     pub mod memory;
     pub mod mutex;
     pub mod paging;
-    pub mod pci;
-    pub mod pio;
     pub mod random;
     pub mod resource;
     pub mod scheduler;
@@ -89,8 +81,11 @@ mod common {
 mod drivers {
     pub mod disk;
     pub mod keyboard;
+    pub mod mmio;
     pub mod mouse;
     pub mod pci;
+    pub mod pciconfig;
+    pub mod pio;
     pub mod ps2;
     pub mod rtc;
     pub mod serial;
@@ -135,10 +130,8 @@ mod schemes {
     pub mod file;
     pub mod http;
     pub mod icmp;
-    pub mod ide;
     pub mod ip;
     pub mod memory;
-    pub mod pci;
     pub mod random;
     pub mod tcp;
     pub mod time;
@@ -158,7 +151,7 @@ mod usb {
 }
 
 static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
-static mut debug_point: Point = Point{ x: 0, y: 0 };
+static mut debug_point: Point = Point { x: 0, y: 0 };
 static mut debug_draw: bool = false;
 static mut debug_redraw: bool = false;
 static mut debug_command: *mut String = 0 as *mut String;
@@ -189,8 +182,8 @@ unsafe fn idle_loop() -> ! {
         let mut halt = true;
 
         let contexts = & *contexts_ptr;
-        for i in 1..contexts.len(){
-            match contexts.get(i){
+        for i in 1..contexts.len() {
+            match contexts.get(i) {
                 Option::Some(context) => if context.interrupted {
                     halt = false;
                     break;
@@ -202,7 +195,7 @@ unsafe fn idle_loop() -> ! {
         if halt {
             asm!("sti");
             asm!("hlt");
-        }else{
+        } else {
             asm!("sti");
         }
 
@@ -225,7 +218,7 @@ unsafe fn event_loop() -> ! {
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
-        loop{
+        loop {
             let reenable = start_no_ints();
 
             let event_option = events.pop();
@@ -267,11 +260,11 @@ unsafe fn event_loop() -> ! {
                             },
                             _ => ()
                         }
-                    }else{
+                    } else {
                         if event.code == 'k' && event.b as u8 == K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
-                        }else{
+                        } else {
                             session.event(event);
                         }
                     }
@@ -294,7 +287,7 @@ unsafe fn redraw_loop() -> ! {
                 debug_redraw = false;
                 display.flip();
             }
-        }else{
+        } else {
             session.redraw();
         }
 
@@ -302,38 +295,38 @@ unsafe fn redraw_loop() -> ! {
     }
 }
 
-pub unsafe fn debug_init(){
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x80);
-    outb(0x3F8 + 0, 0x03);
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x03);
-    outb(0x3F8 + 2, 0xC7);
-    outb(0x3F8 + 4, 0x0B);
-    outb(0x3F8 + 1, 0x01);
+pub unsafe fn debug_init() {
+    PIO8::new(0x3F8 + 1).write(0x00);
+    PIO8::new(0x3F8 + 3).write(0x80);
+    PIO8::new(0x3F8 + 0).write(0x03);
+    PIO8::new(0x3F8 + 1).write(0x00);
+    PIO8::new(0x3F8 + 3).write(0x03);
+    PIO8::new(0x3F8 + 2).write(0xC7);
+    PIO8::new(0x3F8 + 4).write(0x0B);
+    PIO8::new(0x3F8 + 1).write(0x01);
 }
 
-unsafe fn test_disk(disk: Disk){
+unsafe fn test_disk(disk: Disk) {
     if disk.identify() {
         d(" Disk Found");
 
         let fs = FileSystem::from_disk(disk);
         if fs.valid() {
             d(" Redox Filesystem");
-        }else{
+        } else {
             d(" Unknown Filesystem");
         }
-    }else{
+    } else {
         d(" Disk Not Found");
     }
     dl();
 }
 
-unsafe fn init(font_data: usize){
+unsafe fn init(font_data: usize) {
     start_no_ints();
 
     debug_display = 0 as *mut Box<Display>;
-    debug_point = Point{ x: 0, y: 0 };
+    debug_point = Point { x: 0, y: 0 };
     debug_draw = false;
     debug_redraw = false;
 
@@ -370,7 +363,7 @@ unsafe fn init(font_data: usize){
     debug_command = alloc_type();
     ptr::write(debug_command, String::new());
 
-    clock_realtime.secs = rtc_read();
+    clock_realtime = RTC::new().time();
 
     contexts_ptr = alloc_type();
     ptr::write(contexts_ptr, Vec::new());
@@ -387,7 +380,7 @@ unsafe fn init(font_data: usize){
     keyboard_init();
     mouse_init();
 
-    session.items.push(box PS2);
+    session.items.push(box PS2::new());
     session.items.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
@@ -406,12 +399,11 @@ unsafe fn init(font_data: usize){
 
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
-    session.items.push(box FileScheme{
+    session.items.push(box FileScheme {
         fs: FileSystem::from_disk(Disk::primary_master())
     });
     session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
-    session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
 
@@ -424,19 +416,19 @@ unsafe fn init(font_data: usize){
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);
 
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         poll_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         event_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         redraw_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         ARPScheme::reply_loop();
     });
-    Context::spawn(box move ||{
+    Context::spawn(box move || {
         ICMPScheme::reply_loop();
     });
 
@@ -470,14 +462,14 @@ unsafe fn init(font_data: usize){
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()){
+            if folder.ends_with("/".to_string()) {
                 session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder))));
             }
         }
     }
 }
 
-fn dr(reg: &str, value: u32){
+fn dr(reg: &str, value: u32) {
     d(reg);
     d(": ");
     dh(value as usize);
@@ -574,10 +566,10 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
     if interrupt >= 0x20 && interrupt < 0x30 {
         if interrupt >= 0x28 {
-            outb(0xA0, 0x20);
+            PIO8::new(0xA0).write(0x20);
         }
 
-        outb(0x20, 0x20);
+        PIO8::new(0x20).write(0x20);
     }
 
     match interrupt {

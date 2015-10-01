@@ -45,20 +45,20 @@ impl Package {
         for line in info.split("\n".to_string()) {
             if line.starts_with("name=".to_string()) {
                 package.name = line.substr(5, line.len() - 5);
-            }else if line.starts_with("binary=".to_string()){
+            } else if line.starts_with("binary=".to_string()) {
                 package.binary = URL::from_string(&(url.to_string() + line.substr(7, line.len() - 7)));
-            }else if line.starts_with("icon=".to_string()) {
+            } else if line.starts_with("icon=".to_string()) {
                 let mut resource = URL::from_string(&line.substr(5, line.len() - 5)).open();
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
                 package.icon = BMP::from_data(&vec);
-            }else if line.starts_with("accept=".to_string()) {
+            } else if line.starts_with("accept=".to_string()) {
                 package.accepts.push(line.substr(7, line.len() - 7));
-            }else if line.starts_with("author=".to_string()) {
+            } else if line.starts_with("author=".to_string()) {
                 package.authors.push(line.substr(7, line.len() - 7));
-            }else if line.starts_with("description=".to_string()) {
+            } else if line.starts_with("description=".to_string()) {
                 package.descriptions.push(line.substr(12, line.len() - 12));
-            }else{
+            } else {
                 d("Unknown package info: ");
                 line.d();
                 dl();
@@ -68,7 +68,7 @@ impl Package {
         package
     }
 
-    pub fn d(&self){
+    pub fn d(&self) {
         d("URL: ");
         self.url.d();
         dl();

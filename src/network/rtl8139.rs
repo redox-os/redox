@@ -1,7 +1,8 @@
 use common::memory::*;
-use common::pci::*;
-use common::pio::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
+use drivers::pio::*;
 
 use network::common::*;
 use network::scheme::*;
@@ -16,9 +17,7 @@ pub struct TXD {
 }
 
 pub struct RTL8139 {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
@@ -38,7 +37,7 @@ impl SessionItem for RTL8139 {
         NetworkResource::new(self)
     }
 
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             unsafe {
                 let base = self.base as u16;
@@ -54,13 +53,13 @@ impl SessionItem for RTL8139 {
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
         self.sync();
     }
 }
 
 impl NetworkScheme for RTL8139 {
-    fn add(&mut self, resource: *mut NetworkResource){
+    fn add(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = start_no_ints();
             self.resources.push(resource);
@@ -68,7 +67,7 @@ impl NetworkScheme for RTL8139 {
         }
     }
 
-    fn remove(&mut self, resource: *mut NetworkResource){
+    fn remove(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = start_no_ints();
             let mut i = 0;
@@ -78,7 +77,7 @@ impl NetworkScheme for RTL8139 {
                 match self.resources.get(i) {
                     Option::Some(ptr) => if *ptr == resource {
                         remove = true;
-                    }else{
+                    } else {
                         i += 1;
                     },
                     Option::None => break
@@ -92,7 +91,7 @@ impl NetworkScheme for RTL8139 {
         }
     }
 
-    fn sync(&mut self){
+    fn sync(&mut self) {
         unsafe {
             let reenable = start_no_ints();
 
@@ -118,18 +117,18 @@ impl NetworkScheme for RTL8139 {
 }
 
 impl RTL8139 {
-    pub unsafe fn init(&mut self){
+    pub unsafe fn init(&mut self) {
         d("RTL8139 on: ");
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else{
+        } else {
             d(" port mapped");
         }
         d(" IRQ: ");
         dbh(self.irq);
 
-        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
+        self.pci.flag(4, 4, true); // Bus mastering
 
         let base = self.base as u16;
 
@@ -141,7 +140,7 @@ impl RTL8139 {
         d(" MAC: ");
         let mac_low = ind(base);
         let mac_high = ind(base + 4);
-        MAC_ADDR = MACAddr{
+        MAC_ADDR = MACAddr {
             bytes: [
                 mac_low as u8,
                 (mac_low >> 8) as u8,
@@ -248,13 +247,13 @@ impl RTL8139 {
                         outd(txd.status_port, bytes.len() as u32 & 0xFFF);
 
                         self.txd_i = (self.txd_i + 1) % 4;
-                    }else{
+                    } else {
                         dl();
                         d("RTL8139: Frame too long for transmit: ");
                         dd(bytes.len());
                         dl();
                     }
-                }else{
+                } else {
                     d("RTL8139: TXD Overflow!\n");
                     self.txd_i = 0;
                 }

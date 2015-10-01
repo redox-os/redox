@@ -35,7 +35,7 @@ impl FromBytes for EthernetII {
 
 impl ToBytes for EthernetII {
     fn to_bytes(&self) -> Vec<u8> {
-        unsafe{
+        unsafe {
             let header_ptr: *const EthernetIIHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<EthernetIIHeader>());
             ret.push_all(&self.data);
@@ -45,7 +45,7 @@ impl ToBytes for EthernetII {
 }
 
 impl EthernetII {
-    pub fn d(&self){
+    pub fn d(&self) {
         d("Ethernet II ");
         dh(self.header.ethertype.get() as usize);
         d(" from ");
