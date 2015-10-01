@@ -35,17 +35,17 @@ impl FromBytes for ARP {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 }
 
 impl ToBytes for ARP {
     fn to_bytes(&self) -> Vec<u8> {
-        unsafe{
+        unsafe {
             let header_ptr: *const ARPHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ARPHeader>());
             ret.push_all(&self.data);
-            return ret;
+            ret
         }
     }
 }

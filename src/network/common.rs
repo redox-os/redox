@@ -29,7 +29,7 @@ impl n16 {
     }
 
     pub fn get(&self) -> u16 {
-        return ((self.bytes[0] as u16) << 8) | (self.bytes[1] as u16);
+        ((self.bytes[0] as u16) << 8) | (self.bytes[1] as u16)
     }
 
     pub fn set(&mut self, value: u16){
@@ -57,7 +57,7 @@ impl n32 {
     }
 
     pub fn get(&self) -> u32 {
-        return ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16) | ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32);
+        ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16) | ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32)
     }
 
     pub fn set(&mut self, value: u32){
@@ -80,7 +80,7 @@ impl MACAddr {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     pub fn from_string(string: &String) -> MACAddr {
@@ -103,7 +103,7 @@ impl MACAddr {
             i += 1;
         }
 
-        return addr;
+        addr
     }
 
     pub fn to_string(&self) -> String {
@@ -114,7 +114,7 @@ impl MACAddr {
             }
             string = string + String::from_num_radix(self.bytes[i] as usize, 16);
         }
-        return string;
+        string
     }
 
     pub fn d(&self){
@@ -142,7 +142,7 @@ impl IPv4Addr {
                 return false;
             }
         }
-        return true;
+        true
     }
 
     pub fn from_string(string: &String) -> IPv4Addr {
@@ -163,7 +163,7 @@ impl IPv4Addr {
             i += 1;
         }
 
-        return addr;
+        addr
     }
 
     pub fn to_string(&self) -> String {
@@ -176,7 +176,7 @@ impl IPv4Addr {
             string = string + self.bytes[i] as usize;
         }
 
-        return string;
+        string
     }
 
     pub fn d(&self){
@@ -214,7 +214,7 @@ pub struct Checksum {
 }
 
 impl Checksum {
-    pub unsafe fn check(&self, mut ptr: usize, mut len: usize) -> bool{
+    pub unsafe fn check(&self, mut ptr: usize, mut len: usize) -> bool {
         let mut sum: usize = 0;
         while len > 1 {
             sum += *(ptr as *const u16) as usize;
@@ -230,7 +230,7 @@ impl Checksum {
             sum = (sum & 0xFFFF) + (sum >> 16);
         }
 
-        return sum == 0xFFFF;
+        sum == 0xFFFF
     }
 
     pub unsafe fn calculate(&mut self, ptr: usize, len: usize){
@@ -254,7 +254,7 @@ impl Checksum {
             sum += *(ptr as *const u8) as usize;
         }
 
-        return sum;
+        sum
     }
 
     pub unsafe fn compile(mut sum: usize) -> u16{
@@ -262,6 +262,6 @@ impl Checksum {
             sum = (sum & 0xFFFF) + (sum >> 16);
         }
 
-        return 0xFFFF - (sum as u16);
+        0xFFFF - (sum as u16)
     }
 }

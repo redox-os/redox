@@ -98,7 +98,7 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
@@ -125,7 +125,7 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
 
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
@@ -167,7 +167,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 
     end_no_ints(reenable);
 
-    return fd;
+    fd
 }
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
@@ -201,7 +201,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
@@ -237,7 +237,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
 
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
@@ -254,7 +254,7 @@ pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
 
     end_no_ints(reenable);
 
-    return 0;
+    0
 }
 
 #[inline(never)]
@@ -302,7 +302,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
     end_no_ints(reenable);
 
-    return ret;
+    ret
 }
 
 #[inline(never)]
@@ -386,5 +386,5 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         }
     }
 
-    return eax;
+    eax
 }

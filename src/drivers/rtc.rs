@@ -4,7 +4,7 @@ use common::scheduler::*;
 
 unsafe fn rtc_get(reg: u8) -> u8 {
     outb(0x70, reg);
-    return inb(0x71);
+    inb(0x71)
 }
 
 unsafe fn rtc_wait_for_update(){
@@ -13,7 +13,7 @@ unsafe fn rtc_wait_for_update(){
 }
 
 fn cvt_bcd(value: usize) -> usize {
-    return (value & 0xF) + ((value/16) * 10);
+    (value & 0xF) + ((value/16) * 10)
 }
 
 pub unsafe fn rtc_read() -> i64 {
@@ -107,5 +107,5 @@ pub unsafe fn rtc_read() -> i64 {
     dd(secs as usize);
     dl();
 
-    return secs;
+    secs
 }

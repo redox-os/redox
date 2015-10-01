@@ -38,22 +38,22 @@ impl NetworkResource {
             (*ret.nic).add(ret.ptr);
         }
 
-        return ret;
+        ret
     }
 }
 
 impl Resource for NetworkResource {
     fn url(&self) -> URL {
-        return URL::from_str("network://");
+        URL::from_str("network://")
     }
 
     fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+        ResourceType::File
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         d("TODO: Implement read for RTL8139\n");
-        return Option::None;
+        Option::None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -84,15 +84,15 @@ impl Resource for NetworkResource {
             (*self.nic).sync();
         }
 
-        return Option::Some(buf.len());
+        Option::Some(buf.len())
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        Option::None
     }
 
     fn flush(&mut self) -> bool {
-        return false;
+        false
     }
 }
 
