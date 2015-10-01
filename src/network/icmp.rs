@@ -30,7 +30,7 @@ impl FromBytes for ICMP {
                 });
             }
         }
-        return Option::None;
+        Option::None
     }
 }
 
@@ -40,7 +40,7 @@ impl ToBytes for ICMP {
             let header_ptr: *const ICMPHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ICMPHeader>());
             ret.push_all(&self.data);
-            return ret;
+            ret
         }
     }
 }

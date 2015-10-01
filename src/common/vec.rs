@@ -20,10 +20,10 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
         match self.vec.get(self.offset) {
             Option::Some(item) => {
                 self.offset += 1;
-                return Option::Some(item);
+                Option::Some(item)
             },
             Option::None => {
-                return Option::None;
+                Option::None
             }
         }
     }
@@ -43,7 +43,7 @@ impl <T> Vec<T> {
     }
 
     pub unsafe fn as_ptr(&self) -> *const T {
-        return self.data;
+        self.data
     }
 
     pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Vec<T> {
@@ -59,10 +59,10 @@ impl <T> Vec<T> {
 
     pub fn get(&self, i: usize) -> Option<&mut T> {
         if i >= self.length {
-            return Option::None;
-        }else{
-            unsafe{
-                return Option::Some(&mut *self.data.offset(i as isize));
+            Option::None
+        } else {
+            unsafe {
+                Option::Some(&mut *self.data.offset(i as isize))
             }
         }
     }
@@ -108,10 +108,10 @@ impl <T> Vec<T> {
 
                 self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
-                return Option::Some(item);
+                Option::Some(item)
             }
-        }else{
-            return Option::None;
+        } else {
+            Option::None
         }
     }
 
@@ -130,10 +130,10 @@ impl <T> Vec<T> {
                 let item = ptr::read(self.data.offset(self.length as isize));
                 self.data = sys_realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
-                return Option::Some(item);
+                Option::Some(item)
             }
-        }else{
-            return Option::None;
+        } else {
+            Option::None
         }
     }
 
@@ -181,10 +181,10 @@ impl <T> Vec<T> {
     pub fn as_slice(&self) -> &[T] {
         if self.data as usize > 0 && self.length > 0 {
             unsafe{
-                return slice::from_raw_parts(self.data, self.length);
+                slice::from_raw_parts(self.data, self.length)
             }
         }else{
-            return &[]
+            &[]
         }
     }
 }
@@ -208,7 +208,7 @@ impl<T> Clone for Vec<T> where T: Clone {
     fn clone(&self) -> Vec<T> {
         let mut ret = Vec::new();
         ret.push_all(self);
-        return ret;
+        ret
     }
 }
 

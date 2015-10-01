@@ -28,10 +28,10 @@ impl Duration {
             nanos += NANOS_PER_SEC;
         }
 
-        return Duration {
+        Duration {
             secs: secs,
             nanos: nanos
-        };
+        }
     }
 
     pub fn monotonic() -> Duration {
@@ -39,7 +39,7 @@ impl Duration {
         unsafe{
             sys_time(&mut ret, false);
         }
-        return ret;
+        ret
     }
 
     pub fn realtime() -> Duration {
@@ -47,7 +47,7 @@ impl Duration {
         unsafe{
             sys_time(&mut ret, true);
         }
-        return ret;
+        ret
     }
 
     pub fn sleep(&self){
@@ -64,7 +64,7 @@ impl Duration {
 
     //TODO: Format decimal
     pub fn to_string(&self) -> String {
-        return String::from_num_signed(self.secs as isize);
+        String::from_num_signed(self.secs as isize)
     }
 }
 
@@ -72,7 +72,7 @@ impl Add for Duration {
     type Output = Duration;
 
     fn add(self, other: Duration) -> Duration {
-        return Duration::new(self.secs + other.secs, self.nanos + other.nanos);
+        Duration::new(self.secs + other.secs, self.nanos + other.nanos)
     }
 }
 
@@ -80,14 +80,14 @@ impl Sub for Duration {
     type Output = Duration;
 
     fn sub(self, other: Duration) -> Duration {
-        return Duration::new(self.secs - other.secs, self.nanos - other.nanos);
+        Duration::new(self.secs - other.secs, self.nanos - other.nanos)
     }
 }
 
 impl PartialEq for Duration {
     fn eq(&self, other: &Duration) -> bool {
         let dif = *self - *other;
-        return dif.secs == 0 && dif.nanos == 0;
+        dif.secs == 0 && dif.nanos == 0
     }
 }
 
@@ -95,15 +95,15 @@ impl PartialOrd for Duration {
     fn partial_cmp(&self, other: &Duration) -> Option<Ordering> {
         let dif = *self - *other;
         if dif.secs > 0 {
-            return Option::Some(Ordering::Greater);
-        }else if dif.secs < 0 {
-            return Option::Some(Ordering::Less);
-        }else if dif.nanos > 0 {
-            return Option::Some(Ordering::Greater);
-        }else if dif.nanos < 0 {
-            return Option::Some(Ordering::Less);
-        }else{
-            return Option::Some(Ordering::Equal);
+            Option::Some(Ordering::Greater)
+        } else if dif.secs < 0 {
+            Option::Some(Ordering::Less)
+        } else if dif.nanos > 0 {
+            Option::Some(Ordering::Greater)
+        } else if dif.nanos < 0 {
+            Option::Some(Ordering::Less)
+        } else {
+            Option::Some(Ordering::Equal)
         }
     }
 }

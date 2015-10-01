@@ -114,7 +114,7 @@ pub struct Context {
 
 impl Context {
     pub unsafe fn root() -> Box<Context> {
-        return box Context {
+        box Context {
             stack: 0,
             stack_ptr: 0,
             fx: alloc(512),
@@ -124,7 +124,7 @@ impl Context {
             files: Vec::new(),
             interrupted: false,
             exited: false
-        };
+        }
     }
 
     pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Context> {
@@ -165,7 +165,7 @@ impl Context {
         ret.push(0); //ESI
         ret.push(0); //EDI
 
-        return ret;
+        ret
     }
 
     pub fn spawn(box_fn: Box<FnBox()>) {

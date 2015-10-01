@@ -34,9 +34,9 @@ impl <'a> Iterator for Chars<'a> {
         if self.offset < self.string.len() {
             let ret = Option::Some(self.string[self.offset]);
             self.offset += 1;
-            return ret;
-        }else{
-            return Option::None;
+            ret
+        } else {
+            Option::None
         }
     }
 }
@@ -49,7 +49,7 @@ pub struct Split<'a> {
 
 impl <'a> Iterator for Split<'a> {
     type Item = String;
-    fn next(&mut self) -> Option<Self::Item>{
+    fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
             let start = self.offset;
             let mut len = 0;
@@ -62,9 +62,9 @@ impl <'a> Iterator for Split<'a> {
                     len += 1;
                 }
             }
-            return Option::Some(self.string.substr(start, len));
-        }else{
-            return Option::None;
+            Option::Some(self.string.substr(start, len))
+        } else {
+            Option::None
         }
     }
 }
@@ -156,7 +156,7 @@ impl String {
             let mut digit = (digit_num % radix) as u8;
             if digit > 9 {
                 digit += 'A' as u8 - 10;
-            }else{
+            } else {
                 digit += '0' as u8;
             }
 
@@ -176,9 +176,9 @@ impl String {
 
     pub fn from_num_radix_signed(num: isize, radix: usize) -> String {
         if num >= 0 {
-            return String::from_num_radix(num as usize, radix);
-        }else{
-            return "-".to_string() + String::from_num_radix((-num) as usize, radix);
+            String::from_num_radix(num as usize, radix)
+        } else {
+            "-".to_string() + String::from_num_radix((-num) as usize, radix)
         }
     }
 
@@ -233,22 +233,22 @@ impl String {
                 }
             }
         }
-        return Option::None;
+        Option::None
     }
 
     pub fn starts_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
-            return self.substr(0, other.len()) == other;
-        }else{
-            return false;
+            self.substr(0, other.len()) == other
+        } else {
+            false
         }
     }
 
     pub fn ends_with(&self, other: String) -> bool {
         if self.len() >= other.len() {
-            return self.substr(self.len() - other.len(), other.len()) == other;
-        }else{
-            return false;
+            self.substr(self.len() - other.len(), other.len()) == other
+        } else {
+            false
         }
     }
 
@@ -301,7 +301,7 @@ impl String {
             }
         }
 
-        return vec;
+        vec
     }
 
     pub unsafe fn to_c_str(&self) -> *const u8 {
@@ -314,7 +314,7 @@ impl String {
         }
         ptr::write(data.offset(self.len() as isize), 0);
 
-        return data;
+        data
     }
 
     pub fn to_num_radix(&self, radix: usize) -> usize {
@@ -348,9 +348,9 @@ impl String {
 
     pub fn to_num_radix_signed(&self, radix: usize) -> isize {
         if self[0] == '-' {
-            return -(self.substr(1, self.len() - 1).to_num_radix(radix) as isize);
-        }else{
-            return self.to_num_radix(radix) as isize;
+            -(self.substr(1, self.len() - 1).to_num_radix(radix) as isize)
+        } else {
+            self.to_num_radix(radix) as isize
         }
     }
 
@@ -375,8 +375,8 @@ impl Index<usize> for String {
     type Output = char;
     fn index<'a>(&'a self, i: usize) -> &'a Self::Output {
         match self.vec.get(i) {
-            Option::Some(c) => return c,
-            Option::None => return &NULL_CHAR
+            Option::Some(c) => c,
+            Option::None => &NULL_CHAR
         }
     }
 }
@@ -390,16 +390,16 @@ impl PartialEq for String {
                 }
             }
 
-            return true;
+            true
         }else{
-            return false;
+            false
         }
     }
 }
 
 impl Clone for String {
     fn clone(&self) -> Self{
-        return self.substr(0, self.len());
+        self.substr(0, self.len())
     }
 }
 
@@ -407,7 +407,7 @@ impl<'a> Add<&'a String> for String {
     type Output = String;
     fn add(mut self, other: &'a String) -> String {
         self.vec.push_all(&other.vec);
-        return self;
+        self
     }
 }
 
@@ -415,7 +415,7 @@ impl<'a> Add<&'a mut String> for String {
     type Output = String;
     fn add(mut self, other: &'a mut String) -> String {
         self.vec.push_all(&other.vec);
-        return self;
+        self
     }
 }
 
@@ -423,14 +423,14 @@ impl Add for String {
     type Output = String;
     fn add(mut self, other: String) -> String {
         self.vec.push_all(&other.vec);
-        return self;
+        self
     }
 }
 
 impl<'a> Add<&'a str> for String {
     type Output = String;
     fn add(self, other: &'a str) -> String {
-        return self + String::from_str(other);
+        self + String::from_str(other)
     }
 }
 
@@ -438,20 +438,20 @@ impl Add<char> for String {
     type Output = String;
     fn add(mut self, other: char) -> String {
         self.vec.push(other);
-        return self;
+        self
     }
 }
 
 impl Add<usize> for String {
     type Output = String;
     fn add(self, other: usize) -> String {
-        return self + String::from_num(other);
+        self + String::from_num(other)
     }
 }
 
 impl Add<isize> for String {
     type Output = String;
     fn add(self, other: isize) -> String {
-        return self + String::from_num_signed(other);
+        self + String::from_num_signed(other)
     }
 }

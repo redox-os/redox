@@ -632,5 +632,5 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         }
     }
 
-    return eax;
+    eax
 }

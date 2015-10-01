@@ -9,8 +9,8 @@ use syscall::call::*;
 static mut _args: *mut Vec<String> = 0 as *mut Vec<String>;
 
 pub fn args<'a>() -> &'a Vec<String> {
-    unsafe{
-        return & *_args;
+    unsafe {
+        & *_args
     }
 }
 

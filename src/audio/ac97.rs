@@ -20,15 +20,15 @@ struct AC97Resource {
 
 impl Resource for AC97Resource {
     fn url(&self) -> URL {
-        return URL::from_str("audio://");
+        URL::from_str("audio://")
     }
 
     fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+        ResourceType::File
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
+        Option::None
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -83,7 +83,7 @@ impl Resource for AC97Resource {
             let start_lvi;
             if lvi == 0 {
                 start_lvi = 31;
-            }else{
+            } else {
                 start_lvi = lvi - 1;
             }
 
@@ -109,7 +109,7 @@ impl Resource for AC97Resource {
                 dl();
 
                 let bytes = min(65534 * 2, (buf.len() - position + 1));
-                let samples = bytes/2;
+                let samples = bytes / 2;
 
                 ptr::write(bdl.offset(lvi as isize), BD {
                     ptr: buf.as_ptr().offset(position as isize) as u32,
@@ -153,15 +153,15 @@ impl Resource for AC97Resource {
             dl();
         }
 
-        return Option::Some(buf.len());
+        Option::Some(buf.len())
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        Option::None
     }
 
     fn flush(&mut self) -> bool {
-        return false;
+        false
     }
 }
 
@@ -173,23 +173,23 @@ pub struct AC97 {
 
 impl SessionItem for AC97 {
     fn scheme(&self) -> String {
-        return "audio".to_string();
+        "audio".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box AC97Resource {
+        box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master
-        };
+        }
     }
 
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("AC97 IRQ\n");
         }
     }
 
-    fn on_poll(&mut self){
+    fn on_poll(&mut self) {
     }
 }
 
@@ -205,7 +205,7 @@ impl AC97 {
 
         module.init();
 
-        return module;
+        module
     }
 
     pub unsafe fn init(&self){

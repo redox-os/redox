@@ -18,13 +18,13 @@ use syscall::call::*;
 static mut window: *mut Box<ConsoleWindow> = 0 as *mut Box<ConsoleWindow>;
 
 pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
-    unsafe{
+    unsafe {
         if window as usize == 0 {
             window = sys_alloc(size_of::<Box<ConsoleWindow>>()) as *mut Box<ConsoleWindow>;
             ptr::write(window, ConsoleWindow::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Console".to_string()));
             (*window).redraw();
         }
-        return &mut *window;
+        &mut *window
     }
 }
 
@@ -87,18 +87,18 @@ pub struct ConsoleWindow {
 
 impl ConsoleWindow {
     pub fn new(point: Point, size: Size, title: String) -> Box<ConsoleWindow> {
-        return box ConsoleWindow {
+        box ConsoleWindow {
             window: Window::new(point, size, title),
             output: Vec::new(),
             command: String::new(),
             offset: 0,
             scroll: Point::new(0, 0),
             wrap: true
-        };
+        }
     }
 
     pub fn poll(&mut self) -> EventOption {
-        return self.window.poll();
+        self.window.poll()
     }
 
     pub fn print(&mut self, string: &String, color: Color){
