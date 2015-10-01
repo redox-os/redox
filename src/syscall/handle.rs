@@ -57,12 +57,11 @@ pub unsafe fn do_sys_debug(byte: u8) {
         }
     }
 
-    loop {
-        if inb(0x3F8 + 5) & 0x20 == 0x20 {
-            break;
-        }
-    }
-    outb(0x3F8, byte);
+    let serial_status = PIO8::new(0x3F8 + 5);
+    while serial_status.read() & 0x20 == 0 {}
+
+    let mut serial_data = PIO8::new(0x3F8);
+    serial_data.write(byte);
 
     end_no_ints(reenable);
 }
