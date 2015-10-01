@@ -54,8 +54,7 @@ pub struct MouseEvent {
     pub y: isize,
     pub left_button: bool,
     pub right_button: bool,
-    pub middle_button: bool,
-    pub valid: bool
+    pub middle_button: bool
 }
 
 impl MouseEvent {
@@ -78,8 +77,7 @@ impl MouseEvent {
             y: event.b,
             left_button: event.c > 0,
             middle_button: event.d > 0,
-            right_button: event.e > 0,
-            valid: true
+            right_button: event.e > 0
         }
     }
 
