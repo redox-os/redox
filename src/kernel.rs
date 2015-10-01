@@ -17,20 +17,16 @@
 
 extern crate alloc;
 
-use audio::wav::*;
-
-use core::fmt;
-
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
-use common::pio::*;
 use common::scheduler::*;
 
 use drivers::disk::*;
 use drivers::keyboard::keyboard_init;
 use drivers::mouse::mouse_init;
 use drivers::pci::*;
+use drivers::pio::*;
 use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
@@ -52,13 +48,11 @@ use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::pci::*;
 use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
 
-use syscall::common::*;
 use syscall::handle::*;
 
 mod audio {
@@ -76,8 +70,6 @@ mod common {
     pub mod memory;
     pub mod mutex;
     pub mod paging;
-    pub mod pci;
-    pub mod pio;
     pub mod random;
     pub mod resource;
     pub mod scheduler;
@@ -89,8 +81,11 @@ mod common {
 mod drivers {
     pub mod disk;
     pub mod keyboard;
+    pub mod mmio;
     pub mod mouse;
     pub mod pci;
+    pub mod pciconfig;
+    pub mod pio;
     pub mod ps2;
     pub mod rtc;
     pub mod serial;
@@ -135,10 +130,8 @@ mod schemes {
     pub mod file;
     pub mod http;
     pub mod icmp;
-    pub mod ide;
     pub mod ip;
     pub mod memory;
-    pub mod pci;
     pub mod random;
     pub mod tcp;
     pub mod time;
@@ -303,14 +296,14 @@ unsafe fn redraw_loop() -> ! {
 }
 
 pub unsafe fn debug_init(){
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x80);
-    outb(0x3F8 + 0, 0x03);
-    outb(0x3F8 + 1, 0x00);
-    outb(0x3F8 + 3, 0x03);
-    outb(0x3F8 + 2, 0xC7);
-    outb(0x3F8 + 4, 0x0B);
-    outb(0x3F8 + 1, 0x01);
+    PIO8::new(0x3F8 + 1).write(0x00);
+    PIO8::new(0x3F8 + 3).write(0x80);
+    PIO8::new(0x3F8 + 0).write(0x03);
+    PIO8::new(0x3F8 + 1).write(0x00);
+    PIO8::new(0x3F8 + 3).write(0x03);
+    PIO8::new(0x3F8 + 2).write(0xC7);
+    PIO8::new(0x3F8 + 4).write(0x0B);
+    PIO8::new(0x3F8 + 1).write(0x01);
 }
 
 unsafe fn test_disk(disk: Disk){
@@ -370,7 +363,7 @@ unsafe fn init(font_data: usize){
     debug_command = alloc_type();
     ptr::write(debug_command, String::new());
 
-    clock_realtime.secs = rtc_read();
+    clock_realtime = RTC::new().time();
 
     contexts_ptr = alloc_type();
     ptr::write(contexts_ptr, Vec::new());
@@ -387,7 +380,7 @@ unsafe fn init(font_data: usize){
     keyboard_init();
     mouse_init();
 
-    session.items.push(box PS2);
+    session.items.push(box PS2::new());
     session.items.push(box Serial::new(0x3F8, 0x4));
 
     pci_init(session);
@@ -411,7 +404,6 @@ unsafe fn init(font_data: usize){
     });
     session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
-    session.items.push(box PCIScheme);
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
 
@@ -574,10 +566,10 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
     if interrupt >= 0x20 && interrupt < 0x30 {
         if interrupt >= 0x28 {
-            outb(0xA0, 0x20);
+            PIO8::new(0xA0).write(0x20);
         }
 
-        outb(0x20, 0x20);
+        PIO8::new(0x20).write(0x20);
     }
 
     match interrupt {

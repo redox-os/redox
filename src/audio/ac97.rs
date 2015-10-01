@@ -1,9 +1,9 @@
-use core::ptr::{read, write};
+use core::ptr::write;
 
 use common::memory::*;
-use common::pci::*;
-use common::pio::*;
-use common::scheduler::*;
+
+use drivers::pciconfig::*;
+use drivers::pio::*;
 
 use programs::common::*;
 
@@ -194,28 +194,24 @@ impl SessionItem for AC97 {
 }
 
 impl AC97 {
-    pub unsafe fn new(bus: usize, slot: usize, func: usize) -> Box<AC97> {
-        pci_write(bus, slot, func, 0x04, pci_read(bus, slot, func, 0x04) | (1 << 2)); // Bus mastering
+    pub unsafe fn new(mut pci: PCIConfig) -> Box<AC97> {
+        pci.flag(4, 4, true); // Bus mastering
 
         let mut module = box AC97 {
-            audio: pci_read(bus, slot, func, 0x10) & 0xFFFFFFF0,
-            bus_master: pci_read(bus, slot, func, 0x14) & 0xFFFFFFF0,
-            irq: pci_read(bus, slot, func, 0x3C) as u8 & 0xF
+            audio: pci.read(0x10) as usize & 0xFFFFFFF0,
+            bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
+            irq: pci.read(0x3C) as u8 & 0xF
         };
 
-        module.init();
-
-        return module;
-    }
-
-    pub unsafe fn init(&self){
         d("AC97 on: ");
-        dh(self.audio);
+        dh(module.audio);
         d(", ");
-        dh(self.bus_master);
+        dh(module.bus_master);
         d(", IRQ: ");
-        dbh(self.irq);
+        dbh(module.irq);
 
         dl();
+
+        return module;
     }
 }

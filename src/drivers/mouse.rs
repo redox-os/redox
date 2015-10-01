@@ -1,5 +1,6 @@
 use common::event::*;
-use common::pio::*;
+
+use drivers::pio::*;
 
 static mut mouse_cycle: usize = 0;
 static mut mouse_byte: [u8; 3] = [0, 0, 0];

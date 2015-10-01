@@ -1,6 +1,7 @@
 use common::memory::*;
-use common::pci::*;
 use common::scheduler::*;
+
+use drivers::pciconfig::*;
 
 use network::common::*;
 use network::scheme::*;
@@ -92,9 +93,7 @@ struct TD {
     const TD_DD: u8 = 1;
 
 pub struct Intel8254x {
-    pub bus: usize,
-    pub slot: usize,
-    pub func: usize,
+    pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
@@ -288,7 +287,7 @@ impl Intel8254x {
         }
     }
 
-    pub unsafe fn init(&self){
+    pub unsafe fn init(&mut self){
         d("Intel 8254x on: ");
         dh(self.base);
         if self.memory_mapped {
@@ -299,7 +298,7 @@ impl Intel8254x {
         d(", IRQ: ");
         dbh(self.irq);
 
-        pci_write(self.bus, self.slot, self.func, 0x04, pci_read(self.bus, self.slot, self.func, 0x04) | (1 << 2)); // Bus mastering
+        self.pci.flag(4, 4, true); // Bus mastering
 
         //Enable auto negotiate, link, clear reset, do not Invert Loss-Of Signal
         self.flag(CTRL, CTRL_ASDE | CTRL_SLU, true);
