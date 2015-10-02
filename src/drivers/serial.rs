@@ -7,7 +7,7 @@ pub struct Serial {
     pub status: PIO8,
     pub irq: u8,
     pub escape: bool,
-    pub cursor_control: bool
+    pub cursor_control: bool,
 }
 
 impl Serial {
@@ -17,7 +17,7 @@ impl Serial {
             status: PIO8::new(port + 5),
             irq: irq,
             escape: false,
-            cursor_control: false
+            cursor_control: false,
         }
     }
 }
@@ -35,7 +35,7 @@ impl SessionItem for Serial {
             if self.escape {
                 self.escape = false;
 
-                if c == '['{
+                if c == '[' {
                     self.cursor_control = true;
                 }
 
@@ -54,12 +54,12 @@ impl SessionItem for Serial {
                 }
 
                 c = '\0';
-            }else if c == '\x1B' {
+            } else if c == '\x1B' {
                 self.escape = true;
                 c = '\0';
-            }else if c == '\r' {
+            } else if c == '\r' {
                 c = '\n';
-            }else if c == '\x7F' {
+            } else if c == '\x7F' {
                 sc = K_BKSP;
                 c = '\0';
             }
@@ -68,8 +68,9 @@ impl SessionItem for Serial {
                 KeyEvent {
                     character: c,
                     scancode: sc,
-                    pressed: true
-                }.trigger();
+                    pressed: true,
+                }
+                    .trigger();
             }
         }
     }

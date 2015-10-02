@@ -8,17 +8,20 @@ pub struct Sprite {
     cols: usize,
     rows: usize,
     col: usize,
-    row: usize
+    row: usize,
 }
 
 impl Sprite {
-    pub fn draw(&self, content: &Display){
+    pub fn draw(&self, content: &Display) {
         self.image.draw(content, self.point);
     }
 }
 
-pub fn main(){
-    let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Example Game (Loading)".to_string());
+pub fn main() {
+    let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
+                                            (rand() % 300 + 50) as isize),
+                                 Size::new(640, 480),
+                                 "Example Game (Loading)".to_string());
     window.redraw();
 
     let mut audio = File::open(&"audio://".to_string());
@@ -34,7 +37,7 @@ pub fn main(){
             cols: 2,
             rows: 8,
             col: 0,
-            row: 0
+            row: 0,
         };
     }
 
@@ -61,7 +64,7 @@ pub fn main(){
                             K_ESC => {
                                 running = false;
                                 break;
-                            },
+                            }
                             K_DEL => {
                                 window.title = "Example Game (Screaming)".to_string();
                                 window.redraw();
@@ -70,8 +73,8 @@ pub fn main(){
 
                                 window.title = "Example Game".to_string();
                                 window.redraw();
-                            },
-                            _ => ()
+                            }
+                            _ => (),
                         }
 
                         let mut found = false;
@@ -81,10 +84,10 @@ pub fn main(){
                                 break;
                             }
                         }
-                        if ! found {
+                        if !found {
                             keys.push(key_event.scancode);
                         }
-                    }else{
+                    } else {
                         let mut i = 0;
                         while i < keys.len() {
                             let mut remove = false;
@@ -95,24 +98,26 @@ pub fn main(){
                             }
                             if remove {
                                 keys.remove(i);
-                            }else{
+                            } else {
                                 i += 1;
                             }
                         }
                     }
-                },
+                }
                 EventOption::None => break,
-                _ => ()
+                _ => (),
             }
         }
 
         for key in keys.iter() {
             match *key {
                 K_LEFT => player.point.x = max(0, player.point.x - 1),
-                K_RIGHT => player.point.x = min(window.content.width as isize - 1, player.point.x + 1),
+                K_RIGHT => player.point.x = min(window.content.width as isize - 1,
+                                                player.point.x + 1),
                 K_UP => player.point.y = max(0, player.point.y - 1),
-                K_DOWN => player.point.y = min(window.content.height as isize - 1, player.point.y + 1),
-                _ => ()
+                K_DOWN => player.point.y = min(window.content.height as isize - 1,
+                                               player.point.y + 1),
+                _ => (),
             }
         }
 
@@ -125,7 +130,7 @@ pub fn main(){
 
         window.redraw();
 
-        Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+        Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
     }
 
     window.title = "Example Game (Closing)".to_string();

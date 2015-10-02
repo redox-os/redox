@@ -20,6 +20,8 @@ impl SessionItem for ContextScheme {
             end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_str("context://"), ResourceType::File, ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8());
+        return box VecResource::new(URL::from_str("context://"),
+                                    ResourceType::File,
+                                    ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8());
     }
 }

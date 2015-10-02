@@ -13,7 +13,7 @@ use common::vec::*;
 pub enum ResourceSeek {
     Start(usize),
     Current(isize),
-    End(isize)
+    End(isize),
 }
 
 /// A resource type
@@ -22,7 +22,7 @@ pub enum ResourceType {
     None,
     Array,
     Dir,
-    File
+    File,
 }
 
 /// A system resource
@@ -72,15 +72,13 @@ pub trait Resource {
 
 /// An URL, see wiki
 pub struct URL {
-    pub string: String
+    pub string: String,
 }
 
 impl URL {
     /// Create a new empty URL
     pub fn new() -> URL {
-        URL {
-            string: String::new()
-        }
+        URL { string: String::new() }
     }
 
     /// Create an URL from a string literal
@@ -90,9 +88,7 @@ impl URL {
 
     /// Create an URL from `String`
     pub fn from_string(url_string: &String) -> URL {
-        URL {
-            string: url_string.clone()
-        }
+        URL { string: url_string.clone() }
     }
 
     /// Convert to string
@@ -123,16 +119,16 @@ impl URL {
         for part in self.string.split("/".to_string()) {
             match part_i {
                 0 => {
-                        let scheme_part_i = 0;
-                        for scheme_part in part.split(":".to_string()) {
-                            match scheme_part_i {
-                                0 => return scheme_part,
-                                _ => break
-                            }
-                            scheme_part_i += 1;
+                    let scheme_part_i = 0;
+                    for scheme_part in part.split(":".to_string()) {
+                        match scheme_part_i {
+                            0 => return scheme_part,
+                            _ => break,
                         }
-                },
-                _ => break
+                        scheme_part_i += 1;
+                    }
+                }
+                _ => break,
             }
             part_i += 1;
         }
@@ -158,13 +154,13 @@ impl URL {
                             match host_part_i {
                                 0 => match host_subpart_i {
                                     0 => username = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
                                 1 => match host_subpart_i {
                                     0 => host = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
-                                _ => ()
+                                _ => (),
                             }
                             host_subpart_i += 1;
                         }
@@ -173,8 +169,8 @@ impl URL {
                     if host_part_i == 1 {
                         swap(&mut host, &mut username);
                     }
-                },
-                _ => break
+                }
+                _ => break,
             }
             part_i += 1;
         }
@@ -201,13 +197,13 @@ impl URL {
                             match host_part_i {
                                 0 => match host_subpart_i {
                                     1 => password = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
                                 1 => match host_subpart_i {
                                     1 => port = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
-                                _ => ()
+                                _ => (),
                             }
                             host_subpart_i += 1;
                         }
@@ -216,8 +212,8 @@ impl URL {
                     if host_part_i == 1 {
                         swap(&mut port, &mut password);
                     }
-                },
-                _ => break
+                }
+                _ => break,
             }
             part_i += 1;
         }
@@ -243,13 +239,13 @@ impl URL {
                             match host_part_i {
                                 0 => match host_subpart_i {
                                     0 => username = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
                                 1 => match host_subpart_i {
                                     0 => host = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
-                                _ => ()
+                                _ => (),
                             }
                             host_subpart_i += 1;
                         }
@@ -258,8 +254,8 @@ impl URL {
                     if host_part_i == 1 {
                         swap(&mut host, &mut username);
                     }
-                },
-                _ => break
+                }
+                _ => break,
             }
             part_i += 1;
         }
@@ -285,13 +281,13 @@ impl URL {
                             match host_part_i {
                                 0 => match host_subpart_i {
                                     1 => password = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
                                 1 => match host_subpart_i {
                                     1 => port = host_subpart,
-                                    _ => ()
+                                    _ => (),
                                 },
-                                _ => ()
+                                _ => (),
                             }
                             host_subpart_i += 1;
                         }
@@ -300,8 +296,8 @@ impl URL {
                     if host_part_i == 1 {
                         swap(&mut port, &mut password);
                     }
-                },
-                _ => break
+                }
+                _ => break,
             }
             part_i += 1;
         }
@@ -320,7 +316,7 @@ impl URL {
                 1 => (),
                 2 => (),
                 3 => path = part,
-                _ => path = path + "/" + part
+                _ => path = path + "/" + part,
             }
             part_i += 1;
         }
@@ -343,7 +339,7 @@ impl URL {
                 0 => (),
                 1 => (),
                 2 => (),
-                _ => path_parts.push(part)
+                _ => path_parts.push(part),
             }
             part_i += 1;
         }
@@ -354,9 +350,7 @@ impl URL {
 
 impl Clone for URL {
     fn clone(&self) -> URL {
-        URL {
-            string: self.string.clone()
-        }
+        URL { string: self.string.clone() }
     }
 }
 
@@ -392,7 +386,7 @@ pub struct VecResource {
     url: URL,
     resource_type: ResourceType,
     vec: Vec<u8>,
-    seek: usize
+    seek: usize,
 }
 
 impl VecResource {
@@ -401,7 +395,7 @@ impl VecResource {
             url: url,
             resource_type: resource_type,
             vec: vec,
-            seek: 0
+            seek: 0,
         };
     }
 
@@ -424,7 +418,7 @@ impl Resource for VecResource {
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
                 Option::Some(b) => buf[i] = *b,
-                Option::None => ()
+                Option::None => (),
             }
             self.seek += 1;
             i += 1;
@@ -450,8 +444,11 @@ impl Resource for VecResource {
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = min(self.vec.len(), offset),
-            ResourceSeek::Current(offset) => self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
-            ResourceSeek::End(offset) => self.seek = max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize
+            ResourceSeek::Current(offset) =>
+                self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
+            ResourceSeek::End(offset) =>
+                self.seek =
+                    max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
         }
         return Option::Some(self.seek);
     }

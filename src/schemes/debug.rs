@@ -34,7 +34,7 @@ impl Resource for DebugResource {
             while i < buf.len() {
                 match (*::debug_command).vec.remove(0) {
                     Option::Some(c) => buf[i] = c as u8,
-                    Option::None => break
+                    Option::None => break,
                 }
                 i += 1;
             }
@@ -70,7 +70,7 @@ impl SessionItem for DebugScheme {
         return "debug".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         return box DebugResource;
     }
 }

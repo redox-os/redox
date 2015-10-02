@@ -6,7 +6,7 @@ pub struct PCIConfig {
     slot: u8,
     func: u8,
     addr: PIO32,
-    data: PIO32
+    data: PIO32,
 }
 
 impl PCIConfig {
@@ -16,16 +16,13 @@ impl PCIConfig {
             slot: slot,
             func: func,
             addr: PIO32::new(0xCF8),
-            data: PIO32::new(0xCFC)
+            data: PIO32::new(0xCFC),
         };
     }
 
     fn address(&self, offset: u8) -> u32 {
-        return 1 << 31
-            | (self.bus as u32) << 16
-            | (self.slot as u32) << 11
-            | (self.func as u32) << 8
-            | (offset as u32 & 0xFC);
+        return 1 << 31 | (self.bus as u32) << 16 | (self.slot as u32) << 11 |
+               (self.func as u32) << 8 | (offset as u32 & 0xFC);
     }
 
     pub unsafe fn read(&mut self, offset: u8) -> u32 {

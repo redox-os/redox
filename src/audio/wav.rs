@@ -6,7 +6,7 @@ pub struct WAV {
     pub channels: u16,
     pub sample_rate: u32,
     pub sample_bits: u16,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl WAV {
@@ -15,7 +15,7 @@ impl WAV {
             channels: 0,
             sample_rate: 0,
             sample_bits: 0,
-            data: Vec::new()
+            data: Vec::new(),
         }
     }
 
@@ -25,16 +25,15 @@ impl WAV {
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
                 Option::Some(byte) => *byte,
-                Option::None => 0
+                Option::None => 0,
             }
         };
 
-        let getw = |i: usize| -> u16 {
-            (get(i) as u16) + ((get(i + 1) as u16) << 8)
-        };
+        let getw = |i: usize| -> u16 { (get(i) as u16) + ((get(i + 1) as u16) << 8) };
 
         let getd = |i: usize| -> u32 {
-            (get(i) as u32) + ((get(i + 1) as u32) << 8) + ((get(i + 2) as u32) << 16) + ((get(i + 3) as u32) << 24)
+            (get(i) as u32) + ((get(i + 1) as u32) << 8) + ((get(i + 2) as u32) << 16) +
+            ((get(i + 3) as u32) << 24)
         };
 
         let gets = |start: usize, len: usize| -> String {
