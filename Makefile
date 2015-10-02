@@ -75,6 +75,9 @@ help:
 	@echo "    make qemu_no_kvm"
 	@echo "        Build Redox and run it inside Qemu machine without KVM support."
 	@echo
+	@echo "    make apps"
+	@echo "        Build apps for Redox."
+	@echo
 	@echo "    make tests"
 	@echo "        Run tests on Redox."
 	@echo
@@ -87,10 +90,15 @@ all: build/harddrive.bin
 docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
 
+apps: apps/echo apps/editor apps/file_manager apps/httpd apps/game apps/player apps/terminal apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/linux_stdio
+
 tests: tests/success tests/failure
 
 clean:
 	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+
+apps/%:
+	@make --no-print-directory filesystem/apps/$*/$*.bin
 
 FORCE:
 
@@ -138,7 +146,18 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rl
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP -C -M intel -d $< > $@
 
-build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/editor/editor.bin filesystem/apps/file_manager/file_manager.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/player/player.bin filesystem/apps/terminal/terminal.bin filesystem/apps/viewer/viewer.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
+filesystem/apps/zfs/zfs.img:
+	dd if=/dev/zero of=$@ bs=256MB count=1
+	sudo losetup /dev/loop0 $@
+	-sudo zpool create redox_zfs /dev/loop0
+	-sudo zfs create redox_zfs/root
+	-sudo cp README.md /redox_zfs/root/
+	-sudo sync
+	-sudo zfs unmount redox_zfs/root
+	-sudo zpool destroy redox_zfs
+	sudo losetup -d /dev/loop0
+
+build/filesystem.gen: apps
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
