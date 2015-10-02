@@ -196,33 +196,41 @@ impl Resource for FileResource {
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
     // TODO: Allow reallocation
     fn flush(&mut self) -> bool {
-        let block_size = 512;
+        if self.dirty {
+            let block_size: usize = 512;
 
-        let mut pos: usize = 0;
-        for extent in &self.node.extents {
-            //Make sure it is a valid extent
-            if extent.block > 0 && extent.length > 0 {
-                let remaining = self.vec.len() - pos;
+            let mut pos: isize = 0;
+            let mut remaining = self.vec.len() as isize;
+            for extent in &self.node.extents {
+                //Make sure it is a valid extent
+                if extent.block > 0 && extent.length > 0 {
+                    let current_sectors = (extent.length as usize + block_size - 1)/block_size;
+                    let max_size = current_sectors * 512;
 
-                let current_sectors = (extent.length as usize + block_size - 1)/block_size;
-                let max_size = current_sectors * 512;
+                    let size = min(remaining as usize, max_size);
+                    let sectors = (size + block_size - 1)/block_size;
 
-                let size = min(remaining, max_size);
-                let sectors = (size + block_size - 1)/block_size;
+                    unsafe {
+                        let mem_to_write = self.vec.as_ptr().offset(pos) as usize;
+                        //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
+                        let bytes_written = self.disk.write(extent.block,
+                                    sectors as u16,
+                                    mem_to_write as usize);
+                    }
 
-                unsafe {
-                    let mem_to_write = self.vec.as_ptr().offset(pos as isize) as usize;
-                    //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
-                    let bytes_written = self.disk.write(extent.block,
-                                ((size + 511)/512) as u16,
-                                mem_to_write as usize);
+                    pos += size as isize;
+                    remaining -= size as isize;
                 }
-
-                pos += size;
             }
-        }
-        if pos + 1 < self.vec.len() {
-            d("Need to reallocate file\n");
+
+            self.dirty = false;
+
+            if remaining > 0 {
+                d("Need to reallocate file, extra: ");
+                ds(remaining);
+                dl();
+                return false;
+            }
         }
         return true;
     }
