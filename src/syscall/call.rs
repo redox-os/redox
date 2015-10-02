@@ -39,6 +39,14 @@ pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd as u32, 0, 0) as usize
 }
 
+pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
+    syscall(SYS_LSEEK, fd as u32, offset as u32, whence as u32) as usize
+}
+
+pub unsafe fn sys_fsync(fd: usize) -> usize {
+    syscall(SYS_FSYNC, fd as u32, 0, 0) as usize
+}
+
 pub unsafe fn sys_time(time_ptr: *mut Duration, realtime: bool) {
     syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
 }
