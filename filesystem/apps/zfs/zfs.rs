@@ -30,8 +30,10 @@ impl ZFS {
 pub fn main() {
     console_title(&"ZFS".to_string());
 
-    println!("Opening ZFS Image".to_string());
-    let mut zfs = ZFS::new(File::open(&"zfs.img".to_string()));
+    println!("Type open zfs.img to open the image file".to_string());
+    println!("This may take up to 30 seconds".to_string());
+
+    let mut zfs_option: Option<ZFS> = Option::None;
 
     while let Option::Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
@@ -42,31 +44,52 @@ pub fn main() {
         if let Option::Some(command) = args.get(0) {
             println!("# ".to_string() + line);
 
-            if *command == "list".to_string() {
-                print_color!("List volumes\n".to_string(), Color::new(127, 255, 127));
-            } else if *command == "dump".to_string() || *command == "d".to_string() {
-                match args.get(1) {
-                    Option::Some(arg) => {
-                        let block = arg.to_num();
-                        print_color!("Dump block:".to_string() + block, Color::new(127, 255, 127));
+            let mut close = false;
+            match zfs_option {
+                Option::Some(ref mut zfs) => {
+                    if *command == "list".to_string() {
+                        print_color!("List volumes\n".to_string(), Color::new(127, 255, 127));
+                    } else if *command == "dump".to_string() {
+                        match args.get(1) {
+                            Option::Some(arg) => {
+                                let block = arg.to_num();
+                                print_color!("Dump block:".to_string() + block, Color::new(127, 255, 127));
 
-                        let data = zfs.read(block);
-                        for i in 0..data.len() {
-                            if i % 32 == 0 {
-                                print!("\n".to_string() + String::from_num_radix(i, 16) + ":");
-                            }
-                            print!(" ".to_string() + String::from_num_radix(data[i] as usize, 16));
+                                let data = zfs.read(block);
+                                for i in 0..data.len() {
+                                    if i % 32 == 0 {
+                                        print!("\n".to_string() + String::from_num_radix(i, 16) + ":");
+                                    }
+                                    print!(" ".to_string() + String::from_num_radix(data[i] as usize, 16));
+                                }
+                                print!("\n".to_string());
+                            },
+                            Option::None => print_color!("No block specified!\n".to_string(), Color::new(255, 127, 127))
                         }
-                        print!("\n".to_string());
-                    },
-                    Option::None => print_color!("No block specified!\n".to_string(), Color::new(255, 127, 127))
+                    }else if *command == "close".to_string() {
+                        print_color!("Closing\n".to_string(), Color::new(255, 127, 127));
+                        close = true;
+                    } else {
+                        print_color!("Commands: list dump close\n".to_string(), Color::new(127, 127, 255));
+                    }
+                },
+                Option::None => {
+                    if *command == "open".to_string() {
+                        match args.get(1) {
+                            Option::Some(arg) => {
+                                print_color!("Open: ".to_string() + arg.clone() + "\n", Color::new(127, 255, 127));
+                                zfs_option = Option::Some(ZFS::new(File::open(arg)));
+                            },
+                            Option::None => print_color!("No file specified!\n".to_string(), Color::new(255, 127, 127))
+                        }
+                    }else{
+                        print_color!("Commands: open\n".to_string(), Color::new(127, 127, 255));
+                    }
                 }
-            } else {
-                print_color!("Commands: list\n".to_string(), Color::new(127, 127, 255));
+            }
+            if close {
+                zfs_option = Option::None;
             }
         }
     }
-
-    println!("Closing ZFS Image".to_string());
-    drop(zfs);
 }
