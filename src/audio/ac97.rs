@@ -34,37 +34,36 @@ impl Resource for AC97Resource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let audio = self.audio as u16;
-            let master_volume = audio + 2;
-            let pcm_volume = audio + 0x18;
 
-            outw(master_volume, 0x808);
-            outw(pcm_volume, 0x808);
+            let mut master_volume = PIO16::new(audio + 2);
+            let mut pcm_volume = PIO16::new(audio + 0x18);
+
+            master_volume.write(0x808);
+            pcm_volume.write(0x808);
 
             let bus_master = self.bus_master as u16;
 
-            let po_bdbar = bus_master + 0x10;
-            let po_civ = bus_master + 0x14;
-            let po_lvi = bus_master + 0x15;
-            let po_sr = bus_master + 0x16;
-            let po_picb = bus_master + 0x18;
-            let po_piv = bus_master + 0x1A;
-            let po_cr = bus_master + 0x1B;
-            let glob_cnt = bus_master + 0x2C;
-            let glob_sta = bus_master + 0x30;
+            let mut po_bdbar = PIO32::new(bus_master + 0x10);
+            let po_civ = PIO8::new(bus_master + 0x14);
+            let mut po_lvi = PIO8::new(bus_master + 0x15);
+            let po_sr = PIO16::new(bus_master + 0x16);
+            let po_picb = PIO16::new(bus_master + 0x18);
+            let po_piv = PIO8::new(bus_master + 0x1A);
+            let mut po_cr = PIO8::new(bus_master + 0x1B);
 
             loop {
-                if inb(po_cr) & 1 == 0 {
+                if po_cr.read() & 1 == 0 {
                     break;
                 }
                 Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             }
 
-            outb(po_cr, 0);
+            po_cr.write(0);
 
-            let mut bdl = ind(po_bdbar) as *mut BD;
+            let mut bdl = po_bdbar.read() as *mut BD;
             if bdl as usize == 0 {
                 bdl = alloc(32 * size_of::<BD>()) as *mut BD;
-                outd(po_bdbar, bdl as u32);
+                po_bdbar.write(bdl as u32);
             }
 
             for i in 0..32 {
@@ -77,8 +76,7 @@ impl Resource for AC97Resource {
             let mut wait = false;
             let mut position = 0;
 
-
-            let mut lvi = inb(po_lvi);
+            let mut lvi = po_lvi.read();
 
             let start_lvi;
             if lvi == 0 {
@@ -93,12 +91,13 @@ impl Resource for AC97Resource {
             }
             loop {
                 while wait {
-                    if inb(po_civ) != lvi as u8 {
+                    if po_civ.read() != lvi as u8 {
                         break;
                     }
                     Duration::new(0, 10*NANOS_PER_MILLI).sleep();
                 }
 
+<<<<<<< HEAD
                 debug::dd(inb(po_civ) as usize);
                 debug::d(" / ");
                 debug::dd(lvi as usize);
@@ -107,6 +106,16 @@ impl Resource for AC97Resource {
                 debug::d(" / ");
                 debug::dd(buf.len());
                 debug::dl();
+=======
+                dd(po_civ.read() as usize);
+                d(" / ");
+                dd(lvi as usize);
+                d(": ");
+                dd(position);
+                d(" / ");
+                dd(buf.len());
+                dl();
+>>>>>>> upstream/master
 
                 let bytes = min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
@@ -129,28 +138,36 @@ impl Resource for AC97Resource {
                 }
 
                 if lvi == start_lvi {
-                    outb(po_lvi, start_lvi);
-                    outb(po_cr, 1);
+                    po_lvi.write(start_lvi);
+                    po_cr.write(1);
                     wait = true;
                 }
             }
 
-            outb(po_lvi, lvi);
-            outb(po_cr, 1);
+            po_lvi.write(lvi);
+            po_cr.write(1);
 
             loop {
-                if inb(po_civ) == lvi {
-                    outb(po_cr, 0);
+                if po_civ.read() == lvi {
+                    po_cr.write(0);
                     break;
                 }
                 Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             }
 
+<<<<<<< HEAD
             debug::d("Finished ");
             debug::dd(inb(po_civ) as usize);
             debug::d(" / ");
             debug::dd(lvi as usize);
             debug::dl();
+=======
+            d("Finished ");
+            dd(po_civ.read() as usize);
+            d(" / ");
+            dd(lvi as usize);
+            dl();
+>>>>>>> upstream/master
         }
 
         Option::Some(buf.len())

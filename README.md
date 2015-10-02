@@ -11,7 +11,7 @@ cd setup
 ```
 - Make the project
 ```bash
-make
+make all
 ```
 
 ## Running on Debian/Ubuntu
@@ -47,7 +47,7 @@ cd setup
 ```
 - Make the project
 ```bash
-make
+make all
 ```
 
 ## Running on OS X
@@ -63,7 +63,7 @@ make virtualbox
 - The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
 - Open the Rust nightly shell in the redox repository
 ```bash
-windows\make
+windows\make all
 ```
 
 ## Running on Windows
