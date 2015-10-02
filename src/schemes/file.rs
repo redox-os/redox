@@ -54,11 +54,11 @@ impl Node {
 
 impl Clone for Node {
     fn clone(&self) -> Node {
-        return Node {
+        Node {
             address: self.address,
             name: self.name.clone(),
             extents: self.extents,
-        };
+        }
     }
 }
 
@@ -218,11 +218,21 @@ impl Resource for FileResource {
                     }
 
                     unsafe {
-                        let mem_to_write = self.vec.as_ptr().offset(pos) as usize;
-                        //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
-                        let bytes_written = self.disk.write(extent.block,
-                                                            sectors as u16,
-                                                            mem_to_write as usize);
+                        let data = self.vec.as_ptr().offset(pos) as usize;
+                        //TODO: Make sure data is copied safely into an zeroed area of the right size!
+
+                        let mut sector: usize = 0;
+                        while sectors - sector >= 65536 {
+                            self.disk.read(extent.block + sector as u64,
+                                          65535,
+                                          data + sector * 512);
+                            sector += 65535;
+                        }
+                        if sector < sectors {
+                            self.disk.read(extent.block + sector as u64,
+                                          (sectors - sector) as u16,
+                                          data + sector * 512);
+                        }
                     }
 
                     pos += size as isize;
@@ -304,22 +314,34 @@ impl SessionItem for FileScheme {
                 Option::Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
                     //TODO: Handle more extents
-                    if node.extents[0].block > 0 && node.extents[0].length > 0 {
-                        unsafe {
-                            let data = alloc(node.extents[0].length as usize);
-                            if data > 0 {
-                                let reenable = start_no_ints();
+                    for extent in &node.extents {
+                        if extent.block > 0 && extent.length > 0 {
+                            unsafe {
+                                let data = alloc(extent.length as usize);
+                                if data > 0 {
+                                    let reenable = start_no_ints();
 
-                                self.fs.disk.read(node.extents[0].block,
-                                                  ((node.extents[0].length + 511)/512) as u16,
-                                                  data);
+                                    let sectors = (extent.length as usize + 511)/512;
+                                    let mut sector: usize = 0;
+                                    while sectors - sector >= 65536 {
+                                        self.fs.disk.read(extent.block + sector as u64,
+                                                      65535,
+                                                      data + sector * 512);
+                                        sector += 65535;
+                                    }
+                                    if sector < sectors {
+                                        self.fs.disk.read(extent.block + sector as u64,
+                                                      (sectors - sector) as u16,
+                                                      data + sector * 512);
+                                    }
 
-                                end_no_ints(reenable);
+                                    end_no_ints(reenable);
 
-                                vec = Vec {
-                                    data: data as *mut u8,
-                                    length: node.extents[0].length as usize,
-                                };
+                                    vec.push_all(&Vec {
+                                        data: data as *mut u8,
+                                        length: extent.length as usize,
+                                    });
+                                }
                             }
                         }
                     }
