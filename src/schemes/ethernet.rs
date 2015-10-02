@@ -77,8 +77,8 @@ impl Resource for EthernetResource {
         return Option::None;
     }
 
-    fn flush(&mut self) -> bool {
-        return self.network.flush();
+    fn sync(&mut self) -> bool {
+        return self.network.sync();
     }
 }
 

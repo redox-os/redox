@@ -196,7 +196,7 @@ impl Resource for FileResource {
     // TODO: Rename to sync
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
     // TODO: Allow reallocation
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         if self.dirty {
             let block_size: usize = 512;
 
@@ -249,7 +249,7 @@ impl Resource for FileResource {
 
 impl Drop for FileResource {
     fn drop(&mut self) {
-        self.flush();
+        self.sync();
     }
 }
 
