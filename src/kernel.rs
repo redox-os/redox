@@ -233,7 +233,7 @@ unsafe fn event_loop() -> ! {
                                             (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_ALL);
                                         },
                                         K_BKSP => if cmd.len() > 0 {
-                                            db(8);
+                                            debug::db(8);
                                             cmd.vec.pop();
                                         },
                                         _ => match key_event.character {
@@ -244,11 +244,11 @@ unsafe fn event_loop() -> ! {
                                                 end_no_ints(reenable);
 
                                                 cmd = String::new();
-                                                dl();
+                                                debug::dl();
                                             }
                                             _ => {
                                                 cmd.vec.push(key_event.character);
-                                                dc(key_event.character);
+                                                debug::dc(key_event.character);
                                             }
                                         }
                                     }
@@ -304,18 +304,18 @@ pub unsafe fn debug_init() {
 
 unsafe fn test_disk(disk: Disk) {
     if disk.identify() {
-        d(" Disk Found");
+        debug::d(" Disk Found");
 
         let fs = FileSystem::from_disk(disk);
         if fs.valid() {
-            d(" Redox Filesystem");
+            debug::d(" Redox Filesystem");
         } else {
-            d(" Unknown Filesystem");
+            debug::d(" Unknown Filesystem");
         }
     } else {
-        d(" Disk Not Found");
+        debug::d(" Disk Not Found");
     }
-    dl();
+    debug::dl();
 }
 
 unsafe fn init(font_data: usize) {
@@ -342,9 +342,9 @@ unsafe fn init(font_data: usize) {
 
     debug_init();
 
-    dd(size_of::<usize>() * 8);
-    d(" bits");
-    dl();
+    debug::dd(size_of::<usize>() * 8);
+    debug::d(" bits");
+    debug::dl();
 
     page_bootstrap();
     cluster_init();
@@ -378,16 +378,16 @@ unsafe fn init(font_data: usize) {
 
     pci_init(session);
 
-    d("Primary Master:");
+    debug::d("Primary Master:");
     test_disk(Disk::primary_master());
 
-    d("Primary Slave:");
+    debug::d("Primary Slave:");
     test_disk(Disk::primary_slave());
 
-    d("Secondary Master:");
+    debug::d("Secondary Master:");
     test_disk(Disk::secondary_master());
 
-    d("Secondary Slave:");
+    debug::d("Secondary Slave:");
     test_disk(Disk::secondary_slave());
 
     session.items.push(box ContextScheme);
@@ -463,10 +463,10 @@ unsafe fn init(font_data: usize) {
 }
 
 fn dr(reg: &str, value: u32) {
-    d(reg);
-    d(": ");
-    dh(value as usize);
-    dl();
+    debug::d(reg);
+    debug::d(": ");
+    debug::dh(value as usize);
+    debug::dl();
 }
 
 #[no_mangle]
@@ -474,8 +474,8 @@ fn dr(reg: &str, value: u32) {
 pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, mut eax: u32, eip: u32, eflags: u32, error: u32) -> u32 {
     macro_rules! exception {
         ($name:expr) => ({
-            d($name);
-            dl();
+            debug::d($name);
+            debug::dl();
 
             dr("CONTEXT", context_i as u32);
             dr("EFLAGS", eflags);
@@ -516,8 +516,8 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
     macro_rules! exception_error {
         ($name:expr) => ({
-            d($name);
-            dl();
+            debug::d($name);
+            debug::dl();
 
             dr("CONTEXT", context_i as u32);
             dr("EFLAGS", error);
@@ -611,9 +611,9 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x14 => exception!("Virtualization exception"),
         0x1E => exception_error!("Security exception"),
         _ => {
-            d("Interrupt: ");
-            dh(interrupt as usize);
-            dl();
+            debug::d("Interrupt: ");
+            debug::dh(interrupt as usize);
+            debug::dl();
         }
     }
 

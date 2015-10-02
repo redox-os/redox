@@ -22,7 +22,7 @@ impl Resource for EthernetResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        d("TODO: Implement read for ethernet://\n");
+        debug::d("TODO: Implement read for ethernet://\n");
         return Option::None;
     }
 
@@ -121,7 +121,7 @@ impl SessionItem for EthernetScheme {
                 }
             }
         } else {
-            d("Ethernet: No ethertype provided\n");
+            debug::d("Ethernet: No ethertype provided\n");
         }
 
         return box NoneResource;

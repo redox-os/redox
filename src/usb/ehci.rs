@@ -44,7 +44,7 @@ impl SessionItem for EHCI {
     #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //d("EHCI handle");
+            //debug::d("EHCI handle");
 
             unsafe {
                 let CAPLENGTH = self.base as *mut u8;
@@ -52,20 +52,20 @@ impl SessionItem for EHCI {
                 let opbase = self.base + read(CAPLENGTH) as usize;
 
                 let USBSTS = (opbase + 4) as *mut u32;
-                //d(" USBSTS ");
-                //dh(*USBSTS as usize);
+                //debug::d(" USBSTS ");
+                //debug::dh(*USBSTS as usize);
 
                 write(USBSTS, 0b111111);
 
-                //d(" USBSTS ");
-                //dh(*USBSTS as usize);
+                //debug::d(" USBSTS ");
+                //debug::dh(*USBSTS as usize);
 
                 //let FRINDEX = (opbase + 0xC) as *mut u32;
-                //d(" FRINDEX ");
-                //dh(*FRINDEX as usize);
+                //debug::d(" FRINDEX ");
+                //debug::dh(*FRINDEX as usize);
             }
 
-            //dl();
+            //debug::dl();
         }
     }
 }
@@ -73,15 +73,15 @@ impl SessionItem for EHCI {
 impl EHCI {
     #[allow(non_snake_case)]
     pub unsafe fn init(&mut self) {
-        d("EHCI on: ");
-        dh(self.base);
+        debug::d("EHCI on: ");
+        debug::dh(self.base);
         if self.memory_mapped {
-            d(" memory mapped");
+            debug::d(" memory mapped");
         } else {
-            d(" port mapped");
+            debug::d(" port mapped");
         }
-        d(" IRQ: ");
-        dbh(self.irq);
+        debug::d(" IRQ: ");
+        debug::dbh(self.irq);
 
         let pci = &mut self.pci;
 
@@ -91,40 +91,40 @@ impl EHCI {
         let HCSPARAMS = (self.base + 4) as *mut u32;
         let HCCPARAMS = (self.base + 8) as *mut u32;
 
-        d(" CAPLENGTH ");
-        dd(read(CAPLENGTH) as usize);
+        debug::d(" CAPLENGTH ");
+        debug::dd(read(CAPLENGTH) as usize);
 
-        d(" HCSPARAMS ");
-        dh(read(HCSPARAMS) as usize);
+        debug::d(" HCSPARAMS ");
+        debug::dh(read(HCSPARAMS) as usize);
 
-        d(" HCCPARAMS ");
-        dh(read(HCCPARAMS) as usize);
+        debug::d(" HCCPARAMS ");
+        debug::dh(read(HCCPARAMS) as usize);
 
         let ports = (read(HCSPARAMS) & 0b1111) as usize;
-        d(" PORTS ");
-        dd(ports);
+        debug::d(" PORTS ");
+        debug::dd(ports);
 
         let eecp = ((read(HCCPARAMS) >> 8) & 0xFF) as u8;
-        d(" EECP ");
-        dh(eecp as usize);
+        debug::d(" EECP ");
+        debug::dh(eecp as usize);
 
-        dl();
+        debug::dl();
 
         if eecp > 0 {
             if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 16) {
-                d("Taking Ownership");
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
+                debug::d("Taking Ownership");
+                    debug::d(" ");
+                    debug::dh(pci.read(eecp) as usize);
 
                     pci.flag(eecp, 1 << 24, true);
 
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
-                dl();
+                    debug::d(" ");
+                    debug::dh(pci.read(eecp) as usize);
+                debug::dl();
 
-                d("Waiting");
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
+                debug::d("Waiting");
+                    debug::d(" ");
+                    debug::dh(pci.read(eecp) as usize);
 
                     loop {
                         if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 24) {
@@ -132,9 +132,9 @@ impl EHCI {
                         }
                     }
 
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
-                dl();
+                    debug::d(" ");
+                    debug::dh(pci.read(eecp) as usize);
+                debug::dl();
             }
         }
 
@@ -151,148 +151,148 @@ impl EHCI {
         let PORTSC = (opbase + 0x44) as *mut u32;
 
         if read(USBSTS) & (1 << 12) == 0 {
-            d("Halting");
-                d(" CMD ");
-                dh(read(USBCMD) as usize);
+            debug::d("Halting");
+                debug::d(" CMD ");
+                debug::dh(read(USBCMD) as usize);
 
-                d(" STS ");
-                dh(read(USBSTS) as usize);
+                debug::d(" STS ");
+                debug::dh(read(USBSTS) as usize);
 
                 write(USBCMD, read(USBCMD) & 0xFFFFFFF0);
 
-                d(" CMD ");
-                dh(*USBCMD as usize);
+                debug::d(" CMD ");
+                debug::dh(*USBCMD as usize);
 
-                d(" STS ");
-                dh(*USBSTS as usize);
-            dl();
+                debug::d(" STS ");
+                debug::dh(*USBSTS as usize);
+            debug::dl();
 
-            d("Waiting");
+            debug::d("Waiting");
                 loop {
                     if volatile_load(USBSTS) & (1 << 12) == (1 << 12) {
                         break;
                     }
                 }
 
-                d(" CMD ");
-                dh(read(USBCMD) as usize);
+                debug::d(" CMD ");
+                debug::dh(read(USBCMD) as usize);
 
-                d(" STS ");
-                dh(read(USBSTS) as usize);
-            dl();
+                debug::d(" STS ");
+                debug::dh(read(USBSTS) as usize);
+            debug::dl();
         }
 
-        d("Resetting");
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        debug::d("Resetting");
+            debug::d(" CMD ");
+            debug::dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+            debug::d(" STS ");
+            debug::dh(read(USBSTS) as usize);
 
             write(USBCMD, read(USBCMD) | (1 << 1));
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+            debug::d(" CMD ");
+            debug::dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
-        dl();
+            debug::d(" STS ");
+            debug::dh(read(USBSTS) as usize);
+        debug::dl();
 
-        d("Waiting");
+        debug::d("Waiting");
             loop {
                 if volatile_load(USBCMD) & (1 << 1) == 0 {
                     break;
                 }
             }
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+            debug::d(" CMD ");
+            debug::dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
-        dl();
+            debug::d(" STS ");
+            debug::dh(read(USBSTS) as usize);
+        debug::dl();
 
-        d("Enabling");
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        debug::d("Enabling");
+            debug::d(" CMD ");
+            debug::dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+            debug::d(" STS ");
+            debug::dh(read(USBSTS) as usize);
 
             write(USBINTR, 0b111111);
 
             write(USBCMD, read(USBCMD) | 1);
             write(CONFIGFLAG, 1);
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+            debug::d(" CMD ");
+            debug::dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
-        dl();
+            debug::d(" STS ");
+            debug::dh(read(USBSTS) as usize);
+        debug::dl();
 
-        d("Waiting");
+        debug::d("Waiting");
             loop {
                 if volatile_load(USBSTS) & (1 << 12) == 0 {
                     break;
                 }
             }
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+            debug::d(" CMD ");
+            debug::dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
-        dl();
+            debug::d(" STS ");
+            debug::dh(read(USBSTS) as usize);
+        debug::dl();
 
         let disable = start_ints();
         Duration::new(0, 100*NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         for i in 0..ports as isize {
-            dd(i as usize);
-            d(": ");
-            dh(read(PORTSC.offset(i)) as usize);
-            dl();
+            debug::dd(i as usize);
+            debug::d(": ");
+            debug::dh(read(PORTSC.offset(i)) as usize);
+            debug::dl();
 
             if read(PORTSC.offset(i)) & 1 == 1 {
-                d("Device on port ");
-                    dd(i as usize);
-                    d(" ");
-                    dh(read(PORTSC.offset(i)) as usize);
-                dl();
+                debug::d("Device on port ");
+                    debug::dd(i as usize);
+                    debug::d(" ");
+                    debug::dh(read(PORTSC.offset(i)) as usize);
+                debug::dl();
 
                 if read(PORTSC.offset(i)) & (1 << 1) == (1 << 1) {
-                    d("Connection Change");
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    debug::d("Connection Change");
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
 
                         write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 1));
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
-                    dl();
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
+                    debug::dl();
                 }
 
                 if read(PORTSC.offset(i)) & (1 << 2) == 0 {
-                    d("Reset");
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    debug::d("Reset");
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
 
                         write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 8));
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
 
                         write(PORTSC.offset(i), read(PORTSC.offset(i)) & 0xFFFFFEFF);
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
-                    dl();
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
+                    debug::dl();
 
-                    d("Wait");
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    debug::d("Wait");
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
 
                         loop {
                             if volatile_load(PORTSC.offset(i)) & (1 << 8) == 0 {
@@ -302,15 +302,15 @@ impl EHCI {
                             }
                         }
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
-                    dl();
+                        debug::d(" ");
+                        debug::dh(read(PORTSC.offset(i)) as usize);
+                    debug::dl();
                 }
 
                 if read(PORTSC.offset(i)) & (1 << 2) == (1 << 2) {
-                    d("Port Enabled ");
-                    dh(read(PORTSC.offset(i)) as usize);
-                    dl();
+                    debug::d("Port Enabled ");
+                    debug::dh(read(PORTSC.offset(i)) as usize);
+                    debug::dl();
 
                     /*
                     let out_qtd = alloc(size_of::<QTD>()) as *mut QTD;
@@ -360,53 +360,53 @@ impl EHCI {
                         qtd: ptr::read(setup_qtd)
                     });
 
-                    d("Prepare");
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                    debug::d("Prepare");
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" PTR ");
-                        dh(queuehead as usize);
-                    dl();
+                        debug::d(" PTR ");
+                        debug::dh(queuehead as usize);
+                    debug::dl();
 
-                    d("Send");
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                    debug::d("Send");
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
 
                         *ASYNCLISTADDR = queuehead as u32;
 
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
 
                         *USBCMD |= (1 << 5);
 
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
 
                         *USBCMD |= 1;
 
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
-                    dl();
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
+                    debug::dl();
 
-                    d("Wait");
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                    debug::d("Wait");
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
-                        dl();
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
+                        debug::dl();
 
                         loop {
                             if *USBSTS & 0xA000  == 0 {
@@ -414,41 +414,41 @@ impl EHCI {
                             }
                         }
 
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
-                    dl();
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
+                    debug::dl();
 
-                    d("Stop");
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                    debug::d("Stop");
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
 
                         *USBCMD &= 0xFFFFFFFF - (1 << 5);
 
-                        d(" CMD ");
-                        dh(*USBCMD as usize);
+                        debug::d(" CMD ");
+                        debug::dh(*USBCMD as usize);
 
-                        d(" STS ");
-                        dh(*USBSTS as usize);
-                    dl();
+                        debug::d(" STS ");
+                        debug::dh(*USBSTS as usize);
+                    debug::dl();
 
                     d("Data");
                     for i in 0..64 {
-                        d(" ");
-                        dbh(*in_data.offset(i));
+                        debug::d(" ");
+                        debug::dbh(*in_data.offset(i));
                     }
-                    dl();
+                    debug::dl();
 
                     //Only detect one device for testing
                     break;
                     */
                 } else {
-                    d("Device not high-speed\n");
+                    debug::d("Device not high-speed\n");
                 }
             }
         }

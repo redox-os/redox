@@ -24,7 +24,7 @@ impl Resource for IPResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        d("TODO: Implement read for ip://\n");
+        debug::d("TODO: Implement read for ip://\n");
         return Option::None;
     }
 
@@ -162,7 +162,7 @@ impl SessionItem for IPScheme {
                                 Option::None => ()
                             }
                         },
-                        Option::None => d("IP: ARP Write Failed!\n")
+                        Option::None => debug::d("IP: ARP Write Failed!\n")
                     }
                 }
 
@@ -197,7 +197,7 @@ impl SessionItem for IPScheme {
                 }
             }
         } else {
-            d("IP: No protocol provided\n");
+            debug::d("IP: No protocol provided\n");
         }
 
         return box NoneResource;
