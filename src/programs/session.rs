@@ -3,6 +3,7 @@ use common::scheduler::*;
 use graphics::bmp::*;
 
 use programs::common::*;
+use programs::common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use programs::executor::*;
 use programs::package::*;
 
@@ -38,7 +39,7 @@ impl Session {
                 packages: Vec::new(),
                 windows: Vec::new(),
                 windows_ordered: Vec::new(),
-                redraw: REDRAW_ALL,
+                redraw: event::REDRAW_ALL,
             }
         }
     }
@@ -46,7 +47,7 @@ impl Session {
     pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window) {
         self.windows.push(add_window_ptr);
         self.windows_ordered.push(add_window_ptr);
-        self.redraw = max(self.redraw, REDRAW_ALL);
+        self.redraw = max(self.redraw, event::REDRAW_ALL);
     }
 
     pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
@@ -86,7 +87,7 @@ impl Session {
             }
         }
 
-        self.redraw = max(self.redraw, REDRAW_ALL);
+        self.redraw = max(self.redraw, event::REDRAW_ALL);
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
@@ -137,7 +138,7 @@ impl Session {
                 Option::Some(window_ptr) => {
                     unsafe {
                         (**window_ptr).on_key(key_event);
-                        self.redraw = max(self.redraw, REDRAW_ALL);
+                        self.redraw = max(self.redraw, event::REDRAW_ALL);
                     }
                 }
                 Option::None => (),
@@ -189,7 +190,7 @@ impl Session {
                                 Option::None => break,
                             }
                         }
-                        self.redraw = max(self.redraw, REDRAW_ALL);
+                        self.redraw = max(self.redraw, event::REDRAW_ALL);
                         break;
                     }
                     x += w as isize;
@@ -205,7 +206,7 @@ impl Session {
                             if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
                                 catcher = i as isize;
 
-                                self.redraw = max(self.redraw, REDRAW_ALL);
+                                self.redraw = max(self.redraw, event::REDRAW_ALL);
                             }
                         }
                     },
@@ -225,7 +226,7 @@ impl Session {
     }
 
     pub unsafe fn redraw(&mut self) {
-        if self.redraw > REDRAW_NONE {
+        if self.redraw > event::REDRAW_NONE {
             //if self.redraw >= REDRAW_ALL {
             self.display.set(Color::new(64, 64, 64));
             if self.background.data.len() > 0 {
@@ -324,7 +325,7 @@ impl Session {
             }
             */
 
-            self.redraw = REDRAW_NONE;
+            self.redraw = event::REDRAW_NONE;
 
             end_no_ints(reenable);
         }

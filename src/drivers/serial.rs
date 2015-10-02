@@ -44,13 +44,13 @@ impl SessionItem for Serial {
                 self.cursor_control = false;
 
                 if c == 'A' {
-                    sc = K_UP;
+                    sc = event::K_UP;
                 } else if c == 'B' {
-                    sc = K_DOWN;
+                    sc = event::K_DOWN;
                 } else if c == 'C' {
-                    sc = K_RIGHT;
+                    sc = event::K_RIGHT;
                 } else if c == 'D' {
-                    sc = K_LEFT;
+                    sc = event::K_LEFT;
                 }
 
                 c = '\0';
@@ -60,12 +60,12 @@ impl SessionItem for Serial {
             } else if c == '\r' {
                 c = '\n';
             } else if c == '\x7F' {
-                sc = K_BKSP;
+                sc = event::K_BKSP;
                 c = '\0';
             }
 
             if c != '\0' || sc != 0 {
-                KeyEvent {
+                event::KeyEvent {
                     character: c,
                     scancode: sc,
                     pressed: true,

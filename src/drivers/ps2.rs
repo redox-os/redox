@@ -1,6 +1,7 @@
 use drivers::pio::*;
 
 use programs::common::*;
+use programs::common::event::{KeyEvent, MouseEvent};
 
 pub struct PS2 {
     data: PIO8,

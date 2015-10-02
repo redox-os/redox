@@ -34,6 +34,7 @@ pub use externs::*;
 use graphics::bmp::*;
 
 use programs::common::*;
+use programs::common::event::{Event, EventOption};
 use programs::package::*;
 use programs::session::*;
 
@@ -228,11 +229,11 @@ unsafe fn event_loop() -> ! {
                             EventOption::Key(key_event) => {
                                 if key_event.pressed {
                                     match key_event.scancode {
-                                        K_F2 => {
+                                        event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_ALL);
+                                            (*::session_ptr).redraw = max((*::session_ptr).redraw, event::REDRAW_ALL);
                                         },
-                                        K_BKSP => if cmd.len() > 0 {
+                                        event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
                                             cmd.vec.pop();
                                         },
@@ -257,7 +258,7 @@ unsafe fn event_loop() -> ! {
                             _ => ()
                         }
                     } else {
-                        if event.code == 'k' && event.b as u8 == K_F1 && event.c > 0 {
+                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
                         } else {
@@ -446,7 +447,7 @@ unsafe fn init(font_data: usize) {
 
     debug_draw = false;
 
-    session.redraw = max(session.redraw, REDRAW_ALL);
+    session.redraw = max(session.redraw, event::REDRAW_ALL);
 
     {
         let mut resource = URL::from_str("file:///apps/").open();
