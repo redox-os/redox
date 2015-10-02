@@ -106,6 +106,7 @@ impl FileSystem {
 }
 
 pub struct FileResource {
+    pub disk: Disk,
     pub node: Node,
     pub vec: Vec<u8>,
     pub seek: usize
@@ -160,8 +161,20 @@ impl Resource for FileResource {
         return Option::Some(self.seek);
     }
 
+    // TODO: Check to make sure proper amount of bytes written. See Disk::write
     fn flush(&mut self) -> bool {
-        return false;
+        let mut pos: u64 = 0;
+        for extent in &self.node.extents {
+            let mem_to_write = &self.vec.as_slice()[pos as usize..(pos+extent.length) as usize];
+            
+            unsafe {
+                let bytes_written = self.disk.write(extent.block,
+                                                    extent.length as u16,
+                                                    mem_to_write.as_ptr() as usize);
+            }
+            pos += extent.length;
+        }
+        return true;
     }
 }
 
@@ -234,6 +247,7 @@ impl SessionItem for FileScheme {
                     }
 
                     return box FileResource {
+                        disk: self.fs.disk,
                         node: node,
                         vec: vec,
                         seek: 0
