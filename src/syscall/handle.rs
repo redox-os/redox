@@ -203,6 +203,35 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_fsync(fd: usize) -> usize {
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = start_no_ints();
+
+    let contexts = & *contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        for i in 0..current.files.len() {
+            let mut remove = false;
+            if let Option::Some(file) = current.files.get(i) {
+                if file.fd == fd {
+                    end_no_ints(reenable);
+
+                    file.resource.flush();
+
+                    start_no_ints();
+
+                    ret = 0;
+                    break;
+                }
+            }
+        }
+    }
+
+    end_no_ints(reenable);
+
+    ret
+}
+
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
@@ -315,6 +344,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_WRITE => eax = do_sys_write(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_OPEN => eax = do_sys_open(ebx as *mut u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
         SYS_CLOSE => eax = do_sys_close(ebx as usize) as u32,
+        SYS_FSYNC => eax = do_sys_fsync(ebx as usize) as u32,
         SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
         SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize) as u32,
