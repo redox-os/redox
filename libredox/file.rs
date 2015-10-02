@@ -7,13 +7,13 @@ use syscall::call::*;
 pub enum Seek {
     Start(usize),
     Current(isize),
-    End(isize)
+    End(isize),
 }
 
 /// A Unix-style file
 pub struct File {
     path: String,
-    fd: usize
+    fd: usize,
 }
 
 impl File {
@@ -25,7 +25,7 @@ impl File {
             let c_str: *const u8 = path.to_c_str();
             let ret = File {
                 path: path.clone(),
-                fd: sys_open(c_str, 0, 0)
+                fd: sys_open(c_str, 0, 0),
             };
             sys_unalloc(c_str as usize);
             ret
@@ -44,7 +44,7 @@ impl File {
             let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
             if count == 0xFFFFFFFF {
                 Option::None
-            }else{
+            } else {
                 Option::Some(count)
             }
         }
@@ -97,14 +97,12 @@ impl File {
 
     /// Flush the io
     pub fn sync(&mut self) -> bool {
-        unsafe {
-            sys_fsync(self.fd) == 0
-        }
+        unsafe { sys_fsync(self.fd) == 0 }
     }
 }
 
 impl Drop for File {
-    fn drop(&mut self){
+    fn drop(&mut self) {
         unsafe {
             sys_close(self.fd);
         }

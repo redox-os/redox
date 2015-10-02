@@ -6,12 +6,12 @@ use common::debug::*;
 use syscall::call::*;
 
 #[lang="stack_exhausted"]
-extern fn stack_exhausted() {
+extern "C" fn stack_exhausted() {
 
 }
 
 #[lang="eh_personality"]
-extern fn eh_personality() {
+extern "C" fn eh_personality() {
 
 }
 
@@ -31,7 +31,7 @@ pub fn panic_fmt(fmt: fmt::Arguments, file: &'static str, line: u32) -> ! {
 }
 
 #[no_mangle]
-pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
+pub unsafe extern "C" fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
     for i in 0..len {
         let c_a = ptr::read(a.offset(i as isize));
         let c_b = ptr::read(b.offset(i as isize));
@@ -43,7 +43,7 @@ pub unsafe extern fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
 }
 
 #[no_mangle]
-pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: usize) {
+pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, len: usize) {
     if src < dst {
         asm!("std
             rep movsb"
@@ -62,7 +62,7 @@ pub unsafe extern fn memmove(dst: *mut u8, src: *const u8, len: usize) {
 }
 
 #[no_mangle]
-pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
+pub unsafe extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
     asm!("cld
         rep movsb"
         :
@@ -72,7 +72,7 @@ pub unsafe extern fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
 }
 
 #[no_mangle]
-pub unsafe extern fn memset(dst: *mut u8, c: i32, len: usize) {
+pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
     asm!("cld
         rep stosb"
         :

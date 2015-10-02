@@ -20,7 +20,7 @@ pub struct NetworkResource {
     pub nic: *mut NetworkScheme,
     pub ptr: *mut NetworkResource,
     pub inbound: Queue<Vec<u8>>,
-    pub outbound: Queue<Vec<u8>>
+    pub outbound: Queue<Vec<u8>>,
 }
 
 impl NetworkResource {
@@ -29,7 +29,7 @@ impl NetworkResource {
             nic: nic,
             ptr: 0 as *mut NetworkResource,
             inbound: Queue::new(),
-            outbound: Queue::new()
+            outbound: Queue::new(),
         };
 
         unsafe {

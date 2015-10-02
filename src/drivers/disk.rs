@@ -86,14 +86,14 @@ const ATA_REG_DEVADDRESS: u16 = 0x0D;
 pub struct PRDTE {
     pub ptr: u32,
     pub size: u16,
-    pub reserved: u16
+    pub reserved: u16,
 }
 
 #[derive(Copy, Clone)]
 pub struct Disk {
     base: u16,
     ctrl: u16,
-    master: bool
+    master: bool,
 }
 
 impl Disk {
@@ -101,7 +101,7 @@ impl Disk {
         Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
-            master: true
+            master: true,
         }
     }
 
@@ -109,7 +109,7 @@ impl Disk {
         Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
-            master: false
+            master: false,
         }
     }
 
@@ -117,7 +117,7 @@ impl Disk {
         Disk {
             base: 0x170,
             ctrl: 0x374,
-            master: true
+            master: true,
         }
     }
 
@@ -125,7 +125,7 @@ impl Disk {
         Disk {
             base: 0x170,
             ctrl: 0x374,
-            master: false
+            master: false,
         }
     }
 
@@ -225,7 +225,10 @@ impl Disk {
         }
 
         d(" Size: ");
-        let sectors = (*destination.offset(100) as u64) | ((*destination.offset(101) as u64) << 16) | ((*destination.offset(102) as u64) << 32) | ((*destination.offset(103) as u64) << 48);
+        let sectors = (*destination.offset(100) as u64) |
+                      ((*destination.offset(101) as u64) << 16) |
+                      ((*destination.offset(102) as u64) << 32) |
+                      ((*destination.offset(103) as u64) << 48);
         dd((sectors / 2048) as usize);
         d(" MB");
 
@@ -278,21 +281,23 @@ impl Disk {
         if destination > 0 {
             //Allocate PRDT
             let size = count as usize * 512;
-            let entries = (size + 65535)/65536;
+            let entries = (size + 65535) / 65536;
             let prdt = alloc_aligned(size_of::<PRDTE>() * entries, 65536);
             for i in 0..entries {
                 if i == entries - 1 {
-                    ptr::write((prdt as *mut PRDTE).offset(i as isize),  PRDTE {
-                        ptr: (destination + i * 65536) as u32,
-                        size: (size % 65536) as u16,
-                        reserved: 0x8000
-                    });
+                    ptr::write((prdt as *mut PRDTE).offset(i as isize),
+                               PRDTE {
+                                   ptr: (destination + i * 65536) as u32,
+                                   size: (size % 65536) as u16,
+                                   reserved: 0x8000,
+                               });
                 } else {
-                    ptr::write((prdt as *mut PRDTE).offset(i as isize), PRDTE {
-                        ptr: (destination + i * 65536) as u32,
-                        size: 0,
-                        reserved: 0
-                    });
+                    ptr::write((prdt as *mut PRDTE).offset(i as isize),
+                               PRDTE {
+                                   ptr: (destination + i * 65536) as u32,
+                                   size: 0,
+                                   reserved: 0,
+                               });
                 }
             }
 
@@ -330,12 +335,14 @@ impl Disk {
                     self.ide_write(ATA_REG_HDDEVSEL, 0x50);
                 }
 
-                self.ide_write(ATA_REG_SECCOUNT1, ((current_count >> 8) & 0xFF) as u8);
+                self.ide_write(ATA_REG_SECCOUNT1,
+                               ((current_count >> 8) & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA3, ((current_lba >> 24) & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA4, ((current_lba >> 32) & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA5, ((current_lba >> 40) & 0xFF) as u8);
 
-                self.ide_write(ATA_REG_SECCOUNT0, ((current_count >> 0) & 0xFF) as u8);
+                self.ide_write(ATA_REG_SECCOUNT0,
+                               ((current_count >> 0) & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA0, (current_lba & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA1, ((current_lba >> 8) & 0xFF) as u8);
                 self.ide_write(ATA_REG_LBA2, ((current_lba >> 16) & 0xFF) as u8);
@@ -381,7 +388,8 @@ impl Disk {
                 }
 
                 for word in 0..256 {
-                    outw(self.base + ATA_REG_DATA, *((source + sector*512 + word*2) as *const u16));
+                    outw(self.base + ATA_REG_DATA,
+                         *((source + sector*512 + word*2) as *const u16));
                 }
 
                 self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);

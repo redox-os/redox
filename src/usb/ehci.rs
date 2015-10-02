@@ -13,7 +13,7 @@ struct SETUP {
     request: u8,
     value: u16,
     index: u16,
-    len: u16
+    len: u16,
 }
 
 #[repr(packed)]
@@ -21,7 +21,7 @@ struct QTD {
     next: u32,
     next_alt: u32,
     token: u32,
-    buffers: [u32; 5]
+    buffers: [u32; 5],
 }
 
 #[repr(packed)]
@@ -30,14 +30,14 @@ struct QueueHead {
     characteristics: u32,
     capabilities: u32,
     qtd_ptr: u32,
-    qtd: QTD
+    qtd: QTD,
 }
 
 pub struct EHCI {
     pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
-    pub irq: u8
+    pub irq: u8,
 }
 
 impl SessionItem for EHCI {
@@ -113,27 +113,27 @@ impl EHCI {
         if eecp > 0 {
             if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 16) {
                 d("Taking Ownership");
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
+                d(" ");
+                dh(pci.read(eecp) as usize);
 
-                    pci.flag(eecp, 1 << 24, true);
+                pci.flag(eecp, 1 << 24, true);
 
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
+                d(" ");
+                dh(pci.read(eecp) as usize);
                 dl();
 
                 d("Waiting");
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
+                d(" ");
+                dh(pci.read(eecp) as usize);
 
-                    loop {
-                        if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 24) {
-                            break;
-                        }
+                loop {
+                    if pci.read(eecp) & ((1 << 24) | (1 << 16)) == (1 << 24) {
+                        break;
                     }
+                }
 
-                    d(" ");
-                    dh(pci.read(eecp) as usize);
+                d(" ");
+                dh(pci.read(eecp) as usize);
                 dl();
             }
         }
@@ -152,101 +152,101 @@ impl EHCI {
 
         if read(USBSTS) & (1 << 12) == 0 {
             d("Halting");
-                d(" CMD ");
-                dh(read(USBCMD) as usize);
+            d(" CMD ");
+            dh(read(USBCMD) as usize);
 
-                d(" STS ");
-                dh(read(USBSTS) as usize);
+            d(" STS ");
+            dh(read(USBSTS) as usize);
 
-                write(USBCMD, read(USBCMD) & 0xFFFFFFF0);
+            write(USBCMD, read(USBCMD) & 0xFFFFFFF0);
 
-                d(" CMD ");
-                dh(*USBCMD as usize);
+            d(" CMD ");
+            dh(*USBCMD as usize);
 
-                d(" STS ");
-                dh(*USBSTS as usize);
+            d(" STS ");
+            dh(*USBSTS as usize);
             dl();
 
             d("Waiting");
-                loop {
-                    if volatile_load(USBSTS) & (1 << 12) == (1 << 12) {
-                        break;
-                    }
+            loop {
+                if volatile_load(USBSTS) & (1 << 12) == (1 << 12) {
+                    break;
                 }
+            }
 
-                d(" CMD ");
-                dh(read(USBCMD) as usize);
+            d(" CMD ");
+            dh(read(USBCMD) as usize);
 
-                d(" STS ");
-                dh(read(USBSTS) as usize);
+            d(" STS ");
+            dh(read(USBSTS) as usize);
             dl();
         }
 
         d("Resetting");
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        d(" CMD ");
+        dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+        d(" STS ");
+        dh(read(USBSTS) as usize);
 
-            write(USBCMD, read(USBCMD) | (1 << 1));
+        write(USBCMD, read(USBCMD) | (1 << 1));
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        d(" CMD ");
+        dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+        d(" STS ");
+        dh(read(USBSTS) as usize);
         dl();
 
         d("Waiting");
-            loop {
-                if volatile_load(USBCMD) & (1 << 1) == 0 {
-                    break;
-                }
+        loop {
+            if volatile_load(USBCMD) & (1 << 1) == 0 {
+                break;
             }
+        }
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        d(" CMD ");
+        dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+        d(" STS ");
+        dh(read(USBSTS) as usize);
         dl();
 
         d("Enabling");
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        d(" CMD ");
+        dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+        d(" STS ");
+        dh(read(USBSTS) as usize);
 
-            write(USBINTR, 0b111111);
+        write(USBINTR, 0b111111);
 
-            write(USBCMD, read(USBCMD) | 1);
-            write(CONFIGFLAG, 1);
+        write(USBCMD, read(USBCMD) | 1);
+        write(CONFIGFLAG, 1);
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        d(" CMD ");
+        dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+        d(" STS ");
+        dh(read(USBSTS) as usize);
         dl();
 
         d("Waiting");
-            loop {
-                if volatile_load(USBSTS) & (1 << 12) == 0 {
-                    break;
-                }
+        loop {
+            if volatile_load(USBSTS) & (1 << 12) == 0 {
+                break;
             }
+        }
 
-            d(" CMD ");
-            dh(read(USBCMD) as usize);
+        d(" CMD ");
+        dh(read(USBCMD) as usize);
 
-            d(" STS ");
-            dh(read(USBSTS) as usize);
+        d(" STS ");
+        dh(read(USBSTS) as usize);
         dl();
 
         let disable = start_ints();
-        Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+        Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         for i in 0..ports as isize {
@@ -257,53 +257,55 @@ impl EHCI {
 
             if read(PORTSC.offset(i)) & 1 == 1 {
                 d("Device on port ");
-                    dd(i as usize);
-                    d(" ");
-                    dh(read(PORTSC.offset(i)) as usize);
+                dd(i as usize);
+                d(" ");
+                dh(read(PORTSC.offset(i)) as usize);
                 dl();
 
                 if read(PORTSC.offset(i)) & (1 << 1) == (1 << 1) {
                     d("Connection Change");
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
 
-                        write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 1));
+                    write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 1));
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
                     dl();
                 }
 
                 if read(PORTSC.offset(i)) & (1 << 2) == 0 {
                     d("Reset");
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
 
-                        write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 8));
+                    write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 8));
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
 
-                        write(PORTSC.offset(i), read(PORTSC.offset(i)) & 0xFFFFFEFF);
+                    write(PORTSC.offset(i),
+                          read(PORTSC.offset(i)) & 0xFFFFFEFF);
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
                     dl();
 
                     d("Wait");
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
 
-                        loop {
-                            if volatile_load(PORTSC.offset(i)) & (1 << 8) == 0 {
-                                break;
-                            } else {
-                                volatile_store(PORTSC.offset(i), volatile_load(PORTSC.offset(i)) & 0xFFFFFEFF);
-                            }
+                    loop {
+                        if volatile_load(PORTSC.offset(i)) & (1 << 8) == 0 {
+                            break;
+                        } else {
+                            volatile_store(PORTSC.offset(i),
+                                           volatile_load(PORTSC.offset(i)) & 0xFFFFFEFF);
                         }
+                    }
 
-                        d(" ");
-                        dh(read(PORTSC.offset(i)) as usize);
+                    d(" ");
+                    dh(read(PORTSC.offset(i)) as usize);
                     dl();
                 }
 

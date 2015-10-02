@@ -7,7 +7,7 @@ pub struct IPv6 {
     pub next_header: u8,
     pub hop_limit: u8,
     pub src: IPv6Addr,
-    pub dst: IPv6Addr
+    pub dst: IPv6Addr,
 }
 
 impl IPv6 {

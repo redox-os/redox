@@ -8,7 +8,8 @@ pub unsafe fn set_page(virtual_address: usize, physical_address: usize) {
     let entry = page % PAGE_TABLE_SIZE;
     let entry_address = PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * 4;
 
-    ptr::write(entry_address as *mut u32, (physical_address as u32 & 0xFFFFF000) | 1);
+    ptr::write(entry_address as *mut u32,
+               (physical_address as u32 & 0xFFFFF000) | 1);
 
     asm!("invlpg [$0]"
         :
@@ -38,7 +39,8 @@ pub unsafe fn identity_page(virtual_address: usize) {
 
 pub unsafe fn page_bootstrap() {
     for table_i in 0..PAGE_TABLE_SIZE {
-        ptr::write((PAGE_DIRECTORY + table_i * 4) as *mut u32, (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * 4) as u32 | 1);
+        ptr::write((PAGE_DIRECTORY + table_i * 4) as *mut u32,
+                   (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * 4) as u32 | 1);
 
         for entry_i in 0..PAGE_TABLE_SIZE {
             let virtual_address = (table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE;
@@ -48,7 +50,8 @@ pub unsafe fn page_bootstrap() {
             let entry = page % PAGE_TABLE_SIZE;
             let entry_address = PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * 4;
 
-            ptr::write(entry_address as *mut u32, (virtual_address as u32 & 0xFFFFF000) | 1);
+            ptr::write(entry_address as *mut u32,
+                       (virtual_address as u32 & 0xFFFFF000) | 1);
         }
     }
 

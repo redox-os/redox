@@ -16,13 +16,13 @@ pub struct TCPHeader {
     pub flags: n16,
     pub window_size: n16,
     pub checksum: Checksum,
-    pub urgent_pointer: n16
+    pub urgent_pointer: n16,
 }
 
 pub struct TCP {
     pub header: TCPHeader,
     pub options: Vec<u8>,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 pub const TCP_FIN: u16 = 1;
@@ -40,8 +40,9 @@ impl FromBytes for TCP {
 
                 return Option::Some(TCP {
                     header: header,
-                    options: bytes.sub(size_of::<TCPHeader>(), header_len - size_of::<TCPHeader>()),
-                    data: bytes.sub(header_len, bytes.len() - header_len)
+                    options: bytes.sub(size_of::<TCPHeader>(),
+                                       header_len - size_of::<TCPHeader>()),
+                    data: bytes.sub(header_len, bytes.len() - header_len),
                 });
             }
         }

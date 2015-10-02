@@ -9,13 +9,16 @@ impl Viewer {
         Viewer
     }
 
-    fn main(&mut self, url: String){
+    fn main(&mut self, url: String) {
         let mut resource = File::open(&url);
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Viewer".to_string());
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
+                                                (rand() % 300 + 50) as isize),
+                                     Size::new(640, 480),
+                                     "Viewer".to_string());
         window.content.set(Color::new(0, 0, 0));
         window.content.flip();
 
@@ -28,9 +31,9 @@ impl Viewer {
 
         window.title = "Viewer (".to_string() + &url + ")";
 
-        RedrawEvent {
-            redraw: REDRAW_ALL
-        }.to_event().trigger();
+        RedrawEvent { redraw: REDRAW_ALL }
+            .to_event()
+            .trigger();
 
         loop {
             match window.poll() {
@@ -38,17 +41,17 @@ impl Viewer {
                     if key_event.pressed && key_event.scancode == K_ESC {
                         break;
                     }
-                },
+                }
                 EventOption::None => sys_yield(),
-                _ => ()
+                _ => (),
             }
         }
     }
 }
 
-pub fn main(){
+pub fn main() {
     match args().get(1) {
         Option::Some(arg) => Viewer::new().main(arg.clone()),
-        Option::None => Viewer::new().main("none://".to_string())
+        Option::None => Viewer::new().main("none://".to_string()),
     }
 }
