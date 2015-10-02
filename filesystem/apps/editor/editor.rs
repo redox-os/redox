@@ -42,7 +42,7 @@ impl Editor {
                 window.title = "Editor (".to_string() + &self.url + ") Saved";
                 file.seek(Seek::Start(0));
                 file.write(&self.string.to_utf8().as_slice());
-                file.flush();
+                file.sync();
             },
             Option::None => {
                 //TODO: Ask for file to save to

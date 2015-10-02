@@ -95,9 +95,8 @@ impl File {
         }
     }
 
-    //TODO: Call flush on close, Rename to sync ?
     /// Flush the io
-    pub fn flush(&mut self) -> bool {
+    pub fn sync(&mut self) -> bool {
         unsafe {
             sys_fsync(self.fd) == 0
         }

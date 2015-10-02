@@ -21,16 +21,43 @@ pub struct Header {
 }
 
 #[repr(packed)]
-pub struct Node {
+pub struct NodeData {
     pub name: [u8; 256],
-    pub extents: [Extent; 16]
+    pub extents: [Extent; 16],
+}
+
+pub struct Node {
+    pub address: u64,
+    pub name: String,
+    pub extents: [Extent; 16],
+}
+
+impl Node {
+    pub fn new(address: u64, data: NodeData) -> Node {
+        let mut utf8: Vec<u8> = Vec::new();
+        for i in 0..data.name.len() {
+            let c = data.name[i];
+            if c == 0 {
+                break;
+            }else{
+                utf8.push(c);
+            }
+        }
+
+        Node {
+            address: address,
+            name: String::from_utf8(&utf8),
+            extents: data.extents,
+        }
+    }
 }
 
 impl Clone for Node {
     fn clone(&self) -> Node {
         return Node {
-            name: self.name,
-            extents: self.extents
+            address: self.address,
+            name: self.name.clone(),
+            extents: self.extents,
         };
     }
 }
@@ -50,19 +77,20 @@ impl FileSystem {
             unalloc(header_ptr as usize);
 
             let mut nodes = Vec::new();
-            let node_ptr: *const Node = alloc_type();
+            let node_data: *const NodeData = alloc_type();
             for extent in &header.extents {
                 if extent.block > 0 {
                     for node_address in extent.block..extent.block + (extent.length + 511)/512 {
-                        disk.read(node_address, 1, node_ptr as usize);
-                        nodes.push(ptr::read(node_ptr));
+                        disk.read(node_address, 1, node_data as usize);
+
+                        nodes.push(Node::new(node_address, ptr::read(node_data)));
                     }
                 }
             }
-            unalloc(node_ptr as usize);
+            unalloc(node_data as usize);
 
             return FileSystem {
-                disk:disk,
+                disk: disk,
                 header: header,
                 nodes: nodes
             };
@@ -83,7 +111,7 @@ impl FileSystem {
 
     pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
-            if String::from_c_slice(&node.name) == *filename {
+            if node.name == *filename {
                 return Option::Some(node.clone());
             }
         }
@@ -95,9 +123,8 @@ impl FileSystem {
         let mut ret = Vec::<String>::new();
 
         for node in self.nodes.iter() {
-            let node_name = String::from_c_slice(&node.name);
-            if node_name.starts_with(directory.clone()) {
-                ret.push(node_name.substr(directory.len(), node_name.len() - directory.len()));
+            if node.name.starts_with(directory.clone()) {
+                ret.push(node.name.substr(directory.len(), node.name.len() - directory.len()));
             }
         }
 
@@ -109,12 +136,13 @@ pub struct FileResource {
     pub disk: Disk,
     pub node: Node,
     pub vec: Vec<u8>,
-    pub seek: usize
+    pub seek: usize,
+    pub dirty: bool
 }
 
 impl Resource for FileResource {
     fn url(&self) -> URL {
-        return URL::from_string(&String::from_c_slice(&self.node.name));
+        return URL::from_string(&("file:///".to_string() + &self.node.name));
     }
 
     fn stat(&self) -> ResourceType {
@@ -146,6 +174,9 @@ impl Resource for FileResource {
             self.seek += 1;
             i += 1;
         }
+        if i > 0 {
+            self.dirty = true;
+        }
         return Option::Some(i);
     }
 
@@ -161,25 +192,63 @@ impl Resource for FileResource {
         return Option::Some(self.seek);
     }
 
+    // TODO: Rename to sync
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
     // TODO: Allow reallocation
     fn flush(&mut self) -> bool {
-        let mut pos: u64 = 0;
-        for extent in &self.node.extents {
-            //Make sure it is a valid extent
-            if extent.block > 0 && extent.length > 0 {
-                unsafe {
-                    let mem_to_write = self.vec.as_ptr().offset(pos as isize) as usize;
-                    //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
-                    let bytes_written = self.disk.write(extent.block,
-                                //Warning, not obvious, but extent.length is in bytes and count is in 512 byte sectors
-                                ((extent.length + 511)/512) as u16,
-                                mem_to_write as usize);
+        if self.dirty {
+            let block_size: usize = 512;
+
+            let mut node_dirty = false;
+            let mut pos: isize = 0;
+            let mut remaining = self.vec.len() as isize;
+            for ref mut extent in &mut self.node.extents {
+                //Make sure it is a valid extent
+                if extent.block > 0 && extent.length > 0 {
+                    let current_sectors = (extent.length as usize + block_size - 1)/block_size;
+                    let max_size = current_sectors * 512;
+
+                    let size = min(remaining as usize, max_size);
+                    let sectors = (size + block_size - 1)/block_size;
+
+                    if size as u64 != extent.length {
+                        extent.length = size as u64;
+                        node_dirty = true;
+                    }
+
+                    unsafe {
+                        let mem_to_write = self.vec.as_ptr().offset(pos) as usize;
+                        //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
+                        let bytes_written = self.disk.write(extent.block,
+                                    sectors as u16,
+                                    mem_to_write as usize);
+                    }
+
+                    pos += size as isize;
+                    remaining -= size as isize;
                 }
-                pos += extent.length;
+            }
+
+            if node_dirty {
+                d("Node dirty, should rewrite\n");
+            }
+
+            self.dirty = false;
+
+            if remaining > 0 {
+                d("Need to reallocate file, extra: ");
+                ds(remaining);
+                dl();
+                return false;
             }
         }
         return true;
+    }
+}
+
+impl Drop for FileResource {
+    fn drop(&mut self) {
+        self.flush();
     }
 }
 
@@ -192,7 +261,7 @@ impl SessionItem for FileScheme {
         return "file".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource>{
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         let path = url.path();
         if path.len() == 0 || path.ends_with("/".to_string()) {
             let mut list = String::new();
@@ -233,6 +302,7 @@ impl SessionItem for FileScheme {
             match self.fs.node(&path) {
                 Option::Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
+                    //TODO: Handle more extents
                     if node.extents[0].block > 0 && node.extents[0].length > 0 {
                         unsafe {
                             let data = alloc(node.extents[0].length as usize);
@@ -255,7 +325,8 @@ impl SessionItem for FileScheme {
                         disk: self.fs.disk,
                         node: node,
                         vec: vec,
-                        seek: 0
+                        seek: 0,
+                        dirty: false
                     };
                 },
                 Option::None => {
