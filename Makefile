@@ -48,10 +48,10 @@ ifeq ($(OS),Windows_NT)
 	VBM_CLEANUP=\
 		if [ $$? -ne 0 ]; \
 		then \
-			if [ -d "$$userprofile/VirtualBox VMs/Redox" ]; \
+			if [ -d "$$USERPROFILE/VirtualBox VMs/Redox" ]; \
 			then \
 				echo "Redox directory exists, deleting..."; \
-				$(RM) -rf "$$userprofile/VirtualBox VMs/Redox"; \
+				$(RM) -rf "$$USERPROFILE/VirtualBox VMs/Redox"; \
 			fi \
 		fi
 else
