@@ -5,7 +5,7 @@ use common::string::*;
 use common::vec::*;
 
 pub trait FromBytes {
-    fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self:Sized;
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self: Sized;
 }
 
 pub trait ToBytes {
@@ -15,17 +15,12 @@ pub trait ToBytes {
 #[derive(Copy, Clone)]
 #[allow(non_camel_case_types)]
 pub struct n16 {
-    pub bytes: [u8; 2]
+    pub bytes: [u8; 2],
 }
 
 impl n16 {
     pub fn new(value: u16) -> n16 {
-        n16 {
-            bytes: [
-                (value >> 8) as u8,
-                value as u8
-            ]
-        }
+        n16 { bytes: [(value >> 8) as u8, value as u8] }
     }
 
     pub fn get(&self) -> u16 {
@@ -41,23 +36,17 @@ impl n16 {
 #[derive(Copy, Clone)]
 #[allow(non_camel_case_types)]
 pub struct n32 {
-    pub bytes: [u8; 4]
+    pub bytes: [u8; 4],
 }
 
 impl n32 {
     pub fn new(value: u32) -> n32 {
-        n32 {
-            bytes: [
-                (value >> 24) as u8,
-                (value >> 16) as u8,
-                (value >> 8) as u8,
-                value as u8
-            ]
-        }
+        n32 { bytes: [(value >> 24) as u8, (value >> 16) as u8, (value >> 8) as u8, value as u8] }
     }
 
     pub fn get(&self) -> u32 {
-        ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16) | ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32)
+        ((self.bytes[0] as u32) << 24) | ((self.bytes[1] as u32) << 16) |
+        ((self.bytes[2] as u32) << 8) | (self.bytes[3] as u32)
     }
 
     pub fn set(&mut self, value: u32) {
@@ -70,7 +59,7 @@ impl n32 {
 
 #[derive(Copy, Clone)]
 pub struct MACAddr {
-    pub bytes: [u8; 6]
+    pub bytes: [u8; 6],
 }
 
 impl MACAddr {
@@ -84,9 +73,7 @@ impl MACAddr {
     }
 
     pub fn from_string(string: &String) -> MACAddr {
-        let mut addr = MACAddr {
-            bytes: [0, 0, 0, 0, 0, 0]
-        };
+        let mut addr = MACAddr { bytes: [0, 0, 0, 0, 0, 0] };
 
         let mut i = 0;
         for part in string.split(".".to_string()) {
@@ -98,7 +85,7 @@ impl MACAddr {
                 3 => addr.bytes[3] = octet,
                 4 => addr.bytes[4] = octet,
                 5 => addr.bytes[5] = octet,
-                _ => break
+                _ => break,
             }
             i += 1;
         }
@@ -122,17 +109,13 @@ impl MACAddr {
     }
 }
 
-pub static BROADCAST_MAC_ADDR: MACAddr = MACAddr {
-    bytes: [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF]
-};
+pub static BROADCAST_MAC_ADDR: MACAddr = MACAddr { bytes: [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF] };
 
-pub static mut MAC_ADDR: MACAddr = MACAddr {
-    bytes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-};
+pub static mut MAC_ADDR: MACAddr = MACAddr { bytes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00] };
 
 #[derive(Copy, Clone)]
 pub struct IPv4Addr {
-    pub bytes: [u8; 4]
+    pub bytes: [u8; 4],
 }
 
 impl IPv4Addr {
@@ -146,9 +129,7 @@ impl IPv4Addr {
     }
 
     pub fn from_string(string: &String) -> IPv4Addr {
-        let mut addr = IPv4Addr {
-            bytes: [0, 0, 0, 0]
-        };
+        let mut addr = IPv4Addr { bytes: [0, 0, 0, 0] };
 
         let mut i = 0;
         for part in string.split(".".to_string()) {
@@ -158,7 +139,7 @@ impl IPv4Addr {
                 1 => addr.bytes[1] = octet,
                 2 => addr.bytes[2] = octet,
                 3 => addr.bytes[3] = octet,
-                _ => break
+                _ => break,
             }
             i += 1;
         }
@@ -186,7 +167,7 @@ impl IPv4Addr {
 
 #[derive(Copy, Clone)]
 pub struct IPv6Addr {
-    pub bytes: [u8; 16]
+    pub bytes: [u8; 16],
 }
 
 impl IPv6Addr {
@@ -200,17 +181,13 @@ impl IPv6Addr {
     }
 }
 
-pub static BROADCAST_IP_ADDR: IPv4Addr = IPv4Addr {
-    bytes: [10, 85, 85, 255]
-};
+pub static BROADCAST_IP_ADDR: IPv4Addr = IPv4Addr { bytes: [10, 85, 85, 255] };
 
-pub static IP_ADDR: IPv4Addr = IPv4Addr {
-    bytes: [10, 85, 85, 2]
-};
+pub static IP_ADDR: IPv4Addr = IPv4Addr { bytes: [10, 85, 85, 2] };
 
 #[derive(Copy, Clone)]
 pub struct Checksum {
-    pub data: u16
+    pub data: u16,
 }
 
 impl Checksum {

@@ -5,22 +5,22 @@ use programs::common::*;
 #[repr(packed)]
 struct STE {
     pub ptr: u64,
-    pub length: u64
+    pub length: u64,
 }
 
 #[repr(packed)]
 struct TRB {
     pub data: u64,
     pub status: u32,
-    pub control: u32
+    pub control: u32,
 }
 
 impl TRB {
     pub fn new() -> TRB {
         TRB {
-           data: 0,
-           status: 0,
-           control: 0
+            data: 0,
+            status: 0,
+            control: 0,
         }
     }
 
@@ -28,7 +28,7 @@ impl TRB {
         TRB {
             data: 0,
             status: 0,
-            control: (trb_type & 0x3F) << 10
+            control: (trb_type & 0x3F) << 10,
         }
     }
 }
@@ -37,11 +37,11 @@ pub struct XHCI {
     pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
-    pub irq: u8
+    pub irq: u8,
 }
 
 impl SessionItem for XHCI {
-    fn on_irq(&mut self, irq: u8){
+    fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             d("XHCI handle\n");
         }
@@ -54,7 +54,7 @@ impl XHCI {
         dh(self.base);
         if self.memory_mapped {
             d(" memory mapped");
-        }else {
+        } else {
             d(" port mapped");
         }
         d(" IRQ: ");

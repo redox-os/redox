@@ -25,7 +25,7 @@ pub struct ELFHeader {
     pub ph_len: u16,
     pub sh_ent_len: u16,
     pub sh_len: u16,
-    pub sh_str_index: u16
+    pub sh_str_index: u16,
 }
 
 #[repr(packed)]
@@ -37,7 +37,7 @@ pub struct ELFSegment {
     pub file_len: u32,
     pub mem_len: u32,
     pub flags: u32,
-    pub align: u32
+    pub align: u32,
 }
 
 #[repr(packed)]
@@ -51,7 +51,7 @@ pub struct ELFSection {
     pub link: u32,
     pub info: u32,
     pub addr_align: u32,
-    pub ent_len: u32
+    pub ent_len: u32,
 }
 
 #[repr(packed)]
@@ -61,35 +61,28 @@ pub struct ELFSymbol {
     pub size: u32,
     pub info: u8,
     pub other: u8,
-    pub sh_index: u16
+    pub sh_index: u16,
 }
 
 pub const LOAD_ADDR: usize = 0x80000000;
 
 pub struct ELF {
-    pub data: usize
+    pub data: usize,
 }
 
 impl ELF {
     pub fn new() -> ELF {
-        ELF {
-            data: 0
-        }
+        ELF { data: 0 }
     }
 
     pub fn from_data(file_data: usize) -> ELF {
         let data;
         unsafe {
-            if file_data > 0
-                //Signature
-                && *(file_data as *const u8) == 0x7F
-                && *((file_data + 1) as *const u8) == 'E' as u8
-                && *((file_data + 2) as *const u8) == 'L' as u8
-                && *((file_data + 3) as *const u8) == 'F' as u8
-                //1 for 32 bit, 2 for 64 bit
-                && *((file_data + 4) as *const u8) == 1
-                // TODO: Add more tests from header (architecture, platform)
-            {
+            if file_data > 0 && *(file_data as *const u8) == 0x7F &&
+               *((file_data + 1) as *const u8) == 'E' as u8 &&
+               *((file_data + 2) as *const u8) == 'L' as u8 &&
+               *((file_data + 3) as *const u8) == 'F' as u8 &&
+               *((file_data + 4) as *const u8) == 1 {
                 let size = alloc_size(file_data);
                 data = alloc(size);
                 ptr::copy(file_data as *const u8, data as *mut u8, size);
@@ -99,9 +92,7 @@ impl ELF {
             }
         }
 
-        ELF {
-            data: data
-        }
+        ELF { data: data }
     }
 
     pub unsafe fn d(&self) {
@@ -189,7 +180,7 @@ impl ELF {
 
                 if name == ".symtab".to_string() {
                     sym_section = section;
-                }else if name == ".strtab".to_string() {
+                } else if name == ".strtab".to_string() {
                     str_section = section;
                 }
 
@@ -240,7 +231,7 @@ impl ELF {
 
             if sym_section.off > 0 && str_section.off > 0 {
                 if sym_section.ent_len > 0 {
-                    let len = sym_section.len/sym_section.ent_len;
+                    let len = sym_section.len / sym_section.ent_len;
                     d("Symbols: ");
                     dd(len as usize);
                     dl();
@@ -325,7 +316,7 @@ impl ELF {
 
             if sym_section.off > 0 && str_section.off > 0 {
                 if sym_section.ent_len > 0 {
-                    let len = sym_section.len/sym_section.ent_len;
+                    let len = sym_section.len / sym_section.ent_len;
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
 

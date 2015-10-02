@@ -16,7 +16,7 @@ macro_rules! exec {
 
 pub struct Command {
     pub name: String,
-    pub main: Box<Fn(&Vec<String>)>
+    pub main: Box<Fn(&Vec<String>)>,
 }
 
 impl Command {
@@ -25,16 +25,16 @@ impl Command {
 
         commands.push(Command {
             name: "break".to_string(),
-            main: box |args: &Vec<String>|{
-                unsafe{
+            main: box |args: &Vec<String>| {
+                unsafe {
                     asm!("int 3" : : : : "intel");
                 }
-            }
+            },
         });
 
         commands.push(Command {
             name: "echo".to_string(),
-            main: box |args: &Vec<String>|{
+            main: box |args: &Vec<String>| {
                 let mut echo = String::new();
                 let mut first = true;
                 for i in 1..args.len() {
@@ -42,31 +42,31 @@ impl Command {
                         Option::Some(arg) => {
                             if first {
                                 first = false
-                            }else{
+                            } else {
                                 echo = echo + " ";
                             }
                             echo = echo + arg;
-                        },
-                        Option::None => ()
+                        }
+                        Option::None => (),
                     }
                 }
                 println!(echo);
-            }
+            },
         });
 
         commands.push(Command {
             name: "open".to_string(),
-            main: box |args: &Vec<String>|{
+            main: box |args: &Vec<String>| {
                 match args.get(1) {
-                    Option::Some(arg) => OpenEvent{ url_string: arg.clone() }.trigger(),
-                    Option::None => ()
+                    Option::Some(arg) => OpenEvent { url_string: arg.clone() }.trigger(),
+                    Option::None => (),
                 }
-            }
+            },
         });
 
         commands.push(Command {
             name: "run".to_string(),
-            main: box |args: &Vec<String>|{
+            main: box |args: &Vec<String>| {
                 match args.get(1) {
                     Option::Some(arg) => {
                         let path = arg.clone();
@@ -81,19 +81,19 @@ impl Command {
                         for command in commands.split("\n".to_string()) {
                             exec!(command);
                         }
-                    },
-                    Option::None => ()
+                    }
+                    Option::None => (),
                 }
-            }
+            },
         });
 
         commands.push(Command {
             name: "send".to_string(),
-            main: box |args: &Vec<String>|{
+            main: box |args: &Vec<String>| {
                 let path;
                 match args.get(1) {
                     Option::Some(arg) => path = arg.clone(),
-                    Option::None => path = String::new()
+                    Option::None => path = String::new(),
                 }
                 println!("URL: ".to_string() + &path);
 
@@ -105,35 +105,35 @@ impl Command {
                         Option::Some(arg) => {
                             if i == 2 {
                                 vec.push_all(&arg.to_utf8())
-                            }else{
+                            } else {
                                 vec.push_all(&(" ".to_string() + arg).to_utf8())
                             }
-                        },
-                        Option::None => vec = Vec::new()
+                        }
+                        Option::None => vec = Vec::new(),
                     }
                 }
                 vec.push_all(&"\r\n\r\n".to_string().to_utf8());
 
                 match resource.write(&vec.as_slice()) {
                     Option::Some(size) => println!("Wrote ".to_string() + size + " bytes"),
-                    Option::None => println!("Failed to write".to_string())
+                    Option::None => println!("Failed to write".to_string()),
                 }
 
                 vec = Vec::new();
                 match resource.read_to_end(&mut vec) {
                     Option::Some(size) => println!(String::from_utf8(&vec)),
-                    Option::None => println!("Failed to read".to_string())
+                    Option::None => println!("Failed to read".to_string()),
                 }
-            }
+            },
         });
 
         commands.push(Command {
             name: "url".to_string(),
-            main: box |args: &Vec<String>|{
+            main: box |args: &Vec<String>| {
                 let path;
                 match args.get(1) {
                     Option::Some(arg) => path = arg.clone(),
-                    Option::None => path = String::new()
+                    Option::None => path = String::new(),
                 }
                 println!("URL: ".to_string() + &path);
 
@@ -142,18 +142,18 @@ impl Command {
                 let mut vec: Vec<u8> = Vec::new();
                 match resource.read_to_end(&mut vec) {
                     Option::Some(_) => println!(String::from_utf8(&vec)),
-                    Option::None => println!("Failed to read".to_string())
+                    Option::None => println!("Failed to read".to_string()),
                 }
-            }
+            },
         });
 
         commands.push(Command {
             name: "url_hex".to_string(),
-            main: box |args: &Vec<String>|{
+            main: box |args: &Vec<String>| {
                 let path;
                 match args.get(1) {
                     Option::Some(arg) => path = arg.clone(),
-                    Option::None => path = String::new()
+                    Option::None => path = String::new(),
                 }
                 println!("URL: ".to_string() + &path);
 
@@ -167,10 +167,10 @@ impl Command {
                             line = line + ' ' + String::from_num_radix(*byte as usize, 16);
                         }
                         println!(line);
-                    },
-                    Option::None => println!("Failed to read".to_string())
+                    }
+                    Option::None => println!("Failed to read".to_string()),
                 }
-            }
+            },
         });
 
         return commands;
@@ -179,17 +179,17 @@ impl Command {
 
 pub struct Variable {
     pub name: String,
-    pub value: String
+    pub value: String,
 }
 
 pub struct Mode {
-    value: bool
+    value: bool,
 }
 
 pub struct Application {
     commands: Vec<Command>,
     variables: Vec<Variable>,
-    modes: Vec<Mode>
+    modes: Vec<Mode>,
 }
 
 impl Application {
@@ -197,11 +197,11 @@ impl Application {
         return Application {
             commands: Command::vec(),
             variables: Vec::new(),
-            modes: Vec::new()
+            modes: Vec::new(),
         };
     }
 
-    fn on_command(&mut self, command_string: &String){
+    fn on_command(&mut self, command_string: &String) {
         //Comment
         if command_string[0] == '#' {
             return;
@@ -229,7 +229,7 @@ impl Application {
                             break;
                         }
                     }
-                }else{
+                } else {
                     args.push(arg);
                 }
             }
@@ -247,30 +247,28 @@ impl Application {
                                 Option::Some(right) => {
                                     if *cmp == "==".to_string() {
                                         value = *left == *right;
-                                    }else if *cmp == "!=".to_string() {
+                                    } else if *cmp == "!=".to_string() {
                                         value = *left != *right;
-                                    }else if *cmp == ">".to_string() {
+                                    } else if *cmp == ">".to_string() {
                                         value = left.to_num_signed() > right.to_num_signed();
-                                    }else if *cmp == ">=".to_string() {
+                                    } else if *cmp == ">=".to_string() {
                                         value = left.to_num_signed() >= right.to_num_signed();
-                                    }else if *cmp == "<".to_string() {
+                                    } else if *cmp == "<".to_string() {
                                         value = left.to_num_signed() < right.to_num_signed();
-                                    }else if *cmp == "<=".to_string() {
+                                    } else if *cmp == "<=".to_string() {
                                         value = left.to_num_signed() <= right.to_num_signed();
-                                    }else{
+                                    } else {
                                         println!(&("Unknown comparison: ".to_string() + cmp));
                                     }
-                                },
-                                Option::None => ()
+                                }
+                                Option::None => (),
                             },
-                            Option::None => ()
+                            Option::None => (),
                         },
-                        Option::None => ()
+                        Option::None => (),
                     }
 
-                    self.modes.insert(0, Mode{
-                        value: value
-                    });
+                    self.modes.insert(0, Mode { value: value });
                     return;
                 }
 
@@ -278,7 +276,7 @@ impl Application {
                     let mut syntax_error = false;
                     match self.modes.get(0) {
                         Option::Some(mode) => mode.value = !mode.value,
-                        Option::None => syntax_error = true
+                        Option::None => syntax_error = true,
                     }
                     if syntax_error {
                         println!(&"Syntax error: else found with no previous if".to_string());
@@ -290,7 +288,7 @@ impl Application {
                     let mut syntax_error = false;
                     match self.modes.remove(0) {
                         Option::Some(_) => (),
-                        Option::None => syntax_error = true
+                        Option::None => syntax_error = true,
                     }
                     if syntax_error {
                         println!(&"Syntax error: fi found with no previous if".to_string());
@@ -299,7 +297,7 @@ impl Application {
                 }
 
                 for mode in self.modes.iter() {
-                    if ! mode.value {
+                    if !mode.value {
                         return;
                     }
                 }
@@ -317,7 +315,7 @@ impl Application {
                         for i in 1..args.len() {
                             match args.get(i) {
                                 Option::Some(arg) => value = value + ' ' + arg.clone(),
-                                Option::None => ()
+                                Option::None => (),
                             }
                         }
 
@@ -329,14 +327,14 @@ impl Application {
                                         remove = i as isize;
                                         break;
                                     },
-                                    Option::None => break
+                                    Option::None => break,
                                 }
                             }
 
                             if remove >= 0 {
                                 self.variables.remove(remove as usize);
                             }
-                        }else{
+                        } else {
                             for variable in self.variables.iter() {
                                 if variable.name == name {
                                     variable.value = value;
@@ -344,14 +342,14 @@ impl Application {
                                 }
                             }
 
-                            self.variables.push(Variable{
+                            self.variables.push(Variable {
                                 name: name,
-                                value: value
+                                value: value,
                             });
                         }
                         return;
-                    },
-                    Option::None => ()
+                    }
+                    Option::None => (),
                 }
 
                 //Commands
@@ -367,14 +365,14 @@ impl Application {
                     help = help + ' ' + &command.name;
                 }
                 println!(&help);
-            },
-            Option::None => ()
+            }
+            Option::None => (),
         }
     }
 
-    fn main(&mut self){
+    fn main(&mut self) {
         console_title(&"Terminal".to_string());
-        
+
         if let Option::Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
             println!("# ".to_string() + &command);
@@ -390,7 +388,7 @@ impl Application {
     }
 }
 
-pub fn main(){
+pub fn main() {
     unsafe {
         let mut app = box Application::new();
         application = app.deref_mut();

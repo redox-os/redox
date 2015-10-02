@@ -27,7 +27,7 @@ struct Stream {
     reserved_3: u32,
     // pointer to buffer descriptor list
     bdlpl: u32,
-    bdlpu: u32
+    bdlpu: u32,
 }
 
 #[repr(packed)]
@@ -35,11 +35,11 @@ struct BD {
     addr: u32,
     addru: u32,
     len: u32,
-    ioc: u32
+    ioc: u32,
 }
 
 struct IntelHDAResource {
-    base: usize
+    base: usize,
 }
 
 impl Resource for IntelHDAResource {
@@ -121,18 +121,20 @@ impl Resource for IntelHDAResource {
             ::memcpy(bd_addr as *mut u8, buf.as_ptr(), buf.len());
 
             let bdl = alloc(2 * size_of::<BD>()) as *mut BD;
-            write(bdl, BD {
-                addr: bd_addr as u32,
-                addru: 0,
-                len: bd_size as u32,
-                ioc: 1
-            });
-            write(bdl.offset(1), BD {
-                addr: bd_addr as u32,
-                addru: 0,
-                len: bd_size as u32,
-                ioc: 1
-            });
+            write(bdl,
+                  BD {
+                      addr: bd_addr as u32,
+                      addru: 0,
+                      len: bd_size as u32,
+                      ioc: 1,
+                  });
+            write(bdl.offset(1),
+                  BD {
+                      addr: bd_addr as u32,
+                      addru: 0,
+                      len: bd_size as u32,
+                      ioc: 1,
+                  });
 
             stream.bdlpl = bdl as u32;
 
@@ -169,7 +171,7 @@ impl Resource for IntelHDAResource {
                 if stream.status & 4 == 4 {
                     break;
                 }
-                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
             }
 
             d("Finished\n");
@@ -201,7 +203,7 @@ pub struct IntelHDA {
     pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
-    pub irq: u8
+    pub irq: u8,
 }
 
 impl SessionItem for IntelHDA {
@@ -210,9 +212,7 @@ impl SessionItem for IntelHDA {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        box IntelHDAResource {
-            base: self.base
-        }
+        box IntelHDAResource { base: self.base }
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -295,7 +295,7 @@ impl IntelHDA {
         }
 
         let disable = start_ints();
-        Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+        Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         d(" GCTL ");
@@ -486,14 +486,14 @@ impl IntelHDA {
                         */
 
                         output_stream_id += 1;
-                    },
+                    }
                     1 => {
                         d("        Type: Input\n");
 
                         d("        Input Stream ");
                         dh(cmd(w_node << 20 | 0xF0600) as usize);
                         dl();
-                    },
+                    }
                     2 => d("        Type: Mixer\n"),
                     3 => d("        Type: Selector\n"),
                     4 => {
@@ -538,7 +538,7 @@ impl IntelHDA {
                         dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
                         dl();
                         */
-                    },
+                    }
                     5 => d("        Type: Power\n"),
                     6 => d("        Type: Volume\n"),
                     7 => d("        Type: Beep Generator\n"),

@@ -23,7 +23,7 @@ impl ARPScheme {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
                             let mut response = ARP {
                                 header: packet.header,
-                                data: packet.data.clone()
+                                data: packet.data.clone(),
                             };
                             response.header.oper.set(2);
                             response.header.dst_mac = packet.header.src_mac;
@@ -34,8 +34,8 @@ impl ARPScheme {
                             link.write(response.to_bytes().as_slice());
                         }
                     }
-                },
-                Option::None => sys_yield()
+                }
+                Option::None => sys_yield(),
             }
         }
     }

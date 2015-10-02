@@ -17,12 +17,12 @@ pub struct ARPHeader {
     pub src_mac: MACAddr,
     pub src_ip: IPv4Addr,
     pub dst_mac: MACAddr,
-    pub dst_ip: IPv4Addr
+    pub dst_ip: IPv4Addr,
 }
 
 pub struct ARP {
     pub header: ARPHeader,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl FromBytes for ARP {
@@ -31,7 +31,8 @@ impl FromBytes for ARP {
             unsafe {
                 return Option::Some(ARP {
                     header: *(bytes.as_ptr() as *const ARPHeader),
-                    data: bytes.sub(size_of::<ARPHeader>(), bytes.len() - size_of::<ARPHeader>())
+                    data: bytes.sub(size_of::<ARPHeader>(),
+                                    bytes.len() - size_of::<ARPHeader>()),
                 });
             }
         }
