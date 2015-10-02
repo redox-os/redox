@@ -162,6 +162,7 @@ impl Resource for FileResource {
     }
 
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
+    // TODO: Allow reallocation
     fn flush(&mut self) -> bool {
         let mut pos: u64 = 0;
         for extent in &self.node.extents {
