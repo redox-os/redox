@@ -138,7 +138,21 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rl
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP -C -M intel -d $< > $@
 
-build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/editor/editor.bin filesystem/apps/file_manager/file_manager.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/player/player.bin filesystem/apps/terminal/terminal.bin filesystem/apps/viewer/viewer.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
+apps/%:
+	make filesystem/apps/$*/$*.bin
+
+filesystem/apps/zfs/zfs.img:
+	dd if=/dev/zero of=$@ bs=256MB count=1
+	sudo losetup /dev/loop0 $@
+	-sudo zpool create redox_zfs /dev/loop0
+	-sudo zfs create redox_zfs/root
+	-sudo cp README.md /redox_zfs/root/
+	-sudo sync
+	-sudo zfs unmount redox_zfs/root
+	-sudo zpool destroy redox_zfs
+	sudo losetup -d /dev/loop0
+
+build/filesystem.gen: apps/echo apps/editor apps/file_manager apps/httpd apps/game apps/player apps/terminal apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/linux_stdio
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
