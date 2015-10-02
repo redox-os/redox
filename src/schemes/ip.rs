@@ -92,8 +92,8 @@ impl Resource for IPResource {
         return Option::None;
     }
 
-    fn flush(&mut self) -> bool {
-        return self.link.flush();
+    fn sync(&mut self) -> bool {
+        return self.link.sync();
     }
 }
 

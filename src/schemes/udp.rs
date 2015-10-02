@@ -93,8 +93,8 @@ impl Resource for UDPResource {
         return Option::None;
     }
 
-    fn flush(&mut self) -> bool {
-        return self.ip.flush();
+    fn sync(&mut self) -> bool {
+        return self.ip.sync();
     }
 }
 

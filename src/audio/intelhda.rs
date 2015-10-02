@@ -194,7 +194,7 @@ impl Resource for IntelHDAResource {
         Option::None
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         false
     }
 }

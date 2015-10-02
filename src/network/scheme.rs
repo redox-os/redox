@@ -91,7 +91,7 @@ impl Resource for NetworkResource {
         Option::None
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         false
     }
 }
