@@ -9,6 +9,7 @@ use drivers::pciconfig::*;
 use drivers::pio::*;
 
 use programs::common::*;
+use programs::common::event::MouseEvent;
 
 pub struct UHCI {
     pub base: usize,
