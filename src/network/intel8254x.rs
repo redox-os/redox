@@ -114,8 +114,8 @@ impl SessionItem for Intel8254x {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             unsafe {
-                dh(self.read(ICR) as usize);
-                dl();
+                debug::dh(self.read(ICR) as usize);
+                debug::dl();
             }
 
             self.sync();
@@ -193,15 +193,15 @@ impl Intel8254x {
         for tail in 0..length / 16 {
             let rd = &mut *receive_ring.offset(tail as isize);
             if rd.status & RD_DD == RD_DD {
-                d("Recv ");
-                dh(rd as *mut RD as usize);
-                d(" ");
-                dh(rd.status as usize);
-                d(" ");
-                dh(rd.buffer as usize);
-                d(" ");
-                dh(rd.length as usize);
-                dl();
+                debug::d("Recv ");
+                debug::dh(rd as *mut RD as usize);
+                debug::d(" ");
+                debug::dh(rd.status as usize);
+                debug::d(" ");
+                debug::dh(rd.buffer as usize);
+                debug::d(" ");
+                debug::dh(rd.length as usize);
+                debug::dl();
 
                 self.inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
 
@@ -229,15 +229,15 @@ impl Intel8254x {
                     if bytes.len() < 16384 {
                         let td = &mut *transmit_ring.offset(old_tail as isize);
 
-                        d("Send ");
-                        dh(old_tail as usize);
-                        d(" ");
-                        dh(td.status as usize);
-                        d(" ");
-                        dh(td.buffer as usize);
-                        d(" ");
-                        dh(bytes.len() & 0x3FFF);
-                        dl();
+                        debug::d("Send ");
+                        debug::dh(old_tail as usize);
+                        debug::d(" ");
+                        debug::dh(td.status as usize);
+                        debug::d(" ");
+                        debug::dh(td.buffer as usize);
+                        debug::d(" ");
+                        debug::dh(bytes.len() & 0x3FFF);
+                        debug::dl();
 
                         ::memcpy(td.buffer as *mut u8, bytes.as_ptr(), bytes.len());
                         td.length = (bytes.len() & 0x3FFF) as u16;
@@ -250,10 +250,10 @@ impl Intel8254x {
                         self.write(TDT, tail);
                     } else {
                         //TODO: More than one TD
-                        dl();
-                        d("Intel 8254x: Frame too long for transmit: ");
-                        dd(bytes.len());
-                        dl();
+                        debug::dl();
+                        debug::d("Intel 8254x: Frame too long for transmit: ");
+                        debug::dd(bytes.len());
+                        debug::dl();
                     }
 
                     break;
@@ -288,15 +288,15 @@ impl Intel8254x {
     }
 
     pub unsafe fn init(&mut self) {
-        d("Intel 8254x on: ");
-        dh(self.base);
+        debug::d("Intel 8254x on: ");
+        debug::dh(self.base);
         if self.memory_mapped {
-            d(" memory mapped");
+            debug::d(" memory mapped");
         } else {
-            d(" port mapped");
+            debug::d(" port mapped");
         }
-        d(", IRQ: ");
-        dbh(self.irq);
+        debug::d(", IRQ: ");
+        debug::dbh(self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 
@@ -315,12 +315,12 @@ impl Intel8254x {
         //Do not use VLANs
         self.flag(CTRL, CTRL_VME, false);
 
-        d(" CTRL ");
-        dh(self.read(CTRL) as usize);
+        debug::d(" CTRL ");
+        debug::dh(self.read(CTRL) as usize);
 
         // TODO: Clear statistical counters
 
-        d(" MAC: ");
+        debug::d(" MAC: ");
         let mac_low = self.read(RAL0);
         let mac_high = self.read(RAH0);
         MAC_ADDR = MACAddr {
@@ -385,8 +385,8 @@ impl Intel8254x {
         self.write(IMS,
                    IMS_RXT | IMS_RX | IMS_RXDMT | IMS_RXSEQ | IMS_LSC | IMS_TXQE | IMS_TXDW);
 
-        d(" IMS ");
-        dh(self.read(IMS) as usize);
+        debug::d(" IMS ");
+        debug::dh(self.read(IMS) as usize);
 
         self.flag(RCTL, RCTL_EN, true);
         self.flag(RCTL, RCTL_UPE, true);
@@ -401,8 +401,8 @@ impl Intel8254x {
         self.flag(RCTL, RCTL_BSEX, true);
         self.flag(RCTL, RCTL_SECRC, true);
 
-        d(" RCTL ");
-        dh(self.read(RCTL) as usize);
+        debug::d(" RCTL ");
+        debug::dh(self.read(RCTL) as usize);
 
         self.flag(TCTL, TCTL_EN, true);
         self.flag(TCTL, TCTL_PSP, true);
@@ -411,9 +411,9 @@ impl Intel8254x {
         /* TIPG Packet Gap */
         /* TODO ... */
 
-        d(" TCTL ");
-        dh(self.read(TCTL) as usize);
+        debug::d(" TCTL ");
+        debug::dh(self.read(TCTL) as usize);
 
-        dl();
+        debug::dl();
     }
 }

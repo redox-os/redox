@@ -51,15 +51,15 @@ impl RTL8139 {
     }
 
     unsafe fn init(&mut self) {
-        d("RTL8139 on: ");
-        dh(self.base);
+        debug::d("RTL8139 on: ");
+        debug::dh(self.base);
         if self.memory_mapped {
-            d(" memory mapped");
+            debug::d(" memory mapped");
         } else {
-            d(" port mapped");
+            debug::d(" port mapped");
         }
-        d(" IRQ: ");
-        dbh(self.irq);
+        debug::d(" IRQ: ");
+        debug::dbh(self.irq);
 
         self.pci.flag(4, 4, true); // Bus mastering
 
@@ -70,7 +70,7 @@ impl RTL8139 {
         outb(base + 0x37, 0x10);
         while inb(base + 0x37) & 0x10 != 0 {}
 
-        d(" MAC: ");
+        debug::d(" MAC: ");
         let mac_low = ind(base);
         let mac_high = ind(base + 4);
         MAC_ADDR = MACAddr {
@@ -95,23 +95,23 @@ impl RTL8139 {
         }
 
         outw(base + 0x3C, 5);
-        d(" IMR: ");
-        dh(inw(base + 0x3C) as usize);
+        debug::d(" IMR: ");
+        debug::dh(inw(base + 0x3C) as usize);
 
         outb(base + 0x37, 0xC);
-        d(" CMD: ");
-        dbh(inb(base + 0x37));
+        debug::d(" CMD: ");
+        debug::dbh(inb(base + 0x37));
 
         outd(base + 0x44,
              (1 << 7) | (1 << 4) | (1 << 3) | (1 << 2) | (1 << 1));
-        d(" RCR: ");
-        dh(ind(base + 0x44) as usize);
+        debug::d(" RCR: ");
+        debug::dh(ind(base + 0x44) as usize);
 
         outd(base + 0x40, (0b11 << 24));
-        d(" TCR: ");
-        dh(ind(base + 0x40) as usize);
+        debug::d(" TCR: ");
+        debug::dh(ind(base + 0x40) as usize);
 
-        dl();
+        debug::dl();
     }
 
     unsafe fn receive_inbound(&mut self) {
@@ -126,15 +126,15 @@ impl RTL8139 {
             let frame_status = ptr::read((receive_buffer + capr) as *const u16) as usize;
             let frame_len = ptr::read((receive_buffer + capr + 2) as *const u16) as usize;
 
-            d("Recv ");
-            dh(capr as usize);
-            d(" ");
-            dh(frame_status);
-            d(" ");
-            dh(frame_addr);
-            d(" ");
-            dh(frame_len);
-            dl();
+            debug::d("Recv ");
+            debug::dh(capr as usize);
+            debug::d(" ");
+            debug::dh(frame_status);
+            debug::d(" ");
+            debug::dh(frame_addr);
+            debug::d(" ");
+            debug::dh(frame_len);
+            debug::dl();
 
             self.inbound.push(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4));
 
@@ -160,15 +160,15 @@ impl RTL8139 {
                         }
                     }
 
-                    d("Send ");
-                    dh(txd.status_port as usize);
-                    d(" ");
-                    dh(tx_status as usize);
-                    d(" ");
-                    dh(txd.buffer);
-                    d(" ");
-                    dh(bytes.len() & 0xFFF);
-                    dl();
+                    debug::d("Send ");
+                    debug::dh(txd.status_port as usize);
+                    debug::d(" ");
+                    debug::dh(tx_status as usize);
+                    debug::d(" ");
+                    debug::dh(txd.buffer);
+                    debug::d(" ");
+                    debug::dh(bytes.len() & 0xFFF);
+                    debug::dl();
 
                     ::memcpy(txd.buffer as *mut u8, bytes.as_ptr(), bytes.len());
 
@@ -177,13 +177,13 @@ impl RTL8139 {
 
                     self.txd_i = (self.txd_i + 1) % 4;
                 } else {
-                    dl();
-                    d("RTL8139: Frame too long for transmit: ");
-                    dd(bytes.len());
-                    dl();
+                    debug::dl();
+                    debug::d("RTL8139: Frame too long for transmit: ");
+                    debug::dd(bytes.len());
+                    debug::dl();
                 }
             } else {
-                d("RTL8139: TXD Overflow!\n");
+                debug::d("RTL8139: TXD Overflow!\n");
                 self.txd_i = 0;
             }
         }

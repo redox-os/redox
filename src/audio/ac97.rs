@@ -98,14 +98,14 @@ impl Resource for AC97Resource {
                     Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
                 }
 
-                dd(po_civ.read() as usize);
-                d(" / ");
-                dd(lvi as usize);
-                d(": ");
-                dd(position);
-                d(" / ");
-                dd(buf.len());
-                dl();
+                debug::dd(po_civ.read() as usize);
+                debug::d(" / ");
+                debug::dd(lvi as usize);
+                debug::d(": ");
+                debug::dd(position);
+                debug::d(" / ");
+                debug::dd(buf.len());
+                debug::dl();
 
                 let bytes = min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
@@ -146,11 +146,11 @@ impl Resource for AC97Resource {
                 Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
             }
 
-            d("Finished ");
-            dd(po_civ.read() as usize);
-            d(" / ");
-            dd(lvi as usize);
-            dl();
+            debug::d("Finished ");
+            debug::dd(po_civ.read() as usize);
+            debug::d(" / ");
+            debug::dd(lvi as usize);
+            debug::dl();
         }
 
         Option::Some(buf.len())
@@ -203,14 +203,14 @@ impl AC97 {
             irq: pci.read(0x3C) as u8 & 0xF,
         };
 
-        d("AC97 on: ");
-        dh(module.audio);
-        d(", ");
-        dh(module.bus_master);
-        d(", IRQ: ");
-        dbh(module.irq);
+        debug::d("AC97 on: ");
+        debug::dh(module.audio);
+        debug::d(", ");
+        debug::dh(module.bus_master);
+        debug::d(", IRQ: ");
+        debug::dbh(module.irq);
 
-        dl();
+        debug::dl();
 
         module
     }

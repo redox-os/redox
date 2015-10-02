@@ -24,7 +24,7 @@ impl Resource for TCPResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        d("TODO: Implement read for tcp://\n");
+        debug::d("TODO: Implement read for tcp://\n");
         return Option::None;
     }
 
@@ -418,7 +418,7 @@ impl SessionItem for TCPScheme {
                 }
             }
         } else {
-            d("TCP: No remote endpoint or local port provided\n");
+            debug::d("TCP: No remote endpoint or local port provided\n");
         }
 
         return box NoneResource;
