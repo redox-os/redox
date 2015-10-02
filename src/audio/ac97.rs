@@ -160,7 +160,7 @@ impl Resource for AC97Resource {
         Option::None
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         false
     }
 }
