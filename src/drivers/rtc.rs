@@ -4,19 +4,19 @@ use common::time::*;
 use drivers::pio::*;
 
 fn cvt_bcd(value: usize) -> usize {
-    (value & 0xF) + ((value/16) * 10)
+    (value & 0xF) + ((value / 16) * 10)
 }
 
 pub struct RTC {
     addr: PIO8,
-    data: PIO8
+    data: PIO8,
 }
 
 impl RTC {
     pub fn new() -> RTC {
         return RTC {
             addr: PIO8::new(0x70),
-            data: PIO8::new(0x71)
+            data: PIO8::new(0x71),
         }
     }
 
@@ -40,14 +40,14 @@ impl RTC {
         let register_b;
         unsafe {
             let reenable = start_no_ints();
-                self.wait();
-                second = self.read(0) as usize;
-                minute = self.read(2) as usize;
-                hour = self.read(4) as usize;
-                day = self.read(7) as usize;
-                month = self.read(8) as usize;
-                year = self.read(9) as usize;
-                register_b = self.read(0xB);
+            self.wait();
+            second = self.read(0) as usize;
+            minute = self.read(2) as usize;
+            hour = self.read(4) as usize;
+            day = self.read(7) as usize;
+            month = self.read(8) as usize;
+            year = self.read(9) as usize;
+            register_b = self.read(0xB);
             end_no_ints(reenable);
         }
 
@@ -70,7 +70,7 @@ impl RTC {
         //Unix time from clock
         let mut secs: i64 = (year as i64 - 1970) * 31536000;
 
-        let mut leap_days = (year as i64 - 1972)/4 + 1;
+        let mut leap_days = (year as i64 - 1972) / 4 + 1;
         if year % 4 == 0 {
             if month <= 2 {
                 leap_days -= 1;
@@ -90,7 +90,7 @@ impl RTC {
             10 => secs += 23587200,
             11 => secs += 26265600,
             12 => secs += 28857600,
-            _ => ()
+            _ => (),
         }
 
         secs += (day as i64 - 1) * 86400;

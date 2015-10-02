@@ -10,7 +10,7 @@ pub struct Package {
     pub icon: BMP,
     pub accepts: Vec<String>,
     pub authors: Vec<String>,
-    pub descriptions: Vec<String>
+    pub descriptions: Vec<String>,
 }
 
 impl Package {
@@ -23,7 +23,7 @@ impl Package {
             icon: BMP::new(),
             accepts: Vec::new(),
             authors: Vec::new(),
-            descriptions: Vec::new()
+            descriptions: Vec::new(),
         };
 
         let path_parts = url.path_parts();
@@ -46,7 +46,8 @@ impl Package {
             if line.starts_with("name=".to_string()) {
                 package.name = line.substr(5, line.len() - 5);
             } else if line.starts_with("binary=".to_string()) {
-                package.binary = URL::from_string(&(url.to_string() + line.substr(7, line.len() - 7)));
+                package.binary = URL::from_string(&(url.to_string() +
+                                                    line.substr(7, line.len() - 7)));
             } else if line.starts_with("icon=".to_string()) {
                 let mut resource = URL::from_string(&line.substr(5, line.len() - 5)).open();
                 let mut vec: Vec<u8> = Vec::new();

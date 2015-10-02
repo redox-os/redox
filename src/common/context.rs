@@ -9,7 +9,7 @@ use common::scheduler::*;
 use common::string::*;
 use common::vec::*;
 
-pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
+pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
@@ -55,10 +55,10 @@ pub unsafe fn context_switch(interrupted: bool) {
                         next.interrupted = false;
                         current.remap(next);
                         current.switch(next);
-                    },
-                    Option::None => ()
+                    }
+                    Option::None => (),
                 },
-                Option::None => ()
+                Option::None => (),
             }
         }
     }
@@ -70,11 +70,11 @@ pub unsafe fn context_switch(interrupted: bool) {
 pub unsafe extern "cdecl" fn context_exit() {
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
         match contexts.get(context_i) {
             Option::Some(mut current) => current.exited = true,
-            Option::None => ()
+            Option::None => (),
         }
     }
 
@@ -92,12 +92,12 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
 pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
-    pub virtual_size: usize
+    pub virtual_size: usize,
 }
 
 pub struct ContextFile {
     pub fd: usize,
-    pub resource: Box<Resource>
+    pub resource: Box<Resource>,
 }
 
 pub struct Context {
@@ -109,7 +109,7 @@ pub struct Context {
     pub cwd: String,
     pub files: Vec<ContextFile>,
     pub interrupted: bool,
-    pub exited: bool
+    pub exited: bool,
 }
 
 impl Context {
@@ -123,7 +123,7 @@ impl Context {
             cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
-            exited: false
+            exited: false,
         }
     }
 
@@ -139,7 +139,7 @@ impl Context {
             cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
-            exited: false
+            exited: false,
         };
 
         let ebp = ret.stack_ptr;
@@ -192,16 +192,17 @@ impl Context {
 
     pub unsafe fn map(&mut self) {
         for entry in self.memory.iter() {
-            for i in 0..(entry.virtual_size + 4095)/4096 {
-                set_page(entry.virtual_address + i*4096, entry.physical_address + i*4096);
+            for i in 0..(entry.virtual_size + 4095) / 4096 {
+                set_page(entry.virtual_address + i * 4096,
+                         entry.physical_address + i * 4096);
             }
         }
     }
 
     pub unsafe fn unmap(&mut self) {
         for entry in self.memory.iter() {
-            for i in 0..(entry.virtual_size + 4095)/4096 {
-                identity_page(entry.virtual_address + i*4096);
+            for i in 0..(entry.virtual_size + 4095) / 4096 {
+                identity_page(entry.virtual_address + i * 4096);
             }
         }
     }

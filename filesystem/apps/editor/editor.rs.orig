@@ -43,7 +43,11 @@ impl Editor {
                 file.seek(Seek::Start(0));
                 file.write(&self.string.to_utf8().as_slice());
                 file.sync();
+<<<<<<< HEAD
+            },
+=======
             }
+>>>>>>> upstream/master
             Option::None => {
                 //TODO: Ask for file to save to
                 window.title = "Editor (".to_string() + &self.url + ") No Open File";

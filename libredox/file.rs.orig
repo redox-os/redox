@@ -97,7 +97,13 @@ impl File {
 
     /// Flush the io
     pub fn sync(&mut self) -> bool {
+<<<<<<< HEAD
+        unsafe {
+            sys_fsync(self.fd) == 0
+        }
+=======
         unsafe { sys_fsync(self.fd) == 0 }
+>>>>>>> upstream/master
     }
 }
 

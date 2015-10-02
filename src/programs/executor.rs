@@ -22,12 +22,15 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             if executable.data > 0 {
                 virtual_size = alloc_size(executable.data) - 4096;
                 physical_address = alloc(virtual_size);
-                ptr::copy((executable.data + 4096) as *const u8, physical_address as *mut u8, virtual_size);
+                ptr::copy((executable.data + 4096) as *const u8,
+                          physical_address as *mut u8,
+                          virtual_size);
                 entry = executable.entry();
             }
         }
 
-        if physical_address > 0 && virtual_address > 0 && virtual_size > 0 && entry >= virtual_address && entry < virtual_address + virtual_size {
+        if physical_address > 0 && virtual_address > 0 && virtual_size > 0 &&
+           entry >= virtual_address && entry < virtual_address + virtual_size {
             let mut context_args: Vec<u32> = Vec::new();
             context_args.push(0 as u32); // ENVP
             context_args.push(0 as u32); // ARGV NULL
@@ -47,22 +50,22 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             context.memory.push(ContextMemory {
                 physical_address: physical_address,
                 virtual_address: virtual_address,
-                virtual_size: virtual_size
+                virtual_size: virtual_size,
             });
 
             context.cwd = wd.to_string();
 
             context.files.push(ContextFile {
-                fd: 0, //STDIN
-                resource: URL::from_str("debug://").open()
+                fd: 0, // STDIN
+                resource: URL::from_str("debug://").open(),
             });
             context.files.push(ContextFile {
-                fd: 1, //STDOUT
-                resource: URL::from_str("debug://").open()
+                fd: 1, // STDOUT
+                resource: URL::from_str("debug://").open(),
             });
             context.files.push(ContextFile {
-                fd: 2, //STDERR
-                resource: URL::from_str("debug://").open()
+                fd: 2, // STDERR
+                resource: URL::from_str("debug://").open(),
             });
 
             let reenable = start_no_ints();
@@ -70,7 +73,7 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
                 (*contexts_ptr).push(context);
             }
             end_no_ints(reenable);
-        }else if physical_address > 0{
+        } else if physical_address > 0 {
             unalloc(physical_address);
         }
     }

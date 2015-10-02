@@ -9,7 +9,7 @@ use programs::common::*;
 #[repr(packed)]
 pub struct Extent {
     pub block: u64,
-    pub length: u64
+    pub length: u64,
 }
 
 #[repr(packed)]
@@ -17,7 +17,7 @@ pub struct Header {
     pub signature: [u8; 8],
     pub version: u32,
     pub name: [u8; 244],
-    pub extents: [Extent; 16]
+    pub extents: [Extent; 16],
 }
 
 #[repr(packed)]
@@ -39,7 +39,7 @@ impl Node {
             let c = data.name[i];
             if c == 0 {
                 break;
-            }else{
+            } else {
                 utf8.push(c);
             }
         }
@@ -65,7 +65,7 @@ impl Clone for Node {
 pub struct FileSystem {
     pub disk: Disk,
     pub header: Header,
-    pub nodes: Vec<Node>
+    pub nodes: Vec<Node>,
 }
 
 impl FileSystem {
@@ -80,7 +80,7 @@ impl FileSystem {
             let node_data: *const NodeData = alloc_type();
             for extent in &header.extents {
                 if extent.block > 0 {
-                    for node_address in extent.block..extent.block + (extent.length + 511)/512 {
+                    for node_address in extent.block..extent.block + (extent.length + 511) / 512 {
                         disk.read(node_address, 1, node_data as usize);
 
                         nodes.push(Node::new(node_address, ptr::read(node_data)));
@@ -92,21 +92,20 @@ impl FileSystem {
             return FileSystem {
                 disk: disk,
                 header: header,
-                nodes: nodes
+                nodes: nodes,
             };
         }
     }
 
     pub fn valid(&self) -> bool {
-        return self.header.signature[0] == 'R' as u8
-            && self.header.signature[1] == 'E' as u8
-            && self.header.signature[2] == 'D' as u8
-            && self.header.signature[3] == 'O' as u8
-            && self.header.signature[4] == 'X' as u8
-            && self.header.signature[5] == 'F' as u8
-            && self.header.signature[6] == 'S' as u8
-            && self.header.signature[7] == '\0' as u8
-            && self.header.version == 0xFFFFFFFF;
+        return self.header.signature[0] == 'R' as u8 && self.header.signature[1] == 'E' as u8 &&
+               self.header.signature[2] == 'D' as u8 &&
+               self.header.signature[3] == 'O' as u8 &&
+               self.header.signature[4] == 'X' as u8 &&
+               self.header.signature[5] == 'F' as u8 &&
+               self.header.signature[6] == 'S' as u8 &&
+               self.header.signature[7] == '\0' as u8 &&
+               self.header.version == 0xFFFFFFFF;
     }
 
     pub fn node(&self, filename: &String) -> Option<Node> {
@@ -137,7 +136,7 @@ pub struct FileResource {
     pub node: Node,
     pub vec: Vec<u8>,
     pub seek: usize,
-    pub dirty: bool
+    pub dirty: bool,
 }
 
 impl Resource for FileResource {
@@ -154,7 +153,7 @@ impl Resource for FileResource {
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
                 Option::Some(b) => buf[i] = *b,
-                Option::None => ()
+                Option::None => (),
             }
             self.seek += 1;
             i += 1;
@@ -183,8 +182,10 @@ impl Resource for FileResource {
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = offset,
-            ResourceSeek::Current(offset) => self.seek = max(0, self.seek as isize + offset) as usize,
-            ResourceSeek::End(offset) => self.seek = max(0, self.vec.len() as isize + offset) as usize
+            ResourceSeek::Current(offset) =>
+                self.seek = max(0, self.seek as isize + offset) as usize,
+            ResourceSeek::End(offset) =>
+                self.seek = max(0, self.vec.len() as isize + offset) as usize,
         }
         while self.vec.len() < self.seek {
             self.vec.push(0);
@@ -205,11 +206,11 @@ impl Resource for FileResource {
             for ref mut extent in &mut self.node.extents {
                 //Make sure it is a valid extent
                 if extent.block > 0 && extent.length > 0 {
-                    let current_sectors = (extent.length as usize + block_size - 1)/block_size;
+                    let current_sectors = (extent.length as usize + block_size - 1) / block_size;
                     let max_size = current_sectors * 512;
 
                     let size = min(remaining as usize, max_size);
-                    let sectors = (size + block_size - 1)/block_size;
+                    let sectors = (size + block_size - 1) / block_size;
 
                     if size as u64 != extent.length {
                         extent.length = size as u64;
@@ -220,8 +221,8 @@ impl Resource for FileResource {
                         let mem_to_write = self.vec.as_ptr().offset(pos) as usize;
                         //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
                         let bytes_written = self.disk.write(extent.block,
-                                    sectors as u16,
-                                    mem_to_write as usize);
+                                                            sectors as u16,
+                                                            mem_to_write as usize);
                     }
 
                     pos += size as isize;
@@ -253,7 +254,7 @@ impl Drop for FileResource {
 }
 
 pub struct FileScheme {
-    pub fs: FileSystem
+    pub fs: FileSystem,
 }
 
 impl SessionItem for FileScheme {
@@ -285,8 +286,8 @@ impl SessionItem for FileScheme {
                             line = dirname.clone();
                             dirs.push(dirname);
                         }
-                    },
-                    Option::None => line = file.clone()
+                    }
+                    Option::None => line = file.clone(),
                 }
                 if line.len() > 0 {
                     if list.len() > 0 {
@@ -309,13 +310,15 @@ impl SessionItem for FileScheme {
                             if data > 0 {
                                 let reenable = start_no_ints();
 
-                                self.fs.disk.read(node.extents[0].block, ((node.extents[0].length + 511)/512) as u16, data);
+                                self.fs.disk.read(node.extents[0].block,
+                                                  ((node.extents[0].length + 511)/512) as u16,
+                                                  data);
 
                                 end_no_ints(reenable);
 
                                 vec = Vec {
                                     data: data as *mut u8,
-                                    length: node.extents[0].length as usize
+                                    length: node.extents[0].length as usize,
                                 };
                             }
                         }
@@ -326,9 +329,9 @@ impl SessionItem for FileScheme {
                         node: node,
                         vec: vec,
                         seek: 0,
-                        dirty: false
+                        dirty: false,
                     };
-                },
+                }
                 Option::None => {
                     /*
                     d("Creating ");

@@ -2,15 +2,13 @@ use common::vec::*;
 
 //A FIFO Queue
 pub struct Queue<T> {
-    pub vec: Vec<T>
+    pub vec: Vec<T>,
 }
 
 impl<T> Queue<T> {
     /// Create new queue
     pub fn new() -> Queue<T> {
-        Queue {
-            vec: Vec::new()
-        }
+        Queue { vec: Vec::new() }
     }
 
     /// Push element to queue

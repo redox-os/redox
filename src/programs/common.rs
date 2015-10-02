@@ -36,7 +36,7 @@ pub trait SessionItem {
 
     }
 
-    fn scheme(&self) -> String{
+    fn scheme(&self) -> String {
         String::new()
     }
 

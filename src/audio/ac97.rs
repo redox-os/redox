@@ -10,12 +10,12 @@ use programs::common::*;
 #[repr(packed)]
 struct BD {
     ptr: u32,
-    samples: u32
+    samples: u32,
 }
 
 struct AC97Resource {
     audio: usize,
-    bus_master: usize
+    bus_master: usize,
 }
 
 impl Resource for AC97Resource {
@@ -55,7 +55,7 @@ impl Resource for AC97Resource {
                 if po_cr.read() & 1 == 0 {
                     break;
                 }
-                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
             }
 
             po_cr.write(0);
@@ -67,10 +67,11 @@ impl Resource for AC97Resource {
             }
 
             for i in 0..32 {
-                ptr::write(bdl.offset(i), BD {
-                    ptr: 0,
-                    samples: 0
-                });
+                ptr::write(bdl.offset(i),
+                           BD {
+                               ptr: 0,
+                               samples: 0,
+                           });
             }
 
             let mut wait = false;
@@ -94,7 +95,7 @@ impl Resource for AC97Resource {
                     if po_civ.read() != lvi as u8 {
                         break;
                     }
-                    Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+                    Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
                 }
 
                 debug::dd(po_civ.read() as usize);
@@ -109,10 +110,11 @@ impl Resource for AC97Resource {
                 let bytes = min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
 
-                ptr::write(bdl.offset(lvi as isize), BD {
-                    ptr: buf.as_ptr().offset(position as isize) as u32,
-                    samples: (samples & 0xFFFF) as u32
-                });
+                ptr::write(bdl.offset(lvi as isize),
+                           BD {
+                               ptr: buf.as_ptr().offset(position as isize) as u32,
+                               samples: (samples & 0xFFFF) as u32,
+                           });
 
                 position += bytes;
 
@@ -141,7 +143,7 @@ impl Resource for AC97Resource {
                     po_cr.write(0);
                     break;
                 }
-                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
             }
 
             debug::d("Finished ");
@@ -166,7 +168,7 @@ impl Resource for AC97Resource {
 pub struct AC97 {
     pub audio: usize,
     pub bus_master: usize,
-    pub irq: u8
+    pub irq: u8,
 }
 
 impl SessionItem for AC97 {
@@ -177,7 +179,7 @@ impl SessionItem for AC97 {
     fn open(&mut self, url: &URL) -> Box<Resource> {
         box AC97Resource {
             audio: self.audio,
-            bus_master: self.bus_master
+            bus_master: self.bus_master,
         }
     }
 
@@ -198,7 +200,7 @@ impl AC97 {
         let module = box AC97 {
             audio: pci.read(0x10) as usize & 0xFFFFFFF0,
             bus_master: pci.read(0x14) as usize & 0xFFFFFFF0,
-            irq: pci.read(0x3C) as u8 & 0xF
+            irq: pci.read(0x3C) as u8 & 0xF,
         };
 
         debug::d("AC97 on: ");

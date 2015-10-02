@@ -13,7 +13,7 @@ use programs::common::*;
 struct TXD {
     pub address_port: u16,
     pub status_port: u16,
-    pub buffer: usize
+    pub buffer: usize,
 }
 
 pub struct RTL8139 {
@@ -25,7 +25,7 @@ pub struct RTL8139 {
     inbound: Queue<Vec<u8>>,
     outbound: Queue<Vec<u8>>,
     txds: Vec<TXD>,
-    txd_i: usize
+    txd_i: usize,
 }
 
 impl RTL8139 {
@@ -42,7 +42,7 @@ impl RTL8139 {
             inbound: Queue::new(),
             outbound: Queue::new(),
             txds: Vec::new(),
-            txd_i: 0
+            txd_i: 0,
         };
 
         unsafe { module.init() };
@@ -74,14 +74,12 @@ impl RTL8139 {
         let mac_low = ind(base);
         let mac_high = ind(base + 4);
         MAC_ADDR = MACAddr {
-            bytes: [
-                mac_low as u8,
-                (mac_low >> 8) as u8,
-                (mac_low >> 16) as u8,
-                (mac_low >> 24) as u8,
-                mac_high as u8,
-                (mac_high >> 8) as u8
-            ]
+            bytes: [mac_low as u8,
+                    (mac_low >> 8) as u8,
+                    (mac_low >> 16) as u8,
+                    (mac_low >> 24) as u8,
+                    mac_high as u8,
+                    (mac_high >> 8) as u8],
         };
         MAC_ADDR.d();
 
@@ -92,7 +90,7 @@ impl RTL8139 {
             self.txds.push(TXD {
                 address_port: base + 0x20 + (i as u16) * 4,
                 status_port: base + 0x10 + (i as u16) * 4,
-                buffer: alloc(4096)
+                buffer: alloc(4096),
             });
         }
 
@@ -104,7 +102,8 @@ impl RTL8139 {
         debug::d(" CMD: ");
         debug::dbh(inb(base + 0x37));
 
-        outd(base + 0x44, (1 << 7) | (1 << 4) | (1 << 3) | (1 << 2) | (1 << 1));
+        outd(base + 0x44,
+             (1 << 7) | (1 << 4) | (1 << 3) | (1 << 2) | (1 << 1));
         debug::d(" RCR: ");
         debug::dh(ind(base + 0x44) as usize);
 
@@ -243,7 +242,7 @@ impl NetworkScheme for RTL8139 {
                     } else {
                         i += 1;
                     },
-                    Option::None => break
+                    Option::None => break,
                 }
 
                 if remove {

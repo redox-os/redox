@@ -27,7 +27,7 @@ pub struct Window {
     dragging: bool,
     last_mouse_event: MouseEvent,
     events: Queue<Event>,
-    ptr: *mut Window
+    ptr: *mut Window,
 }
 
 impl Window {
@@ -47,10 +47,10 @@ impl Window {
                 y: 0,
                 left_button: false,
                 right_button: false,
-                middle_button: false
+                middle_button: false,
             },
             events: Queue::new(),
-            ptr: 0 as *mut Window
+            ptr: 0 as *mut Window,
         };
 
         unsafe {
@@ -74,7 +74,7 @@ impl Window {
 
         match event_option {
             Option::Some(event) => event.to_option(),
-            Option::None => EventOption::None
+            Option::None => EventOption::None,
         }
     }
 
@@ -95,7 +95,9 @@ impl Window {
         } else {
             self.title_color = Color::new(255, 255, 255);
 
-            display.rect(Point::new(self.point.x - 2, self.point.y - 18), Size::new(self.size.width + 4, 18), self.border_color);
+            display.rect(Point::new(self.point.x - 2, self.point.y - 18),
+                         Size::new(self.size.width + 4, 18),
+                         self.border_color);
 
             let mut cursor = Point::new(self.point.x, self.point.y - 17);
             for c in self.title.chars() {
@@ -105,13 +107,23 @@ impl Window {
                 cursor.x += 8;
             }
 
-            display.rect(Point::new(self.point.x - 2, self.point.y), Size::new(2, self.size.height), self.border_color);
-            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize), Size::new(self.size.width + 4, 2), self.border_color);
-            display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y), Size::new(2, self.size.height), self.border_color);
+            display.rect(Point::new(self.point.x - 2, self.point.y),
+                         Size::new(2, self.size.height),
+                         self.border_color);
+            display.rect(Point::new(self.point.x - 2,
+                                    self.point.y + self.size.height as isize),
+                         Size::new(self.size.width + 4, 2),
+                         self.border_color);
+            display.rect(Point::new(self.point.x + self.size.width as isize,
+                                    self.point.y),
+                         Size::new(2, self.size.height),
+                         self.border_color);
 
             unsafe {
                 let reenable = start_no_ints();
-                display.image(self.point, self.content.onscreen as *const u32, Size::new(self.content.width, self.content.height));
+                display.image(self.point,
+                              self.content.onscreen as *const u32,
+                              Size::new(self.content.width, self.content.height));
                 end_no_ints(reenable);
             }
         }
@@ -130,21 +142,17 @@ impl Window {
 
         if allow_catch {
             if mouse_event.left_button {
-                if ! self.minimized
-                    && mouse_event.x >= self.point.x - 2
-                    && mouse_event.x < self.point.x + self.size.width as isize + 4
-                    && mouse_event.y >= self.point.y - 18
-                    && mouse_event.y < self.point.y + self.size.height as isize + 2
-                {
+                if !self.minimized && mouse_event.x >= self.point.x - 2 &&
+                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
+                   mouse_event.y >= self.point.y - 18 &&
+                   mouse_event.y < self.point.y + self.size.height as isize + 2 {
                     caught = true;
                 }
 
-                if !self.last_mouse_event.left_button
-                    && mouse_event.x >= self.point.x - 2
-                    && mouse_event.x < self.point.x + self.size.width as isize + 4
-                    && mouse_event.y >= self.point.y - 18
-                    && mouse_event.y < self.point.y
-                {
+                if !self.last_mouse_event.left_button && mouse_event.x >= self.point.x - 2 &&
+                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
+                   mouse_event.y >= self.point.y - 18 &&
+                   mouse_event.y < self.point.y {
                     self.dragging = true;
                     caught = true;
                 }
@@ -153,21 +161,17 @@ impl Window {
             }
 
             if mouse_event.right_button {
-                if ! self.minimized
-                    && mouse_event.x >= self.point.x - 2
-                    && mouse_event.x < self.point.x + self.size.width as isize + 4
-                    && mouse_event.y >= self.point.y - 18
-                    && mouse_event.y < self.point.y + self.size.height as isize + 2
-                {
+                if !self.minimized && mouse_event.x >= self.point.x - 2 &&
+                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
+                   mouse_event.y >= self.point.y - 18 &&
+                   mouse_event.y < self.point.y + self.size.height as isize + 2 {
                     caught = true;
                 }
 
-                if !self.last_mouse_event.right_button
-                    && mouse_event.x >= self.point.x - 2
-                    && mouse_event.x < self.point.x + self.size.width as isize + 4
-                    && mouse_event.y >= self.point.y - 18
-                    && mouse_event.y < self.point.y
-                {
+                if !self.last_mouse_event.right_button && mouse_event.x >= self.point.x - 2 &&
+                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
+                   mouse_event.y >= self.point.y - 18 &&
+                   mouse_event.y < self.point.y {
                     self.minimized = !self.minimized;
                     caught = true;
                 }

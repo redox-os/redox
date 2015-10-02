@@ -12,12 +12,12 @@ pub struct ICMPHeader {
     pub _type: u8,
     pub code: u8,
     pub checksum: Checksum,
-    pub data: [u8; 4]
+    pub data: [u8; 4],
 }
 
 pub struct ICMP {
     pub header: ICMPHeader,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl FromBytes for ICMP {
@@ -26,7 +26,8 @@ impl FromBytes for ICMP {
             unsafe {
                 return Option::Some(ICMP {
                     header: *(bytes.as_ptr() as *const ICMPHeader),
-                    data: bytes.sub(size_of::<ICMPHeader>(), bytes.len() - size_of::<ICMPHeader>())
+                    data: bytes.sub(size_of::<ICMPHeader>(),
+                                    bytes.len() - size_of::<ICMPHeader>()),
                 });
             }
         }

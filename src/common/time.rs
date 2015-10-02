@@ -13,7 +13,7 @@ pub const NANOS_PER_SEC: i32 = 1000000000;
 #[derive(Copy, Clone)]
 pub struct Duration {
     pub secs: i64,
-    pub nanos: i32
+    pub nanos: i32,
 }
 
 impl Duration {
@@ -31,7 +31,7 @@ impl Duration {
 
         Duration {
             secs: secs,
-            nanos: nanos
+            nanos: nanos,
         }
     }
 

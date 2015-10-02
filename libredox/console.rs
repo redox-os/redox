@@ -22,7 +22,11 @@ pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
     unsafe {
         if window as usize == 0 {
             window = sys_alloc(size_of::<Box<ConsoleWindow>>()) as *mut Box<ConsoleWindow>;
-            ptr::write(window, ConsoleWindow::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(640, 480), "Console".to_string()));
+            ptr::write(window,
+                       ConsoleWindow::new(Point::new((rand() % 400 + 50) as isize,
+                                                     (rand() % 300 + 50) as isize),
+                                          Size::new(640, 480),
+                                          "Console".to_string()));
             (*window).redraw();
         }
         &mut *window
@@ -45,7 +49,7 @@ pub unsafe fn console_destroy() {
 
 /// Set the title of the console window
 // TODO: Move this to a `Window` trait?
-pub fn console_title(title: &String){
+pub fn console_title(title: &String) {
     console_window().window.title = title.clone();
     console_window().redraw();
 }
@@ -83,7 +87,7 @@ macro_rules! readln {
 /// A console char
 pub struct ConsoleChar {
     character: char,
-    color: Color
+    color: Color,
 }
 
 /// A console window
@@ -99,7 +103,7 @@ pub struct ConsoleWindow {
     /// Scroll distance
     pub scroll: Point,
     /// Wrap the text?
-    pub wrap: bool
+    pub wrap: bool,
 }
 
 impl ConsoleWindow {
@@ -111,7 +115,7 @@ impl ConsoleWindow {
             command: String::new(),
             offset: 0,
             scroll: Point::new(0, 0),
-            wrap: true
+            wrap: true,
         }
     }
 
@@ -121,9 +125,12 @@ impl ConsoleWindow {
     }
 
     /// Print to the window
-    pub fn print(&mut self, string: &String, color: Color){
+    pub fn print(&mut self, string: &String, color: Color) {
         for c in string.chars() {
-            self.output.push(ConsoleChar{ character: c, color: color });
+            self.output.push(ConsoleChar {
+                character: c,
+                color: color,
+            });
         }
     }
 
@@ -135,17 +142,24 @@ impl ConsoleWindow {
                     if key_event.pressed {
                         match key_event.scancode {
                             K_BKSP => if self.offset > 0 {
-                                self.command = self.command.substr(0, self.offset - 1) + self.command.substr(self.offset, self.command.len() - self.offset);
+                                self.command = self.command.substr(0, self.offset - 1) +
+                                               self.command.substr(self.offset,
+                                                                   self.command.len() -
+                                                                   self.offset);
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.command.len() {
-                                self.command = self.command.substr(0, self.offset) + self.command.substr(self.offset + 1, self.command.len() - self.offset - 1);
+                                self.command = self.command.substr(0, self.offset) +
+                                               self.command.substr(self.offset + 1,
+                                                                   self.command.len() -
+                                                                   self.offset -
+                                                                   1);
                             },
                             K_HOME => self.offset = 0,
                             K_UP => {
                                 //self.command = self.last_command.clone();
                                 //self.offset = self.command.len();
-                            },
+                            }
                             K_LEFT => if self.offset > 0 {
                                 self.offset -= 1;
                             },
@@ -156,7 +170,7 @@ impl ConsoleWindow {
                             K_DOWN => {
                                 //self.command = String::new();
                                 //self.offset = self.command.len();
-                            },
+                            }
                             _ => match key_event.character {
                                 '\x00' => (),
                                 '\n' => {
@@ -164,25 +178,29 @@ impl ConsoleWindow {
                                     self.command = String::new();
                                     self.offset = 0;
                                     return Option::Some(command);
-                                },
+                                }
                                 '\x1B' => return Option::None,
                                 _ => {
-                                    self.command = self.command.substr(0, self.offset) + key_event.character + self.command.substr(self.offset, self.command.len() - self.offset);
+                                    self.command = self.command.substr(0, self.offset) +
+                                                   key_event.character +
+                                                   self.command.substr(self.offset,
+                                                                       self.command.len() -
+                                                                       self.offset);
                                     self.offset += 1;
                                 }
-                            }
+                            },
                         }
                     }
                     self.redraw();
-                },
+                }
                 EventOption::None => sys_yield(),
-                _ => ()
+                _ => (),
             }
         }
     }
 
     /// Redraw the window
-    pub fn redraw(&mut self){
+    pub fn redraw(&mut self) {
         let scroll = self.scroll;
 
         let mut col = -scroll.x;
@@ -194,7 +212,7 @@ impl ConsoleWindow {
             let content = &self.window.content;
             content.set(Color::new(0, 0, 0));
 
-            for c in self.output.iter(){
+            for c in self.output.iter() {
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
@@ -203,10 +221,10 @@ impl ConsoleWindow {
                 if c.character == '\n' {
                     col = -scroll.x;
                     row += 1;
-                }else if c.character == '\t' {
+                } else if c.character == '\t' {
                     col += 8 - col % 8;
-                }else{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
+                } else {
+                    if col >= 0 && col < cols && row >= 0 && row < rows {
                         content.char(Point::new(8 * col, 16 * row), c.character, c.color);
                     }
                     col += 1;
@@ -218,20 +236,24 @@ impl ConsoleWindow {
                 row += 1;
             }
 
-            if col >= 0 && col < cols && row >= 0 && row < rows{
-                content.char(Point::new(8 * col, 16 * row), '#', Color::new(255, 255, 255));
+            if col >= 0 && col < cols && row >= 0 && row < rows {
+                content.char(Point::new(8 * col, 16 * row),
+                             '#',
+                             Color::new(255, 255, 255));
                 col += 2;
             }
 
             let mut i = 0;
-            for c in self.command.chars(){
+            for c in self.command.chars() {
                 if self.wrap && col >= cols {
                     col = -scroll.x;
                     row += 1;
                 }
 
-                if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                    content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
+                if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows {
+                    content.char(Point::new(8 * col, 16 * row),
+                                 '_',
+                                 Color::new(255, 255, 255));
                 }
 
                 if c == '\n' {
@@ -240,8 +262,10 @@ impl ConsoleWindow {
                 } else if c == '\t' {
                     col += 8 - col % 8;
                 } else {
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                    if col >= 0 && col < cols && row >= 0 && row < rows {
+                        content.char(Point::new(8 * col, 16 * row),
+                                     c,
+                                     Color::new(255, 255, 255));
                     }
                     col += 1;
                 }
@@ -254,8 +278,10 @@ impl ConsoleWindow {
                 row += 1;
             }
 
-            if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows{
-                content.char(Point::new(8 * col, 16 * row), '_', Color::new(255, 255, 255));
+            if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows {
+                content.char(Point::new(8 * col, 16 * row),
+                             '_',
+                             Color::new(255, 255, 255));
             }
         }
 
