@@ -210,7 +210,7 @@ qemu_tap_8254x: build/harddrive.bin
 
 virtualbox_tap: build/harddrive.bin
 	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete
+	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
 	-$(RM) harddrive.vdi
 	echo "Create VM"
