@@ -35,7 +35,9 @@ impl Editor {
         window.title = "Editor (".to_string() + &self.url + ") Saved";
 
         let mut resource = File::open(&self.url);
+        resource.seek(Seek::Start(0));
         resource.write(&self.string.to_utf8().as_slice());
+        resource.flush();
     }
 
     fn draw_content(&mut self, window: &mut Window){
