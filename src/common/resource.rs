@@ -39,8 +39,8 @@ pub trait Resource {
     fn write(&mut self, buf: &[u8]) -> Option<usize>;
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize>;
-    /// Flush the resource
-    fn flush(&mut self) -> bool;
+    /// Sync the resource
+    fn sync(&mut self) -> bool;
 
     //Helper functions
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -377,7 +377,7 @@ impl Resource for NoneResource {
         return Option::None;
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         return false;
     }
 }
@@ -453,7 +453,7 @@ impl Resource for VecResource {
         return Option::Some(self.seek);
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         return true;
     }
 }
