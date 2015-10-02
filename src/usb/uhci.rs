@@ -559,8 +559,7 @@ impl UHCI {
                                         y: 0,
                                         left_button: buttons & 1 == 1,
                                         middle_button: buttons & 4 == 4,
-                                        right_button: buttons & 2 == 2,
-                                        valid: true
+                                        right_button: buttons & 2 == 2
                                     }.trigger();
                                 }
 
