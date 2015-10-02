@@ -218,7 +218,7 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
                 if file.fd == fd {
                     end_no_ints(reenable);
 
-                    if file.resource.flush() {
+                    if file.resource.sync() {
                         ret = 0;
                     }
 
