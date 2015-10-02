@@ -74,11 +74,28 @@ help:
 	@echo
 	@echo "    make qemu_no_kvm"
 	@echo "        Build Redox and run it inside Qemu machine without KVM support."
+	@echo
+	@echo "    make tests"
+	@echo "        Run tests on Redox."
+	@echo
+	@echo "    make clean"
+	@echo "        Clean build directory."
+	@echo
 
 all: build/harddrive.bin
 
-doc: src/kernel.rs build/libcore.rlib build/liballoc.rlib
+docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
+
+tests: tests/success tests/failure
+
+clean:
+	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+
+FORCE:
+
+tests/%: FORCE
+	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
 build/libcore.rlib: rust/libcore/lib.rs
 	$(MKDIR) -p build
@@ -240,6 +257,3 @@ ping:
 
 wireshark:
 	wireshark network.pcap
-
-clean:
-	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
