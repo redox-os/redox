@@ -645,7 +645,7 @@ impl UHCI {
 
         debug::d(" CMD ");
         debug::dh(inw(usbcmd) as usize);
-        debug::outw(usbcmd, 1 << 2 | 1 << 1);
+        outw(usbcmd, 1 << 2 | 1 << 1);
         debug::d(" to ");
         debug::dh(inw(usbcmd) as usize);
         let disable = start_ints();
@@ -663,7 +663,7 @@ impl UHCI {
 
         debug::d(" FRNUM ");
         debug::dh(inw(frnum) as usize);
-        debug::outw(frnum, 0);
+        outw(frnum, 0);
         debug::d(" to ");
         debug::dh(inw(frnum) as usize);
 
@@ -679,7 +679,7 @@ impl UHCI {
 
         debug::d(" CMD ");
         debug::dh(inw(usbcmd) as usize);
-        debug::outw(usbcmd, 1);
+        outw(usbcmd, 1);
         debug::d(" to ");
         debug::dh(inw(usbcmd) as usize);
 
