@@ -70,20 +70,7 @@ pub unsafe fn pci_device(session: &mut Session, mut pci: PCIConfig, class_id: u3
         match vendor_code {
             0x10EC => match device_code { // REALTEK
                 0x8139 => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box RTL8139 {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                        resources: Vec::new(),
-                        inbound: Queue::new(),
-                        outbound: Queue::new(),
-                        txds: Vec::new(),
-                        txd_i: 0
-                    };
-                    module.init();
-                    session.items.push(module);
+                    session.items.push(RTL8139::new(pci));
                 },
                 _ => ()
             },
