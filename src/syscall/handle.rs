@@ -211,16 +211,16 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     let contexts = & *contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
-            let mut remove = false;
             if let Option::Some(file) = current.files.get(i) {
                 if file.fd == fd {
                     end_no_ints(reenable);
 
-                    file.resource.flush();
+                    if file.resource.flush() {
+                        ret = 0;
+                    }
 
                     start_no_ints();
 
-                    ret = 0;
                     break;
                 }
             }

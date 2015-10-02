@@ -165,14 +165,18 @@ impl Resource for FileResource {
     fn flush(&mut self) -> bool {
         let mut pos: u64 = 0;
         for extent in &self.node.extents {
-            let mem_to_write = &self.vec.as_slice()[pos as usize..(pos+extent.length) as usize];
-            
-            unsafe {
-                let bytes_written = self.disk.write(extent.block,
-                                                    extent.length as u16,
-                                                    mem_to_write.as_ptr() as usize);
+            //Make sure it is a valid extent
+            if extent.block > 0 && extent.length > 0 {
+                unsafe {
+                    let mem_to_write = self.vec.as_ptr().offset(pos as isize) as usize;
+                    //TODO: Make sure mem_to_write is copied safely into an zeroed area of the right size!
+                    let bytes_written = self.disk.write(extent.block,
+                                //Warning, not obvious, but extent.length is in bytes and count is in 512 byte sectors
+                                ((extent.length + 511)/512) as u16,
+                                mem_to_write as usize);
+                }
+                pos += extent.length;
             }
-            pos += extent.length;
         }
         return true;
     }
