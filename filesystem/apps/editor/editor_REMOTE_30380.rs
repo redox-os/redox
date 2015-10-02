@@ -1,0 +1,243 @@
+use redox::*;
+
+pub struct Editor {
+    url: String,
+    file: Option<File>,
+    string: String,
+    offset: usize,
+    scroll: Point,
+}
+
+impl Editor {
+    #[inline(never)]
+    pub fn new() -> Editor {
+        Editor {
+            url: String::new(),
+            file: Option::None,
+            string: String::new(),
+            offset: 0,
+            scroll: Point::new(0, 0),
+        }
+    }
+
+    fn reload(&mut self, window: &mut Window) {
+        window.title = "Editor (".to_string() + &self.url + ")";
+        self.offset = 0;
+        self.scroll = Point::new(0, 0);
+
+        match self.file {
+            Option::Some(ref mut file) => {
+                file.seek(Seek::Start(0));
+                let mut vec: Vec<u8> = Vec::new();
+                file.read_to_end(&mut vec);
+                self.string = String::from_utf8(&vec);
+            }
+            Option::None => self.string = String::new(),
+        }
+    }
+
+    fn save(&mut self, window: &mut Window) {
+        match self.file {
+            Option::Some(ref mut file) => {
+                window.title = "Editor (".to_string() + &self.url + ") Saved";
+                file.seek(Seek::Start(0));
+                file.write(&self.string.to_utf8().as_slice());
+                file.sync();
+            }
+            Option::None => {
+                //TODO: Ask for file to save to
+                window.title = "Editor (".to_string() + &self.url + ") No Open File";
+            }
+        }
+    }
+
+    fn draw_content(&mut self, window: &mut Window) {
+        let mut redraw = false;
+
+        {
+            let content = &window.content;
+
+            content.set(Color::alpha(0, 0, 0, 196));
+
+            let scroll = self.scroll;
+
+            let mut offset = 0;
+
+            let mut col = -scroll.x;
+            let cols = content.width as isize / 8;
+
+            let mut row = -scroll.y;
+            let rows = content.height as isize / 16;
+
+            for c in self.string.chars() {
+                if offset == self.offset {
+                    if col >= 0 && col < cols && row >= 0 && row < rows {
+                        content.char(Point::new(8 * col, 16 * row),
+                                     '_',
+                                     Color::new(128, 128, 128));
+                    } else {
+                        if col < 0 { //Too far to the left
+                            self.scroll.x += col;
+                        } else if col >= cols { //Too far to the right
+                            self.scroll.x += cols - col + 1;
+                        }
+                        if row < 0 { //Too far up
+                            self.scroll.y += row;
+                        } else if row >= rows { //Too far down
+                            self.scroll.y += rows - row + 1;
+                        }
+
+                        redraw = true;
+                    }
+                }
+
+                if c == '\n' {
+                    col = -scroll.x;
+                    row += 1;
+                } else if c == '\t' {
+                    col += 8 - col % 8;
+                } else {
+                    if col >= 0 && col < cols && row >= 0 && row < rows {
+                        content.char(Point::new(8 * col, 16 * row),
+                                     c,
+                                     Color::new(255, 255, 255));
+                    }
+                    col += 1;
+                }
+
+                offset += 1;
+            }
+
+            if offset == self.offset {
+                if col >= 0 && col < cols && row >= 0 && row < rows {
+                    content.char(Point::new(8 * col, 16 * row),
+                                 '_',
+                                 Color::new(128, 128, 128));
+                } else {
+                    if col < 0 { //Too far to the left
+                        self.scroll.x += col;
+                    } else if col >= cols { //Too far to the right
+                        self.scroll.x += cols - col + 1;
+                    }
+                    if row < 0 { //Too far up
+                        self.scroll.y += row;
+                    } else if row >= rows { //Too far down
+                        self.scroll.y += rows - row + 1;
+                    }
+
+                    redraw = true;
+                }
+            }
+
+            content.flip();
+
+            RedrawEvent { redraw: REDRAW_ALL }
+                .to_event()
+                .trigger();
+        }
+
+        if redraw {
+            self.draw_content(window);
+        }
+    }
+
+    fn main(&mut self, url: String) {
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
+                                                (rand() % 300 + 50) as isize),
+                                     Size::new(576, 400),
+                                     "Editor (Loading)".to_string());
+
+        self.url = url;
+        self.file = Option::Some(File::open(&self.url));
+
+        self.reload(&mut window);
+        self.draw_content(&mut window);
+
+        loop {
+            match window.poll() {
+                EventOption::Key(key_event) => {
+                    if key_event.pressed {
+                        match key_event.scancode {
+                            K_ESC => break,
+                            K_BKSP => if self.offset > 0 {
+                                window.title = "Editor (".to_string() + &self.url + ") Changed";
+                                self.string = self.string.substr(0, self.offset - 1) +
+                                              self.string.substr(self.offset,
+                                                                 self.string.len() - self.offset);
+                                self.offset -= 1;
+                            },
+                            K_DEL => if self.offset < self.string.len() {
+                                window.title = "Editor (".to_string() + &self.url + ") Changed";
+                                self.string = self.string.substr(0, self.offset) +
+                                              self.string.substr(self.offset + 1,
+                                                                 self.string.len() - self.offset -
+                                                                 1);
+                            },
+                            K_F5 => self.reload(&mut window),
+                            K_F6 => self.save(&mut window),
+                            K_HOME => self.offset = 0,
+                            K_UP => {
+                                let mut new_offset = 0;
+                                for i in 2..self.offset {
+                                    match self.string[self.offset - i] {
+                                        '\0' => break,
+                                        '\n' => {
+                                            new_offset = self.offset - i + 1;
+                                            break;
+                                        }
+                                        _ => (),
+                                    }
+                                }
+                                self.offset = new_offset;
+                            }
+                            K_LEFT => if self.offset > 0 {
+                                self.offset -= 1;
+                            },
+                            K_RIGHT => if self.offset < self.string.len() {
+                                self.offset += 1;
+                            },
+                            K_END => self.offset = self.string.len(),
+                            K_DOWN => {
+                                let mut new_offset = self.string.len();
+                                for i in self.offset..self.string.len() {
+                                    match self.string[i] {
+                                        '\0' => break,
+                                        '\n' => {
+                                            new_offset = i + 1;
+                                            break;
+                                        }
+                                        _ => (),
+                                    }
+                                }
+                                self.offset = new_offset;
+                            }
+                            _ => match key_event.character {
+                                '\0' => (),
+                                _ => {
+                                    window.title = "Editor (".to_string() + &self.url + ") Changed";
+                                    self.string = self.string.substr(0, self.offset) +
+                                                  key_event.character +
+                                                  self.string.substr(self.offset,
+                                                                     self.string.len() -
+                                                                     self.offset);
+                                    self.offset += 1;
+                                }
+                            },
+                        }
+
+                        self.draw_content(&mut window);
+                    }
+                }
+                EventOption::None => sys_yield(),
+                _ => (),
+            }
+        }
+    }
+}
+
+pub fn main() {
+    match args().get(1) {
+        Option::Some(arg) => Editor::new().main(arg.clone()),
+        Option::None => Editor::new().main("none://".to_string()),
+    }
+}

@@ -60,9 +60,9 @@ impl Package {
             } else if line.starts_with("description=".to_string()) {
                 package.descriptions.push(line.substr(12, line.len() - 12));
             } else {
-                d("Unknown package info: ");
+                debug::d("Unknown package info: ");
                 line.d();
-                dl();
+                debug::dl();
             }
         }
 
@@ -70,44 +70,44 @@ impl Package {
     }
 
     pub fn d(&self) {
-        d("URL: ");
+        debug::d("URL: ");
         self.url.d();
-        dl();
+        debug::dl();
 
-        d("ID: ");
+        debug::d("ID: ");
         self.id.d();
-        dl();
+        debug::dl();
 
-        d("Name: ");
+        debug::d("Name: ");
         self.name.d();
-        dl();
+        debug::dl();
 
-        d("Binary: ");
+        debug::d("Binary: ");
         self.binary.d();
-        dl();
+        debug::dl();
 
-        d("Icon: ");
-        dd(self.icon.size.width);
-        d("x");
-        dd(self.icon.size.height);
-        dl();
+        debug::d("Icon: ");
+        debug::dd(self.icon.size.width);
+        debug::d("x");
+        debug::dd(self.icon.size.height);
+        debug::dl();
 
         for accept in self.accepts.iter() {
-            d("Accept: ");
+            debug::d("Accept: ");
             accept.d();
-            dl();
+            debug::dl();
         }
 
         for author in self.authors.iter() {
-            d("Author: ");
+            debug::d("Author: ");
             author.d();
-            dl();
+            debug::dl();
         }
 
         for description in self.descriptions.iter() {
-            d("Description: ");
+            debug::d("Description: ");
             description.d();
-            dl();
+            debug::dl();
         }
     }
 }

@@ -231,15 +231,15 @@ impl Resource for FileResource {
             }
 
             if node_dirty {
-                d("Node dirty, should rewrite\n");
+                debug::d("Node dirty, should rewrite\n");
             }
 
             self.dirty = false;
 
             if remaining > 0 {
-                d("Need to reallocate file, extra: ");
-                ds(remaining);
-                dl();
+                debug::d("Need to reallocate file, extra: ");
+                debug::ds(remaining);
+                debug::dl();
                 return false;
             }
         }
