@@ -97,16 +97,6 @@ impl Resource for AC97Resource {
                     Duration::new(0, 10*NANOS_PER_MILLI).sleep();
                 }
 
-<<<<<<< HEAD
-                debug::dd(inb(po_civ) as usize);
-                debug::d(" / ");
-                debug::dd(lvi as usize);
-                debug::d(": ");
-                debug::dd(position);
-                debug::d(" / ");
-                debug::dd(buf.len());
-                debug::dl();
-=======
                 dd(po_civ.read() as usize);
                 d(" / ");
                 dd(lvi as usize);
@@ -115,7 +105,6 @@ impl Resource for AC97Resource {
                 d(" / ");
                 dd(buf.len());
                 dl();
->>>>>>> upstream/master
 
                 let bytes = min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
@@ -155,19 +144,11 @@ impl Resource for AC97Resource {
                 Duration::new(0, 10*NANOS_PER_MILLI).sleep();
             }
 
-<<<<<<< HEAD
-            debug::d("Finished ");
-            debug::dd(inb(po_civ) as usize);
-            debug::d(" / ");
-            debug::dd(lvi as usize);
-            debug::dl();
-=======
             d("Finished ");
             dd(po_civ.read() as usize);
             d(" / ");
             dd(lvi as usize);
             dl();
->>>>>>> upstream/master
         }
 
         Option::Some(buf.len())
@@ -202,7 +183,7 @@ impl SessionItem for AC97 {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //debug::d("AC97 IRQ\n");
+            //d("AC97 IRQ\n");
         }
     }
 
@@ -220,14 +201,14 @@ impl AC97 {
             irq: pci.read(0x3C) as u8 & 0xF
         };
 
-        debug::d("AC97 on: ");
-        debug::dh(module.audio);
-        debug::d(", ");
-        debug::dh(module.bus_master);
-        debug::d(", IRQ: ");
-        debug::dbh(module.irq);
+        d("AC97 on: ");
+        dh(module.audio);
+        d(", ");
+        dh(module.bus_master);
+        d(", IRQ: ");
+        dbh(module.irq);
 
-        debug::dl();
+        dl();
 
         module
     }
