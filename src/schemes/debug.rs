@@ -58,7 +58,7 @@ impl Resource for DebugResource {
         return Option::None;
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         return true;
     }
 }
