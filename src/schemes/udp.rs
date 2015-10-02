@@ -23,7 +23,7 @@ impl Resource for UDPResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        d("TODO: Implement read for udp://\n");
+        debug::d("TODO: Implement read for udp://\n");
         return Option::None;
     }
 
@@ -140,7 +140,7 @@ impl SessionItem for UDPScheme {
                 }
             }
         } else {
-            d("UDP: No remote endpoint or local port provided\n");
+            debug::d("UDP: No remote endpoint or local port provided\n");
         }
 
         return box NoneResource;

@@ -43,23 +43,23 @@ pub struct XHCI {
 impl SessionItem for XHCI {
     fn on_irq(&mut self, irq: u8){
         if irq == self.irq {
-            d("XHCI handle\n");
+            debug::d("XHCI handle\n");
         }
     }
 }
 
 impl XHCI {
     pub unsafe fn init(&self) {
-        d("XHCI on: ");
-        dh(self.base);
+        debug::d("XHCI on: ");
+        debug::dh(self.base);
         if self.memory_mapped {
-            d(" memory mapped");
+            debug::d(" memory mapped");
         }else {
-            d(" port mapped");
+            debug::d(" port mapped");
         }
-        d(" IRQ: ");
-        dbh(self.irq);
-        dl();
+        debug::d(" IRQ: ");
+        debug::dbh(self.irq);
+        debug::dl();
 
         return;
 

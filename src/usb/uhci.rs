@@ -90,25 +90,25 @@ impl DeviceDescriptor {
     }
 
     fn d(&self) {
-        d("Device Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" USB ");
-        dh(self.usb_version as usize);
-        d(" Class ");
-        dh(self.class as usize);
-        d(" Subclass ");
-        dh(self.sub_class as usize);
-        d(" Protocol ");
-        dh(self.protocol as usize);
-        d(" Vendor ");
-        dh(self.vendor as usize);
-        d(" Product ");
-        dh(self.product as usize);
-        d(" Configurations ");
-        dh(self.configurations as usize);
-        dl();
+        debug::d("Device Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" USB ");
+        debug::dh(self.usb_version as usize);
+        debug::d(" Class ");
+        debug::dh(self.class as usize);
+        debug::d(" Subclass ");
+        debug::dh(self.sub_class as usize);
+        debug::d(" Protocol ");
+        debug::dh(self.protocol as usize);
+        debug::d(" Vendor ");
+        debug::dh(self.vendor as usize);
+        debug::d(" Product ");
+        debug::dh(self.product as usize);
+        debug::d(" Configurations ");
+        debug::dh(self.configurations as usize);
+        debug::dl();
     }
 }
 
@@ -140,21 +140,21 @@ impl ConfigDescriptor {
     }
 
     fn d(&self) {
-        d("Config Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" Total Length ");
-        dd(self.total_length as usize);
-        d(" Interfaces ");
-        dd(self.interfaces as usize);
-        d(" Number ");
-        dd(self.number as usize);
-        d(" Attributes ");
-        dh(self.attributes as usize);
-        d(" Max Power ");
-        dd(self.max_power as usize);
-        dl();
+        debug::d("Config Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" Total Length ");
+        debug::dd(self.total_length as usize);
+        debug::d(" Interfaces ");
+        debug::dd(self.interfaces as usize);
+        debug::d(" Number ");
+        debug::dd(self.number as usize);
+        debug::d(" Attributes ");
+        debug::dh(self.attributes as usize);
+        debug::d(" Max Power ");
+        debug::dd(self.max_power as usize);
+        debug::dl();
     }
 }
 
@@ -188,21 +188,21 @@ impl InterfaceDescriptor {
     }
 
     fn d(&self) {
-        d("Interface Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" Number ");
-        dd(self.number as usize);
-        d(" Endpoints ");
-        dd(self.endpoints as usize);
-        d(" Class ");
-        dh(self.class as usize);
-        d(" Subclass ");
-        dh(self.sub_class as usize);
-        d(" Protocol ");
-        dh(self.protocol as usize);
-        dl();
+        debug::d("Interface Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" Number ");
+        debug::dd(self.number as usize);
+        debug::d(" Endpoints ");
+        debug::dd(self.endpoints as usize);
+        debug::d(" Class ");
+        debug::dh(self.class as usize);
+        debug::d(" Subclass ");
+        debug::dh(self.sub_class as usize);
+        debug::d(" Protocol ");
+        debug::dh(self.protocol as usize);
+        debug::dl();
     }
 }
 
@@ -230,17 +230,17 @@ impl EndpointDescriptor {
     }
 
     fn d(&self) {
-        d("Endpoint Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" Address ");
-        dh(self.address as usize);
-        d(" Attributes ");
-        dh(self.attributes as usize);
-        d(" Interval ");
-        dh(self.interval as usize);
-        dl();
+        debug::d("Endpoint Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" Address ");
+        debug::dh(self.address as usize);
+        debug::d(" Attributes ");
+        debug::dh(self.attributes as usize);
+        debug::d(" Interval ");
+        debug::dh(self.interval as usize);
+        debug::dl();
     }
 }
 
@@ -270,21 +270,21 @@ impl HIDDescriptor {
     }
 
     fn d(&self) {
-        d("HID Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" HID Version ");
-        dh(self.hid_version as usize);
-        d(" Country Code ");
-        dh(self.country_code as usize);
-        d(" Descriptors ");
-        dh(self.descriptors as usize);
-        d(" Sub Type ");
-        dh(self.sub_descriptor_type as usize);
-        d(" Sub Length ");
-        dd(self.sub_descriptor_length as usize);
-        dl();
+        debug::d("HID Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" HID Version ");
+        debug::dh(self.hid_version as usize);
+        debug::d(" Country Code ");
+        debug::dh(self.country_code as usize);
+        debug::d(" Descriptors ");
+        debug::dh(self.descriptors as usize);
+        debug::d(" Sub Type ");
+        debug::dh(self.sub_descriptor_type as usize);
+        debug::d(" Sub Length ");
+        debug::dd(self.sub_descriptor_length as usize);
+        debug::dl();
     }
 }
 
@@ -345,9 +345,9 @@ impl UHCI {
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
-                d("SETUP_TD ");
-                dh((*setup_td).ctrl_sts as usize);
-                dl();
+                debug::d("SETUP_TD ");
+                debug::dh((*setup_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
@@ -358,9 +358,9 @@ impl UHCI {
 
         loop {
             if (*in_td).ctrl_sts & (1 << 23) == 0 {
-                d("IN_TD ");
-                dh((*in_td).ctrl_sts as usize);
-                dl();
+                debug::d("IN_TD ");
+                debug::dh((*in_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
@@ -426,9 +426,9 @@ impl UHCI {
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
-                d("SETUP_TD ");
-                dh((*setup_td).ctrl_sts as usize);
-                dl();
+                debug::d("SETUP_TD ");
+                debug::dh((*setup_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
@@ -439,9 +439,9 @@ impl UHCI {
 
         loop {
             if (*in_td).ctrl_sts & (1 << 23) == 0 {
-                d("IN_TD ");
-                dh((*in_td).ctrl_sts as usize);
-                dl();
+                debug::d("IN_TD ");
+                debug::dh((*in_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
@@ -452,9 +452,9 @@ impl UHCI {
 
         loop {
             if (*out_td).ctrl_sts & (1 << 23) == 0 {
-                d("OUT_TD ");
-                dh((*out_td).ctrl_sts as usize);
-                dl();
+                debug::d("OUT_TD ");
+                debug::dh((*out_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
@@ -574,11 +574,11 @@ impl UHCI {
                         desc_hid.d();
                     },
                     _ => {
-                        d("Unknown Descriptor Length ");
-                        dd(length as usize);
-                        d(" Type ");
-                        dh(descriptor_type as usize);
-                        dl();
+                        debug::d("Unknown Descriptor Length ");
+                        debug::dd(length as usize);
+                        debug::d(" Type ");
+                        debug::dh(descriptor_type as usize);
+                        debug::dl();
                     }
                 }
                 i += length as isize;
@@ -591,10 +591,10 @@ impl UHCI {
     }
 
     pub unsafe fn init(&self) {
-        d("UHCI on: ");
-        dh(self.base);
-        d(", IRQ: ");
-        dbh(self.irq);
+        debug::d("UHCI on: ");
+        debug::dh(self.base);
+        debug::d(", IRQ: ");
+        debug::dbh(self.irq);
 
         let base = self.base as u16;
         let usbcmd = base;
@@ -606,82 +606,82 @@ impl UHCI {
         let portsc1 = base + 0x10;
         let portsc2 = base + 0x12;
 
-        d(" CMD ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" CMD ");
+        debug::dh(inw(usbcmd) as usize);
             outw(usbcmd, 1 << 2 | 1 << 1);
-        d(" to ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" to ");
+        debug::dh(inw(usbcmd) as usize);
             let disable = start_ints();
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
         outw(usbcmd, 0);
-        d(" to ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" to ");
+        debug::dh(inw(usbcmd) as usize);
 
-        d(" STS ");
-        dh(inw(usbsts) as usize);
+        debug::d(" STS ");
+        debug::dh(inw(usbsts) as usize);
 
-        d(" INTR ");
-        dh(inw(usbintr) as usize);
+        debug::d(" INTR ");
+        debug::dh(inw(usbintr) as usize);
 
-        d(" FRNUM ");
-        dh(inw(frnum) as usize);
+        debug::d(" FRNUM ");
+        debug::dh(inw(frnum) as usize);
             outw(frnum, 0);
-        d(" to ");
-        dh(inw(frnum) as usize);
+        debug::d(" to ");
+        debug::dh(inw(frnum) as usize);
 
-        d(" FLBASEADD ");
-        dh(ind(flbaseadd) as usize);
+        debug::d(" FLBASEADD ");
+        debug::dh(ind(flbaseadd) as usize);
             let frame_list = alloc(1024 * 4) as *mut u32;
             for i in 0..1024 {
                 write(frame_list.offset(i), 1);
             }
             outd(flbaseadd, frame_list as u32);
-        d(" to ");
-        dh(ind(flbaseadd) as usize);
+        debug::d(" to ");
+        debug::dh(ind(flbaseadd) as usize);
 
-        d(" CMD ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" CMD ");
+        debug::dh(inw(usbcmd) as usize);
             outw(usbcmd, 1);
-        d(" to ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" to ");
+        debug::dh(inw(usbcmd) as usize);
 
-        dl();
+        debug::dl();
 
         let disable = start_ints();
         Duration::new(0, 100*NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         {
-            d(" PORTSC1 ");
-            dh(inw(portsc1) as usize);
+            debug::d(" PORTSC1 ");
+            debug::dh(inw(portsc1) as usize);
 
             outw(portsc1, 1 << 9);
-            d(" to ");
-            dh(inw(portsc1) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc1) as usize);
 
             let disable = start_ints();
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 0);
-            d(" to ");
-            dh(inw(portsc1) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc1) as usize);
 
             let disable = start_ints();
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
-            dl();
+            debug::dl();
 
             if inw(portsc1) & 1 == 1 {
-                d(" Device Found ");
-                dh(inw(portsc1) as usize);
+                debug::d(" Device Found ");
+                debug::dh(inw(portsc1) as usize);
 
                 outw(portsc1, 4);
-                d(" to ");
-                dh(inw(portsc1) as usize);
-                dl();
+                debug::d(" to ");
+                debug::dh(inw(portsc1) as usize);
+                debug::dl();
 
                 let disable = start_ints();
                 Duration::new(0, 100*NANOS_PER_MILLI).sleep();
@@ -692,35 +692,35 @@ impl UHCI {
         }
 
         {
-            d(" PORTSC2 ");
-            dh(inw(portsc2) as usize);
+            debug::d(" PORTSC2 ");
+            debug::dh(inw(portsc2) as usize);
 
             outw(portsc2, 1 << 9);
-            d(" to ");
-            dh(inw(portsc2) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc2) as usize);
 
             let disable = start_ints();
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 0);
-            d(" to ");
-            dh(inw(portsc2) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc2) as usize);
 
             let disable = start_ints();
             Duration::new(0, 100*NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
-            dl();
+            debug::dl();
 
             if inw(portsc2) & 1 == 1 {
-                d(" Device Found ");
-                dh(inw(portsc2) as usize);
+                debug::d(" Device Found ");
+                debug::dh(inw(portsc2) as usize);
 
                 outw(portsc2, 4);
-                d(" to ");
-                dh(inw(portsc2) as usize);
-                dl();
+                debug::d(" to ");
+                debug::dh(inw(portsc2) as usize);
+                debug::dl();
 
                 let disable = start_ints();
                 Duration::new(0, 100*NANOS_PER_MILLI).sleep();
