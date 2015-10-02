@@ -147,7 +147,7 @@ filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP -C -M intel -d $< > $@
 
 filesystem/apps/zfs/zfs.img:
-	dd if=/dev/zero of=$@ bs=256MB count=1
+	dd if=/dev/zero of=$@ bs=64M count=1
 	sudo losetup /dev/loop0 $@
 	-sudo zpool create redox_zfs /dev/loop0
 	-sudo zfs create redox_zfs/root
