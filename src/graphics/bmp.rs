@@ -8,14 +8,17 @@ use graphics::size::*;
 
 pub struct BMP {
     pub data: Vec<u32>,
-    pub size: Size
+    pub size: Size,
 }
 
 impl BMP {
     pub fn new() -> BMP {
         BMP {
             data: Vec::new(),
-            size: Size { width: 0, height: 0 }
+            size: Size {
+                width: 0,
+                height: 0,
+            },
         }
     }
 
@@ -25,16 +28,15 @@ impl BMP {
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
                 Option::Some(byte) => *byte,
-                Option::None => 0
+                Option::None => 0,
             }
         };
 
-        let getw = |i: usize| -> u16 {
-            (get(i) as u16) + ((get(i + 1) as u16) << 8)
-        };
+        let getw = |i: usize| -> u16 { (get(i) as u16) + ((get(i + 1) as u16) << 8) };
 
         let getd = |i: usize| -> u32 {
-            (get(i) as u32) + ((get(i + 1) as u32) << 8) + ((get(i + 2) as u32) << 16) + ((get(i + 3) as u32) << 24)
+            (get(i) as u32) + ((get(i + 1) as u32) << 8) + ((get(i + 2) as u32) << 16) +
+            ((get(i + 3) as u32) << 24)
         };
 
         let gets = |start: usize, len: usize| -> String {
@@ -53,8 +55,8 @@ impl BMP {
             let height = getd(0x16);
             let depth = getw(0x1C) as u32;
 
-            let bytes = (depth + 7)/8;
-            let row_bytes = (depth * width + 31)/32 * 4;
+            let bytes = (depth + 7) / 8;
+            let row_bytes = (depth * width + 31) / 32 * 4;
 
             let mut red_mask = 0xFF0000;
             let mut green_mask = 0xFF00;
@@ -89,7 +91,7 @@ impl BMP {
 
             ret.size = Size {
                 width: width as usize,
-                height: height as usize
+                height: height as usize,
             };
             for y in 0..height {
                 for x in 0..width {
@@ -102,7 +104,7 @@ impl BMP {
                     let alpha = ((pixel_data & alpha_mask) >> alpha_shift) as u8;
                     if bytes == 3 {
                         ret.data.push(Color::new(red, green, blue).data);
-                    }else if bytes == 4 {
+                    } else if bytes == 4 {
                         ret.data.push(Color::alpha(red, green, blue, alpha).data);
                     }
                 }

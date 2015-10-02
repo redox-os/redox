@@ -12,12 +12,12 @@ pub struct UDPHeader {
     pub src: n16,
     pub dst: n16,
     pub len: n16,
-    pub checksum: Checksum
+    pub checksum: Checksum,
 }
 
 pub struct UDP {
     pub header: UDPHeader,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl FromBytes for UDP {
@@ -26,7 +26,8 @@ impl FromBytes for UDP {
             unsafe {
                 return Option::Some(UDP {
                     header: *(bytes.as_ptr() as *const UDPHeader),
-                    data: bytes.sub(size_of::<UDPHeader>(), bytes.len() - size_of::<UDPHeader>())
+                    data: bytes.sub(size_of::<UDPHeader>(),
+                                    bytes.len() - size_of::<UDPHeader>()),
                 });
             }
         }

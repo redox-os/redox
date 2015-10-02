@@ -1,13 +1,11 @@
 #[derive(Copy, Clone)]
 pub struct PIO8 {
-    port: u16
+    port: u16,
 }
 
 impl PIO8 {
-    pub fn new (port: u16) -> PIO8 {
-        return PIO8 {
-            port: port
-        };
+    pub fn new(port: u16) -> PIO8 {
+        return PIO8 { port: port };
     }
 
     pub unsafe fn read(&self) -> u8 {
@@ -33,14 +31,12 @@ pub unsafe fn outb(port: u16, value: u8) {
 
 #[derive(Copy, Clone)]
 pub struct PIO16 {
-    port: u16
+    port: u16,
 }
 
 impl PIO16 {
-    pub fn new (port: u16) -> PIO16 {
-        return PIO16 {
-            port: port
-        };
+    pub fn new(port: u16) -> PIO16 {
+        return PIO16 { port: port };
     }
 
     pub unsafe fn read(&self) -> u16 {
@@ -66,14 +62,12 @@ pub unsafe fn outw(port: u16, value: u16) {
 
 #[derive(Copy, Clone)]
 pub struct PIO32 {
-    port: u16
+    port: u16,
 }
 
 impl PIO32 {
-    pub fn new (port: u16) -> PIO32 {
-        return PIO32 {
-            port: port
-        };
+    pub fn new(port: u16) -> PIO32 {
+        return PIO32 { port: port };
     }
 
     pub unsafe fn read(&self) -> u32 {
