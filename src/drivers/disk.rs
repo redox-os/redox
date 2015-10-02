@@ -89,6 +89,7 @@ pub struct PRDTE {
     pub reserved: u16
 }
 
+#[derive(Copy, Clone)]
 pub struct Disk {
     base: u16,
     ctrl: u16,

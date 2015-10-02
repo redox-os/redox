@@ -11,6 +11,7 @@ pub const SYS_LSEEK: u32 = 19;
 pub const SYS_FSTAT: u32 = 28;
 pub const SYS_BRK: u32 = 45;
 pub const SYS_GETTIMEOFDAY: u32 = 78;
+pub const SYS_FSYNC: u32 = 118;
 pub const SYS_YIELD: u32 = 158;
 
 //Rust Memory

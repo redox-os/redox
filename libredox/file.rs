@@ -3,6 +3,13 @@ use common::vec::*;
 
 use syscall::call::*;
 
+/// File seek
+pub enum Seek {
+    Start(usize),
+    Current(isize),
+    End(isize)
+}
+
 /// A Unix-style file
 pub struct File {
     path: String,
@@ -72,16 +79,28 @@ impl File {
         }
     }
 
-    /*
     pub fn seek(&mut self, pos: Seek) -> Option<usize> {
-        Option::None
+        let (whence, offset) =
+            match pos {
+                Seek::Start(offset) => (0, offset as isize),
+                Seek::Current(offset) => (1, offset),
+                Seek::End(offset) => (2, offset),
+            };
+        unsafe {
+            if sys_lseek(self.fd, offset, whence) == 0xFFFFFFFF {
+                Option::None
+            } else {
+                // TODO
+                Option::Some(0)
+            }
+        }
     }
-    */
 
     /// Flush the io
     pub fn flush(&mut self) -> bool {
-        // TODO
-        false
+        unsafe {
+            sys_fsync(self.fd) == 0
+        }
     }
 }
 
