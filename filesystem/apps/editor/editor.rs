@@ -2,6 +2,7 @@ use redox::*;
 
 pub struct Editor {
     url: String,
+    file: Option<File>,
     string: String,
     offset: usize,
     scroll: Point
@@ -12,6 +13,7 @@ impl Editor {
     pub fn new() -> Editor {
         Editor {
             url: String::new(),
+            file: Option::None,
             string: String::new(),
             offset: 0,
             scroll: Point::new(0, 0)
@@ -23,21 +25,30 @@ impl Editor {
         self.offset = 0;
         self.scroll = Point::new(0, 0);
 
-        let mut resource = File::open(&self.url);
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        self.string = String::from_utf8(&vec);
+        match self.file {
+            Option::Some(ref mut file) => {
+                file.seek(Seek::Start(0));
+                let mut vec: Vec<u8> = Vec::new();
+                file.read_to_end(&mut vec);
+                self.string = String::from_utf8(&vec);
+            },
+            Option::None => self.string = String::new()
+        }
     }
 
     fn save(&mut self, window: &mut Window){
-        window.title = "Editor (".to_string() + &self.url + ") Saved";
-
-        let mut resource = File::open(&self.url);
-        resource.seek(Seek::Start(0));
-        resource.write(&self.string.to_utf8().as_slice());
-        resource.flush();
+        match self.file {
+            Option::Some(ref mut file) => {
+                window.title = "Editor (".to_string() + &self.url + ") Saved";
+                file.seek(Seek::Start(0));
+                file.write(&self.string.to_utf8().as_slice());
+                file.flush();
+            },
+            Option::None => {
+                //TODO: Ask for file to save to
+                window.title = "Editor (".to_string() + &self.url + ") No Open File";
+            }
+        }
     }
 
     fn draw_content(&mut self, window: &mut Window){
@@ -128,6 +139,7 @@ impl Editor {
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor (Loading)".to_string());
 
         self.url = url;
+        self.file = Option::Some(File::open(&self.url));
 
         self.reload(&mut window);
         self.draw_content(&mut window);

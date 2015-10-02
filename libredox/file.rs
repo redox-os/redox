@@ -19,6 +19,7 @@ pub struct File {
 impl File {
     /// Open a new file using a path
     // TODO: Why &String and not String
+    // TODO: Return Option<File>
     pub fn open(path: &String) -> File {
         unsafe {
             let c_str: *const u8 = path.to_c_str();
@@ -80,22 +81,21 @@ impl File {
     }
 
     pub fn seek(&mut self, pos: Seek) -> Option<usize> {
-        let (whence, offset) =
-            match pos {
-                Seek::Start(offset) => (0, offset as isize),
-                Seek::Current(offset) => (1, offset),
-                Seek::End(offset) => (2, offset),
-            };
-        unsafe {
-            if sys_lseek(self.fd, offset, whence) == 0xFFFFFFFF {
-                Option::None
-            } else {
-                // TODO
-                Option::Some(0)
-            }
+        let (whence, offset) = match pos {
+            Seek::Start(offset) => (0, offset as isize),
+            Seek::Current(offset) => (1, offset),
+            Seek::End(offset) => (2, offset),
+        };
+
+        let position = unsafe { sys_lseek(self.fd, offset, whence) };
+        if position == 0xFFFFFFFF {
+            Option::None
+        } else {
+            Option::Some(position)
         }
     }
 
+    //TODO: Call flush on close, Rename to sync ?
     /// Flush the io
     pub fn flush(&mut self) -> bool {
         unsafe {
