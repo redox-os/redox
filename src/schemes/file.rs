@@ -23,13 +23,13 @@ pub struct Header {
 #[repr(packed)]
 pub struct NodeData {
     pub name: [u8; 256],
-    pub extents: [Extent; 16]
+    pub extents: [Extent; 16],
 }
 
 pub struct Node {
     pub address: u64,
     pub name: String,
-    pub extents: [Extent; 16]
+    pub extents: [Extent; 16],
 }
 
 impl Node {
@@ -47,7 +47,7 @@ impl Node {
         Node {
             address: address,
             name: String::from_utf8(&utf8),
-            extents: data.extents
+            extents: data.extents,
         }
     }
 }
@@ -57,7 +57,7 @@ impl Clone for Node {
         return Node {
             address: self.address,
             name: self.name.clone(),
-            extents: self.extents
+            extents: self.extents,
         };
     }
 }
@@ -199,9 +199,10 @@ impl Resource for FileResource {
         if self.dirty {
             let block_size: usize = 512;
 
+            let mut node_dirty = false;
             let mut pos: isize = 0;
             let mut remaining = self.vec.len() as isize;
-            for extent in &self.node.extents {
+            for ref mut extent in &mut self.node.extents {
                 //Make sure it is a valid extent
                 if extent.block > 0 && extent.length > 0 {
                     let current_sectors = (extent.length as usize + block_size - 1)/block_size;
@@ -209,6 +210,11 @@ impl Resource for FileResource {
 
                     let size = min(remaining as usize, max_size);
                     let sectors = (size + block_size - 1)/block_size;
+
+                    if size as u64 != extent.length {
+                        extent.length = size as u64;
+                        node_dirty = true;
+                    }
 
                     unsafe {
                         let mem_to_write = self.vec.as_ptr().offset(pos) as usize;
@@ -221,6 +227,10 @@ impl Resource for FileResource {
                     pos += size as isize;
                     remaining -= size as isize;
                 }
+            }
+
+            if node_dirty {
+                d("Node dirty, should rewrite\n");
             }
 
             self.dirty = false;
