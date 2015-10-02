@@ -129,7 +129,7 @@ impl PS2 {
         return Option::Some(KeyEvent {
             character: char_for_scancode(scancode & 0x7F, shift),
             scancode: scancode & 0x7F,
-            pressed: scancode >= 0x80,
+            pressed: scancode < 0x80,
         });
     }
 
