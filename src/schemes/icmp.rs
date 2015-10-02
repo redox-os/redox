@@ -23,7 +23,7 @@ impl ICMPScheme {
                         if message.header._type == 0x08 {
                             let mut response = ICMP {
                                 header: message.header,
-                                data: message.data
+                                data: message.data,
                             };
 
                             response.header._type = 0x00;
@@ -41,8 +41,8 @@ impl ICMPScheme {
                             ip.write(&response.to_bytes().as_slice());
                         }
                     }
-                },
-                Option::None => sys_yield()
+                }
+                Option::None => sys_yield(),
             }
         }
     }

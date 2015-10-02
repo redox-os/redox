@@ -5,12 +5,15 @@ use core::ops::Sub;
 #[derive(Copy, Clone)]
 pub struct Size {
     pub width: usize,
-    pub height: usize
+    pub height: usize,
 }
 
 impl Size {
     pub fn new(width: usize, height: usize) -> Size {
-        Size { width: width, height: height }
+        Size {
+            width: width,
+            height: height,
+        }
     }
 }
 
@@ -20,7 +23,7 @@ impl Add for Size {
     fn add(self, other: Size) -> Self::Output {
         Size {
             width: self.width + other.width,
-            height: self.height + other.height
+            height: self.height + other.height,
         }
     }
 }
@@ -31,7 +34,7 @@ impl Sub for Size {
     fn sub(self, other: Size) -> Self::Output {
         Size {
             width: self.width - min(self.width, other.width),
-            height: self.height - min(self.height, other.height)
+            height: self.height - min(self.height, other.height),
         }
     }
 }

@@ -28,7 +28,7 @@ impl ToString for &'static str {
 /// A unicode character
 pub struct Chars<'a> {
     string: &'a String,
-    offset: usize
+    offset: usize,
 }
 
 impl <'a> Iterator for Chars<'a> {
@@ -48,7 +48,7 @@ impl <'a> Iterator for Chars<'a> {
 pub struct Split<'a> {
     string: &'a String,
     offset: usize,
-    seperator: String
+    seperator: String,
 }
 
 impl <'a> Iterator for Split<'a> {
@@ -75,15 +75,13 @@ impl <'a> Iterator for Split<'a> {
 
 /// A heap allocated, owned string.
 pub struct String {
-    pub vec: Vec<char>
+    pub vec: Vec<char>,
 }
 
 impl String {
     /// Create a new empty `String`
     pub fn new() -> String {
-        String {
-            vec: Vec::new()
-        }
+        String { vec: Vec::new() }
     }
 
     // TODO FromStr trait
@@ -95,9 +93,7 @@ impl String {
             vec.push(c);
         }
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Convert a c-style string slice to a String
@@ -112,9 +108,7 @@ impl String {
             vec.push(c);
         }
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Convert a utf8 vector to a string
@@ -131,9 +125,7 @@ impl String {
             vec.push(c);
         }
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Convert a C-style string literal to a `String`
@@ -150,9 +142,7 @@ impl String {
             i += 1;
         }
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Convert an integer to a String using a given radix
@@ -181,9 +171,7 @@ impl String {
             digit_num /= radix;
         }
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Convert a signed integer to a String
@@ -205,9 +193,7 @@ impl String {
         let mut vec: Vec<char> = Vec::new();
         vec.push(c);
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Convert an unsigned integer to a `String` in base 10
@@ -239,9 +225,7 @@ impl String {
             vec.push(self[k]);
         }
 
-        String {
-            vec: vec
-        }
+        String { vec: vec }
     }
 
     /// Find the index of a substring in a string
@@ -286,7 +270,7 @@ impl String {
     pub fn chars(&self) -> Chars {
         Chars {
             string: &self,
-            offset: 0
+            offset: 0,
         }
     }
 
@@ -295,7 +279,7 @@ impl String {
         Split {
             string: &self,
             offset: 0,
-            seperator: seperator
+            seperator: seperator,
         }
     }
 
@@ -318,11 +302,15 @@ impl String {
                 d("Unhandled to_utf8 code ");
                 dh(u);
                 dl();
-                unsafe { dh(self.vec.as_ptr() as usize); }
+                unsafe {
+                    dh(self.vec.as_ptr() as usize);
+                }
                 d(" ");
                 dd(self.vec.len());
                 d(" to ");
-                unsafe { dh(vec.as_ptr() as usize); }
+                unsafe {
+                    dh(vec.as_ptr() as usize);
+                }
                 d(" ");
                 dd(vec.len());
                 dl();
@@ -410,7 +398,7 @@ impl Index<usize> for String {
     fn index<'a>(&'a self, i: usize) -> &'a Self::Output {
         match self.vec.get(i) {
             Option::Some(c) => c,
-            Option::None => &NULL_CHAR
+            Option::None => &NULL_CHAR,
         }
     }
 }
@@ -425,14 +413,14 @@ impl PartialEq for String {
             }
 
             true
-        }else{
+        } else {
             false
         }
     }
 }
 
 impl Clone for String {
-    fn clone(&self) -> Self{
+    fn clone(&self) -> Self {
         self.substr(0, self.len())
     }
 }

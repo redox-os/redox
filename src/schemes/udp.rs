@@ -10,12 +10,14 @@ pub struct UDPResource {
     data: Vec<u8>,
     peer_addr: IPv4Addr,
     peer_port: u16,
-    host_port: u16
+    host_port: u16,
 }
 
 impl Resource for UDPResource {
     fn url(&self) -> URL {
-        return URL::from_string(&("udp://".to_string() + self.peer_addr.to_string() + ':' + self.peer_port as usize + '/' + self.host_port as usize));
+        return URL::from_string(&("udp://".to_string() + self.peer_addr.to_string() + ':' +
+                                  self.peer_port as usize +
+                                  '/' + self.host_port as usize));
     }
 
     fn stat(&self) -> ResourceType {
@@ -40,13 +42,14 @@ impl Resource for UDPResource {
             match self.ip.read_to_end(&mut bytes) {
                 Option::Some(_) => {
                     if let Option::Some(datagram) = UDP::from_bytes(bytes) {
-                        if datagram.header.dst.get() == self.host_port && datagram.header.src.get() == self.peer_port {
+                        if datagram.header.dst.get() == self.host_port &&
+                           datagram.header.src.get() == self.peer_port {
                             vec.push_all(&datagram.data);
                             return Option::Some(datagram.data.len());
                         }
                     }
-                },
-                Option::None => return Option::None
+                }
+                Option::None => return Option::None,
             }
         }
     }
@@ -59,29 +62,30 @@ impl Resource for UDPResource {
                 src: n16::new(self.host_port),
                 dst: n16::new(self.peer_port),
                 len: n16::new((size_of::<UDPHeader>() + udp_data.len()) as u16),
-                checksum: Checksum {
-                    data: 0
-                }
+                checksum: Checksum { data: 0 },
             },
-            data: udp_data
+            data: udp_data,
         };
 
         unsafe {
             let proto = n16::new(0x11);
             let datagram_len = n16::new((size_of::<UDPHeader>() + udp.data.len()) as u16);
-            udp.header.checksum.data = Checksum::compile(
-                Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                Checksum::sum((&datagram_len as *const n16) as usize, size_of::<n16>()) +
-                Checksum::sum((&udp.header as *const UDPHeader) as usize, size_of::<UDPHeader>()) +
-                Checksum::sum(udp.data.as_ptr() as usize, udp.data.len())
-            );
+            udp.header.checksum.data =
+                Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
+                                                size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
+                                                size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                  Checksum::sum((&datagram_len as *const n16) as usize,
+                                                size_of::<n16>()) +
+                                  Checksum::sum((&udp.header as *const UDPHeader) as usize,
+                                                size_of::<UDPHeader>()) +
+                                  Checksum::sum(udp.data.as_ptr() as usize, udp.data.len()));
         }
 
         match self.ip.write(udp.to_bytes().as_slice()) {
             Option::Some(_) => return Option::Some(buf.len()),
-            Option::None => return Option::None
+            Option::None => return Option::None,
         }
     }
 
@@ -112,9 +116,9 @@ impl SessionItem for UDPScheme {
                 data: Vec::new(),
                 peer_addr: peer_addr,
                 peer_port: peer_port,
-                host_port: host_port
+                host_port: host_port,
             };
-        }else if url.path().len() > 0 {
+        } else if url.path().len() > 0 {
             let host_port = url.path().to_num() as u16;
             loop {
                 let mut ip = URL::from_str("ip:///11").open();
@@ -131,12 +135,12 @@ impl SessionItem for UDPScheme {
                                     data: datagram.data,
                                     peer_addr: peer_addr,
                                     peer_port: datagram.header.src.get(),
-                                    host_port: host_port
+                                    host_port: host_port,
                                 };
                             }
                         }
-                    },
-                    Option::None => break
+                    }
+                    Option::None => break,
                 }
             }
         } else {
