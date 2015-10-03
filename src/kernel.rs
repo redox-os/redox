@@ -39,6 +39,7 @@ use programs::common::queue::Queue;
 use programs::common::resource::URL;
 use programs::common::string::{String, ToString};
 use programs::common::time::Duration;
+use programs::common::vec::Vec;
 use programs::package::*;
 use programs::session::*;
 

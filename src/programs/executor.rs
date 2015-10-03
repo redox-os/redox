@@ -6,6 +6,7 @@ use common::scheduler::*;
 use programs::common::*;
 use programs::common::resource::URL;
 use programs::common::string::String;
+use programs::common::vec::Vec;
 
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
     unsafe {
