@@ -370,14 +370,14 @@ impl SessionItem for TCPScheme {
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_addr = IPv4Addr::from_string(&url.host());
             let peer_port = url.port().to_num() as u16;
-            let host_port = (rand() % 32768 + 32768) as u16;
+            let host_port = (random::rand() % 32768 + 32768) as u16;
 
             let mut ret = box TCPResource {
                 ip: URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/6")).open(),
                 peer_addr: peer_addr,
                 peer_port: peer_port,
                 host_port: host_port,
-                sequence: rand() as u32,
+                sequence: random::rand() as u32,
                 acknowledge: 0,
             };
 
@@ -404,7 +404,7 @@ impl SessionItem for TCPScheme {
                                     peer_addr: peer_addr,
                                     peer_port: segment.header.src.get(),
                                     host_port: host_port,
-                                    sequence: rand() as u32,
+                                    sequence: random::rand() as u32,
                                     acknowledge: segment.header.sequence.get(),
                                 };
 
