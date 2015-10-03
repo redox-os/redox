@@ -2,13 +2,12 @@ use alloc::boxed::Box;
 
 use core::{cmp, ptr};
 
-use common::memory::*;
-use common::scheduler::*;
-
 use drivers::disk::*;
 
 use common::debug;
+use common::memory;
 use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
+use common::scheduler::*;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -80,13 +79,13 @@ pub struct FileSystem {
 impl FileSystem {
     pub fn from_disk(disk: Disk) -> FileSystem {
         unsafe {
-            let header_ptr: *const Header = alloc_type();
+            let header_ptr: *const Header = memory::alloc_type();
             disk.read(1, 1, header_ptr as usize);
             let header = ptr::read(header_ptr);
-            unalloc(header_ptr as usize);
+            memory::unalloc(header_ptr as usize);
 
             let mut nodes = Vec::new();
-            let node_data: *const NodeData = alloc_type();
+            let node_data: *const NodeData = memory::alloc_type();
             for extent in &header.extents {
                 if extent.block > 0 {
                     for node_address in extent.block..extent.block + (extent.length + 511) / 512 {
@@ -96,7 +95,7 @@ impl FileSystem {
                     }
                 }
             }
-            unalloc(node_data as usize);
+            memory::unalloc(node_data as usize);
 
             return FileSystem {
                 disk: disk,
@@ -326,7 +325,7 @@ impl SessionItem for FileScheme {
                     for extent in &node.extents {
                         if extent.block > 0 && extent.length > 0 {
                             unsafe {
-                                let data = alloc(extent.length as usize);
+                                let data = memory::alloc(extent.length as usize);
                                 if data > 0 {
                                     let reenable = start_no_ints();
 

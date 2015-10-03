@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::ptr;
 
 use common::debug;
-use common::memory::*;
+use common::memory;
 use common::queue::Queue;
 use common::resource::{Resource, URL};
 use common::scheduler::*;
@@ -92,14 +92,14 @@ impl RTL8139 {
         };
         MAC_ADDR.d();
 
-        let receive_buffer = alloc(10240);
+        let receive_buffer = memory::alloc(10240);
         outd(base + 0x30, receive_buffer as u32);
 
         for i in 0..4 {
             self.txds.push(TXD {
                 address_port: base + 0x20 + (i as u16) * 4,
                 status_port: base + 0x10 + (i as u16) * 4,
-                buffer: alloc(4096),
+                buffer: memory::alloc(4096),
             });
         }
 
