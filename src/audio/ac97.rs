@@ -6,6 +6,7 @@ use drivers::pciconfig::*;
 use drivers::pio::*;
 
 use programs::common::*;
+use programs::common::resource::{Resource, ResourceSeek, ResourceType, URL};
 
 #[repr(packed)]
 struct BD {

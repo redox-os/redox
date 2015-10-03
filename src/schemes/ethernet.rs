@@ -4,6 +4,7 @@ use network::common::*;
 use network::ethernet::*;
 
 use programs::common::*;
+use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
 
 pub struct EthernetResource {
     network: Box<Resource>,

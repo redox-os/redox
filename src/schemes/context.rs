@@ -1,4 +1,5 @@
 use programs::common::*;
+use programs::common::resource::{Resource, ResourceType, URL, VecResource};
 
 use common::context::*;
 use common::scheduler::*;

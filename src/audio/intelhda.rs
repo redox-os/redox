@@ -6,6 +6,7 @@ use common::scheduler::*;
 use drivers::pciconfig::*;
 
 use programs::common::*;
+use programs::common::resource::{Resource, ResourceSeek, ResourceType, URL};
 
 #[repr(packed)]
 struct Stream {

@@ -13,7 +13,7 @@ pub use common::debug;
 pub use common::event;
 pub use common::queue;
 pub use common::random;
-pub use common::resource::*;
+pub use common::resource;
 pub use common::string::*;
 pub use common::time::*;
 pub use common::vec::*;
@@ -25,6 +25,8 @@ pub use graphics::size::*;
 pub use graphics::window::*;
 
 pub use syscall::call::*;
+
+use common::resource::{NoneResource, Resource, URL};
 
 #[allow(unused_variables)]
 pub trait SessionItem {

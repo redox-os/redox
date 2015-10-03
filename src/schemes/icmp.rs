@@ -2,6 +2,7 @@ use network::common::*;
 use network::icmp::*;
 
 use programs::common::*;
+use programs::common::resource::URL;
 
 pub struct ICMPScheme;
 

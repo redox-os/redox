@@ -2,6 +2,7 @@ use network::common::*;
 use network::tcp::*;
 
 use programs::common::*;
+use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
 
 pub struct TCPResource {
     ip: Box<Resource>,
