@@ -37,6 +37,7 @@ use programs::common::*;
 use programs::common::event::{Event, EventOption};
 use programs::common::queue::Queue;
 use programs::common::resource::URL;
+use programs::common::string::{String, ToString};
 use programs::package::*;
 use programs::session::*;
 

@@ -2,6 +2,7 @@ use common::scheduler::*;
 
 use programs::common::*;
 use programs::common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use programs::common::string::{String, ToString};
 
 pub struct DebugResource;
 
