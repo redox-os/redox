@@ -4,6 +4,7 @@ use network::common::*;
 use programs::common::*;
 use programs::common::resource::URL;
 use programs::common::string::{String, ToString};
+use programs::common::vec::Vec;
 
 pub struct ARPScheme;
 
