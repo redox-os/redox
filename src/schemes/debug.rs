@@ -1,6 +1,12 @@
-use common::scheduler::*;
+use alloc::boxed::Box;
 
-use programs::common::*;
+use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::scheduler::*;
+use common::string::{String, ToString};
+
+use programs::common::SessionItem;
+
+use syscall::call;
 
 pub struct DebugResource;
 
@@ -24,7 +30,7 @@ impl Resource for DebugResource {
 
                 end_no_ints(reenable);
 
-                sys_yield();
+                call::sys_yield();
             }
 
             let reenable = start_no_ints();
@@ -48,7 +54,7 @@ impl Resource for DebugResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         for byte in buf {
             unsafe {
-                sys_debug(*byte);
+                call::sys_debug(*byte);
             }
         }
         return Option::Some(buf.len());

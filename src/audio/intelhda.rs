@@ -1,11 +1,17 @@
-use core::ptr::{read, write};
+use alloc::boxed::Box;
 
-use common::memory::*;
-use common::scheduler::*;
+use core::{ptr, mem};
 
 use drivers::pciconfig::*;
 
-use programs::common::*;
+use common::debug;
+use common::memory;
+use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::scheduler::*;
+use common::string::{String, ToString};
+use common::time::{self, Duration};
+
+use programs::common::SessionItem;
 
 #[repr(packed)]
 struct Stream {
@@ -61,17 +67,17 @@ impl Resource for IntelHDAResource {
 
             let gcap = (self.base) as *mut u16;
             debug::d(" GCAP ");
-            debug::dh(read(gcap) as usize);
+            debug::dh(ptr::read(gcap) as usize);
 
-            let iss = (read(gcap) as usize >> 12) & 0b1111;
+            let iss = (ptr::read(gcap) as usize >> 12) & 0b1111;
             debug::d(" ISS ");
             debug::dd(iss);
 
-            let oss = (read(gcap) as usize >> 8) & 0b1111;
+            let oss = (ptr::read(gcap) as usize >> 8) & 0b1111;
             debug::d(" OSS ");
             debug::dd(oss);
 
-            let bss = (read(gcap) as usize >> 3) & 0b11111;
+            let bss = (ptr::read(gcap) as usize >> 3) & 0b11111;
             debug::d(" BSS ");
             debug::dd(bss);
 
@@ -82,7 +88,7 @@ impl Resource for IntelHDAResource {
             debug::d("Output Stream");
 
             debug::d(" SizeOf ");
-            debug::dd(size_of::<Stream>());
+            debug::dd(mem::size_of::<Stream>());
 
             stream.interrupt = 1;
             loop {
@@ -114,21 +120,21 @@ impl Resource for IntelHDAResource {
             debug::d(" Format ");
             debug::dh(stream.format as usize);
 
-            let bd_addr = alloc(buf.len());
-            let bd_size = alloc_size(bd_addr);
+            let bd_addr = memory::alloc(buf.len());
+            let bd_size = memory::alloc_size(bd_addr);
 
             ::memset(bd_addr as *mut u8, 0, bd_size);
             ::memcpy(bd_addr as *mut u8, buf.as_ptr(), buf.len());
 
-            let bdl = alloc(2 * size_of::<BD>()) as *mut BD;
-            write(bdl,
+            let bdl = memory::alloc(2 * mem::size_of::<BD>()) as *mut BD;
+            ptr::write(bdl,
                   BD {
                       addr: bd_addr as u32,
                       addru: 0,
                       len: bd_size as u32,
                       ioc: 1,
                   });
-            write(bdl.offset(1),
+            ptr::write(bdl.offset(1),
                   BD {
                       addr: bd_addr as u32,
                       addru: 0,
@@ -171,7 +177,7 @@ impl Resource for IntelHDAResource {
                 if stream.status & 4 == 4 {
                     break;
                 }
-                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
             debug::d("Finished\n");
@@ -182,8 +188,8 @@ impl Resource for IntelHDAResource {
             stream.cbl = 0;
             stream.lvi = 0;
             stream.bdlpl = 0;
-            unalloc(bd_addr);
-            unalloc(bdl as usize);
+            memory::unalloc(bd_addr);
+            memory::unalloc(bdl as usize);
             */
 
             Option::Some(buf.len())
@@ -260,118 +266,118 @@ impl IntelHDA {
         let rirbsize = (self.base + 0x5E) as *mut u8;
 
         debug::d(" GCAP ");
-        debug::dh(read(gcap) as usize);
+        debug::dh(ptr::read(gcap) as usize);
 
-        let iss = (read(gcap) as usize >> 12) & 0b1111;
+        let iss = (ptr::read(gcap) as usize >> 12) & 0b1111;
         debug::d(" ISS ");
         debug::dd(iss);
 
-        let oss = (read(gcap) as usize >> 8) & 0b1111;
+        let oss = (ptr::read(gcap) as usize >> 8) & 0b1111;
         debug::d(" OSS ");
         debug::dd(oss);
 
-        let bss = (read(gcap) as usize >> 3) & 0b11111;
+        let bss = (ptr::read(gcap) as usize >> 3) & 0b11111;
         debug::d(" BSS ");
         debug::dd(bss);
 
         debug::d(" GCTL ");
-        debug::dh(read(gctl) as usize);
+        debug::dh(ptr::read(gctl) as usize);
 
-        write(gctl, 0);
+        ptr::write(gctl, 0);
         loop {
-            if read(gctl) & 1 == 0 {
+            if ptr::read(gctl) & 1 == 0 {
                 break;
             }
         }
 
         debug::d(" GCTL ");
-        debug::dh(read(gctl) as usize);
+        debug::dh(ptr::read(gctl) as usize);
 
-        write(gctl, 1);
+        ptr::write(gctl, 1);
         loop {
-            if read(gctl) & 1 == 1 {
+            if ptr::read(gctl) & 1 == 1 {
                 break;
             }
         }
 
         let disable = start_ints();
-        Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+        Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         debug::d(" GCTL ");
-        debug::dh(read(gctl) as usize);
+        debug::dh(ptr::read(gctl) as usize);
 
         debug::d(" STATESTS ");
-        debug::dh(read(statests) as usize);
+        debug::dh(ptr::read(statests) as usize);
 
-        let corb_ptr = alloc(256 * 4) as *mut u32;
+        let corb_ptr = memory::alloc(256 * 4) as *mut u32;
         {
-            write(corbctl, 0);
+            ptr::write(corbctl, 0);
             loop {
-                if read(corbctl) & 1 << 1 == 0 {
+                if ptr::read(corbctl) & 1 << 1 == 0 {
                     break;
                 }
             }
             debug::d(" CORBCTL ");
-            debug::dh(read(corbctl) as usize);
+            debug::dh(ptr::read(corbctl) as usize);
 
-            write(corb, corb_ptr as u32);
-            write(corbsize, 0b10);
-            write(corbrp, 1 << 15);
+            ptr::write(corb, corb_ptr as u32);
+            ptr::write(corbsize, 0b10);
+            ptr::write(corbrp, 1 << 15);
             loop {
-                if read(corbrp) == 1 << 15 {
+                if ptr::read(corbrp) == 1 << 15 {
                     break;
                 }
             }
-            write(corbrp, 0);
+            ptr::write(corbrp, 0);
             loop {
-                if read(corbrp) == 0 {
+                if ptr::read(corbrp) == 0 {
                     break;
                 }
             }
-            write(corbwp, 0);
+            ptr::write(corbwp, 0);
 
-            write(corbctl, 1 << 1);
+            ptr::write(corbctl, 1 << 1);
             loop {
-                if read(corbctl) & 1 << 1 == 1 << 1 {
+                if ptr::read(corbctl) & 1 << 1 == 1 << 1 {
                     break;
                 }
             }
             debug::d(" CORBCTL ");
-            debug::dh(read(corbctl) as usize);
+            debug::dh(ptr::read(corbctl) as usize);
         }
 
-        let rirb_ptr = alloc(256 * 8) as *mut u64;
+        let rirb_ptr = memory::alloc(256 * 8) as *mut u64;
         {
-            write(rirbctl, 0);
+            ptr::write(rirbctl, 0);
             loop {
-                if read(rirbctl) & 1 << 1 == 0 {
+                if ptr::read(rirbctl) & 1 << 1 == 0 {
                     break;
                 }
             }
             debug::d(" RIRBCTL ");
-            debug::dh(read(rirbctl) as usize);
+            debug::dh(ptr::read(rirbctl) as usize);
 
-            write(rirb, rirb_ptr as u32);
-            write(rirbsize, 0b10);
-            write(rirbwp, 1 << 15);
-            write(rintcnt, 0xFF);
+            ptr::write(rirb, rirb_ptr as u32);
+            ptr::write(rirbsize, 0b10);
+            ptr::write(rirbwp, 1 << 15);
+            ptr::write(rintcnt, 0xFF);
 
-            write(rirbctl, 1 << 1);
+            ptr::write(rirbctl, 1 << 1);
             loop {
-                if read(rirbctl) & 1 << 1 == 1 << 1 {
+                if ptr::read(rirbctl) & 1 << 1 == 1 << 1 {
                     break;
                 }
             }
             debug::d(" RIRBCTL ");
-            debug::dh(read(rirbctl) as usize);
+            debug::dh(ptr::read(rirbctl) as usize);
         }
 
         debug::dl();
 
         let cmd = |command: u32| -> u64 {
-            let corb_i = (read(corbwp) + 1) & 0xFF;
-            let rirb_i = (read(rirbwp) + 1) & 0xFF;
+            let corb_i = (ptr::read(corbwp) + 1) & 0xFF;
+            let rirb_i = (ptr::read(rirbwp) + 1) & 0xFF;
 
             /*
             d("CORB ");
@@ -381,16 +387,16 @@ impl IntelHDA {
             dl();
             */
 
-            write(corb_ptr.offset(corb_i as isize), command);
-            write(corbwp, corb_i);
+            ptr::write(corb_ptr.offset(corb_i as isize), command);
+            ptr::write(corbwp, corb_i);
 
             loop {
-                if read(rirbwp) == rirb_i {
+                if ptr::read(rirbwp) == rirb_i {
                     break;
                 }
             }
 
-            read(rirb_ptr.offset(rirb_i as isize))
+            ptr::read(rirb_ptr.offset(rirb_i as isize))
         };
 
         let mut output_stream_id = 1;

@@ -1,6 +1,11 @@
+use alloc::boxed::Box;
+
 use graphics::bmp::*;
 
-use programs::common::*;
+use common::debug;
+use common::resource::URL;
+use common::string::{String, ToString};
+use common::vec::Vec;
 
 pub struct Package {
     pub url: URL,

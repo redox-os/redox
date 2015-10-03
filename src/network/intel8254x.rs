@@ -1,12 +1,21 @@
-use common::memory::*;
+use alloc::boxed::Box;
+
+use core::ptr;
+
+use common::debug;
+use common::memory;
+use common::queue::Queue;
+use common::resource::{Resource, URL};
 use common::scheduler::*;
+use common::string::{String, ToString};
+use common::vec::Vec;
 
 use drivers::pciconfig::*;
 
 use network::common::*;
 use network::scheme::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;
@@ -339,9 +348,9 @@ impl Intel8254x {
 
         //Receive Buffer
         let receive_ring_length = 1024;
-        let receive_ring = alloc(receive_ring_length * 16) as *mut RD;
+        let receive_ring = memory::alloc(receive_ring_length * 16) as *mut RD;
         for i in 0..receive_ring_length {
-            let receive_buffer = alloc(16384);
+            let receive_buffer = memory::alloc(16384);
             ptr::write(receive_ring.offset(i as isize),
                        RD {
                            buffer: receive_buffer as u64,
@@ -361,9 +370,9 @@ impl Intel8254x {
 
         //Transmit Buffer
         let transmit_ring_length = 64;
-        let transmit_ring = alloc(transmit_ring_length * 16) as *mut TD;
+        let transmit_ring = memory::alloc(transmit_ring_length * 16) as *mut TD;
         for i in 0..transmit_ring_length {
-            let transmit_buffer = alloc(16384);
+            let transmit_buffer = memory::alloc(16384);
             ptr::write(transmit_ring.offset(i as isize),
                        TD {
                            buffer: transmit_buffer as u64,

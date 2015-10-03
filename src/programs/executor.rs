@@ -1,9 +1,12 @@
+use core::ptr;
+
 use common::context::*;
 use common::elf::*;
-use common::memory::*;
+use common::memory;
+use common::resource::URL;
 use common::scheduler::*;
-
-use programs::common::*;
+use common::string::String;
+use common::vec::Vec;
 
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
     unsafe {
@@ -20,8 +23,8 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             let executable = ELF::from_data(vec.as_ptr() as usize);
 
             if executable.data > 0 {
-                virtual_size = alloc_size(executable.data) - 4096;
-                physical_address = alloc(virtual_size);
+                virtual_size = memory::alloc_size(executable.data) - 4096;
+                physical_address = memory::alloc(virtual_size);
                 ptr::copy((executable.data + 4096) as *const u8,
                           physical_address as *mut u8,
                           virtual_size);
@@ -74,7 +77,7 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             }
             end_no_ints(reenable);
         } else if physical_address > 0 {
-            unalloc(physical_address);
+            memory::unalloc(physical_address);
         }
     }
 }

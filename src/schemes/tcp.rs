@@ -1,7 +1,16 @@
+use alloc::boxed::Box;
+
+use core::mem;
+
+use common::{debug, random};
+use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::string::{String, ToString};
+use common::vec::Vec;
+
 use network::common::*;
 use network::tcp::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
 
 pub struct TCPResource {
     ip: Box<Resource>,
@@ -48,7 +57,7 @@ impl Resource for TCPResource {
                                     dst: n16::new(self.peer_port),
                                     sequence: n32::new(self.sequence),
                                     ack_num: n32::new(self.acknowledge),
-                                    flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
+                                    flags: n16::new(((mem::size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
                                     window_size: n16::new(65535),
                                     checksum: Checksum {
                                         data: 0
@@ -61,13 +70,13 @@ impl Resource for TCPResource {
 
                             unsafe {
                                 let proto = n16::new(0x06);
-                                let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                                let segment_len = n16::new((mem::size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                 tcp.header.checksum.data = Checksum::compile(
-                                    Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                    Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                    Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                                    Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                    Checksum::sum((&tcp.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                                    Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                    Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                    Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                    Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
+                                    Checksum::sum((&tcp.header as *const TCPHeader) as usize, mem::size_of::<TCPHeader>()) +
                                     Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                     Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
                                 );
@@ -94,7 +103,7 @@ impl Resource for TCPResource {
                 dst: n16::new(self.peer_port),
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
-                flags: n16::new((((size_of::<TCPHeader>()) << 10) & 0xF000) as u16 | TCP_PSH |
+                flags: n16::new((((mem::size_of::<TCPHeader>()) << 10) & 0xF000) as u16 | TCP_PSH |
                                 TCP_ACK),
                 window_size: n16::new(65535),
                 checksum: Checksum { data: 0 },
@@ -106,17 +115,17 @@ impl Resource for TCPResource {
 
         unsafe {
             let proto = n16::new(0x06);
-            let segment_len = n16::new((size_of::<TCPHeader>() + tcp.data.len()) as u16);
+            let segment_len = n16::new((mem::size_of::<TCPHeader>() + tcp.data.len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
+                                                mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                                mem::size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
-                                                size_of::<n16>()) +
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
-                                                size_of::<TCPHeader>()) +
+                                                mem::size_of::<TCPHeader>()) +
                                   Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
@@ -165,7 +174,7 @@ impl TCPResource {
                 dst: n16::new(self.peer_port),
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
-                flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_SYN),
+                flags: n16::new(((mem::size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_SYN),
                 window_size: n16::new(65535),
                 checksum: Checksum { data: 0 },
                 urgent_pointer: n16::new(0),
@@ -177,17 +186,17 @@ impl TCPResource {
         unsafe {
             let proto = n16::new(0x06);
             let segment_len =
-                n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                n16::new((mem::size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
+                                                mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                                mem::size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
-                                                size_of::<n16>()) +
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
-                                                size_of::<TCPHeader>()) +
+                                                mem::size_of::<TCPHeader>()) +
                                   Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
@@ -212,7 +221,7 @@ impl TCPResource {
                                             dst: n16::new(self.peer_port),
                                             sequence: n32::new(self.sequence),
                                             ack_num: n32::new(self.acknowledge),
-                                            flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
+                                            flags: n16::new(((mem::size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
                                             window_size: n16::new(65535),
                                             checksum: Checksum {
                                                 data: 0
@@ -225,13 +234,13 @@ impl TCPResource {
 
                                     unsafe {
                                         let proto = n16::new(0x06);
-                                        let segment_len = n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                                        let segment_len = n16::new((mem::size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                         tcp.header.checksum.data = Checksum::compile(
-                                            Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                            Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, size_of::<IPv4Addr>()) +
-                                            Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
-                                            Checksum::sum((&segment_len as *const n16) as usize, size_of::<n16>()) +
-                                            Checksum::sum((&tcp.header as *const TCPHeader) as usize, size_of::<TCPHeader>()) +
+                                            Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                            Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
+                                            Checksum::sum((&tcp.header as *const TCPHeader) as usize, mem::size_of::<TCPHeader>()) +
                                             Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                             Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
                                         );
@@ -263,7 +272,7 @@ impl TCPResource {
                 dst: n16::new(self.peer_port),
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
-                flags: n16::new(((size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_SYN |
+                flags: n16::new(((mem::size_of::<TCPHeader>() << 10) & 0xF000) as u16 | TCP_SYN |
                                 TCP_ACK),
                 window_size: n16::new(65535),
                 checksum: Checksum { data: 0 },
@@ -276,17 +285,17 @@ impl TCPResource {
         unsafe {
             let proto = n16::new(0x06);
             let segment_len =
-                n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                n16::new((mem::size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
+                                                mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                                mem::size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
-                                                size_of::<n16>()) +
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
-                                                size_of::<TCPHeader>()) +
+                                                mem::size_of::<TCPHeader>()) +
                                   Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
@@ -327,7 +336,7 @@ impl Drop for TCPResource {
                 dst: n16::new(self.peer_port),
                 sequence: n32::new(self.sequence),
                 ack_num: n32::new(self.acknowledge),
-                flags: n16::new((((size_of::<TCPHeader>()) << 10) & 0xF000) as u16 | TCP_FIN |
+                flags: n16::new((((mem::size_of::<TCPHeader>()) << 10) & 0xF000) as u16 | TCP_FIN |
                                 TCP_ACK),
                 window_size: n16::new(65535),
                 checksum: Checksum { data: 0 },
@@ -340,17 +349,17 @@ impl Drop for TCPResource {
         unsafe {
             let proto = n16::new(0x06);
             let segment_len =
-                n16::new((size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                n16::new((mem::size_of::<TCPHeader>() + tcp.options.len() + tcp.data.len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
+                                                mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                                mem::size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
-                                                size_of::<n16>()) +
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
-                                                size_of::<TCPHeader>()) +
+                                                mem::size_of::<TCPHeader>()) +
                                   Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
@@ -370,14 +379,14 @@ impl SessionItem for TCPScheme {
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_addr = IPv4Addr::from_string(&url.host());
             let peer_port = url.port().to_num() as u16;
-            let host_port = (rand() % 32768 + 32768) as u16;
+            let host_port = (random::rand() % 32768 + 32768) as u16;
 
             let mut ret = box TCPResource {
                 ip: URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/6")).open(),
                 peer_addr: peer_addr,
                 peer_port: peer_port,
                 host_port: host_port,
-                sequence: rand() as u32,
+                sequence: random::rand() as u32,
                 acknowledge: 0,
             };
 
@@ -404,7 +413,7 @@ impl SessionItem for TCPScheme {
                                     peer_addr: peer_addr,
                                     peer_port: segment.header.src.get(),
                                     host_port: host_port,
-                                    sequence: rand() as u32,
+                                    sequence: random::rand() as u32,
                                     acknowledge: segment.header.sequence.get(),
                                 };
 

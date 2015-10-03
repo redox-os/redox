@@ -1,9 +1,16 @@
-use core::mem::swap;
+use alloc::boxed::Box;
+
+use core::mem;
+
+use common::{debug, random};
+use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::string::{String, ToString};
+use common::vec::Vec;
 
 use network::common::*;
 use network::udp::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
 
 pub struct UDPResource {
     ip: Box<Resource>,
@@ -32,7 +39,7 @@ impl Resource for UDPResource {
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         if self.data.len() > 0 {
             let mut bytes: Vec<u8> = Vec::new();
-            swap(&mut self.data, &mut bytes);
+            mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
             return Option::Some(bytes.len());
         }
@@ -61,7 +68,7 @@ impl Resource for UDPResource {
             header: UDPHeader {
                 src: n16::new(self.host_port),
                 dst: n16::new(self.peer_port),
-                len: n16::new((size_of::<UDPHeader>() + udp_data.len()) as u16),
+                len: n16::new((mem::size_of::<UDPHeader>() + udp_data.len()) as u16),
                 checksum: Checksum { data: 0 },
             },
             data: udp_data,
@@ -69,17 +76,17 @@ impl Resource for UDPResource {
 
         unsafe {
             let proto = n16::new(0x11);
-            let datagram_len = n16::new((size_of::<UDPHeader>() + udp.data.len()) as u16);
+            let datagram_len = n16::new((mem::size_of::<UDPHeader>() + udp.data.len()) as u16);
             udp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
+                                                mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
-                                                size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, size_of::<n16>()) +
+                                                mem::size_of::<IPv4Addr>()) +
+                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
                                   Checksum::sum((&datagram_len as *const n16) as usize,
-                                                size_of::<n16>()) +
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&udp.header as *const UDPHeader) as usize,
-                                                size_of::<UDPHeader>()) +
+                                                mem::size_of::<UDPHeader>()) +
                                   Checksum::sum(udp.data.as_ptr() as usize, udp.data.len()));
         }
 
@@ -109,7 +116,7 @@ impl SessionItem for UDPScheme {
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_port = url.port().to_num() as u16;
             let peer_addr = IPv4Addr::from_string(&url.host());
-            let host_port = (rand() % 32768 + 32768) as u16;
+            let host_port = (random::rand() % 32768 + 32768) as u16;
 
             return box UDPResource {
                 ip: URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/11")).open(),

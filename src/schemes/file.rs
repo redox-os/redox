@@ -1,9 +1,17 @@
-use common::memory::*;
-use common::scheduler::*;
+use alloc::boxed::Box;
+
+use core::{cmp, ptr};
 
 use drivers::disk::*;
 
-use programs::common::*;
+use common::debug;
+use common::memory;
+use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
+use common::scheduler::*;
+use common::string::{String, ToString};
+use common::vec::Vec;
+
+use programs::common::SessionItem;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -71,13 +79,13 @@ pub struct FileSystem {
 impl FileSystem {
     pub fn from_disk(disk: Disk) -> FileSystem {
         unsafe {
-            let header_ptr: *const Header = alloc_type();
+            let header_ptr: *const Header = memory::alloc_type();
             disk.read(1, 1, header_ptr as usize);
             let header = ptr::read(header_ptr);
-            unalloc(header_ptr as usize);
+            memory::unalloc(header_ptr as usize);
 
             let mut nodes = Vec::new();
-            let node_data: *const NodeData = alloc_type();
+            let node_data: *const NodeData = memory::alloc_type();
             for extent in &header.extents {
                 if extent.block > 0 {
                     for node_address in extent.block..extent.block + (extent.length + 511) / 512 {
@@ -87,7 +95,7 @@ impl FileSystem {
                     }
                 }
             }
-            unalloc(node_data as usize);
+            memory::unalloc(node_data as usize);
 
             return FileSystem {
                 disk: disk,
@@ -183,9 +191,9 @@ impl Resource for FileResource {
         match pos {
             ResourceSeek::Start(offset) => self.seek = offset,
             ResourceSeek::Current(offset) =>
-                self.seek = max(0, self.seek as isize + offset) as usize,
+                self.seek = cmp::max(0, self.seek as isize + offset) as usize,
             ResourceSeek::End(offset) =>
-                self.seek = max(0, self.vec.len() as isize + offset) as usize,
+                self.seek = cmp::max(0, self.vec.len() as isize + offset) as usize,
         }
         while self.vec.len() < self.seek {
             self.vec.push(0);
@@ -209,7 +217,7 @@ impl Resource for FileResource {
                     let current_sectors = (extent.length as usize + block_size - 1) / block_size;
                     let max_size = current_sectors * 512;
 
-                    let size = min(remaining as usize, max_size);
+                    let size = cmp::min(remaining as usize, max_size);
                     let sectors = (size + block_size - 1) / block_size;
 
                     if size as u64 != extent.length {
@@ -317,7 +325,7 @@ impl SessionItem for FileScheme {
                     for extent in &node.extents {
                         if extent.block > 0 && extent.length > 0 {
                             unsafe {
-                                let data = alloc(extent.length as usize);
+                                let data = memory::alloc(extent.length as usize);
                                 if data > 0 {
                                     let reenable = start_no_ints();
 
