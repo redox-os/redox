@@ -1,7 +1,11 @@
+use alloc::boxed::Box;
+
+use common::debug;
+use common::event::{KeyEvent, MouseEvent};
+
 use drivers::pio::*;
 
-use programs::common::*;
-use programs::common::event::{KeyEvent, MouseEvent};
+use programs::common::SessionItem;
 
 pub struct PS2 {
     data: PIO8,

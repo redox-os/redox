@@ -1,16 +1,21 @@
+use alloc::boxed::Box;
+
 use core::intrinsics::{volatile_load, volatile_store};
-use core::ptr::{read, write};
+use core::{cmp, mem, ptr};
 
 use common::context::*;
+use common::debug;
+use common::event::MouseEvent;
 use common::memory::*;
 use common::scheduler::*;
+use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::common::*;
-use programs::common::event::MouseEvent;
-use programs::common::time::Duration;
+use programs::common::SessionItem;
+
+use syscall::call;
 
 pub struct UHCI {
     pub base: usize,
@@ -320,7 +325,7 @@ impl UHCI {
                    });
 
         let setup: *mut SETUP = alloc_type();
-        write(setup,
+        ptr::write(setup,
               SETUP {
                   request_type: 0b00000000,
                   request: 5,
@@ -330,23 +335,23 @@ impl UHCI {
               });
 
         let setup_td: *mut TD = alloc_type();
-        write(setup_td,
+        ptr::write(setup_td,
               TD {
                   link_ptr: in_td as u32 | 4,
                   ctrl_sts: 1 << 23,
-                  token: (size_of_val(&*setup) as u32 - 1) << 21 | 0x2D,
+                  token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | 0x2D,
                   buffer: setup as u32,
               });
 
         let queue_head: *mut QH = alloc_type();
-        write(queue_head,
+        ptr::write(queue_head,
               QH {
                   head_ptr: 1,
                   element_ptr: setup_td as u32,
               });
 
         let frame = (inw(frnum) + 2) & 0x3FF;
-        write(frame_list.offset(frame as isize),
+        ptr::write(frame_list.offset(frame as isize),
               queue_head as u32 | 2);
 
         loop {
@@ -375,7 +380,7 @@ impl UHCI {
             end_ints(disable);
         }
 
-        write(frame_list.offset(frame as isize), 1);
+        ptr::write(frame_list.offset(frame as isize), 1);
 
         unalloc(queue_head as usize);
         unalloc(setup_td as usize);
@@ -413,7 +418,7 @@ impl UHCI {
                    });
 
         let setup: *mut SETUP = alloc_type();
-        write(setup,
+        ptr::write(setup,
               SETUP {
                   request_type: 0b10000000,
                   request: 6,
@@ -423,23 +428,23 @@ impl UHCI {
               });
 
         let setup_td: *mut TD = alloc_type();
-        write(setup_td,
+        ptr::write(setup_td,
               TD {
                   link_ptr: in_td as u32 | 4,
                   ctrl_sts: 1 << 23,
-                  token: (size_of_val(&*setup) as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
+                  token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
                   buffer: setup as u32,
               });
 
         let queue_head: *mut QH = alloc_type();
-        write(queue_head,
+        ptr::write(queue_head,
               QH {
                   head_ptr: 1,
                   element_ptr: setup_td as u32,
               });
 
         let frame = (inw(frnum) + 2) & 0x3FF;
-        write(frame_list.offset(frame as isize),
+        ptr::write(frame_list.offset(frame as isize),
               queue_head as u32 | 2);
 
         loop {
@@ -481,7 +486,7 @@ impl UHCI {
             end_ints(disable);
         }
 
-        write(frame_list.offset(frame as isize), 1);
+        ptr::write(frame_list.offset(frame as isize), 1);
 
         unalloc(queue_head as usize);
         unalloc(setup_td as usize);
@@ -494,20 +499,20 @@ impl UHCI {
         self.set_address(frame_list, address);
 
         let desc_dev: *mut DeviceDescriptor = alloc_type();
-        write(desc_dev, DeviceDescriptor::new());
+        ptr::write(desc_dev, DeviceDescriptor::new());
         self.descriptor(frame_list,
                         address,
                         DESC_DEV,
                         0,
                         desc_dev as u32,
-                        size_of_val(&*desc_dev) as u32);
+                        mem::size_of_val(&*desc_dev) as u32);
         (*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
             let desc_cfg_buf = alloc(desc_cfg_len) as *mut u8;
             for i in 0..desc_cfg_len as isize {
-                write(desc_cfg_buf.offset(i), 0);
+                ptr::write(desc_cfg_buf.offset(i), 0);
             }
             self.descriptor(frame_list,
                             address,
@@ -516,20 +521,20 @@ impl UHCI {
                             desc_cfg_buf as u32,
                             desc_cfg_len as u32);
 
-            let desc_cfg = read(desc_cfg_buf as *const ConfigDescriptor);
+            let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
             desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
-                let length = read(desc_cfg_buf.offset(i));
-                let descriptor_type = read(desc_cfg_buf.offset(i + 1));
+                let length = ptr::read(desc_cfg_buf.offset(i));
+                let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        let desc_int = read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
                         desc_int.d();
                     }
                     DESC_END => {
-                        let desc_end = read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
                         desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
@@ -548,7 +553,7 @@ impl UHCI {
                                     volatile_store(in_ptr.offset(i), 0);
                                 }
 
-                                write(in_td,
+                                ptr::write(in_td,
                                       TD {
                                           link_ptr: 1,
                                           ctrl_sts: 1 << 25 | 1 << 23,
@@ -570,26 +575,26 @@ impl UHCI {
                                         break;
                                     }
 
-                                    sys_yield();
+                                    call::sys_yield();
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);
 
                                 if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
-                                    let buttons = read(in_ptr.offset(0) as *const u8) as usize;
-                                    let x = read(in_ptr.offset(1) as *const u16) as usize;
-                                    let y = read(in_ptr.offset(3) as *const u16) as usize;
+                                    let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
                                     let mouse_x = (x * (*::session_ptr).display.width) / 32768;
                                     let mouse_y = (y * (*::session_ptr).display.height) / 32768;
 
                                     (*::session_ptr).mouse_point.x =
-                                        max(0,
-                                            min((*::session_ptr).display.width as isize - 1,
+                                        cmp::max(0,
+                                            cmp::min((*::session_ptr).display.width as isize - 1,
                                                 mouse_x as isize));
                                     (*::session_ptr).mouse_point.y =
-                                        max(0,
-                                            min((*::session_ptr).display.height as isize - 1,
+                                        cmp::max(0,
+                                            cmp::min((*::session_ptr).display.height as isize - 1,
                                                 mouse_y as isize));
 
                                     MouseEvent {
@@ -673,7 +678,7 @@ impl UHCI {
         debug::dh(ind(flbaseadd) as usize);
         let frame_list = alloc(1024 * 4) as *mut u32;
         for i in 0..1024 {
-            write(frame_list.offset(i), 1);
+            ptr::write(frame_list.offset(i), 1);
         }
         outd(flbaseadd, frame_list as u32);
         debug::d(" to ");

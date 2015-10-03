@@ -1,6 +1,8 @@
+use common::event;
+
 use drivers::pio::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
 
 pub struct Serial {
     pub data: PIO8,

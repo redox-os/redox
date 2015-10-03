@@ -1,14 +1,24 @@
+use super::package::*;
+use super::executor::*;
+
+use alloc::boxed::Box;
+
+use core::{cmp, ptr, mem};
+
+use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
+use common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
 use common::scheduler::*;
+use common::string::{String, ToString};
+use common::vec::Vec;
 
 use graphics::bmp::*;
+use graphics::color::Color;
+use graphics::display::Display;
+use graphics::point::Point;
+use graphics::size::Size;
+use graphics::window::Window;
 
-use programs::common::*;
-use programs::common::event::{Event, EventOption, KeyEvent, MouseEvent};
-use programs::common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
-use programs::common::string::{String, ToString};
-use programs::common::vec::Vec;
-use programs::executor::*;
-use programs::package::*;
+use programs::common::SessionItem;
 
 pub struct Session {
     pub display: Display,
@@ -50,7 +60,7 @@ impl Session {
     pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window) {
         self.windows.push(add_window_ptr);
         self.windows_ordered.push(add_window_ptr);
-        self.redraw = max(self.redraw, event::REDRAW_ALL);
+        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
     }
 
     pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
@@ -90,7 +100,7 @@ impl Session {
             }
         }
 
-        self.redraw = max(self.redraw, event::REDRAW_ALL);
+        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
@@ -141,7 +151,7 @@ impl Session {
                 Option::Some(window_ptr) => {
                     unsafe {
                         (**window_ptr).on_key(key_event);
-                        self.redraw = max(self.redraw, event::REDRAW_ALL);
+                        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
                     }
                 }
                 Option::None => (),
@@ -193,7 +203,7 @@ impl Session {
                                 Option::None => break,
                             }
                         }
-                        self.redraw = max(self.redraw, event::REDRAW_ALL);
+                        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
                         break;
                     }
                     x += w as isize;
@@ -209,7 +219,7 @@ impl Session {
                             if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
                                 catcher = i as isize;
 
-                                self.redraw = max(self.redraw, event::REDRAW_ALL);
+                                self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
                             }
                         }
                     },
@@ -339,7 +349,7 @@ impl Session {
             EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
             EventOption::Key(key_event) => self.on_key(key_event),
             EventOption::Redraw(redraw_event) =>
-                self.redraw = max(self.redraw, redraw_event.redraw),
+                self.redraw = cmp::max(self.redraw, redraw_event.redraw),
             EventOption::Open(open_event) => {
                 let url_string = open_event.url_string;
 

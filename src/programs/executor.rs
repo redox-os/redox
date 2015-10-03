@@ -1,12 +1,12 @@
+use core::ptr;
+
 use common::context::*;
 use common::elf::*;
 use common::memory::*;
+use common::resource::URL;
 use common::scheduler::*;
-
-use programs::common::*;
-use programs::common::resource::URL;
-use programs::common::string::String;
-use programs::common::vec::Vec;
+use common::string::String;
+use common::vec::Vec;
 
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
     unsafe {

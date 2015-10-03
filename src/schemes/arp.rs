@@ -1,10 +1,13 @@
+use common::resource::URL;
+use common::string::{String, ToString};
+use common::vec::Vec;
+
 use network::arp::*;
 use network::common::*;
 
-use programs::common::*;
-use programs::common::resource::URL;
-use programs::common::string::{String, ToString};
-use programs::common::vec::Vec;
+use programs::common::SessionItem;
+
+use syscall::call;
 
 pub struct ARPScheme;
 
@@ -38,7 +41,7 @@ impl ARPScheme {
                         }
                     }
                 }
-                Option::None => sys_yield(),
+                Option::None => call::sys_yield(),
             }
         }
     }
