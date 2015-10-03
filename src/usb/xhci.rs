@@ -1,6 +1,8 @@
 use drivers::pciconfig::*;
 
-use programs::common::*;
+use common::*;
+
+use programs::common::SessionItem;
 
 #[repr(packed)]
 struct STE {

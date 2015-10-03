@@ -1,11 +1,13 @@
 use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::{read, write};
 
+use common::debug;
 use common::scheduler::*;
+use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
 
 #[repr(packed)]
 struct SETUP {
@@ -246,7 +248,7 @@ impl EHCI {
         debug::dl();
 
         let disable = start_ints();
-        Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         for i in 0..ports as isize {

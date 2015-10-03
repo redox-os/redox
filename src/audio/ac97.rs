@@ -1,11 +1,19 @@
-use core::ptr::write;
+use alloc::boxed::Box;
 
-use common::memory::*;
+use core::{cmp, ptr, mem};
+
+use common::debug;
+use common::memory;
+use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::string::{String, ToString};
+use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
+
+use syscall::call;
 
 #[repr(packed)]
 struct BD {
@@ -55,14 +63,14 @@ impl Resource for AC97Resource {
                 if po_cr.read() & 1 == 0 {
                     break;
                 }
-                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
             po_cr.write(0);
 
             let mut bdl = po_bdbar.read() as *mut BD;
             if bdl as usize == 0 {
-                bdl = alloc(32 * size_of::<BD>()) as *mut BD;
+                bdl = memory::alloc(32 * mem::size_of::<BD>()) as *mut BD;
                 po_bdbar.write(bdl as u32);
             }
 
@@ -95,7 +103,7 @@ impl Resource for AC97Resource {
                     if po_civ.read() != lvi as u8 {
                         break;
                     }
-                    Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                    Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                 }
 
                 debug::dd(po_civ.read() as usize);
@@ -107,7 +115,7 @@ impl Resource for AC97Resource {
                 debug::dd(buf.len());
                 debug::dl();
 
-                let bytes = min(65534 * 2, (buf.len() - position + 1));
+                let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
 
                 ptr::write(bdl.offset(lvi as isize),
@@ -143,7 +151,7 @@ impl Resource for AC97Resource {
                     po_cr.write(0);
                     break;
                 }
-                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
             debug::d("Finished ");

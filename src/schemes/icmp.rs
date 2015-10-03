@@ -1,7 +1,15 @@
+use core::mem;
+
 use network::common::*;
 use network::icmp::*;
 
-use programs::common::*;
+use common::resource::URL;
+use common::string::{String, ToString};
+use common::vec::Vec;
+
+use programs::common::SessionItem;
+
+use syscall::call;
 
 pub struct ICMPScheme;
 
@@ -33,7 +41,7 @@ impl ICMPScheme {
 
                                 let header_ptr: *const ICMPHeader = &response.header;
                                 response.header.checksum.data = Checksum::compile(
-                                    Checksum::sum(header_ptr as usize, size_of::<ICMPHeader>()) +
+                                    Checksum::sum(header_ptr as usize, mem::size_of::<ICMPHeader>()) +
                                     Checksum::sum(response.data.as_ptr() as usize, response.data.len())
                                 );
                             }
@@ -42,7 +50,7 @@ impl ICMPScheme {
                         }
                     }
                 }
-                Option::None => sys_yield(),
+                Option::None => call::sys_yield(),
             }
         }
     }

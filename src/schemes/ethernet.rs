@@ -1,9 +1,16 @@
+use alloc::boxed::Box;
+
 use core::mem::swap;
 
 use network::common::*;
 use network::ethernet::*;
 
-use programs::common::*;
+use common::debug;
+use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::string::{String, ToString};
+use common::vec::Vec;
+
+use programs::common::SessionItem;
 
 pub struct EthernetResource {
     network: Box<Resource>,

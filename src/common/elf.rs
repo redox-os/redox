@@ -2,7 +2,7 @@ use core::ops::Drop;
 use core::ptr;
 
 use common::debug::*;
-use common::memory::*;
+use common::memory;
 use common::string::*;
 
 #[repr(packed)]
@@ -83,8 +83,8 @@ impl ELF {
                *((file_data + 2) as *const u8) == 'L' as u8 &&
                *((file_data + 3) as *const u8) == 'F' as u8 &&
                *((file_data + 4) as *const u8) == 1 {
-                let size = alloc_size(file_data);
-                data = alloc(size);
+                let size = memory::alloc_size(file_data);
+                data = memory::alloc(size);
                 ptr::copy(file_data as *const u8, data as *mut u8, size);
             } else {
                 d("Invalid ELF Format\n");
@@ -338,7 +338,7 @@ impl Drop for ELF {
     fn drop(&mut self) {
         unsafe {
             if self.data > 0 {
-                unalloc(self.data);
+                memory::unalloc(self.data);
                 self.data = 0;
             }
         }

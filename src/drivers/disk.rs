@@ -2,7 +2,7 @@ use core::mem::size_of;
 use core::ptr;
 
 use common::debug::*;
-use common::memory::*;
+use common::memory;
 
 use drivers::pio::*;
 
@@ -219,7 +219,7 @@ impl Disk {
             return false;
         }
 
-        let destination = alloc(512) as *mut u16;
+        let destination = memory::alloc(512) as *mut u16;
         for word in 0..256 {
             *destination.offset(word) = inw(self.base + ATA_REG_DATA);
         }
@@ -232,7 +232,7 @@ impl Disk {
         dd((sectors / 2048) as usize);
         d(" MB");
 
-        unalloc(destination as usize);
+        memory::unalloc(destination as usize);
 
         true
     }
@@ -282,7 +282,7 @@ impl Disk {
             //Allocate PRDT
             let size = count as usize * 512;
             let entries = (size + 65535) / 65536;
-            let prdt = alloc_aligned(size_of::<PRDTE>() * entries, 65536);
+            let prdt = memory::alloc_aligned(size_of::<PRDTE>() * entries, 65536);
             for i in 0..entries {
                 if i == entries - 1 {
                     ptr::write((prdt as *mut PRDTE).offset(i as isize),
