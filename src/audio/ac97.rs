@@ -8,6 +8,7 @@ use drivers::pio::*;
 use programs::common::*;
 use programs::common::resource::{Resource, ResourceSeek, ResourceType, URL};
 use programs::common::string::{String, ToString};
+use programs::common::time::Duration;
 
 #[repr(packed)]
 struct BD {
@@ -57,7 +58,7 @@ impl Resource for AC97Resource {
                 if po_cr.read() & 1 == 0 {
                     break;
                 }
-                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
             po_cr.write(0);
@@ -97,7 +98,7 @@ impl Resource for AC97Resource {
                     if po_civ.read() != lvi as u8 {
                         break;
                     }
-                    Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                    Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                 }
 
                 debug::dd(po_civ.read() as usize);
@@ -145,7 +146,7 @@ impl Resource for AC97Resource {
                     po_cr.write(0);
                     break;
                 }
-                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
             debug::d("Finished ");

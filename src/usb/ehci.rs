@@ -6,6 +6,7 @@ use common::scheduler::*;
 use drivers::pciconfig::*;
 
 use programs::common::*;
+use programs::common::time::Duration;
 
 #[repr(packed)]
 struct SETUP {
@@ -246,7 +247,7 @@ impl EHCI {
         debug::dl();
 
         let disable = start_ints();
-        Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         for i in 0..ports as isize {

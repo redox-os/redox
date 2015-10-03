@@ -8,6 +8,7 @@ use drivers::pciconfig::*;
 use programs::common::*;
 use programs::common::resource::{Resource, ResourceSeek, ResourceType, URL};
 use programs::common::string::{String, ToString};
+use programs::common::time::Duration;
 
 #[repr(packed)]
 struct Stream {
@@ -173,7 +174,7 @@ impl Resource for IntelHDAResource {
                 if stream.status & 4 == 4 {
                     break;
                 }
-                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
             debug::d("Finished\n");
@@ -297,7 +298,7 @@ impl IntelHDA {
         }
 
         let disable = start_ints();
-        Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+        Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         debug::d(" GCTL ");
