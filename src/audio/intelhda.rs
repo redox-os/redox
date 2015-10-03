@@ -5,7 +5,7 @@ use core::{ptr, mem};
 use drivers::pciconfig::*;
 
 use common::debug;
-use common::memory::*;
+use common::memory;
 use common::resource::{Resource, ResourceSeek, ResourceType, URL};
 use common::scheduler::*;
 use common::string::{String, ToString};
@@ -120,13 +120,13 @@ impl Resource for IntelHDAResource {
             debug::d(" Format ");
             debug::dh(stream.format as usize);
 
-            let bd_addr = alloc(buf.len());
-            let bd_size = alloc_size(bd_addr);
+            let bd_addr = memory::alloc(buf.len());
+            let bd_size = memory::alloc_size(bd_addr);
 
             ::memset(bd_addr as *mut u8, 0, bd_size);
             ::memcpy(bd_addr as *mut u8, buf.as_ptr(), buf.len());
 
-            let bdl = alloc(2 * mem::size_of::<BD>()) as *mut BD;
+            let bdl = memory::alloc(2 * mem::size_of::<BD>()) as *mut BD;
             ptr::write(bdl,
                   BD {
                       addr: bd_addr as u32,
@@ -188,8 +188,8 @@ impl Resource for IntelHDAResource {
             stream.cbl = 0;
             stream.lvi = 0;
             stream.bdlpl = 0;
-            unalloc(bd_addr);
-            unalloc(bdl as usize);
+            memory::unalloc(bd_addr);
+            memory::unalloc(bdl as usize);
             */
 
             Option::Some(buf.len())
@@ -310,7 +310,7 @@ impl IntelHDA {
         debug::d(" STATESTS ");
         debug::dh(ptr::read(statests) as usize);
 
-        let corb_ptr = alloc(256 * 4) as *mut u32;
+        let corb_ptr = memory::alloc(256 * 4) as *mut u32;
         {
             ptr::write(corbctl, 0);
             loop {
@@ -347,7 +347,7 @@ impl IntelHDA {
             debug::dh(ptr::read(corbctl) as usize);
         }
 
-        let rirb_ptr = alloc(256 * 8) as *mut u64;
+        let rirb_ptr = memory::alloc(256 * 8) as *mut u64;
         {
             ptr::write(rirbctl, 0);
             loop {

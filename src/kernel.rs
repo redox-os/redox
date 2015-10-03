@@ -22,9 +22,16 @@ use alloc::boxed::Box;
 use core::{cmp, mem, ptr};
 
 use common::context::*;
-use common::memory::*;
+use common::debug;
+use common::event::{self, Event, EventOption};
+use common::memory;
 use common::paging::*;
+use common::queue::Queue;
+use common::resource::URL;
 use common::scheduler::*;
+use common::string::{String, ToString};
+use common::time::Duration;
+use common::vec::Vec;
 
 use drivers::disk::*;
 use drivers::pci::*;
@@ -41,14 +48,6 @@ use graphics::display::{self, Display};
 use graphics::point::Point;
 use graphics::size::Size;
 use graphics::window::Window;
-
-use common::debug;
-use common::event::{self, Event, EventOption};
-use common::queue::Queue;
-use common::resource::URL;
-use common::string::{String, ToString};
-use common::time::Duration;
-use common::vec::Vec;
 
 use programs::package::*;
 use programs::session::*;
@@ -364,28 +363,28 @@ unsafe fn init(font_data: usize) {
     debug::dl();
 
     page_bootstrap();
-    cluster_init();
+    memory::cluster_init();
     page_init();
 
     ptr::write(display::FONTS, font_data);
 
-    debug_display = alloc_type();
+    debug_display = memory::alloc_type();
     ptr::write(debug_display, box Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
-    debug_command = alloc_type();
+    debug_command = memory::alloc_type();
     ptr::write(debug_command, String::new());
 
     clock_realtime = RTC::new().time();
 
-    contexts_ptr = alloc_type();
+    contexts_ptr = memory::alloc_type();
     ptr::write(contexts_ptr, Vec::new());
     (*contexts_ptr).push(Context::root());
 
-    session_ptr = alloc_type();
+    session_ptr = memory::alloc_type();
     ptr::write(session_ptr, box Session::new());
 
-    events_ptr = alloc_type();
+    events_ptr = memory::alloc_type();
     ptr::write(events_ptr, Queue::new());
 
     let session = &mut *session_ptr;

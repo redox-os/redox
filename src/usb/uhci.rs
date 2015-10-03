@@ -6,7 +6,7 @@ use core::{cmp, mem, ptr};
 use common::context::*;
 use common::debug;
 use common::event::MouseEvent;
-use common::memory::*;
+use common::memory;
 use common::scheduler::*;
 use common::time::{self, Duration};
 
@@ -315,7 +315,7 @@ impl UHCI {
         let usbintr = base + 4;
         let frnum = base + 6;
 
-        let in_td: *mut TD = alloc_type();
+        let in_td: *mut TD = memory::alloc_type();
         ptr::write(in_td,
                    TD {
                        link_ptr: 1,
@@ -324,7 +324,7 @@ impl UHCI {
                        buffer: 0,
                    });
 
-        let setup: *mut SETUP = alloc_type();
+        let setup: *mut SETUP = memory::alloc_type();
         ptr::write(setup,
               SETUP {
                   request_type: 0b00000000,
@@ -334,7 +334,7 @@ impl UHCI {
                   len: 0,
               });
 
-        let setup_td: *mut TD = alloc_type();
+        let setup_td: *mut TD = memory::alloc_type();
         ptr::write(setup_td,
               TD {
                   link_ptr: in_td as u32 | 4,
@@ -343,7 +343,7 @@ impl UHCI {
                   buffer: setup as u32,
               });
 
-        let queue_head: *mut QH = alloc_type();
+        let queue_head: *mut QH = memory::alloc_type();
         ptr::write(queue_head,
               QH {
                   head_ptr: 1,
@@ -382,10 +382,10 @@ impl UHCI {
 
         ptr::write(frame_list.offset(frame as isize), 1);
 
-        unalloc(queue_head as usize);
-        unalloc(setup_td as usize);
-        unalloc(setup as usize);
-        unalloc(in_td as usize);
+        memory::unalloc(queue_head as usize);
+        memory::unalloc(setup_td as usize);
+        memory::unalloc(setup as usize);
+        memory::unalloc(in_td as usize);
     }
 
     unsafe fn descriptor(&self,
@@ -399,7 +399,7 @@ impl UHCI {
         let usbcmd = base;
         let frnum = base + 6;
 
-        let out_td: *mut TD = alloc_type();
+        let out_td: *mut TD = memory::alloc_type();
         ptr::write(out_td,
                    TD {
                        link_ptr: 1,
@@ -408,7 +408,7 @@ impl UHCI {
                        buffer: 0,
                    });
 
-        let in_td: *mut TD = alloc_type();
+        let in_td: *mut TD = memory::alloc_type();
         ptr::write(in_td,
                    TD {
                        link_ptr: out_td as u32 | 4,
@@ -417,7 +417,7 @@ impl UHCI {
                        buffer: descriptor_ptr,
                    });
 
-        let setup: *mut SETUP = alloc_type();
+        let setup: *mut SETUP = memory::alloc_type();
         ptr::write(setup,
               SETUP {
                   request_type: 0b10000000,
@@ -427,7 +427,7 @@ impl UHCI {
                   len: descriptor_len as u16,
               });
 
-        let setup_td: *mut TD = alloc_type();
+        let setup_td: *mut TD = memory::alloc_type();
         ptr::write(setup_td,
               TD {
                   link_ptr: in_td as u32 | 4,
@@ -436,7 +436,7 @@ impl UHCI {
                   buffer: setup as u32,
               });
 
-        let queue_head: *mut QH = alloc_type();
+        let queue_head: *mut QH = memory::alloc_type();
         ptr::write(queue_head,
               QH {
                   head_ptr: 1,
@@ -488,17 +488,17 @@ impl UHCI {
 
         ptr::write(frame_list.offset(frame as isize), 1);
 
-        unalloc(queue_head as usize);
-        unalloc(setup_td as usize);
-        unalloc(setup as usize);
-        unalloc(in_td as usize);
-        unalloc(out_td as usize);
+        memory::unalloc(queue_head as usize);
+        memory::unalloc(setup_td as usize);
+        memory::unalloc(setup as usize);
+        memory::unalloc(in_td as usize);
+        memory::unalloc(out_td as usize);
     }
 
     unsafe fn device(&self, frame_list: *mut u32, address: u8) {
         self.set_address(frame_list, address);
 
-        let desc_dev: *mut DeviceDescriptor = alloc_type();
+        let desc_dev: *mut DeviceDescriptor = memory::alloc_type();
         ptr::write(desc_dev, DeviceDescriptor::new());
         self.descriptor(frame_list,
                         address,
@@ -510,7 +510,7 @@ impl UHCI {
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
-            let desc_cfg_buf = alloc(desc_cfg_len) as *mut u8;
+            let desc_cfg_buf = memory::alloc(desc_cfg_len) as *mut u8;
             for i in 0..desc_cfg_len as isize {
                 ptr::write(desc_cfg_buf.offset(i), 0);
             }
@@ -545,8 +545,8 @@ impl UHCI {
                         let frnum = base + 0x6;
 
                         Context::spawn(box move || {
-                            let in_ptr = alloc(in_len) as *mut u8;
-                            let in_td: *mut TD = alloc_type();
+                            let in_ptr = memory::alloc(in_len) as *mut u8;
+                            let in_td: *mut TD = memory::alloc_type();
 
                             loop {
                                 for i in 0..in_len as isize {
@@ -610,7 +610,7 @@ impl UHCI {
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                            unalloc(in_td as usize);
+                            memory::unalloc(in_td as usize);
                         });
                     }
                     DESC_HID => {
@@ -628,10 +628,10 @@ impl UHCI {
                 i += length as isize;
             }
 
-            unalloc(desc_cfg_buf as usize);
+            memory::unalloc(desc_cfg_buf as usize);
         }
 
-        unalloc(desc_dev as usize);
+        memory::unalloc(desc_dev as usize);
     }
 
     pub unsafe fn init(&self) {
@@ -676,7 +676,7 @@ impl UHCI {
 
         debug::d(" FLBASEADD ");
         debug::dh(ind(flbaseadd) as usize);
-        let frame_list = alloc(1024 * 4) as *mut u32;
+        let frame_list = memory::alloc(1024 * 4) as *mut u32;
         for i in 0..1024 {
             ptr::write(frame_list.offset(i), 1);
         }

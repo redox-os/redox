@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::{cmp, ptr, mem};
 
 use common::debug;
-use common::memory::*;
+use common::memory;
 use common::resource::{Resource, ResourceSeek, ResourceType, URL};
 use common::string::{String, ToString};
 use common::time::{self, Duration};
@@ -70,7 +70,7 @@ impl Resource for AC97Resource {
 
             let mut bdl = po_bdbar.read() as *mut BD;
             if bdl as usize == 0 {
-                bdl = alloc(32 * mem::size_of::<BD>()) as *mut BD;
+                bdl = memory::alloc(32 * mem::size_of::<BD>()) as *mut BD;
                 po_bdbar.write(bdl as u32);
             }
 
