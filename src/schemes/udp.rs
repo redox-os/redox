@@ -109,7 +109,7 @@ impl SessionItem for UDPScheme {
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_port = url.port().to_num() as u16;
             let peer_addr = IPv4Addr::from_string(&url.host());
-            let host_port = (rand() % 32768 + 32768) as u16;
+            let host_port = (random::rand() % 32768 + 32768) as u16;
 
             return box UDPResource {
                 ip: URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/11")).open(),

@@ -177,7 +177,7 @@ impl SessionItem for IPScheme {
                     data: Vec::new(),
                     peer_addr: peer_addr,
                     proto: proto,
-                    id: (rand() % 65536) as u16,
+                    id: (random::rand() % 65536) as u16,
                 };
             } else {
                 loop {
@@ -194,7 +194,7 @@ impl SessionItem for IPScheme {
                                         data: packet.data,
                                         peer_addr: packet.header.src,
                                         proto: proto,
-                                        id: (rand() % 65536) as u16,
+                                        id: (random::rand() % 65536) as u16,
                                     };
                                 }
                             }
