@@ -10,6 +10,7 @@ use drivers::pio::*;
 
 use programs::common::*;
 use programs::common::event::MouseEvent;
+use programs::common::time::Duration;
 
 pub struct UHCI {
     pub base: usize,
@@ -357,7 +358,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -370,7 +371,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -450,7 +451,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -463,7 +464,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -476,7 +477,7 @@ impl UHCI {
             }
 
             let disable = start_ints();
-            Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
@@ -601,7 +602,7 @@ impl UHCI {
                                         .trigger();
                                 }
 
-                                Duration::new(0, 10 * NANOS_PER_MILLI).sleep();
+                                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
                             unalloc(in_td as usize);
@@ -650,7 +651,7 @@ impl UHCI {
         debug::d(" to ");
         debug::dh(inw(usbcmd) as usize);
         let disable = start_ints();
-        Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
         outw(usbcmd, 0);
         debug::d(" to ");
@@ -687,7 +688,7 @@ impl UHCI {
         debug::dl();
 
         let disable = start_ints();
-        Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         {
@@ -699,7 +700,7 @@ impl UHCI {
             debug::dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 0);
@@ -707,7 +708,7 @@ impl UHCI {
             debug::dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             debug::dl();
@@ -722,7 +723,7 @@ impl UHCI {
                 debug::dl();
 
                 let disable = start_ints();
-                Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
                 end_ints(disable);
 
                 self.device(frame_list, 1);
@@ -738,7 +739,7 @@ impl UHCI {
             debug::dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 0);
@@ -746,7 +747,7 @@ impl UHCI {
             debug::dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             debug::dl();
@@ -761,7 +762,7 @@ impl UHCI {
                 debug::dl();
 
                 let disable = start_ints();
-                Duration::new(0, 100 * NANOS_PER_MILLI).sleep();
+                Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
                 end_ints(disable);
 
                 self.device(frame_list, 2);
