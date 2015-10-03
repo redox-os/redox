@@ -4,6 +4,7 @@ use common::scheduler::*;
 use drivers::disk::*;
 
 use programs::common::*;
+use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]

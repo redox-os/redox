@@ -4,6 +4,7 @@ use common::memory::*;
 use common::scheduler::*;
 
 use programs::common::*;
+use programs::common::resource::URL;
 
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
     unsafe {

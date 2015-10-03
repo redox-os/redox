@@ -1,6 +1,7 @@
 use common::memory::*;
 
 use programs::common::*;
+use programs::common::resource::{Resource, ResourceType, URL, VecResource};
 
 pub struct MemoryScheme;
 

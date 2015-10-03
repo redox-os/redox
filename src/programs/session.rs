@@ -4,6 +4,7 @@ use graphics::bmp::*;
 
 use programs::common::*;
 use programs::common::event::{Event, EventOption, KeyEvent, MouseEvent};
+use programs::common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
 use programs::executor::*;
 use programs::package::*;
 

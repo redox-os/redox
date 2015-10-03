@@ -5,6 +5,7 @@ use network::common::*;
 use network::ipv4::*;
 
 use programs::common::*;
+use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
 
 pub struct IPResource {
     link: Box<Resource>,

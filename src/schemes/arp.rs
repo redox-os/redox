@@ -2,6 +2,7 @@ use network::arp::*;
 use network::common::*;
 
 use programs::common::*;
+use programs::common::resource::URL;
 
 pub struct ARPScheme;
 

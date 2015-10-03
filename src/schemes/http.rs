@@ -1,4 +1,5 @@
 use programs::common::*;
+use programs::common::resource::{Resource, URL};
 
 pub struct HTTPScheme;
 

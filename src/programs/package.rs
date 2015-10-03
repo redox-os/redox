@@ -1,6 +1,7 @@
 use graphics::bmp::*;
 
 use programs::common::*;
+use programs::common::resource::URL;
 
 pub struct Package {
     pub url: URL,

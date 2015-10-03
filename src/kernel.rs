@@ -36,6 +36,7 @@ use graphics::bmp::*;
 use programs::common::*;
 use programs::common::event::{Event, EventOption};
 use programs::common::queue::Queue;
+use programs::common::resource::URL;
 use programs::package::*;
 use programs::session::*;
 
