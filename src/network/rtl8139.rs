@@ -10,6 +10,7 @@ use network::scheme::*;
 use programs::common::*;
 use programs::common::queue::Queue;
 use programs::common::resource::{Resource, URL};
+use programs::common::string::{String, ToString};
 
 #[repr(packed)]
 struct TXD {

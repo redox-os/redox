@@ -5,6 +5,7 @@ use network::udp::*;
 
 use programs::common::*;
 use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use programs::common::string::{String, ToString};
 
 pub struct UDPResource {
     ip: Box<Resource>,

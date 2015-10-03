@@ -1,5 +1,6 @@
 use programs::common::*;
 use programs::common::resource::{Resource, URL};
+use programs::common::string::{String, ToString};
 
 pub struct HTTPScheme;
 

@@ -5,6 +5,7 @@ use drivers::disk::*;
 
 use programs::common::*;
 use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
+use programs::common::string::{String, ToString};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
