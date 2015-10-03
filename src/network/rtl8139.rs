@@ -8,6 +8,7 @@ use network::common::*;
 use network::scheme::*;
 
 use programs::common::*;
+use programs::common::queue::Queue;
 
 #[repr(packed)]
 struct TXD {
