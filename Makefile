@@ -203,14 +203,14 @@ qemu: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 
 qemu_no_kvm: build/harddrive.bin
 	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -hda $<
 
 qemu_tap: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
@@ -219,7 +219,7 @@ qemu_tap: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -230,7 +230,7 @@ qemu_tap_8254x: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
