@@ -7,6 +7,7 @@ use network::common::*;
 use network::scheme::*;
 
 use programs::common::*;
+use programs::common::queue::Queue;
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;
