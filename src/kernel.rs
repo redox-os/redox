@@ -17,6 +17,10 @@
 
 extern crate alloc;
 
+use alloc::boxed::Box;
+
+use core::{cmp, mem, ptr};
+
 use common::context::*;
 use common::memory::*;
 use common::paging::*;
@@ -32,14 +36,20 @@ use drivers::serial::*;
 pub use externs::*;
 
 use graphics::bmp::*;
+use graphics::color::Color;
+use graphics::display::{self, Display};
+use graphics::point::Point;
+use graphics::size::Size;
+use graphics::window::Window;
 
-use programs::common::*;
-use programs::common::event::{Event, EventOption};
-use programs::common::queue::Queue;
-use programs::common::resource::URL;
-use programs::common::string::{String, ToString};
-use programs::common::time::Duration;
-use programs::common::vec::Vec;
+use common::debug;
+use common::event::{self, Event, EventOption};
+use common::queue::Queue;
+use common::resource::URL;
+use common::string::{String, ToString};
+use common::time::Duration;
+use common::vec::Vec;
+
 use programs::package::*;
 use programs::session::*;
 
@@ -57,6 +67,7 @@ use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
 
+use syscall::call;
 use syscall::handle::*;
 
 mod audio {
@@ -211,7 +222,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        sys_yield();
+        call::sys_yield();
     }
 }
 
@@ -236,7 +247,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = max((*::session_ptr).redraw, event::REDRAW_ALL);
+                                            (*::session_ptr).redraw = cmp::max((*::session_ptr).redraw, event::REDRAW_ALL);
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
@@ -275,7 +286,7 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        sys_yield();
+        call::sys_yield();
     }
 }
 
@@ -293,7 +304,7 @@ unsafe fn redraw_loop() -> ! {
             session.redraw();
         }
 
-        sys_yield();
+        call::sys_yield();
     }
 }
 
@@ -348,7 +359,7 @@ unsafe fn init(font_data: usize) {
 
     debug_init();
 
-    debug::dd(size_of::<usize>() * 8);
+    debug::dd(mem::size_of::<usize>() * 8);
     debug::d(" bits");
     debug::dl();
 
@@ -356,7 +367,7 @@ unsafe fn init(font_data: usize) {
     cluster_init();
     page_init();
 
-    ptr::write(FONTS, font_data);
+    ptr::write(display::FONTS, font_data);
 
     debug_display = alloc_type();
     ptr::write(debug_display, box Display::root());
@@ -452,7 +463,7 @@ unsafe fn init(font_data: usize) {
 
     debug_draw = false;
 
-    session.redraw = max(session.redraw, event::REDRAW_ALL);
+    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
 
     {
         let mut resource = URL::from_str("file:///apps/").open();
@@ -512,7 +523,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            sys_exit(-1);
+            call::sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");
@@ -555,7 +566,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            sys_exit(-1);
+            call::sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");

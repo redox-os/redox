@@ -1,8 +1,10 @@
-use common::memory::*;
+use alloc::boxed::Box;
 
-use programs::common::*;
-use programs::common::resource::{Resource, ResourceType, URL, VecResource};
-use programs::common::string::{String, ToString};
+use common::memory::*;
+use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::string::{String, ToString};
+
+use programs::common::SessionItem;
 
 pub struct MemoryScheme;
 

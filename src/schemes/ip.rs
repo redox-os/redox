@@ -1,13 +1,17 @@
-use core::mem::swap;
+use alloc::boxed::Box;
+
+use core::mem;
 
 use network::arp::*;
 use network::common::*;
 use network::ipv4::*;
 
-use programs::common::*;
-use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
-use programs::common::string::{String, ToString};
-use programs::common::vec::Vec;
+use common::{debug, random};
+use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::string::{String, ToString};
+use common::vec::Vec;
+
+use programs::common::SessionItem;
 
 pub struct IPResource {
     link: Box<Resource>,
@@ -35,7 +39,7 @@ impl Resource for IPResource {
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         if self.data.len() > 0 {
             let mut bytes: Vec<u8> = Vec::new();
-            swap(&mut self.data, &mut bytes);
+            mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
             return Option::Some(bytes.len());
         }
@@ -63,9 +67,9 @@ impl Resource for IPResource {
         self.id += 1;
         let mut ip = IPv4 {
             header: IPv4Header {
-                ver_hlen: 0x40 | (size_of::<IPv4Header>()/4 & 0xF) as u8, // No Options
+                ver_hlen: 0x40 | (mem::size_of::<IPv4Header>()/4 & 0xF) as u8, // No Options
                 services: 0,
-                len: n16::new((size_of::<IPv4Header>() + ip_data.len()) as u16), // No Options
+                len: n16::new((mem::size_of::<IPv4Header>() + ip_data.len()) as u16), // No Options
                 id: n16::new(self.id),
                 flags_fragment: n16::new(0),
                 ttl: 128,
@@ -81,7 +85,7 @@ impl Resource for IPResource {
         unsafe {
             let header_ptr: *const IPv4Header = &ip.header;
             ip.header.checksum.data =
-                Checksum::compile(Checksum::sum(header_ptr as usize, size_of::<IPv4Header>()) +
+                Checksum::compile(Checksum::sum(header_ptr as usize, mem::size_of::<IPv4Header>()) +
                                   Checksum::sum(ip.options.as_ptr() as usize, ip.options.len()));
         }
 

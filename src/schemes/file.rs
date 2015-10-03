@@ -1,12 +1,18 @@
+use alloc::boxed::Box;
+
+use core::{cmp, ptr};
+
 use common::memory::*;
 use common::scheduler::*;
 
 use drivers::disk::*;
 
-use programs::common::*;
-use programs::common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
-use programs::common::string::{String, ToString};
-use programs::common::vec::Vec;
+use common::debug;
+use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
+use common::string::{String, ToString};
+use common::vec::Vec;
+
+use programs::common::SessionItem;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -186,9 +192,9 @@ impl Resource for FileResource {
         match pos {
             ResourceSeek::Start(offset) => self.seek = offset,
             ResourceSeek::Current(offset) =>
-                self.seek = max(0, self.seek as isize + offset) as usize,
+                self.seek = cmp::max(0, self.seek as isize + offset) as usize,
             ResourceSeek::End(offset) =>
-                self.seek = max(0, self.vec.len() as isize + offset) as usize,
+                self.seek = cmp::max(0, self.vec.len() as isize + offset) as usize,
         }
         while self.vec.len() < self.seek {
             self.vec.push(0);
@@ -212,7 +218,7 @@ impl Resource for FileResource {
                     let current_sectors = (extent.length as usize + block_size - 1) / block_size;
                     let max_size = current_sectors * 512;
 
-                    let size = min(remaining as usize, max_size);
+                    let size = cmp::min(remaining as usize, max_size);
                     let sectors = (size + block_size - 1) / block_size;
 
                     if size as u64 != extent.length {

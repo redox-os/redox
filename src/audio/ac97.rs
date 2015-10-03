@@ -1,14 +1,19 @@
-use core::ptr::write;
+use alloc::boxed::Box;
 
+use core::{cmp, ptr, mem};
+
+use common::debug;
 use common::memory::*;
+use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::string::{String, ToString};
+use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::common::*;
-use programs::common::resource::{Resource, ResourceSeek, ResourceType, URL};
-use programs::common::string::{String, ToString};
-use programs::common::time::Duration;
+use programs::common::SessionItem;
+
+use syscall::call;
 
 #[repr(packed)]
 struct BD {
@@ -65,7 +70,7 @@ impl Resource for AC97Resource {
 
             let mut bdl = po_bdbar.read() as *mut BD;
             if bdl as usize == 0 {
-                bdl = alloc(32 * size_of::<BD>()) as *mut BD;
+                bdl = alloc(32 * mem::size_of::<BD>()) as *mut BD;
                 po_bdbar.write(bdl as u32);
             }
 
@@ -110,7 +115,7 @@ impl Resource for AC97Resource {
                 debug::dd(buf.len());
                 debug::dl();
 
-                let bytes = min(65534 * 2, (buf.len() - position + 1));
+                let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
 
                 ptr::write(bdl.offset(lvi as isize),
