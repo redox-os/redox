@@ -11,6 +11,7 @@ CUT=cut
 FIND=find
 LD=ld
 LDARGS=-m elf_i386
+MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
 RM=rm
@@ -28,6 +29,7 @@ ifeq ($(OS),Windows_NT)
 	BASENAME=windows/basename
 	CUT=windows/cut
 	FIND=windows/find
+	MAKE=windows/make
 	MKDIR=windows/mkdir
 	OBJDUMP=windows/objdump
 	RM=windows/rm
@@ -98,7 +100,7 @@ clean:
 	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 apps/%:
-	@make --no-print-directory filesystem/apps/$*/$*.bin
+	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
 
 FORCE:
 
