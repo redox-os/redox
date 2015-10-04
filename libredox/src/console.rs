@@ -86,7 +86,9 @@ macro_rules! readln {
 
 /// A console char
 pub struct ConsoleChar {
+    /// The char
     character: char,
+    /// The color
     color: Color,
 }
 
