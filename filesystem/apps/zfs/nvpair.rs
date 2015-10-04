@@ -88,6 +88,7 @@ struct NvAlloc<> {
                   // Not sure if Any is the correct type.
 }
 
+/*
 struct NvAllocOps {
     int (*nv_ao_init)(nv_alloc_t *, __va_list);
     void (*nv_ao_fini)(nv_alloc_t *);
@@ -95,3 +96,4 @@ struct NvAllocOps {
     void (*nv_ao_free)(nv_alloc_t *, void *, size_t);
     void (*nv_ao_reset)(nv_alloc_t *);
 }
+*/
