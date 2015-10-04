@@ -39,7 +39,6 @@ pub use env::*;
 pub use file::*;
 
 /// A module for audio
-#[path="../../src/audio"]
 mod audio {
     pub mod wav;
 }
