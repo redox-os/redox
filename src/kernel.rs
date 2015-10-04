@@ -364,6 +364,8 @@ unsafe fn init(font_data: usize) {
 
     Page::init();
     memory::cluster_init();
+    //Unmap first page to catch null pointer errors (after reading memory map)
+    Page::new(0).unmap();
 
     ptr::write(display::FONTS, font_data);
 
