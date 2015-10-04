@@ -16,8 +16,6 @@ impl Page {
             }
         }
 
-        Page::new(0).unmap();
-
         asm!("mov cr3, $0\n
             mov $0, cr0\n
             or $0, 0x80000000\n
