@@ -21,6 +21,40 @@ struct MemoryMapEntry {
     acpi: u32,
 }
 
+struct Memory {
+    address: usize,
+}
+
+impl Memory {
+    pub fn new(size: usize) -> Option<Self> {
+        unsafe {
+            let alloc = alloc(size);
+            if alloc > 0 {
+                Some(Memory { address: alloc })
+            }
+            else { None }
+        }
+    }
+
+    pub fn renew(&self, size: usize) -> Option<Self> {
+        unsafe {
+            let realloc = realloc(self.address, size);
+            if realloc > 0 {
+                Some(Memory { address: realloc })
+            }
+            else { None }
+        }
+    }
+}
+
+impl Drop for Memory {
+        fn drop(&mut self) {
+            unsafe {
+                unalloc(self.address)
+            }
+        }
+}
+
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
 pub unsafe fn cluster(number: usize) -> usize {
