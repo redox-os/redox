@@ -11,14 +11,24 @@ CUT=cut
 FIND=find
 LD=ld
 LDARGS=-m elf_i386
+MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
 RM=rm
 SED=sed
 SORT=sort
 VB=virtualbox
-VBM=VBoxManage
 VB_AUDIO="pulse"
+VBM=VBoxManage
+VBM_CLEANUP=\
+	if [ $$? -ne 0 ]; \
+	then \
+		if [ -d "$$HOME/VirtualBox VMs/Redox" ]; \
+		then \
+			echo "Redox directory exists, deleting..."; \
+			$(RM) -rf "$$HOME/VirtualBox VMs/Redox"; \
+		fi \
+	fi
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
@@ -28,23 +38,33 @@ ifeq ($(OS),Windows_NT)
 	BASENAME=windows/basename
 	CUT=windows/cut
 	FIND=windows/find
+	MAKE=windows/make
 	MKDIR=windows/mkdir
 	OBJDUMP=windows/objdump
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
 	VB="C:/Program Files/Oracle/VirtualBox/VirtualBox"
-	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
 	VB_AUDIO="dsound"
+	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
+	VBM_CLEANUP=\
+		if [ $$? -ne 0 ]; \
+		then \
+			if [ -d "$$USERPROFILE/VirtualBox VMs/Redox" ]; \
+			then \
+				echo "Redox directory exists, deleting..."; \
+				$(RM) -rf "$$USERPROFILE/VirtualBox VMs/Redox"; \
+			fi \
+		fi
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 		LD=i386-elf-ld
 		OBJDUMP=i386-elf-objdump
-                RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
+        RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
-		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 		VB_AUDIO="coreaudio"
+		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	endif
 endif
 
@@ -98,7 +118,7 @@ clean:
 	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
 
 apps/%:
-	@make --no-print-directory filesystem/apps/$*/$*.bin
+	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
 
 FORCE:
 
@@ -165,15 +185,7 @@ build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
 
 virtualbox: build/harddrive.bin
 	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete; \
-	if [ $$? -ne 0 ]; \
-	then \
-		if [ -d "$$HOME/VirtualBox VMs/Redox" ]; \
-		then \
-			echo "redox directory exists, deleting..."; \
-			$(RM) -rf "$$HOME/VirtualBox VMs/Redox"; \
-		fi \
-	fi
+	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
 	-$(RM) harddrive.vdi
 	echo "Create VM"
@@ -236,7 +248,7 @@ qemu_tap_8254x: build/harddrive.bin
 
 virtualbox_tap: build/harddrive.bin
 	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete
+	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
 	-$(RM) harddrive.vdi
 	echo "Create VM"
