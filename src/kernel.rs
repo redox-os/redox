@@ -65,6 +65,7 @@ use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
+use schemes::window::*;
 
 use syscall::call;
 use syscall::handle::*;
@@ -148,6 +149,7 @@ mod schemes {
     pub mod tcp;
     pub mod time;
     pub mod udp;
+    pub mod window;
 }
 
 mod syscall {
@@ -425,6 +427,9 @@ unsafe fn init(font_data: usize) {
     session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);
+    session.items.push(box WindowScheme {
+        raw_current: ptr::null_mut()
+    });
 
     Context::spawn(box move || {
         poll_loop();
