@@ -38,43 +38,67 @@ pub use console::*;
 pub use env::*;
 pub use file::*;
 
+/// A module for audio
 #[path="../../src/audio"]
 mod audio {
     pub mod wav;
 }
 
+/// A module for common functionalities.
+/// Primary functionality provided by std.
 #[path="../..//src/common"]
 mod common {
+    /// Debug
     pub mod debug; // Not needed
+    /// Event input
     pub mod event;
+    /// A module for queues
     pub mod queue;
+    /// A module for pseudorandom generator
     pub mod random; // Should remove
+    /// A module for scheduling
     pub mod scheduler; // Should remove
+    /// A module for owned strings
     pub mod string;
+    /// A module for time
     pub mod time;
+    /// A module for heap allocated, growable vectors
     pub mod vec;
 }
 
 #[path="../../src/externs.rs"]
 pub mod externs;
 
+/// A module for graphics
 #[path="../../src/graphics"]
 mod graphics {
+    /// A module for loading bitmaps
     pub mod bmp;
+    /// A module for color
     pub mod color;
+    /// A module for displays
     pub mod display;
+    /// A module for points
     pub mod point;
+    /// A module for sizes
     pub mod size;
+    /// A module for windows
     pub mod window;
 }
 
+/// A module for system calls
 #[path="../../src/syscall"]
 mod syscall {
+    /// Calls
     pub mod call;
+    /// Common
     pub mod common;
 }
 
+/// A module for console functionality
 #[macro_use]
 pub mod console;
+/// A module for commands and enviroment
 pub mod env;
+/// A module for the filesystem
 pub mod file;
