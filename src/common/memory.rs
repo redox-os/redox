@@ -27,26 +27,32 @@ struct Memory {
 
 impl Memory {
     pub fn new(size: usize) -> Option<Self> {
-        let alloc = alloc(size);
-        if alloc > 0 {
-            Some(Memory { address: alloc })
+        unsafe {
+            let alloc = alloc(size);
+            if alloc > 0 {
+                Some(Memory { address: alloc })
+            }
+            else { None }
         }
-        else { None }
     }
 
     pub fn renew(&self, size: usize) -> Option<Self> {
-        let realloc = realloc(self.address, size);
-        if realloc > 0 {
-            Some(Memory { address: realloc })
+        unsafe {
+            let realloc = realloc(self.address, size);
+            if realloc > 0 {
+                Some(Memory { address: realloc })
+            }
+            else { None }
         }
-        else { None }
     }
 }
 
 impl Drop for Memory {
-    fn drop(&mut self) {
-        unalloc(self.address)
-    }
+        fn drop(&mut self) {
+            unsafe {
+                unalloc(self.address)
+            }
+        }
 }
 
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
