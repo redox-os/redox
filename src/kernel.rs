@@ -362,9 +362,8 @@ unsafe fn init(font_data: usize) {
     debug::d(" bits");
     debug::dl();
 
-    page_bootstrap();
+    Page::init();
     memory::cluster_init();
-    page_init();
 
     ptr::write(display::FONTS, font_data);
 
