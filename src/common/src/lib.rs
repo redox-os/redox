@@ -1,3 +1,5 @@
+#![feature(asm)]
+
 
 /// Debug
 pub mod debug; // Not needed
