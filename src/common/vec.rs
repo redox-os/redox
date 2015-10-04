@@ -9,6 +9,14 @@ use core::slice::SliceExt;
 
 use syscall::call::*;
 
+#[macro_export]
+macro_rules! vec {
+    ($($x:expr),*) => (
+        Vec::from_slice(&[$($x),*])
+    );
+    ($($x:expr,)*) => (vec![$($x),*])
+}
+
 /// An iterator over a vec
 pub struct VecIterator<'a, T: 'a> {
     vec: &'a Vec<T>,
@@ -52,16 +60,31 @@ impl <T> Vec<T> {
 
     /// Convert from a raw (unsafe) buffer
     pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Vec<T> {
-        let data = sys_alloc(size_of::<T>() * len);
+        let data = sys_alloc(size_of::<T>() * len) as *mut T;
 
-        ptr::copy(ptr, data as *mut T, len);
+        ptr::copy(ptr, data, len);
 
         Vec::<T> {
-            data: data as *mut T,
+            data: data,
             length: len,
         }
     }
 
+    pub fn from_slice(slice: &[T]) -> Vec<T> {
+        let data;
+        unsafe{
+            data = sys_alloc(size_of::<T>() * slice.len()) as *mut T;
+            
+            ptr::copy(slice.as_ptr(), data, slice.len());
+        }
+        
+        Vec::<T> {
+            data: data,
+            length: slice.len()
+        }
+    }
+    
+    
     /// Get the nth element. Returns None if out of bounds.
     pub fn get(&self, i: usize) -> Option<&mut T> {
         if i >= self.length {
