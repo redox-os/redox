@@ -5,14 +5,19 @@ use syscall::call::*;
 
 /// File seek
 pub enum Seek {
+    /// The start point
     Start(usize),
+    /// The current point
     Current(isize),
+    /// The end point
     End(isize),
 }
 
 /// A Unix-style file
 pub struct File {
+    /// The path to the file
     path: String,
+    /// The id for the file
     fd: usize,
 }
 
@@ -80,6 +85,7 @@ impl File {
         }
     }
 
+    /// Seek a given position
     pub fn seek(&mut self, pos: Seek) -> Option<usize> {
         let (whence, offset) = match pos {
             Seek::Start(offset) => (0, offset as isize),
