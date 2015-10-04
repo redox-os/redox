@@ -72,7 +72,6 @@ use syscall::handle::*;
 mod audio {
     pub mod ac97;
     pub mod intelhda;
-    pub mod wav;
 }
 
 #[path="common/src"]
