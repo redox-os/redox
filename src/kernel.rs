@@ -76,6 +76,7 @@ mod audio {
     pub mod wav;
 }
 
+#[path="common/src"]
 mod common {
     pub mod context;
     pub mod debug;
