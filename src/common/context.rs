@@ -193,8 +193,7 @@ impl Context {
     pub unsafe fn map(&mut self) {
         for entry in self.memory.iter() {
             for i in 0..(entry.virtual_size + 4095) / 4096 {
-                set_page(entry.virtual_address + i * 4096,
-                         entry.physical_address + i * 4096);
+                Page::new(entry.virtual_address + i * 4096).map(entry.physical_address + i * 4096);
             }
         }
     }
@@ -202,7 +201,7 @@ impl Context {
     pub unsafe fn unmap(&mut self) {
         for entry in self.memory.iter() {
             for i in 0..(entry.virtual_size + 4095) / 4096 {
-                identity_page(entry.virtual_address + i * 4096);
+                Page::new(entry.virtual_address + i * 4096).map_identity();
             }
         }
     }
