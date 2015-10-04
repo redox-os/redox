@@ -22,6 +22,9 @@ pub struct Command {
 impl Command {
     pub fn vec() -> Vec<Command> {
         let mut commands: Vec<Command> = Vec::new();
+        
+        // TODO: Move this out of the terminal
+        //      (commands are not the terminals job)
 
         commands.push(Command {
             name: "break".to_string(),
