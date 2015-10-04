@@ -38,27 +38,27 @@ pub use console::*;
 pub use env::*;
 pub use file::*;
 
-#[path="../src/audio"]
-mod audio{
+#[path="../../src/audio"]
+mod audio {
     pub mod wav;
 }
 
-#[path="../src/common"]
+#[path="../..//src/common"]
 mod common {
-    pub mod debug; //Not needed
+    pub mod debug; // Not needed
     pub mod event;
     pub mod queue;
-    pub mod random; //Should remove
-    pub mod scheduler; //Should remove
+    pub mod random; // Should remove
+    pub mod scheduler; // Should remove
     pub mod string;
     pub mod time;
     pub mod vec;
 }
 
-#[path="../src/externs.rs"]
+#[path="../../src/externs.rs"]
 pub mod externs;
 
-#[path="../src/graphics"]
+#[path="../../src/graphics"]
 mod graphics {
     pub mod bmp;
     pub mod color;
@@ -68,8 +68,8 @@ mod graphics {
     pub mod window;
 }
 
-#[path="../src/syscall"]
-mod syscall{
+#[path="../../src/syscall"]
+mod syscall {
     pub mod call;
     pub mod common;
 }

@@ -1,11 +1,17 @@
-use core::ptr::{read, write};
+use alloc::boxed::Box;
 
-use common::memory::*;
-use common::scheduler::*;
+use core::{ptr, mem};
 
 use drivers::pciconfig::*;
 
-use programs::common::*;
+use common::debug;
+use common::memory;
+use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::scheduler::*;
+use common::string::{String, ToString};
+use common::time::{self, Duration};
+
+use programs::common::SessionItem;
 
 #[repr(packed)]
 struct Stream {
@@ -27,7 +33,7 @@ struct Stream {
     reserved_3: u32,
     // pointer to buffer descriptor list
     bdlpl: u32,
-    bdlpu: u32
+    bdlpu: u32,
 }
 
 #[repr(packed)]
@@ -35,11 +41,11 @@ struct BD {
     addr: u32,
     addru: u32,
     len: u32,
-    ioc: u32
+    ioc: u32,
 }
 
 struct IntelHDAResource {
-    base: usize
+    base: usize,
 }
 
 impl Resource for IntelHDAResource {
@@ -57,32 +63,32 @@ impl Resource for IntelHDAResource {
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
-            d("Write HDA");
+            debug::d("Write HDA");
 
             let gcap = (self.base) as *mut u16;
-            d(" GCAP ");
-            dh(read(gcap) as usize);
+            debug::d(" GCAP ");
+            debug::dh(ptr::read(gcap) as usize);
 
-            let iss = (read(gcap) as usize >> 12) & 0b1111;
-            d(" ISS ");
-            dd(iss);
+            let iss = (ptr::read(gcap) as usize >> 12) & 0b1111;
+            debug::d(" ISS ");
+            debug::dd(iss);
 
-            let oss = (read(gcap) as usize >> 8) & 0b1111;
-            d(" OSS ");
-            dd(oss);
+            let oss = (ptr::read(gcap) as usize >> 8) & 0b1111;
+            debug::d(" OSS ");
+            debug::dd(oss);
 
-            let bss = (read(gcap) as usize >> 3) & 0b11111;
-            d(" BSS ");
-            dd(bss);
+            let bss = (ptr::read(gcap) as usize >> 3) & 0b11111;
+            debug::d(" BSS ");
+            debug::dd(bss);
 
-            dl();
+            debug::dl();
 
             let stream = &mut *((self.base + 0x80 + iss * 0x20) as *mut Stream);
 
-            d("Output Stream");
+            debug::d("Output Stream");
 
-            d(" SizeOf ");
-            dd(size_of::<Stream>());
+            debug::d(" SizeOf ");
+            debug::dd(mem::size_of::<Stream>());
 
             stream.interrupt = 1;
             loop {
@@ -98,81 +104,83 @@ impl Resource for IntelHDAResource {
                 }
             }
 
-            d(" Interrupt ");
-            dh(stream.interrupt as usize);
+            debug::d(" Interrupt ");
+            debug::dh(stream.interrupt as usize);
 
             stream.control = 1 << 4 as u8;
 
-            d(" Control ");
-            dh(stream.control as usize);
+            debug::d(" Control ");
+            debug::dh(stream.control as usize);
 
-            d(" Status ");
-            dh(stream.status as usize);
+            debug::d(" Status ");
+            debug::dh(stream.status as usize);
 
             stream.format = 0b0000000000010001;
 
-            d(" Format ");
-            dh(stream.format as usize);
+            debug::d(" Format ");
+            debug::dh(stream.format as usize);
 
-            let bd_addr = alloc(buf.len());
-            let bd_size = alloc_size(bd_addr);
+            let bd_addr = memory::alloc(buf.len());
+            let bd_size = memory::alloc_size(bd_addr);
 
             ::memset(bd_addr as *mut u8, 0, bd_size);
             ::memcpy(bd_addr as *mut u8, buf.as_ptr(), buf.len());
 
-            let bdl = alloc(2 * size_of::<BD>()) as *mut BD;
-            write(bdl, BD {
-                addr: bd_addr as u32,
-                addru: 0,
-                len: bd_size as u32,
-                ioc: 1
-            });
-            write(bdl.offset(1), BD {
-                addr: bd_addr as u32,
-                addru: 0,
-                len: bd_size as u32,
-                ioc: 1
-            });
+            let bdl = memory::alloc(2 * mem::size_of::<BD>()) as *mut BD;
+            ptr::write(bdl,
+                  BD {
+                      addr: bd_addr as u32,
+                      addru: 0,
+                      len: bd_size as u32,
+                      ioc: 1,
+                  });
+            ptr::write(bdl.offset(1),
+                  BD {
+                      addr: bd_addr as u32,
+                      addru: 0,
+                      len: bd_size as u32,
+                      ioc: 1,
+                  });
 
             stream.bdlpl = bdl as u32;
 
             stream.cbl = (bd_size * 2) as u32;
 
-            d(" CBL ");
-            dd(stream.cbl as usize);
+            debug::d(" CBL ");
+            debug::dd(stream.cbl as usize);
 
             stream.lvi = 1;
-            d(" LVI ");
-            dd(stream.lvi as usize);
+            debug::d(" LVI ");
+            debug::dd(stream.lvi as usize);
 
             stream.interrupt = 1 << 2 | 1 << 1;
 
-            d(" Interrupt ");
-            dh(stream.interrupt as usize);
+            debug::d(" Interrupt ");
+            debug::dh(stream.interrupt as usize);
 
-            dl();
+            debug::dl();
 
             loop {
-                d(" Interrupt ");
-                dh(stream.interrupt as usize);
+                debug::d(" Interrupt ");
+                debug::dh(stream.interrupt as usize);
 
-                d(" Control ");
-                dh(stream.control as usize);
+                debug::d(" Control ");
+                debug::dh(stream.control as usize);
 
-                d(" Status ");
-                dh(stream.status as usize);
+                debug::d(" Status ");
+                debug::dh(stream.status as usize);
 
-                d(" LPIB ");
-                dd(stream.lpib as usize);
-                dl();
+                debug::d(" LPIB ");
+                debug::dd(stream.lpib as usize);
+                debug::dl();
 
                 if stream.status & 4 == 4 {
                     break;
                 }
-                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
-            d("Finished\n");
+            debug::d("Finished\n");
             stream.interrupt = 0;
             /*
             stream.control = 0;
@@ -180,8 +188,8 @@ impl Resource for IntelHDAResource {
             stream.cbl = 0;
             stream.lvi = 0;
             stream.bdlpl = 0;
-            unalloc(bd_addr);
-            unalloc(bdl as usize);
+            memory::unalloc(bd_addr);
+            memory::unalloc(bdl as usize);
             */
 
             Option::Some(buf.len())
@@ -192,7 +200,7 @@ impl Resource for IntelHDAResource {
         Option::None
     }
 
-    fn flush(&mut self) -> bool {
+    fn sync(&mut self) -> bool {
         false
     }
 }
@@ -201,7 +209,7 @@ pub struct IntelHDA {
     pub pci: PCIConfig,
     pub base: usize,
     pub memory_mapped: bool,
-    pub irq: u8
+    pub irq: u8,
 }
 
 impl SessionItem for IntelHDA {
@@ -210,9 +218,7 @@ impl SessionItem for IntelHDA {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        box IntelHDAResource {
-            base: self.base
-        }
+        box IntelHDAResource { base: self.base }
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -227,15 +233,15 @@ impl SessionItem for IntelHDA {
 
 impl IntelHDA {
     pub unsafe fn init(&mut self) {
-        d("Intel HDA on: ");
-        dh(self.base);
+        debug::d("Intel HDA on: ");
+        debug::dh(self.base);
         if self.memory_mapped {
-            d(" memory mapped");
+            debug::d(" memory mapped");
         } else {
-            d(" port mapped");
+            debug::d(" port mapped");
         }
-        d(", IRQ: ");
-        dbh(self.irq);
+        debug::d(", IRQ: ");
+        debug::dbh(self.irq);
 
         let pci = &mut self.pci;
 
@@ -259,119 +265,119 @@ impl IntelHDA {
         let rirbsts = (self.base + 0x5D) as *mut u8;
         let rirbsize = (self.base + 0x5E) as *mut u8;
 
-        d(" GCAP ");
-        dh(read(gcap) as usize);
+        debug::d(" GCAP ");
+        debug::dh(ptr::read(gcap) as usize);
 
-        let iss = (read(gcap) as usize >> 12) & 0b1111;
-        d(" ISS ");
-        dd(iss);
+        let iss = (ptr::read(gcap) as usize >> 12) & 0b1111;
+        debug::d(" ISS ");
+        debug::dd(iss);
 
-        let oss = (read(gcap) as usize >> 8) & 0b1111;
-        d(" OSS ");
-        dd(oss);
+        let oss = (ptr::read(gcap) as usize >> 8) & 0b1111;
+        debug::d(" OSS ");
+        debug::dd(oss);
 
-        let bss = (read(gcap) as usize >> 3) & 0b11111;
-        d(" BSS ");
-        dd(bss);
+        let bss = (ptr::read(gcap) as usize >> 3) & 0b11111;
+        debug::d(" BSS ");
+        debug::dd(bss);
 
-        d(" GCTL ");
-        dh(read(gctl) as usize);
+        debug::d(" GCTL ");
+        debug::dh(ptr::read(gctl) as usize);
 
-        write(gctl, 0);
+        ptr::write(gctl, 0);
         loop {
-            if read(gctl) & 1 == 0 {
+            if ptr::read(gctl) & 1 == 0 {
                 break;
             }
         }
 
-        d(" GCTL ");
-        dh(read(gctl) as usize);
+        debug::d(" GCTL ");
+        debug::dh(ptr::read(gctl) as usize);
 
-        write(gctl, 1);
+        ptr::write(gctl, 1);
         loop {
-            if read(gctl) & 1 == 1 {
+            if ptr::read(gctl) & 1 == 1 {
                 break;
             }
         }
 
         let disable = start_ints();
-        Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+        Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
-        d(" GCTL ");
-        dh(read(gctl) as usize);
+        debug::d(" GCTL ");
+        debug::dh(ptr::read(gctl) as usize);
 
-        d(" STATESTS ");
-        dh(read(statests) as usize);
+        debug::d(" STATESTS ");
+        debug::dh(ptr::read(statests) as usize);
 
-        let corb_ptr = alloc(256 * 4) as *mut u32;
+        let corb_ptr = memory::alloc(256 * 4) as *mut u32;
         {
-            write(corbctl, 0);
+            ptr::write(corbctl, 0);
             loop {
-                if read(corbctl) & 1 << 1 == 0 {
+                if ptr::read(corbctl) & 1 << 1 == 0 {
                     break;
                 }
             }
-            d(" CORBCTL ");
-            dh(read(corbctl) as usize);
+            debug::d(" CORBCTL ");
+            debug::dh(ptr::read(corbctl) as usize);
 
-            write(corb, corb_ptr as u32);
-            write(corbsize, 0b10);
-            write(corbrp, 1 << 15);
+            ptr::write(corb, corb_ptr as u32);
+            ptr::write(corbsize, 0b10);
+            ptr::write(corbrp, 1 << 15);
             loop {
-                if read(corbrp) == 1 << 15 {
+                if ptr::read(corbrp) == 1 << 15 {
                     break;
                 }
             }
-            write(corbrp, 0);
+            ptr::write(corbrp, 0);
             loop {
-                if read(corbrp) == 0 {
+                if ptr::read(corbrp) == 0 {
                     break;
                 }
             }
-            write(corbwp, 0);
+            ptr::write(corbwp, 0);
 
-            write(corbctl, 1 << 1);
+            ptr::write(corbctl, 1 << 1);
             loop {
-                if read(corbctl) & 1 << 1 == 1 << 1 {
+                if ptr::read(corbctl) & 1 << 1 == 1 << 1 {
                     break;
                 }
             }
-            d(" CORBCTL ");
-            dh(read(corbctl) as usize);
+            debug::d(" CORBCTL ");
+            debug::dh(ptr::read(corbctl) as usize);
         }
 
-        let rirb_ptr = alloc(256 * 8) as *mut u64;
+        let rirb_ptr = memory::alloc(256 * 8) as *mut u64;
         {
-            write(rirbctl, 0);
+            ptr::write(rirbctl, 0);
             loop {
-                if read(rirbctl) & 1 << 1 == 0 {
+                if ptr::read(rirbctl) & 1 << 1 == 0 {
                     break;
                 }
             }
-            d(" RIRBCTL ");
-            dh(read(rirbctl) as usize);
+            debug::d(" RIRBCTL ");
+            debug::dh(ptr::read(rirbctl) as usize);
 
-            write(rirb, rirb_ptr as u32);
-            write(rirbsize, 0b10);
-            write(rirbwp, 1 << 15);
-            write(rintcnt, 0xFF);
+            ptr::write(rirb, rirb_ptr as u32);
+            ptr::write(rirbsize, 0b10);
+            ptr::write(rirbwp, 1 << 15);
+            ptr::write(rintcnt, 0xFF);
 
-            write(rirbctl, 1 << 1);
+            ptr::write(rirbctl, 1 << 1);
             loop {
-                if read(rirbctl) & 1 << 1 == 1 << 1 {
+                if ptr::read(rirbctl) & 1 << 1 == 1 << 1 {
                     break;
                 }
             }
-            d(" RIRBCTL ");
-            dh(read(rirbctl) as usize);
+            debug::d(" RIRBCTL ");
+            debug::dh(ptr::read(rirbctl) as usize);
         }
 
-        dl();
+        debug::dl();
 
         let cmd = |command: u32| -> u64 {
-            let corb_i = (read(corbwp) + 1) & 0xFF;
-            let rirb_i = (read(rirbwp) + 1) & 0xFF;
+            let corb_i = (ptr::read(corbwp) + 1) & 0xFF;
+            let rirb_i = (ptr::read(rirbwp) + 1) & 0xFF;
 
             /*
             d("CORB ");
@@ -381,16 +387,16 @@ impl IntelHDA {
             dl();
             */
 
-            write(corb_ptr.offset(corb_i as isize), command);
-            write(corbwp, corb_i);
+            ptr::write(corb_ptr.offset(corb_i as isize), command);
+            ptr::write(corbwp, corb_i);
 
             loop {
-                if read(rirbwp) == rirb_i {
+                if ptr::read(rirbwp) == rirb_i {
                     break;
                 }
             }
 
-            read(rirb_ptr.offset(rirb_i as isize))
+            ptr::read(rirb_ptr.offset(rirb_i as isize))
         };
 
         let mut output_stream_id = 1;
@@ -399,151 +405,151 @@ impl IntelHDA {
         let root_nodes_start = (root_nodes_packed >> 16) as u32;
         let root_nodes_length = (root_nodes_packed & 0xFFFF) as u32;
 
-        d("Root Sub-Nodes ");
-        dd(root_nodes_start as usize);
-        d(" ");
-        dd(root_nodes_length as usize);
-        dl();
+        debug::d("Root Sub-Nodes ");
+        debug::dd(root_nodes_start as usize);
+        debug::d(" ");
+        debug::dd(root_nodes_length as usize);
+        debug::dl();
 
         for fg_node in root_nodes_start..root_nodes_start + root_nodes_length {
-            d("  Function Group ");
-            dd(fg_node as usize);
-            dl();
+            debug::d("  Function Group ");
+            debug::dd(fg_node as usize);
+            debug::dl();
 
             let fg_type = cmd(fg_node << 20 | 0xF0005);
 
-            d("    Type ");
-            dh(fg_type as usize);
-            dl();
+            debug::d("    Type ");
+            debug::dh(fg_type as usize);
+            debug::dl();
 
             let fg_nodes_packed = cmd(fg_node << 20 | 0xF0004);
             let fg_nodes_start = (fg_nodes_packed >> 16) as u32;
             let fg_nodes_length = (fg_nodes_packed & 0xFFFF) as u32;
 
-            d("    Sub-Nodes ");
-            dd(fg_nodes_start as usize);
-            d(" ");
-            dd(fg_nodes_length as usize);
-            dl();
+            debug::d("    Sub-Nodes ");
+            debug::dd(fg_nodes_start as usize);
+            debug::d(" ");
+            debug::dd(fg_nodes_length as usize);
+            debug::dl();
 
             for w_node in fg_nodes_start..fg_nodes_start + fg_nodes_length {
-                d("      Widget ");
-                dh(w_node as usize);
-                dl();
+                debug::d("      Widget ");
+                debug::dh(w_node as usize);
+                debug::dl();
 
                 let w_caps = cmd(w_node << 20 | 0xF0009);
 
-                d("        Capabilities ");
-                dh(w_caps as usize);
-                dl();
+                debug::d("        Capabilities ");
+                debug::dh(w_caps as usize);
+                debug::dl();
 
                 match w_caps >> 20 {
                     0 => {
-                        d("        Type: Output\n");
+                        debug::d("        Type: Output\n");
 
-                        d("        Sample Rate and Bits ");
-                        dh(cmd(w_node << 20 | 0xF000A) as usize);
-                        dl();
+                        debug::d("        Sample Rate and Bits ");
+                        debug::dh(cmd(w_node << 20 | 0xF000A) as usize);
+                        debug::dl();
 
-                        d("        Sample Format ");
-                        dh(cmd(w_node << 20 | 0xF000B) as usize);
-                        dl();
+                        debug::d("        Sample Format ");
+                        debug::dh(cmd(w_node << 20 | 0xF000B) as usize);
+                        debug::dl();
 
-                        d("        Output Stream (Before) ");
-                        dh(cmd(w_node << 20 | 0xF0600) as usize);
-                        dl();
+                        debug::d("        Output Stream (Before) ");
+                        debug::dh(cmd(w_node << 20 | 0xF0600) as usize);
+                        debug::dl();
 
                         cmd(w_node << 20 | 0x70600 | (output_stream_id as u32) << 4);
 
-                        d("        Output Stream (After) ");
-                        dh(cmd(w_node << 20 | 0xF0600) as usize);
-                        dl();
+                        debug::d("        Output Stream (After) ");
+                        debug::dh(cmd(w_node << 20 | 0xF0600) as usize);
+                        debug::dl();
 
-                        d("        Format (Before) ");
-                        dh(cmd(w_node << 20 | 0xA0000) as usize);
-                        dl();
+                        debug::d("        Format (Before) ");
+                        debug::dh(cmd(w_node << 20 | 0xA0000) as usize);
+                        debug::dl();
 
                         cmd(w_node << 20 | 0x20000 | 0b0000000000010001);
 
-                        d("        Format (After) ");
-                        dh(cmd(w_node << 20 | 0xA0000) as usize);
-                        dl();
+                        debug::d("        Format (After) ");
+                        debug::dh(cmd(w_node << 20 | 0xA0000) as usize);
+                        debug::dl();
 
                         /*
-                        d("        Amplifier Gain/Mute (Before) ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        d(" ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        dl();
+                        debug::d("        Amplifier Gain/Mute (Before) ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        debug::d(" ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        debug::dl();
 
                         cmd(w_node << 20 | 0x30000 | 1 << 15 | 1 << 13 | 1 << 12 | 0b111111);
 
-                        d("        Amplifier Gain/Mute (After) ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        d(" ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        dl();
+                        debug::d("        Amplifier Gain/Mute (After) ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        debug::d(" ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        debug::dl();
                         */
 
                         output_stream_id += 1;
-                    },
+                    }
                     1 => {
-                        d("        Type: Input\n");
+                        debug::d("        Type: Input\n");
 
-                        d("        Input Stream ");
-                        dh(cmd(w_node << 20 | 0xF0600) as usize);
-                        dl();
-                    },
-                    2 => d("        Type: Mixer\n"),
-                    3 => d("        Type: Selector\n"),
+                        debug::d("        Input Stream ");
+                        debug::dh(cmd(w_node << 20 | 0xF0600) as usize);
+                        debug::dl();
+                    }
+                    2 => debug::d("        Type: Mixer\n"),
+                    3 => debug::d("        Type: Selector\n"),
                     4 => {
-                        d("        Type: Pin\n");
+                        debug::d("        Type: Pin\n");
 
-                        d("        Pin Capabilities ");
-                        dh(cmd(w_node << 20 | 0xF000C) as usize);
-                        dl();
+                        debug::d("        Pin Capabilities ");
+                        debug::dh(cmd(w_node << 20 | 0xF000C) as usize);
+                        debug::dl();
 
-                        d("        Pin Control (Before) ");
-                        dh(cmd(w_node << 20 | 0xF0700) as usize);
-                        dl();
+                        debug::d("        Pin Control (Before) ");
+                        debug::dh(cmd(w_node << 20 | 0xF0700) as usize);
+                        debug::dl();
 
                         cmd(w_node << 20 | 0x70700 | 0b11100101);
 
-                        d("        Pin Control (After) ");
-                        dh(cmd(w_node << 20 | 0xF0700) as usize);
-                        dl();
+                        debug::d("        Pin Control (After) ");
+                        debug::dh(cmd(w_node << 20 | 0xF0700) as usize);
+                        debug::dl();
 
                         /*
-                        d("        Pin EAPD/BTL (Before) ");
-                        dh(cmd(w_node << 20 | 0xF0C00) as usize);
-                        dl();
+                        debug::d("        Pin EAPD/BTL (Before) ");
+                        debug::dh(cmd(w_node << 20 | 0xF0C00) as usize);
+                        debug::dl();
 
                         cmd(w_node << 20 | 0x70C00 | 1 << 1);
 
-                        d("        Pin EAPD/BPL (After) ");
-                        dh(cmd(w_node << 20 | 0xF0C00) as usize);
-                        dl();
+                        debug::d("        Pin EAPD/BPL (After) ");
+                        debug::dh(cmd(w_node << 20 | 0xF0C00) as usize);
+                        debug::dl();
 
-                        d("        Amplifier Gain/Mute (Before) ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        d(" ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        dl();
+                        debug::d("        Amplifier Gain/Mute (Before) ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        debug::d(" ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        debug::dl();
 
                         cmd(w_node << 20 | 0x30000 | 1 << 15 | 1 << 13 | 1 << 12 | 0b111111);
 
-                        d("        Amplifier Gain/Mute (After) ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        d(" ");
-                        dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        dl();
+                        debug::d("        Amplifier Gain/Mute (After) ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        debug::d(" ");
+                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        debug::dl();
                         */
-                    },
-                    5 => d("        Type: Power\n"),
-                    6 => d("        Type: Volume\n"),
-                    7 => d("        Type: Beep Generator\n"),
+                    }
+                    5 => debug::d("        Type: Power\n"),
+                    6 => debug::d("        Type: Volume\n"),
+                    7 => debug::d("        Type: Beep Generator\n"),
                     _ => {
-                        d("        Type: Unknown\n");
+                        debug::d("        Type: Unknown\n");
                     }
                 }
             }

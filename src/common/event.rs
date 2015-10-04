@@ -11,7 +11,7 @@ pub enum EventOption {
     Redraw(RedrawEvent),
     Open(OpenEvent),
     Unknown(Event),
-    None
+    None,
 }
 
 /// An event
@@ -22,7 +22,7 @@ pub struct Event {
     pub b: isize,
     pub c: isize,
     pub d: isize,
-    pub e: isize
+    pub e: isize,
 }
 
 impl Event {
@@ -35,7 +35,7 @@ impl Event {
             'r' => EventOption::Redraw(RedrawEvent::from_event(self)),
             'o' => EventOption::Open(OpenEvent::from_event(self)),
             '\0' => EventOption::None,
-            _ => EventOption::Unknown(self)
+            _ => EventOption::Unknown(self),
         }
     }
 
@@ -54,7 +54,7 @@ pub struct MouseEvent {
     pub y: isize,
     pub left_button: bool,
     pub right_button: bool,
-    pub middle_button: bool
+    pub middle_button: bool,
 }
 
 impl MouseEvent {
@@ -66,7 +66,7 @@ impl MouseEvent {
             b: self.y,
             c: self.left_button as isize,
             d: self.middle_button as isize,
-            e: self.right_button as isize
+            e: self.right_button as isize,
         }
     }
 
@@ -77,7 +77,7 @@ impl MouseEvent {
             y: event.b,
             left_button: event.c > 0,
             middle_button: event.d > 0,
-            right_button: event.e > 0
+            right_button: event.e > 0,
         }
     }
 
@@ -120,7 +120,7 @@ pub const K_F12: u8 = 0x58;
 pub struct KeyEvent {
     pub character: char,
     pub scancode: u8,
-    pub pressed: bool
+    pub pressed: bool,
 }
 
 impl KeyEvent {
@@ -132,7 +132,7 @@ impl KeyEvent {
             b: self.scancode as isize,
             c: self.pressed as isize,
             d: 0,
-            e: 0
+            e: 0,
         }
     }
 
@@ -148,7 +148,7 @@ impl KeyEvent {
                 character: '\0',
                 scancode: event.b as u8,
                 pressed: event.c > 0,
-            }
+            },
         }
     }
 
@@ -165,7 +165,7 @@ pub const REDRAW_ALL: usize = 2;
 
 /// A redraw event
 pub struct RedrawEvent {
-    pub redraw: usize
+    pub redraw: usize,
 }
 
 impl RedrawEvent {
@@ -177,15 +177,13 @@ impl RedrawEvent {
             b: 0,
             c: 0,
             d: 0,
-            e: 0
+            e: 0,
         }
     }
 
     /// Convert from an `Event`
     pub fn from_event(event: Event) -> RedrawEvent {
-        RedrawEvent {
-            redraw: event.a as usize
-        }
+        RedrawEvent { redraw: event.a as usize }
     }
 
     /// Redraw trigger
@@ -198,7 +196,7 @@ impl RedrawEvent {
 /// A "open event" (such as a IO request)
 pub struct OpenEvent {
     /// The URL, see wiki.
-    pub url_string: String
+    pub url_string: String,
 }
 
 impl OpenEvent {
@@ -211,7 +209,7 @@ impl OpenEvent {
                 b: 0,
                 c: 0,
                 d: 0,
-                e: 0
+                e: 0,
             }
         }
     }
@@ -219,9 +217,7 @@ impl OpenEvent {
     /// Convert from an `Event`
     pub fn from_event(event: Event) -> OpenEvent {
         unsafe {
-            let ret = OpenEvent {
-                url_string: String::from_c_str(event.a as *const u8)
-            };
+            let ret = OpenEvent { url_string: String::from_c_str(event.a as *const u8) };
             sys_unalloc(event.a as usize);
             ret
         }

@@ -1,6 +1,8 @@
 #![crate_type="staticlib"]
+#![allow(unused_features)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(core_slice_ext)]
 #![feature(no_std)]
 #![no_std]
 

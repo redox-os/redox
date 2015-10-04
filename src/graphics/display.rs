@@ -48,7 +48,7 @@ pub struct VBEModeInfo {
     directcolormodeinfo: u8,
     physbaseptr: u32,
     offscreenmemoryoffset: u32,
-    offscreenmemsize: u16
+    offscreenmemsize: u16,
 }
 
 const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
@@ -62,7 +62,7 @@ pub struct Display {
     pub bytesperrow: usize,
     pub width: usize,
     pub height: usize,
-    pub root: bool
+    pub root: bool,
 }
 
 impl Display {
@@ -70,13 +70,14 @@ impl Display {
         let mode_info = &*VBEMODEINFO;
 
         let ret = Display {
-            offscreen: sys_alloc(mode_info.bytesperscanline as usize * mode_info.yresolution as usize),
+            offscreen: sys_alloc(mode_info.bytesperscanline as usize *
+                                 mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
             bytesperrow: mode_info.bytesperscanline as usize,
             width: mode_info.xresolution as usize,
             height: mode_info.yresolution as usize,
-            root: true
+            root: true,
         };
 
         ret.set(Color::new(0, 0, 0));
@@ -95,9 +96,9 @@ impl Display {
                 onscreen: sys_alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
-                width:  width,
+                width: width,
                 height: height,
-                root: false
+                root: false,
             };
 
             ret.set(Color::new(0, 0, 0));
@@ -153,7 +154,7 @@ impl Display {
         }
     }
 
-    pub fn set(&self, color:Color) {
+    pub fn set(&self, color: Color) {
         unsafe {
             Display::set_run(color.data, self.offscreen, self.size);
         }
@@ -163,7 +164,9 @@ impl Display {
         if rows > 0 && rows < self.height {
             let offset = rows * self.bytesperrow;
             unsafe {
-                Display::copy_run(self.offscreen + offset, self.offscreen, self.size - offset);
+                Display::copy_run(self.offscreen + offset,
+                                  self.offscreen,
+                                  self.size - offset);
                 Display::set_run(0, self.offscreen + self.size - offset, offset);
             }
         }
@@ -176,7 +179,8 @@ impl Display {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
                 let self_mut: *mut Display = transmute(self);
-                swap(&mut (*self_mut).offscreen, &mut (*self_mut).onscreen);
+                swap(&mut (*self_mut).offscreen,
+                     &mut (*self_mut).onscreen);
             }
             end_no_ints(reenable);
         }
@@ -188,15 +192,19 @@ impl Display {
 
         if alpha > 0 {
             let start_y = max(0, min(self.height as isize - 1, point.y)) as usize;
-            let end_y = max(0, min(self.height as isize - 1, point.y + size.height as isize)) as usize;
+            let end_y =
+                max(0, min(self.height as isize - 1, point.y + size.height as isize)) as usize;
 
             let start_x = max(0, min(self.width as isize - 1, point.x)) as usize * 4;
-            let len = max(0, min(self.width as isize - 1, point.x + size.width as isize)) as usize * 4 - start_x;
+            let len = max(0, min(self.width as isize - 1, point.x + size.width as isize)) as usize *
+                      4 - start_x;
 
             if alpha >= 255 {
                 for y in start_y..end_y {
                     unsafe {
-                        Display::set_run(data, self.offscreen + y * self.bytesperrow + start_x, len);
+                        Display::set_run(data,
+                                         self.offscreen + y * self.bytesperrow + start_x,
+                                         len);
                     }
                 }
             } else {
@@ -207,7 +215,10 @@ impl Display {
                 let premul = (r << 16) | (g << 8) | b;
                 for y in start_y..end_y {
                     unsafe {
-                        Display::set_run_alpha(premul, n_alpha, self.offscreen + y * self.bytesperrow + start_x, len);
+                        Display::set_run_alpha(premul,
+                                               n_alpha,
+                                               self.offscreen + y * self.bytesperrow + start_x,
+                                               len);
                     }
                 }
             }
@@ -219,14 +230,18 @@ impl Display {
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
         let start_x = max(0, point.x) as usize;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x * 4;
+        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 -
+                  start_x * 4;
         let offscreen_offset = self.offscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+        let data_offset = data as usize - start_y * bytesperrow -
+                          (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y {
-            Display::copy_run(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
+            Display::copy_run(data_offset + y * bytesperrow,
+                              offscreen_offset + y * self.bytesperrow,
+                              len);
         }
     }
     /* } Optimized */
@@ -236,14 +251,18 @@ impl Display {
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
         let start_x = max(0, point.x) as usize;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x * 4;
+        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 -
+                  start_x * 4;
         let offscreen_offset = self.offscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+        let data_offset = data as usize - start_y * bytesperrow -
+                          (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y {
-            Display::copy_run_alpha(data_offset + y * bytesperrow, offscreen_offset + y * self.bytesperrow, len);
+            Display::copy_run_alpha(data_offset + y * bytesperrow,
+                                    offscreen_offset + y * self.bytesperrow,
+                                    len);
         }
     }
 
@@ -280,7 +299,8 @@ impl Display {
                     let o_g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
                     let o_b = ((orig & 0xFF) * n_alpha) >> 8;
 
-                    *((dst + i) as *mut u32) = ((o_r << 16) | (o_g << 8) | o_b) + ((n_r << 16) | (n_g << 8) | n_b);
+                    *((dst + i) as *mut u32) = ((o_r << 16) | (o_g << 8) | o_b) +
+                                               ((n_r << 16) | (n_g << 8) | n_b);
                 }
             }
             i += size_of::<u32>();
@@ -289,7 +309,8 @@ impl Display {
 
     pub fn pixel(&self, point: Point, color: Color) {
         unsafe {
-            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 && point.y < self.height as isize {
+            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
+               point.y < self.height as isize {
                 *((self.offscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
             }
         }
@@ -298,13 +319,14 @@ impl Display {
     pub fn char(&self, point: Point, character: char, color: Color) {
         unsafe {
             if *FONTS > 0 {
-                let bitmap_location = *FONTS + 16*(character as usize);
+                let bitmap_location = *FONTS + 16 * (character as usize);
                 for row in 0..16 {
                     let row_data = *((bitmap_location + row) as *const u8);
                     for col in 0..8 {
                         let pixel = (row_data >> (7 - col)) & 1;
                         if pixel > 0 {
-                            self.pixel(Point::new(point.x + col, point.y + row as isize), color);
+                            self.pixel(Point::new(point.x + col, point.y + row as isize),
+                                       color);
                         }
                     }
                 }
@@ -318,20 +340,25 @@ impl Display {
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
 
         let start_x = max(0, point.x) as usize;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 - start_x * 4;
+        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 -
+                  start_x * 4;
         let onscreen_offset = self.onscreen + start_x * 4;
 
         let bytesperrow = size.width * 4;
-        let data_offset = data as usize - start_y * bytesperrow - (point.x - start_x as isize) as usize * 4;
+        let data_offset = data as usize - start_y * bytesperrow -
+                          (point.x - start_x as isize) as usize * 4;
 
         for y in start_y..end_y {
-            Display::copy_run_alpha(data_offset + y * bytesperrow, onscreen_offset + y * self.bytesperrow, len);
+            Display::copy_run_alpha(data_offset + y * bytesperrow,
+                                    onscreen_offset + y * self.bytesperrow,
+                                    len);
         }
     }
 
     pub fn pixel_onscreen(&self, point: Point, color: Color) {
         unsafe {
-            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 && point.y < self.height as isize {
+            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
+               point.y < self.height as isize {
                 *((self.onscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
             }
         }
@@ -340,13 +367,14 @@ impl Display {
     pub fn char_onscreen(&self, point: Point, character: char, color: Color) {
         unsafe {
             if *FONTS > 0 {
-                let bitmap_location = *FONTS + 16*(character as usize);
+                let bitmap_location = *FONTS + 16 * (character as usize);
                 for row in 0..16 {
                     let row_data = *((bitmap_location + row) as *const u8);
                     for col in 0..8 {
                         let pixel = (row_data >> (7 - col)) & 1;
                         if pixel > 0 {
-                            self.pixel_onscreen(Point::new(point.x + col, point.y + row as isize), color);
+                            self.pixel_onscreen(Point::new(point.x + col, point.y + row as isize),
+                                                color);
                         }
                     }
                 }
@@ -363,7 +391,7 @@ impl Drop for Display {
                 sys_unalloc(self.offscreen);
                 self.offscreen = 0;
             }
-            if ! self.root && self.onscreen > 0 {
+            if !self.root && self.onscreen > 0 {
                 sys_unalloc(self.onscreen);
                 self.onscreen = 0;
             }

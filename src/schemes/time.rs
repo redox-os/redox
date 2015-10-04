@@ -1,6 +1,11 @@
-use programs::common::*;
+use alloc::boxed::Box;
+
+use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::string::{String, ToString};
 
 use common::scheduler::*;
+
+use programs::common::SessionItem;
 
 pub struct TimeScheme;
 
@@ -19,6 +24,11 @@ impl SessionItem for TimeScheme {
             end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_str("time://"), ResourceType::File, ("Time: ".to_string() + clock_realtime.to_string() + "\nUptime: " + clock_monotonic.to_string()).to_utf8());
+        return box VecResource::new(URL::from_str("time://"),
+                                    ResourceType::File,
+                                    ("Time: ".to_string() + clock_realtime.to_string() +
+                                     "\nUptime: " +
+                                     clock_monotonic.to_string())
+                                        .to_utf8());
     }
 }

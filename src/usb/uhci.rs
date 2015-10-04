@@ -1,18 +1,25 @@
+use alloc::boxed::Box;
+
 use core::intrinsics::{volatile_load, volatile_store};
-use core::ptr::{read, write};
+use core::{cmp, mem, ptr};
 
 use common::context::*;
-use common::memory::*;
+use common::debug;
+use common::event::MouseEvent;
+use common::memory;
 use common::scheduler::*;
+use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::common::*;
+use programs::common::SessionItem;
+
+use syscall::call;
 
 pub struct UHCI {
     pub base: usize,
-    pub irq: u8
+    pub irq: u8,
 }
 
 impl SessionItem for UHCI {
@@ -32,7 +39,7 @@ struct SETUP {
     request: u8,
     value: u16,
     index: u16,
-    len: u16
+    len: u16,
 }
 
 #[repr(packed)]
@@ -40,14 +47,13 @@ struct TD {
     link_ptr: u32,
     ctrl_sts: u32,
     token: u32,
-    buffer: u32
-    //reserved: [u32; 4]
+    buffer: u32, // reserved: [u32; 4]
 }
 
 #[repr(packed)]
 struct QH {
     head_ptr: u32,
-    element_ptr: u32
+    element_ptr: u32,
 }
 
 const DESC_DEV: u8 = 1;
@@ -66,7 +72,7 @@ struct DeviceDescriptor {
     manufacturer_string: u8,
     product_string: u8,
     serial_string: u8,
-    configurations: u8
+    configurations: u8,
 }
 
 impl DeviceDescriptor {
@@ -85,30 +91,30 @@ impl DeviceDescriptor {
             manufacturer_string: 0,
             product_string: 0,
             serial_string: 0,
-            configurations: 0
+            configurations: 0,
         };
     }
 
     fn d(&self) {
-        d("Device Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" USB ");
-        dh(self.usb_version as usize);
-        d(" Class ");
-        dh(self.class as usize);
-        d(" Subclass ");
-        dh(self.sub_class as usize);
-        d(" Protocol ");
-        dh(self.protocol as usize);
-        d(" Vendor ");
-        dh(self.vendor as usize);
-        d(" Product ");
-        dh(self.product as usize);
-        d(" Configurations ");
-        dh(self.configurations as usize);
-        dl();
+        debug::d("Device Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" USB ");
+        debug::dh(self.usb_version as usize);
+        debug::d(" Class ");
+        debug::dh(self.class as usize);
+        debug::d(" Subclass ");
+        debug::dh(self.sub_class as usize);
+        debug::d(" Protocol ");
+        debug::dh(self.protocol as usize);
+        debug::d(" Vendor ");
+        debug::dh(self.vendor as usize);
+        debug::d(" Product ");
+        debug::dh(self.product as usize);
+        debug::d(" Configurations ");
+        debug::dh(self.configurations as usize);
+        debug::dl();
     }
 }
 
@@ -122,7 +128,7 @@ struct ConfigDescriptor {
     number: u8,
     string: u8,
     attributes: u8,
-    max_power: u8
+    max_power: u8,
 }
 
 impl ConfigDescriptor {
@@ -135,26 +141,26 @@ impl ConfigDescriptor {
             number: 0,
             string: 0,
             attributes: 0,
-            max_power: 0
+            max_power: 0,
         };
     }
 
     fn d(&self) {
-        d("Config Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" Total Length ");
-        dd(self.total_length as usize);
-        d(" Interfaces ");
-        dd(self.interfaces as usize);
-        d(" Number ");
-        dd(self.number as usize);
-        d(" Attributes ");
-        dh(self.attributes as usize);
-        d(" Max Power ");
-        dd(self.max_power as usize);
-        dl();
+        debug::d("Config Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" Total Length ");
+        debug::dd(self.total_length as usize);
+        debug::d(" Interfaces ");
+        debug::dd(self.interfaces as usize);
+        debug::d(" Number ");
+        debug::dd(self.number as usize);
+        debug::d(" Attributes ");
+        debug::dh(self.attributes as usize);
+        debug::d(" Max Power ");
+        debug::dd(self.max_power as usize);
+        debug::dl();
     }
 }
 
@@ -169,7 +175,7 @@ struct InterfaceDescriptor {
     class: u8,
     sub_class: u8,
     protocol: u8,
-    string: u8
+    string: u8,
 }
 
 impl InterfaceDescriptor {
@@ -183,26 +189,26 @@ impl InterfaceDescriptor {
             class: 0,
             sub_class: 0,
             protocol: 0,
-            string: 0
+            string: 0,
         };
     }
 
     fn d(&self) {
-        d("Interface Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" Number ");
-        dd(self.number as usize);
-        d(" Endpoints ");
-        dd(self.endpoints as usize);
-        d(" Class ");
-        dh(self.class as usize);
-        d(" Subclass ");
-        dh(self.sub_class as usize);
-        d(" Protocol ");
-        dh(self.protocol as usize);
-        dl();
+        debug::d("Interface Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" Number ");
+        debug::dd(self.number as usize);
+        debug::d(" Endpoints ");
+        debug::dd(self.endpoints as usize);
+        debug::d(" Class ");
+        debug::dh(self.class as usize);
+        debug::d(" Subclass ");
+        debug::dh(self.sub_class as usize);
+        debug::d(" Protocol ");
+        debug::dh(self.protocol as usize);
+        debug::dl();
     }
 }
 
@@ -214,7 +220,7 @@ struct EndpointDescriptor {
     address: u8,
     attributes: u8,
     max_packet_size: u16,
-    interval: u8
+    interval: u8,
 }
 
 impl EndpointDescriptor {
@@ -225,22 +231,22 @@ impl EndpointDescriptor {
             address: 0,
             attributes: 0,
             max_packet_size: 0,
-            interval: 0
+            interval: 0,
         };
     }
 
     fn d(&self) {
-        d("Endpoint Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" Address ");
-        dh(self.address as usize);
-        d(" Attributes ");
-        dh(self.attributes as usize);
-        d(" Interval ");
-        dh(self.interval as usize);
-        dl();
+        debug::d("Endpoint Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" Address ");
+        debug::dh(self.address as usize);
+        debug::d(" Attributes ");
+        debug::dh(self.attributes as usize);
+        debug::d(" Interval ");
+        debug::dh(self.interval as usize);
+        debug::dl();
     }
 }
 
@@ -253,7 +259,7 @@ struct HIDDescriptor {
     country_code: u8,
     descriptors: u8,
     sub_descriptor_type: u8,
-    sub_descriptor_length: u16
+    sub_descriptor_length: u16,
 }
 
 impl HIDDescriptor {
@@ -265,26 +271,26 @@ impl HIDDescriptor {
             country_code: 0,
             descriptors: 0,
             sub_descriptor_type: 0,
-            sub_descriptor_length: 0
+            sub_descriptor_length: 0,
         };
     }
 
     fn d(&self) {
-        d("HID Descriptor Length ");
-        dd(self.length as usize);
-        d(" Type ");
-        dh(self.descriptor_type as usize);
-        d(" HID Version ");
-        dh(self.hid_version as usize);
-        d(" Country Code ");
-        dh(self.country_code as usize);
-        d(" Descriptors ");
-        dh(self.descriptors as usize);
-        d(" Sub Type ");
-        dh(self.sub_descriptor_type as usize);
-        d(" Sub Length ");
-        dd(self.sub_descriptor_length as usize);
-        dl();
+        debug::d("HID Descriptor Length ");
+        debug::dd(self.length as usize);
+        debug::d(" Type ");
+        debug::dh(self.descriptor_type as usize);
+        debug::d(" HID Version ");
+        debug::dh(self.hid_version as usize);
+        debug::d(" Country Code ");
+        debug::dh(self.country_code as usize);
+        debug::d(" Descriptors ");
+        debug::dh(self.descriptors as usize);
+        debug::d(" Sub Type ");
+        debug::dh(self.sub_descriptor_type as usize);
+        debug::d(" Sub Length ");
+        debug::dd(self.sub_descriptor_length as usize);
+        debug::dl();
     }
 }
 
@@ -294,7 +300,7 @@ impl UHCI {
 
         let module = box UHCI {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
-            irq: pci.read(0x3C) as u8 & 0xF
+            irq: pci.read(0x3C) as u8 & 0xF,
         };
 
         module.init();
@@ -309,199 +315,226 @@ impl UHCI {
         let usbintr = base + 4;
         let frnum = base + 6;
 
-        let in_td: *mut TD = alloc_type();
-        ptr::write(in_td, TD {
-            link_ptr: 1,
-            ctrl_sts: 1 << 23,
-            token: 0x7FF << 21 | 0x69,
-            buffer: 0
-        });
+        let in_td: *mut TD = memory::alloc_type();
+        ptr::write(in_td,
+                   TD {
+                       link_ptr: 1,
+                       ctrl_sts: 1 << 23,
+                       token: 0x7FF << 21 | 0x69,
+                       buffer: 0,
+                   });
 
-        let setup: *mut SETUP = alloc_type();
-        write(setup, SETUP {
-            request_type: 0b00000000,
-            request: 5,
-            value: address as u16,
-            index: 0,
-            len: 0
-        });
+        let setup: *mut SETUP = memory::alloc_type();
+        ptr::write(setup,
+              SETUP {
+                  request_type: 0b00000000,
+                  request: 5,
+                  value: address as u16,
+                  index: 0,
+                  len: 0,
+              });
 
-        let setup_td: *mut TD = alloc_type();
-        write(setup_td, TD {
-            link_ptr: in_td as u32 | 4,
-            ctrl_sts: 1 << 23,
-            token: (size_of_val(&*setup) as u32 - 1) << 21 | 0x2D,
-            buffer: setup as u32
-        });
+        let setup_td: *mut TD = memory::alloc_type();
+        ptr::write(setup_td,
+              TD {
+                  link_ptr: in_td as u32 | 4,
+                  ctrl_sts: 1 << 23,
+                  token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | 0x2D,
+                  buffer: setup as u32,
+              });
 
-        let queue_head: *mut QH = alloc_type();
-        write(queue_head, QH {
-            head_ptr: 1,
-            element_ptr: setup_td as u32
-        });
+        let queue_head: *mut QH = memory::alloc_type();
+        ptr::write(queue_head,
+              QH {
+                  head_ptr: 1,
+                  element_ptr: setup_td as u32,
+              });
 
         let frame = (inw(frnum) + 2) & 0x3FF;
-        write(frame_list.offset(frame as isize), queue_head as u32 | 2);
+        ptr::write(frame_list.offset(frame as isize),
+              queue_head as u32 | 2);
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
-                d("SETUP_TD ");
-                dh((*setup_td).ctrl_sts as usize);
-                dl();
+                debug::d("SETUP_TD ");
+                debug::dh((*setup_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
         loop {
             if (*in_td).ctrl_sts & (1 << 23) == 0 {
-                d("IN_TD ");
-                dh((*in_td).ctrl_sts as usize);
-                dl();
+                debug::d("IN_TD ");
+                debug::dh((*in_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
-        write(frame_list.offset(frame as isize), 1);
+        ptr::write(frame_list.offset(frame as isize), 1);
 
-        unalloc(queue_head as usize);
-        unalloc(setup_td as usize);
-        unalloc(setup as usize);
-        unalloc(in_td as usize);
+        memory::unalloc(queue_head as usize);
+        memory::unalloc(setup_td as usize);
+        memory::unalloc(setup as usize);
+        memory::unalloc(in_td as usize);
     }
 
-    unsafe fn descriptor(&self, frame_list: *mut u32, address: u8, descriptor_type: u8, descriptor_index: u8, descriptor_ptr: u32, descriptor_len: u32) {
+    unsafe fn descriptor(&self,
+                         frame_list: *mut u32,
+                         address: u8,
+                         descriptor_type: u8,
+                         descriptor_index: u8,
+                         descriptor_ptr: u32,
+                         descriptor_len: u32) {
         let base = self.base as u16;
         let usbcmd = base;
         let frnum = base + 6;
 
-        let out_td: *mut TD = alloc_type();
-        ptr::write(out_td, TD {
-            link_ptr: 1,
-            ctrl_sts: 1 << 23,
-            token: 0x7FF << 21 | (address as u32) << 8 |  0xE1,
-            buffer: 0
-        });
+        let out_td: *mut TD = memory::alloc_type();
+        ptr::write(out_td,
+                   TD {
+                       link_ptr: 1,
+                       ctrl_sts: 1 << 23,
+                       token: 0x7FF << 21 | (address as u32) << 8 | 0xE1,
+                       buffer: 0,
+                   });
 
-        let in_td: *mut TD = alloc_type();
-        ptr::write(in_td, TD {
-            link_ptr: out_td as u32 | 4,
-            ctrl_sts: 1 << 23,
-            token: (descriptor_len - 1) << 21 | (address as u32) << 8 | 0x69,
-            buffer: descriptor_ptr
-        });
+        let in_td: *mut TD = memory::alloc_type();
+        ptr::write(in_td,
+                   TD {
+                       link_ptr: out_td as u32 | 4,
+                       ctrl_sts: 1 << 23,
+                       token: (descriptor_len - 1) << 21 | (address as u32) << 8 | 0x69,
+                       buffer: descriptor_ptr,
+                   });
 
-        let setup: *mut SETUP = alloc_type();
-        write(setup, SETUP {
-            request_type: 0b10000000,
-            request: 6,
-            value: (descriptor_type as u16) << 8 | (descriptor_index as u16),
-            index: 0,
-            len: descriptor_len as u16
-        });
+        let setup: *mut SETUP = memory::alloc_type();
+        ptr::write(setup,
+              SETUP {
+                  request_type: 0b10000000,
+                  request: 6,
+                  value: (descriptor_type as u16) << 8 | (descriptor_index as u16),
+                  index: 0,
+                  len: descriptor_len as u16,
+              });
 
-        let setup_td: *mut TD = alloc_type();
-        write(setup_td, TD {
-            link_ptr: in_td as u32 | 4,
-            ctrl_sts: 1 << 23,
-            token: (size_of_val(&*setup) as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
-            buffer: setup as u32
-        });
+        let setup_td: *mut TD = memory::alloc_type();
+        ptr::write(setup_td,
+              TD {
+                  link_ptr: in_td as u32 | 4,
+                  ctrl_sts: 1 << 23,
+                  token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
+                  buffer: setup as u32,
+              });
 
-        let queue_head: *mut QH = alloc_type();
-        write(queue_head, QH {
-            head_ptr: 1,
-            element_ptr: setup_td as u32
-        });
+        let queue_head: *mut QH = memory::alloc_type();
+        ptr::write(queue_head,
+              QH {
+                  head_ptr: 1,
+                  element_ptr: setup_td as u32,
+              });
 
         let frame = (inw(frnum) + 2) & 0x3FF;
-        write(frame_list.offset(frame as isize), queue_head as u32 | 2);
+        ptr::write(frame_list.offset(frame as isize),
+              queue_head as u32 | 2);
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
-                d("SETUP_TD ");
-                dh((*setup_td).ctrl_sts as usize);
-                dl();
+                debug::d("SETUP_TD ");
+                debug::dh((*setup_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
         loop {
             if (*in_td).ctrl_sts & (1 << 23) == 0 {
-                d("IN_TD ");
-                dh((*in_td).ctrl_sts as usize);
-                dl();
+                debug::d("IN_TD ");
+                debug::dh((*in_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
         loop {
             if (*out_td).ctrl_sts & (1 << 23) == 0 {
-                d("OUT_TD ");
-                dh((*out_td).ctrl_sts as usize);
-                dl();
+                debug::d("OUT_TD ");
+                debug::dh((*out_td).ctrl_sts as usize);
+                debug::dl();
                 break;
             }
 
             let disable = start_ints();
-            Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
         }
 
-        write(frame_list.offset(frame as isize), 1);
+        ptr::write(frame_list.offset(frame as isize), 1);
 
-        unalloc(queue_head as usize);
-        unalloc(setup_td as usize);
-        unalloc(setup as usize);
-        unalloc(in_td as usize);
-        unalloc(out_td as usize);
+        memory::unalloc(queue_head as usize);
+        memory::unalloc(setup_td as usize);
+        memory::unalloc(setup as usize);
+        memory::unalloc(in_td as usize);
+        memory::unalloc(out_td as usize);
     }
 
     unsafe fn device(&self, frame_list: *mut u32, address: u8) {
         self.set_address(frame_list, address);
 
-        let desc_dev: *mut DeviceDescriptor = alloc_type();
-        write(desc_dev, DeviceDescriptor::new());
-        self.descriptor(frame_list, address, DESC_DEV, 0, desc_dev as u32, size_of_val(&*desc_dev) as u32);
+        let desc_dev: *mut DeviceDescriptor = memory::alloc_type();
+        ptr::write(desc_dev, DeviceDescriptor::new());
+        self.descriptor(frame_list,
+                        address,
+                        DESC_DEV,
+                        0,
+                        desc_dev as u32,
+                        mem::size_of_val(&*desc_dev) as u32);
         (*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
-            let desc_cfg_buf = alloc(desc_cfg_len) as *mut u8;
+            let desc_cfg_buf = memory::alloc(desc_cfg_len) as *mut u8;
             for i in 0..desc_cfg_len as isize {
-                write(desc_cfg_buf.offset(i), 0);
+                ptr::write(desc_cfg_buf.offset(i), 0);
             }
-            self.descriptor(frame_list, address, DESC_CFG, configuration, desc_cfg_buf as u32, desc_cfg_len as u32);
+            self.descriptor(frame_list,
+                            address,
+                            DESC_CFG,
+                            configuration,
+                            desc_cfg_buf as u32,
+                            desc_cfg_len as u32);
 
-            let desc_cfg = read(desc_cfg_buf as *const ConfigDescriptor);
+            let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
             desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
-                let length = read(desc_cfg_buf.offset(i));
-                let descriptor_type = read(desc_cfg_buf.offset(i + 1));
+                let length = ptr::read(desc_cfg_buf.offset(i));
+                let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        let desc_int = read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
                         desc_int.d();
-                    },
+                    }
                     DESC_END => {
-                        let desc_end = read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
                         desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
@@ -512,24 +545,28 @@ impl UHCI {
                         let frnum = base + 0x6;
 
                         Context::spawn(box move || {
-                            let in_ptr = alloc(in_len) as *mut u8;
-                            let in_td: *mut TD = alloc_type();
+                            let in_ptr = memory::alloc(in_len) as *mut u8;
+                            let in_td: *mut TD = memory::alloc_type();
 
                             loop {
                                 for i in 0..in_len as isize {
                                     volatile_store(in_ptr.offset(i), 0);
                                 }
 
-                                write(in_td, TD {
-                                    link_ptr: 1,
-                                    ctrl_sts: 1 << 25 | 1 << 23,
-                                    token: (in_len as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
-                                    buffer: in_ptr as u32
-                                });
+                                ptr::write(in_td,
+                                      TD {
+                                          link_ptr: 1,
+                                          ctrl_sts: 1 << 25 | 1 << 23,
+                                          token: (in_len as u32 - 1) << 21 |
+                                                 (endpoint as u32) << 15 |
+                                                 (address as u32) << 8 |
+                                                 0x69,
+                                          buffer: in_ptr as u32,
+                                      });
 
                                 let reenable = start_no_ints();
-                                    let frame = (inw(frnum) + 2) & 0x3FF;
-                                    volatile_store(frame_list.offset(frame as isize), in_td as u32);
+                                let frame = (inw(frnum) + 2) & 0x3FF;
+                                volatile_store(frame_list.offset(frame as isize), in_td as u32);
                                 end_no_ints(reenable);
 
                                 loop {
@@ -538,63 +575,70 @@ impl UHCI {
                                         break;
                                     }
 
-                                    sys_yield();
+                                    call::sys_yield();
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);
 
                                 if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
-                                    let buttons = read(in_ptr.offset(0) as *const u8) as usize;
-                                    let x = read(in_ptr.offset(1) as *const u16) as usize;
-                                    let y = read(in_ptr.offset(3) as *const u16) as usize;
+                                    let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                    let mouse_x = (x * (*::session_ptr).display.width)/32768;
-                                    let mouse_y = (y * (*::session_ptr).display.height)/32768;
+                                    let mouse_x = (x * (*::session_ptr).display.width) / 32768;
+                                    let mouse_y = (y * (*::session_ptr).display.height) / 32768;
 
-                                    (*::session_ptr).mouse_point.x = max(0, min((*::session_ptr).display.width as isize - 1, mouse_x as isize));
-                                    (*::session_ptr).mouse_point.y = max(0, min((*::session_ptr).display.height as isize - 1, mouse_y as isize));
+                                    (*::session_ptr).mouse_point.x =
+                                        cmp::max(0,
+                                            cmp::min((*::session_ptr).display.width as isize - 1,
+                                                mouse_x as isize));
+                                    (*::session_ptr).mouse_point.y =
+                                        cmp::max(0,
+                                            cmp::min((*::session_ptr).display.height as isize - 1,
+                                                mouse_y as isize));
 
                                     MouseEvent {
                                         x: 0,
                                         y: 0,
                                         left_button: buttons & 1 == 1,
                                         middle_button: buttons & 4 == 4,
-                                        right_button: buttons & 2 == 2
-                                    }.trigger();
+                                        right_button: buttons & 2 == 2,
+                                    }
+                                        .trigger();
                                 }
 
-                                Duration::new(0, 10*NANOS_PER_MILLI).sleep();
+                                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                            unalloc(in_td as usize);
+                            memory::unalloc(in_td as usize);
                         });
-                    },
+                    }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
                         desc_hid.d();
-                    },
+                    }
                     _ => {
-                        d("Unknown Descriptor Length ");
-                        dd(length as usize);
-                        d(" Type ");
-                        dh(descriptor_type as usize);
-                        dl();
+                        debug::d("Unknown Descriptor Length ");
+                        debug::dd(length as usize);
+                        debug::d(" Type ");
+                        debug::dh(descriptor_type as usize);
+                        debug::dl();
                     }
                 }
                 i += length as isize;
             }
 
-            unalloc(desc_cfg_buf as usize);
+            memory::unalloc(desc_cfg_buf as usize);
         }
 
-        unalloc(desc_dev as usize);
+        memory::unalloc(desc_dev as usize);
     }
 
     pub unsafe fn init(&self) {
-        d("UHCI on: ");
-        dh(self.base);
-        d(", IRQ: ");
-        dbh(self.irq);
+        debug::d("UHCI on: ");
+        debug::dh(self.base);
+        debug::d(", IRQ: ");
+        debug::dbh(self.irq);
 
         let base = self.base as u16;
         let usbcmd = base;
@@ -606,85 +650,85 @@ impl UHCI {
         let portsc1 = base + 0x10;
         let portsc2 = base + 0x12;
 
-        d(" CMD ");
-        dh(inw(usbcmd) as usize);
-            outw(usbcmd, 1 << 2 | 1 << 1);
-        d(" to ");
-        dh(inw(usbcmd) as usize);
-            let disable = start_ints();
-            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
-            end_ints(disable);
+        debug::d(" CMD ");
+        debug::dh(inw(usbcmd) as usize);
+        outw(usbcmd, 1 << 2 | 1 << 1);
+        debug::d(" to ");
+        debug::dh(inw(usbcmd) as usize);
+        let disable = start_ints();
+        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
+        end_ints(disable);
         outw(usbcmd, 0);
-        d(" to ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" to ");
+        debug::dh(inw(usbcmd) as usize);
 
-        d(" STS ");
-        dh(inw(usbsts) as usize);
+        debug::d(" STS ");
+        debug::dh(inw(usbsts) as usize);
 
-        d(" INTR ");
-        dh(inw(usbintr) as usize);
+        debug::d(" INTR ");
+        debug::dh(inw(usbintr) as usize);
 
-        d(" FRNUM ");
-        dh(inw(frnum) as usize);
-            outw(frnum, 0);
-        d(" to ");
-        dh(inw(frnum) as usize);
+        debug::d(" FRNUM ");
+        debug::dh(inw(frnum) as usize);
+        outw(frnum, 0);
+        debug::d(" to ");
+        debug::dh(inw(frnum) as usize);
 
-        d(" FLBASEADD ");
-        dh(ind(flbaseadd) as usize);
-            let frame_list = alloc(1024 * 4) as *mut u32;
-            for i in 0..1024 {
-                write(frame_list.offset(i), 1);
-            }
-            outd(flbaseadd, frame_list as u32);
-        d(" to ");
-        dh(ind(flbaseadd) as usize);
+        debug::d(" FLBASEADD ");
+        debug::dh(ind(flbaseadd) as usize);
+        let frame_list = memory::alloc(1024 * 4) as *mut u32;
+        for i in 0..1024 {
+            ptr::write(frame_list.offset(i), 1);
+        }
+        outd(flbaseadd, frame_list as u32);
+        debug::d(" to ");
+        debug::dh(ind(flbaseadd) as usize);
 
-        d(" CMD ");
-        dh(inw(usbcmd) as usize);
-            outw(usbcmd, 1);
-        d(" to ");
-        dh(inw(usbcmd) as usize);
+        debug::d(" CMD ");
+        debug::dh(inw(usbcmd) as usize);
+        outw(usbcmd, 1);
+        debug::d(" to ");
+        debug::dh(inw(usbcmd) as usize);
 
-        dl();
+        debug::dl();
 
         let disable = start_ints();
-        Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
         end_ints(disable);
 
         {
-            d(" PORTSC1 ");
-            dh(inw(portsc1) as usize);
+            debug::d(" PORTSC1 ");
+            debug::dh(inw(portsc1) as usize);
 
             outw(portsc1, 1 << 9);
-            d(" to ");
-            dh(inw(portsc1) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc1, 0);
-            d(" to ");
-            dh(inw(portsc1) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc1) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
-            dl();
+            debug::dl();
 
             if inw(portsc1) & 1 == 1 {
-                d(" Device Found ");
-                dh(inw(portsc1) as usize);
+                debug::d(" Device Found ");
+                debug::dh(inw(portsc1) as usize);
 
                 outw(portsc1, 4);
-                d(" to ");
-                dh(inw(portsc1) as usize);
-                dl();
+                debug::d(" to ");
+                debug::dh(inw(portsc1) as usize);
+                debug::dl();
 
                 let disable = start_ints();
-                Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+                Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
                 end_ints(disable);
 
                 self.device(frame_list, 1);
@@ -692,38 +736,38 @@ impl UHCI {
         }
 
         {
-            d(" PORTSC2 ");
-            dh(inw(portsc2) as usize);
+            debug::d(" PORTSC2 ");
+            debug::dh(inw(portsc2) as usize);
 
             outw(portsc2, 1 << 9);
-            d(" to ");
-            dh(inw(portsc2) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
             outw(portsc2, 0);
-            d(" to ");
-            dh(inw(portsc2) as usize);
+            debug::d(" to ");
+            debug::dh(inw(portsc2) as usize);
 
             let disable = start_ints();
-            Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
             end_ints(disable);
 
-            dl();
+            debug::dl();
 
             if inw(portsc2) & 1 == 1 {
-                d(" Device Found ");
-                dh(inw(portsc2) as usize);
+                debug::d(" Device Found ");
+                debug::dh(inw(portsc2) as usize);
 
                 outw(portsc2, 4);
-                d(" to ");
-                dh(inw(portsc2) as usize);
-                dl();
+                debug::d(" to ");
+                debug::dh(inw(portsc2) as usize);
+                debug::dl();
 
                 let disable = start_ints();
-                Duration::new(0, 100*NANOS_PER_MILLI).sleep();
+                Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
                 end_ints(disable);
 
                 self.device(frame_list, 2);

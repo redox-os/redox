@@ -48,7 +48,9 @@ pub unsafe fn do_sys_debug(byte: u8) {
             display.scroll(16);
             ::debug_point.y -= 16;
         }
-        display.rect(::debug_point, Size::new(8, 16), Color::new(255, 255, 255));
+        display.rect(::debug_point,
+                     Size::new(8, 16),
+                     Color::new(255, 255, 255));
         ::debug_redraw = true;
         //If interrupts disabled, probably booting up
         if !reenable && ::debug_draw && ::debug_redraw {
@@ -57,12 +59,11 @@ pub unsafe fn do_sys_debug(byte: u8) {
         }
     }
 
-    loop {
-        if inb(0x3F8 + 5) & 0x20 == 0x20 {
-            break;
-        }
-    }
-    outb(0x3F8, byte);
+    let serial_status = PIO8::new(0x3F8 + 5);
+    while serial_status.read() & 0x20 == 0 {}
+
+    let mut serial_data = PIO8::new(0x3F8);
+    serial_data.write(byte);
 
     end_no_ints(reenable);
 }
@@ -76,13 +77,14 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
 
-                if let Option::Some(count) = file.resource.read(slice::from_raw_parts_mut(buf, count)) {
+                if let Option::Some(count) = file.resource
+                                                 .read(slice::from_raw_parts_mut(buf, count)) {
                     ret = count;
                 }
 
@@ -103,13 +105,14 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
 
-                if let Option::Some(count) = file.resource.write(slice::from_raw_parts(buf, count)) {
+                if let Option::Some(count) = file.resource
+                                                 .write(slice::from_raw_parts(buf, count)) {
                     ret = count;
                 }
 
@@ -133,7 +136,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     if path_str.find(":".to_string()).is_none() {
         let reenable = start_no_ints();
 
-        let contexts = & *contexts_ptr;
+        let contexts = &*contexts_ptr;
         if let Option::Some(current) = contexts.get(context_i) {
             path_str = current.cwd.clone() + path_str;
         }
@@ -147,7 +150,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
         fd = 0;
         for file in current.files.iter() {
@@ -158,7 +161,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 
         current.files.push(ContextFile {
             fd: fd,
-            resource: resource
+            resource: resource,
         });
     }
 
@@ -172,7 +175,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
             let mut remove = false;
@@ -208,14 +211,14 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
             if let Option::Some(file) = current.files.get(i) {
                 if file.fd == fd {
                     end_no_ints(reenable);
 
-                    if file.resource.flush() {
+                    if file.resource.sync() {
                         ret = 0;
                     }
 
@@ -237,23 +240,26 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 end_no_ints(reenable);
 
                 match whence {
-                    0 => if let Option::Some(count) = file.resource.seek(ResourceSeek::Start(offset as usize)) {
+                    0 => if let Option::Some(count) =
+                                file.resource.seek(ResourceSeek::Start(offset as usize)) {
                         ret = count;
                     },
-                    1 => if let Option::Some(count) = file.resource.seek(ResourceSeek::Current(offset)) {
+                    1 => if let Option::Some(count) = file.resource
+                                                          .seek(ResourceSeek::Current(offset)) {
                         ret = count;
                     },
-                    2 => if let Option::Some(count) = file.resource.seek(ResourceSeek::End(offset)) {
+                    2 =>
+                        if let Option::Some(count) = file.resource.seek(ResourceSeek::End(offset)) {
                         ret = count;
                     },
-                    _ => ()
+                    _ => (),
                 }
 
                 start_no_ints();
@@ -291,7 +297,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
         if let Option::Some(mut current) = contexts.get(context_i) {
             current.unmap();
@@ -301,7 +307,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
                 if addr == 0 {
                     //Get current break
-                }else if addr >= entry.virtual_address {
+                } else if addr >= entry.virtual_address {
                     let request_size = addr - entry.virtual_address;
                     let new_address = realloc(entry.physical_address, request_size);
                     if new_address > 0 {
@@ -338,11 +344,12 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),
 
-        //Linux
+        // Linux
         SYS_EXIT => do_sys_exit((ebx as i32) as isize),
         SYS_READ => eax = do_sys_read(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_WRITE => eax = do_sys_write(ebx as usize, ecx as *mut u8, edx as usize) as u32,
-        SYS_OPEN => eax = do_sys_open(ebx as *mut u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
+        SYS_OPEN =>
+            eax = do_sys_open(ebx as *mut u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
         SYS_CLOSE => eax = do_sys_close(ebx as usize) as u32,
         SYS_FSYNC => eax = do_sys_fsync(ebx as usize) as u32,
         SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
@@ -350,21 +357,25 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize) as u32,
         SYS_YIELD => context_switch(false),
 
-        //Rust Memory
+        // Rust Memory
         SYS_ALLOC => eax = alloc(ebx as usize) as u32,
         SYS_REALLOC => eax = realloc(ebx as usize, ecx as usize) as u32,
         SYS_REALLOC_INPLACE => eax = realloc_inplace(ebx as usize, ecx as usize) as u32,
         SYS_UNALLOC => unalloc(ebx as usize),
 
-        //Windows
+        // Windows
         SYS_TRIGGER => {
             let mut event = ptr::read(ebx as *const Event);
 
             let reenable = start_no_ints();
 
             if event.code == 'm' {
-                event.a = max(0, min((*::session_ptr).display.width as isize - 1, (*::session_ptr).mouse_point.x + event.a));
-                event.b = max(0, min((*::session_ptr).display.height as isize - 1, (*::session_ptr).mouse_point.y + event.b));
+                event.a = max(0,
+                              min((*::session_ptr).display.width as isize - 1,
+                                  (*::session_ptr).mouse_point.x + event.a));
+                event.b = max(0,
+                              min((*::session_ptr).display.height as isize - 1,
+                                  (*::session_ptr).mouse_point.y + event.b));
                 (*::session_ptr).mouse_point.x = event.a;
                 (*::session_ptr).mouse_point.y = event.b;
                 (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
@@ -374,23 +385,23 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
             (*::events_ptr).push(event);
 
             end_no_ints(reenable);
-        },
+        }
         SYS_WINDOW_CREATE => {
             let reenable = start_no_ints();
 
             (*::session_ptr).add_window(ebx as *mut Window);
 
             end_no_ints(reenable);
-        },
+        }
         SYS_WINDOW_DESTROY => {
             let reenable = start_no_ints();
 
             (*::session_ptr).remove_window(ebx as *mut Window);
 
             end_no_ints(reenable);
-        },
+        }
 
-        //Misc
+        // Misc
         SYS_TIME => {
             let reenable = start_no_ints();
 
@@ -401,7 +412,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
             }
 
             end_no_ints(reenable);
-        },
+        }
         _ => {
             d("Unknown Syscall: ");
             dd(eax as usize);

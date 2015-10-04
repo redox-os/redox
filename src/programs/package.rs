@@ -1,6 +1,11 @@
+use alloc::boxed::Box;
+
 use graphics::bmp::*;
 
-use programs::common::*;
+use common::debug;
+use common::resource::URL;
+use common::string::{String, ToString};
+use common::vec::Vec;
 
 pub struct Package {
     pub url: URL,
@@ -10,7 +15,7 @@ pub struct Package {
     pub icon: BMP,
     pub accepts: Vec<String>,
     pub authors: Vec<String>,
-    pub descriptions: Vec<String>
+    pub descriptions: Vec<String>,
 }
 
 impl Package {
@@ -23,7 +28,7 @@ impl Package {
             icon: BMP::new(),
             accepts: Vec::new(),
             authors: Vec::new(),
-            descriptions: Vec::new()
+            descriptions: Vec::new(),
         };
 
         let path_parts = url.path_parts();
@@ -46,7 +51,8 @@ impl Package {
             if line.starts_with("name=".to_string()) {
                 package.name = line.substr(5, line.len() - 5);
             } else if line.starts_with("binary=".to_string()) {
-                package.binary = URL::from_string(&(url.to_string() + line.substr(7, line.len() - 7)));
+                package.binary = URL::from_string(&(url.to_string() +
+                                                    line.substr(7, line.len() - 7)));
             } else if line.starts_with("icon=".to_string()) {
                 let mut resource = URL::from_string(&line.substr(5, line.len() - 5)).open();
                 let mut vec: Vec<u8> = Vec::new();
@@ -59,9 +65,9 @@ impl Package {
             } else if line.starts_with("description=".to_string()) {
                 package.descriptions.push(line.substr(12, line.len() - 12));
             } else {
-                d("Unknown package info: ");
+                debug::d("Unknown package info: ");
                 line.d();
-                dl();
+                debug::dl();
             }
         }
 
@@ -69,44 +75,44 @@ impl Package {
     }
 
     pub fn d(&self) {
-        d("URL: ");
+        debug::d("URL: ");
         self.url.d();
-        dl();
+        debug::dl();
 
-        d("ID: ");
+        debug::d("ID: ");
         self.id.d();
-        dl();
+        debug::dl();
 
-        d("Name: ");
+        debug::d("Name: ");
         self.name.d();
-        dl();
+        debug::dl();
 
-        d("Binary: ");
+        debug::d("Binary: ");
         self.binary.d();
-        dl();
+        debug::dl();
 
-        d("Icon: ");
-        dd(self.icon.size.width);
-        d("x");
-        dd(self.icon.size.height);
-        dl();
+        debug::d("Icon: ");
+        debug::dd(self.icon.size.width);
+        debug::d("x");
+        debug::dd(self.icon.size.height);
+        debug::dl();
 
         for accept in self.accepts.iter() {
-            d("Accept: ");
+            debug::d("Accept: ");
             accept.d();
-            dl();
+            debug::dl();
         }
 
         for author in self.authors.iter() {
-            d("Author: ");
+            debug::d("Author: ");
             author.d();
-            dl();
+            debug::dl();
         }
 
         for description in self.descriptions.iter() {
-            d("Description: ");
+            debug::d("Description: ");
             description.d();
-            dl();
+            debug::dl();
         }
     }
 }
