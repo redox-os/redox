@@ -41,6 +41,10 @@ impl Memory {
         }
         else { None }
     }
+
+    pub fn size(self) -> usize {
+        unsafe { alloc_size(self.address) }
+    }
 }
 
 impl Drop for Memory {
