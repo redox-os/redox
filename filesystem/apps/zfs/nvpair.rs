@@ -8,7 +8,7 @@ enum DataType {
     Uint32,
     Int64,
     Uint64,
-    String, // TODO: What to name this string type?
+    String,
     ByteArray,
     Int16Array,
     Uint16Array,
@@ -17,9 +17,9 @@ enum DataType {
     Int64Array,
     Uint64Array,
     StringArray,
-    Hrtime,
-    Nvlist, // TODO: What to name this ?
-    NvlistArray,
+    HrTime,
+    NvList,
+    NvListArray,
     BooleanValue,
     Int8,
     Uint8,
