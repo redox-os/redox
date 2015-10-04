@@ -2,18 +2,18 @@ use redox::*;
 
 pub struct FileManager {
     files: Vec<String>,
-    selected: isize
+    selected: isize,
 }
 
 impl FileManager {
     pub fn new() -> FileManager {
         return FileManager {
             files: Vec::new(),
-            selected: -1
+            selected: -1,
         };
     }
 
-    fn draw_content(&mut self, window: &mut Window){
+    fn draw_content(&mut self, window: &mut Window) {
         let content = &window.content;
 
         content.set(Color::new(0, 0, 0));
@@ -26,18 +26,20 @@ impl FileManager {
                 if c == '\n' {
                     col = 0;
                     row += 1;
-                }else if c == '\t' {
+                } else if c == '\t' {
                     col += 8 - col % 8;
-                }else{
+                } else {
                     let color;
                     if i == self.selected {
                         color = Color::new(128, 128, 128);
-                    }else{
+                    } else {
                         color = Color::new(255, 255, 255);
                     }
 
                     if col < content.width / 8 && row < content.height / 16 {
-                        content.char(Point::new(8*col as isize, 16*row as isize), c, color);
+                        content.char(Point::new(8 * col as isize, 16 * row as isize),
+                                     c,
+                                     color);
                         col += 1;
                     }
                 }
@@ -52,12 +54,12 @@ impl FileManager {
 
         content.flip();
 
-        RedrawEvent {
-            redraw: REDRAW_ALL
-        }.to_event().trigger();
+        RedrawEvent { redraw: REDRAW_ALL }
+            .to_event()
+            .trigger();
     }
 
-    fn main(&mut self, path: String){
+    fn main(&mut self, path: String) {
         let mut size = Size::new(0, 0);
         {
             let mut resource = File::open(&path);
@@ -65,9 +67,9 @@ impl FileManager {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
-            for file in String::from_utf8(&vec).split("\n".to_string()){
+            for file in String::from_utf8(&vec).split("\n".to_string()) {
                 if size.width < (file.len() + 1) * 8 {
-                    size.width = (file.len() + 1) * 8 ;
+                    size.width = (file.len() + 1) * 8;
                 }
                 self.files.push(file);
             }
@@ -77,7 +79,10 @@ impl FileManager {
             }
         }
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), size, "File Manager (".to_string() + &path + ")");
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
+                                                (rand() % 300 + 50) as isize),
+                                     size,
+                                     "File Manager (".to_string() + &path + ")");
 
         self.draw_content(&mut window);
 
@@ -98,13 +103,17 @@ impl FileManager {
                             _ => match key_event.character {
                                 '\0' => (),
                                 '\n' => {
-                                    if self.selected >= 0 && self.selected < self.files.len() as isize {
+                                    if self.selected >= 0 &&
+                                       self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => OpenEvent{ url_string: path.clone() + file.clone() }.trigger(),
-                                            Option::None => ()
+                                            Option::Some(file) => OpenEvent {
+                                                url_string: path.clone() + file.clone(),
+                                            }
+                                                                      .trigger(),
+                                            Option::None => (),
                                         }
                                     }
-                                },
+                                }
                                 _ => {
                                     let mut i = 0;
                                     for file in self.files.iter() {
@@ -115,15 +124,15 @@ impl FileManager {
                                         i += 1;
                                     }
                                 }
-                            }
+                            },
                         }
 
                         self.draw_content(&mut window);
                     }
-                },
+                }
                 EventOption::Mouse(mouse_event) => {
                     let mut redraw = false;
-                    if ! window.minimized {
+                    if !window.minimized {
                         let mut i = 0;
                         let mut row = 0;
                         for file in self.files.iter() {
@@ -132,12 +141,17 @@ impl FileManager {
                                 if c == '\n' {
                                     col = 0;
                                     row += 1;
-                                }else if c == '\t' {
+                                } else if c == '\t' {
                                     col += 8 - col % 8;
-                                }else{
-                                    if col < window.size.width / 8 && row < window.size.height / 16 {
-                                        let point = Point::new(window.point.x + 8*col as isize, window.point.y + 16*row as isize);
-                                        if mouse_event.x >= point.x && mouse_event.x < point.x + 8 && mouse_event.y >= point.y && mouse_event.y < point.y + 16 {
+                                } else {
+                                    if col < window.size.width / 8 &&
+                                       row < window.size.height / 16 {
+                                        let point = Point::new(window.point.x + 8 * col as isize,
+                                                               window.point.y + 16 * row as isize);
+                                        if mouse_event.x >= point.x &&
+                                           mouse_event.x < point.x + 8 &&
+                                           mouse_event.y >= point.y &&
+                                           mouse_event.y < point.y + 16 {
                                             self.selected = i;
                                             redraw = true;
                                         }
@@ -157,17 +171,17 @@ impl FileManager {
                     if redraw {
                         self.draw_content(&mut window);
                     }
-                },
+                }
                 EventOption::None => sys_yield(),
-                _ => ()
+                _ => (),
             }
         }
     }
 }
 
-pub fn main(){
+pub fn main() {
     match args().get(1) {
         Option::Some(arg) => FileManager::new().main(arg.clone()),
-        Option::None => FileManager::new().main("file:///".to_string())
+        Option::None => FileManager::new().main("file:///".to_string()),
     }
 }

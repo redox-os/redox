@@ -18,13 +18,13 @@ pub struct IPv4Header {
     pub proto: u8,
     pub checksum: Checksum,
     pub src: IPv4Addr,
-    pub dst: IPv4Addr
+    pub dst: IPv4Addr,
 }
 
 pub struct IPv4 {
     pub header: IPv4Header,
     pub options: Vec<u8>,
-    pub data: Vec<u8>
+    pub data: Vec<u8>,
 }
 
 impl FromBytes for IPv4 {
@@ -36,8 +36,9 @@ impl FromBytes for IPv4 {
 
                 return Option::Some(IPv4 {
                     header: header,
-                    options: bytes.sub(size_of::<IPv4Header>(), header_len - size_of::<IPv4Header>()),
-                    data: bytes.sub(header_len, bytes.len() - header_len)
+                    options: bytes.sub(size_of::<IPv4Header>(),
+                                       header_len - size_of::<IPv4Header>()),
+                    data: bytes.sub(header_len, bytes.len() - header_len),
                 });
             }
         }

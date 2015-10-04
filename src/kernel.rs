@@ -17,10 +17,21 @@
 
 extern crate alloc;
 
+use alloc::boxed::Box;
+
+use core::{cmp, mem, ptr};
+
 use common::context::*;
-use common::memory::*;
+use common::debug;
+use common::event::{self, Event, EventOption};
+use common::memory;
 use common::paging::*;
+use common::queue::Queue;
+use common::resource::URL;
 use common::scheduler::*;
+use common::string::{String, ToString};
+use common::time::Duration;
+use common::vec::Vec;
 
 use drivers::disk::*;
 use drivers::pci::*;
@@ -32,8 +43,12 @@ use drivers::serial::*;
 pub use externs::*;
 
 use graphics::bmp::*;
+use graphics::color::Color;
+use graphics::display::{self, Display};
+use graphics::point::Point;
+use graphics::size::Size;
+use graphics::window::Window;
 
-use programs::common::*;
 use programs::package::*;
 use programs::session::*;
 
@@ -51,6 +66,7 @@ use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
 
+use syscall::call;
 use syscall::handle::*;
 
 mod audio {
@@ -205,7 +221,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        sys_yield();
+        call::sys_yield();
     }
 }
 
@@ -228,12 +244,12 @@ unsafe fn event_loop() -> ! {
                             EventOption::Key(key_event) => {
                                 if key_event.pressed {
                                     match key_event.scancode {
-                                        K_F2 => {
+                                        event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_ALL);
+                                            (*::session_ptr).redraw = cmp::max((*::session_ptr).redraw, event::REDRAW_ALL);
                                         },
-                                        K_BKSP => if cmd.len() > 0 {
-                                            db(8);
+                                        event::K_BKSP => if cmd.len() > 0 {
+                                            debug::db(8);
                                             cmd.vec.pop();
                                         },
                                         _ => match key_event.character {
@@ -244,11 +260,11 @@ unsafe fn event_loop() -> ! {
                                                 end_no_ints(reenable);
 
                                                 cmd = String::new();
-                                                dl();
+                                                debug::dl();
                                             }
                                             _ => {
                                                 cmd.vec.push(key_event.character);
-                                                dc(key_event.character);
+                                                debug::dc(key_event.character);
                                             }
                                         }
                                     }
@@ -257,7 +273,7 @@ unsafe fn event_loop() -> ! {
                             _ => ()
                         }
                     } else {
-                        if event.code == 'k' && event.b as u8 == K_F1 && event.c > 0 {
+                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
                         } else {
@@ -269,7 +285,7 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        sys_yield();
+        call::sys_yield();
     }
 }
 
@@ -287,7 +303,7 @@ unsafe fn redraw_loop() -> ! {
             session.redraw();
         }
 
-        sys_yield();
+        call::sys_yield();
     }
 }
 
@@ -304,18 +320,18 @@ pub unsafe fn debug_init() {
 
 unsafe fn test_disk(disk: Disk) {
     if disk.identify() {
-        d(" Disk Found");
+        debug::d(" Disk Found");
 
         let fs = FileSystem::from_disk(disk);
         if fs.valid() {
-            d(" Redox Filesystem");
+            debug::d(" Redox Filesystem");
         } else {
-            d(" Unknown Filesystem");
+            debug::d(" Unknown Filesystem");
         }
     } else {
-        d(" Disk Not Found");
+        debug::d(" Disk Not Found");
     }
-    dl();
+    debug::dl();
 }
 
 unsafe fn init(font_data: usize) {
@@ -342,33 +358,32 @@ unsafe fn init(font_data: usize) {
 
     debug_init();
 
-    dd(size_of::<usize>() * 8);
-    d(" bits");
-    dl();
+    debug::dd(mem::size_of::<usize>() * 8);
+    debug::d(" bits");
+    debug::dl();
 
-    page_bootstrap();
-    cluster_init();
-    page_init();
+    Page::init();
+    memory::cluster_init();
 
-    ptr::write(FONTS, font_data);
+    ptr::write(display::FONTS, font_data);
 
-    debug_display = alloc_type();
+    debug_display = memory::alloc_type();
     ptr::write(debug_display, box Display::root());
     (*debug_display).set(Color::new(0, 0, 0));
     debug_draw = true;
-    debug_command = alloc_type();
+    debug_command = memory::alloc_type();
     ptr::write(debug_command, String::new());
 
     clock_realtime = RTC::new().time();
 
-    contexts_ptr = alloc_type();
+    contexts_ptr = memory::alloc_type();
     ptr::write(contexts_ptr, Vec::new());
     (*contexts_ptr).push(Context::root());
 
-    session_ptr = alloc_type();
+    session_ptr = memory::alloc_type();
     ptr::write(session_ptr, box Session::new());
 
-    events_ptr = alloc_type();
+    events_ptr = memory::alloc_type();
     ptr::write(events_ptr, Queue::new());
 
     let session = &mut *session_ptr;
@@ -378,16 +393,16 @@ unsafe fn init(font_data: usize) {
 
     pci_init(session);
 
-    d("Primary Master:");
+    debug::d("Primary Master:");
     test_disk(Disk::primary_master());
 
-    d("Primary Slave:");
+    debug::d("Primary Slave:");
     test_disk(Disk::primary_slave());
 
-    d("Secondary Master:");
+    debug::d("Secondary Master:");
     test_disk(Disk::secondary_master());
 
-    d("Secondary Slave:");
+    debug::d("Secondary Slave:");
     test_disk(Disk::secondary_slave());
 
     session.items.push(box ContextScheme);
@@ -446,7 +461,7 @@ unsafe fn init(font_data: usize) {
 
     debug_draw = false;
 
-    session.redraw = max(session.redraw, REDRAW_ALL);
+    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
 
     {
         let mut resource = URL::from_str("file:///apps/").open();
@@ -463,10 +478,10 @@ unsafe fn init(font_data: usize) {
 }
 
 fn dr(reg: &str, value: u32) {
-    d(reg);
-    d(": ");
-    dh(value as usize);
-    dl();
+    debug::d(reg);
+    debug::d(": ");
+    debug::dh(value as usize);
+    debug::dl();
 }
 
 #[no_mangle]
@@ -474,8 +489,8 @@ fn dr(reg: &str, value: u32) {
 pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, mut eax: u32, eip: u32, eflags: u32, error: u32) -> u32 {
     macro_rules! exception {
         ($name:expr) => ({
-            d($name);
-            dl();
+            debug::d($name);
+            debug::dl();
 
             dr("CONTEXT", context_i as u32);
             dr("EFLAGS", eflags);
@@ -506,7 +521,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            sys_exit(-1);
+            call::sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");
@@ -516,8 +531,8 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
     macro_rules! exception_error {
         ($name:expr) => ({
-            d($name);
-            dl();
+            debug::d($name);
+            debug::dl();
 
             dr("CONTEXT", context_i as u32);
             dr("EFLAGS", error);
@@ -549,7 +564,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            sys_exit(-1);
+            call::sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");
@@ -611,9 +626,9 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x14 => exception!("Virtualization exception"),
         0x1E => exception_error!("Security exception"),
         _ => {
-            d("Interrupt: ");
-            dh(interrupt as usize);
-            dl();
+            debug::d("Interrupt: ");
+            debug::dh(interrupt as usize);
+            debug::dl();
         }
     }
 

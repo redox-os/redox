@@ -12,7 +12,7 @@ use syscall::call::*;
 /// An iterator over a vec
 pub struct VecIterator<'a, T: 'a> {
     vec: &'a Vec<T>,
-    offset: usize
+    offset: usize,
 }
 
 impl <'a, T> Iterator for VecIterator<'a, T> {
@@ -22,7 +22,7 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
             Option::Some(item) => {
                 self.offset += 1;
                 Option::Some(item)
-            },
+            }
             Option::None => {
                 Option::None
             }
@@ -33,7 +33,7 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
 /// A owned, heap allocated list of elements
 pub struct Vec<T> {
     pub data: *mut T,
-    pub length: usize
+    pub length: usize,
 }
 
 impl <T> Vec<T> {
@@ -41,7 +41,7 @@ impl <T> Vec<T> {
     pub fn new() -> Vec<T> {
         Vec::<T> {
             data: 0 as *mut T,
-            length: 0
+            length: 0,
         }
     }
 
@@ -58,7 +58,7 @@ impl <T> Vec<T> {
 
         Vec::<T> {
             data: data as *mut T,
-            length: len
+            length: len,
         }
     }
 
@@ -67,9 +67,7 @@ impl <T> Vec<T> {
         if i >= self.length {
             Option::None
         } else {
-            unsafe {
-                Option::Some(&mut *self.data.offset(i as isize))
-            }
+            unsafe { Option::Some(&mut *self.data.offset(i as isize)) }
         }
     }
 
@@ -92,7 +90,8 @@ impl <T> Vec<T> {
                 //Move all things ahead of insert forward one
                 let mut j = self.length - 1;
                 while j > i {
-                    ptr::write(self.data.offset(j as isize), ptr::read(self.data.offset(j as isize - 1)));
+                    ptr::write(self.data.offset(j as isize),
+                               ptr::read(self.data.offset(j as isize - 1)));
                     j -= 1;
                 }
 
@@ -111,7 +110,8 @@ impl <T> Vec<T> {
                 //Move all things ahead of remove back one
                 let mut j = i;
                 while j < self.length {
-                    ptr::write(self.data.offset(j as isize), ptr::read(self.data.offset(j as isize + 1)));
+                    ptr::write(self.data.offset(j as isize),
+                               ptr::read(self.data.offset(j as isize + 1)));
                     j += 1;
                 }
 
@@ -157,7 +157,7 @@ impl <T> Vec<T> {
     pub fn iter(&self) -> VecIterator<T> {
         VecIterator {
             vec: self,
-            offset: 0
+            offset: 0,
         }
     }
 
@@ -182,22 +182,21 @@ impl <T> Vec<T> {
             let data = sys_alloc(length * size_of::<T>()) as *mut T;
 
             for k in i..j {
-                ptr::write(data.offset((k - i) as isize), ptr::read(self.data.offset(k as isize)));
+                ptr::write(data.offset((k - i) as isize),
+                           ptr::read(self.data.offset(k as isize)));
             }
 
             Vec {
                 data: data,
-                length: length
+                length: length,
             }
         }
     }
 
     pub fn as_slice(&self) -> &[T] {
         if self.data as usize > 0 && self.length > 0 {
-            unsafe{
-                slice::from_raw_parts(self.data, self.length)
-            }
-        }else{
+            unsafe { slice::from_raw_parts(self.data, self.length) }
+        } else {
             &[]
         }
     }

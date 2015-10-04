@@ -10,9 +10,9 @@
    xmlns="http://www.w3.org/2000/svg"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="210mm"
-   height="297mm"
-   viewBox="0 0 744.09448819 1052.3622047"
+   width="132.48604mm"
+   height="45.880295mm"
+   viewBox="0 0 469.43872 162.56797"
    id="svg3725"
    version="1.1"
    inkscape:version="0.91 r13725"
@@ -36,8 +36,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8284271"
-     inkscape:cx="253.11418"
-     inkscape:cy="967.74695"
+     inkscape:cx="114.81512"
+     inkscape:cy="114.25027"
      inkscape:document-units="px"
      inkscape:current-layer="layer5"
      showgrid="false"
@@ -48,7 +48,11 @@
      inkscape:window-maximized="0"
      inkscape:snap-global="true"
      inkscape:snap-bbox="true"
-     inkscape:bbox-paths="false" />
+     inkscape:bbox-paths="false"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0" />
   <metadata
      id="metadata3730">
     <rdf:RDF>
@@ -57,7 +61,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title />
+        <dc:title></dc:title>
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -66,7 +70,8 @@
      inkscape:groupmode="layer"
      id="layer1"
      style="display:inline"
-     sodipodi:insensitive="true">
+     sodipodi:insensitive="true"
+     transform="translate(-60.870869,-36.297542)">
     <circle
        style="opacity:1;fill:none;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:2.4000001;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path3733"
@@ -97,12 +102,14 @@
      inkscape:groupmode="layer"
      id="layer6"
      inkscape:label="Layer 3"
-     style="display:inline" />
+     style="display:inline"
+     transform="translate(-60.870869,-36.297542)" />
   <g
      inkscape:groupmode="layer"
      id="layer5"
      inkscape:label="Layer 2"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(-60.870869,-36.297542)">
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:40px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
@@ -120,7 +127,8 @@
      inkscape:groupmode="layer"
      id="layer4"
      inkscape:label="Layer 4"
-     style="display:inline">
+     style="display:inline"
+     transform="translate(-60.870869,-36.297542)">
     <circle
        style="opacity:1;fill:#000000;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        id="path4232-6-7-5-0-9"

@@ -5,7 +5,7 @@ pub struct Editor {
     file: Option<File>,
     string: String,
     offset: usize,
-    scroll: Point
+    scroll: Point,
 }
 
 impl Editor {
@@ -16,11 +16,11 @@ impl Editor {
             file: Option::None,
             string: String::new(),
             offset: 0,
-            scroll: Point::new(0, 0)
+            scroll: Point::new(0, 0),
         }
     }
 
-    fn reload(&mut self, window: &mut Window){
+    fn reload(&mut self, window: &mut Window) {
         window.title = "Editor (".to_string() + &self.url + ")";
         self.offset = 0;
         self.scroll = Point::new(0, 0);
@@ -31,19 +31,19 @@ impl Editor {
                 let mut vec: Vec<u8> = Vec::new();
                 file.read_to_end(&mut vec);
                 self.string = String::from_utf8(&vec);
-            },
-            Option::None => self.string = String::new()
+            }
+            Option::None => self.string = String::new(),
         }
     }
 
-    fn save(&mut self, window: &mut Window){
+    fn save(&mut self, window: &mut Window) {
         match self.file {
             Option::Some(ref mut file) => {
                 window.title = "Editor (".to_string() + &self.url + ") Saved";
                 file.seek(Seek::Start(0));
                 file.write(&self.string.to_utf8().as_slice());
-                file.flush();
-            },
+                file.sync();
+            }
             Option::None => {
                 //TODO: Ask for file to save to
                 window.title = "Editor (".to_string() + &self.url + ") No Open File";
@@ -51,7 +51,7 @@ impl Editor {
         }
     }
 
-    fn draw_content(&mut self, window: &mut Window){
+    fn draw_content(&mut self, window: &mut Window) {
         let mut redraw = false;
 
         {
@@ -70,18 +70,20 @@ impl Editor {
             let rows = content.height as isize / 16;
 
             for c in self.string.chars() {
-                if offset == self.offset{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
-                    }else{
+                if offset == self.offset {
+                    if col >= 0 && col < cols && row >= 0 && row < rows {
+                        content.char(Point::new(8 * col, 16 * row),
+                                     '_',
+                                     Color::new(128, 128, 128));
+                    } else {
                         if col < 0 { //Too far to the left
                             self.scroll.x += col;
-                        }else if col >= cols{ //Too far to the right
+                        } else if col >= cols { //Too far to the right
                             self.scroll.x += cols - col + 1;
                         }
                         if row < 0 { //Too far up
                             self.scroll.y += row;
-                        }else if row >= rows{ //Too far down
+                        } else if row >= rows { //Too far down
                             self.scroll.y += rows - row + 1;
                         }
 
@@ -92,11 +94,13 @@ impl Editor {
                 if c == '\n' {
                     col = -scroll.x;
                     row += 1;
-                }else if c == '\t' {
+                } else if c == '\t' {
                     col += 8 - col % 8;
-                }else{
-                    if col >= 0 && col < cols && row >= 0 && row < rows{
-                        content.char(Point::new(8 * col, 16 * row), c, Color::new(255, 255, 255));
+                } else {
+                    if col >= 0 && col < cols && row >= 0 && row < rows {
+                        content.char(Point::new(8 * col, 16 * row),
+                                     c,
+                                     Color::new(255, 255, 255));
                     }
                     col += 1;
                 }
@@ -105,17 +109,19 @@ impl Editor {
             }
 
             if offset == self.offset {
-                if col >= 0 && col < cols && row >= 0 && row < rows{
-                    content.char(Point::new(8 * col, 16 * row), '_', Color::new(128, 128, 128));
-                }else{
+                if col >= 0 && col < cols && row >= 0 && row < rows {
+                    content.char(Point::new(8 * col, 16 * row),
+                                 '_',
+                                 Color::new(128, 128, 128));
+                } else {
                     if col < 0 { //Too far to the left
                         self.scroll.x += col;
-                    }else if col >= cols{ //Too far to the right
+                    } else if col >= cols { //Too far to the right
                         self.scroll.x += cols - col + 1;
                     }
                     if row < 0 { //Too far up
                         self.scroll.y += row;
-                    }else if row >= rows{ //Too far down
+                    } else if row >= rows { //Too far down
                         self.scroll.y += rows - row + 1;
                     }
 
@@ -125,9 +131,9 @@ impl Editor {
 
             content.flip();
 
-            RedrawEvent {
-                redraw: REDRAW_ALL
-            }.to_event().trigger();
+            RedrawEvent { redraw: REDRAW_ALL }
+                .to_event()
+                .trigger();
         }
 
         if redraw {
@@ -135,8 +141,11 @@ impl Editor {
         }
     }
 
-    fn main(&mut self, url: String){
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize), Size::new(576, 400), "Editor (Loading)".to_string());
+    fn main(&mut self, url: String) {
+        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
+                                                (rand() % 300 + 50) as isize),
+                                     Size::new(576, 400),
+                                     "Editor (Loading)".to_string());
 
         self.url = url;
         self.file = Option::Some(File::open(&self.url));
@@ -152,12 +161,17 @@ impl Editor {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
                                 window.title = "Editor (".to_string() + &self.url + ") Changed";
-                                self.string = self.string.substr(0, self.offset - 1) + self.string.substr(self.offset, self.string.len() - self.offset);
+                                self.string = self.string.substr(0, self.offset - 1) +
+                                              self.string.substr(self.offset,
+                                                                 self.string.len() - self.offset);
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
                                 window.title = "Editor (".to_string() + &self.url + ") Changed";
-                                self.string = self.string.substr(0, self.offset) + self.string.substr(self.offset + 1, self.string.len() - self.offset - 1);
+                                self.string = self.string.substr(0, self.offset) +
+                                              self.string.substr(self.offset + 1,
+                                                                 self.string.len() - self.offset -
+                                                                 1);
                             },
                             K_F5 => self.reload(&mut window),
                             K_F6 => self.save(&mut window),
@@ -170,12 +184,12 @@ impl Editor {
                                         '\n' => {
                                             new_offset = self.offset - i + 1;
                                             break;
-                                        },
-                                        _ => ()
+                                        }
+                                        _ => (),
                                     }
                                 }
                                 self.offset = new_offset;
-                            },
+                            }
                             K_LEFT => if self.offset > 0 {
                                 self.offset -= 1;
                             },
@@ -191,35 +205,39 @@ impl Editor {
                                         '\n' => {
                                             new_offset = i + 1;
                                             break;
-                                        },
-                                        _ => ()
+                                        }
+                                        _ => (),
                                     }
                                 }
                                 self.offset = new_offset;
-                            },
+                            }
                             _ => match key_event.character {
                                 '\0' => (),
                                 _ => {
                                     window.title = "Editor (".to_string() + &self.url + ") Changed";
-                                    self.string = self.string.substr(0, self.offset) + key_event.character + self.string.substr(self.offset, self.string.len() - self.offset);
+                                    self.string = self.string.substr(0, self.offset) +
+                                                  key_event.character +
+                                                  self.string.substr(self.offset,
+                                                                     self.string.len() -
+                                                                     self.offset);
                                     self.offset += 1;
                                 }
-                            }
+                            },
                         }
 
                         self.draw_content(&mut window);
                     }
-                },
+                }
                 EventOption::None => sys_yield(),
-                _ => ()
+                _ => (),
             }
         }
     }
 }
 
-pub fn main(){
+pub fn main() {
     match args().get(1) {
         Option::Some(arg) => Editor::new().main(arg.clone()),
-        Option::None => Editor::new().main("none://".to_string())
+        Option::None => Editor::new().main("none://".to_string()),
     }
 }

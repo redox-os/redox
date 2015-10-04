@@ -2,14 +2,14 @@ use alloc::boxed::*;
 
 use core::ptr;
 
-use common::memory::*;
+use common::memory;
 use common::paging::*;
 use common::resource::*;
 use common::scheduler::*;
 use common::string::*;
 use common::vec::*;
 
-pub const CONTEXT_STACK_SIZE: usize = 1024*1024;
+pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
@@ -55,10 +55,10 @@ pub unsafe fn context_switch(interrupted: bool) {
                         next.interrupted = false;
                         current.remap(next);
                         current.switch(next);
-                    },
-                    Option::None => ()
+                    }
+                    Option::None => (),
                 },
-                Option::None => ()
+                Option::None => (),
             }
         }
     }
@@ -70,11 +70,11 @@ pub unsafe fn context_switch(interrupted: bool) {
 pub unsafe extern "cdecl" fn context_exit() {
     let reenable = start_no_ints();
 
-    let contexts = & *contexts_ptr;
+    let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
         match contexts.get(context_i) {
             Option::Some(mut current) => current.exited = true,
-            Option::None => ()
+            Option::None => (),
         }
     }
 
@@ -85,19 +85,19 @@ pub unsafe extern "cdecl" fn context_exit() {
 
 pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
-    unalloc(box_fn_ptr);
+    memory::unalloc(box_fn_ptr);
     box_fn();
 }
 
 pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
-    pub virtual_size: usize
+    pub virtual_size: usize,
 }
 
 pub struct ContextFile {
     pub fd: usize,
-    pub resource: Box<Resource>
+    pub resource: Box<Resource>,
 }
 
 pub struct Context {
@@ -109,7 +109,7 @@ pub struct Context {
     pub cwd: String,
     pub files: Vec<ContextFile>,
     pub interrupted: bool,
-    pub exited: bool
+    pub exited: bool,
 }
 
 impl Context {
@@ -117,18 +117,18 @@ impl Context {
         box Context {
             stack: 0,
             stack_ptr: 0,
-            fx: alloc(512),
+            fx: memory::alloc(512),
             fx_enabled: false,
             memory: Vec::new(),
             cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
-            exited: false
+            exited: false,
         }
     }
 
     pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Context> {
-        let stack = alloc(CONTEXT_STACK_SIZE + 512);
+        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             stack: stack,
@@ -139,7 +139,7 @@ impl Context {
             cwd: String::new(),
             files: Vec::new(),
             interrupted: false,
-            exited: false
+            exited: false,
         };
 
         let ebp = ret.stack_ptr;
@@ -170,7 +170,7 @@ impl Context {
 
     pub fn spawn(box_fn: Box<FnBox()>) {
         unsafe {
-            let box_fn_ptr: *mut Box<FnBox()> = alloc_type();
+            let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
             ptr::write(box_fn_ptr, box_fn);
 
             let mut context_box_args: Vec<u32> = Vec::new();
@@ -192,16 +192,16 @@ impl Context {
 
     pub unsafe fn map(&mut self) {
         for entry in self.memory.iter() {
-            for i in 0..(entry.virtual_size + 4095)/4096 {
-                set_page(entry.virtual_address + i*4096, entry.physical_address + i*4096);
+            for i in 0..(entry.virtual_size + 4095) / 4096 {
+                Page::new(entry.virtual_address + i * 4096).map(entry.physical_address + i * 4096);
             }
         }
     }
 
     pub unsafe fn unmap(&mut self) {
         for entry in self.memory.iter() {
-            for i in 0..(entry.virtual_size + 4095)/4096 {
-                identity_page(entry.virtual_address + i*4096);
+            for i in 0..(entry.virtual_size + 4095) / 4096 {
+                Page::new(entry.virtual_address + i * 4096).map_identity();
             }
         }
     }
@@ -258,13 +258,13 @@ impl Drop for Context {
 
         while let Option::Some(entry) = self.memory.remove(0) {
             unsafe {
-                unalloc(entry.physical_address);
+                memory::unalloc(entry.physical_address);
             }
         }
 
         if self.stack > 0 {
             unsafe {
-                unalloc(self.stack);
+                memory::unalloc(self.stack);
             }
             self.stack = 0;
         }

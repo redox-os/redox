@@ -11,6 +11,7 @@ CUT=cut
 FIND=find
 LD=ld
 LDARGS=-m elf_i386
+MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
 RM=rm
@@ -37,6 +38,7 @@ ifeq ($(OS),Windows_NT)
 	BASENAME=windows/basename
 	CUT=windows/cut
 	FIND=windows/find
+	MAKE=windows/make
 	MKDIR=windows/mkdir
 	OBJDUMP=windows/objdump
 	RM=windows/rm
@@ -92,11 +94,36 @@ help:
 	@echo
 	@echo "    make qemu_no_kvm"
 	@echo "        Build Redox and run it inside Qemu machine without KVM support."
+	@echo
+	@echo "    make apps"
+	@echo "        Build apps for Redox."
+	@echo
+	@echo "    make tests"
+	@echo "        Run tests on Redox."
+	@echo
+	@echo "    make clean"
+	@echo "        Clean build directory."
+	@echo
 
 all: build/harddrive.bin
 
-doc: src/kernel.rs build/libcore.rlib build/liballoc.rlib
+docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
+
+apps: apps/echo apps/editor apps/file_manager apps/httpd apps/game apps/ox apps/player apps/terminal apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/linux_stdio
+
+tests: tests/success tests/failure
+
+clean:
+	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+
+apps/%:
+	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
+
+FORCE:
+
+tests/%: FORCE
+	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
 build/libcore.rlib: rust/libcore/lib.rs
 	$(MKDIR) -p build
@@ -114,7 +141,7 @@ build/librustc_unicode.rlib: rust/librustc_unicode/lib.rs build/libcore.rlib
 build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/libredox.rlib: libredox/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
+build/libredox.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 build/kernel.rlib: src/kernel.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
@@ -139,7 +166,18 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rl
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP -C -M intel -d $< > $@
 
-build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/editor/editor.bin filesystem/apps/file_manager/file_manager.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/player/player.bin filesystem/apps/terminal/terminal.bin filesystem/apps/viewer/viewer.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
+filesystem/apps/zfs/zfs.img:
+	dd if=/dev/zero of=$@ bs=64M count=1
+	sudo losetup /dev/loop0 $@
+	-sudo zpool create redox_zfs /dev/loop0
+	-sudo zfs create redox_zfs/root
+	-sudo cp README.md /redox_zfs/root/
+	-sudo sync
+	-sudo zfs unmount redox_zfs/root
+	-sudo zpool destroy redox_zfs
+	sudo losetup -d /dev/loop0
+
+build/filesystem.gen: apps
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
@@ -177,14 +215,14 @@ qemu: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 
 qemu_no_kvm: build/harddrive.bin
 	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -hda $<
 
 qemu_tap: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
@@ -193,7 +231,7 @@ qemu_tap: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -204,7 +242,7 @@ qemu_tap_8254x: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -250,6 +288,3 @@ ping:
 
 wireshark:
 	wireshark network.pcap
-
-clean:
-	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list

@@ -9,7 +9,7 @@ use syscall::call::sys_yield;
 /// A mutex, i.e. a form of safe shared memory between threads. See rust std's Mutex.
 pub struct Mutex<T: ?Sized> {
     lock: AtomicBool,
-    value: UnsafeCell<T>
+    value: UnsafeCell<T>,
 }
 
 impl<T> Mutex<T> {
@@ -17,7 +17,7 @@ impl<T> Mutex<T> {
     pub fn new(value: T) -> Mutex<T> {
         Mutex {
             lock: AtomicBool::new(false),
-            value: UnsafeCell::new(value)
+            value: UnsafeCell::new(value),
         }
     }
 }
@@ -38,14 +38,14 @@ unsafe impl<T: ?Sized + Send> Sync for Mutex<T> { }
 
 pub struct MutexGuard<'a, T: ?Sized + 'a> {
     lock: &'a AtomicBool,
-    data: &'a UnsafeCell<T>
+    data: &'a UnsafeCell<T>,
 }
 
 impl<'mutex, T: ?Sized> MutexGuard<'mutex, T> {
     fn new(lock: &'mutex AtomicBool, data: &'mutex UnsafeCell<T>) -> MutexGuard<'mutex, T> {
         MutexGuard {
             lock: lock,
-            data: data
+            data: data,
         }
     }
 }
@@ -66,7 +66,7 @@ impl<'mutex, T: ?Sized> DerefMut for MutexGuard<'mutex, T> {
 
 impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     fn drop(&mut self) {
-        if ! self.lock.compare_and_swap(true, false, Ordering::SeqCst) {
+        if !self.lock.compare_and_swap(true, false, Ordering::SeqCst) {
             d("Mutex was already unlocked!\n");
         }
     }
