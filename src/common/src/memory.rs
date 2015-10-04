@@ -1,4 +1,5 @@
 use core::cmp::min;
+use core::intrinsics;
 use core::mem::size_of;
 use core::ptr;
 
@@ -21,35 +22,56 @@ struct MemoryMapEntry {
     acpi: u32,
 }
 
-struct Memory {
-    address: usize,
+struct Memory<T> {
+    ptr: *mut T,
 }
 
-impl Memory {
-    pub fn new(size: usize) -> Option<Self> {
-        let alloc = unsafe { alloc(size) };
+impl<T> Memory<T> {
+    pub fn new(count: usize) -> Option<Self> {
+        let alloc = unsafe { alloc(count * size_of::<T>()) };
         if alloc > 0 {
-            Some(Memory { address: alloc })
+            Some(Memory { ptr: alloc as *mut T })
         }
         else { None }
     }
 
-    pub fn renew(&self, size: usize) -> Option<Self> {
-        let realloc = unsafe { realloc(self.address, size) };
-        if realloc > 0 {
-            Some(Memory { address: realloc })
+    pub fn renew(&mut self, count: usize) -> bool {
+        let address = unsafe { realloc(self.ptr as usize, count * size_of::<T>()) };
+        if address > 0 {
+            self.ptr = address as *mut T;
+            true
         }
-        else { None }
+        else { false }
     }
 
-    pub fn size(self) -> usize {
-        unsafe { alloc_size(self.address) }
+    pub fn length(self) -> usize {
+        unsafe { alloc_size(self.ptr as usize)/size_of::<T>() }
+    }
+
+    pub unsafe fn address(&self) -> usize {
+        self.ptr as usize
+    }
+
+    pub unsafe fn read(&self, i: usize) -> T {
+        ptr::read(self.ptr.offset(i as isize))
+    }
+
+    pub unsafe fn load(&self, i: usize) -> T {
+        intrinsics::volatile_load(self.ptr.offset(i as isize))
+    }
+
+    pub unsafe fn write(&mut self, i: usize, value: T) {
+        ptr::write(self.ptr.offset(i as isize), value);
+    }
+
+    pub unsafe fn store(&mut self, i: usize, value: T) {
+        intrinsics::volatile_store(self.ptr.offset(i as isize), value);
     }
 }
 
-impl Drop for Memory {
+impl<T> Drop for Memory<T> {
     fn drop(&mut self) {
-        unsafe { unalloc(self.address) }
+        unsafe { unalloc(self.ptr as usize) }
     }
 }
 
