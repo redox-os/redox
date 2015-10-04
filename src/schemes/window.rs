@@ -1,13 +1,18 @@
+use alloc::boxed::Box;
+
 use programs::common::*;
+use graphics::point::*;
+use graphics::size::*;
+use graphics::window::*;
+use common::string::*;
+use common::resource::*;
 
-pub struct WindowScheme;
+pub struct WindowScheme {
+    pub raw_current: *mut Window,
+}
 
-pub struct WindowResourse {
+pub struct WindowResource {
     pub title: String,
-    pub node: Node,
-    pub vec: Vec<u8>,
-    pub seek: usize,
-    pub dirty: bool,
 }
 
 
@@ -18,7 +23,7 @@ impl SessionItem for WindowScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        let scheme: String;
+        let scheme :String;
         let mut pointx :isize;
         let mut pointy :isize;
         let mut size_width :usize;
@@ -28,7 +33,7 @@ impl SessionItem for WindowScheme {
         scheme = match split_url.next() {
             Some(x) => x,
             None    => "".to_string(),
-        }m
+        };
         pointx = match split_url.next() {
             Some(x) => x.to_num_signed(),
             None    => 0,
@@ -53,16 +58,13 @@ impl SessionItem for WindowScheme {
         let mut s: Size = Size::new(size_width, size_height);
         
         let mut newWin = Window::new(p, s, title);
-
         unsafe {
             //newWin.ptr = newWin.deref_mut();
-            let raw_win = Box::into_raw(newWin);
-            
+            self.raw_current = Box::into_raw(newWin);
             //if raw_win.ptr as usize > 0 {
-                (*::session_ptr).add_window(raw_win); 
+                (*::session_ptr).add_window(self.raw_current); 
             //}
         } 
-
         return box NoneResource; //TODO define a WindowResource
         //return box VecResource::new(URL::from_str("window://"),
         //                            ResourceType::File,
@@ -71,4 +73,9 @@ impl SessionItem for WindowScheme {
 }
 
 impl Drop for WindowScheme {
-    
+   fn drop(&mut self) {
+       unsafe {
+           (*::session_ptr).remove_window(self.raw_current);
+       }
+   }
+}
