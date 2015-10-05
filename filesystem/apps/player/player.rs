@@ -13,29 +13,33 @@ impl Player {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
-                                                (rand() % 300 + 50) as isize),
-                                     Size::new(320, 0),
-                                     "Player (Playing ".to_string() + &url + ")");
-        RedrawEvent { redraw: REDRAW_ALL }.trigger();
+        let mut window = File::open(&("window://".to_string()
+                                    + "/" + (rand() % 400 + 50)
+                                    + "/" + (rand() % 300 + 50)
+                                    + "/320"
+                                    + "/0"
+                                    + "/Player (Playing " + &url + ")"));
+        window.sync();
 
         let wav = WAV::from_data(&vec);
 
         let mut audio = File::open(&"audio://".to_string());
         audio.write(wav.data.as_slice());
 
-        window.title = "Player (".to_string() + &url + ")";
-        RedrawEvent { redraw: REDRAW_ALL }.trigger();
-
         loop {
-            match window.poll() {
-                EventOption::Key(key_event) => {
-                    if key_event.pressed && key_event.scancode == K_ESC {
-                        break;
+            let mut event_slice = Event::slice();
+            match window.read(&mut event_slice) {
+                Option::Some(_) => {
+                    match Event::from_slice(&event_slice).to_option() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed && key_event.scancode == K_ESC {
+                                break;
+                            }
+                        }
+                        _ => (),
                     }
-                }
-                EventOption::None => sys_yield(),
-                _ => (),
+                },
+                Option::None => break
             }
         }
     }
