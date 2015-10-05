@@ -138,7 +138,10 @@ build/liballoc_system.rlib: rust/liballoc_system/lib.rs build/libcore.rlib
 build/librustc_unicode.rlib: rust/librustc_unicode/lib.rs build/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib librustc_unicode.rlib
+build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+build/librand.rlib: rust/librand/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib build/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 build/libredox.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib

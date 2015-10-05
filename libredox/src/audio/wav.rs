@@ -1,4 +1,3 @@
-use common::debug::*;
 use common::string::*;
 use common::vec::*;
 
@@ -50,19 +49,9 @@ impl WAV {
         let root_size = getd(i);
         i += 4;
 
-        d("Root ");
-        root_type.d();
-        dc(' ');
-        dd(root_size as usize);
-        dl();
-
         if root_type == "RIFF".to_string() {
             let media_type = gets(i, 4);
             i += 4;
-
-            d("  Media ");
-            media_type.d();
-            dl();
 
             if media_type == "WAVE".to_string() {
                 loop {
@@ -75,27 +64,10 @@ impl WAV {
                         break;
                     }
 
-                    d("    Chunk ");
-                    chunk_type.d();
-                    dc(' ');
-                    dd(chunk_size as usize);
-                    dl();
-
                     if chunk_type == "fmt ".to_string() {
                         ret.channels = getw(i + 2);
-                        d("      Channels ");
-                        dd(ret.channels as usize);
-                        dl();
-
                         ret.sample_rate = getd(i + 4);
-                        d("      Sample Rate ");
-                        dd(ret.sample_rate as usize);
-                        dl();
-
                         ret.sample_bits = getw(i + 0xE);
-                        d("      Sample Bits ");
-                        dd(ret.sample_bits as usize);
-                        dl();
                     }
 
                     if chunk_type == "data".to_string() {
