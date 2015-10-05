@@ -110,7 +110,7 @@ all: build/harddrive.bin
 docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
 
-apps: apps/echo apps/editor apps/file_manager apps/httpd apps/game apps/ox apps/player apps/terminal apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/linux_stdio apps/wintest
+apps: apps/echo apps/editor apps/file_manager apps/httpd apps/game apps/ox apps/player apps/terminal apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/linux_stdio
 
 tests: tests/success tests/failure
 

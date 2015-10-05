@@ -1,55 +1,87 @@
 use alloc::boxed::Box;
 
-use programs::common::*;
-use graphics::point::*;
-use graphics::size::*;
-use graphics::window::*;
+use core::cmp::{min, max};
+use core::ops::DerefMut;
+
 use common::string::*;
 use common::resource::*;
 
-use core::ops::DerefMut;
+use graphics::display::*;
+use graphics::point::*;
+use graphics::size::*;
+use graphics::window::*;
 
-pub struct WindowScheme {
-    pub current_window: *mut Window,
-}
+use programs::common::*;
+
+pub struct WindowScheme;
 
 pub struct WindowResource {
-    pub active_window: Box<Window>,
+    pub window: Box<Window>,
+    pub seek: usize
 }
 
 impl Resource for WindowResource {
      //Required functions
     /// Return the url of this resource
     fn url(&self) -> URL {
-        return URL::from_string(&("window://test".to_string()));
-    } 
+        return URL::from_string(
+            &("window:///".to_string() + self.window.point.x
+                                + "/" + self.window.point.y
+                                + "/" + self.window.size.width
+                                + "/" + self.window.size.height
+                                + "/" + &self.window.title));
+    }
+
     /// Return the type of this resource
     fn stat(&self) -> ResourceType {
-        return ResourceType::Window;
+        return ResourceType::File;
     }
+
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        //TODO implement
-        return Option::None;
+        let content = &mut self.window.content;
+
+        let size = min(content.size - self.seek, buf.len());
+        unsafe {
+            Display::copy_run(content.offscreen + self.seek, buf.as_ptr() as usize, size);
+        }
+        self.seek += size;
+
+        return Option::Some(size);
     }
+
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        //TODO implement
-        return Option::None;
+        let content = &mut self.window.content;
+
+        let size = min(content.size - self.seek, buf.len());
+        unsafe {
+            Display::copy_run(buf.as_ptr() as usize, content.offscreen + self.seek, size);
+        }
+        self.seek += size;
+
+        return Option::Some(size);
     }
+
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None; //TODO implement
+        let end = self.window.content.size;
+
+        self.seek = match pos {
+            ResourceSeek::Start(offset) => min(end, max(0, offset)),
+            ResourceSeek::Current(offset) => min(end, max(0, self.seek as isize + offset) as usize),
+            ResourceSeek::End(offset) =>  min(end, max(0, end as isize + offset) as usize)
+        };
+
+        return Option::Some(self.seek);
     }
-    /// Sync the resource
+
+    /// Sync the resource, should flip
     fn sync(&mut self) -> bool {
+        self.window.redraw();
         return true;
     }
 }
- 
-
-
-
 
 impl SessionItem for WindowScheme {
     fn scheme(&self) -> String {
@@ -76,41 +108,23 @@ impl SessionItem for WindowScheme {
         };
         size_width = match url_path.get(2) {
             Some(w) =>  w.to_num(),
-            None    =>  10,
+            None    =>  100,
         };
         size_height = match url_path.get(3) {
             Some(h) =>  h.to_num(),
-            None    =>  10,
+            None    =>  100,
         };
         title = match url_path.get(4) {
             Some(t) =>  t.clone(),
             None    =>  "Fail".to_string(),
         };
+
         let mut p: Point = Point::new(pointx, pointy);
         let mut s: Size = Size::new(size_width, size_height);
-        let mut newWin  = Window::new(p, s, title);
-        unsafe {
-            newWin.ptr = newWin.deref_mut();
-            self.current_window = newWin.ptr;
-            //self.raw_current = Box::into_raw(newWin);
-            if newWin.ptr as usize > 0 {
-                (*::session_ptr).add_window(self.current_window); 
-            }
-        }
-        
-        return box WindowResource {
-            active_window : newWin,
-        };
-        //return box VecResource::new(URL::from_str("window://"),
-        //                            ResourceType::File,
-        //                            newWin);
-    }
-}
 
-impl Drop for WindowScheme {
-   fn drop(&mut self) {
-       unsafe {
-           (*::session_ptr).remove_window(self.current_window);
-       }
-   }
+        return box WindowResource {
+            window: Window::new(p, s, title),
+            seek: 0,
+        };
+    }
 }
