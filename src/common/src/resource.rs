@@ -23,6 +23,7 @@ pub enum ResourceType {
     Array,
     Dir,
     File,
+    Window,
 }
 
 /// A system resource
@@ -63,6 +64,7 @@ pub trait Resource {
 
 //URL Parsing:
 //Split by /
+//scheme//user/password/host/port/(path/query/fragment)
 //First part is scheme, second is empty, third is user, password, host, and port, later parts are path, last part is path, query, and fragment
     //Split third part by @, the last part is the host and port, if there is a first part it is the user and password
         //Split these parts each by :, first part splits into user and password, the second part is split into domain and port

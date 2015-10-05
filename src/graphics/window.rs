@@ -27,7 +27,7 @@ pub struct Window {
     dragging: bool,
     last_mouse_event: MouseEvent,
     events: Queue<Event>,
-    ptr: *mut Window,
+    pub ptr: *mut Window,
 }
 
 impl Window {
