@@ -1,4 +1,6 @@
 use core::char;
+use core::mem::size_of;
+use core::ptr;
 
 use common::string::*;
 
@@ -26,6 +28,32 @@ pub struct Event {
 }
 
 impl Event {
+    //// Create a null event
+    pub fn new() -> Event {
+        Event {
+            code: '\0',
+            a: 0,
+            b: 0,
+            c: 0,
+            d: 0,
+            e: 0,
+        }
+    }
+
+    /// Get a slice sized for an event
+    pub fn slice() -> [u8; 48] {
+        [0; 48]
+    }
+
+    /// Get an event from a u8 slice
+    pub fn from_slice(slice: &[u8]) -> Event {
+        if slice.len() >= size_of::<Event>() {
+            unsafe { ptr::read(slice.as_ptr() as *const Event) }
+        } else {
+            Event::new()
+        }
+    }
+
     /// Convert the event ot an optional event
     // TODO: Consider doing this via a From trait.
     pub fn to_option(self) -> EventOption {

@@ -1,8 +1,11 @@
 use alloc::boxed::Box;
 
 use core::cmp::{min, max};
+use core::mem::size_of;
 use core::ops::DerefMut;
+use core::ptr;
 
+use common::event::*;
 use common::string::*;
 use common::resource::*;
 
@@ -12,6 +15,8 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::common::*;
+
+use syscall::call::sys_yield;
 
 pub struct WindowScheme;
 
@@ -25,7 +30,8 @@ impl Resource for WindowResource {
     /// Return the url of this resource
     fn url(&self) -> URL {
         return URL::from_string(
-            &("window:///".to_string() + self.window.point.x
+            &("window://".to_string()
+                                + "/" + self.window.point.x
                                 + "/" + self.window.point.y
                                 + "/" + self.window.size.width
                                 + "/" + self.window.size.height
@@ -39,6 +45,7 @@ impl Resource for WindowResource {
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        /* Reading window contents, might be necessary?
         let content = &mut self.window.content;
 
         let size = min(content.size - self.seek, buf.len());
@@ -48,6 +55,21 @@ impl Resource for WindowResource {
         self.seek += size;
 
         return Option::Some(size);
+        */
+
+        //Read events from window
+        let mut i = 0;
+        while buf.len() - i >= size_of::<Event>() {
+            match self.window.poll_window_scheme() {
+                Option::Some(event) => {
+                    unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
+                    i += size_of::<Event>();
+                },
+                Option::None => sys_yield()
+            }
+        }
+
+        return Option::Some(i);
     }
 
     /// Write to resource
@@ -89,35 +111,34 @@ impl SessionItem for WindowScheme {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        let scheme :String;
-        let mut pointx :isize;
-        let mut pointy :isize;
-        let mut size_width :usize;
-        let mut size_height :usize;
-        let mut title :String;
-
         //window://host/path/path/path is the path type we're working with.
-        let mut url_path = url.path_parts();
-        pointx = match url_path.get(0) {
+        let url_path = url.path_parts();
+        let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None    => 0,
         };
-        pointy = match url_path.get(1) {
+        let pointy = match url_path.get(1) {
             Some(y) => y.to_num_signed(),
             None    => 0,
         };
-        size_width = match url_path.get(2) {
+        let size_width = match url_path.get(2) {
             Some(w) =>  w.to_num(),
             None    =>  100,
         };
-        size_height = match url_path.get(3) {
+        let size_height = match url_path.get(3) {
             Some(h) =>  h.to_num(),
             None    =>  100,
         };
-        title = match url_path.get(4) {
+
+        let mut title = match url_path.get(4) {
             Some(t) =>  t.clone(),
-            None    =>  "Fail".to_string(),
+            None    =>  String::new(),
         };
+        for i in 5..url_path.len() {
+            if let Some(t) = url_path.get(i) {
+                title = title + "/" + t;
+            }
+        }
 
         let mut p: Point = Point::new(pointx, pointy);
         let mut s: Size = Size::new(size_width, size_height);
