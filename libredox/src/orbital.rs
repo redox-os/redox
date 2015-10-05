@@ -1,3 +1,7 @@
+use core::mem::size_of;
+use core::ops::DerefMut;
+use core::slice;
+
 use common::event::*;
 use common::string::*;
 
@@ -10,6 +14,8 @@ pub struct NewWindow {
     h: usize,
     t: String,
     file: File,
+    /// Font file, mut to allow changes
+    pub font: File,
 }
 
 impl NewWindow {
@@ -24,6 +30,7 @@ impl NewWindow {
             file: File::open(&("window://".to_string()
                         + '/' + x + '/' + y + '/' + w + '/' + h
                         + '/' + title)),
+            font: File::open(&"file:///ui/unifont.font".to_string())
         }
     }
 
@@ -62,6 +69,22 @@ impl NewWindow {
         }
     }
 
+    /// Draw a character, using the loaded font
+    pub fn char(&mut self, x: isize, y: isize, character: char, color: [u8; 4]) {
+        self.font.seek(Seek::Start((character as usize) * 16));
+        let mut bitmap: [u8; 16] = [0; 16];
+        self.font.read(&mut bitmap);
+        for row in 0..16 {
+            let row_data = bitmap[row];
+            for col in 0..8 {
+                let pixel = (row_data >> (7 - col)) & 1;
+                if pixel > 0 {
+                    self.pixel(x + col as isize, y + row as isize, color);
+                }
+            }
+        }
+    }
+
     /// Set entire window to a color
     //TODO move, resize, setTitle
     #[allow(unused_variables)]
@@ -89,10 +112,12 @@ impl NewWindow {
     }
 
     /// Poll for an event
+    //TODO: clean this up
     pub fn poll(&mut self) -> Option<Event> {
-        let mut event_slice = Event::slice();
-        match self.file.read(&mut event_slice) {
-            Option::Some(_) => return Option::Some(Event::from_slice(&event_slice)),
+        let mut event = box Event::new();
+        let event_ptr: *mut Event = event.deref_mut();
+        match self.file.read(&mut unsafe { slice::from_raw_parts_mut(event_ptr as *mut u8, size_of::<Event>()) }) {
+            Option::Some(_) => return Option::Some(*event),
             Option::None => return Option::None
         }
     }
