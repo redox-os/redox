@@ -43,35 +43,6 @@ impl File {
         self.path.clone()
     }
 
-    /// Read a file to a buffer
-    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        unsafe {
-            let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
-                Option::None
-            } else {
-                Option::Some(count)
-            }
-        }
-    }
-
-    /// Read the file to the end
-    pub fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        let mut read = 0;
-        loop {
-            let mut bytes = [0; 1024];
-            match self.read(&mut bytes) {
-                Option::Some(0) => return Option::Some(read),
-                Option::None => return Option::None,
-                Option::Some(count) => {
-                    for i in 0..count {
-                        vec.push(bytes[i]);
-                    }
-                    read += count;
-                }
-            }
-        }
-    }
 
     /// Write to the file
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -104,6 +75,49 @@ impl File {
     /// Flush the io
     pub fn sync(&mut self) -> bool {
         unsafe { sys_fsync(self.fd) == 0 }
+    }
+}
+
+pub trait Read {
+
+    /// Read a file to a buffer
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
+
+    /// Read the file to the end
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+        let mut read = 0;
+        loop {
+            let mut bytes = [0; 1024];
+            match self.read(&mut bytes) {
+                Option::Some(0) => return Option::Some(read),
+                Option::None => return Option::None,
+                Option::Some(count) => {
+                    for i in 0..count {
+                        vec.push(bytes[i]);
+                    }
+                    read += count;
+                }
+            }
+        }
+    }
+    // /// Return an iterator of the bytes
+    //fn bytes(&'a mut self) -> BytesIter<'a> {
+    //    BytesIter {
+    //        reader: self,
+    //    }
+    //}
+}
+
+impl Read for File {
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        unsafe {
+            let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
+            if count == 0xFFFFFFFF {
+                Option::None
+            } else {
+                Option::Some(count)
+            }
+        }
     }
 }
 
