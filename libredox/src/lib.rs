@@ -37,7 +37,8 @@ pub use syscall::call::*;
 pub use console::*;
 pub use env::*;
 pub use file::*;
-pub use window::*;
+pub use orbital::*;
+pub use font::*;
 
 /// A module for audio
 mod audio {
@@ -73,4 +74,6 @@ pub mod env;
 /// A module for the filesystem
 pub mod file;
 /// A module for window support
-pub mod window;
+pub mod orbital;
+/// A module for fonts
+pub mod font;
