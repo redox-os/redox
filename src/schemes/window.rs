@@ -60,7 +60,7 @@ impl Resource for WindowResource {
         //Read events from window
         let mut i = 0;
         while buf.len() - i >= size_of::<Event>() {
-            match self.window.poll_window_scheme() {
+            match self.window.poll() {
                 Option::Some(event) => {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();

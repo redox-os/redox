@@ -14,9 +14,6 @@ use super::display::*;
 use super::point::*;
 use super::size::*;
 
-use syscall::call::sys_window_create;
-use syscall::call::sys_window_destroy;
-
 /// A window
 pub struct Window {
     /// The position of the window
@@ -69,7 +66,7 @@ impl Window {
             ret.ptr = ret.deref_mut();
 
             if ret.ptr as usize > 0 {
-                (::session_ptr).add_window(ret.ptr);
+                (*::session_ptr).add_window(ret.ptr);
             }
         }
 
@@ -223,7 +220,7 @@ impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
             if self.ptr as usize > 0 {
-                (::session_ptr).remove_window(self.ptr);
+                (*::session_ptr).remove_window(self.ptr);
             }
         }
     }
