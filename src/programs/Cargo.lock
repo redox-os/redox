@@ -1,0 +1,15 @@
+[root]
+name = "programs"
+version = "0.1.0"
+dependencies = [
+ "common 0.1.0",
+ "graphics 0.1.0"
+]
+
+[[package]]
+name = "common"
+version = "0.1.0"
+
+[[package]]
+name = "graphics"
+version = "0.1.0"
