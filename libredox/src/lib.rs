@@ -54,21 +54,8 @@ mod common;
 pub mod externs;
 
 /// A module for graphics
-#[path="../../src/graphics"]
-mod graphics {
-    /// A module for loading bitmaps
-    pub mod bmp;
-    /// A module for color
-    pub mod color;
-    /// A module for displays
-    pub mod display;
-    /// A module for points
-    pub mod point;
-    /// A module for sizes
-    pub mod size;
-    /// A module for windows
-    pub mod window;
-}
+#[path="../../src/graphics/src/lib.rs"]
+mod graphics;
 
 /// A module for system calls
 #[path="../../src/syscall"]
