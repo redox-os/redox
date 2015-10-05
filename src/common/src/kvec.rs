@@ -40,7 +40,7 @@ impl <'a, T> Iterator for KVecIterator<'a, T> {
 
 /// A owned, heap allocated list of elements
 pub struct KVec<T> {
-    pub mem: Option<Memory<T>>,
+    pub mem: Memory<T>, //TODO: Option<Memory>
     pub length: usize,
 }
 
@@ -48,7 +48,9 @@ impl <T> KVec<T> {
     /// Create a empty kvector
     pub fn new() -> KVec<T> {
         KVec {
-            mem: Option::None,
+            mem: Memory {
+                ptr: 0 as *mut T //TODO: Option::None
+            },
             length: 0,
         }
     }
@@ -211,8 +213,7 @@ impl <T> KVec<T> {
         match Memory::new(length) {
             Option::Some(mem) => {
                 for k in i..j {
-                    ptr::write(mem.ptr.offset((k - i) as isize),
-                               ptr::read(self.mem.ptr.offset(k as isize)));
+                    unsafe { ptr::write(mem.ptr.offset((k - i) as isize), ptr::read(self.mem.ptr.offset(k as isize))) };
                 }
 
                 return KVec {
@@ -227,7 +228,7 @@ impl <T> KVec<T> {
     }
 
     pub fn as_slice(&self) -> &[T] {
-        if self.data as usize > 0 && self.length > 0 {
+        if self.length > 0 {
             unsafe { slice::from_raw_parts(self.mem.ptr, self.length) }
         } else {
             &[]
