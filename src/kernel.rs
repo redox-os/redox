@@ -112,11 +112,8 @@ mod schemes;
 #[path="syscall/src/lib.rs"]
 mod syscall;
 
-mod usb {
-    pub mod ehci;
-    pub mod uhci;
-    pub mod xhci;
-}
+#[path="usb/src/lib.rs"]
+mod usb;
 
 static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
 static mut debug_point: Point = Point { x: 0, y: 0 };
