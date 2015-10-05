@@ -6,12 +6,17 @@ use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 
+// TODO: Follow naming convention
+/// A bitmap
 pub struct BMP {
+    /// The data of the bitmap
     pub data: Vec<u32>,
+    /// The bitmap size
     pub size: Size,
 }
 
 impl BMP {
+    /// Create a new empty bitmap
     pub fn new() -> BMP {
         BMP {
             data: Vec::new(),
@@ -22,6 +27,7 @@ impl BMP {
         }
     }
 
+    /// Create a bitmap from some data
     pub fn from_data(file_data: &Vec<u8>) -> BMP {
         let mut ret = BMP::new();
 
@@ -114,6 +120,7 @@ impl BMP {
         ret
     }
 
+    /// Draw the bitmap to the screen
     pub fn draw(&self, display: &Display, point: Point) {
         unsafe {
             display.image_alpha(point, self.data.as_ptr(), self.size);
