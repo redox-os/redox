@@ -37,6 +37,7 @@ pub use syscall::call::*;
 pub use console::*;
 pub use env::*;
 pub use file::*;
+pub use window::*;
 
 /// A module for audio
 #[path="../../src/audio"]
@@ -85,3 +86,5 @@ pub mod console;
 pub mod env;
 /// A module for the filesystem
 pub mod file;
+/// A module for window support
+pub mod window;
