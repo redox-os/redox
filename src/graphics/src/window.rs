@@ -17,14 +17,23 @@ use size::*;
 use syscall::call::sys_window_create;
 use syscall::call::sys_window_destroy;
 
+/// A window
 pub struct Window {
+    /// The position of the window
     pub point: Point,
+    /// The size of the window
     pub size: Size,
+    /// The title of the window
     pub title: String,
+    /// The content of the window
     pub content: Display,
+    /// The color of the window title
     pub title_color: Color,
+    /// The color of the border
     pub border_color: Color,
+    /// Is the window focused?
     pub focused: bool,
+    /// Is the window minimized?
     pub minimized: bool,
     dragging: bool,
     last_mouse_event: MouseEvent,
@@ -33,6 +42,7 @@ pub struct Window {
 }
 
 impl Window {
+    /// Create a new window
     pub fn new(point: Point, size: Size, title: String) -> Box<Window> {
         let mut ret = Box::new(Window {
             point: point,
@@ -66,6 +76,7 @@ impl Window {
         ret
     }
 
+    /// Poll the window
     pub fn poll(&mut self) -> EventOption {
         let event_option;
         unsafe {
@@ -80,11 +91,13 @@ impl Window {
         }
     }
 
+    /// Redraw the window
     pub fn redraw(&mut self) {
         self.content.flip();
         RedrawEvent { redraw: REDRAW_ALL }.to_event().trigger();
     }
 
+    /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
             self.border_color = Color::new(128, 128, 128);
@@ -131,6 +144,7 @@ impl Window {
         }
     }
 
+    /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
         unsafe {
             let reenable = start_no_ints();
@@ -139,6 +153,7 @@ impl Window {
         }
     }
 
+    /// Called on mouse movement
     pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool {
         let mut caught = false;
 

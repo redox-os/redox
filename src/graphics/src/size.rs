@@ -2,6 +2,7 @@ use core::cmp::min;
 use core::ops::Add;
 use core::ops::Sub;
 
+/// A size
 #[derive(Copy, Clone)]
 pub struct Size {
     pub width: usize,
@@ -9,6 +10,7 @@ pub struct Size {
 }
 
 impl Size {
+    /// Create a new size
     pub fn new(width: usize, height: usize) -> Size {
         Size {
             width: width,

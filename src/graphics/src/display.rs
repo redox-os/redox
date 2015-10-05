@@ -14,6 +14,7 @@ use graphics::size::*;
 
 use syscall::call::*;
 
+/// The info of the VBE mode
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct VBEModeInfo {
@@ -55,6 +56,7 @@ const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
 
 pub const FONTS: *mut usize = 0x200008 as *mut usize;
 
+/// A display
 pub struct Display {
     pub offscreen: usize,
     pub onscreen: usize,
@@ -86,6 +88,7 @@ impl Display {
         ret
     }
 
+    /// Create a new display
     pub fn new(width: usize, height: usize) -> Display {
         unsafe {
             let bytesperrow = width * 4;
@@ -154,12 +157,14 @@ impl Display {
         }
     }
 
+    /// Set the color
     pub fn set(&self, color: Color) {
         unsafe {
             Display::set_run(color.data, self.offscreen, self.size);
         }
     }
 
+    /// Scroll the display
     pub fn scroll(&self, rows: usize) {
         if rows > 0 && rows < self.height {
             let offset = rows * self.bytesperrow;
@@ -172,6 +177,7 @@ impl Display {
         }
     }
 
+    /// Flip the display
     pub fn flip(&self) {
         unsafe {
             let reenable = start_no_ints();
@@ -186,6 +192,7 @@ impl Display {
         }
     }
 
+    /// Draw a rectangle
     pub fn rect(&self, point: Point, size: Size, color: Color) {
         let data = color.data;
         let alpha = (color.data & 0xFF000000) >> 24;
@@ -225,6 +232,7 @@ impl Display {
         }
     }
 
+    /// Draw an image
     pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
@@ -246,6 +254,7 @@ impl Display {
     }
     /* } Optimized */
 
+    /// Draw a image with opacity
     pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
         let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
@@ -307,6 +316,7 @@ impl Display {
         }
     }
 
+    /// Set the color of a pixel
     pub fn pixel(&self, point: Point, color: Color) {
         unsafe {
             if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
@@ -316,6 +326,7 @@ impl Display {
         }
     }
 
+    /// Draw a char
     pub fn char(&self, point: Point, character: char, color: Color) {
         unsafe {
             if *FONTS > 0 {
@@ -355,6 +366,7 @@ impl Display {
         }
     }
 
+    /// Draw a pixel on the screen (absolute)
     pub fn pixel_onscreen(&self, point: Point, color: Color) {
         unsafe {
             if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
@@ -364,6 +376,7 @@ impl Display {
         }
     }
 
+    /// Draw a char on the screen (absolute)
     pub fn char_onscreen(&self, point: Point, character: char, color: Color) {
         unsafe {
             if *FONTS > 0 {
