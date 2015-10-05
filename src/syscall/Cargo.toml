@@ -1,0 +1,9 @@
+[package]
+name = "syscall"
+version = "0.1.0"
+authors = []
+
+[dependencies]
+common = {path = "../common"}
+drivers = {path = "../drivers"}
+graphics = {path = "../graphics"}

@@ -40,7 +40,7 @@ mod common;
 pub mod externs;
 
 /// A module for system calls
-#[path="../../src/syscall"]
+#[path="../../src/syscall/src"]
 mod syscall {
     /// Calls
     pub mod call;

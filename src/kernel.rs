@@ -109,11 +109,8 @@ mod programs;
 #[path="schemes/src/lib.rs"]
 mod schemes; 
 
-mod syscall {
-    pub mod call;
-    pub mod common;
-    pub mod handle;
-}
+#[path="syscall/src/lib.rs"]
+mod syscall;
 
 mod usb {
     pub mod ehci;
