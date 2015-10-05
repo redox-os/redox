@@ -100,18 +100,8 @@ pub mod externs;
 #[path="graphics/src/lib.rs"]
 mod graphics;
 
-mod network {
-    pub mod arp;
-    pub mod common;
-    pub mod ethernet;
-    pub mod icmp;
-    pub mod intel8254x;
-    pub mod ipv4;
-    pub mod rtl8139;
-    pub mod scheme;
-    pub mod tcp;
-    pub mod udp;
-}
+#[path="network/src/lib.rs"]
+mod network;
 
 mod programs {
     pub mod common;
