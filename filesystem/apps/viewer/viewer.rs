@@ -15,25 +15,15 @@ impl Viewer {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
+        let image = BMP::from_data(&vec);
+
         let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
                                                 (rand() % 300 + 50) as isize),
-                                     Size::new(640, 480),
-                                     "Viewer".to_string());
-        window.content.set(Color::new(0, 0, 0));
-        window.content.flip();
-
-        let image = BMP::from_data(&vec);
-        window.size = Size::new(max(320, image.size.width), image.size.height);
-        window.content = Display::new(window.size.width, window.size.height);
+                                     Size::new(max(320, image.size.width), image.size.height),
+                                     "Viewer (".to_string() + &url + ")");
         window.content.set(Color::new(0, 0, 0));
         image.draw(&window.content, Point::new(0, 0));
-        window.content.flip();
-
-        window.title = "Viewer (".to_string() + &url + ")";
-
-        RedrawEvent { redraw: REDRAW_ALL }
-            .to_event()
-            .trigger();
+        window.redraw();
 
         loop {
             match window.poll() {
