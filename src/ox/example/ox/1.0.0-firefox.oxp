@@ -1,0 +1,4 @@
+name=firefox
+host=firefox.mozilla.org/dl.bin
+vers=1.0.0
+file=/firefox-config,/firefox,/bookmarks
