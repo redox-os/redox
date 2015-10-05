@@ -65,6 +65,7 @@ use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
 use schemes::udp::*;
+use schemes::window::*;
 
 use syscall::call;
 use syscall::handle::*;
@@ -106,14 +107,8 @@ mod drivers {
 
 pub mod externs;
 
-mod graphics {
-    pub mod bmp;
-    pub mod color;
-    pub mod display;
-    pub mod point;
-    pub mod size;
-    pub mod window;
-}
+#[path="graphics/src/lib.rs"]
+mod graphics;
 
 mod network {
     pub mod arp;
@@ -149,6 +144,7 @@ mod schemes {
     pub mod tcp;
     pub mod time;
     pub mod udp;
+    pub mod window;
 }
 
 mod syscall {
@@ -426,6 +422,7 @@ unsafe fn init(font_data: usize) {
     session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);
+    session.items.push(box WindowScheme);
 
     Context::spawn(box move || {
         poll_loop();

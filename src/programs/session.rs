@@ -264,7 +264,7 @@ impl Session {
 
             self.display.rect(Point::new(0, self.display.height as isize - 32),
                               Size::new(self.display.width, 32),
-                              Color::new(0, 0, 0));
+                              Color::alpha(0, 0, 0, 128));
 
             let mut x = 0;
             for package in self.packages.iter() {
@@ -274,7 +274,7 @@ impl Session {
                        self.mouse_point.x < x + package.icon.size.width as isize {
                         self.display.rect(Point::new(x, y),
                                           package.icon.size,
-                                          Color::new(128, 128, 128));
+                                          Color::alpha(128, 128, 128, 128));
 
                         let mut c_x = x;
                         for c in package.name.chars() {

@@ -231,13 +231,13 @@ impl Resource for FileResource {
 
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
-                            self.disk.read(extent.block + sector as u64,
+                            self.disk.write(extent.block + sector as u64,
                                           65535,
                                           data + sector * 512);
                             sector += 65535;
                         }
                         if sector < sectors {
-                            self.disk.read(extent.block + sector as u64,
+                            self.disk.write(extent.block + sector as u64,
                                           (sectors - sector) as u16,
                                           data + sector * 512);
                         }
