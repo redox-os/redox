@@ -31,6 +31,11 @@ pub use file::*;
 pub use graphics::bmp::*;
 pub use orbital::*;
 
+/// A module for audio
+mod audio {
+    pub mod wav;
+}
+
 /// A module for common functionalities.
 /// Primary functionality provided by std.
 #[path="../../src/common/src/lib.rs"]
