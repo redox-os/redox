@@ -1,6 +1,4 @@
 use core::char;
-use core::mem::size_of;
-use core::ptr;
 
 use common::string::*;
 

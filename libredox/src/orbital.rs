@@ -7,7 +7,7 @@ use common::string::*;
 
 use file::*;
 
-pub struct NewWindow {
+pub struct Window {
     x: isize,
     y: isize,
     w: usize,
@@ -18,10 +18,10 @@ pub struct NewWindow {
     pub font: File,
 }
 
-impl NewWindow {
+impl Window {
     /// Create a new window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> NewWindow {
-        NewWindow {
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Window {
+        Window {
             x: x,
             y: y,
             w: w,
@@ -59,6 +59,11 @@ impl NewWindow {
     /// Get title
     pub fn title(&self) -> String {
         self.t.clone()
+    }
+
+    /// Set title
+    pub fn setTitle(&mut self, title: &String) {
+        //TODO
     }
 
     /// Draw a pixel

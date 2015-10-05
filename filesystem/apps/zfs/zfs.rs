@@ -131,6 +131,10 @@ impl Gang {
 pub fn main() {
     console_title(&"ZFS".to_string());
 
+    let red = [255, 127, 127, 255];
+    let green = [127, 255, 127, 255];
+    let blue = [127, 127, 255, 255];
+
     println!("Type open zfs.img to open the image file".to_string());
     println!("This may take up to 30 seconds".to_string());
 
@@ -174,7 +178,7 @@ pub fn main() {
 
                         match newest_uberblock {
                             Option::Some(uberblock) => {
-                                print_color!("Newest Uberblock:\n".to_string(), Color::new(127, 255, 127));
+                                print_color!("Newest Uberblock:\n".to_string(), green);
                                 //TODO: Do not use as usize
                                 println!("Magic: ".to_string() + String::from_num_radix(uberblock.magic as usize, 16));
                                 println!("Version: ".to_string() + uberblock.version as usize);
@@ -182,15 +186,15 @@ pub fn main() {
                                 println!("Timestamp: ".to_string() + uberblock.timestamp as usize);
                                 println!("MOS: ".to_string() + uberblock.rootbp.dvas[0].sector() as usize);
                             },
-                            Option::None => print_color!("No valid uberblock found!\n".to_string(), Color::new(255, 127, 127))
+                            Option::None => print_color!("No valid uberblock found!\n".to_string(), red)
                         }
                     } else if *command == "list".to_string() {
-                        print_color!("List volumes\n".to_string(), Color::new(127, 255, 127));
+                        print_color!("List volumes\n".to_string(), green);
                     } else if *command == "dump".to_string() {
                         match args.get(1) {
                             Option::Some(arg) => {
                                 let sector = arg.to_num();
-                                print_color!("Dump sector: ".to_string() + sector, Color::new(127, 255, 127));
+                                print_color!("Dump sector: ".to_string() + sector, green);
 
                                 let data = zfs.read(sector, 1);
                                 for i in 0..data.len() {
@@ -205,26 +209,26 @@ pub fn main() {
                                 }
                                 print!("\n".to_string());
                             },
-                            Option::None => print_color!("No sector specified!\n".to_string(), Color::new(255, 127, 127))
+                            Option::None => print_color!("No sector specified!\n".to_string(), red)
                         }
                     }else if *command == "close".to_string() {
-                        print_color!("Closing\n".to_string(), Color::new(255, 127, 127));
+                        print_color!("Closing\n".to_string(), red);
                         close = true;
                     } else {
-                        print_color!("Commands: uber list dump close\n".to_string(), Color::new(127, 127, 255));
+                        print_color!("Commands: uber list dump close\n".to_string(), blue);
                     }
                 },
                 Option::None => {
                     if *command == "open".to_string() {
                         match args.get(1) {
                             Option::Some(arg) => {
-                                print_color!("Open: ".to_string() + arg.clone() + "\n", Color::new(127, 255, 127));
+                                print_color!("Open: ".to_string() + arg.clone() + "\n", green);
                                 zfs_option = Option::Some(ZFS::new(File::open(arg)));
                             },
-                            Option::None => print_color!("No file specified!\n".to_string(), Color::new(255, 127, 127))
+                            Option::None => print_color!("No file specified!\n".to_string(), red)
                         }
                     }else{
-                        print_color!("Commands: open\n".to_string(), Color::new(127, 127, 255));
+                        print_color!("Commands: open\n".to_string(), blue);
                     }
                 }
             }

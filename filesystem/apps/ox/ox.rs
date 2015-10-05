@@ -5,6 +5,10 @@ use redox::*;
 pub fn main() {
     console_title(&"Ox".to_string());
 
+    let red = [255, 127, 127, 255];
+    let green = [127, 255, 127, 255];
+    let blue = [127, 127, 255, 255];
+
     while let Option::Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
         for arg in line.split(" ".to_string()) {
@@ -17,17 +21,17 @@ pub fn main() {
             if *command == "install".to_string() || *command == "i".to_string() {
                 for i in 1..args.len() {
                     if let Option::Some(package) = args.get(i) {
-                        print_color!("Install ".to_string() + package + "\n".to_string(), Color::new(127, 255, 127));
+                        print_color!("Install ".to_string() + package + "\n".to_string(), green);
                     }
                 }
             } else if *command == "uninstall".to_string() || *command == "u".to_string() {
                 for i in 1..args.len() {
                     if let Option::Some(package) = args.get(i) {
-                        print_color!("Uninstall ".to_string() + package + "\n".to_string(), Color::new(255, 127, 127));
+                        print_color!("Uninstall ".to_string() + package + "\n".to_string(), red);
                     }
                 }
             }else{
-                print_color!("Commands: install uninstall\n".to_string(), Color::new(127, 127, 255));
+                print_color!("Commands: install uninstall\n".to_string(), blue);
             }
         }
     }
