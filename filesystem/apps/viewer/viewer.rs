@@ -13,31 +13,22 @@ pub fn main() {
     let mut vec: Vec<u8> = Vec::new();
     resource.read_to_end(&mut vec);
 
-    let image = BMP::from_data(&vec);
+    let bmp = BMP::from_data(&vec);
 
-    let mut window = File::open(&("window://".to_string()
-                                + "/" + (rand() % 400 + 50)
-                                + "/" + (rand() % 300 + 50)
-                                + "/" + max(320, image.size.width)
-                                + "/" + image.size.height
-                                + "/Viewer (" + &url + ")"));
-    window.write(image.as_slice());
+    let mut window = NewWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
+                                max(320, bmp.size.width), bmp.size.height,
+                                &("Viewer (".to_string() + &url + ")"));
+    window.image(0, 0, bmp.size.width, bmp.size.height, bmp.as_slice());
     window.sync();
 
-    loop {
-        let mut event_slice = Event::slice();
-        match window.read(&mut event_slice) {
-            Option::Some(_) => {
-                match Event::from_slice(&event_slice).to_option() {
-                    EventOption::Key(key_event) => {
-                        if key_event.pressed && key_event.scancode == K_ESC {
-                            break;
-                        }
-                    }
-                    _ => (),
+    while let Option::Some(event) = window.poll() {
+        match event.to_option() {
+            EventOption::Key(key_event) => {
+                if key_event.pressed && key_event.scancode == K_ESC {
+                    break;
                 }
-            },
-            Option::None => break
+            }
+            _ => (),
         }
     }
 }
