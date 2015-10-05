@@ -1,6 +1,7 @@
 use core::ops::Add;
 use core::ops::Sub;
 
+/// A point
 #[derive(Copy, Clone)]
 pub struct Point {
     pub x: isize,
@@ -8,6 +9,7 @@ pub struct Point {
 }
 
 impl Point {
+    /// Create a new point
     pub fn new(x: isize, y: isize) -> Point {
         Point { x: x, y: y }
     }
