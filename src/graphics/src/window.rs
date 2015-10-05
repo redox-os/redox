@@ -9,10 +9,10 @@ use common::queue::*;
 use common::scheduler::*;
 use common::string::*;
 
-use color::*;
-use display::*;
-use point::*;
-use size::*;
+use super::color::*;
+use super::display::*;
+use super::point::*;
+use super::size::*;
 
 use syscall::call::sys_window_create;
 use syscall::call::sys_window_destroy;
@@ -50,7 +50,7 @@ impl Window {
             title: title,
             content: Display::new(size.width, size.height),
             title_color: Color::new(255, 255, 255),
-            border_color: Color::new(64, 64, 64),
+            border_color: Color::alpha(64, 64, 64, 128),
             focused: false,
             minimized: false,
             dragging: false,
@@ -76,7 +76,19 @@ impl Window {
         ret
     }
 
-    /// Poll the window
+    /// Poll the window (new)
+    pub fn poll_window_scheme(&mut self) -> Option<Event> {
+        let event_option;
+        unsafe {
+            let reenable = start_no_ints();
+            event_option = self.events.pop();
+            end_no_ints(reenable);
+        }
+
+        return event_option;
+    }
+
+    /// Poll the window (old)
     pub fn poll(&mut self) -> EventOption {
         let event_option;
         unsafe {
@@ -100,9 +112,9 @@ impl Window {
     /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
-            self.border_color = Color::new(128, 128, 128);
+            self.border_color = Color::alpha(192, 192, 192, 128);
         } else {
-            self.border_color = Color::new(64, 64, 64);
+            self.border_color = Color::alpha(64, 64, 64, 128);
         }
 
         if self.minimized {
