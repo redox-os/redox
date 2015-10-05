@@ -3,6 +3,8 @@ use redox::*;
 
 use core::ptr;
 
+mod xdr_rpc;
+
 pub struct ZFS {
     disk: File,
 }
