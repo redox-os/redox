@@ -100,12 +100,14 @@ pub trait Read {
             }
         }
     }
-    // /// Return an iterator of the bytes
-    //fn bytes(&'a mut self) -> BytesIter<'a> {
-    //    BytesIter {
-    //        reader: self,
-    //    }
-    //}
+    /// Return an iterator of the bytes
+    fn bytes(&'a mut self) -> VecIterator<'a, u8> {
+        // TODO: This is only a temporary implementation. Make this read one byte at a time.
+        let buf = Vec::new();
+        self.read_to_end(&mut buf);
+
+        buf.iter()
+    }
 }
 
 impl Read for File {
