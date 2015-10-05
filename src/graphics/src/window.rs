@@ -9,22 +9,31 @@ use common::queue::*;
 use common::scheduler::*;
 use common::string::*;
 
-use color::*;
-use display::*;
-use point::*;
-use size::*;
+use super::color::*;
+use super::display::*;
+use super::point::*;
+use super::size::*;
 
 use syscall::call::sys_window_create;
 use syscall::call::sys_window_destroy;
 
+/// A window
 pub struct Window {
+    /// The position of the window
     pub point: Point,
+    /// The size of the window
     pub size: Size,
+    /// The title of the window
     pub title: String,
+    /// The content of the window
     pub content: Display,
+    /// The color of the window title
     pub title_color: Color,
+    /// The color of the border
     pub border_color: Color,
+    /// Is the window focused?
     pub focused: bool,
+    /// Is the window minimized?
     pub minimized: bool,
     dragging: bool,
     last_mouse_event: MouseEvent,
@@ -33,6 +42,7 @@ pub struct Window {
 }
 
 impl Window {
+    /// Create a new window
     pub fn new(point: Point, size: Size, title: String) -> Box<Window> {
         let mut ret = Box::new(Window {
             point: point,
@@ -40,7 +50,7 @@ impl Window {
             title: title,
             content: Display::new(size.width, size.height),
             title_color: Color::new(255, 255, 255),
-            border_color: Color::new(64, 64, 64),
+            border_color: Color::alpha(64, 64, 64, 128),
             focused: false,
             minimized: false,
             dragging: false,
@@ -66,6 +76,19 @@ impl Window {
         ret
     }
 
+    /// Poll the window (new)
+    pub fn poll_window_scheme(&mut self) -> Option<Event> {
+        let event_option;
+        unsafe {
+            let reenable = start_no_ints();
+            event_option = self.events.pop();
+            end_no_ints(reenable);
+        }
+
+        return event_option;
+    }
+
+    /// Poll the window (old)
     pub fn poll(&mut self) -> EventOption {
         let event_option;
         unsafe {
@@ -80,16 +103,18 @@ impl Window {
         }
     }
 
+    /// Redraw the window
     pub fn redraw(&mut self) {
         self.content.flip();
         RedrawEvent { redraw: REDRAW_ALL }.to_event().trigger();
     }
 
+    /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
-            self.border_color = Color::new(128, 128, 128);
+            self.border_color = Color::alpha(192, 192, 192, 128);
         } else {
-            self.border_color = Color::new(64, 64, 64);
+            self.border_color = Color::alpha(64, 64, 64, 128);
         }
 
         if self.minimized {
@@ -131,6 +156,7 @@ impl Window {
         }
     }
 
+    /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
         unsafe {
             let reenable = start_no_ints();
@@ -139,6 +165,7 @@ impl Window {
         }
     }
 
+    /// Called on mouse movement
     pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool {
         let mut caught = false;
 

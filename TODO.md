@@ -11,5 +11,11 @@ Hey there! Here's a bunch of stuff that needs done:
 
 - [ ] ZFS (WIP)
 
+- [ ] Documentation: Lots of docs are needed. Libredox and common are documented. The rest is almost.... non-documented.
+
+- [ ] Port toml-rs to redox
+
+- [ ] Add the multithreading functionality that the std provides.
+
 
 Add more stuff if you want.
