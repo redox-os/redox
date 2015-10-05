@@ -25,7 +25,7 @@ impl ToString for &'static str {
     }
 }
 
-/// A unicode character
+/// An iterator over unicode characters
 pub struct Chars<'a> {
     string: &'a String,
     offset: usize,
