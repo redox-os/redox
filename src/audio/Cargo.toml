@@ -1,0 +1,7 @@
+[package]
+name = "audio"
+version = "0.1.0"
+authors = []
+
+[dependencies]
+common = {path = "../common"}
