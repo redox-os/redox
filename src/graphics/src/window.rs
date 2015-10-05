@@ -166,22 +166,27 @@ impl Window {
     }
 
     /// Called on mouse movement
-    pub fn on_mouse(&mut self, mouse_event: MouseEvent, allow_catch: bool) -> bool {
+    pub fn on_mouse(&mut self, orig_mouse_event: MouseEvent, allow_catch: bool) -> bool {
+        let mut mouse_event = orig_mouse_event;
+
+        mouse_event.x -= self.point.x;
+        mouse_event.y -= self.point.y;
+
         let mut caught = false;
 
         if allow_catch {
             if mouse_event.left_button {
-                if !self.minimized && mouse_event.x >= self.point.x - 2 &&
-                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
-                   mouse_event.y >= self.point.y - 18 &&
-                   mouse_event.y < self.point.y + self.size.height as isize + 2 {
+                if !self.minimized && mouse_event.x >= -2 &&
+                   mouse_event.x < self.size.width as isize + 4 &&
+                   mouse_event.y >= -18 &&
+                   mouse_event.y < self.size.height as isize + 2 {
                     caught = true;
                 }
 
-                if !self.last_mouse_event.left_button && mouse_event.x >= self.point.x - 2 &&
-                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
-                   mouse_event.y >= self.point.y - 18 &&
-                   mouse_event.y < self.point.y {
+                if !self.last_mouse_event.left_button && mouse_event.x >= -2 &&
+                   mouse_event.x < self.size.width as isize + 4 &&
+                   mouse_event.y >= -18 &&
+                   mouse_event.y < 0 {
                     self.dragging = true;
                     caught = true;
                 }
@@ -190,34 +195,34 @@ impl Window {
             }
 
             if mouse_event.right_button {
-                if !self.minimized && mouse_event.x >= self.point.x - 2 &&
-                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
-                   mouse_event.y >= self.point.y - 18 &&
-                   mouse_event.y < self.point.y + self.size.height as isize + 2 {
+                if !self.minimized && mouse_event.x >= -2 &&
+                   mouse_event.x < self.size.width as isize + 4 &&
+                   mouse_event.y >= -18 &&
+                   mouse_event.y < self.size.height as isize + 2 {
                     caught = true;
                 }
 
-                if !self.last_mouse_event.right_button && mouse_event.x >= self.point.x - 2 &&
-                   mouse_event.x < self.point.x + self.size.width as isize + 4 &&
-                   mouse_event.y >= self.point.y - 18 &&
-                   mouse_event.y < self.point.y {
+                if !self.last_mouse_event.right_button && mouse_event.x >= -2 &&
+                   mouse_event.x < self.size.width as isize + 4 &&
+                   mouse_event.y >= -18 &&
+                   mouse_event.y < 0 {
                     self.minimized = !self.minimized;
                     caught = true;
                 }
             }
 
             if self.dragging {
-                self.point.x += mouse_event.x - self.last_mouse_event.x;
-                self.point.y += mouse_event.y - self.last_mouse_event.y;
+                self.point.x += orig_mouse_event.x - self.last_mouse_event.x;
+                self.point.y += orig_mouse_event.y - self.last_mouse_event.y;
                 caught = true;
             }
         } else {
             self.dragging = false;
         }
 
-        self.last_mouse_event = mouse_event;
+        self.last_mouse_event = orig_mouse_event;
 
-        if caught {
+        if caught && !self.dragging {
             unsafe {
                 let reenable = start_no_ints();
                 self.events.push(mouse_event.to_event());
