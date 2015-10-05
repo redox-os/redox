@@ -64,6 +64,17 @@ impl Window {
         ret
     }
 
+    //TODO: Replace poll with this
+    pub fn poll_window_scheme(&mut self) -> Option<Event> {
+        let event_option;
+        unsafe {
+            let reenable = start_no_ints();
+            event_option = self.events.pop();
+            end_no_ints(reenable);
+        }
+        return event_option;
+    }
+
     pub fn poll(&mut self) -> EventOption {
         let event_option;
         unsafe {
