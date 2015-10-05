@@ -7,13 +7,47 @@ use graphics::window::*;
 use common::string::*;
 use common::resource::*;
 
+use core::ops::DerefMut;
+
 pub struct WindowScheme {
-    pub raw_current: *mut Window,
+    pub current_window: *mut Window,
 }
 
 pub struct WindowResource {
-    pub title: String,
+    pub active_window: Box<Window>,
 }
+
+impl Resource for WindowResource {
+     //Required functions
+    /// Return the url of this resource
+    fn url(&self) -> URL {
+        return URL::from_string(&("window://test".to_string()));
+    } 
+    /// Return the type of this resource
+    fn stat(&self) -> ResourceType {
+        return ResourceType::Window;
+    }
+    /// Read data to buffer
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        //TODO implement
+        return Option::None;
+    }
+    /// Write to resource
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        //TODO implement
+        return Option::None;
+    }
+    /// Seek
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        return Option::None; //TODO implement
+    }
+    /// Sync the resource
+    fn sync(&mut self) -> bool {
+        return true;
+    }
+}
+ 
+
 
 
 
@@ -29,43 +63,45 @@ impl SessionItem for WindowScheme {
         let mut size_width :usize;
         let mut size_height :usize;
         let mut title :String;
-        let mut split_url = url.string.split("/".to_string());
-        scheme = match split_url.next() {
-            Some(x) => x,
-            None    => "".to_string(),
-        };
-        pointx = match split_url.next() {
+
+        //window://host/path/path/path is the path type we're working with.
+        let mut url_path = url.path_parts();
+        pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None    => 0,
         };
-        pointy = match split_url.next() {
+        pointy = match url_path.get(1) {
             Some(y) => y.to_num_signed(),
             None    => 0,
         };
-        size_width = match split_url.next() {
+        size_width = match url_path.get(2) {
             Some(w) =>  w.to_num(),
             None    =>  10,
         };
-        size_height = match split_url.next() {
+        size_height = match url_path.get(3) {
             Some(h) =>  h.to_num(),
             None    =>  10,
         };
-        title = match split_url.next() {
-            Some(t) =>  t,
+        title = match url_path.get(4) {
+            Some(t) =>  t.clone(),
             None    =>  "Fail".to_string(),
         };
         let mut p: Point = Point::new(pointx, pointy);
         let mut s: Size = Size::new(size_width, size_height);
         
-        let mut newWin = Window::new(p, s, title);
+        let mut newWin  = Window::new(p, s, title);
         unsafe {
-            //newWin.ptr = newWin.deref_mut();
-            self.raw_current = Box::into_raw(newWin);
-            //if raw_win.ptr as usize > 0 {
-                (*::session_ptr).add_window(self.raw_current); 
-            //}
-        } 
-        return box NoneResource; //TODO define a WindowResource
+            newWin.ptr = newWin.deref_mut();
+            self.current_window = newWin.ptr;
+            //self.raw_current = Box::into_raw(newWin);
+            if newWin.ptr as usize > 0 {
+                (*::session_ptr).add_window(self.current_window); 
+            }
+        }
+        
+        return box WindowResource {
+            active_window : newWin,
+        };
         //return box VecResource::new(URL::from_str("window://"),
         //                            ResourceType::File,
         //                            newWin);
@@ -75,7 +111,7 @@ impl SessionItem for WindowScheme {
 impl Drop for WindowScheme {
    fn drop(&mut self) {
        unsafe {
-           (*::session_ptr).remove_window(self.raw_current);
+           (*::session_ptr).remove_window(self.current_window);
        }
    }
 }
