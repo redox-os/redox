@@ -1,0 +1,7 @@
+[package]
+name = "graphics"
+version = "0.1.0"
+authors = []
+
+[dependencies]
+common = {path = "../common"}
