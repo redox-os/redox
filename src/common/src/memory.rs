@@ -22,8 +22,8 @@ struct MemoryMapEntry {
     acpi: u32,
 }
 
-struct Memory<T> {
-    ptr: *mut T,
+pub struct Memory<T> {
+    pub ptr: *mut T,
 }
 
 impl<T> Memory<T> {

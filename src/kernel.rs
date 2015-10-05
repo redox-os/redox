@@ -73,7 +73,6 @@ use syscall::handle::*;
 mod audio {
     pub mod ac97;
     pub mod intelhda;
-    pub mod wav;
 }
 
 #[path="common/src"]
@@ -82,6 +81,7 @@ mod common {
     pub mod debug;
     pub mod elf;
     pub mod event;
+    pub mod kvec;
     pub mod queue;
     pub mod memory;
     pub mod mutex;
