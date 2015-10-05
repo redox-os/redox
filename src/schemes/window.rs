@@ -88,7 +88,6 @@ impl SessionItem for WindowScheme {
         };
         let mut p: Point = Point::new(pointx, pointy);
         let mut s: Size = Size::new(size_width, size_height);
-        
         let mut newWin  = Window::new(p, s, title);
         unsafe {
             newWin.ptr = newWin.deref_mut();
