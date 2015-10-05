@@ -69,7 +69,7 @@ impl Window {
             ret.ptr = ret.deref_mut();
 
             if ret.ptr as usize > 0 {
-                sys_window_create(ret.ptr);
+                (::session_ptr).add_window(ret.ptr);
             }
         }
 
@@ -77,7 +77,7 @@ impl Window {
     }
 
     /// Poll the window (new)
-    pub fn poll_window_scheme(&mut self) -> Option<Event> {
+    pub fn poll(&mut self) -> Option<Event> {
         let event_option;
         unsafe {
             let reenable = start_no_ints();
@@ -86,21 +86,6 @@ impl Window {
         }
 
         return event_option;
-    }
-
-    /// Poll the window (old)
-    pub fn poll(&mut self) -> EventOption {
-        let event_option;
-        unsafe {
-            let reenable = start_no_ints();
-            event_option = self.events.pop();
-            end_no_ints(reenable);
-        }
-
-        match event_option {
-            Option::Some(event) => event.to_option(),
-            Option::None => EventOption::None,
-        }
     }
 
     /// Redraw the window
@@ -238,7 +223,7 @@ impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
             if self.ptr as usize > 0 {
-                sys_window_destroy(self.ptr);
+                (::session_ptr).remove_window(self.ptr);
             }
         }
     }

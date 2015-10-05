@@ -46,7 +46,7 @@ impl WAV {
         let mut i = 0;
         let root_type = gets(i, 4);
         i += 4;
-        let root_size = getd(i);
+        //let root_size = getd(i);
         i += 4;
 
         if root_type == "RIFF".to_string() {

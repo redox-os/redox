@@ -15,10 +15,10 @@ pub fn main() {
 
     let bmp = BMP::from_data(&vec);
 
-    let mut window = NewWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                max(320, bmp.size.width), bmp.size.height,
+    let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
+                                max(320, bmp.width()), bmp.height(),
                                 &("Viewer (".to_string() + &url + ")"));
-    window.image(0, 0, bmp.size.width, bmp.size.height, bmp.as_slice());
+    window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
     window.sync();
 
     while let Option::Some(event) = window.poll() {

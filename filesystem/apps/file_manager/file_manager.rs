@@ -13,7 +13,7 @@ impl FileManager {
         };
     }
 
-    fn draw_content(&mut self, window: &mut NewWindow) {
+    fn draw_content(&mut self, window: &mut Window) {
         window.set([0, 0, 0, 255]);
 
         let mut i = 0;
@@ -52,7 +52,8 @@ impl FileManager {
     }
 
     fn main(&mut self, path: String) {
-        let mut size = Size::new(0, 0);
+        let mut width = 320;
+        let mut height = 0;
         {
             let mut resource = File::open(&path);
 
@@ -60,19 +61,19 @@ impl FileManager {
             resource.read_to_end(&mut vec);
 
             for file in String::from_utf8(&vec).split("\n".to_string()) {
-                if size.width < (file.len() + 1) * 8 {
-                    size.width = (file.len() + 1) * 8;
+                if width < (file.len() + 1) * 8 {
+                    width = (file.len() + 1) * 8;
                 }
                 self.files.push(file);
             }
 
-            if size.height < self.files.len() * 16 {
-                size.height = self.files.len() * 16;
+            if height < self.files.len() * 16 {
+                height = self.files.len() * 16;
             }
         }
 
-        let mut window = NewWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                     size.width, size.height,
+        let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
+                                     width, height,
                                      &("File Manager (".to_string() + &path + ")"));
 
         self.draw_content(&mut window);
@@ -136,11 +137,10 @@ impl FileManager {
                             } else {
                                 if col < window.width() / 8 &&
                                    row < window.height() / 16 {
-                                    let point = Point::new(8 * col as isize, 16 * row as isize);
-                                    if mouse_event.x >= point.x &&
-                                       mouse_event.x < point.x + 8 &&
-                                       mouse_event.y >= point.y &&
-                                       mouse_event.y < point.y + 16 {
+                                    if mouse_event.x >= 8 * col as isize &&
+                                       mouse_event.x < 8 * col as isize + 8 &&
+                                       mouse_event.y >= 16 * row as isize &&
+                                       mouse_event.y < 16 * row as isize + 16 {
                                         self.selected = i;
                                         redraw = true;
                                     }

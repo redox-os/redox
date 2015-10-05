@@ -22,8 +22,6 @@ pub const SYS_UNALLOC: u32 = 1003;
 
 //Windowing
 pub const SYS_TRIGGER: u32 = 2000;
-pub const SYS_WINDOW_CREATE: u32 = 2001;
-pub const SYS_WINDOW_DESTROY: u32 = 2002;
 
 //Misc
 pub const SYS_TIME: u32 = 3000;

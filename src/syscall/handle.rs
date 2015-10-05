@@ -16,7 +16,6 @@ use drivers::pio::*;
 
 use graphics::color::*;
 use graphics::size::*;
-use graphics::window::*;
 
 use syscall::common::*;
 
@@ -383,20 +382,6 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
 
             //TODO: Dispatch to appropriate window
             (*::events_ptr).push(event);
-
-            end_no_ints(reenable);
-        }
-        SYS_WINDOW_CREATE => {
-            let reenable = start_no_ints();
-
-            (*::session_ptr).add_window(ebx as *mut Window);
-
-            end_no_ints(reenable);
-        }
-        SYS_WINDOW_DESTROY => {
-            let reenable = start_no_ints();
-
-            (*::session_ptr).remove_window(ebx as *mut Window);
 
             end_no_ints(reenable);
         }

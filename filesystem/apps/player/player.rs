@@ -13,7 +13,7 @@ pub fn main() {
 
 
 
-    let mut window = NewWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
+    let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
                                 320, 0,
                                 &("Player (".to_string() + &url + ")"));
     window.sync();

@@ -157,8 +157,8 @@ pub fn main() {
             resource.write(response.as_slice());
         }
 
-        loop {
-            match console_window().poll() {
+        while let Option::Some(event) = console_window().poll() {
+            match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed && key_event.scancode == K_ESC {
                         break;
@@ -172,14 +172,13 @@ pub fn main() {
 
     println!("Closed HTTP Server".to_string());
 
-    loop {
-        match console_window().poll() {
+    while let Option::Some(event) = console_window().poll() {
+        match event.to_option() {
             EventOption::Key(key_event) => {
                 if key_event.pressed && key_event.scancode == K_ESC {
                     break;
                 }
             }
-            EventOption::None => sys_yield(),
             _ => (),
         }
     }

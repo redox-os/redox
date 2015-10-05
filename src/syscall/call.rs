@@ -1,8 +1,6 @@
 use common::event::*;
 use common::time::*;
 
-use graphics::window::*;
-
 use syscall::common::*;
 
 pub unsafe fn syscall(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
@@ -64,14 +62,6 @@ pub fn sys_yield() {
 
 pub unsafe fn sys_trigger(event_ptr: *const Event) {
     syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
-}
-
-pub unsafe fn sys_window_create(ptr: *mut Window) {
-    syscall(SYS_WINDOW_CREATE, ptr as u32, 0, 0);
-}
-
-pub unsafe fn sys_window_destroy(ptr: *mut Window) {
-    syscall(SYS_WINDOW_DESTROY, ptr as u32, 0, 0);
 }
 
 pub unsafe fn sys_alloc(size: usize) -> usize {

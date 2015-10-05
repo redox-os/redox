@@ -3,7 +3,6 @@
 #![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(core_simd)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
 #![feature(lang_items)]
@@ -14,8 +13,6 @@ extern crate alloc;
 
 pub use alloc::boxed::*;
 
-pub use audio::wav::*;
-
 pub use common::event::*;
 pub use common::queue::*;
 pub use common::random::*;
@@ -23,26 +20,16 @@ pub use common::string::*;
 pub use common::time::*;
 pub use common::vec::*;
 
-pub use graphics::bmp::*;
-pub use graphics::color::*;
-pub use graphics::display::*;
-pub use graphics::point::*;
-pub use graphics::size::*;
-pub use graphics::window::*;
-
 pub use externs::*;
 
 pub use syscall::call::*;
 
+pub use audio::wav::*;
 pub use console::*;
 pub use env::*;
 pub use file::*;
+pub use graphics::bmp::*;
 pub use orbital::*;
-
-/// A module for audio
-mod audio {
-    pub mod wav;
-}
 
 /// A module for common functionalities.
 /// Primary functionality provided by std.
@@ -51,10 +38,6 @@ mod common;
 
 #[path="../../src/externs.rs"]
 pub mod externs;
-
-/// A module for graphics
-#[path="../../src/graphics/src/lib.rs"]
-mod graphics;
 
 /// A module for system calls
 #[path="../../src/syscall"]
@@ -65,6 +48,11 @@ mod syscall {
     pub mod common;
 }
 
+/// A module for audio
+mod audio {
+    pub mod wav;
+}
+
 /// A module for console functionality
 #[macro_use]
 pub mod console;
@@ -72,5 +60,9 @@ pub mod console;
 pub mod env;
 /// A module for the filesystem
 pub mod file;
+/// Graphics support
+mod graphics {
+    pub mod bmp;
+}
 /// A module for window support
 pub mod orbital;
