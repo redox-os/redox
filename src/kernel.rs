@@ -70,10 +70,8 @@ use schemes::window::*;
 use syscall::call;
 use syscall::handle::*;
 
-mod audio {
-    pub mod ac97;
-    pub mod intelhda;
-}
+#[path="audio/src/lib.rs"]
+mod audio;
 
 #[path="common/src"]
 mod common {
