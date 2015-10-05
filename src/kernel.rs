@@ -103,12 +103,8 @@ mod graphics;
 #[path="network/src/lib.rs"]
 mod network;
 
-mod programs {
-    pub mod common;
-    pub mod executor;
-    pub mod package;
-    pub mod session;
-}
+#[path="programs/src/lib.rs"]
+mod programs;
 
 mod schemes {
     pub mod arp;
