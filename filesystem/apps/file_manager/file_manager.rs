@@ -52,7 +52,7 @@ impl FileManager {
     }
 
     fn main(&mut self, path: String) {
-        let mut width = 320;
+        let mut width = 160;
         let mut height = 0;
         {
             let mut resource = File::open(&path);
