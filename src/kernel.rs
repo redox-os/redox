@@ -80,6 +80,7 @@ mod common {
     pub mod debug;
     pub mod elf;
     pub mod event;
+    pub mod kvec;
     pub mod queue;
     pub mod memory;
     pub mod mutex;
