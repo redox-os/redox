@@ -92,16 +92,8 @@ mod common {
     pub mod vec;
 }
 
-mod drivers {
-    pub mod disk;
-    pub mod mmio;
-    pub mod pci;
-    pub mod pciconfig;
-    pub mod pio;
-    pub mod ps2;
-    pub mod rtc;
-    pub mod serial;
-}
+#[path="drivers/src/lib.rs"]
+mod drivers;
 
 pub mod externs;
 
