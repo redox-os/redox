@@ -107,14 +107,8 @@ mod drivers {
 
 pub mod externs;
 
-mod graphics {
-    pub mod bmp;
-    pub mod color;
-    pub mod display;
-    pub mod point;
-    pub mod size;
-    pub mod window;
-}
+#[path="graphics/src/lib.rs"]
+mod graphics;
 
 mod network {
     pub mod arp;
