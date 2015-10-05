@@ -428,7 +428,7 @@ unsafe fn init(font_data: usize) {
     session.items.push(box TCPScheme);
     session.items.push(box UDPScheme);
     session.items.push(box WindowScheme {
-        raw_current: ptr::null_mut()
+        current_window: ptr::null_mut()
     });
 
     Context::spawn(box move || {
