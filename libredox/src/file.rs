@@ -101,12 +101,12 @@ pub trait Read {
         }
     }
     /// Return an iterator of the bytes
-    fn bytes(&'a mut self) -> VecIterator<'a, u8> {
+    fn bytes(&mut self) -> OwnedVecIterator<u8> {
         // TODO: This is only a temporary implementation. Make this read one byte at a time.
-        let buf = Vec::new();
+        let mut buf = Vec::new();
         self.read_to_end(&mut buf);
 
-        buf.iter()
+        buf.into_iter()
     }
 }
 
