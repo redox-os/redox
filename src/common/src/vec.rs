@@ -38,6 +38,28 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
     }
 }
 
+/// An owned iterator over a vec
+pub struct OwnedVecIterator<T>
+    where T: Clone {
+    vec: Vec<T>,
+    offset: usize,
+}
+
+impl<'a, T> Iterator for OwnedVecIterator<T>
+            where T: Clone {
+    type Item = T;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.vec.get(self.offset) {
+            Option::Some(item) => {
+                self.offset += 1;
+                Option::Some(item.clone())
+            }
+            Option::None => {
+                Option::None
+            }
+        }
+    }
+}
 /// A owned, heap allocated list of elements
 pub struct Vec<T> {
     pub data: *mut T,
@@ -179,6 +201,15 @@ impl <T> Vec<T> {
     /// Create an iterator
     pub fn iter(&self) -> VecIterator<T> {
         VecIterator {
+            vec: self,
+            offset: 0,
+        }
+    }
+    
+    /// Convert into an iterator
+    pub fn into_iter(self) -> OwnedVecIterator<T>
+           where T: Clone {
+        OwnedVecIterator {
             vec: self,
             offset: 0,
         }

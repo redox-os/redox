@@ -1,3 +1,6 @@
+use core::mem::size_of;
+use core::slice;
+
 use common::string::*;
 use common::vec::*;
 
@@ -112,6 +115,14 @@ impl BMP {
         }
 
         ret
+    }
+
+    pub fn as_slice(&self) -> &[[u8; 4]] {
+        if self.data.len() > 0 {
+            unsafe { slice::from_raw_parts(self.data.as_ptr() as *const [u8; 4], self.data.len()) }
+        } else {
+            &[]
+        }
     }
 
     pub fn draw(&self, display: &Display, point: Point) {

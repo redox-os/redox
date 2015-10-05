@@ -2,46 +2,33 @@ use core::cmp::max;
 
 use redox::*;
 
-pub struct Viewer;
-
-impl Viewer {
-    pub fn new() -> Viewer {
-        Viewer
-    }
-
-    fn main(&mut self, url: String) {
-        let mut resource = File::open(&url);
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        let image = BMP::from_data(&vec);
-
-        let mut window = Window::new(Point::new((rand() % 400 + 50) as isize,
-                                                (rand() % 300 + 50) as isize),
-                                     Size::new(max(320, image.size.width), image.size.height),
-                                     "Viewer (".to_string() + &url + ")");
-        window.content.set(Color::new(0, 0, 0));
-        image.draw(&window.content, Point::new(0, 0));
-        window.redraw();
-
-        loop {
-            match window.poll() {
-                EventOption::Key(key_event) => {
-                    if key_event.pressed && key_event.scancode == K_ESC {
-                        break;
-                    }
-                }
-                EventOption::None => sys_yield(),
-                _ => (),
-            }
-        }
-    }
-}
-
 pub fn main() {
-    match args().get(1) {
-        Option::Some(arg) => Viewer::new().main(arg.clone()),
-        Option::None => Viewer::new().main("none://".to_string()),
+    let url = match args().get(1) {
+        Option::Some(arg) => arg.clone(),
+        Option::None => "none://".to_string(),
+    };
+
+    let mut resource = File::open(&url);
+
+    let mut vec: Vec<u8> = Vec::new();
+    resource.read_to_end(&mut vec);
+
+    let bmp = BMP::from_data(&vec);
+
+    let mut window = NewWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
+                                max(320, bmp.size.width), bmp.size.height,
+                                &("Viewer (".to_string() + &url + ")"));
+    window.image(0, 0, bmp.size.width, bmp.size.height, bmp.as_slice());
+    window.sync();
+
+    while let Option::Some(event) = window.poll() {
+        match event.to_option() {
+            EventOption::Key(key_event) => {
+                if key_event.pressed && key_event.scancode == K_ESC {
+                    break;
+                }
+            }
+            _ => (),
+        }
     }
 }
