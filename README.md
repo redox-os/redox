@@ -7,6 +7,7 @@
 ![Redox](img/screenshots/Desktop.png)
 ![Redox](img/screenshots/Fancy_opacity.png)
 ![Redox](img/screenshots/File_manager.png)
+![Redox](img/screenshots/Boot.png)
 
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
