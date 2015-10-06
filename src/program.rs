@@ -36,7 +36,7 @@ unsafe fn _start_stack(stack: *const u32) {
         if arg as usize > 0 {
             let mut utf8: Vec<u8> = Vec::new();
             for j in 0..4096 /* Max arg length */ {
-                let b = ptr::read(arg.offset(i));
+                let b = ptr::read(arg.offset(j));
                 if b == 0 {
                     break;
                 }else{

@@ -220,7 +220,9 @@ impl OpenEvent {
     pub fn to_event(&self) -> Event {
         unsafe {
             let c_str = sys_alloc(self.url_string.len() + 1) as *mut u8;
-            ptr::copy(self.url_string.as_ptr(), c_str, self.url_string.len());
+            if self.url_string.len() > 0 {
+                ptr::copy(self.url_string.as_ptr(), c_str, self.url_string.len());
+            }
             ptr::write(c_str.offset(self.url_string.len() as isize), 0);
             Event {
                 code: 'o',

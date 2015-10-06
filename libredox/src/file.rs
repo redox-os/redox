@@ -1,6 +1,8 @@
 use collections::string::*;
 use collections::vec::{IntoIter, Vec};
 
+use core::ptr;
+
 use syscall::call::*;
 
 /// File seek
@@ -26,9 +28,21 @@ impl File {
     // TODO: Why &String and not String
     // TODO: Return Option<File>
     pub fn open(path: &String) -> Self {
-        File {
-            path: path.clone(),
-            fd: unsafe { sys_open(path.as_ptr(), 0, 0) },
+        unsafe {
+            let c_str = sys_alloc(path.len() + 1) as *mut u8;
+            if path.len() > 0 {
+                ptr::copy(path.as_ptr(), c_str, path.len());
+            }
+            ptr::write(c_str.offset(path.len() as isize), 0);
+
+            let ret = File {
+                path: path.clone(),
+                fd: sys_open(c_str, 0, 0),
+            };
+
+            sys_unalloc(c_str as usize);
+            
+            ret
         }
     }
 
