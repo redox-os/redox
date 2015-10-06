@@ -6,10 +6,14 @@ pub enum XdrOp {
 
 pub struct Xdr {
     op: XdrOp,
-    public: usize, // pointer to users' data
-    private: usize, // pointer to private data
-    base: usize, // pointer to private used for position info
-    handy: isize, // extra private word
+    /// Pointer to users' data
+    public: usize,
+    /// Pointer to private data
+    private: usize, 
+    /// Pointer to private used for position info
+    base: usize,
+    /// extra private word
+    handy: isize, 
 }
 
 pub trait XdrOps {

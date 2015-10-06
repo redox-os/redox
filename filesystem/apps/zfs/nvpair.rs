@@ -29,37 +29,42 @@ enum DataType {
 }
 
 struct NvPair {
-    nvp_size: i32, // size of this nvpair
-    nvp_name_sz: i16, // length of name string
-    nvp_reserve: i16, // not used
-    nvp_value_elem: i32, // number of elements for array types
-    nvp_type: DataType, /* type of value
-                         * name string
-                         * aligned ptr array for string arrays
-                         * aligned array of data for value */
+    /// Size of this nvpair
+    nvp_size: i32,
+    /// Length of name string
+    nvp_name_sz: i16,
+    /// Not used
+    nvp_reserve: i16,
+    /// number of elements for array types
+    nvp_value_elem: i32,
+    /// type of value name string aligned ptr array for string arrays aligned array of data for value
+    nvp_type: DataType,
 }
 
 // nvlist header
 struct NvList {
     nvl_version: i32,
-    nvl_nvflag: u32, // persistent flags
-    nvl_priv: u64, // ptr to private data if not packed
+    /// Persistent flags
+    nvl_nvflag: u32,
+    /// Ptr to private data if not packed
+    nvl_priv: u64,
     nvl_flag: u32,
-    nvl_pad: i32, // currently not used, for alignment
+    /// Currently not used, for alignment
+    nvl_pad: i32,
 }
 
-// nvp implementation version
+/// nvp implementation version
 const NV_VERSION: i32 = 0;
 
-// nvlist pack encoding
+/// nvlist pack encoding
 const NV_ENCODE_NATIVE: u8 = 0;
 const NV_ENCODE_XDR:    u8 = 1;
 
-// nvlist persistent unique name flags, stored in nvl_nvflags
+/// nvlist persistent unique name flags, stored in nvl_nvflags
 const NV_UNIQUE_NAME:      u32 = 0x1;
 const NV_UNIQUE_NAME_TYPE: u32 = 0x2;
 
-// nvlist lookup pairs related flags
+/// nvlist lookup pairs related flags
 const NV_FLAG_NOENTOK: isize = 0x1;
 
 /* What to do about these macros?
@@ -79,7 +84,7 @@ const NV_FLAG_NOENTOK: isize = 0x1;
 #define NVL_FLAG(nvl)       ((nvl)->nvl_flag)
 */
 
-// NV allocator framework
+/// NV allocator framework
 struct NvAllocOps;
 
 struct NvAlloc {
