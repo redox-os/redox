@@ -46,7 +46,7 @@ pub struct KVec<T> {
 
 impl <T> KVec<T> {
     /// Create a empty kvector
-    pub fn new() -> KVec<T> {
+    pub fn new() -> Self {
         KVec {
             mem: Memory {
                 ptr: 0 as *mut T //TODO: Option::None
@@ -61,7 +61,7 @@ impl <T> KVec<T> {
     }
 
     /// Convert from a raw (unsafe) buffer
-    pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> KVec<T> {
+    pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Self {
         match Memory::new(len) {
             Option::Some(mem) => {
                 ptr::copy(ptr, mem.ptr, len);
@@ -77,7 +77,7 @@ impl <T> KVec<T> {
         }
     }
 
-    pub fn from_slice(slice: &[T]) -> KVec<T> {
+    pub fn from_slice(slice: &[T]) -> Self {
         match Memory::new(slice.len()) {
             Option::Some(mem) => {
                 unsafe { ptr::copy(slice.as_ptr(), mem.ptr, slice.len()) };
@@ -194,7 +194,7 @@ impl <T> KVec<T> {
     }
 
     // TODO: Consider returning a slice instead
-    pub fn sub(&self, start: usize, count: usize) -> KVec<T> {
+    pub fn sub(&self, start: usize, count: usize) -> Self {
         let mut i = start;
         if i > self.len() {
             i = self.len();
@@ -238,7 +238,7 @@ impl <T> KVec<T> {
 
 impl<T> KVec<T> where T: Clone {
     /// Append a kvector to another kvector
-    pub fn push_all(&mut self, kvec: &KVec<T>) {
+    pub fn push_all(&mut self, kvec: &Self) {
         let mut i = self.length as isize;
         let new_length = self.length + kvec.len();
         if self.mem.renew(new_length) {
@@ -253,7 +253,7 @@ impl<T> KVec<T> where T: Clone {
 }
 
 impl<T> Clone for KVec<T> where T: Clone {
-    fn clone(&self) -> KVec<T> {
+    fn clone(&self) -> Self {
         let mut ret = KVec::new();
         ret.push_all(self);
         ret

@@ -38,7 +38,7 @@ pub struct RTL8139 {
 }
 
 impl RTL8139 {
-    pub fn new(mut pci: PCIConfig) -> Box<RTL8139> {
+    pub fn new(mut pci: PCIConfig) -> Box<Self> {
         let base = unsafe { pci.read(0x10) as usize };
         let irq = unsafe { pci.read(0x3C) as u8 & 0xF };
 

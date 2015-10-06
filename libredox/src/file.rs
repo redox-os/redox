@@ -25,7 +25,7 @@ impl File {
     /// Open a new file using a path
     // TODO: Why &String and not String
     // TODO: Return Option<File>
-    pub fn open(path: &String) -> File {
+    pub fn open(path: &String) -> Self {
         unsafe {
             let c_str: *const u8 = path.to_c_str();
             let ret = File {

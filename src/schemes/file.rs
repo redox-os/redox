@@ -41,7 +41,7 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(address: u64, data: NodeData) -> Node {
+    pub fn new(address: u64, data: NodeData) -> Self {
         let mut utf8: Vec<u8> = Vec::new();
         for i in 0..data.name.len() {
             let c = data.name[i];
@@ -61,7 +61,7 @@ impl Node {
 }
 
 impl Clone for Node {
-    fn clone(&self) -> Node {
+    fn clone(&self) -> Self {
         Node {
             address: self.address,
             name: self.name.clone(),
@@ -77,7 +77,7 @@ pub struct FileSystem {
 }
 
 impl FileSystem {
-    pub fn from_disk(disk: Disk) -> FileSystem {
+    pub fn from_disk(disk: Disk) -> Self {
         unsafe {
             let header_ptr: *const Header = memory::alloc_type();
             disk.read(1, 1, header_ptr as usize);

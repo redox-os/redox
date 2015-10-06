@@ -7,7 +7,7 @@ pub struct Queue<T> {
 
 impl<T> Queue<T> {
     /// Create new queue
-    pub fn new() -> Queue<T> {
+    pub fn new() -> Self {
         Queue { vec: Vec::new() }
     }
 

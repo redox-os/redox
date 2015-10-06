@@ -26,7 +26,7 @@ impl Page {
             : "intel", "volatile");
     }
 
-    pub fn new(virtual_address: usize) -> Page {
+    pub fn new(virtual_address: usize) -> Self {
         Page {
             virtual_address: virtual_address
         }
@@ -53,7 +53,7 @@ impl Page {
         self.flush();
     }
 
-    pub unsafe fn map_identity(&mut self){
+    pub unsafe fn map_identity(&mut self) {
         let physical_address = self.virtual_address;
         self.map(physical_address);
     }

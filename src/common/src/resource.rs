@@ -78,17 +78,17 @@ pub struct URL {
 
 impl URL {
     /// Create a new empty URL
-    pub fn new() -> URL {
+    pub fn new() -> Self {
         URL { string: String::new() }
     }
 
     /// Create an URL from a string literal
-    pub fn from_str(url_str: &'static str) -> URL {
+    pub fn from_str(url_str: &'static str) -> Self {
         return URL::from_string(&url_str.to_string());
     }
 
     /// Create an URL from `String`
-    pub fn from_string(url_string: &String) -> URL {
+    pub fn from_string(url_string: &String) -> Self {
         URL { string: url_string.clone() }
     }
 
@@ -350,7 +350,7 @@ impl URL {
 }
 
 impl Clone for URL {
-    fn clone(&self) -> URL {
+    fn clone(&self) -> Self {
         URL { string: self.string.clone() }
     }
 }
@@ -391,7 +391,7 @@ pub struct VecResource {
 }
 
 impl VecResource {
-    pub fn new(url: URL, resource_type: ResourceType, vec: Vec<u8>) -> VecResource {
+    pub fn new(url: URL, resource_type: ResourceType, vec: Vec<u8>) -> Self {
         return VecResource {
             url: url,
             resource_type: resource_type,

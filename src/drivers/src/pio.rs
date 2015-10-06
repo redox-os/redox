@@ -4,7 +4,7 @@ pub struct PIO8 {
 }
 
 impl PIO8 {
-    pub fn new(port: u16) -> PIO8 {
+    pub fn new(port: u16) -> Self {
         return PIO8 { port: port };
     }
 
@@ -35,7 +35,7 @@ pub struct PIO16 {
 }
 
 impl PIO16 {
-    pub fn new(port: u16) -> PIO16 {
+    pub fn new(port: u16) -> Self {
         return PIO16 { port: port };
     }
 
@@ -66,7 +66,7 @@ pub struct PIO32 {
 }
 
 impl PIO32 {
-    pub fn new(port: u16) -> PIO32 {
+    pub fn new(port: u16) -> Self {
         return PIO32 { port: port };
     }
 

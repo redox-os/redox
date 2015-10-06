@@ -20,9 +20,9 @@ pub struct Command {
 }
 
 impl Command {
-    pub fn vec() -> Vec<Command> {
-        let mut commands: Vec<Command> = Vec::new();
-        
+    pub fn vec() -> Vec<Self> {
+        let mut commands: Vec<Self> = Vec::new();
+
         // TODO: Move this out of the terminal
         //      (commands are not the terminals job)
 
@@ -196,7 +196,7 @@ pub struct Application {
 }
 
 impl Application {
-    pub fn new() -> Application {
+    pub fn new() -> Self {
         return Application {
             commands: Command::vec(),
             variables: Vec::new(),

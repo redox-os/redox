@@ -68,7 +68,7 @@ pub struct Display {
 }
 
 impl Display {
-    pub unsafe fn root() -> Display {
+    pub unsafe fn root() -> Self {
         let mode_info = &*VBEMODEINFO;
 
         let ret = Display {
@@ -89,7 +89,7 @@ impl Display {
     }
 
     /// Create a new display
-    pub fn new(width: usize, height: usize) -> Display {
+    pub fn new(width: usize, height: usize) -> Self {
         unsafe {
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
@@ -184,7 +184,7 @@ impl Display {
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
-                let self_mut: *mut Display = transmute(self);
+                let self_mut: *mut Self = transmute(self);
                 swap(&mut (*self_mut).offscreen,
                      &mut (*self_mut).onscreen);
             }

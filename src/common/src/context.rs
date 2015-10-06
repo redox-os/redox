@@ -113,7 +113,7 @@ pub struct Context {
 }
 
 impl Context {
-    pub unsafe fn root() -> Box<Context> {
+    pub unsafe fn root() -> Box<Self> {
         box Context {
             stack: 0,
             stack_ptr: 0,
@@ -127,7 +127,7 @@ impl Context {
         }
     }
 
-    pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Context> {
+    pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
@@ -206,7 +206,7 @@ impl Context {
         }
     }
 
-    pub unsafe fn remap(&mut self, other: &mut Context) {
+    pub unsafe fn remap(&mut self, other: &mut Self) {
         self.unmap();
         other.map();
     }
@@ -215,7 +215,7 @@ impl Context {
     //It should have exactly one extra push/pop of ESI
     #[cold]
     #[inline(never)]
-    pub unsafe fn switch(&mut self, other: &mut Context) {
+    pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfd
             pushad
             mov [esi], esp"

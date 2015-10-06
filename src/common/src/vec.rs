@@ -68,7 +68,7 @@ pub struct Vec<T> {
 
 impl <T> Vec<T> {
     /// Create a empty vector
-    pub fn new() -> Vec<T> {
+    pub fn new() -> Self {
         Vec::<T> {
             data: 0 as *mut T,
             length: 0,
@@ -81,7 +81,7 @@ impl <T> Vec<T> {
     }
 
     /// Convert from a raw (unsafe) buffer
-    pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Vec<T> {
+    pub unsafe fn from_raw_buf(ptr: *const T, len: usize) -> Self {
         let data = sys_alloc(size_of::<T>() * len) as *mut T;
 
         ptr::copy(ptr, data, len);
@@ -92,21 +92,20 @@ impl <T> Vec<T> {
         }
     }
 
-    pub fn from_slice(slice: &[T]) -> Vec<T> {
+    pub fn from_slice(slice: &[T]) -> Self {
         let data;
         unsafe{
             data = sys_alloc(size_of::<T>() * slice.len()) as *mut T;
-            
+
             ptr::copy(slice.as_ptr(), data, slice.len());
         }
-        
+
         Vec::<T> {
             data: data,
             length: slice.len()
         }
     }
-    
-    
+
     /// Get the nth element. Returns None if out of bounds.
     pub fn get(&self, i: usize) -> Option<&mut T> {
         if i >= self.length {
@@ -205,7 +204,7 @@ impl <T> Vec<T> {
             offset: 0,
         }
     }
-    
+
     /// Convert into an iterator
     pub fn into_iter(self) -> OwnedVecIterator<T>
            where T: Clone {
@@ -216,7 +215,7 @@ impl <T> Vec<T> {
     }
 
     // TODO: Consider returning a slice instead
-    pub fn sub(&self, start: usize, count: usize) -> Vec<T> {
+    pub fn sub(&self, start: usize, count: usize) -> Self {
         let mut i = start;
         if i > self.len() {
             i = self.len();
@@ -258,7 +257,7 @@ impl <T> Vec<T> {
 
 impl<T> Vec<T> where T: Clone {
     /// Append a vector to another vector
-    pub fn push_all(&mut self, vec: &Vec<T>) {
+    pub fn push_all(&mut self, vec: &Self) {
         let mut i = self.length as isize;
         self.length += vec.len();
         unsafe {
@@ -273,7 +272,7 @@ impl<T> Vec<T> where T: Clone {
 }
 
 impl<T> Clone for Vec<T> where T: Clone {
-    fn clone(&self) -> Vec<T> {
+    fn clone(&self) -> Self {
         let mut ret = Vec::new();
         ret.push_all(self);
         ret

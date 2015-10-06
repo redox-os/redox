@@ -76,7 +76,7 @@ struct DeviceDescriptor {
 }
 
 impl DeviceDescriptor {
-    fn new() -> DeviceDescriptor {
+    fn new() -> Self {
         return DeviceDescriptor {
             length: 0,
             descriptor_type: 0,
@@ -132,7 +132,7 @@ struct ConfigDescriptor {
 }
 
 impl ConfigDescriptor {
-    fn new() -> ConfigDescriptor {
+    fn new() -> Self {
         return ConfigDescriptor {
             length: 0,
             descriptor_type: 0,
@@ -179,7 +179,7 @@ struct InterfaceDescriptor {
 }
 
 impl InterfaceDescriptor {
-    fn new() -> InterfaceDescriptor {
+    fn new() -> Self {
         return InterfaceDescriptor {
             length: 0,
             descriptor_type: 0,
@@ -224,7 +224,7 @@ struct EndpointDescriptor {
 }
 
 impl EndpointDescriptor {
-    fn new() -> EndpointDescriptor {
+    fn new() -> Self {
         return EndpointDescriptor {
             length: 0,
             descriptor_type: 0,
@@ -263,7 +263,7 @@ struct HIDDescriptor {
 }
 
 impl HIDDescriptor {
-    fn new() -> HIDDescriptor {
+    fn new() -> Self {
         return HIDDescriptor {
             length: 0,
             descriptor_type: 0,
@@ -295,7 +295,7 @@ impl HIDDescriptor {
 }
 
 impl UHCI {
-    pub unsafe fn new(mut pci: PCIConfig) -> Box<UHCI> {
+    pub unsafe fn new(mut pci: PCIConfig) -> Box<Self> {
         pci.flag(4, 4, true); // Bus mastering
 
         let module = box UHCI {

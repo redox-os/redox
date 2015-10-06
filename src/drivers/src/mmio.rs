@@ -5,7 +5,7 @@ pub struct MMIO<T> {
 }
 
 impl <T> MMIO <T> {
-    fn new(address: *mut T) -> MMIO<T> {
+    fn new(address: *mut T) -> Self {
         return MMIO { address: address };
     }
 

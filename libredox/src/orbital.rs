@@ -20,7 +20,7 @@ pub struct Window {
 
 impl Window {
     /// Create a new window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Window {
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Self {
         Window {
             x: x,
             y: y,

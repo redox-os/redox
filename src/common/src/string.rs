@@ -80,13 +80,13 @@ pub struct String {
 
 impl String {
     /// Create a new empty `String`
-    pub fn new() -> String {
+    pub fn new() -> Self {
         String { vec: Vec::new() }
     }
 
     // TODO FromStr trait
     /// Convert a string literal to a `String`
-    pub fn from_str(s: &str) -> String {
+    pub fn from_str(s: &str) -> Self {
         let mut vec: Vec<char> = Vec::new();
 
         for c in s.chars() {
@@ -97,7 +97,7 @@ impl String {
     }
 
     /// Convert a c-style string slice to a String
-    pub fn from_c_slice(s: &[u8]) -> String {
+    pub fn from_c_slice(s: &[u8]) -> Self {
         let mut vec: Vec<char> = Vec::new();
 
         for b in s {
@@ -113,7 +113,7 @@ impl String {
 
     /// Convert a utf8 vector to a string
     // Why &Vec?
-    pub fn from_utf8(utf_vec: &Vec<u8>) -> String {
+    pub fn from_utf8(utf_vec: &Vec<u8>) -> Self {
         let mut vec: Vec<char> = Vec::new();
 
         //TODO: better UTF support
@@ -129,7 +129,7 @@ impl String {
     }
 
     /// Convert a C-style string literal to a `String`
-    pub unsafe fn from_c_str(s: *const u8) -> String {
+    pub unsafe fn from_c_str(s: *const u8) -> Self {
         let mut vec: Vec<char> = Vec::new();
 
         let mut i = 0;
@@ -146,7 +146,7 @@ impl String {
     }
 
     /// Convert an integer to a String using a given radix
-    pub fn from_num_radix(num: usize, radix: usize) -> String {
+    pub fn from_num_radix(num: usize, radix: usize) -> Self {
         if radix == 0 {
             return String::new();
         }
@@ -176,7 +176,7 @@ impl String {
 
     /// Convert a signed integer to a String
     // TODO: Consider using `int` instead of `num`
-    pub fn from_num_radix_signed(num: isize, radix: usize) -> String {
+    pub fn from_num_radix_signed(num: isize, radix: usize) -> Self {
         if num >= 0 {
             String::from_num_radix(num as usize, radix)
         } else {
@@ -185,7 +185,7 @@ impl String {
     }
 
     /// Convert a `char` to a string
-    pub fn from_char(c: char) -> String {
+    pub fn from_char(c: char) -> Self {
         if c == '\0' {
             return String::new();
         }
@@ -197,18 +197,18 @@ impl String {
     }
 
     /// Convert an unsigned integer to a `String` in base 10
-    pub fn from_num(num: usize) -> String {
+    pub fn from_num(num: usize) -> Self {
         String::from_num_radix(num, 10)
     }
 
     /// Convert a signed int to a `String` in base 10
-    pub fn from_num_signed(num: isize) -> String {
+    pub fn from_num_signed(num: isize) -> Self {
         String::from_num_radix_signed(num, 10)
     }
 
     /// Get a substring
     // TODO: Consider to use a string slice
-    pub fn substr(&self, start: usize, len: usize) -> String {
+    pub fn substr(&self, start: usize, len: usize) -> Self {
         let mut i = start;
         if i > self.len() {
             i = self.len();
@@ -229,7 +229,7 @@ impl String {
     }
 
     /// Find the index of a substring in a string
-    pub fn find(&self, other: String) -> Option<usize> {
+    pub fn find(&self, other: Self) -> Option<usize> {
         if self.len() >= other.len() {
             for i in 0..self.len() + 1 - other.len() {
                 if self.substr(i, other.len()) == other {
@@ -241,7 +241,7 @@ impl String {
     }
 
     /// Check if the string starts with a given string
-    pub fn starts_with(&self, other: String) -> bool {
+    pub fn starts_with(&self, other: Self) -> bool {
         if self.len() >= other.len() {
             // FIXME: This is inefficient
             self.substr(0, other.len()) == other
@@ -251,7 +251,7 @@ impl String {
     }
 
     /// Check if a string ends with another string
-    pub fn ends_with(&self, other: String) -> bool {
+    pub fn ends_with(&self, other: Self) -> bool {
         if self.len() >= other.len() {
             // FIXME: Inefficient
             self.substr(self.len() - other.len(), other.len()) == other
@@ -275,7 +275,7 @@ impl String {
     }
 
     /// Get a iterator of the splits of the string (by a seperator)
-    pub fn split(&self, seperator: String) -> Split {
+    pub fn split(&self, seperator: Self) -> Split {
         Split {
             string: &self,
             offset: 0,
@@ -427,7 +427,7 @@ impl Clone for String {
 
 impl<'a> Add<&'a String> for String {
     type Output = String;
-    fn add(mut self, other: &'a String) -> String {
+    fn add(mut self, other: &'a Self) -> Self {
         self.vec.push_all(&other.vec);
         self
     }
@@ -435,7 +435,7 @@ impl<'a> Add<&'a String> for String {
 
 impl<'a> Add<&'a mut String> for String {
     type Output = String;
-    fn add(mut self, other: &'a mut String) -> String {
+    fn add(mut self, other: &'a mut Self) -> Self {
         self.vec.push_all(&other.vec);
         self
     }
@@ -443,7 +443,7 @@ impl<'a> Add<&'a mut String> for String {
 
 impl Add for String {
     type Output = String;
-    fn add(mut self, other: String) -> String {
+    fn add(mut self, other: Self) -> Self {
         self.vec.push_all(&other.vec);
         self
     }
@@ -451,14 +451,14 @@ impl Add for String {
 
 impl<'a> Add<&'a str> for String {
     type Output = String;
-    fn add(self, other: &'a str) -> String {
+    fn add(self, other: &'a str) -> Self {
         self + String::from_str(other)
     }
 }
 
 impl Add<char> for String {
     type Output = String;
-    fn add(mut self, other: char) -> String {
+    fn add(mut self, other: char) -> Self {
         self.vec.push(other);
         self
     }
@@ -466,14 +466,14 @@ impl Add<char> for String {
 
 impl Add<usize> for String {
     type Output = String;
-    fn add(self, other: usize) -> String {
+    fn add(self, other: usize) -> Self {
         self + String::from_num(other)
     }
 }
 
 impl Add<isize> for String {
     type Output = String;
-    fn add(self, other: isize) -> String {
+    fn add(self, other: isize) -> Self {
         self + String::from_num_signed(other)
     }
 }

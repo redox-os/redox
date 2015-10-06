@@ -10,7 +10,7 @@ pub struct ZFS {
 }
 
 impl ZFS {
-    pub fn new(disk: File) -> ZFS {
+    pub fn new(disk: File) -> Self {
         ZFS {
             disk: disk,
         }
@@ -69,7 +69,7 @@ impl Uberblock {
         return 0x00bab10c;
     }
 
-    pub fn from(data: &Vec<u8>) -> Option<Uberblock> {
+    pub fn from(data: &Vec<u8>) -> Option<Self> {
         if data.len() >= 1024 {
             let uberblock = unsafe { ptr::read(data.data as *const Uberblock) };
             if uberblock.magic == Uberblock::magic_little() {
