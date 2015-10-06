@@ -6,6 +6,10 @@
 *.pcap
 *.rlib
 *.vdi
+.directory
 .DS_Store
 libc/build/
 setup/rust/
+target
+zfs.img
+*.swp

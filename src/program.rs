@@ -1,8 +1,19 @@
 #![crate_type="staticlib"]
+#![allow(unused_features)]
+#![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(collections)]
+#![feature(core_slice_ext)]
 #![feature(no_std)]
+#![feature(vec_push_all)]
 #![no_std]
+
+#[macro_use]
+extern crate alloc;
+
+#[macro_use]
+extern crate collections;
 
 #[macro_use]
 extern crate redox;
@@ -17,14 +28,23 @@ mod application;
 use redox::*;
 
 #[inline(never)]
-unsafe fn _start_stack(stack: *const u32){
+unsafe fn _start_stack(stack: *const u32) {
     let argc = ptr::read(stack);
     let mut args: Vec<String> = Vec::new();
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {
-            args.push(String::from_c_str(arg));
-        }else{
+            let mut utf8: Vec<u8> = Vec::new();
+            for j in 0..4096 /* Max arg length */ {
+                let b = ptr::read(arg.offset(j));
+                if b == 0 {
+                    break;
+                }else{
+                    utf8.push(b);
+                }
+            }
+            args.push(String::from_utf8_unchecked(utf8));
+        } else {
             args.push(String::new());
         }
     }
@@ -39,7 +59,7 @@ unsafe fn _start_stack(stack: *const u32){
 
 #[cold]
 #[no_mangle]
-pub unsafe fn _start(){
+pub unsafe fn _start() {
     let stack: *const u32;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);

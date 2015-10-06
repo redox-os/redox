@@ -11,13 +11,24 @@ CUT=cut
 FIND=find
 LD=ld
 LDARGS=-m elf_i386
+MAKE=make
 MKDIR=mkdir
+OBJDUMP=objdump
 RM=rm
 SED=sed
 SORT=sort
 VB=virtualbox
-VBM=VBoxManage
 VB_AUDIO="pulse"
+VBM=VBoxManage
+VBM_CLEANUP=\
+	if [ $$? -ne 0 ]; \
+	then \
+		if [ -d "$$HOME/VirtualBox VMs/Redox" ]; \
+		then \
+			echo "Redox directory exists, deleting..."; \
+			$(RM) -rf "$$HOME/VirtualBox VMs/Redox"; \
+		fi \
+	fi
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
@@ -27,28 +38,92 @@ ifeq ($(OS),Windows_NT)
 	BASENAME=windows/basename
 	CUT=windows/cut
 	FIND=windows/find
+	MAKE=windows/make
 	MKDIR=windows/mkdir
+	OBJDUMP=windows/objdump
 	RM=windows/rm
 	SED=windows/sed
 	SORT=windows/sort
 	VB="C:/Program Files/Oracle/VirtualBox/VirtualBox"
-	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
 	VB_AUDIO="dsound"
+	VBM="C:/Program Files/Oracle/VirtualBox/VBoxManage"
+	VBM_CLEANUP=\
+		if [ $$? -ne 0 ]; \
+		then \
+			if [ -d "$$USERPROFILE/VirtualBox VMs/Redox" ]; \
+			then \
+				echo "Redox directory exists, deleting..."; \
+				$(RM) -rf "$$USERPROFILE/VirtualBox VMs/Redox"; \
+			fi \
+		fi
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
 		LD=i386-elf-ld
-                RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
+		OBJDUMP=i386-elf-objdump
+        RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
-		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 		VB_AUDIO="coreaudio"
+		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
 	endif
 endif
 
+help:
+	@echo ".########..########.########...#######..##.....##"
+	@echo ".##.....##.##.......##.....##.##.....##..##...##."
+	@echo ".##.....##.##.......##.....##.##.....##...##.##.."
+	@echo ".########..######...##.....##.##.....##....###..."
+	@echo ".##...##...##.......##.....##.##.....##...##.##.."
+	@echo ".##....##..##.......##.....##.##.....##..##...##."
+	@echo ".##.....##.########.########...#######..##.....##"
+	@echo
+	@echo "-------- Redox: A Rust Operating System ---------"
+	@echo
+	@echo "Commands:"
+	@echo
+	@echo "    make all"
+	@echo "        Build raw image of filesystem used by Redox."
+	@echo "        It create build/harddrive.bin which can be used to build"
+	@echo "        images for Your virtual machine."
+	@echo
+	@echo "    make virtualbox"
+	@echo "        Build Redox and run it inside VirtualBox machine."
+	@echo
+	@echo "    make qemu"
+	@echo "        Build Redox and run it inside KVM machine."
+	@echo
+	@echo "    make qemu_no_kvm"
+	@echo "        Build Redox and run it inside Qemu machine without KVM support."
+	@echo
+	@echo "    make apps"
+	@echo "        Build apps for Redox."
+	@echo
+	@echo "    make tests"
+	@echo "        Run tests on Redox."
+	@echo
+	@echo "    make clean"
+	@echo "        Clean build directory."
+	@echo
+
 all: build/harddrive.bin
 
-doc: src/kernel.rs build/libcore.rlib build/liballoc.rlib
+docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
+
+apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
+
+tests: tests/success tests/failure
+
+clean:
+	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+
+apps/%:
+	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
+
+FORCE:
+
+tests/%: FORCE
+	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
 build/libcore.rlib: rust/libcore/lib.rs
 	$(MKDIR) -p build
@@ -63,10 +138,13 @@ build/liballoc_system.rlib: rust/liballoc_system/lib.rs build/libcore.rlib
 build/librustc_unicode.rlib: rust/librustc_unicode/lib.rs build/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib librustc_unicode.rlib
+build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/libredox.rlib: libredox/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
+build/librand.rlib: rust/librand/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib build/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+build/libredox.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 build/kernel.rlib: src/kernel.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
@@ -76,7 +154,7 @@ filesystem/kernel.bin: build/kernel.rlib src/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
 
 filesystem/kernel.list: filesystem/kernel.bin
-	objdump -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/%.bin: filesystem/%.asm src/program.ld
 	$(MKDIR) -p build
@@ -89,9 +167,20 @@ filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rl
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.rlib
 
 filesystem/%.list: filesystem/%.bin
-	objdump -C -M intel -d $< > $@
+	$(OBJDUMP -C -M intel -d $< > $@
 
-build/filesystem.gen: filesystem/apps/echo/echo.bin filesystem/apps/editor/editor.bin filesystem/apps/file_manager/file_manager.bin filesystem/apps/httpd/httpd.bin filesystem/apps/game/game.bin filesystem/apps/player/player.bin filesystem/apps/terminal/terminal.bin filesystem/apps/viewer/viewer.bin filesystem/apps/bad_code/bad_code.bin filesystem/apps/bad_data/bad_data.bin filesystem/apps/bad_segment/bad_segment.bin filesystem/apps/linux_stdio/linux_stdio.bin
+filesystem/apps/zfs/zfs.img:
+	dd if=/dev/zero of=$@ bs=64M count=1
+	sudo losetup /dev/loop0 $@
+	-sudo zpool create redox_zfs /dev/loop0
+	-sudo zfs create redox_zfs/root
+	-sudo cp README.md /redox_zfs/root/
+	-sudo sync
+	-sudo zfs unmount redox_zfs/root
+	-sudo zpool destroy redox_zfs
+	sudo losetup -d /dev/loop0
+
+build/filesystem.gen: apps
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
@@ -99,7 +188,7 @@ build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
 
 virtualbox: build/harddrive.bin
 	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete
+	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
 	-$(RM) harddrive.vdi
 	echo "Create VM"
@@ -129,14 +218,14 @@ qemu: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 
 qemu_no_kvm: build/harddrive.bin
 	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -hda $<
 
 qemu_tap: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
@@ -145,7 +234,7 @@ qemu_tap: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -156,13 +245,13 @@ qemu_tap_8254x: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
 virtualbox_tap: build/harddrive.bin
 	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete
+	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
 	-$(RM) harddrive.vdi
 	echo "Create VM"
@@ -202,6 +291,3 @@ ping:
 
 wireshark:
 	wireshark network.pcap
-
-clean:
-	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list

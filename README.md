@@ -1,7 +1,8 @@
-# Redox
-Redox is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
+![Redox](img/transp_background_with_text.png)
 
-## Building on Ubuntu
+**Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
+
+## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
@@ -10,10 +11,10 @@ cd setup
 ```
 - Make the project
 ```bash
-make
+make all
 ```
 
-## Running on Ubuntu
+## Running on Debian/Ubuntu
 - Install VirtualBox
 ```bash
 sudo apt-get install virtualbox
@@ -23,7 +24,7 @@ sudo apt-get install virtualbox
 make virtualbox
 ```
 
-## Running on Ubuntu (Qemu, Advanced)
+## Running on Debian/Ubuntu (Qemu, Advanced)
 - Install Qemu
 ```bash
 sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
@@ -64,7 +65,7 @@ cd setup
 ```
 - Make the project
 ```bash
-make
+make all
 ```
 
 ## Running on OS X
@@ -80,7 +81,7 @@ make virtualbox
 - The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
 - Open the Rust nightly shell in the redox repository
 ```bash
-windows\make
+windows\make all
 ```
 
 ## Running on Windows

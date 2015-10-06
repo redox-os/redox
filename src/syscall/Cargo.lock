@@ -1,0 +1,20 @@
+[root]
+name = "syscall"
+version = "0.1.0"
+dependencies = [
+ "common 0.1.0",
+ "drivers 0.1.0",
+ "graphics 0.1.0"
+]
+
+[[package]]
+name = "common"
+version = "0.1.0"
+
+[[package]]
+name = "drivers"
+version = "0.1.0"
+
+[[package]]
+name = "graphics"
+version = "0.1.0"
