@@ -13,19 +13,22 @@ pub struct BMP {
 }
 
 impl BMP {
-    /// Create a new empty bitmap
-    pub fn new() -> Self {
+    /// Create a new bitmap
+    pub fn new(width: usize, height: usize) -> Self {
         BMP {
-            w: 0,
-            h: 0,
+            w: width,
+            h: height,
             data: Vec::new(),
         }
     }
 
+    /// Create a new empty bitmap
+    pub fn default() -> Self {
+        Self::new(0, 0)
+    }
+
     /// Create a bitmap from some data
     pub fn from_data(file_data: &Vec<u8>) -> Self {
-        let mut ret = BMP::new();
-
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
                 Option::Some(byte) => *byte,
@@ -41,14 +44,12 @@ impl BMP {
         };
 
         let gets = |start: usize, len: usize| -> String {
-            let mut ret = String::new();
-            for i in start..start + len {
-                ret = ret + &(get(i) as char).to_string();
-            }
-            ret
+            (start..start + len).map(|i| get(i) as char).collect::<String>()
         };
 
-        if gets(0, 2) == "BM".to_string() {
+        let mut ret: BMP;
+
+        if gets(0, 2) == "BM" {
             //let file_size = getd(2);
             let offset = getd(0xA);
             //let header_size = getd(0xE);
@@ -90,8 +91,8 @@ impl BMP {
                 alpha_shift += 1;
             }
 
-            ret.w = width as usize;
-            ret.h = height as usize;
+            ret = BMP::new(width as usize, height as usize);
+
             for y in 0..height {
                 for x in 0..width {
                     let pixel_offset = offset + (height - y - 1) * row_bytes + x * bytes;
@@ -109,6 +110,7 @@ impl BMP {
                 }
             }
         }
+        else { ret = BMP::default(); }
 
         ret
     }
