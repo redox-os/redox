@@ -100,54 +100,20 @@ pub mod externs;
 #[path="graphics/src/lib.rs"]
 mod graphics;
 
-mod network {
-    pub mod arp;
-    pub mod common;
-    pub mod ethernet;
-    pub mod icmp;
-    pub mod intel8254x;
-    pub mod ipv4;
-    pub mod rtl8139;
-    pub mod scheme;
-    pub mod tcp;
-    pub mod udp;
-}
+#[path="network/src/lib.rs"]
+mod network;
 
-mod programs {
-    pub mod common;
-    pub mod executor;
-    pub mod package;
-    pub mod session;
-}
+#[path="programs/src/lib.rs"]
+mod programs;
 
-mod schemes {
-    pub mod arp;
-    pub mod context;
-    pub mod debug;
-    pub mod ethernet;
-    pub mod file;
-    pub mod http;
-    pub mod icmp;
-    pub mod ip;
-    pub mod memory;
-    pub mod random;
-    pub mod tcp;
-    pub mod time;
-    pub mod udp;
-    pub mod window;
-}
+#[path="schemes/src/lib.rs"]
+mod schemes; 
 
-mod syscall {
-    pub mod call;
-    pub mod common;
-    pub mod handle;
-}
+#[path="syscall/src/lib.rs"]
+mod syscall;
 
-mod usb {
-    pub mod ehci;
-    pub mod uhci;
-    pub mod xhci;
-}
+#[path="usb/src/lib.rs"]
+mod usb;
 
 static mut debug_display: *mut Box<Display> = 0 as *mut Box<Display>;
 static mut debug_point: Point = Point { x: 0, y: 0 };
