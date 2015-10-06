@@ -1,9 +1,13 @@
+extern crate redox;
+
 //To use this, please install zfs-fuse
 use redox::*;
 
 use core::ptr;
 
-mod xdr_rpc;
+mod nvpair;
+mod nvstream;
+mod xdr;
 
 pub struct ZFS {
     disk: File,
