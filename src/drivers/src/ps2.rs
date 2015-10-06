@@ -19,7 +19,7 @@ pub struct PS2 {
 }
 
 impl PS2 {
-    pub fn new() -> Box<PS2> {
+    pub fn new() -> Box<Self> {
         let mut module = box PS2 {
             data: PIO8::new(0x60),
             cmd: PIO8::new(0x64),

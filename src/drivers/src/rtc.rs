@@ -13,7 +13,7 @@ pub struct RTC {
 }
 
 impl RTC {
-    pub fn new() -> RTC {
+    pub fn new() -> Self {
         return RTC {
             addr: PIO8::new(0x70),
             data: PIO8::new(0x71),

@@ -21,7 +21,7 @@ pub struct ICMP {
 }
 
 impl FromBytes for ICMP {
-    fn from_bytes(bytes: Vec<u8>) -> Option<ICMP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<ICMPHeader>() {
             unsafe {
                 return Option::Some(ICMP {
