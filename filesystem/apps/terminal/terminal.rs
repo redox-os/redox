@@ -2,13 +2,15 @@ use core::ops::DerefMut;
 
 use redox::*;
 
+use redox::fmt::*;
+
 /* Magic Macros { */
 static mut application: *mut Application = 0 as *mut Application;
 
 macro_rules! exec {
     ($cmd:expr) => ({
         unsafe {
-            (*application).on_command(&$cmd);
+            (*application).on_command(&$cmd.to_string());
         }
     })
 }
@@ -25,15 +27,6 @@ impl Command {
 
         // TODO: Move this out of the terminal
         //      (commands are not the terminals job)
-
-        commands.push(Command {
-            name: "break".to_string(),
-            main: box |args: &Vec<String>| {
-                unsafe {
-                    asm!("int 3" : : : : "intel");
-                }
-            },
-        });
 
         commands.push(Command {
             name: "echo".to_string(),
@@ -53,7 +46,7 @@ impl Command {
                         Option::None => (),
                     }
                 }
-                println!(echo);
+                println!("{}", echo);
             },
         });
 
@@ -73,15 +66,15 @@ impl Command {
                 match args.get(1) {
                     Option::Some(arg) => {
                         let path = arg.clone();
-                        println!("URL: ".to_string() + &path);
+                        println!("URL: {}", path);
 
                         let mut resource = File::open(&path);
 
                         let mut vec: Vec<u8> = Vec::new();
                         resource.read_to_end(&mut vec);
 
-                        let commands = String::from_utf8(&vec);
-                        for command in commands.split("\n".to_string()) {
+                        let commands = unsafe { String::from_utf8_unchecked(vec) };
+                        for command in commands.split('\n') {
                             exec!(command);
                         }
                     }
@@ -98,7 +91,7 @@ impl Command {
                     Option::Some(arg) => path = arg.clone(),
                     Option::None => path = String::new(),
                 }
-                println!("URL: ".to_string() + &path);
+                println!("URL: {}", path);
 
                 let mut resource = File::open(&path);
 
@@ -107,25 +100,25 @@ impl Command {
                     match args.get(i) {
                         Option::Some(arg) => {
                             if i == 2 {
-                                vec.push_all(&arg.to_utf8())
+                                vec.push_all(&arg.as_bytes())
                             } else {
-                                vec.push_all(&(" ".to_string() + arg).to_utf8())
+                                vec.push_all(&(" ".to_string() + arg).as_bytes())
                             }
                         }
                         Option::None => vec = Vec::new(),
                     }
                 }
-                vec.push_all(&"\r\n\r\n".to_string().to_utf8());
+                vec.push_all(&"\r\n\r\n".to_string().as_bytes());
 
-                match resource.write(&vec.as_slice()) {
-                    Option::Some(size) => println!("Wrote ".to_string() + size + " bytes"),
-                    Option::None => println!("Failed to write".to_string()),
+                match resource.write(&vec) {
+                    Option::Some(size) => println!("Wrote {} bytes", size),
+                    Option::None => println!("Failed to write"),
                 }
 
                 vec = Vec::new();
                 match resource.read_to_end(&mut vec) {
-                    Option::Some(size) => println!(String::from_utf8(&vec)),
-                    Option::None => println!("Failed to read".to_string()),
+                    Option::Some(size) => println!("{}", unsafe { String::from_utf8_unchecked(vec) }),
+                    Option::None => println!("Failed to read"),
                 }
             },
         });
@@ -138,14 +131,14 @@ impl Command {
                     Option::Some(arg) => path = arg.clone(),
                     Option::None => path = String::new(),
                 }
-                println!("URL: ".to_string() + &path);
+                println!("URL: {}", path);
 
                 let mut resource = File::open(&path);
 
                 let mut vec: Vec<u8> = Vec::new();
                 match resource.read_to_end(&mut vec) {
-                    Option::Some(_) => println!(String::from_utf8(&vec)),
-                    Option::None => println!("Failed to read".to_string()),
+                    Option::Some(_) => println!("{}", unsafe { String::from_utf8_unchecked(vec) }),
+                    Option::None => println!("Failed to read"),
                 }
             },
         });
@@ -158,7 +151,7 @@ impl Command {
                     Option::Some(arg) => path = arg.clone(),
                     Option::None => path = String::new(),
                 }
-                println!("URL: ".to_string() + &path);
+                println!("URL: {}", path);
 
                 let mut resource = File::open(&path);
 
@@ -167,11 +160,11 @@ impl Command {
                     Option::Some(_) => {
                         let mut line = "HEX:".to_string();
                         for byte in vec.iter() {
-                            line = line + ' ' + String::from_num_radix(*byte as usize, 16);
+                            line = line + " " + &format!("{:X}", *byte);
                         }
-                        println!(line);
+                        println!("{}", line);
                     }
-                    Option::None => println!("Failed to read".to_string()),
+                    Option::None => println!("Failed to read"),
                 }
             },
         });
@@ -206,7 +199,7 @@ impl Application {
 
     fn on_command(&mut self, command_string: &String) {
         //Comment
-        if command_string[0] == '#' {
+        if command_string.starts_with('#') {
             return;
         }
 
@@ -214,18 +207,18 @@ impl Application {
         if *command_string == "$".to_string() {
             let mut variables = String::new();
             for variable in self.variables.iter() {
-                variables = variables + '\n' + &variable.name + "=" + &variable.value;
+                variables = variables + "\n" + &variable.name + "=" + &variable.value;
             }
-            println!(&variables);
+            println!("{}", variables);
             return;
         }
 
         //Explode into arguments, replace variables
         let mut args: Vec<String> = Vec::<String>::new();
-        for arg in command_string.split(" ".to_string()) {
+        for arg in command_string.split(' ') {
             if arg.len() > 0 {
-                if arg[0] == '$' {
-                    let name = arg.substr(1, arg.len() - 1);
+                if arg.starts_with('$') {
+                    let name = arg[1 .. arg.len()].to_string();
                     for variable in self.variables.iter() {
                         if variable.name == name {
                             args.push(variable.value.clone());
@@ -233,7 +226,7 @@ impl Application {
                         }
                     }
                 } else {
-                    args.push(arg);
+                    args.push(arg.to_string());
                 }
             }
         }
@@ -261,7 +254,7 @@ impl Application {
                                     } else if *cmp == "<=".to_string() {
                                         value = left.to_num_signed() <= right.to_num_signed();
                                     } else {
-                                        println!(&("Unknown comparison: ".to_string() + cmp));
+                                        println!("Unknown comparison: {}", cmp);
                                     }
                                 }
                                 Option::None => (),
@@ -277,24 +270,25 @@ impl Application {
 
                 if *cmd == "else".to_string() {
                     let mut syntax_error = false;
-                    match self.modes.get(0) {
+                    match self.modes.get_mut(0) {
                         Option::Some(mode) => mode.value = !mode.value,
                         Option::None => syntax_error = true,
                     }
                     if syntax_error {
-                        println!(&"Syntax error: else found with no previous if".to_string());
+                        println!("Syntax error: else found with no previous if");
                     }
                     return;
                 }
 
                 if *cmd == "fi".to_string() {
                     let mut syntax_error = false;
-                    match self.modes.remove(0) {
-                        Option::Some(_) => (),
-                        Option::None => syntax_error = true,
+                    if self.modes.len() > 0 {
+                        self.modes.remove(0);
+                    } else {
+                        syntax_error = true;
                     }
                     if syntax_error {
-                        println!(&"Syntax error: fi found with no previous if".to_string());
+                        println!("Syntax error: fi found with no previous if");
                     }
                     return;
                 }
@@ -306,10 +300,10 @@ impl Application {
                 }
 
                 //Set variables
-                match cmd.find("=".to_string()) {
+                match cmd.find('=') {
                     Option::Some(i) => {
-                        let name = cmd.substr(0, i);
-                        let mut value = cmd.substr(i + 1, cmd.len() - i - 1);
+                        let name = cmd[0 .. i].to_string();
+                        let mut value = cmd[i + 1 .. cmd.len()].to_string();
 
                         if name.len() == 0 {
                             return;
@@ -317,7 +311,7 @@ impl Application {
 
                         for i in 1..args.len() {
                             match args.get(i) {
-                                Option::Some(arg) => value = value + ' ' + arg.clone(),
+                                Option::Some(arg) => value = value + " " + &arg,
                                 Option::None => (),
                             }
                         }
@@ -338,7 +332,7 @@ impl Application {
                                 self.variables.remove(remove as usize);
                             }
                         } else {
-                            for variable in self.variables.iter() {
+                            for variable in self.variables.iter_mut() {
                                 if variable.name == name {
                                     variable.value = value;
                                     return;
@@ -365,9 +359,9 @@ impl Application {
 
                 let mut help = "Commands:".to_string();
                 for command in self.commands.iter() {
-                    help = help + ' ' + &command.name;
+                    help = help + " " + &command.name;
                 }
-                println!(&help);
+                println!("{}", help);
             }
             Option::None => (),
         }
@@ -378,12 +372,12 @@ impl Application {
 
         if let Option::Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
-            println!("# ".to_string() + &command);
+            println!("# {}", command);
             self.on_command(&command);
         }
 
         while let Option::Some(command) = readln!() {
-            println!("# ".to_string() + &command);
+            println!("# {}", command);
             if command.len() > 0 {
                 self.on_command(&command);
             }

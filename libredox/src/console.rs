@@ -3,10 +3,12 @@ use alloc::boxed::*;
 use core::mem::size_of;
 use core::ptr;
 
-use common::event::*;
+use collections::string::*;
+use collections::vec::Vec;
+
 use common::random::*;
-use common::string::*;
-use common::vec::*;
+
+use event::*;
 
 use orbital::*;
 
@@ -49,27 +51,39 @@ pub fn console_title(title: &String) {
     console_window().setTitle(title);
 }
 
-/// Print to console with color
+/// Print to console
 #[macro_export]
-macro_rules! print_color {
-    ($text:expr, $color:expr) => ({
-        console_window().print(&$text, $color);
+macro_rules! print {
+    ($($arg:tt)*) => ({
+        console_window().print(&format!($($arg)*), [224, 224, 224, 255]);
         console_window().sync();
     });
 }
 
-/// Print to console
+/// Print to console with color
 #[macro_export]
-macro_rules! print {
-    ($text:expr) => (print_color!($text, [224, 224, 224, 255]));
+macro_rules! print_color {
+    ($color:expr, $($arg:tt)*) => ({
+        console_window().print(&format!($($arg)*), $color);
+        console_window().sync();
+    });
 }
 
 /// Print new line to console
 #[macro_export]
 macro_rules! println {
-    ($text:expr) => ({
-        print!($text);
-        print!(&"\n".to_string());
+    ($($arg:tt)*) => ({
+        print!($($arg)*);
+        print!("\n");
+    });
+}
+
+/// Print new line to console with color
+#[macro_export]
+macro_rules! println_color {
+    ($color:expr, $($arg:tt)*) => ({
+        print_color!($color, $($arg)*);
+        print_color!($color, "\n");
     });
 }
 
@@ -148,18 +162,13 @@ impl ConsoleWindow {
                     if key_event.pressed {
                         match key_event.scancode {
                             K_BKSP => if self.offset > 0 {
-                                self.command = self.command.substr(0, self.offset - 1) +
-                                               self.command.substr(self.offset,
-                                                                   self.command.len() -
-                                                                   self.offset);
+                                self.command = self.command[0 .. self.offset - 1].to_string() +
+                                               &self.command[self.offset .. self.command.len()];
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.command.len() {
-                                self.command = self.command.substr(0, self.offset) +
-                                               self.command.substr(self.offset + 1,
-                                                                   self.command.len() -
-                                                                   self.offset -
-                                                                   1);
+                                self.command = self.command[0 .. self.offset].to_string() +
+                                               &self.command[self.offset + 1 .. self.command.len() - 1];
                             },
                             K_HOME => self.offset = 0,
                             K_UP => {
@@ -187,11 +196,9 @@ impl ConsoleWindow {
                                 }
                                 '\x1B' => break,
                                 _ => {
-                                    self.command = self.command.substr(0, self.offset) +
-                                                   key_event.character +
-                                                   self.command.substr(self.offset,
-                                                                       self.command.len() -
-                                                                       self.offset);
+                                    self.command = self.command[0 .. self.offset].to_string() +
+                                                   &key_event.character.to_string() +
+                                                   &self.command[self.offset .. self.command.len()];
                                     self.offset += 1;
                                 }
                             },

@@ -2,8 +2,9 @@ use core::mem::size_of;
 use core::ops::DerefMut;
 use core::slice;
 
-use common::event::*;
-use common::string::*;
+use collections::string::*;
+
+use event::*;
 
 use file::*;
 
@@ -27,10 +28,8 @@ impl Window {
             w: w,
             h: h,
             t: title.clone(),
-            file: File::open(&("window://".to_string()
-                        + '/' + x + '/' + y + '/' + w + '/' + h
-                        + '/' + title)),
-            font: File::open(&"file:///ui/unifont.font".to_string())
+            file: File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)),
+            font: File::open(&"file:///ui/unifont.font".to_string()),
         }
     }
 

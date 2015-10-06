@@ -21,7 +21,7 @@ pub fn main() {
     let wav = WAV::from_data(&vec);
 
     let mut audio = File::open(&"audio://".to_string());
-    audio.write(wav.data.as_slice());
+    audio.write(&wav.data);
 
     while let Option::Some(event) = window.poll() {
         match event.to_option() {
