@@ -11,14 +11,14 @@ pub struct Package {
     pub version: String,
     /// Description
     pub desc: String,
-//    /// The developer's public key
-//    pub dev: String,
-//    /// The developer's signature of this package
-//    pub dev_signature: String,
-//    /// Signatures of the developers public key from people who trusts the developers.
-//    pub trust: Vec<String>,
-//    /// The signatures of this package
-//    pub signatures: Vec<String>,
+    //    /// The developer's public key
+    //    pub dev: String,
+    //    /// The developer's signature of this package
+    //    pub dev_signature: String,
+    //    /// Signatures of the developers public key from people who trusts the developers.
+    //    pub trust: Vec<String>,
+    //    /// The signatures of this package
+    //    pub signatures: Vec<String>,
     /// The files this package will create on the computer.
     pub files: Vec<String>,
 }
@@ -26,10 +26,7 @@ pub struct Package {
 pub fn get_package(host: String, name: String, version: String) -> Package {
     let con = File::open("tcp://".to_string() + host);
 
-    con.write("GET /ox/".to_string() + version
-                                     + "-".to_string()
-                                     + name
-                                     + " HTTP/1.1".to_string());
+    con.write("GET /ox/".to_string() + version + "-".to_string() + name + " HTTP/1.1".to_string());
 
     let resp;
 

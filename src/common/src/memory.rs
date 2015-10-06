@@ -31,8 +31,9 @@ impl<T> Memory<T> {
         let alloc = unsafe { alloc(count * size_of::<T>()) };
         if alloc > 0 {
             Some(Memory { ptr: alloc as *mut T })
+        } else {
+            None
         }
-        else { None }
     }
 
     pub fn renew(&mut self, count: usize) -> bool {
@@ -40,12 +41,13 @@ impl<T> Memory<T> {
         if address > 0 {
             self.ptr = address as *mut T;
             true
+        } else {
+            false
         }
-        else { false }
     }
 
     pub fn length(self) -> usize {
-        unsafe { alloc_size(self.ptr as usize)/size_of::<T>() }
+        unsafe { alloc_size(self.ptr as usize) / size_of::<T>() }
     }
 
     pub unsafe fn address(&self) -> usize {

@@ -49,9 +49,17 @@ impl FileManager {
             }
 
             if string.ends_with('/') {
-                window.image(0, 32 * row as isize, self.folder_icon.width(), self.folder_icon.height(), self.folder_icon.as_slice());
-            }else{
-                window.image(0, 32 * row as isize, self.file_icon.width(), self.file_icon.height(), self.file_icon.as_slice());
+                window.image(0,
+                             32 * row as isize,
+                             self.folder_icon.width(),
+                             self.folder_icon.height(),
+                             self.folder_icon.as_slice());
+            } else {
+                window.image(0,
+                             32 * row as isize,
+                             self.file_icon.width(),
+                             self.file_icon.height(),
+                             self.file_icon.as_slice());
             }
 
             let mut col = 0;
@@ -63,7 +71,10 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < window.width() / 8 && row < window.height() / 32 {
-                        window.char(8 * col as isize + 40, 32 * row as isize + 8, c, [0, 0, 0, 255]);
+                        window.char(8 * col as isize + 40,
+                                    32 * row as isize + 8,
+                                    c,
+                                    [0, 0, 0, 255]);
                         col += 1;
                     }
                 }
@@ -100,9 +111,11 @@ impl FileManager {
             }
         }
 
-        let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                     width, height,
-                                     &("File Manager (".to_string() + path + ")"));
+        let mut window = Window::new((rand() % 400 + 50) as isize,
+                                     (rand() % 300 + 50) as isize,
+                                     width,
+                                     height,
+                                     &("File Manager (".to_string() + &path + ")"));
 
         self.draw_content(&mut window);
 
@@ -157,9 +170,9 @@ impl FileManager {
                         let mut col = 0;
                         for c in file.chars() {
                             if mouse_event.y >= 32 * row as isize &&
-                                mouse_event.y < 32 * row as isize + 32 {
-                                 self.selected = i;
-                                 redraw = true;
+                               mouse_event.y < 32 * row as isize + 32 {
+                                self.selected = i;
+                                redraw = true;
                             }
 
                             if c == '\n' {
@@ -168,8 +181,7 @@ impl FileManager {
                             } else if c == '\t' {
                                 col += 8 - col % 8;
                             } else {
-                                if col < window.width() / 8 &&
-                                   row < window.height() / 32 {
+                                if col < window.width() / 8 && row < window.height() / 32 {
                                     col += 1;
                                 }
                             }

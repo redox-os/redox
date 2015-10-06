@@ -173,7 +173,7 @@ impl SessionItem for IPScheme {
                                 Option::None => (),
                             }
                         },
-                        Option::None => debug::d("IP: ARP Write Failed!\n")
+                        Option::None => debug::d("IP: ARP Write Failed!\n"),
                     }
                 }
 
