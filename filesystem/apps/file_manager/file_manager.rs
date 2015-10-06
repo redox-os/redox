@@ -79,11 +79,11 @@ impl FileManager {
         window.sync();
     }
 
-    fn main(&mut self, path: String) {
+    fn main(&mut self, path: &str) {
         let mut width = 160;
         let mut height = 0;
         {
-            let mut resource = File::open(&path);
+            let mut resource = File::open(path);
 
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
@@ -102,7 +102,7 @@ impl FileManager {
 
         let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
                                      width, height,
-                                     &("File Manager (".to_string() + &path + ")"));
+                                     &("File Manager (".to_string() + path + ")"));
 
         self.draw_content(&mut window);
 
@@ -127,7 +127,7 @@ impl FileManager {
                                        self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
                                             Option::Some(file) => OpenEvent {
-                                                url_string: path.clone() + &file,
+                                                url_string: path.to_string() + &file,
                                             }.trigger(),
                                             Option::None => (),
                                         }
@@ -195,7 +195,7 @@ impl FileManager {
 
 pub fn main() {
     match args().get(1) {
-        Option::Some(arg) => FileManager::new().main(arg.clone()),
-        Option::None => FileManager::new().main("file:///".to_string()),
+        Option::Some(arg) => FileManager::new().main(arg),
+        Option::None => FileManager::new().main("file:///"),
     }
 }
