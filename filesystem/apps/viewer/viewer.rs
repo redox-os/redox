@@ -18,6 +18,7 @@ pub fn main() {
     let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
                                 max(320, bmp.width()), bmp.height(),
                                 &("Viewer (".to_string() + &url + ")"));
+    window.set([0, 0, 0, 255]);
     window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
     window.sync();
 
