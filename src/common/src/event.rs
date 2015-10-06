@@ -195,7 +195,7 @@ impl RedrawEvent {
     }
 
     /// Convert from an `Event`
-    pub fn from_event(event: Event) -> RedrawEvent {
+    pub fn from_event(event: Event) -> Self {
         RedrawEvent { redraw: event.a as usize }
     }
 
@@ -228,7 +228,7 @@ impl OpenEvent {
     }
 
     /// Convert from an `Event`
-    pub fn from_event(event: Event) -> OpenEvent {
+    pub fn from_event(event: Event) -> Self {
         unsafe {
             let ret = OpenEvent { url_string: String::from_c_str(event.a as *const u8) };
             sys_unalloc(event.a as usize);

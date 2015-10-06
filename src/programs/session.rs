@@ -34,7 +34,7 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new() -> Session {
+    pub fn new() -> Self {
         unsafe {
             Session {
                 display: Display::root(),

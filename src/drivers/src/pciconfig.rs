@@ -10,7 +10,7 @@ pub struct PCIConfig {
 }
 
 impl PCIConfig {
-    pub fn new(bus: u8, slot: u8, func: u8) -> PCIConfig {
+    pub fn new(bus: u8, slot: u8, func: u8) -> Self {
         return PCIConfig {
             bus: bus,
             slot: slot,

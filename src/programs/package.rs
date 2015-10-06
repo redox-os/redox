@@ -19,7 +19,7 @@ pub struct Package {
 }
 
 impl Package {
-    pub fn from_url(url: &URL) -> Box<Package> {
+    pub fn from_url(url: &URL) -> Box<Self> {
         let mut package = box Package {
             url: url.clone(),
             id: String::new(),

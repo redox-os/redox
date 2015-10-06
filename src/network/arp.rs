@@ -26,7 +26,7 @@ pub struct ARP {
 }
 
 impl FromBytes for ARP {
-    fn from_bytes(bytes: Vec<u8>) -> Option<ARP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<ARPHeader>() {
             unsafe {
                 return Option::Some(ARP {

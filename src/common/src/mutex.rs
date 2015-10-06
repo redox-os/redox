@@ -14,7 +14,7 @@ pub struct Mutex<T: ?Sized> {
 
 impl<T> Mutex<T> {
     /// Create a new mutex with value `value`.
-    pub fn new(value: T) -> Mutex<T> {
+    pub fn new(value: T) -> Self {
         Mutex {
             lock: AtomicBool::new(false),
             value: UnsafeCell::new(value),
@@ -42,7 +42,7 @@ pub struct MutexGuard<'a, T: ?Sized + 'a> {
 }
 
 impl<'mutex, T: ?Sized> MutexGuard<'mutex, T> {
-    fn new(lock: &'mutex AtomicBool, data: &'mutex UnsafeCell<T>) -> MutexGuard<'mutex, T> {
+    fn new(lock: &'mutex AtomicBool, data: &'mutex UnsafeCell<T>) -> Self {
         MutexGuard {
             lock: lock,
             data: data,

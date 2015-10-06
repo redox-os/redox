@@ -19,7 +19,7 @@ pub struct n16 {
 }
 
 impl n16 {
-    pub fn new(value: u16) -> n16 {
+    pub fn new(value: u16) -> Self {
         n16 { bytes: [(value >> 8) as u8, value as u8] }
     }
 
@@ -40,7 +40,7 @@ pub struct n32 {
 }
 
 impl n32 {
-    pub fn new(value: u32) -> n32 {
+    pub fn new(value: u32) -> Self {
         n32 { bytes: [(value >> 24) as u8, (value >> 16) as u8, (value >> 8) as u8, value as u8] }
     }
 
@@ -63,7 +63,7 @@ pub struct MACAddr {
 }
 
 impl MACAddr {
-    pub fn equals(&self, other: MACAddr) -> bool {
+    pub fn equals(&self, other: Self) -> bool {
         for i in 0..6 {
             if self.bytes[i] != other.bytes[i] {
                 return false;
@@ -72,7 +72,7 @@ impl MACAddr {
         true
     }
 
-    pub fn from_string(string: &String) -> MACAddr {
+    pub fn from_string(string: &String) -> Self {
         let mut addr = MACAddr { bytes: [0, 0, 0, 0, 0, 0] };
 
         let mut i = 0;
@@ -119,7 +119,7 @@ pub struct IPv4Addr {
 }
 
 impl IPv4Addr {
-    pub fn equals(&self, other: IPv4Addr) -> bool {
+    pub fn equals(&self, other: Self) -> bool {
         for i in 0..4 {
             if self.bytes[i] != other.bytes[i] {
                 return false;
@@ -128,7 +128,7 @@ impl IPv4Addr {
         true
     }
 
-    pub fn from_string(string: &String) -> IPv4Addr {
+    pub fn from_string(string: &String) -> Self {
         let mut addr = IPv4Addr { bytes: [0, 0, 0, 0] };
 
         let mut i = 0;
