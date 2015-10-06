@@ -33,7 +33,7 @@ impl Editor {
                 file.seek(Seek::Start(0));
                 let mut vec: Vec<u8> = Vec::new();
                 file.read_to_end(&mut vec);
-                self.string = String::from_utf8(&vec);
+                self.string = unsafe { String::from_utf8_unchecked(vec) };
             }
             Option::None => self.string = String::new(),
         }
@@ -44,7 +44,7 @@ impl Editor {
             Option::Some(ref mut file) => {
                 window.setTitle(&("Editor (".to_string() + &self.url + ") Saved"));
                 file.seek(Seek::Start(0));
-                file.write(&self.string.to_utf8().as_slice());
+                file.write(&self.string.as_bytes());
                 file.sync();
             }
             Option::None => {
@@ -152,17 +152,14 @@ impl Editor {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
                                 window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
-                                self.string = self.string.substr(0, self.offset - 1) +
-                                              self.string.substr(self.offset,
-                                                                 self.string.len() - self.offset);
+                                self.string = self.string[0 .. self.offset - 1].to_string() +
+                                              &self.string[self.offset .. self.string.len()];
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
                                 window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
-                                self.string = self.string.substr(0, self.offset) +
-                                              self.string.substr(self.offset + 1,
-                                                                 self.string.len() - self.offset -
-                                                                 1);
+                                self.string = self.string[0 .. self.offset].to_string() +
+                                              &self.string[self.offset + 1 .. self.string.len() - 1];
                             },
                             K_F5 => self.reload(&mut window),
                             K_F6 => self.save(&mut window),
@@ -170,9 +167,9 @@ impl Editor {
                             K_UP => {
                                 let mut new_offset = 0;
                                 for i in 2..self.offset {
-                                    match self.string[self.offset - i] {
-                                        '\0' => break,
-                                        '\n' => {
+                                    match self.string.as_bytes()[self.offset - i] {
+                                        0 => break,
+                                        10 => {
                                             new_offset = self.offset - i + 1;
                                             break;
                                         }
@@ -191,9 +188,9 @@ impl Editor {
                             K_DOWN => {
                                 let mut new_offset = self.string.len();
                                 for i in self.offset..self.string.len() {
-                                    match self.string[i] {
-                                        '\0' => break,
-                                        '\n' => {
+                                    match self.string.as_bytes()[i] {
+                                        0 => break,
+                                        10 => {
                                             new_offset = i + 1;
                                             break;
                                         }
@@ -206,11 +203,9 @@ impl Editor {
                                 '\0' => (),
                                 _ => {
                                     window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
-                                    self.string = self.string.substr(0, self.offset) +
-                                                  key_event.character +
-                                                  self.string.substr(self.offset,
-                                                                     self.string.len() -
-                                                                     self.offset);
+                                    self.string = self.string[0 .. self.offset].to_string() +
+                                                  &key_event.character.to_string() +
+                                                  &self.string[self.offset .. self.string.len()];
                                     self.offset += 1;
                                 }
                             },
