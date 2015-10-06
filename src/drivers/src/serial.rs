@@ -13,7 +13,7 @@ pub struct Serial {
 }
 
 impl Serial {
-    pub fn new(port: u16, irq: u8) -> Serial {
+    pub fn new(port: u16, irq: u8) -> Self {
         Serial {
             data: PIO8::new(port),
             status: PIO8::new(port + 5),

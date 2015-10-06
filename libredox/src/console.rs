@@ -107,7 +107,7 @@ pub struct ConsoleWindow {
 
 impl ConsoleWindow {
     /// Create a new console window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Box<ConsoleWindow> {
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Box<Self> {
         box ConsoleWindow {
             window: Window::new(x, y, w, h, title),
             output: Vec::new(),

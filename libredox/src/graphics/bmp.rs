@@ -14,7 +14,7 @@ pub struct BMP {
 
 impl BMP {
     /// Create a new empty bitmap
-    pub fn new() -> BMP {
+    pub fn new() -> Self {
         BMP {
             w: 0,
             h: 0,
@@ -23,7 +23,7 @@ impl BMP {
     }
 
     /// Create a bitmap from some data
-    pub fn from_data(file_data: &Vec<u8>) -> BMP {
+    pub fn from_data(file_data: &Vec<u8>) -> Self {
         let mut ret = BMP::new();
 
         let get = |i: usize| -> u8 {

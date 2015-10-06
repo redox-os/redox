@@ -24,7 +24,7 @@ pub struct NetworkResource {
 }
 
 impl NetworkResource {
-    pub fn new(nic: *mut NetworkScheme) -> Box<NetworkResource> {
+    pub fn new(nic: *mut NetworkScheme) -> Box<Self> {
         let mut ret = box NetworkResource {
             nic: nic,
             ptr: 0 as *mut NetworkResource,

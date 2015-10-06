@@ -97,7 +97,7 @@ pub struct Disk {
 }
 
 impl Disk {
-    pub fn primary_master() -> Disk {
+    pub fn primary_master() -> Self {
         Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
@@ -105,7 +105,7 @@ impl Disk {
         }
     }
 
-    pub fn primary_slave() -> Disk {
+    pub fn primary_slave() -> Self {
         Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
@@ -113,7 +113,7 @@ impl Disk {
         }
     }
 
-    pub fn secondary_master() -> Disk {
+    pub fn secondary_master() -> Self {
         Disk {
             base: 0x170,
             ctrl: 0x374,
@@ -121,7 +121,7 @@ impl Disk {
         }
     }
 
-    pub fn secondary_slave() -> Disk {
+    pub fn secondary_slave() -> Self {
         Disk {
             base: 0x170,
             ctrl: 0x374,

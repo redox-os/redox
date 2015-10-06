@@ -6,7 +6,7 @@ pub struct FileManager {
 }
 
 impl FileManager {
-    pub fn new() -> FileManager {
+    pub fn new() -> Self {
         return FileManager {
             files: Vec::new(),
             selected: -1,

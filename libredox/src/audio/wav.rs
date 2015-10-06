@@ -9,7 +9,7 @@ pub struct WAV {
 }
 
 impl WAV {
-    pub fn new() -> WAV {
+    pub fn new() -> Self {
         WAV {
             channels: 0,
             sample_rate: 0,
@@ -18,7 +18,7 @@ impl WAV {
         }
     }
 
-    pub fn from_data(file_data: &Vec<u8>) -> WAV {
+    pub fn from_data(file_data: &Vec<u8>) -> Self {
         let mut ret = WAV::new();
 
         let get = |i: usize| -> u8 {

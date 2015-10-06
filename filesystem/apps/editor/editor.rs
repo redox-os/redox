@@ -11,7 +11,7 @@ pub struct Editor {
 
 impl Editor {
     #[inline(never)]
-    pub fn new() -> Editor {
+    pub fn new() -> Self {
         Editor {
             url: String::new(),
             file: Option::None,

@@ -32,7 +32,7 @@ pub const TCP_PSH: u16 = 1 << 3;
 pub const TCP_ACK: u16 = 1 << 4;
 
 impl FromBytes for TCP {
-    fn from_bytes(bytes: Vec<u8>) -> Option<TCP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<TCPHeader>() {
             unsafe {
                 let header = *(bytes.as_ptr() as *const TCPHeader);

@@ -21,7 +21,7 @@ pub struct UDP {
 }
 
 impl FromBytes for UDP {
-    fn from_bytes(bytes: Vec<u8>) -> Option<UDP> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<UDPHeader>() {
             unsafe {
                 return Option::Some(UDP {

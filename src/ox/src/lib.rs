@@ -62,7 +62,7 @@ pub fn get_package(host: String, name: String, version: String) -> Package {
             version = data;
         }
     }
-    
+
     Package {
         host: host,
         name: name,

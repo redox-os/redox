@@ -18,7 +18,7 @@ struct TRB {
 }
 
 impl TRB {
-    pub fn new() -> TRB {
+    pub fn new() -> Self {
         TRB {
             data: 0,
             status: 0,
@@ -26,7 +26,7 @@ impl TRB {
         }
     }
 
-    pub fn from_type(trb_type: u32) -> TRB {
+    pub fn from_type(trb_type: u32) -> Self {
         TRB {
             data: 0,
             status: 0,

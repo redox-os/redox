@@ -40,7 +40,7 @@ pub struct Window {
 
 impl Window {
     /// Create a new window
-    pub fn new(point: Point, size: Size, title: String) -> Box<Window> {
+    pub fn new(point: Point, size: Size, title: String) -> Box<Self> {
         let mut ret = Box::new(Window {
             point: point,
             size: size,

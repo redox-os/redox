@@ -28,7 +28,7 @@ pub struct IPv4 {
 }
 
 impl FromBytes for IPv4 {
-    fn from_bytes(bytes: Vec<u8>) -> Option<IPv4> {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<IPv4Header>() {
             unsafe {
                 let header = *(bytes.as_ptr() as *const IPv4Header);

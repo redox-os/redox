@@ -71,11 +71,11 @@ pub struct ELF {
 }
 
 impl ELF {
-    pub fn new() -> ELF {
+    pub fn new() -> Self {
         ELF { data: 0 }
     }
 
-    pub fn from_data(file_data: usize) -> ELF {
+    pub fn from_data(file_data: usize) -> Self {
         let data;
         unsafe {
             if file_data > 0 && *(file_data as *const u8) == 0x7F &&
