@@ -22,8 +22,10 @@ pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
         if window as usize == 0 {
             window = sys_alloc(size_of::<Box<ConsoleWindow>>()) as *mut Box<ConsoleWindow>;
             ptr::write(window,
-                       ConsoleWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                          640, 480,
+                       ConsoleWindow::new((rand() % 400 + 50) as isize,
+                                          (rand() % 300 + 50) as isize,
+                                          640,
+                                          480,
                                           "Console"));
             (*window).sync();
         }
@@ -136,7 +138,11 @@ impl ConsoleWindow {
     /// Set the window title
     pub fn set_title(&mut self, title: &str){
         //TODO THIS IS A HACK, should use self.window.setTitle(title);
-        self.window = Window::new(self.window.x(), self.window.y(), self.window.width(), self.window.height(), title);
+        self.window = Window::new(self.window.x(),
+                                  self.window.y(),
+                                  self.window.width(),
+                                  self.window.height(),
+                                  title);
     }
 
     /// Poll the window

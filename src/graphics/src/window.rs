@@ -167,8 +167,7 @@ impl Window {
 
                 if !self.last_mouse_event.left_button && mouse_event.x >= -2 &&
                    mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 &&
-                   mouse_event.y < 0 {
+                   mouse_event.y >= -18 && mouse_event.y < 0 {
                     self.dragging = true;
                     caught = true;
                 }
@@ -186,8 +185,7 @@ impl Window {
 
                 if !self.last_mouse_event.right_button && mouse_event.x >= -2 &&
                    mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 &&
-                   mouse_event.y < 0 {
+                   mouse_event.y >= -18 && mouse_event.y < 0 {
                     self.minimized = !self.minimized;
                     caught = true;
                 }

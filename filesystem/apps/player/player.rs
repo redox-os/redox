@@ -13,9 +13,11 @@ pub fn main() {
 
 
 
-    let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                320, 0,
-                                &("Player (".to_string() + &url + ")"));
+    let mut window = Window::new((rand() % 400 + 50) as isize,
+                                 (rand() % 300 + 50) as isize,
+                                 320,
+                                 0,
+                                 &("Player (".to_string() + &url + ")"));
     window.sync();
 
     let wav = WAV::from_data(&vec);

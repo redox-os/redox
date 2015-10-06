@@ -2,6 +2,13 @@
 
 **Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
 
+## What it looks like
+
+![Redox](img/screenshots/Desktop.png)
+![Redox](img/screenshots/Fancy_opacity.png)
+![Redox](img/screenshots/File_manager.png)
+![Redox](img/screenshots/Boot.png)
+
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
@@ -51,6 +58,17 @@ make
 make virtualbox
 ```
 
+
+## Running on Arch Linux (Qemu)
+
+- Install Qemu
+```bash
+$ sudo pacman -S qemu
+```
+- Run redox
+```bash
+$ make qemu_tap
+```
 
 ## Building on OS X
 - Install MacPorts or Homebrew

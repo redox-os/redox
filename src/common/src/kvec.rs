@@ -40,7 +40,7 @@ impl <'a, T> Iterator for KVecIterator<'a, T> {
 
 /// A owned, heap allocated list of elements
 pub struct KVec<T> {
-    pub mem: Memory<T>, //TODO: Option<Memory>
+    pub mem: Memory<T>, // TODO: Option<Memory>
     pub length: usize,
 }
 
@@ -48,9 +48,7 @@ impl <T> KVec<T> {
     /// Create a empty kvector
     pub fn new() -> Self {
         KVec {
-            mem: Memory {
-                ptr: 0 as *mut T //TODO: Option::None
-            },
+            mem: Memory { ptr: 0 as *mut T /* TODO: Option::None */ },
             length: 0,
         }
     }
@@ -70,7 +68,7 @@ impl <T> KVec<T> {
                     mem: mem,
                     length: len,
                 };
-            },
+            }
             Option::None => {
                 return KVec::new();
             }
@@ -86,7 +84,7 @@ impl <T> KVec<T> {
                     mem: mem,
                     length: slice.len(),
                 };
-            },
+            }
             Option::None => {
                 return KVec::new();
             }
@@ -121,7 +119,8 @@ impl <T> KVec<T> {
                 let mut j = self.length - 1;
                 while j > i {
                     unsafe {
-                        ptr::write(self.mem.ptr.offset(j as isize), ptr::read(self.mem.ptr.offset(j as isize - 1)));
+                        ptr::write(self.mem.ptr.offset(j as isize),
+                                   ptr::read(self.mem.ptr.offset(j as isize - 1)));
                     }
                     j -= 1;
                 }
@@ -142,7 +141,8 @@ impl <T> KVec<T> {
             let mut j = i;
             while j < self.length {
                 unsafe {
-                    ptr::write(self.mem.ptr.offset(j as isize), ptr::read(self.mem.ptr.offset(j as isize + 1)));
+                    ptr::write(self.mem.ptr.offset(j as isize),
+                               ptr::read(self.mem.ptr.offset(j as isize + 1)));
                 }
                 j += 1;
             }
@@ -213,14 +213,17 @@ impl <T> KVec<T> {
         match Memory::new(length) {
             Option::Some(mem) => {
                 for k in i..j {
-                    unsafe { ptr::write(mem.ptr.offset((k - i) as isize), ptr::read(self.mem.ptr.offset(k as isize))) };
+                    unsafe {
+                        ptr::write(mem.ptr.offset((k - i) as isize),
+                                   ptr::read(self.mem.ptr.offset(k as isize)))
+                    };
                 }
 
                 return KVec {
                     mem: mem,
                     length: length,
                 };
-            },
+            }
             Option::None => {
                 return KVec::new();
             }
