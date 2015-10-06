@@ -1,4 +1,4 @@
-use mem;
+use core::mem;
 
 use nvpair;
 use xdr;
@@ -82,6 +82,6 @@ impl<T: xdr::XdrOps> XdrNvListEncoder<T> {
                 reserved1: 0,
                 reserved2: 0,
             };
-        self.xdr_ops.put_bytes(&transmute(header));
+        self.xdr_ops.put_bytes(&mem::transmute(header));
     }
 }
