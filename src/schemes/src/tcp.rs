@@ -121,7 +121,8 @@ impl Resource for TCPResource {
                                                 mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                  Checksum::sum((&proto as *const n16) as usize,
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
@@ -192,7 +193,8 @@ impl TCPResource {
                                                 mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                  Checksum::sum((&proto as *const n16) as usize,
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
@@ -291,7 +293,8 @@ impl TCPResource {
                                                 mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                  Checksum::sum((&proto as *const n16) as usize,
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,
@@ -355,7 +358,8 @@ impl Drop for TCPResource {
                                                 mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                  Checksum::sum((&proto as *const n16) as usize,
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&segment_len as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&tcp.header as *const TCPHeader) as usize,

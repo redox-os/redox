@@ -25,7 +25,6 @@ pub struct File {
 
 impl File {
     /// Open a new file using a path
-    // TODO: Why &String and not String
     // TODO: Return Option<File>
     pub fn open(path: &str) -> Self {
         unsafe {
