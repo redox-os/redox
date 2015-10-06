@@ -239,11 +239,11 @@ impl OpenEvent {
     pub fn from_event(event: Event) -> OpenEvent {
         unsafe {
             let mut utf8: Vec<u8> = Vec::new();
-            for i in 0..4096 /*max size*/ {
+            for i in 0..4096 {
                 let b = ptr::read((event.a as *const u8).offset(i));
-                if b == 0{
+                if b == 0 {
                     break;
-                }else{
+                } else {
                     utf8.push(b);
                 }
             }

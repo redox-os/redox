@@ -56,7 +56,7 @@ impl XHCI {
         debug::dh(self.base);
         if self.memory_mapped {
             debug::d(" memory mapped");
-        }else {
+        } else {
             debug::d(" port mapped");
         }
         debug::d(" IRQ: ");

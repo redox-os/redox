@@ -25,27 +25,27 @@ enum DataType {
     Uint8,
     BooleanArray,
     Int8Array,
-    Uint8Array
+    Uint8Array,
 }
 
 struct NvPair {
-    nvp_size:       i32, // size of this nvpair
-    nvp_name_sz:    i16, // length of name string
-    nvp_reserve:    i16, // not used
+    nvp_size: i32, // size of this nvpair
+    nvp_name_sz: i16, // length of name string
+    nvp_reserve: i16, // not used
     nvp_value_elem: i32, // number of elements for array types
-    nvp_type:       DataType, // type of value
-    // name string
-    // aligned ptr array for string arrays
-    // aligned array of data for value
+    nvp_type: DataType, /* type of value
+                         * name string
+                         * aligned ptr array for string arrays
+                         * aligned array of data for value */
 }
 
 // nvlist header
 struct NvList {
-    nvl_version: i32
-    nvl_nvflag:  u32 // persistent flags
-    nvl_priv:    u64 // ptr to private data if not packed
-    nvl_flag:    u32
-    nvl_pad:     i32 // currently not used, for alignment
+    nvl_version: i32,
+    nvl_nvflag: u32, // persistent flags
+    nvl_priv: u64, // ptr to private data if not packed
+    nvl_flag: u32,
+    nvl_pad: i32, // currently not used, for alignment
 }
 
 // nvp implementation version
@@ -82,10 +82,10 @@ const NV_FLAG_NOENTOK: isize = 0x1;
 // NV allocator framework
 struct NvAllocOps;
 
-struct NvAlloc<> {
+struct NvAlloc {
     nva_ops: &'static NvAllocOps,
-    nva_arg: Any, // This was a void pointer type.
-                  // Not sure if Any is the correct type.
+    nva_arg: Any, /* This was a void pointer type.
+                   * Not sure if Any is the correct type. */
 }
 
 /*

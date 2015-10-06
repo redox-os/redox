@@ -128,19 +128,19 @@ impl Resource for IntelHDAResource {
 
             let bdl = memory::alloc(2 * mem::size_of::<BD>()) as *mut BD;
             ptr::write(bdl,
-                  BD {
-                      addr: bd_addr as u32,
-                      addru: 0,
-                      len: bd_size as u32,
-                      ioc: 1,
-                  });
+                       BD {
+                           addr: bd_addr as u32,
+                           addru: 0,
+                           len: bd_size as u32,
+                           ioc: 1,
+                       });
             ptr::write(bdl.offset(1),
-                  BD {
-                      addr: bd_addr as u32,
-                      addru: 0,
-                      len: bd_size as u32,
-                      ioc: 1,
-                  });
+                       BD {
+                           addr: bd_addr as u32,
+                           addru: 0,
+                           len: bd_size as u32,
+                           ioc: 1,
+                       });
 
             stream.bdlpl = bdl as u32;
 
