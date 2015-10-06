@@ -134,8 +134,10 @@ impl Editor {
     }
 
     fn main(&mut self, url: &str) {
-        let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                     576, 400,
+        let mut window = Window::new((rand() % 400 + 50) as isize,
+                                    (rand() % 300 + 50) as isize,
+                                    576,
+                                    400,
                                      "Editor (Loading)");
 
         self.url = url.to_string();

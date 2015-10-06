@@ -92,7 +92,7 @@ impl Window {
     //TODO move, resize, setTitle
 
     /// Set entire window to a color
-    //TODO: Improve speed
+    // TODO: Improve speed
     #[allow(unused_variables)]
     pub fn set(&mut self, color: [u8; 4]) {
         self.file.seek(Seek::Start(0));
@@ -104,7 +104,7 @@ impl Window {
     }
 
     /// Draw rectangle
-    //TODO: Improve speed
+    // TODO: Improve speed
     #[allow(unused_variables)]
     pub fn rect(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, color: [u8; 4]) {
         for y in start_y..start_y + h as isize {
@@ -116,7 +116,7 @@ impl Window {
 
     /// Display an image
     //TODO: Improve speed
-    pub fn image(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, data: &[[u8; 4]]){
+    pub fn image(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, data: &[[u8; 4]]) {
         let mut i = 0;
         for y in start_y..start_y + h as isize {
             for x in start_x..start_x + w as isize {
@@ -133,9 +133,11 @@ impl Window {
     pub fn poll(&mut self) -> Option<Event> {
         let mut event = box Event::new();
         let event_ptr: *mut Event = event.deref_mut();
-        match self.file.read(&mut unsafe { slice::from_raw_parts_mut(event_ptr as *mut u8, size_of::<Event>()) }) {
+        match self.file.read(&mut unsafe {
+            slice::from_raw_parts_mut(event_ptr as *mut u8, size_of::<Event>())
+        }) {
             Option::Some(_) => return Option::Some(*event),
-            Option::None => return Option::None
+            Option::None => return Option::None,
         }
     }
 

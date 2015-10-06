@@ -115,7 +115,8 @@ impl Command {
 
                 vec = Vec::new();
                 match resource.read_to_end(&mut vec) {
-                    Option::Some(size) => println!("{}", unsafe { String::from_utf8_unchecked(vec) }),
+                    Option::Some(size) =>
+                        println!("{}", unsafe { String::from_utf8_unchecked(vec) }),
                     Option::None => println!("Failed to read"),
                 }
             },
