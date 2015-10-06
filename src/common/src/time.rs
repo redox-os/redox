@@ -1,8 +1,6 @@
 use core::cmp::*;
 use core::ops::*;
 
-use common::string::*;
-
 use syscall::call::sys_time;
 use syscall::call::sys_yield;
 
@@ -64,12 +62,6 @@ impl Duration {
                 sys_yield();
             }
         }
-    }
-
-    //TODO: Format decimal
-    /// Convert to string
-    pub fn to_string(&self) -> String {
-        String::from_num_signed(self.secs as isize)
     }
 }
 

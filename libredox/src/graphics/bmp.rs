@@ -1,5 +1,5 @@
-use common::string::*;
-use common::vec::*;
+use collections::string::*;
+use collections::vec::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap
@@ -43,7 +43,7 @@ impl BMP {
         let gets = |start: usize, len: usize| -> String {
             let mut ret = String::new();
             for i in start..start + len {
-                ret = ret + get(i) as char;
+                ret = ret + &(get(i) as char).to_string();
             }
             ret
         };
@@ -115,7 +115,7 @@ impl BMP {
 
     /// Convert to slice for drawing
     pub fn as_slice(&self) -> &[[u8; 4]] {
-        self.data.as_slice()
+        &self.data
     }
 
     pub fn width(&self) -> usize {

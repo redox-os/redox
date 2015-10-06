@@ -1,4 +1,3 @@
-use common::event::*;
 use common::time::*;
 
 use syscall::common::*;
@@ -60,7 +59,7 @@ pub fn sys_yield() {
     }
 }
 
-pub unsafe fn sys_trigger(event_ptr: *const Event) {
+pub unsafe fn sys_trigger(event_ptr: usize) {
     syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
 }
 
