@@ -48,7 +48,7 @@ pub unsafe fn console_destroy() {
 /// Set the title of the console window
 // TODO: Move this to a `Window` trait?
 pub fn console_title(title: &str) {
-    console_window().setTitle(title);
+    console_window().set_title(title);
 }
 
 /// Print to console
@@ -134,7 +134,7 @@ impl ConsoleWindow {
     }
 
     /// Set the window title
-    pub fn setTitle(&mut self, title: &str){
+    pub fn set_title(&mut self, title: &str){
         //TODO THIS IS A HACK, should use self.window.setTitle(title);
         self.window = Window::new(self.window.x(), self.window.y(), self.window.width(), self.window.height(), title);
     }
