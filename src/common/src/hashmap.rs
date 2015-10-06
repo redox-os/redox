@@ -16,7 +16,8 @@ impl<T, U> Iterator<Item = (T, U)> for Entry<T, U> {
 
 /// A hashmap (a simple implementation)
 pub struct HashMap<T, U>
-           where T: Hash {
+    where T: Hash
+{
     values: [Entry<T, U>; 247],
 }
 
@@ -32,13 +33,11 @@ impl<T, U> HashMap<T, U>
 
     /// Get a refference to an entry
     pub fn get(&self, key: &T) -> Option<&U> {
-        &self.values[self.get_pos(key)]
-             .find(|(k, v)| key == k)
+        &self.values[self.get_pos(key)].find(|(k, v)| key == k)
     }
     /// Get a mutable refference to an entry
     pub fn get_mut(&mut self, key: &T) -> Option<&mut U> {
-        &mut self.values[self.get_pos(key)]
-                 .find(|(k, v)| key == k)
+        &mut self.values[self.get_pos(key)].find(|(k, v)| key == k)
     }
     /// Set the value of an entry
     pub fn set(&mut self, key: &T, val: &U) {
@@ -48,7 +47,7 @@ impl<T, U> HashMap<T, U>
                 self.values[self.get_pos(key)]
                     .keys
                     .push((*key, *val));
-            },
+            }
         }
     }
 }

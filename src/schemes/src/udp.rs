@@ -82,7 +82,8 @@ impl Resource for UDPResource {
                                                 mem::size_of::<IPv4Addr>()) +
                                   Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
-                                  Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                  Checksum::sum((&proto as *const n16) as usize,
+                                                mem::size_of::<n16>()) +
                                   Checksum::sum((&datagram_len as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&udp.header as *const UDPHeader) as usize,
