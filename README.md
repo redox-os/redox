@@ -32,6 +32,24 @@ sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
 ```bash
 make qemu_tap
 ```
+## Building on Arch Linux
+- Run the setup script and enter your password when prompted (to install the Rust compiler and its dependencies)
+```bash
+cd setup
+./arch.sh
+./binary.sh
+```
+- Make the project
+```bash
+make
+```
+## Running on Arch Linux
+- Virtualbox was completely setup as part of the script.
+- Run Virtualbox
+```bash
+make virtualbox
+```
+
 
 ## Building on OS X
 - Install MacPorts or Homebrew
