@@ -2,8 +2,6 @@ use core::ops::DerefMut;
 
 use redox::*;
 
-use redox::fmt::*;
-
 /* Magic Macros { */
 static mut application: *mut Application = 0 as *mut Application;
 

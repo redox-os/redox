@@ -27,7 +27,7 @@ impl File {
     /// Open a new file using a path
     // TODO: Why &String and not String
     // TODO: Return Option<File>
-    pub fn open(path: &String) -> Self {
+    pub fn open(path: &str) -> Self {
         unsafe {
             let c_str = sys_alloc(path.len() + 1) as *mut u8;
             if path.len() > 0 {
@@ -36,12 +36,12 @@ impl File {
             ptr::write(c_str.offset(path.len() as isize), 0);
 
             let ret = File {
-                path: path.clone(),
+                path: path.to_string(),
                 fd: sys_open(c_str, 0, 0),
             };
 
             sys_unalloc(c_str as usize);
-            
+
             ret
         }
     }

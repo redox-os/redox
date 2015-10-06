@@ -89,14 +89,27 @@ impl Window {
         }
     }
 
-    /// Set entire window to a color
     //TODO move, resize, setTitle
+
+    /// Set entire window to a color
+    //TODO: Improve speed
     #[allow(unused_variables)]
     pub fn set(&mut self, color: [u8; 4]) {
         self.file.seek(Seek::Start(0));
         for y in 0..self.h {
             for x in 0..self.w {
                 self.file.write(&color);
+            }
+        }
+    }
+
+    /// Draw rectangle
+    //TODO: Improve speed
+    #[allow(unused_variables)]
+    pub fn rect(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, color: [u8; 4]) {
+        for y in start_y..start_y + h as isize {
+            for x in start_x..start_x + w as isize {
+                self.pixel(x, y, color);
             }
         }
     }

@@ -59,14 +59,14 @@ impl BMP {
             let bytes = (depth + 7) / 8;
             let row_bytes = (depth * width + 31) / 32 * 4;
 
-            let mut red_mask = 0xFF0000;
+            let mut red_mask = 0xFF;
             let mut green_mask = 0xFF00;
-            let mut blue_mask = 0xFF;
+            let mut blue_mask = 0xFF0000;
             let mut alpha_mask = 0xFF000000;
             if getd(0x1E) == 3 {
-                red_mask = getd(0x36);
+                blue_mask = getd(0x36);
                 green_mask = getd(0x3A);
-                blue_mask = getd(0x3E);
+                red_mask = getd(0x3E);
                 alpha_mask = getd(0x42);
             }
 

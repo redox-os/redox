@@ -1,24 +1,59 @@
 use redox::*;
 
 pub struct FileManager {
+    folder_icon: BMP,
+    file_icon: BMP,
     files: Vec<String>,
     selected: isize,
 }
 
 impl FileManager {
     pub fn new() -> Self {
+        let file_icon;
+        {
+            let mut resource = File::open("file:///ui/mimetypes/unknown.bmp");
+
+            let mut vec: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut vec);
+
+            file_icon = BMP::from_data(&vec);
+        }
+
+        let folder_icon;
+        {
+            let mut resource = File::open("file:///ui/places/folder.bmp");
+
+            let mut vec: Vec<u8> = Vec::new();
+            resource.read_to_end(&mut vec);
+
+            folder_icon = BMP::from_data(&vec);
+        }
+
         return FileManager {
+            file_icon: file_icon,
+            folder_icon: folder_icon,
             files: Vec::new(),
             selected: -1,
         };
     }
 
     fn draw_content(&mut self, window: &mut Window) {
-        window.set([0, 0, 0, 255]);
+        window.set([255, 255, 255, 255]);
 
         let mut i = 0;
         let mut row = 0;
         for string in self.files.iter() {
+            if i == self.selected {
+                let width = window.width();
+                window.rect(0, 32 * row as isize, width, 32, [224, 224, 224, 255]);
+            }
+
+            if string.ends_with('/') {
+                window.image(0, 32 * row as isize, self.folder_icon.width(), self.folder_icon.height(), self.folder_icon.as_slice());
+            }else{
+                window.image(0, 32 * row as isize, self.file_icon.width(), self.file_icon.height(), self.file_icon.as_slice());
+            }
+
             let mut col = 0;
             for c in string.chars() {
                 if c == '\n' {
@@ -27,15 +62,8 @@ impl FileManager {
                 } else if c == '\t' {
                     col += 8 - col % 8;
                 } else {
-                    let color;
-                    if i == self.selected {
-                        color = [128, 128, 128, 255];
-                    } else {
-                        color = [255, 255, 255, 255];
-                    }
-
-                    if col < window.width() / 8 && row < window.height() / 16 {
-                        window.char(8 * col as isize, 16 * row as isize, c, color);
+                    if col < window.width() / 8 && row < window.height() / 32 {
+                        window.char(8 * col as isize + 40, 32 * row as isize + 8, c, [0, 0, 0, 255]);
                         col += 1;
                     }
                 }
@@ -61,14 +89,14 @@ impl FileManager {
             resource.read_to_end(&mut vec);
 
             for file in unsafe { String::from_utf8_unchecked(vec) }.split('\n') {
-                if width < (file.len() + 1) * 8 {
-                    width = (file.len() + 1) * 8;
+                if width < 40 + (file.len() + 1) * 8 {
+                    width = 40 + (file.len() + 1) * 8;
                 }
                 self.files.push(file.to_string());
             }
 
-            if height < self.files.len() * 16 {
-                height = self.files.len() * 16;
+            if height < self.files.len() * 32 {
+                height = self.files.len() * 32;
             }
         }
 
@@ -128,6 +156,12 @@ impl FileManager {
                     for file in self.files.iter() {
                         let mut col = 0;
                         for c in file.chars() {
+                            if mouse_event.y >= 32 * row as isize &&
+                                mouse_event.y < 32 * row as isize + 32 {
+                                 self.selected = i;
+                                 redraw = true;
+                            }
+
                             if c == '\n' {
                                 col = 0;
                                 row += 1;
@@ -135,14 +169,7 @@ impl FileManager {
                                 col += 8 - col % 8;
                             } else {
                                 if col < window.width() / 8 &&
-                                   row < window.height() / 16 {
-                                    if mouse_event.x >= 8 * col as isize &&
-                                       mouse_event.x < 8 * col as isize + 8 &&
-                                       mouse_event.y >= 16 * row as isize &&
-                                       mouse_event.y < 16 * row as isize + 16 {
-                                        self.selected = i;
-                                        redraw = true;
-                                    }
+                                   row < window.height() / 32 {
                                     col += 1;
                                 }
                             }
