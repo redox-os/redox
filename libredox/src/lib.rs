@@ -7,6 +7,7 @@
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
 #![feature(lang_items)]
+#![feature(vec_push_all)]
 #![feature(no_std)]
 #![no_std]
 
@@ -77,6 +78,9 @@ mod graphics {
 }
 /// A module for window support
 pub mod orbital;
+
+/// A module for shell based functions
+pub mod ion;
 
 /* Extensions for String { */
 /// Parse the string to a integer using a given radix
