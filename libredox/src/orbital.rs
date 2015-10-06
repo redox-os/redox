@@ -61,7 +61,7 @@ impl Window {
     }
 
     /// Set title
-    pub fn setTitle(&mut self, title: &str) {
+    pub fn set_title(&mut self, title: &str) {
         //TODO
     }
 
