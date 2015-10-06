@@ -1,0 +1,12 @@
+[package]
+name = "schemes"
+version = "0.1.0"
+authors = []
+
+[dependencies]
+common = {path = "../common"}
+drivers = {path = "../drivers"}
+graphics = {path = "../graphics"}
+network = {path = "../network"}
+programs = {path = "../programs"}
+syscall = {path = "../syscall"}
