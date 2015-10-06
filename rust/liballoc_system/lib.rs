@@ -42,7 +42,7 @@ extern {
 
 use syscall::common::*;
 
-#[path="../../src/syscall/"]
+#[path="../../src/syscall/src"]
 mod syscall {
     pub mod common;
 }

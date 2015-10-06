@@ -1,0 +1,11 @@
+[package]
+name = "drivers"
+version = "0.1.0"
+authors = []
+
+[dependencies]
+common = {path = "../common"}
+audio = {path = "../audio"}
+network = {path = "../network"}
+programs = {path = "../programs"}
+usb = {path = "../usb"}
