@@ -125,7 +125,8 @@ impl BMP {
     /// Convert to slice for drawing
     pub fn as_slice(&self) -> &[[u8; 4]] {
         unsafe {
-            slice::from_raw_parts(self.data.as_ptr() as *const [u8; 4], self.data.len())
+            slice::from_raw_parts(self.data.as_ptr() as *const [u8; 4],
+                                  self.data.len())
         }
     }
 

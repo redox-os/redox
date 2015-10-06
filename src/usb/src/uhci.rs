@@ -326,33 +326,33 @@ impl UHCI {
 
         let setup: *mut SETUP = memory::alloc_type();
         ptr::write(setup,
-              SETUP {
-                  request_type: 0b00000000,
-                  request: 5,
-                  value: address as u16,
-                  index: 0,
-                  len: 0,
-              });
+                   SETUP {
+                       request_type: 0b00000000,
+                       request: 5,
+                       value: address as u16,
+                       index: 0,
+                       len: 0,
+                   });
 
         let setup_td: *mut TD = memory::alloc_type();
         ptr::write(setup_td,
-              TD {
-                  link_ptr: in_td as u32 | 4,
-                  ctrl_sts: 1 << 23,
-                  token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | 0x2D,
-                  buffer: setup as u32,
-              });
+                   TD {
+                       link_ptr: in_td as u32 | 4,
+                       ctrl_sts: 1 << 23,
+                       token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | 0x2D,
+                       buffer: setup as u32,
+                   });
 
         let queue_head: *mut QH = memory::alloc_type();
         ptr::write(queue_head,
-              QH {
-                  head_ptr: 1,
-                  element_ptr: setup_td as u32,
-              });
+                   QH {
+                       head_ptr: 1,
+                       element_ptr: setup_td as u32,
+                   });
 
         let frame = (inw(frnum) + 2) & 0x3FF;
         ptr::write(frame_list.offset(frame as isize),
-              queue_head as u32 | 2);
+                   queue_head as u32 | 2);
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
@@ -419,33 +419,34 @@ impl UHCI {
 
         let setup: *mut SETUP = memory::alloc_type();
         ptr::write(setup,
-              SETUP {
-                  request_type: 0b10000000,
-                  request: 6,
-                  value: (descriptor_type as u16) << 8 | (descriptor_index as u16),
-                  index: 0,
-                  len: descriptor_len as u16,
-              });
+                   SETUP {
+                       request_type: 0b10000000,
+                       request: 6,
+                       value: (descriptor_type as u16) << 8 | (descriptor_index as u16),
+                       index: 0,
+                       len: descriptor_len as u16,
+                   });
 
         let setup_td: *mut TD = memory::alloc_type();
         ptr::write(setup_td,
-              TD {
-                  link_ptr: in_td as u32 | 4,
-                  ctrl_sts: 1 << 23,
-                  token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
-                  buffer: setup as u32,
-              });
+                   TD {
+                       link_ptr: in_td as u32 | 4,
+                       ctrl_sts: 1 << 23,
+                       token: (mem::size_of_val(&*setup) as u32 - 1) << 21 | (address as u32) << 8 |
+                              0x2D,
+                       buffer: setup as u32,
+                   });
 
         let queue_head: *mut QH = memory::alloc_type();
         ptr::write(queue_head,
-              QH {
-                  head_ptr: 1,
-                  element_ptr: setup_td as u32,
-              });
+                   QH {
+                       head_ptr: 1,
+                       element_ptr: setup_td as u32,
+                   });
 
         let frame = (inw(frnum) + 2) & 0x3FF;
         ptr::write(frame_list.offset(frame as isize),
-              queue_head as u32 | 2);
+                   queue_head as u32 | 2);
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
@@ -530,11 +531,13 @@ impl UHCI {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        let desc_int =
+                            ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
                         desc_int.d();
                     }
                     DESC_END => {
-                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        let desc_end =
+                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
                         desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
@@ -554,15 +557,15 @@ impl UHCI {
                                 }
 
                                 ptr::write(in_td,
-                                      TD {
-                                          link_ptr: 1,
-                                          ctrl_sts: 1 << 25 | 1 << 23,
-                                          token: (in_len as u32 - 1) << 21 |
-                                                 (endpoint as u32) << 15 |
-                                                 (address as u32) << 8 |
-                                                 0x69,
-                                          buffer: in_ptr as u32,
-                                      });
+                                           TD {
+                                               link_ptr: 1,
+                                               ctrl_sts: 1 << 25 | 1 << 23,
+                                               token: (in_len as u32 - 1) << 21 |
+                                                      (endpoint as u32) << 15 |
+                                                      (address as u32) << 8 |
+                                                      0x69,
+                                               buffer: in_ptr as u32,
+                                           });
 
                                 let reenable = start_no_ints();
                                 let frame = (inw(frnum) + 2) & 0x3FF;
@@ -590,12 +593,14 @@ impl UHCI {
 
                                     (*::session_ptr).mouse_point.x =
                                         cmp::max(0,
-                                            cmp::min((*::session_ptr).display.width as isize - 1,
-                                                mouse_x as isize));
+                                                 cmp::min((*::session_ptr).display.width as isize -
+                                                          1,
+                                                          mouse_x as isize));
                                     (*::session_ptr).mouse_point.y =
                                         cmp::max(0,
-                                            cmp::min((*::session_ptr).display.height as isize - 1,
-                                                mouse_y as isize));
+                                                 cmp::min((*::session_ptr).display.height as isize -
+                                                          1,
+                                                          mouse_y as isize));
 
                                     MouseEvent {
                                         x: 0,

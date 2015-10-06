@@ -30,7 +30,7 @@ pub fn main() {
                         println_color!(red, "Uninstall {}", package);
                     }
                 }
-            }else{
+            } else {
                 print_color!(blue, "Commands: install uninstall");
             }
         }

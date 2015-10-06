@@ -11,9 +11,7 @@ pub struct ZFS {
 
 impl ZFS {
     pub fn new(disk: File) -> Self {
-        ZFS {
-            disk: disk,
-        }
+        ZFS { disk: disk }
     }
 
     //TODO: Error handling
@@ -27,7 +25,7 @@ impl ZFS {
             let mut data: [u8; 512] = [0; 512];
             self.disk.read(&mut data);
 
-            for i in 0..512{
+            for i in 0..512 {
                 ret.push(data[i]);
             }
         }
@@ -46,7 +44,7 @@ pub struct VdevLabel {
     pub blank: [u8; 8 * 1024],
     pub boot_header: [u8; 8 * 1024],
     pub nv_pairs: [u8; 112 * 1024],
-    pub uberblocks: [Uberblock; 128]
+    pub uberblocks: [Uberblock; 128],
 }
 
 #[derive(Copy, Clone)]
@@ -57,7 +55,7 @@ pub struct Uberblock {
     pub txg: u64,
     pub guid_sum: u64,
     pub timestamp: u64,
-    pub rootbp: BlockPtr
+    pub rootbp: BlockPtr,
 }
 
 impl Uberblock {
@@ -75,10 +73,10 @@ impl Uberblock {
             if uberblock.magic == Uberblock::magic_little() {
                 println!("Little Magic");
                 return Option::Some(uberblock);
-            }else if uberblock.magic == Uberblock::magic_big() {
+            } else if uberblock.magic == Uberblock::magic_big() {
                 println!("Big Magic");
                 return Option::Some(uberblock);
-            }else if uberblock.magic > 0 {
+            } else if uberblock.magic > 0 {
                 println!("Unknown Magic: {:X}", uberblock.magic as usize);
             }
         }
@@ -118,7 +116,7 @@ pub struct Gang {
     pub bps: [BlockPtr; 3],
     pub padding: [u64; 14],
     pub magic: u64,
-    pub checksum: u64
+    pub checksum: u64,
 }
 
 impl Gang {
@@ -164,15 +162,15 @@ pub fn main() {
                                             if uberblock.txg > previous.txg {
                                                 newest = true;
                                             }
-                                        },
-                                        Option::None => newest = true
+                                        }
+                                        Option::None => newest = true,
                                     }
 
                                     if newest {
                                         newest_uberblock = Option::Some(uberblock);
                                     }
-                                },
-                                Option::None => () //Invalid uberblock
+                                }
+                                Option::None => (), //Invalid uberblock
                             }
                         }
 
@@ -184,9 +182,10 @@ pub fn main() {
                                 println!("Version: {}", uberblock.version as usize);
                                 println!("TXG: {}", uberblock.txg as usize);
                                 println!("Timestamp: {}", uberblock.timestamp as usize);
-                                println!("MOS: {}", uberblock.rootbp.dvas[0].sector() as usize);
-                            },
-                            Option::None => println_color!(red, "No valid uberblock found!")
+                                println!("MOS: {}",
+                                         uberblock.rootbp.dvas[0].sector() as usize);
+                            }
+                            Option::None => println_color!(red, "No valid uberblock found!"),
                         }
                     } else if *command == "list".to_string() {
                         println_color!(green, "List volumes");
@@ -203,31 +202,31 @@ pub fn main() {
                                     }
                                     if let Option::Some(byte) = data.get(i) {
                                         print!(" {:X}", *byte);
-                                    }else{
+                                    } else {
                                         println!(" !");
                                     }
                                 }
                                 print!("\n");
-                            },
-                            Option::None => println_color!(red, "No sector specified!")
+                            }
+                            Option::None => println_color!(red, "No sector specified!"),
                         }
-                    }else if *command == "close".to_string() {
+                    } else if *command == "close".to_string() {
                         println_color!(red, "Closing");
                         close = true;
                     } else {
                         println_color!(blue, "Commands: uber list dump close");
                     }
-                },
+                }
                 Option::None => {
                     if *command == "open".to_string() {
                         match args.get(1) {
                             Option::Some(arg) => {
                                 println_color!(green, "Open: {}", arg);
                                 zfs_option = Option::Some(ZFS::new(File::open(arg)));
-                            },
-                            Option::None => println_color!(red, "No file specified!")
+                            }
+                            Option::None => println_color!(red, "No file specified!"),
                         }
-                    }else{
+                    } else {
                         println_color!(blue, "Commands: open");
                     }
                 }
