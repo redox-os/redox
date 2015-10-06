@@ -71,15 +71,15 @@ impl Uberblock {
 
     pub fn from(data: &Vec<u8>) -> Option<Self> {
         if data.len() >= 1024 {
-            let uberblock = unsafe { ptr::read(data.data as *const Uberblock) };
+            let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
             if uberblock.magic == Uberblock::magic_little() {
-                println!("Little Magic".to_string());
+                println!("Little Magic");
                 return Option::Some(uberblock);
             }else if uberblock.magic == Uberblock::magic_big() {
-                println!("Big Magic".to_string());
+                println!("Big Magic");
                 return Option::Some(uberblock);
             }else if uberblock.magic > 0 {
-                println!("Unknown Magic: ".to_string() + uberblock.magic as usize);
+                println!("Unknown Magic: {:X}", uberblock.magic as usize);
             }
         }
 
@@ -135,19 +135,19 @@ pub fn main() {
     let green = [127, 255, 127, 255];
     let blue = [127, 127, 255, 255];
 
-    println!("Type open zfs.img to open the image file".to_string());
-    println!("This may take up to 30 seconds".to_string());
+    println!("Type open zfs.img to open the image file");
+    println!("This may take up to 30 seconds");
 
     let mut zfs_option: Option<ZFS> = Option::None;
 
     while let Option::Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
-        for arg in line.split(" ".to_string()) {
-            args.push(arg);
+        for arg in line.split(' ') {
+            args.push(arg.to_string());
         }
 
         if let Option::Some(command) = args.get(0) {
-            println!("# ".to_string() + line);
+            println!("# {}", line);
 
             let mut close = false;
             match zfs_option {
@@ -178,57 +178,57 @@ pub fn main() {
 
                         match newest_uberblock {
                             Option::Some(uberblock) => {
-                                print_color!("Newest Uberblock:\n".to_string(), green);
+                                println_color!(green, "Newest Uberblock");
                                 //TODO: Do not use as usize
-                                println!("Magic: ".to_string() + String::from_num_radix(uberblock.magic as usize, 16));
-                                println!("Version: ".to_string() + uberblock.version as usize);
-                                println!("TXG: ".to_string() + uberblock.txg as usize);
-                                println!("Timestamp: ".to_string() + uberblock.timestamp as usize);
-                                println!("MOS: ".to_string() + uberblock.rootbp.dvas[0].sector() as usize);
+                                println!("Magic: {:X}", uberblock.magic as usize);
+                                println!("Version: {}", uberblock.version as usize);
+                                println!("TXG: {}", uberblock.txg as usize);
+                                println!("Timestamp: {}", uberblock.timestamp as usize);
+                                println!("MOS: {}", uberblock.rootbp.dvas[0].sector() as usize);
                             },
-                            Option::None => print_color!("No valid uberblock found!\n".to_string(), red)
+                            Option::None => println_color!(red, "No valid uberblock found!")
                         }
                     } else if *command == "list".to_string() {
-                        print_color!("List volumes\n".to_string(), green);
+                        println_color!(green, "List volumes");
                     } else if *command == "dump".to_string() {
                         match args.get(1) {
                             Option::Some(arg) => {
                                 let sector = arg.to_num();
-                                print_color!("Dump sector: ".to_string() + sector, green);
+                                println_color!(green, "Dump sector: {}", sector);
 
                                 let data = zfs.read(sector, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
-                                        print!("\n".to_string() + String::from_num_radix(i, 16) + ":");
+                                        print!("\n{:X}:", i);
                                     }
                                     if let Option::Some(byte) = data.get(i) {
-                                        print!(" ".to_string() + String::from_num_radix(*byte as usize, 16));
+                                        print!(" {:X}", *byte);
                                     }else{
-                                        println!(" !".to_string());
+                                        println!(" !");
                                     }
                                 }
-                                print!("\n".to_string());
+                                print!("\n");
                             },
-                            Option::None => print_color!("No sector specified!\n".to_string(), red)
+                            Option::None => println_color!(red, "No sector specified!")
                         }
                     }else if *command == "close".to_string() {
-                        print_color!("Closing\n".to_string(), red);
+                        println_color!(red, "Closing");
                         close = true;
                     } else {
-                        print_color!("Commands: uber list dump close\n".to_string(), blue);
+                        println_color!(blue, "Commands: uber list dump close");
                     }
                 },
                 Option::None => {
                     if *command == "open".to_string() {
                         match args.get(1) {
                             Option::Some(arg) => {
-                                print_color!("Open: ".to_string() + arg.clone() + "\n", green);
+                                println_color!(green, "Open: {}", arg);
                                 zfs_option = Option::Some(ZFS::new(File::open(arg)));
                             },
-                            Option::None => print_color!("No file specified!\n".to_string(), red)
+                            Option::None => println_color!(red, "No file specified!")
                         }
                     }else{
-                        print_color!("Commands: open\n".to_string(), blue);
+                        println_color!(blue, "Commands: open");
                     }
                 }
             }

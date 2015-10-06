@@ -1,8 +1,8 @@
 use core::mem::size_of;
 use core::ptr;
 
-use common::string::*;
-use common::vec::*;
+use collections::string::*;
+use collections::vec::Vec;
 
 use syscall::call::*;
 

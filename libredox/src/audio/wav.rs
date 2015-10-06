@@ -1,5 +1,5 @@
-use common::string::*;
-use common::vec::*;
+use collections::string::*;
+use collections::vec::Vec;
 
 pub struct WAV {
     pub channels: u16,
@@ -38,7 +38,7 @@ impl WAV {
         let gets = |start: usize, len: usize| -> String {
             let mut ret = String::new();
             for i in start..start + len {
-                ret = ret + get(i) as char;
+                ret = ret + &(get(i) as char).to_string();
             }
             ret
         };
@@ -71,7 +71,7 @@ impl WAV {
                     }
 
                     if chunk_type == "data".to_string() {
-                        ret.data = file_data.sub(i, chunk_size as usize);
+                        ret.data = file_data[i .. chunk_size as usize].to_vec();
                     }
 
                     i += chunk_size as usize;

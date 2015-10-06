@@ -1,5 +1,7 @@
-use common::string::*;
-use common::vec::*;
+use collections::string::*;
+use collections::vec::{IntoIter, Vec};
+
+use core::ptr;
 
 use syscall::call::*;
 
@@ -27,12 +29,19 @@ impl File {
     // TODO: Return Option<File>
     pub fn open(path: &String) -> Self {
         unsafe {
-            let c_str: *const u8 = path.to_c_str();
+            let c_str = sys_alloc(path.len() + 1) as *mut u8;
+            if path.len() > 0 {
+                ptr::copy(path.as_ptr(), c_str, path.len());
+            }
+            ptr::write(c_str.offset(path.len() as isize), 0);
+
             let ret = File {
                 path: path.clone(),
                 fd: sys_open(c_str, 0, 0),
             };
+
             sys_unalloc(c_str as usize);
+            
             ret
         }
     }
@@ -101,7 +110,7 @@ pub trait Read {
         }
     }
     /// Return an iterator of the bytes
-    fn bytes(&mut self) -> OwnedVecIterator<u8> {
+    fn bytes(&mut self) -> IntoIter<u8> {
         // TODO: This is only a temporary implementation. Make this read one byte at a time.
         let mut buf = Vec::new();
         self.read_to_end(&mut buf);

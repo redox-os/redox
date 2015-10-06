@@ -11,27 +11,27 @@ pub fn main() {
 
     while let Option::Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
-        for arg in line.split(" ".to_string()) {
-            args.push(arg);
+        for arg in line.split(' ') {
+            args.push(arg.to_string());
         }
 
         if let Option::Some(command) = args.get(0) {
-            println!("# ".to_string() + line);
+            println!("# {}", line);
 
             if *command == "install".to_string() || *command == "i".to_string() {
                 for i in 1..args.len() {
                     if let Option::Some(package) = args.get(i) {
-                        print_color!("Install ".to_string() + package + "\n".to_string(), green);
+                        println_color!(green, "Install {}", package);
                     }
                 }
             } else if *command == "uninstall".to_string() || *command == "u".to_string() {
                 for i in 1..args.len() {
                     if let Option::Some(package) = args.get(i) {
-                        print_color!("Uninstall ".to_string() + package + "\n".to_string(), red);
+                        println_color!(red, "Uninstall {}", package);
                     }
                 }
             }else{
-                print_color!("Commands: install uninstall\n".to_string(), blue);
+                print_color!(blue, "Commands: install uninstall");
             }
         }
     }

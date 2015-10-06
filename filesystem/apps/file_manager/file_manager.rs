@@ -60,11 +60,11 @@ impl FileManager {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
-            for file in String::from_utf8(&vec).split("\n".to_string()) {
+            for file in unsafe { String::from_utf8_unchecked(vec) }.split('\n') {
                 if width < (file.len() + 1) * 8 {
                     width = (file.len() + 1) * 8;
                 }
-                self.files.push(file);
+                self.files.push(file.to_string());
             }
 
             if height < self.files.len() * 16 {
@@ -99,9 +99,8 @@ impl FileManager {
                                        self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
                                             Option::Some(file) => OpenEvent {
-                                                url_string: path.clone() + file.clone(),
-                                            }
-                                                                      .trigger(),
+                                                url_string: path.clone() + &file,
+                                            }.trigger(),
                                             Option::None => (),
                                         }
                                     }
@@ -109,7 +108,7 @@ impl FileManager {
                                 _ => {
                                     let mut i = 0;
                                     for file in self.files.iter() {
-                                        if file[0] == key_event.character {
+                                        if file.starts_with(key_event.character) {
                                             self.selected = i;
                                             break;
                                         }

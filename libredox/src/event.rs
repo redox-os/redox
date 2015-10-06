@@ -1,6 +1,8 @@
 use core::char;
+use core::ptr;
 
-use common::string::*;
+use collections::string::*;
+use collections::vec::Vec;
 
 use syscall::call::*;
 
@@ -196,7 +198,7 @@ impl RedrawEvent {
     }
 
     /// Convert from an `Event`
-    pub fn from_event(event: Event) -> Self {
+    pub fn from_event(event: Event) -> RedrawEvent {
         RedrawEvent { redraw: event.a as usize }
     }
 
@@ -217,9 +219,14 @@ impl OpenEvent {
     /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         unsafe {
+            let c_str = sys_alloc(self.url_string.len() + 1) as *mut u8;
+            if self.url_string.len() > 0 {
+                ptr::copy(self.url_string.as_ptr(), c_str, self.url_string.len());
+            }
+            ptr::write(c_str.offset(self.url_string.len() as isize), 0);
             Event {
                 code: 'o',
-                a: self.url_string.to_c_str() as isize,
+                a: c_str as isize,
                 b: 0,
                 c: 0,
                 d: 0,
@@ -229,11 +236,20 @@ impl OpenEvent {
     }
 
     /// Convert from an `Event`
-    pub fn from_event(event: Event) -> Self {
+    pub fn from_event(event: Event) -> OpenEvent {
         unsafe {
-            let ret = OpenEvent { url_string: String::from_c_str(event.a as *const u8) };
+            let mut utf8: Vec<u8> = Vec::new();
+            for i in 0..4096 /*max size*/ {
+                let b = ptr::read((event.a as *const u8).offset(i));
+                if b == 0{
+                    break;
+                }else{
+                    utf8.push(b);
+                }
+            }
             sys_unalloc(event.a as usize);
-            ret
+
+            OpenEvent { url_string: String::from_utf8_unchecked(utf8) }
         }
     }
 
