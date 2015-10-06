@@ -2,6 +2,12 @@
 
 **Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
 
+## What it looks like
+
+![Redox](img/screenshots/Desktop.png)
+![Redox](img/screenshots/Fancy_opacity.png)
+![Redox](img/screenshots/File_manager.png)
+
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
