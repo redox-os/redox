@@ -4,26 +4,18 @@ pub enum XdrOp {
     Free,
 }
 
-pub struct Xdr {
-    op: XdrOp,
-    public: usize,  // pointer to users' data
-    private: usize, // pointer to private data
-    base: usize,    // pointer to private used for position info
-    handy: isize,   // extra private word
-}
-
 pub trait XdrOps {
     /// Get a long from underlying stream
     fn get_long(&mut self, l: &mut usize) -> bool;
 
     /// Put a long to underlying stream
-    fn put_long(&mut self, l: &usize) -> bool;
+    fn put_long(&mut self, l: usize) -> bool;
 
     /// Get a i32 from underlying stream
     fn get_i32(&mut self, i: &mut i32) -> bool;
 
     /// Put a i32 to underlying stream
-    fn put_i32(&mut self, i: &i32) -> bool;
+    fn put_i32(&mut self, i: i32) -> bool;
 
     /// Get some bytes from the underlying stream
     fn get_bytes(&mut self, bytes: &mut [u8]) -> bool;
@@ -47,4 +39,27 @@ pub trait XdrOps {
     // TODO: Not sure if we'll need this?
     // Change, retrieve client info
     //fn control(&mut self, req: isize, op: void *);
+}
+
+pub struct Xdr {
+    public: usize,  // pointer to users' data
+    ops: Box<XdrOps>,
+}
+
+
+impl Xdr {
+    pub fn new(ops: Box<XdrOps>) -> Xdr {
+        Xdr {
+            public: 0,
+            ops: ops,
+        }
+    }
+
+    pub fn encode_i32(&self, i: i32) {
+        self.ops.put_i32(i);
+    }
+
+    pub fn decode_i32(&self, i: &mut i32) {
+        self.ops.get_i32(i);
+    }
 }
