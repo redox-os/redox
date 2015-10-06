@@ -41,6 +41,17 @@ sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
 make qemu_tap
 ```
 
+## Running on Arch Linux (Qemu)
+
+- Install Qemu
+```bash
+$ sudo pacman -S qemu
+```
+- Run redox
+```bash
+$ make qemu_tap
+```
+
 ## Building on OS X
 - Install MacPorts or Homebrew
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
