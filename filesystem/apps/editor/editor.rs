@@ -134,8 +134,10 @@ impl Editor {
     }
 
     fn main(&mut self, url: String) {
-        let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                     576, 400,
+        let mut window = Window::new((rand() % 400 + 50) as isize,
+                                     (rand() % 300 + 50) as isize,
+                                     576,
+                                     400,
                                      &"Editor (Loading)".to_string());
 
         self.url = url;
@@ -151,15 +153,18 @@ impl Editor {
                         match key_event.scancode {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
-                                window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
+                                window.setTitle(&("Editor (".to_string() + &self.url +
+                                                  ") Changed"));
                                 self.string = self.string[0 .. self.offset - 1].to_string() +
                                               &self.string[self.offset .. self.string.len()];
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
-                                window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
-                                self.string = self.string[0 .. self.offset].to_string() +
-                                              &self.string[self.offset + 1 .. self.string.len() - 1];
+                                window.setTitle(&("Editor (".to_string() + &self.url +
+                                                  ") Changed"));
+                                self.string =
+                                    self.string[0 .. self.offset].to_string() +
+                                    &self.string[self.offset + 1 .. self.string.len() - 1];
                             },
                             K_F5 => self.reload(&mut window),
                             K_F6 => self.save(&mut window),
@@ -202,7 +207,8 @@ impl Editor {
                             _ => match key_event.character {
                                 '\0' => (),
                                 _ => {
-                                    window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
+                                    window.setTitle(&("Editor (".to_string() + &self.url +
+                                                      ") Changed"));
                                     self.string = self.string[0 .. self.offset].to_string() +
                                                   &key_event.character.to_string() +
                                                   &self.string[self.offset .. self.string.len()];

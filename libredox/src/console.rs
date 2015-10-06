@@ -22,8 +22,10 @@ pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
         if window as usize == 0 {
             window = sys_alloc(size_of::<Box<ConsoleWindow>>()) as *mut Box<ConsoleWindow>;
             ptr::write(window,
-                       ConsoleWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                          640, 480,
+                       ConsoleWindow::new((rand() % 400 + 50) as isize,
+                                          (rand() % 300 + 50) as isize,
+                                          640,
+                                          480,
                                           &"Console".to_string()));
             (*window).sync();
         }
@@ -134,9 +136,13 @@ impl ConsoleWindow {
     }
 
     /// Set the window title
-    pub fn setTitle(&mut self, title: &String){
+    pub fn setTitle(&mut self, title: &String) {
         //TODO THIS IS A HACK, should use self.window.setTitle(title);
-        self.window = Window::new(self.window.x(), self.window.y(), self.window.width(), self.window.height(), title);
+        self.window = Window::new(self.window.x(),
+                                  self.window.y(),
+                                  self.window.width(),
+                                  self.window.height(),
+                                  title);
     }
 
     /// Poll the window
@@ -167,8 +173,9 @@ impl ConsoleWindow {
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.command.len() {
-                                self.command = self.command[0 .. self.offset].to_string() +
-                                               &self.command[self.offset + 1 .. self.command.len() - 1];
+                                self.command =
+                                    self.command[0 .. self.offset].to_string() +
+                                    &self.command[self.offset + 1 .. self.command.len() - 1];
                             },
                             K_HOME => self.offset = 0,
                             K_UP => {
