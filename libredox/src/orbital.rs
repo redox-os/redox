@@ -21,13 +21,13 @@ pub struct Window {
 
 impl Window {
     /// Create a new window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Self {
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Self {
         Window {
             x: x,
             y: y,
             w: w,
             h: h,
-            t: title.clone(),
+            t: title.to_string(),
             file: File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)),
             font: File::open(&"file:///ui/unifont.font".to_string()),
         }
@@ -61,7 +61,7 @@ impl Window {
     }
 
     /// Set title
-    pub fn setTitle(&mut self, title: &String) {
+    pub fn set_title(&mut self, title: &str) {
         //TODO
     }
 

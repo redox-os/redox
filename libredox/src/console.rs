@@ -24,7 +24,7 @@ pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
             ptr::write(window,
                        ConsoleWindow::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
                                           640, 480,
-                                          &"Console".to_string()));
+                                          "Console"));
             (*window).sync();
         }
         &mut *window
@@ -47,8 +47,8 @@ pub unsafe fn console_destroy() {
 
 /// Set the title of the console window
 // TODO: Move this to a `Window` trait?
-pub fn console_title(title: &String) {
-    console_window().setTitle(title);
+pub fn console_title(title: &str) {
+    console_window().set_title(title);
 }
 
 /// Print to console
@@ -121,7 +121,7 @@ pub struct ConsoleWindow {
 
 impl ConsoleWindow {
     /// Create a new console window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &String) -> Box<Self> {
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Box<Self> {
         box ConsoleWindow {
             window: Window::new(x, y, w, h, title),
             output: Vec::new(),
@@ -134,7 +134,7 @@ impl ConsoleWindow {
     }
 
     /// Set the window title
-    pub fn setTitle(&mut self, title: &String){
+    pub fn set_title(&mut self, title: &str){
         //TODO THIS IS A HACK, should use self.window.setTitle(title);
         self.window = Window::new(self.window.x(), self.window.y(), self.window.width(), self.window.height(), title);
     }
@@ -145,7 +145,7 @@ impl ConsoleWindow {
     }
 
     /// Print to the window
-    pub fn print(&mut self, string: &String, color: [u8; 4]) {
+    pub fn print(&mut self, string: &str, color: [u8; 4]) {
         for c in string.chars() {
             self.output.push(ConsoleChar {
                 character: c,
@@ -162,13 +162,15 @@ impl ConsoleWindow {
                     if key_event.pressed {
                         match key_event.scancode {
                             K_BKSP => if self.offset > 0 {
-                                self.command = self.command[0 .. self.offset - 1].to_string() +
-                                               &self.command[self.offset .. self.command.len()];
+                                self.command = format!("{}{}",
+                                                       &self.command[0 .. self.offset - 1],
+                                                       &self.command[self.offset .. self.command.len()]);
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.command.len() {
-                                self.command = self.command[0 .. self.offset].to_string() +
-                                               &self.command[self.offset + 1 .. self.command.len() - 1];
+                                self.command = format!("{}{}",
+                                                       &self.command[0 .. self.offset],
+                                                       &self.command[self.offset + 1 .. self.command.len() - 1]);
                             },
                             K_HOME => self.offset = 0,
                             K_UP => {
@@ -183,22 +185,23 @@ impl ConsoleWindow {
                             },
                             K_END => self.offset = self.command.len(),
                             K_DOWN => {
-                                //self.command = String::new();
+                                //self.command.clear()
                                 //self.offset = self.command.len();
                             }
                             _ => match key_event.character {
                                 '\x00' => (),
                                 '\n' => {
                                     let command = self.command.clone();
-                                    self.command = String::new();
+                                    self.command.clear();
                                     self.offset = 0;
                                     return Option::Some(command);
                                 }
                                 '\x1B' => break,
                                 _ => {
-                                    self.command = self.command[0 .. self.offset].to_string() +
-                                                   &key_event.character.to_string() +
-                                                   &self.command[self.offset .. self.command.len()];
+                                    self.command = format!("{}{}{}",
+                                                           &self.command[0 .. self.offset],
+                                                           key_event.character,
+                                                           &self.command[self.offset .. self.command.len()]);
                                     self.offset += 1;
                                 }
                             },
