@@ -268,89 +268,9 @@ impl Disk {
                 }
 
                 for word in 0..256 {
-                    let data = inw(self.base + ATA_REG_DATA);
-                    *((destination + sector*512 + word*2) as *mut u16) = data;
+                    ptr::write((destination + sector*512 + word*2) as *mut u16, inw(self.base + ATA_REG_DATA));
                 }
             }
-        }
-
-        0
-    }
-
-    pub unsafe fn read_dma(&self, lba: u64, count: u64, destination: usize, busmaster: u16) -> u8 {
-        if destination > 0 {
-            //Allocate PRDT
-            let size = count as usize * 512;
-            let entries = (size + 65535) / 65536;
-            let prdt = memory::alloc_aligned(size_of::<PRDTE>() * entries, 65536);
-            for i in 0..entries {
-                if i == entries - 1 {
-                    ptr::write((prdt as *mut PRDTE).offset(i as isize),
-                               PRDTE {
-                                   ptr: (destination + i * 65536) as u32,
-                                   size: (size % 65536) as u16,
-                                   reserved: 0x8000,
-                               });
-                } else {
-                    ptr::write((prdt as *mut PRDTE).offset(i as isize),
-                               PRDTE {
-                                   ptr: (destination + i * 65536) as u32,
-                                   size: 0,
-                                   reserved: 0,
-                               });
-                }
-            }
-
-            //Clear command
-            outb(busmaster, 8);
-
-            //Clear status
-            outb(busmaster + 2, 0);
-
-            outd(busmaster + 4, prdt as u32);
-
-            //DMA Transfer Command
-            /*
-            for i in 0..entries
-                let current_lba = lba + i as u64 * 128;
-                let current_count;
-                if i == entries - 1 {
-                    current_count = count % 128;
-                } else {
-                    current_count = 128;
-                }
-            */
-
-            {
-                let current_lba = lba;
-                let current_count = count;
-
-                while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-                }
-
-                if self.master {
-                    self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-                } else {
-                    self.ide_write(ATA_REG_HDDEVSEL, 0x50);
-                }
-
-                self.ide_write(ATA_REG_SECCOUNT1,
-                               ((current_count >> 8) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA3, ((current_lba >> 24) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA4, ((current_lba >> 32) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA5, ((current_lba >> 40) & 0xFF) as u8);
-
-                self.ide_write(ATA_REG_SECCOUNT0,
-                               ((current_count >> 0) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA0, (current_lba & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA1, ((current_lba >> 8) & 0xFF) as u8);
-                self.ide_write(ATA_REG_LBA2, ((current_lba >> 16) & 0xFF) as u8);
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
-            }
-
-            //Engage bus mastering
-            outb(busmaster, 9);
         }
 
         0
@@ -388,8 +308,7 @@ impl Disk {
                 }
 
                 for word in 0..256 {
-                    outw(self.base + ATA_REG_DATA,
-                         *((source + sector*512 + word*2) as *const u16));
+                    outw(self.base + ATA_REG_DATA, ptr::read((source + sector*512 + word*2) as *const u16));
                 }
 
                 self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
@@ -398,5 +317,52 @@ impl Disk {
         }
 
         0
+    }
+
+    pub unsafe fn read_dma(&self, lba: u64, count: u64) {
+        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+        }
+
+        if self.master {
+            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+        } else {
+            self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+        }
+
+        self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
+
+        self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
+        self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+    }
+
+
+    pub unsafe fn write_dma(&self, lba: u64, count: u64) {
+        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+        }
+
+        if self.master {
+            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+        } else {
+            self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+        }
+
+        self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
+
+        self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
+        self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
+        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
     }
 }

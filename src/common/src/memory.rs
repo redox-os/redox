@@ -36,6 +36,15 @@ impl<T> Memory<T> {
         }
     }
 
+    pub fn new_align(count: usize, align: usize) -> Option<Self> {
+        let alloc = unsafe { alloc_aligned(count * size_of::<T>(), align) };
+        if alloc > 0 {
+            Some(Memory { ptr: alloc as *mut T })
+        } else {
+            None
+        }
+    }
+
     pub fn renew(&mut self, count: usize) -> bool {
         let address = unsafe { realloc(self.ptr as usize, count * size_of::<T>()) };
         if address > 0 {
@@ -177,7 +186,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
         let mut count = 0;
 
         for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 && cluster_to_address(i) % align == 0 {
+            if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
                 if count == 0 {
                     number = i;
                 }
