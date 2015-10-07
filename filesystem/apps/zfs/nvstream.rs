@@ -40,6 +40,7 @@ const NV_FLAG_NOENTOK: isize = 0x1;
 // unsigned things like array lengths.
 
 /// Name value stream header
+#[derive(Debug)]
 pub struct NvsHeader {
     encoding: u8,  // nvs encoding method
     endian: u8,    // nvs endian
@@ -96,7 +97,11 @@ fn encode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
 
 /// Decodes a NvList in XDR format
 pub fn decode_nv_list(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
+    println!("Decoding NvList...");
+
     try!(decode_nv_list_header(xdr));
+
+    println!("Decoded header");
 
     decode_nv_list_embedded(xdr)
 }
@@ -105,6 +110,8 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
     // Decode version and nvflag
     let version = try!(xdr.decode_i32());
     let nvflag = try!(xdr.decode_u32());
+
+    println!("Decoded version and nvflag: {}\t{}", version, nvflag);
 
     // TODO: Give an actual error
     if version != NV_VERSION {
@@ -118,6 +125,8 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         // Decode decoded/decoded size
         let encoded_size = try!(xdr.decode_u32());
         let decoded_size = try!(xdr.decode_u32());
+        
+        println!("Decoded sizes: {}\t{}", encoded_size, decoded_size);
 
         // Check for 2 terminating zeros
         if (encoded_size == 0 && decoded_size == 0) {
@@ -126,6 +135,8 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
 
         // Decode name
         let name = try!(xdr.decode_string());
+
+        println!("Decoded name: {}", name);
 
         // Decode data type
         let data_type = 
@@ -148,13 +159,17 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
 }
 
 fn decode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
+    println!("Decoding header...");
+
     let mut bytes = [0; 4];
     try!(xdr.decode_opaque(&mut bytes));
     let header: &NvsHeader = unsafe { mem::transmute(&bytes[0]) };
+
+    println!("header: {:?}", header);
     
-    if header.encoding != NV_ENCODE_XDR {
+    /*if header.encoding != NV_ENCODE_XDR {
         return Err(xdr::XdrError);
-    }
+    }*/
     Ok(())
 }
 
