@@ -1,11 +1,17 @@
+use alloc::arc::Arc;
 use alloc::boxed::Box;
 
-use core::{cmp, ptr};
+use core::{cmp, mem, ptr};
+use core::sync::atomic::{AtomicBool, Ordering};
 
 use drivers::disk::*;
+use drivers::pio::*;
+use drivers::pciconfig::PCIConfig;
 
 use common::debug;
+use common::queue::Queue;
 use common::memory;
+use common::memory::Memory;
 use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
 use common::scheduler::*;
 use common::string::{String, ToString};
@@ -13,12 +19,7 @@ use common::vec::Vec;
 
 use programs::common::SessionItem;
 
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct Extent {
-    pub block: u64,
-    pub length: u64,
-}
+use syscall::call::sys_yield;
 
 #[repr(packed)]
 pub struct Header {
@@ -41,7 +42,7 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(address: u64, data: NodeData) -> Self {
+    pub fn new(address: u64, data: &NodeData) -> Self {
         let mut utf8: Vec<u8> = Vec::new();
         for i in 0..data.name.len() {
             let c = data.name[i];
@@ -77,43 +78,102 @@ pub struct FileSystem {
 }
 
 impl FileSystem {
-    pub fn from_disk(disk: Disk) -> Self {
+    pub fn from_disk(mut disk: Disk) -> Option<Self> {
         unsafe {
-            let header_ptr: *const Header = memory::alloc_type();
-            disk.read(1, 1, header_ptr as usize);
-            let header = ptr::read(header_ptr);
-            memory::unalloc(header_ptr as usize);
+            if disk.identify() {
+                debug::d(" Disk Found");
 
-            let mut nodes = Vec::new();
-            let node_data: *const NodeData = memory::alloc_type();
-            for extent in &header.extents {
-                if extent.block > 0 {
-                    for node_address in extent.block..extent.block + (extent.length + 511) / 512 {
-                        disk.read(node_address, 1, node_data as usize);
+                let header_ptr: *const Header = memory::alloc_type();
+                disk.read(1, 1, header_ptr as usize);
+                let header = ptr::read(header_ptr);
+                memory::unalloc(header_ptr as usize);
 
-                        nodes.push(Node::new(node_address, ptr::read(node_data)));
-                    }
+                if header.signature[0] == 'R' as u8 &&
+                    header.signature[1] == 'E' as u8 &&
+                    header.signature[2] == 'D' as u8 &&
+                    header.signature[3] == 'O' as u8 &&
+                    header.signature[4] == 'X' as u8 &&
+                    header.signature[5] == 'F' as u8 &&
+                    header.signature[6] == 'S' as u8 &&
+                    header.signature[7] == '\0' as u8 &&
+                    header.version == 0xFFFFFFFF {
+                        debug::d(" Redox Filesystem\n");
+
+                        let mut nodes = Vec::new();
+                        for extent in &header.extents {
+                            if extent.block > 0 && extent.length > 0 {
+                                let mut node_data: Vec<NodeData> = Vec::new();
+                                unsafe {
+                                    let data = memory::alloc(extent.length as usize);
+                                    if data > 0 {
+                                        let sectors = (extent.length as usize + 511) / 512;
+                                        let mut sector: usize = 0;
+                                        while sectors - sector >= 65536 {
+                                            let request = Request {
+                                                extent: Extent {
+                                                    block: extent.block + sector as u64,
+                                                    length: 65536 * 512,
+                                                },
+                                                mem: data + sector * 512,
+                                                read: true,
+                                                complete: Arc::new(AtomicBool::new(false)),
+                                            };
+
+                                            disk.request(request.clone());
+
+                                            while request.complete.load(Ordering::SeqCst) == false {
+                                                disk.on_poll();
+                                            }
+
+                                            sector += 65535;
+                                        }
+                                        if sector < sectors {
+                                            let request = Request {
+                                                extent: Extent {
+                                                    block: extent.block + sector as u64,
+                                                    length: (sectors - sector) as u64 * 512,
+                                                },
+                                                mem: data + sector * 512,
+                                                read: true,
+                                                complete: Arc::new(AtomicBool::new(false)),
+                                            };
+
+                                            disk.request(request.clone());
+
+                                            while request.complete.load(Ordering::SeqCst) == false {
+                                                disk.on_poll();
+                                            }
+                                        }
+
+                                        node_data = Vec {
+                                            data: data as *mut NodeData,
+                                            length: extent.length as usize/mem::size_of::<NodeData>(),
+                                        };
+                                    }
+                                }
+
+                                for i in 0..node_data.len() {
+                                    if let Some(data) = node_data.get(i) {
+                                        nodes.push(Node::new(extent.block + i as u64, data));
+                                    }
+                                }
+                            }
+                        }
+
+                        return Some(FileSystem {
+                            disk: disk,
+                            header: header,
+                            nodes: nodes,
+                        });
+                } else {
+                    debug::d(" Unknown Filesystem\n");
                 }
+            } else {
+                debug::d(" Disk Not Found\n");
             }
-            memory::unalloc(node_data as usize);
-
-            return FileSystem {
-                disk: disk,
-                header: header,
-                nodes: nodes,
-            };
         }
-    }
 
-    pub fn valid(&self) -> bool {
-        return self.header.signature[0] == 'R' as u8 && self.header.signature[1] == 'E' as u8 &&
-               self.header.signature[2] == 'D' as u8 &&
-               self.header.signature[3] == 'O' as u8 &&
-               self.header.signature[4] == 'X' as u8 &&
-               self.header.signature[5] == 'F' as u8 &&
-               self.header.signature[6] == 'S' as u8 &&
-               self.header.signature[7] == '\0' as u8 &&
-               self.header.version == 0xFFFFFFFF;
+        Option::None
     }
 
     pub fn node(&self, filename: &String) -> Option<Node> {
@@ -140,7 +200,7 @@ impl FileSystem {
 }
 
 pub struct FileResource {
-    pub disk: Disk,
+    pub scheme: *mut FileScheme,
     pub node: Node,
     pub vec: Vec<u8>,
     pub seek: usize,
@@ -229,18 +289,22 @@ impl Resource for FileResource {
                         let data = self.vec.as_ptr().offset(pos) as usize;
                         //TODO: Make sure data is copied safely into an zeroed area of the right size!
 
+                        let reenable = start_no_ints();
+
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
-                            self.disk.write(extent.block + sector as u64,
+                            (*self.scheme).fs.disk.write(extent.block + sector as u64,
                                             65535,
                                             data + sector * 512);
                             sector += 65535;
                         }
                         if sector < sectors {
-                            self.disk.write(extent.block + sector as u64,
+                            (*self.scheme).fs.disk.write(extent.block + sector as u64,
                                             (sectors - sector) as u16,
                                             data + sector * 512);
                         }
+
+                        end_no_ints(reenable);
                     }
 
                     pos += size as isize;
@@ -272,10 +336,70 @@ impl Drop for FileResource {
 }
 
 pub struct FileScheme {
-    pub fs: FileSystem,
+    pci: PCIConfig,
+    fs: FileSystem,
+}
+
+impl FileScheme {
+    ///TODO Allow busmaster for secondary
+    pub fn new(mut pci: PCIConfig) -> Option<Box<Self>> {
+        unsafe { pci.flag(4, 4, true) }; // Bus mastering
+
+        let base = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
+
+        debug::d("IDE on ");
+        debug::dh(base as usize);
+        debug::dl();
+
+        debug::d("Primary Master:");
+        if let Some(fs) = FileSystem::from_disk(Disk::primary_master(base)) {
+            return Some(box FileScheme {
+                pci: pci,
+                fs: fs,
+            });
+        }
+
+        debug::d("Primary Slave:");
+        if let Some(fs) = FileSystem::from_disk(Disk::primary_slave(base)) {
+            return Some(box FileScheme {
+                pci: pci,
+                fs: fs,
+            });
+        }
+
+        debug::d("Secondary Master:");
+        if let Some(fs) = FileSystem::from_disk(Disk::secondary_master(base)) {
+            return Some(box FileScheme {
+                pci: pci,
+                fs: fs,
+            });
+        }
+
+        debug::d("Secondary Slave:");
+        if let Some(fs) = FileSystem::from_disk(Disk::secondary_slave(base)) {
+            return Some(box FileScheme {
+                pci: pci,
+                fs: fs,
+            });
+        }
+
+        None
+    }
 }
 
 impl SessionItem for FileScheme {
+    fn on_irq(&mut self, irq: u8) {
+        if irq == self.fs.disk.irq {
+            self.on_poll();
+        }
+    }
+
+    fn on_poll(&mut self) {
+        unsafe {
+            self.fs.disk.on_poll();
+        }
+    }
+
     fn scheme(&self) -> String {
         return "file".to_string();
     }
@@ -327,23 +451,44 @@ impl SessionItem for FileScheme {
                             unsafe {
                                 let data = memory::alloc(extent.length as usize);
                                 if data > 0 {
-                                    let reenable = start_no_ints();
-
                                     let sectors = (extent.length as usize + 511) / 512;
                                     let mut sector: usize = 0;
                                     while sectors - sector >= 65536 {
-                                        self.fs.disk.read(extent.block + sector as u64,
-                                                          65535,
-                                                          data + sector * 512);
+                                        let request = Request {
+                                            extent: Extent {
+                                                block: extent.block + sector as u64,
+                                                length: 65536 * 512,
+                                            },
+                                            mem: data + sector * 512,
+                                            read: true,
+                                            complete: Arc::new(AtomicBool::new(false)),
+                                        };
+
+                                        self.fs.disk.request(request.clone());
+
+                                        while request.complete.load(Ordering::SeqCst) == false {
+                                            sys_yield();
+                                        }
+
                                         sector += 65535;
                                     }
                                     if sector < sectors {
-                                        self.fs.disk.read(extent.block + sector as u64,
-                                                          (sectors - sector) as u16,
-                                                          data + sector * 512);
-                                    }
+                                        let request = Request {
+                                            extent: Extent {
+                                                block: extent.block + sector as u64,
+                                                length: (sectors - sector) as u64 * 512,
+                                            },
+                                            mem: data + sector * 512,
+                                            read: true,
+                                            complete: Arc::new(AtomicBool::new(false)),
+                                        };
 
-                                    end_no_ints(reenable);
+                                        self.fs.disk.request(request.clone());
+
+                                        while request.complete.load(Ordering::SeqCst) == false {
+                                            sys_yield();
+                                        }
+                                    }
 
                                     vec.push_all(&Vec {
                                         data: data as *mut u8,
@@ -355,7 +500,7 @@ impl SessionItem for FileScheme {
                     }
 
                     return box FileResource {
-                        disk: self.fs.disk,
+                        scheme: self,
                         node: node,
                         vec: vec,
                         seek: 0,
@@ -363,57 +508,6 @@ impl SessionItem for FileScheme {
                     };
                 }
                 Option::None => {
-                    /*
-                    d("Creating ");
-                    path.d();
-                    dl();
-
-                    let mut name = [0; 256];
-                    for i in 0..256 {
-                        //TODO: UTF8
-                        let b = path[i] as u8;
-                        name[i] = b;
-                        if b == 0 {
-                            break;
-                        }
-                    }
-
-                    let node = Node {
-                        name: name,
-                        extents: [Extent { block: 0, length: 0 }; 16]
-                    };
-
-                    //TODO: Sync to disk
-                    let mut node_i = 0;
-                    while node_i < self.fs.nodes.len() {
-                        let mut cmp = 0;
-
-                        if let Option::Some(other_node) = self.fs.nodes.get(node_i) {
-                            for i in 0..256 {
-                                if other_node.name[i] != node.name[i] {
-                                    cmp = other_node.name[i] as isize - node.name[i] as isize;
-                                    break;
-                                }
-                            }
-                        }
-
-                        if cmp >= 0 {
-                            break;
-                        }
-
-                        node_i += 1;
-                    }
-                    d("Insert at ");
-                    dd(node_i);
-                    dl();
-                    self.fs.nodes.insert(node_i, node.clone());
-
-                    return box FileResource {
-                        node: node,
-                        vec: Vec::new(),
-                        seek: 0
-                    };
-                    */
                     return box NoneResource;
                 }
             }

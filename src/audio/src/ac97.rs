@@ -13,8 +13,6 @@ use drivers::pio::*;
 
 use programs::common::SessionItem;
 
-use syscall::call;
-
 #[repr(packed)]
 struct BD {
     ptr: u32,
