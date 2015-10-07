@@ -11,7 +11,7 @@ pub struct NvList {
 }
 
 impl NvList {
-    pub fn new(nvflag: u32) -> NvList {
+    pub fn new(nvflag: u32) -> Self {
         NvList {
             version: NV_VERSION,
             nvflag: nvflag,
