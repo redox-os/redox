@@ -173,7 +173,10 @@ impl<T: XdrOps> Xdr for T {
     fn encode_opaque(&mut self, bytes: &[u8]) -> XdrResult<()> {
         // XDR byte strings always have len%4 == 0
         let mut crud: [u8; 4] = [0; 4];
-        let round_up = 4 - (bytes.len()%4);
+        let mut round_up = bytes.len()%4;
+        if round_up > 0 {
+            round_up = 4 - round_up;
+        }
         try!(self.put_bytes(bytes));
         try!(self.put_bytes(&crud[0..round_up]));
         Ok(())
@@ -182,7 +185,10 @@ impl<T: XdrOps> Xdr for T {
     fn decode_opaque(&mut self, bytes: &mut [u8]) -> XdrResult<()> {
         // XDR byte strings always have len%4 == 0
         let mut crud: [u8; 4] = [0; 4];
-        let round_up = 4 - (bytes.len()%4);
+        let mut round_up = bytes.len()%4;
+        if round_up > 0 {
+            round_up = 4 - round_up;
+        }
         try!(self.get_bytes(bytes));
         try!(self.get_bytes(&mut crud[0..round_up]));
         Ok(())
@@ -207,6 +213,7 @@ impl<T: XdrOps> Xdr for T {
 
     fn decode_string(&mut self) -> XdrResult<String> {
         let count = try!(self.decode_u32());
+        println!("Decoding string of length: {}", count);
         let mut bytes = vec![0; count as usize];
         try!(self.decode_opaque(&mut bytes[..]));
         String::from_utf8(bytes).map_err(|_| XdrError)
