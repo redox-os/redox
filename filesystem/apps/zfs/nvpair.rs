@@ -1,3 +1,25 @@
+use redox::*;
+
+// nvp implementation version
+const NV_VERSION: i32 = 0;
+
+// nvlist header
+pub struct NvList {
+    pub version: i32,
+    pub nvflag:  u32, // persistent flags
+    pub pairs: Vec<(String, NvValue)>,
+}
+
+impl NvList {
+    pub fn new(nvflag: u32) -> Self {
+        NvList {
+            version: NV_VERSION,
+            nvflag: nvflag,
+            pairs: Vec::new(),
+        }
+    }
+}
+
 enum DataType {
     Unknown = 0,
     Boolean,
@@ -28,77 +50,32 @@ enum DataType {
     Uint8Array,
 }
 
-struct NvPair {
-    /// Size of this nvpair
-    nvp_size: i32,
-    /// Length of name string
-    nvp_name_sz: i16,
-    /// Not used
-    nvp_reserve: i16,
-    /// number of elements for array types
-    nvp_value_elem: i32,
-    /// type of value name string aligned ptr array for string arrays aligned array of data for value
-    nvp_type: DataType,
+pub enum NvValue {
+    Unknown,
+    Boolean,
+    Byte(u8),
+    Int16(i16),
+    Uint16(u16),
+    Int32(i32),
+    Uint32(u32),
+    Int64(i64),
+    Uint64(u64),
+    String(String),
+    ByteArray(Vec<u8>),
+    Int16Array(Vec<i16>),
+    Uint16Array(Vec<u16>),
+    Int32Array(Vec<i32>),
+    Uint32Array(Vec<u32>),
+    Int64Array(Vec<i64>),
+    Uint64Array(Vec<u64>),
+    StringArray(Vec<String>),
+    HrTime,
+    NvList(Box<NvList>),
+    NvListArray(Vec<Box<NvList>>),
+    BooleanValue(bool),
+    Int8(i8),
+    Uint8(u8),
+    BooleanArray(Vec<bool>),
+    Int8Array(Vec<i8>),
+    Uint8Array(Vec<u8>),
 }
-
-// nvlist header
-struct NvList {
-    nvl_version: i32,
-    /// Persistent flags
-    nvl_nvflag: u32,
-    /// Ptr to private data if not packed
-    nvl_priv: u64,
-    nvl_flag: u32,
-    /// Currently not used, for alignment
-    nvl_pad: i32,
-}
-
-/// nvp implementation version
-const NV_VERSION: i32 = 0;
-
-/// nvlist pack encoding
-const NV_ENCODE_NATIVE: u8 = 0;
-const NV_ENCODE_XDR:    u8 = 1;
-
-/// nvlist persistent unique name flags, stored in nvl_nvflags
-const NV_UNIQUE_NAME:      u32 = 0x1;
-const NV_UNIQUE_NAME_TYPE: u32 = 0x2;
-
-/// nvlist lookup pairs related flags
-const NV_FLAG_NOENTOK: isize = 0x1;
-
-/* What to do about these macros?
-// convenience macros
-#define NV_ALIGN(x)     (((ulong_t)(x) + 7ul) & ~7ul)
-#define NV_ALIGN4(x)        (((x) + 3) & ~3)
-
-#define NVP_SIZE(nvp)       ((nvp)->nvp_size)
-#define NVP_NAME(nvp)       ((char *)(nvp) + sizeof (nvpair_t))
-#define NVP_TYPE(nvp)       ((nvp)->nvp_type)
-#define NVP_NELEM(nvp)      ((nvp)->nvp_value_elem)
-#define NVP_VALUE(nvp)      ((char *)(nvp) + NV_ALIGN(sizeof (nvpair_t) \
-                + (nvp)->nvp_name_sz))
-
-#define NVL_VERSION(nvl)    ((nvl)->nvl_version)
-#define NVL_SIZE(nvl)       ((nvl)->nvl_size)
-#define NVL_FLAG(nvl)       ((nvl)->nvl_flag)
-*/
-
-/// NV allocator framework
-struct NvAllocOps;
-
-struct NvAlloc {
-    nva_ops: &'static NvAllocOps,
-    nva_arg: Any, /* This was a void pointer type.
-                   * Not sure if Any is the correct type. */
-}
-
-/*
-struct NvAllocOps {
-    int (*nv_ao_init)(nv_alloc_t *, __va_list);
-    void (*nv_ao_fini)(nv_alloc_t *);
-    void *(*nv_ao_alloc)(nv_alloc_t *, size_t);
-    void (*nv_ao_free)(nv_alloc_t *, void *, size_t);
-    void (*nv_ao_reset)(nv_alloc_t *);
-}
-*/
