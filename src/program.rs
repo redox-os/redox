@@ -7,6 +7,7 @@
 #![feature(core_slice_ext)]
 #![feature(no_std)]
 #![feature(vec_push_all)]
+#![feature(vec_resize)]
 #![no_std]
 
 #[macro_use]
