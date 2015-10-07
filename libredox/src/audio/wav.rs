@@ -1,14 +1,21 @@
 use collections::string::*;
 use collections::vec::Vec;
 
+/// A WAV file
+// TODO: Follow naming conventions
 pub struct WAV {
+    /// The number of channels
     pub channels: u16,
+    /// The sample rate
     pub sample_rate: u32,
+    /// The sample bits
     pub sample_bits: u16,
+    /// The data
     pub data: Vec<u8>,
 }
 
 impl WAV {
+    /// Create a new empty WAV file
     pub fn new() -> Self {
         WAV {
             channels: 0,
@@ -18,6 +25,7 @@ impl WAV {
         }
     }
 
+    /// Create a WAV file from data
     pub fn from_data(file_data: &Vec<u8>) -> Self {
         let mut ret = WAV::new();
 

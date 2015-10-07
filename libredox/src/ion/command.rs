@@ -9,6 +9,7 @@ use env::*;
 /* Magic Macros { */
 static mut application: *mut Application = 0 as *mut Application;
 
+/// Execute a command
 macro_rules! exec {
     ($cmd:expr) => ({
         unsafe {
@@ -18,12 +19,15 @@ macro_rules! exec {
 }
 /* } Magic Macros */
 
+/// A command
 pub struct Command {
     pub name: String,
     pub main: Box<Fn(&Vec<String>)>,
 }
 
 impl Command {
+    /// Return the vector of the commands
+    // TODO: Use a more efficient collection instead
     pub fn vec() -> Vec<Self> {
         let mut commands: Vec<Self> = Vec::new();
         commands.push(Command {
@@ -170,6 +174,7 @@ impl Command {
     }
 }
 
+/// A (env) variable
 pub struct Variable {
     pub name: String,
     pub value: String,
@@ -179,6 +184,7 @@ pub struct Mode {
     value: bool,
 }
 
+/// An application
 pub struct Application {
     commands: Vec<Command>,
     variables: Vec<Variable>,
@@ -186,6 +192,7 @@ pub struct Application {
 }
 
 impl Application {
+    /// Create a new empty application
     pub fn new() -> Self {
         return Application {
             commands: Command::vec(),
@@ -364,6 +371,7 @@ impl Application {
         }
     }
 
+    /// Run the application
     pub fn main(&mut self) {
         console_title(&"Terminal".to_string());
 
