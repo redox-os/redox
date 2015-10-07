@@ -8,11 +8,17 @@ use event::*;
 
 use file::*;
 
+/// A window
 pub struct Window {
+    /// The x coordinate of the window
     x: isize,
+    /// The y coordinate of the window
     y: isize,
+    /// The width of the window
     w: usize,
+    /// The height of the window
     h: usize,
+    /// The title of the window
     t: String,
     file: File,
     /// Font file, mut to allow changes

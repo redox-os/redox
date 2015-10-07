@@ -11,6 +11,9 @@
 #![feature(no_std)]
 #![no_std]
 
+// Yep I'm evil
+#![warn(missing_docs)]
+
 #[macro_use]
 extern crate alloc;
 
