@@ -1,10 +1,8 @@
 use alloc::boxed::*;
 
 use core::clone::Clone;
-use core::cmp::min;
-use core::cmp::max;
+use core::cmp::{max, min};
 use core::mem::swap;
-use core::ptr;
 
 use common::string::*;
 use common::vec::*;

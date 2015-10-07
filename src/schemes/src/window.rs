@@ -2,7 +2,6 @@ use alloc::boxed::Box;
 
 use core::cmp::{min, max};
 use core::mem::size_of;
-use core::ops::DerefMut;
 use core::ptr;
 
 use common::event::*;
