@@ -50,11 +50,20 @@ pub trait XdrOps {
 }
 
 pub trait Xdr {
+    fn encode_bool(&mut self, i: bool) -> XdrResult<()>;
+    fn decode_bool(&mut self) -> XdrResult<bool>;
+
     fn encode_i8(&mut self, i: i8) -> XdrResult<()>;
     fn decode_i8(&mut self) -> XdrResult<i8>;
 
     fn encode_u8(&mut self, u: u8) -> XdrResult<()>;
     fn decode_u8(&mut self) -> XdrResult<u8>;
+
+    fn encode_i16(&mut self, i: i16) -> XdrResult<()>;
+    fn decode_i16(&mut self) -> XdrResult<i16>;
+
+    fn encode_u16(&mut self, u: u16) -> XdrResult<()>;
+    fn decode_u16(&mut self) -> XdrResult<u16>;
 
     fn encode_i32(&mut self, i: i32) -> XdrResult<()>;
     fn decode_i32(&mut self) -> XdrResult<i32>;
@@ -79,6 +88,24 @@ pub trait Xdr {
 }
 
 impl<T: XdrOps> Xdr for T {
+    fn encode_bool(&mut self, b: bool) -> XdrResult<()> {
+        let i =
+            match b {
+                false => 0,
+                true => 1,
+            };
+        self.put_i32(b as i32)
+    }
+
+    fn decode_bool(&mut self) -> XdrResult<bool> {
+        let i = try!(self.get_i32());
+        match i {
+            0 => Ok(false),
+            1 => Ok(true),
+            _ => Err(XdrError),
+        }
+    }
+
     fn encode_i8(&mut self, i: i8) -> XdrResult<()> {
         self.put_i32(i as i32)
     }
@@ -93,6 +120,22 @@ impl<T: XdrOps> Xdr for T {
 
     fn decode_u8(&mut self) -> XdrResult<u8> {
         self.get_i32().map(|x| x as u8)
+    }
+
+    fn encode_i16(&mut self, i: i16) -> XdrResult<()> {
+        self.put_i32(i as i32)
+    }
+
+    fn decode_i16(&mut self) -> XdrResult<i16> {
+        self.get_i32().map(|x| x as i16)
+    }
+
+    fn encode_u16(&mut self, u: u16) -> XdrResult<()> {
+        self.put_i32(u as i32)
+    }
+
+    fn decode_u16(&mut self) -> XdrResult<u16> {
+        self.get_i32().map(|x| x as u16)
     }
 
     fn encode_i32(&mut self, i: i32) -> XdrResult<()> {
