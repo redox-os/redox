@@ -1,5 +1,7 @@
 use common::*;
 
+mod rsa;
+
 /// An installable package for Ox
 pub struct Package {
     // TODO: Many of these uses String where other types can be used (when integreting with octavo)
