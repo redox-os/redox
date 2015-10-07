@@ -13,11 +13,11 @@ pub enum XdrOp {
 
 // TODO: Return `XdrResult` instead
 pub trait XdrOps {
-    /// Get a long from underlying stream
-    fn get_long(&mut self) -> XdrResult<usize>;
+    /// Get a usize from underlying stream
+    fn get_usize(&mut self) -> XdrResult<usize>;
 
-    /// Put a long to underlying stream
-    fn put_long(&mut self, l: usize) -> XdrResult<()>;
+    /// Put a usize to underlying stream
+    fn put_usize(&mut self, l: usize) -> XdrResult<()>;
 
     /// Get a i32 from underlying stream
     fn get_i32(&mut self) -> XdrResult<i32>;
@@ -113,12 +113,13 @@ impl<T: XdrOps> Xdr for T {
     }
 
     fn encode_string(&mut self, string: &String) -> XdrResult<()> {
-        // TODO
-        Ok(())
+        self.encode_opaque(string.as_bytes())
     }
 
     fn decode_string(&mut self) -> XdrResult<String> {
-        // TODO
-        Ok(String::new())
+        let count = try!(self.decode_u32());
+        let mut bytes = vec![0; count as usize];
+        try!(self.decode_opaque(&mut bytes[..]));
+        String::from_utf8(bytes).map_err(|_| XdrError)
     }
 }
