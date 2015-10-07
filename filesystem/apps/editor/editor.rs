@@ -23,7 +23,7 @@ impl Editor {
     }
 
     fn reload(&mut self, window: &mut Window) {
-        window.setTitle(&("Editor (".to_string() + &self.url + ")"));
+        window.set_title(&format!("{}{}{}","Editor (", &self.url, ")"));
         self.offset = 0;
         self.scroll_x = 0;
         self.scroll_y = 0;
@@ -42,14 +42,14 @@ impl Editor {
     fn save(&mut self, window: &mut Window) {
         match self.file {
             Option::Some(ref mut file) => {
-                window.setTitle(&("Editor (".to_string() + &self.url + ") Saved"));
+                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Saved"));
                 file.seek(Seek::Start(0));
                 file.write(&self.string.as_bytes());
                 file.sync();
             }
             Option::None => {
                 //TODO: Ask for file to save to
-                window.setTitle(&("Editor (".to_string() + &self.url + ") No Open File"));
+                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") No Open File"));
             }
         }
     }
@@ -133,12 +133,14 @@ impl Editor {
         }
     }
 
-    fn main(&mut self, url: String) {
-        let mut window = Window::new((rand() % 400 + 50) as isize, (rand() % 300 + 50) as isize,
-                                     576, 400,
-                                     &"Editor (Loading)".to_string());
+    fn main(&mut self, url: &str) {
+        let mut window = Window::new((rand() % 400 + 50) as isize,
+                                    (rand() % 300 + 50) as isize,
+                                    576,
+                                    400,
+                                     "Editor (Loading)");
 
-        self.url = url;
+        self.url = url.to_string();
         self.file = Option::Some(File::open(&self.url));
 
         self.reload(&mut window);
@@ -151,13 +153,13 @@ impl Editor {
                         match key_event.scancode {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
-                                window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
+                                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                 self.string = self.string[0 .. self.offset - 1].to_string() +
                                               &self.string[self.offset .. self.string.len()];
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
-                                window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
+                                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                 self.string = self.string[0 .. self.offset].to_string() +
                                               &self.string[self.offset + 1 .. self.string.len() - 1];
                             },
@@ -202,7 +204,7 @@ impl Editor {
                             _ => match key_event.character {
                                 '\0' => (),
                                 _ => {
-                                    window.setTitle(&("Editor (".to_string() + &self.url + ") Changed"));
+                                    window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                     self.string = self.string[0 .. self.offset].to_string() +
                                                   &key_event.character.to_string() +
                                                   &self.string[self.offset .. self.string.len()];
@@ -222,7 +224,7 @@ impl Editor {
 
 pub fn main() {
     match args().get(1) {
-        Option::Some(arg) => Editor::new().main(arg.clone()),
-        Option::None => Editor::new().main("none://".to_string()),
+        Option::Some(arg) => Editor::new().main(&arg),
+        Option::None => Editor::new().main("none://"),
     }
 }

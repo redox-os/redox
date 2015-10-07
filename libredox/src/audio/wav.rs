@@ -36,11 +36,7 @@ impl WAV {
         };
 
         let gets = |start: usize, len: usize| -> String {
-            let mut ret = String::new();
-            for i in start..start + len {
-                ret = ret + &(get(i) as char).to_string();
-            }
-            ret
+            (start..start + len).map(|i| get(i) as char).collect::<String>()
         };
 
         let mut i = 0;
@@ -49,11 +45,11 @@ impl WAV {
         //let root_size = getd(i);
         i += 4;
 
-        if root_type == "RIFF".to_string() {
+        if root_type == "RIFF" {
             let media_type = gets(i, 4);
             i += 4;
 
-            if media_type == "WAVE".to_string() {
+            if media_type == "WAVE" {
                 loop {
                     let chunk_type = gets(i, 4);
                     i += 4;
@@ -64,13 +60,13 @@ impl WAV {
                         break;
                     }
 
-                    if chunk_type == "fmt ".to_string() {
+                    if chunk_type == "fmt " {
                         ret.channels = getw(i + 2);
                         ret.sample_rate = getd(i + 4);
                         ret.sample_bits = getw(i + 0xE);
                     }
 
-                    if chunk_type == "data".to_string() {
+                    if chunk_type == "data" {
                         ret.data = file_data[i .. chunk_size as usize].to_vec();
                     }
 
