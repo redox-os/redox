@@ -364,21 +364,24 @@ unsafe fn init(font_data: usize) {
     //Start interrupts
     end_no_ints(true);
 
-    debug_draw = false;
-
-    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
-
-    context_enabled = true;
-
+    //Load cursor before getting out of debug mode
     {
         let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
-        session.cursor = BMP::from_data(&vec);
+
+        let cursor = BMP::from_data(&vec);
+
+        let reenable = start_no_ints();
+        session.cursor = cursor;
+        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        end_no_ints(reenable);
     }
 
-    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+    debug_draw = false;
+
+    context_enabled = true;
 
     {
         let mut resource = URL::from_str("file:///apps/").open();
@@ -388,8 +391,12 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()) {
-                session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder))));
+                let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
+
+                let reenable = start_no_ints();
+                session.packages.push(package);
                 session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+                end_no_ints(reenable);
             }
         }
     }
@@ -399,10 +406,14 @@ unsafe fn init(font_data: usize) {
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
-        session.background = BMP::from_data(&vec)
-    }
 
-    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        let background = BMP::from_data(&vec);
+
+        let reenable = start_no_ints();
+        session.background = background;
+        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        end_no_ints(reenable);
+    }
 }
 
 fn dr(reg: &str, value: u32) {
