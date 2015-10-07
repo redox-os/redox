@@ -1,6 +1,7 @@
 use core::cmp::min;
 use core::intrinsics;
 use core::mem::size_of;
+use core::ops::{Index, IndexMut};
 use core::ptr;
 
 use common::scheduler::*;
@@ -55,7 +56,13 @@ impl<T> Memory<T> {
         }
     }
 
-    pub fn length(self) -> usize {
+    // The size in bytes
+    pub fn size(&self) -> usize {
+        unsafe { alloc_size(self.ptr as usize) }
+    }
+
+    // The length in T elements
+    pub fn length(&self) -> usize {
         unsafe { alloc_size(self.ptr as usize) / size_of::<T>() }
     }
 
@@ -68,7 +75,8 @@ impl<T> Memory<T> {
     }
 
     pub unsafe fn load(&self, i: usize) -> T {
-        intrinsics::volatile_load(self.ptr.offset(i as isize))
+        intrinsics::atomic_singlethreadfence();
+        ptr::read(self.ptr.offset(i as isize))
     }
 
     pub unsafe fn write(&mut self, i: usize, value: T) {
@@ -76,13 +84,28 @@ impl<T> Memory<T> {
     }
 
     pub unsafe fn store(&mut self, i: usize, value: T) {
-        intrinsics::volatile_store(self.ptr.offset(i as isize), value);
+        intrinsics::atomic_singlethreadfence();
+        ptr::write(self.ptr.offset(i as isize), value)
     }
 }
 
 impl<T> Drop for Memory<T> {
     fn drop(&mut self) {
         unsafe { unalloc(self.ptr as usize) }
+    }
+}
+
+impl<T> Index<usize> for Memory<T> {
+    type Output = T;
+
+    fn index<'a>(&'a self, _index: usize) -> &'a T {
+        unsafe { &*self.ptr.offset(_index as isize) }
+    }
+}
+
+impl<T> IndexMut<usize> for Memory<T> {
+    fn index_mut<'a>(&'a mut self, _index: usize) -> &'a mut T {
+        unsafe { &mut *self.ptr.offset(_index as isize) }
     }
 }
 
