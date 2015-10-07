@@ -1,10 +1,91 @@
+use alloc::arc::Arc;
+
 use core::mem::size_of;
 use core::ptr;
+use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::debug::*;
+use common::queue::Queue;
 use common::memory;
+use common::memory::Memory;
+use common::scheduler::*;
 
 use drivers::pio::*;
+
+#[derive(Copy, Clone)]
+#[repr(packed)]
+pub struct Extent {
+    pub block: u64,
+    pub length: u64,
+}
+
+/// A disk request
+pub struct Request {
+    /// The disk extent
+    pub extent: Extent,
+    /// The memory location
+    pub mem: usize,
+    /// The request type
+    pub read: bool,
+    /// Completion indicator
+    pub complete: Arc<AtomicBool>,
+}
+
+impl Clone for Request {
+    fn clone(&self) -> Self {
+        Request {
+            extent: self.extent,
+            mem: self.mem,
+            read: self.read,
+            complete: self.complete.clone(),
+        }
+    }
+}
+
+/// Direction of DMA, set if moving from disk to memory, not set if moving from memory to disk
+const CMD_DIR: u8 = 8;
+/// DMA should process PRDT
+const CMD_ACT: u8 = 1;
+/// DMA interrupt occured
+const STS_INT: u8 = 4;
+/// DMA error occured
+const STS_ERR: u8 = 2;
+/// DMA is processing PRDT
+const STS_ACT: u8 = 1;
+
+/// PRDT End of Table
+const PRD_EOT: u32 = 0x80000000;
+
+/// Physical Region Descriptor
+#[repr(packed)]
+struct PRD {
+    addr: u32,
+    size: u32,
+}
+
+struct PRDT {
+    reg: PIO32,
+    mem: Memory<PRD>,
+}
+
+impl PRDT {
+    fn new(port: u16) -> Option<Self> {
+        if let Some(mem) = Memory::new_align(8192, 65536) {
+            return Some(PRDT {
+                reg: PIO32::new(port),
+                mem: mem,
+            });
+        }
+
+        None
+    }
+}
+
+impl Drop for PRDT {
+    fn drop(&mut self) {
+        unsafe { self.reg.write(0) };
+    }
+}
 
 //Status port bits
 const ATA_SR_BSY: u8 = 0x80;
@@ -82,50 +163,72 @@ const ATA_REG_CONTROL: u16 = 0x0C;
 const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
 
-#[repr(packed)]
-pub struct PRDTE {
-    pub ptr: u32,
-    pub size: u16,
-    pub reserved: u16,
-}
-
-#[derive(Copy, Clone)]
 pub struct Disk {
     base: u16,
     ctrl: u16,
     master: bool,
+    request: Option<Request>,
+    requests: Queue<Request>,
+    cmd: PIO8,
+    sts: PIO8,
+    prdt: Option<PRDT>,
+    pub irq: u8,
 }
 
 impl Disk {
-    pub fn primary_master() -> Self {
+    pub fn primary_master(base: u16) -> Self {
         Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: true,
+            request: Option::None,
+            requests: Queue::new(),
+            cmd: PIO8::new(base),
+            sts: PIO8::new(base + 2),
+            prdt: PRDT::new(base + 4),
+            irq: 0xE,
         }
     }
 
-    pub fn primary_slave() -> Self {
+    pub fn primary_slave(base: u16) -> Self {
         Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: false,
+            request: Option::None,
+            requests: Queue::new(),
+            cmd: PIO8::new(base),
+            sts: PIO8::new(base + 2),
+            prdt: PRDT::new(base + 4),
+            irq: 0xE,
         }
     }
 
-    pub fn secondary_master() -> Self {
+    pub fn secondary_master(base: u16) -> Self {
         Disk {
             base: 0x170,
             ctrl: 0x374,
             master: true,
+            request: Option::None,
+            requests: Queue::new(),
+            cmd: PIO8::new(base + 8),
+            sts: PIO8::new(base + 0xA),
+            prdt: PRDT::new(base + 0xC),
+            irq: 0xF,
         }
     }
 
-    pub fn secondary_slave() -> Self {
+    pub fn secondary_slave(base: u16) -> Self {
         Disk {
             base: 0x170,
             ctrl: 0x374,
             master: false,
+            request: Option::None,
+            requests: Queue::new(),
+            cmd: PIO8::new(base + 8),
+            sts: PIO8::new(base + 0xA),
+            prdt: PRDT::new(base + 0xC),
+            irq: 0xF,
         }
     }
 
@@ -319,50 +422,153 @@ impl Disk {
         0
     }
 
-    pub unsafe fn read_dma(&self, lba: u64, count: u64) {
-        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+    pub fn request(&mut self, request: Request) {
+        unsafe {
+            let reenable = start_no_ints();
 
+            self.requests.push(request);
+
+            if self.request.is_none() {
+                self.next_request();
+            }
+
+            end_no_ints(reenable);
         }
-
-        if self.master {
-            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
-        } else {
-            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
-        }
-
-        self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
-
-        self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-        self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
     }
 
+    pub unsafe fn on_poll(&mut self) {
+        let sts = unsafe { self.sts.read() };
+        if sts & STS_INT == STS_INT {
+            unsafe { self.sts.write(sts) };
 
-    pub unsafe fn write_dma(&self, lba: u64, count: u64) {
-        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+            let cmd = unsafe { self.cmd.read() };
+            if cmd & CMD_ACT == CMD_ACT {
+                unsafe { self.next_request() };
+            }
+        }
+    }
 
+    unsafe fn next_request(&mut self) {
+        let reenable = start_no_ints();
+
+        self.cmd.write(CMD_DIR);
+        if let Some(ref mut prdt) = self.prdt {
+            prdt.reg.write(0 as u32);
         }
 
-        if self.master {
-            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
-        } else {
-            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
+        if let Some(ref mut req) = self.request {
+            req.complete.store(true, Ordering::SeqCst);
         }
 
-        self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
+        self.request = self.requests.pop();
 
-        self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-        self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
+        if let Some(ref req) = self.request {
+            if req.mem > 0 {
+                let sectors = (req.extent.length + 511)/512;
+                let mut prdt_set = false;
+                if let Some(ref mut prdt) = self.prdt {
+                    let mut size = sectors * 512;
+                    let mut i = 0;
+                    while size >= 65536 && i < 8192 {
+                        let eot;
+                        if size == 65536 {
+                            eot = PRD_EOT;
+                        } else {
+                            eot = 0;
+                        }
+
+                        unsafe{
+                            prdt.mem.store(i, PRD {
+                               addr: (req.mem + i * 65536) as u32,
+                               size: eot,
+                            });
+                        }
+
+                        size -= 65536;
+                        i += 1;
+                    }
+                    if size > 0 && i < 8192 {
+                        unsafe {
+                            prdt.mem.store(i, PRD {
+                               addr: (req.mem + i * 65536) as u32,
+                               size: size as u32 | PRD_EOT,
+                            });
+                        }
+
+                        size = 0;
+                        i += 1;
+                    }
+
+                    if i > 0 {
+                        if size == 0 {
+                            prdt.reg.write(prdt.mem.ptr as u32);
+                            prdt_set = true;
+                        }else{
+                            d("IDE Request too large: ");
+                            dd(size as usize);
+                            d(" remaining\n");
+                        }
+                    }else{
+                        d("IDE Request size is 0\n");
+                    }
+                }else{
+                    d("PRDT not allocated\n");
+                }
+
+                if prdt_set {
+                    if req.read {
+                        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+                        }
+
+                        if self.master {
+                            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
+                        } else {
+                            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
+                        }
+
+                        self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
+
+                        self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+
+                        self.cmd.write(CMD_ACT | CMD_DIR);
+                    } else {
+                        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+                        }
+
+                        if self.master {
+                            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
+                        } else {
+                            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
+                        }
+
+                        self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
+
+                        self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
+
+                        self.cmd.write(CMD_ACT);
+                    }
+                }
+            }else{
+                d("IDE Request mem is 0\n");
+            }
+        }
+
+        end_no_ints(reenable);
     }
 }
