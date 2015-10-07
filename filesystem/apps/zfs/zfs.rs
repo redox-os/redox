@@ -20,18 +20,13 @@ impl ZFS {
 
     //TODO: Error handling
     pub fn read(&mut self, start: usize, length: usize) -> Vec<u8> {
-        let mut ret: Vec<u8> = Vec::new();
+        let mut ret: Vec<u8> = vec![0; length*512];
 
         for sector in start..start + length {
             //TODO: Check error
             self.disk.seek(Seek::Start(sector * 512));
 
-            let mut data: [u8; 512] = [0; 512];
-            self.disk.read(&mut data);
-
-            for i in 0..512 {
-                ret.push(data[i]);
-            }
+            self.disk.read(&mut ret[sector*512..(sector+1)*512]);
         }
 
         return ret;
