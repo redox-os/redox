@@ -5,13 +5,13 @@ use redox::*;
 
 use super::{XdrOps, XdrError, XdrResult};
 
-pub struct MemOps {
+pub struct MemOps<'a> {
     pos: usize,
-    buffer: Vec<u8>,
+    buffer: &'a mut [u8],
 }
 
-impl MemOps {
-    pub fn new(buffer: Vec<u8>) -> MemOps {
+impl<'a> MemOps<'a> {
+    pub fn new(buffer: &'a mut [u8]) -> Self {
         MemOps {
             pos: 0,
             buffer: buffer,
@@ -21,7 +21,7 @@ impl MemOps {
 
 // Xdr encodes things in big endian and values are aligned at 4 bytes. For example, a u8 would take
 // up 4 bytes when serialized.
-impl XdrOps for MemOps {
+impl<'a> XdrOps for MemOps<'a> {
     fn get_i64(&mut self) -> XdrResult<i64> {
         if self.pos >= self.buffer.len() {
             Err(XdrError)
@@ -36,8 +36,8 @@ impl XdrOps for MemOps {
 
     fn put_i64(&mut self, l: i64) -> XdrResult<()> {
         if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < 4 {
-            // Buffer is too small, grow it
-            self.buffer.resize(self.pos+4, 0);
+            // Buffer is too small
+            return Err(XdrError);
         }
 
         let d: &mut i64 = unsafe { mem::transmute(&mut self.buffer[self.pos]) };
@@ -60,8 +60,8 @@ impl XdrOps for MemOps {
 
     fn put_i32(&mut self, i: i32) -> XdrResult<()> {
         if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < 4 {
-            // Buffer is too small, grow it
-            self.buffer.resize(self.pos+4, 0);
+            // Buffer is too small
+            return Err(XdrError);
         }
 
         let d: &mut i32 = unsafe { mem::transmute(&mut self.buffer[self.pos]) };
@@ -88,8 +88,8 @@ impl XdrOps for MemOps {
 
     fn put_bytes(&mut self, bytes: &[u8]) -> XdrResult<()> {
         if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < bytes.len() {
-            // Buffer is too small, grow it
-            self.buffer.resize(self.pos+bytes.len(), 0);
+            // Buffer is too small
+            return Err(XdrError);
         }
 
         let src = bytes.as_ptr();
@@ -116,13 +116,13 @@ impl XdrOps for MemOps {
 
 #[test]
 fn test_mem_ops_i64() {
-    let mem_ops = MemOps::new(vec![1, 1, 0, 0]);
+    let mem_ops = MemOps::new(&mut [1, 1, 0, 0]);
     assert!(mem_ops.get_i32() == 257);
 }
 
 #[test]
 fn test_mem_ops_i64_and_back() {
-    let mut mem_ops = MemOps::new();
+    let mut mem_ops = MemOps::new(&mut [0; 8]);
     mem_ops.put_i64(424242);
     mem_ops.set_pos(0);
     assert!(mem_ops.get_i64() == 424242);
@@ -130,13 +130,13 @@ fn test_mem_ops_i64_and_back() {
 
 #[test]
 fn test_mem_ops_i32() {
-    let mem_ops = MemOps::new(vec![1, 1, 0, 0]);
+    let mem_ops = MemOps::new(&mut [1, 1, 0, 0]);
     assert!(mem_ops.get_i32() == 257);
 }
 
 #[test]
 fn test_mem_ops_i32_and_back() {
-    let mut mem_ops = MemOps::new();
+    let mut mem_ops = MemOps::new(&mut [0; 4]);
     mem_ops.put_i32(424242);
     mem_ops.set_pos(0);
     assert!(mem_ops.get_i32() == 424242);
