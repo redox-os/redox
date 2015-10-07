@@ -135,10 +135,10 @@ impl Editor {
 
     fn main(&mut self, url: &str) {
         let mut window = Window::new((rand() % 400 + 50) as isize,
-                                    (rand() % 300 + 50) as isize,
-                                    576,
-                                    400,
-                                     "Editor (Loading)");
+                                     (rand() % 300 + 50) as isize,
+                                     576,
+                                     400,
+                                      "Editor (Loading)");
 
         self.url = url.to_string();
         self.file = Option::Some(File::open(&self.url));
@@ -154,14 +154,16 @@ impl Editor {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
                                 window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                self.string = self.string[0 .. self.offset - 1].to_string() +
-                                              &self.string[self.offset .. self.string.len()];
+                                self.string = format!("{}{}",
+                                                      &self.string[0 .. self.offset - 1],
+                                                      &self.string[self.offset .. self.string.len()]);
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
                                 window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                self.string = self.string[0 .. self.offset].to_string() +
-                                              &self.string[self.offset + 1 .. self.string.len() - 1];
+                                self.string = format!("{}{}",
+                                                      &self.string[0 .. self.offset],
+                                                      &self.string[self.offset + 1 .. self.string.len() - 1]);
                             },
                             K_F5 => self.reload(&mut window),
                             K_F6 => self.save(&mut window),
@@ -205,9 +207,10 @@ impl Editor {
                                 '\0' => (),
                                 _ => {
                                     window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                    self.string = self.string[0 .. self.offset].to_string() +
-                                                  &key_event.character.to_string() +
-                                                  &self.string[self.offset .. self.string.len()];
+                                    self.string = format!("{}{}{}",
+                                                          &self.string[0 .. self.offset],
+                                                          key_event.character,
+                                                          &self.string[self.offset .. self.string.len()]);
                                     self.offset += 1;
                                 }
                             },
