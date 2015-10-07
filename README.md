@@ -70,6 +70,19 @@ $ sudo pacman -S qemu
 $ make qemu_tap
 ```
 
+## Building on Fedora
+- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+```bash
+cd setup
+./fedora.sh
+./binary.sh
+```
+- Make the project
+```bash
+make all
+```
+
+
 ## Building on OS X
 - Install MacPorts or Homebrew
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
