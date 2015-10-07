@@ -11,7 +11,7 @@
 #![feature(no_std)]
 #![no_std]
 
-// Yep I'm evil
+// Yep I'm evil (this is a good idea!)
 #![warn(missing_docs)]
 
 #[macro_use]
@@ -36,7 +36,7 @@ pub use audio::wav::*;
 pub use console::*;
 pub use env::*;
 pub use event::*;
-pub use file::*;
+pub use fs::file::*;
 pub use graphics::bmp::*;
 pub use orbital::*;
 
@@ -74,7 +74,8 @@ pub mod env;
 /// A module for events
 pub mod event;
 /// A module for the filesystem
-pub mod file;
+#[path="fs/lib.rs"]
+mod fs;
 /// Graphics support
 mod graphics {
     pub mod bmp;
