@@ -220,6 +220,9 @@ qemu: build/harddrive.bin
 			-soundhw ac97 \
 			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 
+qemu_bare: build/harddrive.bin
+	-qemu-system-i386 -net none -serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
+
 qemu_no_kvm: build/harddrive.bin
 	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
