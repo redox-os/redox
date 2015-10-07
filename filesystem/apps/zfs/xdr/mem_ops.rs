@@ -1,6 +1,8 @@
+use core::mem;
+
 use redox::*;
 
-use super::{XdrOps, XdrResult};
+use super::{XdrOps, XdrError, XdrResult};
 
 pub struct MemOps {
     pos: usize,
@@ -9,7 +11,13 @@ pub struct MemOps {
 
 impl XdrOps for MemOps {
     fn get_long(&mut self) -> XdrResult<usize> {
-        Ok(0)
+        if self.buffer.len()-self.pos < 4 {
+            Err(XdrError)
+        } else {
+            let d: &usize = unsafe { mem::transmute(&self.buffer[self.pos]) };
+            self.pos += 4;
+            Ok(*d)
+        }
     }
 
     fn put_long(&mut self, l: usize) -> XdrResult<()> {
