@@ -66,7 +66,8 @@ impl<T> Memory<T> {
     }
 
     pub unsafe fn load(&self, i: usize) -> T {
-        intrinsics::atomic_load(self.ptr.offset(i as isize))
+        intrinsics::atomic_singlethreadfence();
+        ptr::read(self.ptr.offset(i as isize))
     }
 
     pub unsafe fn write(&mut self, i: usize, value: T) {
@@ -74,7 +75,8 @@ impl<T> Memory<T> {
     }
 
     pub unsafe fn store(&mut self, i: usize, value: T) {
-        intrinsics::atomic_store(self.ptr.offset(i as isize), value);
+        intrinsics::atomic_singlethreadfence();
+        ptr::write(self.ptr.offset(i as isize), value)
     }
 }
 
