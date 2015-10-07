@@ -291,10 +291,6 @@ unsafe fn init(font_data: usize) {
 
     debug_init();
 
-    debug::dd(mem::size_of::<usize>() * 8);
-    debug::d(" bits");
-    debug::dl();
-
     Page::init();
     memory::cluster_init();
     //Unmap first page to catch null pointer errors (after reading memory map)
@@ -308,6 +304,11 @@ unsafe fn init(font_data: usize) {
     debug_draw = true;
     debug_command = memory::alloc_type();
     ptr::write(debug_command, String::new());
+
+    debug::d("Redox ");
+    debug::dd(mem::size_of::<usize>() * 8);
+    debug::d(" bits ");
+    debug::dl();
 
     clock_realtime = RTC::new().time();
 
@@ -360,6 +361,8 @@ unsafe fn init(font_data: usize) {
     Context::spawn(box move || {
         ICMPScheme::reply_loop();
     });
+
+    debug::d("Reenabling interrupts\n");
 
     //Start interrupts
     end_no_ints(true);
