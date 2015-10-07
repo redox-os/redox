@@ -1,10 +1,7 @@
 use core::mem;
 
-use nvpair;
-use xdr;
-
-// nvp implementation version
-const NV_VERSION: i32 = 0;
+use super::nvpair::NvList;
+use super::xdr;
 
 // nvlist pack encoding
 const NV_ENCODE_NATIVE: u8 = 0;
@@ -64,7 +61,7 @@ pub struct XdrNvListEncoder<T: xdr::XdrOps> {
 }
 
 impl<T: xdr::XdrOps> XdrNvListEncoder<T> {
-    pub fn new(xdr_ops: T) -> XdrNvListEncoder {
+    pub fn new(xdr_ops: T) -> XdrNvListEncoder<T> {
         XdrNvListEncoder {
             xdr_ops: xdr_ops,
         }
@@ -82,6 +79,7 @@ impl<T: xdr::XdrOps> XdrNvListEncoder<T> {
                 reserved1: 0,
                 reserved2: 0,
             };
-        self.xdr_ops.put_bytes(&mem::transmute(header));
+        let header_bytes: [u8; 4] = unsafe { mem::transmute(header) };
+        self.xdr_ops.put_bytes(&header_bytes);
     }
 }

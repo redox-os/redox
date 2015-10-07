@@ -40,26 +40,3 @@ pub trait XdrOps {
     // Change, retrieve client info
     //fn control(&mut self, req: isize, op: void *);
 }
-
-pub struct Xdr {
-    public: usize,  // pointer to users' data
-    ops: Box<XdrOps>,
-}
-
-
-impl Xdr {
-    pub fn new(ops: Box<XdrOps>) -> Xdr {
-        Xdr {
-            public: 0,
-            ops: ops,
-        }
-    }
-
-    pub fn encode_i32(&self, i: i32) {
-        self.ops.put_i32(i);
-    }
-
-    pub fn decode_i32(&self, i: &mut i32) {
-        self.ops.get_i32(i);
-    }
-}
