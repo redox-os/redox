@@ -1,7 +1,7 @@
 use redox::*;
 
 // nvp implementation version
-const NV_VERSION: i32 = 0;
+pub const NV_VERSION: i32 = 0;
 
 // nvlist header
 pub struct NvList {

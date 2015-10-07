@@ -1,6 +1,6 @@
 use core::mem;
 
-use super::nvpair::NvList;
+use super::nvpair::{NV_VERSION, NvList, NvValue};
 use super::xdr;
 
 // nvlist pack encoding
@@ -38,64 +38,102 @@ pub struct NvsHeader {
 ///   - num elements: 4 bytes
 ///   - data
 /// - 2 terminating zeros: 4 bytes
-pub struct XdrNvListEncoder<T: xdr::Xdr> {
-    xdr_ops: T,
+pub fn encode_nv_list(xdr: &mut xdr::Xdr, nv_list: &NvList) -> xdr::XdrResult<()> {
+    try!(encode_nv_list_header(xdr));
+
+    // Encode version and nvflag
+    try!(xdr.encode_i32(nv_list.version));
+    try!(xdr.encode_u32(nv_list.nvflag));
+
+    // Encode the pairs
+    for &(ref name, ref value) in &nv_list.pairs {
+        // Encode encoded/decoded size
+        let encoded_size = 0;
+        let decoded_size = 0;
+
+        // Encode name
+        try!(xdr.encode_string(name));
+
+        // TODO
+
+        // Encode data type
+        //try!(xdr.encode_i32(value.get_data_type()));
+
+        // Encode the number of elements
+        //try!(xdr.encode_i32(value.num_elements()));
+
+        // Encode the value
+    }
+
+    // Encode 2 terminating zeros
+    try!(xdr.encode_i32(0));
+    try!(xdr.encode_i32(0));
+    Ok(())
 }
 
-impl<T: xdr::Xdr> XdrNvListEncoder<T> {
-    pub fn new(xdr_ops: T) -> XdrNvListEncoder<T> {
-        XdrNvListEncoder {
-            xdr_ops: xdr_ops,
+fn encode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
+    let header =
+        NvsHeader {
+            encoding: NV_ENCODE_XDR,
+            endian: NV_LITTLE_ENDIAN,
+            reserved1: 0,
+            reserved2: 0,
+        };
+    let header_bytes: [u8; 4] = unsafe { mem::transmute(header) };
+    try!(xdr.encode_bytes(&header_bytes));
+    Ok(())
+}
+
+pub fn decode_nv_list(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
+    try!(decode_nv_list_header(xdr));
+
+    // Decode version and nvflag
+    let version = try!(xdr.decode_i32());
+    let nvflags = try!(xdr.decode_u32());
+
+    // TODO: Give an actual error
+    if version != NV_VERSION {
+        return Err(xdr::XdrError);
+    }
+
+    let mut nv_list = NvList::new(NV_UNIQUE_NAME);
+
+    // Decode the pairs
+    loop {
+        // Decode decoded/decoded size
+        let encoded_size = try!(xdr.decode_u32());
+        let decoded_size = try!(xdr.decode_u32());
+
+        // Check for 2 terminating zeros
+        if (encoded_size == 0 && decoded_size == 0) {
+            break;
         }
+
+        // Decode name
+        let name = try!(xdr.decode_string());
+
+        // Decode data type
+        let data_type = try!(xdr.decode_i32());
+
+        // Decode the number of elements
+        let num_elements = try!(xdr.decode_i32());
+
+        // Decode the value
+        let value = NvValue::Uint8(42);
+        
+        // Add the value to the list
+        nv_list.pairs.push((name, value));
     }
 
-    pub fn encode(&mut self, nv_list: &NvList) -> xdr::XdrResult<()> {
-        try!(self.encode_header());
+    Ok(nv_list)
+}
 
-        // Encode version and nvflag
-        try!(self.xdr_ops.encode_i32(nv_list.version));
-        try!(self.xdr_ops.encode_u32(nv_list.nvflag));
-
-        // Encode the pairs
-        for &(ref name, ref value) in &nv_list.pairs {
-            // Encode encoded/decoded size
-            let encoded_size = 0;
-            let decoded_size = 0;
-
-            // Encode name
-            try!(self.xdr_ops.encode_string(name));
-
-            // TODO
-
-            // Encode data type
-            //try!(self.xdr_ops.encode_i32(value.get_data_type()));
-
-            // Encode the number of elements
-            //try!(self.xdr_ops.encode_i32(value.num_elements()));
-
-            // Encode the value
-        }
-
-        try!(self.encode_end_zeros());
-        Ok(())
+fn decode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
+    let bytes = try!(xdr.decode_bytes());
+    let header: &NvsHeader = unsafe { mem::transmute(&bytes[0]) };
+    
+    if header.encoding != NV_ENCODE_XDR {
+        return Err(xdr::XdrError);
     }
-
-    fn encode_header(&mut self) -> xdr::XdrResult<()> {
-        let header =
-            NvsHeader {
-                encoding: NV_ENCODE_XDR,
-                endian: NV_LITTLE_ENDIAN,
-                reserved1: 0,
-                reserved2: 0,
-            };
-        let header_bytes: [u8; 4] = unsafe { mem::transmute(header) };
-        try!(self.xdr_ops.encode_bytes(&header_bytes));
-        Ok(())
-    }
-
-    fn encode_end_zeros(&mut self) -> xdr::XdrResult<()> {
-        try!(self.xdr_ops.encode_i32(0));
-        try!(self.xdr_ops.encode_i32(0));
-        Ok(())
-    }
+    Ok(())
 }
