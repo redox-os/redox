@@ -33,7 +33,6 @@ use common::string::{String, ToString};
 use common::time::Duration;
 use common::vec::Vec;
 
-use drivers::disk::*;
 use drivers::pci::*;
 use drivers::pio::*;
 use drivers::ps2::*;
@@ -56,7 +55,6 @@ use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
-use schemes::file::*;
 use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
@@ -107,7 +105,7 @@ mod network;
 mod programs;
 
 #[path="schemes/src/lib.rs"]
-mod schemes; 
+mod schemes;
 
 #[path="syscall/src/lib.rs"]
 mod syscall;
@@ -271,22 +269,6 @@ pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x01);
 }
 
-unsafe fn test_disk(disk: Disk) {
-    if disk.identify() {
-        debug::d(" Disk Found");
-
-        let fs = FileSystem::from_disk(disk);
-        if fs.valid() {
-            debug::d(" Redox Filesystem");
-        } else {
-            debug::d(" Unknown Filesystem");
-        }
-    } else {
-        debug::d(" Disk Not Found");
-    }
-    debug::dl();
-}
-
 unsafe fn init(font_data: usize) {
     start_no_ints();
 
@@ -348,23 +330,8 @@ unsafe fn init(font_data: usize) {
 
     pci_init(session);
 
-    debug::d("Primary Master:");
-    test_disk(Disk::primary_master());
-
-    debug::d("Primary Slave:");
-    test_disk(Disk::primary_slave());
-
-    debug::d("Secondary Master:");
-    test_disk(Disk::secondary_master());
-
-    debug::d("Secondary Slave:");
-    test_disk(Disk::secondary_slave());
-
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
-    session.items.push(box FileScheme {
-        fs: FileSystem::from_disk(Disk::primary_master())
-    });
     session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
     session.items.push(box RandomScheme);
