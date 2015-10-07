@@ -245,9 +245,9 @@ impl Disk {
             }
 
             if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
             } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
             }
 
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
@@ -284,9 +284,9 @@ impl Disk {
             }
 
             if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
             } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
             }
 
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
@@ -325,9 +325,9 @@ impl Disk {
         }
 
         if self.master {
-            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
         } else {
-            self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
         }
 
         self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
@@ -349,9 +349,9 @@ impl Disk {
         }
 
         if self.master {
-            self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
         } else {
-            self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
         }
 
         self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
