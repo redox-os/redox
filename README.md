@@ -81,7 +81,14 @@ cd setup
 ```bash
 make all
 ```
-
+## Running on Fedora (Qemu, Advanced)
+- Install Qemu
+```bash
+sudo yum install qemu-system-x86 qemu-kvm tunctl
+```
+- Run Qemu
+```bash
+make qemu_tap
 
 ## Building on OS X
 - Install MacPorts or Homebrew
