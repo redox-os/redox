@@ -1,6 +1,9 @@
 use redox::*;
 
-enum NvValue {
+// nvp implementation version
+const NV_VERSION: i32 = 0;
+
+pub enum NvValue {
     Unknown,
     Boolean,
     Byte(u8),
@@ -31,10 +34,10 @@ enum NvValue {
 }
 
 // nvlist header
-struct NvList {
+pub struct NvList {
     version: i32,
     nvflag:  u32, // persistent flags
-    pairs: HashMap<String, NvValue>,
+    pairs: Vec<(String, NvValue)>,
 }
 
 impl NvList {
@@ -42,7 +45,7 @@ impl NvList {
         NvList {
             version: NV_VERSION,
             nvflag: nvflag,
-            pairs: HashMap::new(),
+            pairs: Vec::new(),
         }
     }
 }

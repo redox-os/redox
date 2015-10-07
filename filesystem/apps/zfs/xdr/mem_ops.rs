@@ -1,6 +1,6 @@
 use redox::*;
 
-use xdr::XdrOps;
+use super::XdrOps;
 
 pub struct MemOps {
     buffer: Vec<u8>,
