@@ -45,8 +45,6 @@ use graphics::bmp::*;
 use graphics::color::Color;
 use graphics::display::{self, Display};
 use graphics::point::Point;
-use graphics::size::Size;
-use graphics::window::Window;
 
 use programs::package::*;
 use programs::session::*;
