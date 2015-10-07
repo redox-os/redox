@@ -13,11 +13,11 @@ pub enum XdrOp {
 
 // TODO: Return `XdrResult` instead
 pub trait XdrOps {
-    /// Get a usize from underlying stream
-    fn get_usize(&mut self) -> XdrResult<usize>;
+    /// Get a i64 from underlying stream
+    fn get_i64(&mut self) -> XdrResult<i64>;
 
-    /// Put a usize to underlying stream
-    fn put_usize(&mut self, l: usize) -> XdrResult<()>;
+    /// Put a i64 to underlying stream
+    fn put_i64(&mut self, l: i64) -> XdrResult<()>;
 
     /// Get a i32 from underlying stream
     fn get_i32(&mut self) -> XdrResult<i32>;
@@ -50,11 +50,23 @@ pub trait XdrOps {
 }
 
 pub trait Xdr {
+    fn encode_i8(&mut self, i: i8) -> XdrResult<()>;
+    fn decode_i8(&mut self) -> XdrResult<i8>;
+
+    fn encode_u8(&mut self, u: u8) -> XdrResult<()>;
+    fn decode_u8(&mut self) -> XdrResult<u8>;
+
     fn encode_i32(&mut self, i: i32) -> XdrResult<()>;
     fn decode_i32(&mut self) -> XdrResult<i32>;
 
     fn encode_u32(&mut self, u: u32) -> XdrResult<()>;
     fn decode_u32(&mut self) -> XdrResult<u32>;
+
+    fn encode_i64(&mut self, i: i64) -> XdrResult<()>;
+    fn decode_i64(&mut self) -> XdrResult<i64>;
+
+    fn encode_u64(&mut self, u: u64) -> XdrResult<()>;
+    fn decode_u64(&mut self) -> XdrResult<u64>;
 
     fn encode_opaque(&mut self, bytes: &[u8]) -> XdrResult<()>;
     fn decode_opaque(&mut self, bytes: &mut [u8]) -> XdrResult<()>;
@@ -67,6 +79,22 @@ pub trait Xdr {
 }
 
 impl<T: XdrOps> Xdr for T {
+    fn encode_i8(&mut self, i: i8) -> XdrResult<()> {
+        self.put_i32(i as i32)
+    }
+
+    fn decode_i8(&mut self) -> XdrResult<i8> {
+        self.get_i32().map(|x| x as i8)
+    }
+
+    fn encode_u8(&mut self, u: u8) -> XdrResult<()> {
+        self.put_i32(u as i32)
+    }
+
+    fn decode_u8(&mut self) -> XdrResult<u8> {
+        self.get_i32().map(|x| x as u8)
+    }
+
     fn encode_i32(&mut self, i: i32) -> XdrResult<()> {
         self.put_i32(i)
     }
@@ -81,6 +109,22 @@ impl<T: XdrOps> Xdr for T {
 
     fn decode_u32(&mut self) -> XdrResult<u32> {
         self.get_i32().map(|x| x as u32)
+    }
+
+    fn encode_i64(&mut self, i: i64) -> XdrResult<()> {
+        self.put_i64(i)
+    }
+
+    fn decode_i64(&mut self) -> XdrResult<i64> {
+        self.get_i64()
+    }
+
+    fn encode_u64(&mut self, u: u64) -> XdrResult<()> {
+        self.put_i64(u as i64)
+    }
+
+    fn decode_u64(&mut self) -> XdrResult<u64> {
+        self.get_i64().map(|x| x as u64)
     }
 
     fn encode_opaque(&mut self, bytes: &[u8]) -> XdrResult<()> {
@@ -102,6 +146,7 @@ impl<T: XdrOps> Xdr for T {
     }
 
     fn encode_bytes(&mut self, bytes: &[u8]) -> XdrResult<()> {
+        try!(self.encode_u32(bytes.len() as u32));
         self.encode_opaque(bytes)
     }
 
@@ -113,6 +158,7 @@ impl<T: XdrOps> Xdr for T {
     }
 
     fn encode_string(&mut self, string: &String) -> XdrResult<()> {
+        try!(self.encode_u32(string.as_bytes().len() as u32));
         self.encode_opaque(string.as_bytes())
     }
 
