@@ -9,6 +9,15 @@ pub struct MemOps {
     buffer: Vec<u8>,
 }
 
+impl MemOps {
+    pub fn new(buffer: Vec<u8>) -> MemOps {
+        MemOps {
+            pos: 0,
+            buffer: buffer,
+        }
+    }
+}
+
 impl XdrOps for MemOps {
     fn get_long(&mut self) -> XdrResult<usize> {
         if self.buffer.len()-self.pos < 4 {
@@ -25,7 +34,13 @@ impl XdrOps for MemOps {
     }
 
     fn get_i32(&mut self) -> XdrResult<i32> {
-        Ok(0)
+        if self.buffer.len()-self.pos < 4 {
+            Err(XdrError)
+        } else {
+            let d: &i32 = unsafe { mem::transmute(&self.buffer[self.pos]) };
+            self.pos += 4;
+            Ok(i32::from_be(*d))
+        }
     }
 
     fn put_i32(&mut self, i: i32) -> XdrResult<()> {
@@ -44,10 +59,17 @@ impl XdrOps for MemOps {
         self.pos
     }
 
-    fn set_pos(&mut self, offset: usize) -> XdrResult<()> {
+    fn set_pos(&mut self, new_pos: usize) -> XdrResult<()> {
+        self.pos = new_pos;
         Ok(())
     }
 
     fn destroy(&mut self) {
     }
+}
+
+#[test]
+fn test_mem_ops_u32() {
+    let mem_ops = MemOps::new(vec![1, 1, 0, 0]);
+    assert!(mem_ops.get_u32() == 257);
 }
