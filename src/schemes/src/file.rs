@@ -232,14 +232,14 @@ impl Resource for FileResource {
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
                             self.disk.write(extent.block + sector as u64,
-                                          65535,
-                                          data + sector * 512);
+                                            65535,
+                                            data + sector * 512);
                             sector += 65535;
                         }
                         if sector < sectors {
                             self.disk.write(extent.block + sector as u64,
-                                          (sectors - sector) as u16,
-                                          data + sector * 512);
+                                            (sectors - sector) as u16,
+                                            data + sector * 512);
                         }
                     }
 
@@ -329,18 +329,18 @@ impl SessionItem for FileScheme {
                                 if data > 0 {
                                     let reenable = start_no_ints();
 
-                                    let sectors = (extent.length as usize + 511)/512;
+                                    let sectors = (extent.length as usize + 511) / 512;
                                     let mut sector: usize = 0;
                                     while sectors - sector >= 65536 {
                                         self.fs.disk.read(extent.block + sector as u64,
-                                                      65535,
-                                                      data + sector * 512);
+                                                          65535,
+                                                          data + sector * 512);
                                         sector += 65535;
                                     }
                                     if sector < sectors {
                                         self.fs.disk.read(extent.block + sector as u64,
-                                                      (sectors - sector) as u16,
-                                                      data + sector * 512);
+                                                          (sectors - sector) as u16,
+                                                          data + sector * 512);
                                     }
 
                                     end_no_ints(reenable);

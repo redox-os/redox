@@ -3,16 +3,18 @@ use core::ptr;
 use common::memory;
 
 pub struct Page {
-    virtual_address: usize
+    virtual_address: usize,
 }
 
 impl Page {
     pub unsafe fn init() {
         for table_i in 0..memory::PAGE_TABLE_SIZE {
-            ptr::write((memory::PAGE_DIRECTORY + table_i * 4) as *mut u32, (memory::PAGE_TABLES + table_i * memory::PAGE_TABLE_SIZE * 4) as u32 | 1);
+            ptr::write((memory::PAGE_DIRECTORY + table_i * 4) as *mut u32,
+                       (memory::PAGE_TABLES + table_i * memory::PAGE_TABLE_SIZE * 4) as u32 | 1);
 
             for entry_i in 0..memory::PAGE_TABLE_SIZE {
-                Page::new((table_i * memory::PAGE_TABLE_SIZE + entry_i) * memory::PAGE_SIZE).map_identity();
+                Page::new((table_i * memory::PAGE_TABLE_SIZE + entry_i) * memory::PAGE_SIZE)
+                    .map_identity();
             }
         }
 
@@ -27,9 +29,7 @@ impl Page {
     }
 
     pub fn new(virtual_address: usize) -> Self {
-        Page {
-            virtual_address: virtual_address
-        }
+        Page { virtual_address: virtual_address }
     }
 
     fn entry_address(&self) -> usize {
@@ -49,7 +49,8 @@ impl Page {
     }
 
     pub unsafe fn map(&mut self, physical_address: usize) {
-        ptr::write(self.entry_address() as *mut u32, (physical_address as u32 & 0xFFFFF000) | 1);
+        ptr::write(self.entry_address() as *mut u32,
+                   (physical_address as u32 & 0xFFFFF000) | 1);
         self.flush();
     }
 

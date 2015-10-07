@@ -47,7 +47,7 @@ enum DataType {
     Uint8,
     BooleanArray,
     Int8Array,
-    Uint8Array
+    Uint8Array,
 }
 
 pub enum NvValue {

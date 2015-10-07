@@ -22,20 +22,18 @@ pub struct WindowScheme;
 
 pub struct WindowResource {
     pub window: Box<Window>,
-    pub seek: usize
+    pub seek: usize,
 }
 
 impl Resource for WindowResource {
      //Required functions
     /// Return the url of this resource
     fn url(&self) -> URL {
-        return URL::from_string(
-            &("window://".to_string()
-                                + "/" + self.window.point.x
-                                + "/" + self.window.point.y
-                                + "/" + self.window.size.width
-                                + "/" + self.window.size.height
-                                + "/" + &self.window.title));
+        return URL::from_string(&("window://".to_string() + "/" + self.window.point.x + "/" +
+                                  self.window.point.y + "/" +
+                                  self.window.size.width + "/" +
+                                  self.window.size.height +
+                                  "/" + &self.window.title));
     }
 
     /// Return the type of this resource
@@ -64,8 +62,8 @@ impl Resource for WindowResource {
                 Option::Some(event) => {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();
-                },
-                Option::None => sys_yield()
+                }
+                Option::None => sys_yield(),
             }
         }
 
@@ -78,7 +76,9 @@ impl Resource for WindowResource {
 
         let size = min(content.size - self.seek, buf.len());
         unsafe {
-            Display::copy_run(buf.as_ptr() as usize, content.offscreen + self.seek, size);
+            Display::copy_run(buf.as_ptr() as usize,
+                              content.offscreen + self.seek,
+                              size);
         }
         self.seek += size;
 
@@ -92,7 +92,7 @@ impl Resource for WindowResource {
         self.seek = match pos {
             ResourceSeek::Start(offset) => min(end, max(0, offset)),
             ResourceSeek::Current(offset) => min(end, max(0, self.seek as isize + offset) as usize),
-            ResourceSeek::End(offset) =>  min(end, max(0, end as isize + offset) as usize)
+            ResourceSeek::End(offset) => min(end, max(0, end as isize + offset) as usize),
         };
 
         return Option::Some(self.seek);
@@ -115,24 +115,24 @@ impl SessionItem for WindowScheme {
         let url_path = url.path_parts();
         let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
-            None    => 0,
+            None => 0,
         };
         let pointy = match url_path.get(1) {
             Some(y) => y.to_num_signed(),
-            None    => 0,
+            None => 0,
         };
         let size_width = match url_path.get(2) {
-            Some(w) =>  w.to_num(),
-            None    =>  100,
+            Some(w) => w.to_num(),
+            None => 100,
         };
         let size_height = match url_path.get(3) {
-            Some(h) =>  h.to_num(),
-            None    =>  100,
+            Some(h) => h.to_num(),
+            None => 100,
         };
 
         let mut title = match url_path.get(4) {
-            Some(t) =>  t.clone(),
-            None    =>  String::new(),
+            Some(t) => t.clone(),
+            None => String::new(),
         };
         for i in 5..url_path.len() {
             if let Some(t) = url_path.get(i) {

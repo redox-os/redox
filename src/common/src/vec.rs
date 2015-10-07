@@ -40,7 +40,8 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
 
 /// An owned iterator over a vec
 pub struct OwnedVecIterator<T>
-    where T: Clone {
+    where T: Clone
+{
     vec: Vec<T>,
     offset: usize,
 }
@@ -94,7 +95,7 @@ impl <T> Vec<T> {
 
     pub fn from_slice(slice: &[T]) -> Self {
         let data;
-        unsafe{
+        unsafe {
             data = sys_alloc(size_of::<T>() * slice.len()) as *mut T;
 
             ptr::copy(slice.as_ptr(), data, slice.len());
@@ -102,7 +103,7 @@ impl <T> Vec<T> {
 
         Vec::<T> {
             data: data,
-            length: slice.len()
+            length: slice.len(),
         }
     }
 
@@ -207,7 +208,8 @@ impl <T> Vec<T> {
 
     /// Convert into an iterator
     pub fn into_iter(self) -> OwnedVecIterator<T>
-           where T: Clone {
+        where T: Clone
+    {
         OwnedVecIterator {
             vec: self,
             offset: 0,
