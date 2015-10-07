@@ -170,7 +170,29 @@ impl Command {
             },
         });
 
-        return commands;
+        commands.push(Command {
+            name: "wget".to_string(),
+            main: box |args: &Vec<String>| {
+                if let Some(host) = args.get(1) {
+                    if let Some(req) = args.get(2) {
+
+                        let mut con = File::open(&("tcp://".to_string() + host));
+                        con.write(("GET ".to_string() + req + " HTTP/1.1").as_bytes());
+                        let mut res = Vec::new();
+                        con.read_to_end(&mut res);
+                        let mut file = File::open(&req);
+
+                        file.write(&res[..]);
+                    } else {
+                        println!("No request given");
+                    }
+                } else {
+                    println!("No url given");
+                }
+            },
+        });
+
+        commands
     }
 }
 
