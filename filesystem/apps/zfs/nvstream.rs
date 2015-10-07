@@ -49,12 +49,12 @@ impl<T: xdr::Xdr> XdrNvListEncoder<T> {
         }
     }
 
-    pub fn encode(&mut self, nv_list: &NvList) {
-        self.encode_header();
+    pub fn encode(&mut self, nv_list: &NvList) -> xdr::XdrResult<()> {
+        try!(self.encode_header());
 
         // Encode version and nvflag
-        self.xdr_ops.encode_i32(nv_list.version);
-        self.xdr_ops.encode_u32(nv_list.nvflag);
+        try!(self.xdr_ops.encode_i32(nv_list.version));
+        try!(self.xdr_ops.encode_u32(nv_list.nvflag));
 
         // Encode the pairs
         for &(ref name, ref value) in &nv_list.pairs {
@@ -63,23 +63,24 @@ impl<T: xdr::Xdr> XdrNvListEncoder<T> {
             let decoded_size = 0;
 
             // Encode name
-            self.xdr_ops.encode_string(name);
+            try!(self.xdr_ops.encode_string(name));
 
             // TODO
 
             // Encode data type
-            //self.xdr_ops.encode_i32(value.get_data_type());
+            //try!(self.xdr_ops.encode_i32(value.get_data_type()));
 
             // Encode the number of elements
-            //self.xdr_ops.encode_i32(value.num_elements());
+            //try!(self.xdr_ops.encode_i32(value.num_elements()));
 
             // Encode the value
         }
 
-        self.encode_end_zeros();
+        try!(self.encode_end_zeros());
+        Ok(())
     }
 
-    fn encode_header(&mut self) {
+    fn encode_header(&mut self) -> xdr::XdrResult<()> {
         let header =
             NvsHeader {
                 encoding: NV_ENCODE_XDR,
@@ -88,11 +89,13 @@ impl<T: xdr::Xdr> XdrNvListEncoder<T> {
                 reserved2: 0,
             };
         let header_bytes: [u8; 4] = unsafe { mem::transmute(header) };
-        self.xdr_ops.encode_bytes(&header_bytes);
+        try!(self.xdr_ops.encode_bytes(&header_bytes));
+        Ok(())
     }
 
-    fn encode_end_zeros(&mut self) {
-        self.xdr_ops.encode_i32(0);
-        self.xdr_ops.encode_i32(0);
+    fn encode_end_zeros(&mut self) -> xdr::XdrResult<()> {
+        try!(self.xdr_ops.encode_i32(0));
+        try!(self.xdr_ops.encode_i32(0));
+        Ok(())
     }
 }
