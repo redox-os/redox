@@ -23,7 +23,7 @@ impl Editor {
     }
 
     fn reload(&mut self, window: &mut Window) {
-        window.set_title(&format!("{}{}{}","Editor (", &self.url, ")"));
+        window.set_title(&("Editor (".to_string() + &self.url + ")"));
         self.offset = 0;
         self.scroll_x = 0;
         self.scroll_y = 0;
@@ -42,14 +42,14 @@ impl Editor {
     fn save(&mut self, window: &mut Window) {
         match self.file {
             Option::Some(ref mut file) => {
-                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Saved"));
+                window.set_title(&("Editor (".to_string() + &self.url + ") Saved"));
                 file.seek(Seek::Start(0));
                 file.write(&self.string.as_bytes());
                 file.sync();
             }
             Option::None => {
                 //TODO: Ask for file to save to
-                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") No Open File"));
+                window.set_title(&("Editor (".to_string() + &self.url + ") No Open File"));
             }
         }
     }
@@ -135,10 +135,10 @@ impl Editor {
 
     fn main(&mut self, url: &str) {
         let mut window = Window::new((rand() % 400 + 50) as isize,
-                                    (rand() % 300 + 50) as isize,
-                                    576,
-                                    400,
-                                     "Editor (Loading)");
+                                     (rand() % 300 + 50) as isize,
+                                     576,
+                                     400,
+                                      "Editor (Loading)");
 
         self.url = url.to_string();
         self.file = Option::Some(File::open(&self.url));

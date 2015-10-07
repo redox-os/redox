@@ -8,11 +8,17 @@ use syscall::call::*;
 
 /// An optional event
 pub enum EventOption {
+    /// A mouse event
     Mouse(MouseEvent),
+    /// A key event
     Key(KeyEvent),
+    /// A redraw event
     Redraw(RedrawEvent),
+    /// A open event
     Open(OpenEvent),
+    /// An unknown event
     Unknown(Event),
+    /// No event
     None,
 }
 
@@ -29,7 +35,7 @@ pub struct Event {
 }
 
 impl Event {
-    //// Create a null event
+    /// Create a null event
     pub fn new() -> Event {
         Event {
             code: '\0',
@@ -66,10 +72,15 @@ impl Event {
 /// A event related to the mouse
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
+    /// The x coordinate of the mouse
     pub x: isize,
+    /// The y coordinate of the mouse
     pub y: isize,
+    /// Was the left button pressed?
     pub left_button: bool,
+    /// Was the right button pressed?
     pub right_button: bool,
+    /// Was the middle button pressed?
     pub middle_button: bool,
 }
 
@@ -134,8 +145,11 @@ pub const K_F12: u8 = 0x58;
 /// A key event (such as a pressed key)
 #[derive(Copy, Clone)]
 pub struct KeyEvent {
+    /// The charecter of the key
     pub character: char,
+    /// The scancode of the key
     pub scancode: u8,
+    /// Was it pressed?
     pub pressed: bool,
 }
 

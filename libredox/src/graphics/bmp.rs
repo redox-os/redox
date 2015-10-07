@@ -28,7 +28,7 @@ impl BMP {
     }
 
     /// Create a bitmap from some data
-    pub fn from_data(file_data: &Vec<u8>) -> Self {
+    pub fn from_data(file_data: &[u8]) -> Self {
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
                 Option::Some(byte) => *byte,
