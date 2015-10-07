@@ -22,25 +22,25 @@ impl MemOps {
 // Xdr encodes things in big endian and values are aligned at 4 bytes. For example, a u8 would take
 // up 4 bytes when serialized.
 impl XdrOps for MemOps {
-    fn get_usize(&mut self) -> XdrResult<usize> {
+    fn get_i64(&mut self) -> XdrResult<i64> {
         if self.pos >= self.buffer.len() {
             Err(XdrError)
         } else if self.buffer.len()-self.pos < 4 {
             Err(XdrError)
         } else {
-            let d: &usize = unsafe { mem::transmute(&self.buffer[self.pos]) };
+            let d: &i64 = unsafe { mem::transmute(&self.buffer[self.pos]) };
             self.pos += 4;
-            Ok(usize::from_be(*d))
+            Ok(i64::from_be(*d))
         }
     }
 
-    fn put_usize(&mut self, l: usize) -> XdrResult<()> {
+    fn put_i64(&mut self, l: i64) -> XdrResult<()> {
         if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < 4 {
             // Buffer is too small, grow it
             self.buffer.resize(self.pos+4, 0);
         }
 
-        let d: &mut usize = unsafe { mem::transmute(&mut self.buffer[self.pos]) };
+        let d: &mut i64 = unsafe { mem::transmute(&mut self.buffer[self.pos]) };
         *d = l.to_be();
         self.pos += 4;
         Ok(())
@@ -115,17 +115,17 @@ impl XdrOps for MemOps {
 }
 
 #[test]
-fn test_mem_ops_usize() {
+fn test_mem_ops_i64() {
     let mem_ops = MemOps::new(vec![1, 1, 0, 0]);
     assert!(mem_ops.get_i32() == 257);
 }
 
 #[test]
-fn test_mem_ops_usize_and_back() {
+fn test_mem_ops_i64_and_back() {
     let mut mem_ops = MemOps::new();
-    mem_ops.put_usize(424242);
+    mem_ops.put_i64(424242);
     mem_ops.set_pos(0);
-    assert!(mem_ops.get_usize() == 424242);
+    assert!(mem_ops.get_i64() == 424242);
 }
 
 #[test]

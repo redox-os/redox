@@ -1,6 +1,6 @@
 use core::mem;
 
-use super::nvpair::{NV_VERSION, NvList, NvValue};
+use super::nvpair::{DataType, NV_VERSION, NvList, NvValue};
 use super::xdr;
 
 // nvlist pack encoding
@@ -18,7 +18,7 @@ const NV_UNIQUE_NAME_TYPE: u32 = 0x2;
 // nvlist lookup pairs related flags
 const NV_FLAG_NOENTOK: isize = 0x1;
 
-// Name value stream header
+/// Name value stream header
 pub struct NvsHeader {
     encoding: u8,  // nvs encoding method
     endian: u8,    // nvs endian
@@ -26,18 +26,26 @@ pub struct NvsHeader {
     reserved2: u8, // reserved for future use
 }
 
-/// NvList XDR format:
-/// - header (encoding and endian): 4 bytes
-/// - nvl version: 4 bytes
-/// - nv flags: 4 bytes 
-/// - nv pairs:
-///   - encoded size: 4 bytes
-///   - decoded size: 4 bytes
-///   - name: xdr string | len: 4 bytes, data: len+(4 - len%4) bytes
-///   - data type: 4 bytes
-///   - num elements: 4 bytes
-///   - data
-/// - 2 terminating zeros: 4 bytes
+// NvList XDR format:
+// - header (encoding and endian): 4 bytes
+// - nvl version: 4 bytes
+// - nv flags: 4 bytes 
+// - nv pairs:
+//   - encoded size: 4 bytes
+//   - decoded size: 4 bytes
+//   - name: xdr string | len: 4 bytes, data: len+(4 - len%4) bytes
+//   - data type: 4 bytes
+//   - num elements: 4 bytes
+//   - data
+// - 2 terminating zeros: 4 bytes
+//
+// NOTE: XDR aligns all of the smaller integer types to be 4 bytes, so `encode_u8` is actually
+// writing 4 bytes
+//
+// I don't know why the ZFS developers decided to use i32's everywhere. Even for clearly
+// unsigned things like array lengths.
+
+/// Encodes a NvList in XDR format
 pub fn encode_nv_list(xdr: &mut xdr::Xdr, nv_list: &NvList) -> xdr::XdrResult<()> {
     try!(encode_nv_list_header(xdr));
 
@@ -57,10 +65,10 @@ pub fn encode_nv_list(xdr: &mut xdr::Xdr, nv_list: &NvList) -> xdr::XdrResult<()
         // TODO
 
         // Encode data type
-        //try!(xdr.encode_i32(value.get_data_type()));
+        try!(xdr.encode_u8(value.data_type().to_u8()));
 
         // Encode the number of elements
-        //try!(xdr.encode_i32(value.num_elements()));
+        try!(xdr.encode_i32(value.num_elements() as i32));
 
         // Encode the value
     }
@@ -80,23 +88,24 @@ fn encode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
             reserved2: 0,
         };
     let header_bytes: [u8; 4] = unsafe { mem::transmute(header) };
-    try!(xdr.encode_bytes(&header_bytes));
+    try!(xdr.encode_opaque(&header_bytes));
     Ok(())
 }
 
+/// Decodes a NvList in XDR format
 pub fn decode_nv_list(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
     try!(decode_nv_list_header(xdr));
 
     // Decode version and nvflag
     let version = try!(xdr.decode_i32());
-    let nvflags = try!(xdr.decode_u32());
+    let nvflag = try!(xdr.decode_u32());
 
     // TODO: Give an actual error
     if version != NV_VERSION {
         return Err(xdr::XdrError);
     }
 
-    let mut nv_list = NvList::new(NV_UNIQUE_NAME);
+    let mut nv_list = NvList::new(nvflag);
 
     // Decode the pairs
     loop {
@@ -113,10 +122,14 @@ pub fn decode_nv_list(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         let name = try!(xdr.decode_string());
 
         // Decode data type
-        let data_type = try!(xdr.decode_i32());
+        let data_type = 
+            match DataType::from_u8(try!(xdr.decode_u8())) {
+                Some(dt) => dt,
+                None => { return Err(xdr::XdrError); },
+            };
 
         // Decode the number of elements
-        let num_elements = try!(xdr.decode_i32());
+        let num_elements = try!(xdr.decode_i32()) as usize;
 
         // Decode the value
         let value = NvValue::Uint8(42);
@@ -129,7 +142,8 @@ pub fn decode_nv_list(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
 }
 
 fn decode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
-    let bytes = try!(xdr.decode_bytes());
+    let mut bytes = [0; 4];
+    try!(xdr.decode_opaque(&mut bytes));
     let header: &NvsHeader = unsafe { mem::transmute(&bytes[0]) };
     
     if header.encoding != NV_ENCODE_XDR {
