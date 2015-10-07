@@ -511,9 +511,9 @@ impl FileScheme {
                         if size == 0 {
                             if req.read {
                                 prdt.reg.write(prdt.mem.ptr as u32);
-                                self.fs.disk.read(req.extent.block, sectors as u16, req.mem);
-                                //self.fs.disk.read_dma(req.extent.block, sectors);
-                                //self.cmd.write(CMD_ACT | CMD_DIR);
+                                //self.fs.disk.read(req.extent.block, sectors as u16, req.mem);
+                                self.fs.disk.read_dma(req.extent.block, sectors);
+                                self.cmd.write(CMD_ACT | CMD_DIR);
                             } else {
                                 prdt.reg.write(prdt.mem.ptr as u32);
                                 self.fs.disk.write_dma(req.extent.block, sectors);

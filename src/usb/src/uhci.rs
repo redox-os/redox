@@ -356,9 +356,6 @@ impl UHCI {
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
-                debug::d("SETUP_TD ");
-                debug::dh((*setup_td).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 
@@ -369,9 +366,6 @@ impl UHCI {
 
         loop {
             if (*in_td).ctrl_sts & (1 << 23) == 0 {
-                debug::d("IN_TD ");
-                debug::dh((*in_td).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 
@@ -450,9 +444,6 @@ impl UHCI {
 
         loop {
             if (*setup_td).ctrl_sts & (1 << 23) == 0 {
-                debug::d("SETUP_TD ");
-                debug::dh((*setup_td).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 
@@ -463,9 +454,6 @@ impl UHCI {
 
         loop {
             if (*in_td).ctrl_sts & (1 << 23) == 0 {
-                debug::d("IN_TD ");
-                debug::dh((*in_td).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 
@@ -476,9 +464,6 @@ impl UHCI {
 
         loop {
             if (*out_td).ctrl_sts & (1 << 23) == 0 {
-                debug::d("OUT_TD ");
-                debug::dh((*out_td).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 
