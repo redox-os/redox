@@ -53,6 +53,7 @@ impl File {
 
 
     /// Write to the file
+    // TODO: Move this to a write trait
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let count = sys_write(self.fd, buf.as_ptr(), buf.len());
