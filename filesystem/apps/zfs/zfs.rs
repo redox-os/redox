@@ -46,6 +46,17 @@ pub struct VdevLabel {
     pub uberblocks: [Uberblock; 128],
 }
 
+impl VdevLabel {
+    pub fn from(data: &[u8]) -> Option<Self> {
+        if data.len() >= 262144 {
+            let vdev_label = unsafe { ptr::read(data.as_ptr() as *const VdevLabel) };
+            Some(vdev_label)
+        } else {
+            Option::None
+        }
+    }
+}
+
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct Uberblock {
@@ -185,6 +196,16 @@ pub fn main() {
                                          uberblock.rootbp.dvas[0].sector() as usize);
                             }
                             Option::None => println_color!(red, "No valid uberblock found!"),
+                        }
+                    } else if *command == "vdev_label".to_string() {
+                        let mut vdev_label = VdevLabel::from(&zfs.read(0, 256 * 2)); // 256KB of vdev label
+                        match vdev_label {
+                            Some(ref mut vdev_label) => {
+                                let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
+                                let nv_list = nvstream::decode_nv_list(&mut xdr);
+                                println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                            },
+                            None => { println_color!(red, "Couldn't read vdev_label"); },
                         }
                     } else if *command == "list".to_string() {
                         println_color!(green, "List volumes");

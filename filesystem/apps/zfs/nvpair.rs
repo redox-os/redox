@@ -4,6 +4,7 @@ use redox::*;
 pub const NV_VERSION: i32 = 0;
 
 // nvlist header
+#[derive(Debug)]
 pub struct NvList {
     pub version: i32,
     pub nvflag:  u32, // persistent flags
@@ -20,6 +21,7 @@ impl NvList {
     }
 }
 
+#[derive(Debug)]
 pub enum NvValue {
     Unknown,
     Boolean,
