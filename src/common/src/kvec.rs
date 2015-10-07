@@ -1,11 +1,9 @@
 use core::clone::Clone;
 use core::iter::Iterator;
-use core::mem::size_of;
 use core::ops::Drop;
 use core::option::Option;
 use core::ptr;
-use core::slice;
-use core::slice::SliceExt;
+use core::slice::{self, SliceExt};
 
 use common::memory::*;
 

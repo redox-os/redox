@@ -85,6 +85,10 @@ impl EHCI {
         debug::d(" IRQ: ");
         debug::dbh(self.irq);
 
+        return;
+
+        /*
+
         let pci = &mut self.pci;
 
         pci.flag(4, 4, true); // Bus master
@@ -456,5 +460,6 @@ impl EHCI {
                 }
             }
         }
+        */
     }
 }
