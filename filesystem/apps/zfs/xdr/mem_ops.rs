@@ -16,7 +16,7 @@ impl XdrOps for MemOps {
         } else {
             let d: &usize = unsafe { mem::transmute(&self.buffer[self.pos]) };
             self.pos += 4;
-            Ok(*d)
+            Ok(usize::from_be(*d))
         }
     }
 
