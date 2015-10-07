@@ -119,11 +119,15 @@ impl FileSystem {
                                                 complete: Arc::new(AtomicBool::new(false)),
                                             };
 
+                                            disk.read(extent.block + sector as u64, 0, data + sector * 512);
+
+                                            /*
                                             disk.request(request.clone());
 
                                             while request.complete.load(Ordering::SeqCst) == false {
                                                 disk.on_poll();
                                             }
+                                            */
 
                                             sector += 65535;
                                         }
@@ -138,11 +142,15 @@ impl FileSystem {
                                                 complete: Arc::new(AtomicBool::new(false)),
                                             };
 
+                                            disk.read(extent.block + sector as u64, (sectors - sector) as u16, data + sector * 512);
+
+                                            /*
                                             disk.request(request.clone());
 
                                             while request.complete.load(Ordering::SeqCst) == false {
                                                 disk.on_poll();
                                             }
+                                            */
                                         }
 
                                         node_data = Vec {
