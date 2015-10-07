@@ -168,15 +168,13 @@ impl ConsoleWindow {
                     if key_event.pressed {
                         match key_event.scancode {
                             K_BKSP => if self.offset > 0 {
-                                self.command = format!("{}{}",
-                                                       &self.command[0 .. self.offset - 1],
-                                                       &self.command[self.offset .. self.command.len()]);
+                                self.command = self.command[0 .. self.offset - 1].to_string() +
+                                               &self.command[self.offset .. self.command.len()];
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.command.len() {
-                                self.command = format!("{}{}",
-                                                       &self.command[0 .. self.offset],
-                                                       &self.command[self.offset + 1 .. self.command.len() - 1]);
+                                self.command = self.command[0 .. self.offset].to_string() +
+                                               &self.command[self.offset + 1 .. self.command.len() - 1];
                             },
                             K_HOME => self.offset = 0,
                             K_UP => {
@@ -204,10 +202,9 @@ impl ConsoleWindow {
                                 }
                                 '\x1B' => break,
                                 _ => {
-                                    self.command = format!("{}{}{}",
-                                                           &self.command[0 .. self.offset],
-                                                           key_event.character,
-                                                           &self.command[self.offset .. self.command.len()]);
+                                    self.command = self.command[0 .. self.offset].to_string() +
+                                                   &key_event.character.to_string() +
+                                                   &self.command[self.offset .. self.command.len()];
                                     self.offset += 1;
                                 }
                             },
