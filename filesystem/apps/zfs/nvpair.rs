@@ -118,7 +118,7 @@ impl NvValue {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum DataType {
     Unknown = 0,
     Boolean,

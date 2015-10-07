@@ -71,6 +71,9 @@ impl<'a> XdrOps for MemOps<'a> {
     }
 
     fn get_bytes(&mut self, bytes: &mut [u8]) -> XdrResult<()> {
+        if bytes.len() == 0 {
+            return Ok(());
+        }
         if self.pos >= self.buffer.len() {
             Err(XdrError)
         } else if self.buffer.len()-self.pos < bytes.len() {
