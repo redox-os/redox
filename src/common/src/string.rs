@@ -1,8 +1,7 @@
 use core::clone::Clone;
 use core::cmp::PartialEq;
 use core::iter::Iterator;
-use core::ops::Add;
-use core::ops::Index;
+use core::ops::{Add, Index};
 use core::option::Option;
 use core::ptr;
 use core::slice::SliceExt;
