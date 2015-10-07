@@ -61,41 +61,33 @@ impl PS2 {
         self.wait1();
         self.data.write(flags);
 
-        debug::d("Set Defaults:");
+        //Set Defaults
         self.wait1();
         self.data.write(0xF6);
         self.wait0();
-        debug::dc(' ');
-        debug::dbh(self.data.read());
-        debug::dl();
+        self.data.read();
 
-        debug::d("Set LEDS:");
+        // Set LEDS
         self.wait1();
         self.data.write(0xED);
         self.wait0();
-        debug::dc(' ');
-        debug::dbh(self.data.read());
+        self.data.read();
 
         self.wait1();
         self.data.write(0);
         self.wait0();
-        debug::dc(' ');
-        debug::dbh(self.data.read());
-        debug::dl();
+        self.data.read();
 
-        debug::d("Set Scancode Map:");
+        //Set Scancode Map:
         self.wait1();
         self.data.write(0xF0);
         self.wait0();
-        debug::dc(' ');
-        debug::dbh(self.data.read());
+        self.data.read();
 
         self.wait1();
         self.data.write(1);
         self.wait0();
-        debug::dc(' ');
-        debug::dbh(self.data.read());
-        debug::dl();
+        self.data.read();
     }
 
     pub fn keyboard_interrupt(&mut self) -> Option<KeyEvent> {

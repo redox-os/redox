@@ -12,6 +12,8 @@ use network::rtl8139::*;
 
 use programs::session::*;
 
+use schemes::file::*;
+
 use usb::ehci::*;
 use usb::uhci::*;
 use usb::xhci::*;
@@ -24,20 +26,9 @@ pub unsafe fn pci_device(session: &mut Session,
                          vendor_code: u32,
                          device_code: u32) {
     if class_id == 0x01 && subclass_id == 0x01 {
-        let base = pci.read(0x20) as usize;
-        d("IDE on ");
-        dh(base);
-        dl();
-        /*
-        let mut module = box IDE {
-            pci: pci,
-            base: base & 0xFFFFFFF0,
-            memory_mapped: base & 1 == 0,
-            requests: Vec::new()
-        };
-        module.init();
-        session.items.push(module);
-        */
+        if let Some(module) = FileScheme::new(pci) {
+            session.items.push(module);
+        }
     } else if class_id == 0x0C && subclass_id == 0x03 {
         if interface_id == 0x30 {
             let base = pci.read(0x10) as usize;
