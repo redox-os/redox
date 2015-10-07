@@ -355,13 +355,7 @@ impl UHCI {
                    queue_head.address() as u32 | 2);
 
         loop {
-            debug::d("SETUP_TD ");
-            debug::dh(setup_td.load(0).ctrl_sts as usize);
-            debug::dl();
             if setup_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                debug::d("SETUP_TD ");
-                debug::dh(setup_td.load(0).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 
@@ -371,13 +365,7 @@ impl UHCI {
         }
 
         loop {
-            debug::d("IN_TD ");
-            debug::dh(in_td.load(0).ctrl_sts as usize);
-            debug::dl();
             if in_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                debug::d("IN_TD ");
-                debug::dh(in_td.load(0).ctrl_sts as usize);
-                debug::dl();
                 break;
             }
 

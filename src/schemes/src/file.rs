@@ -1,7 +1,7 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 
-use core::{cmp, ptr};
+use core::{cmp, mem, ptr};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use drivers::disk::*;
@@ -20,13 +20,6 @@ use common::vec::Vec;
 use programs::common::SessionItem;
 
 use syscall::call::sys_yield;
-
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct Extent {
-    pub block: u64,
-    pub length: u64,
-}
 
 #[repr(packed)]
 pub struct Header {
@@ -49,7 +42,7 @@ pub struct Node {
 }
 
 impl Node {
-    pub fn new(address: u64, data: NodeData) -> Self {
+    pub fn new(address: u64, data: &NodeData) -> Self {
         let mut utf8: Vec<u8> = Vec::new();
         for i in 0..data.name.len() {
             let c = data.name[i];
@@ -85,7 +78,7 @@ pub struct FileSystem {
 }
 
 impl FileSystem {
-    pub fn from_disk(disk: Disk) -> Option<Self> {
+    pub fn from_disk(mut disk: Disk) -> Option<Self> {
         unsafe {
             if disk.identify() {
                 debug::d(" Disk Found");
@@ -107,17 +100,65 @@ impl FileSystem {
                         debug::d(" Redox Filesystem\n");
 
                         let mut nodes = Vec::new();
-                        let node_data: *const NodeData = memory::alloc_type();
                         for extent in &header.extents {
                             if extent.block > 0 && extent.length > 0 {
-                                for node_address in extent.block..extent.block + (extent.length + 511) / 512 {
-                                    disk.read(node_address, 1, node_data as usize);
+                                let mut node_data: Vec<NodeData> = Vec::new();
+                                unsafe {
+                                    let data = memory::alloc(extent.length as usize);
+                                    if data > 0 {
+                                        let sectors = (extent.length as usize + 511) / 512;
+                                        let mut sector: usize = 0;
+                                        while sectors - sector >= 65536 {
+                                            let request = Request {
+                                                extent: Extent {
+                                                    block: extent.block + sector as u64,
+                                                    length: 65536 * 512,
+                                                },
+                                                mem: data + sector * 512,
+                                                read: true,
+                                                complete: Arc::new(AtomicBool::new(false)),
+                                            };
 
-                                    nodes.push(Node::new(node_address, ptr::read(node_data)));
+                                            disk.request(request.clone());
+
+                                            while request.complete.load(Ordering::SeqCst) == false {
+                                                disk.on_poll();
+                                            }
+
+                                            sector += 65535;
+                                        }
+                                        if sector < sectors {
+                                            let request = Request {
+                                                extent: Extent {
+                                                    block: extent.block + sector as u64,
+                                                    length: (sectors - sector) as u64 * 512,
+                                                },
+                                                mem: data + sector * 512,
+                                                read: true,
+                                                complete: Arc::new(AtomicBool::new(false)),
+                                            };
+
+                                            disk.request(request.clone());
+
+                                            while request.complete.load(Ordering::SeqCst) == false {
+                                                disk.on_poll();
+                                            }
+                                        }
+
+                                        node_data = Vec {
+                                            data: data as *mut NodeData,
+                                            length: extent.length as usize/mem::size_of::<NodeData>(),
+                                        };
+                                    }
+                                }
+
+                                for i in 0..node_data.len() {
+                                    if let Some(data) = node_data.get(i) {
+                                        nodes.push(Node::new(extent.block + i as u64, data));
+                                    }
                                 }
                             }
                         }
-                        memory::unalloc(node_data as usize);
 
                         return Some(FileSystem {
                             disk: disk,
@@ -294,88 +335,16 @@ impl Drop for FileResource {
     }
 }
 
-/// A disk request
-pub struct Request {
-    /// The disk extent
-    extent: Extent,
-    /// The memory location
-    mem: usize,
-    /// The request type
-    read: bool,
-    /// Completion indicator
-    complete: Arc<AtomicBool>,
-}
-
-impl Clone for Request {
-    fn clone(&self) -> Self {
-        Request {
-            extent: self.extent,
-            mem: self.mem,
-            read: self.read,
-            complete: self.complete.clone(),
-        }
-    }
-}
-
-/// Direction of DMA, set if moving from disk to memory, not set if moving from memory to disk
-const CMD_DIR: u8 = 8;
-/// DMA should process PRDT
-const CMD_ACT: u8 = 1;
-/// DMA interrupt occured
-const STS_INT: u8 = 4;
-/// DMA error occured
-const STS_ERR: u8 = 2;
-/// DMA is processing PRDT
-const STS_ACT: u8 = 1;
-
-/// PRDT End of Table
-const PRD_EOT: u32 = 0x80000000;
-
-/// Physical Region Descriptor
-#[repr(packed)]
-struct PRD {
-    addr: u32,
-    size: u32,
-}
-
-struct PRDT {
-    reg: PIO32,
-    mem: Memory<PRD>,
-}
-
-impl PRDT {
-    fn new(port: u16) -> Option<Self> {
-        if let Some(mem) = Memory::new_align(8192, 65536) {
-            return Some(PRDT {
-                reg: PIO32::new(port),
-                mem: mem,
-            });
-        }
-
-        None
-    }
-}
-
-impl Drop for PRDT {
-    fn drop(&mut self) {
-        unsafe { self.reg.write(0) };
-    }
-}
-
 pub struct FileScheme {
     pci: PCIConfig,
     fs: FileSystem,
-    request: Option<Request>,
-    requests: Queue<Request>,
-    cmd: PIO8,
-    sts: PIO8,
-    prdt: Option<PRDT>,
-    irq: u8,
 }
 
 impl FileScheme {
     ///TODO Allow busmaster for secondary
     pub fn new(mut pci: PCIConfig) -> Option<Box<Self>> {
+        unsafe { pci.flag(4, 4, true) }; // Bus mastering
+
         let base = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
 
         debug::d("IDE on ");
@@ -383,185 +352,51 @@ impl FileScheme {
         debug::dl();
 
         debug::d("Primary Master:");
-        if let Some(fs) = FileSystem::from_disk(Disk::primary_master()) {
+        if let Some(fs) = FileSystem::from_disk(Disk::primary_master(base)) {
             return Some(box FileScheme {
                 pci: pci,
                 fs: fs,
-                request: Option::None,
-                requests: Queue::new(),
-                cmd: PIO8::new(base),
-                sts: PIO8::new(base + 2),
-                prdt: PRDT::new(base + 4),
-                irq: 0xE,
             });
         }
 
         debug::d("Primary Slave:");
-        if let Some(fs) = FileSystem::from_disk(Disk::primary_slave()) {
+        if let Some(fs) = FileSystem::from_disk(Disk::primary_slave(base)) {
             return Some(box FileScheme {
                 pci: pci,
                 fs: fs,
-                request: Option::None,
-                requests: Queue::new(),
-                cmd: PIO8::new(base),
-                sts: PIO8::new(base + 2),
-                prdt: PRDT::new(base + 4),
-                irq: 0xE,
             });
         }
 
         debug::d("Secondary Master:");
-        if let Some(fs) = FileSystem::from_disk(Disk::secondary_master()) {
+        if let Some(fs) = FileSystem::from_disk(Disk::secondary_master(base)) {
             return Some(box FileScheme {
                 pci: pci,
                 fs: fs,
-                request: Option::None,
-                requests: Queue::new(),
-                cmd: PIO8::new(base + 8),
-                sts: PIO8::new(base + 0xA),
-                prdt: PRDT::new(base + 0xC),
-                irq: 0xF,
             });
         }
 
         debug::d("Secondary Slave:");
-        if let Some(fs) = FileSystem::from_disk(Disk::secondary_slave()) {
+        if let Some(fs) = FileSystem::from_disk(Disk::secondary_slave(base)) {
             return Some(box FileScheme {
                 pci: pci,
                 fs: fs,
-                request: Option::None,
-                requests: Queue::new(),
-                cmd: PIO8::new(base + 8),
-                sts: PIO8::new(base + 0xA),
-                prdt: PRDT::new(base + 0xC),
-                irq: 0xF,
             });
         }
 
         None
     }
-
-    pub fn request(&mut self, request: Request) {
-        unsafe {
-            let reenable = start_no_ints();
-
-            self.requests.push(request);
-
-            if self.request.is_none() {
-                self.next_request();
-            }
-
-            end_no_ints(reenable);
-        }
-    }
-
-    unsafe fn next_request(&mut self) {
-        let reenable = start_no_ints();
-
-        self.cmd.write(CMD_DIR);
-        if let Some(ref mut prdt) = self.prdt {
-            prdt.reg.write(0 as u32);
-        }
-
-        if let Some(ref mut req) = self.request {
-            req.complete.store(true, Ordering::SeqCst);
-        }
-
-        self.request = self.requests.pop();
-
-        if let Some(ref mut req) = self.request {
-            req.complete.store(false, Ordering::SeqCst);
-
-            if req.mem > 0 {
-                if let Some(ref mut prdt) = self.prdt {
-                    let sectors = (req.extent.length + 511)/512;
-                    let mut size = sectors * 512;
-                    let mut i = 0;
-                    while size >= 65536 && i < 8192 {
-                        let eot;
-                        if size == 65536 {
-                            eot = PRD_EOT;
-                        } else {
-                            eot = 0;
-                        }
-
-                        unsafe{
-                            prdt.mem.write(i, PRD {
-                               addr: (req.mem + i * 65536) as u32,
-                               size: eot,
-                            });
-                        }
-
-                        size -= 65536;
-                        i += 1;
-                    }
-                    if size > 0 && i < 8192 {
-                        unsafe {
-                            prdt.mem.write(i, PRD {
-                               addr: (req.mem + i * 65536) as u32,
-                               size: size as u32 | PRD_EOT,
-                            });
-                        }
-
-                        size = 0;
-                        i += 1;
-                    }
-
-                    if i > 0 {
-                        if size == 0 {
-                            if req.read {
-                                prdt.reg.write(prdt.mem.ptr as u32);
-                                self.fs.disk.read_dma(req.extent.block, sectors);
-                                self.cmd.write(CMD_ACT | CMD_DIR);
-                            } else {
-                                prdt.reg.write(prdt.mem.ptr as u32);
-                                self.fs.disk.write_dma(req.extent.block, sectors);
-                                self.cmd.write(CMD_ACT);
-                            }
-                        }else{
-                            debug::d("IDE Request too large: ");
-                            debug::dd(size as usize);
-                            debug::d(" remaining\n");
-                        }
-                    }else{
-                        debug::d("IDE Request size is 0\n");
-                    }
-                }else{
-                    debug::d("PRDT not allocated\n");
-                }
-            }else{
-                debug::d("IDE Request mem is 0\n");
-            }
-        }
-
-        end_no_ints(reenable);
-    }
 }
 
 impl SessionItem for FileScheme {
     fn on_irq(&mut self, irq: u8) {
-        if irq == self.irq {
+        if irq == self.fs.disk.irq {
             self.on_poll();
         }
     }
 
     fn on_poll(&mut self) {
-        let sts = unsafe { self.sts.read() };
-        if sts & STS_INT == STS_INT {
-            unsafe { self.sts.write(sts) };
-
-            let cmd = unsafe { self.cmd.read() };
-            if cmd & CMD_ACT == CMD_ACT {
-                if cmd & CMD_DIR == CMD_DIR {
-                    debug::d("IDE DMA READ\n");
-                } else {
-                    debug::d("IDE DMA WRITE\n");
-                }
-
-                unsafe { self.next_request() };
-            } else {
-                debug::d("IDE PIO\n");
-            }
+        unsafe {
+            self.fs.disk.on_poll();
         }
     }
 
@@ -629,10 +464,7 @@ impl SessionItem for FileScheme {
                                             complete: Arc::new(AtomicBool::new(false)),
                                         };
 
-                                        path.d();
-                                        debug::dl();
-
-                                        self.request(request.clone());
+                                        self.fs.disk.request(request.clone());
 
                                         while request.complete.load(Ordering::SeqCst) == false {
                                             sys_yield();
@@ -651,10 +483,7 @@ impl SessionItem for FileScheme {
                                             complete: Arc::new(AtomicBool::new(false)),
                                         };
 
-                                        path.d();
-                                        debug::dl();
-
-                                        self.request(request.clone());
+                                        self.fs.disk.request(request.clone());
 
                                         while request.complete.load(Ordering::SeqCst) == false {
                                             sys_yield();
