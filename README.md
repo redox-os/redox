@@ -89,6 +89,7 @@ sudo yum install qemu-system-x86 qemu-kvm tunctl
 - Run Qemu
 ```bash
 make qemu_tap
+```
 
 ## Building on OS X
 - Install MacPorts or Homebrew
