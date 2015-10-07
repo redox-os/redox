@@ -364,6 +364,12 @@ unsafe fn init(font_data: usize) {
     //Start interrupts
     end_no_ints(true);
 
+    debug_draw = false;
+
+    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+
+    context_enabled = true;
+
     {
         let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
 
@@ -371,16 +377,6 @@ unsafe fn init(font_data: usize) {
         resource.read_to_end(&mut vec);
         session.cursor = BMP::from_data(&vec);
     }
-
-    {
-        let mut resource = URL::from_str("file:///ui/background.bmp").open();
-
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-        session.background = BMP::from_data(&vec)
-    }
-
-    debug_draw = false;
 
     session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
 
@@ -393,9 +389,20 @@ unsafe fn init(font_data: usize) {
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()) {
                 session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder))));
+                session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
             }
         }
     }
+
+    {
+        let mut resource = URL::from_str("file:///ui/background.bmp").open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+        session.background = BMP::from_data(&vec)
+    }
+
+    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
 }
 
 fn dr(reg: &str, value: u32) {
@@ -523,7 +530,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize);
-            context_enabled = true;
             idle_loop();
         }
         0x0 => exception!("Divide by zero exception"),
