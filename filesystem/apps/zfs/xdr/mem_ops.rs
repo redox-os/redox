@@ -7,16 +7,16 @@ pub struct MemOps {
 }
 
 impl XdrOps for MemOps {
-    fn get_long(&mut self, l: &mut usize) -> bool {
-        false
+    fn get_long(&mut self) -> usize {
+        0
     }
 
     fn put_long(&mut self, l: usize) -> bool {
         false
     }
 
-    fn get_i32(&mut self, i: &mut i32) -> bool {
-        false
+    fn get_i32(&mut self) -> i32 {
+        0
     }
 
     fn put_i32(&mut self, i: i32) -> bool {
