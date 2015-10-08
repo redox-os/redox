@@ -1,6 +1,3 @@
-use core::mem;
-use core::ptr;
-
 use redox::*;
 
 use super::{XdrOps, XdrError, XdrResult};
