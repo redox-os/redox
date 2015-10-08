@@ -1,5 +1,5 @@
-use collections::string::*;
-use collections::vec::Vec;
+use string::*;
+use vec::Vec;
 
 /// A WAV file
 // TODO: Follow naming conventions

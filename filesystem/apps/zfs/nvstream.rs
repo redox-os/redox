@@ -1,5 +1,3 @@
-use core::mem;
-
 use redox::*;
 
 use super::nvpair::{DataType, NV_VERSION, NvList, NvValue};
@@ -23,7 +21,7 @@ const NV_FLAG_NOENTOK: isize = 0x1;
 // NvList XDR format:
 // - header (encoding and endian): 4 bytes
 // - nvl version: 4 bytes
-// - nv flags: 4 bytes 
+// - nv flags: 4 bytes
 // - nv pairs:
 //   - encoded size: 4 bytes
 //   - decoded size: 4 bytes
@@ -119,7 +117,7 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         // Decode decoded/decoded size
         let encoded_size = try!(xdr.decode_u32());
         let decoded_size = try!(xdr.decode_u32());
-        
+
         // Check for 2 terminating zeros
         if (encoded_size == 0 && decoded_size == 0) {
             break;
@@ -129,12 +127,12 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         let name = try!(xdr.decode_string());
 
         // Decode data type
-        let data_type = 
+        let data_type =
             match DataType::from_u8(try!(xdr.decode_u8())) {
                 Some(dt) => dt,
                 None => { return Err(xdr::XdrError); },
             };
-        
+
         // Decode the number of elements
         let num_elements = try!(xdr.decode_i32()) as usize;
 

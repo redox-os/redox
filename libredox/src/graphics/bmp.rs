@@ -1,5 +1,5 @@
-use collections::string::*;
-use collections::vec::Vec;
+use string::*;
+use vec::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap

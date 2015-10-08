@@ -1,6 +1,6 @@
-use collections::string::*;
-use collections::vec::Vec;
-use collections::boxed::Box;
+use string::*;
+use vec::Vec;
+use boxed::Box;
 use fs::file::*;
 use event::*;
 use console::*;
