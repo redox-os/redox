@@ -1,9 +1,9 @@
-use collections::string::*;
-use collections::vec::{IntoIter, Vec};
+use string::*;
+use vec::{IntoIter, Vec};
 
 use core::ptr;
 
-use syscall::call::*;
+use syscall::{sys_alloc, sys_unalloc, sys_open, sys_close, sys_read, sys_write, sys_lseek, sys_fsync};
 
 /// File seek
 pub enum Seek {

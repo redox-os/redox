@@ -3,16 +3,16 @@ use alloc::boxed::*;
 use core::mem::size_of;
 use core::ptr;
 
-use collections::string::*;
-use collections::vec::Vec;
-
-use common::random::*;
+use string::*;
+use vec::Vec;
 
 use event::*;
 
 use orbital::*;
 
-use syscall::call::*;
+use rand::*;
+
+use syscall::{sys_alloc, sys_unalloc};
 
 static mut window: *mut Box<ConsoleWindow> = 0 as *mut Box<ConsoleWindow>;
 
