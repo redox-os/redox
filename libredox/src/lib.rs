@@ -1,3 +1,10 @@
+//! # The Redox Library
+//!
+//! The Redox Library contains a collection of commonly used low-level software
+//! constructs to be used on top of the base operating system, including graphics 
+//! support and windowing, a basic filesystem, audio support, a simple console
+//! with shell style functions, an event system, and environment argument support.
+
 #![crate_name="redox"]
 #![crate_type="rlib"]
 #![feature(alloc)]
@@ -11,7 +18,7 @@
 #![feature(no_std)]
 #![no_std]
 
-// Yep I'm evil
+// Yep I'm evil (this is a good idea!)
 #![warn(missing_docs)]
 
 #[macro_use]
@@ -36,7 +43,7 @@ pub use audio::wav::*;
 pub use console::*;
 pub use env::*;
 pub use event::*;
-pub use file::*;
+pub use fs::file::*;
 pub use graphics::bmp::*;
 pub use orbital::*;
 
@@ -49,6 +56,7 @@ mod common {
     pub mod time;
 }
 
+/// A module for necessary C and assembly constructs
 #[path="../../src/externs.rs"]
 pub mod externs;
 
@@ -74,7 +82,8 @@ pub mod env;
 /// A module for events
 pub mod event;
 /// A module for the filesystem
-pub mod file;
+#[path="fs/lib.rs"]
+mod fs;
 /// Graphics support
 mod graphics {
     pub mod bmp;

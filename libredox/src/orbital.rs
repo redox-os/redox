@@ -1,12 +1,13 @@
-use core::mem::size_of;
+use core::mem;
 use core::ops::DerefMut;
 use core::slice;
 
 use collections::string::*;
+use collections::Vec;
 
 use event::*;
 
-use file::*;
+use fs::file::*;
 
 /// A window
 pub struct Window {
@@ -21,13 +22,28 @@ pub struct Window {
     /// The title of the window
     t: String,
     file: File,
-    /// Font file, mut to allow changes
-    pub font: File,
+    /// Font file
+    font: Vec<u8>,
+    /// Window data
+    data: Vec<u8>,
 }
 
 impl Window {
     /// Create a new window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Self {
+        let mut font_file = File::open("file:///ui/unifont.font");
+
+        let mut font;
+        match font_file.seek(Seek::End(0)) {
+            Some(length) => {
+                font = vec![0; length];
+
+                font_file.seek(Seek::Start(0));
+                font_file.read(&mut font);
+            },
+            None => font = Vec::new()
+        }
+
         Window {
             x: x,
             y: y,
@@ -35,7 +51,8 @@ impl Window {
             h: h,
             t: title.to_string(),
             file: File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)),
-            font: File::open(&"file:///ui/unifont.font".to_string()),
+            font: font,
+            data: vec![0; w * h * 4]
         }
     }
 
@@ -73,25 +90,35 @@ impl Window {
 
     /// Draw a pixel
     pub fn pixel(&mut self, x: isize, y: isize, color: [u8; 4]) {
-        if x >= 0 && y >= 0 {
-            self.file.seek(Seek::Start((y as usize * self.w + x as usize) * 4));
-            self.file.write(&color);
+        if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
+            let offset = (y as usize * self.w + x as usize) * 4;
+            //TODO: Alpha
+            self.data[offset + 0] = color[0];
+            self.data[offset + 1] = color[1];
+            self.data[offset + 2] = color[2];
+            self.data[offset + 3] = color[3];
         }
     }
 
     /// Draw a character, using the loaded font
-    pub fn char(&mut self, x: isize, y: isize, character: char, color: [u8; 4]) {
-        self.font.seek(Seek::Start((character as usize) * 16));
-        let mut bitmap: [u8; 16] = [0; 16];
-        self.font.read(&mut bitmap);
+    pub fn char(&mut self, x: isize, y: isize, c: char, color: [u8; 4]) {
+        let mut offset = (c as usize) * 16;
         for row in 0..16 {
-            let row_data = bitmap[row];
+            let row_data;
+            if offset < self.font.len() {
+                row_data = self.font[offset];
+            } else {
+                row_data = 0;
+            }
+
             for col in 0..8 {
                 let pixel = (row_data >> (7 - col)) & 1;
                 if pixel > 0 {
                     self.pixel(x + col as isize, y + row as isize, color);
                 }
             }
+
+            offset += 1;
         }
     }
 
@@ -101,12 +128,9 @@ impl Window {
     // TODO: Improve speed
     #[allow(unused_variables)]
     pub fn set(&mut self, color: [u8; 4]) {
-        self.file.seek(Seek::Start(0));
-        for y in 0..self.h {
-            for x in 0..self.w {
-                self.file.write(&color);
-            }
-        }
+        let w = self.w;
+        let h = self.h;
+        self.rect(0, 0, w, h, color);
     }
 
     /// Draw rectangle
@@ -140,7 +164,7 @@ impl Window {
         let mut event = box Event::new();
         let event_ptr: *mut Event = event.deref_mut();
         match self.file.read(&mut unsafe {
-            slice::from_raw_parts_mut(event_ptr as *mut u8, size_of::<Event>())
+            slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
         }) {
             Option::Some(_) => return Option::Some(*event),
             Option::None => return Option::None,
@@ -149,6 +173,8 @@ impl Window {
 
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
+        self.file.seek(Seek::Start(0));
+        self.file.write(&self.data);
         return self.file.sync();
     }
 }
