@@ -8,23 +8,23 @@ use core::slice::{self, SliceExt};
 use common::memory::*;
 
 #[macro_export]
-macro_rules! kvec {
+macro_rules! vec {
     ($($x:expr),*) => (
-        KVec::from_slice(&[$($x),*])
+        Vec::from_slice(&[$($x),*])
     );
-    ($($x:expr,)*) => (kvec![$($x),*])
+    ($($x:expr,)*) => (vec![$($x),*])
 }
 
-/// An iterator over a kvec
-pub struct KVecIterator<'a, T: 'a> {
-    kvec: &'a KVec<T>,
+/// An iterator over a vec
+pub struct VecIterator<'a, T: 'a> {
+    vec: &'a Vec<T>,
     offset: usize,
 }
 
-impl <'a, T> Iterator for KVecIterator<'a, T> {
+impl <'a, T> Iterator for VecIterator<'a, T> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
-        match self.kvec.get(self.offset) {
+        match self.vec.get(self.offset) {
             Option::Some(item) => {
                 self.offset += 1;
                 Option::Some(item)
@@ -37,15 +37,15 @@ impl <'a, T> Iterator for KVecIterator<'a, T> {
 }
 
 /// A owned, heap allocated list of elements
-pub struct KVec<T> {
+pub struct Vec<T> {
     pub mem: Memory<T>, // TODO: Option<Memory>
     pub length: usize,
 }
 
-impl <T> KVec<T> {
-    /// Create a empty kvector
+impl <T> Vec<T> {
+    /// Create a empty vector
     pub fn new() -> Self {
-        KVec {
+        Vec {
             mem: Memory { ptr: 0 as *mut T /* TODO: Option::None */ },
             length: 0,
         }
@@ -62,13 +62,13 @@ impl <T> KVec<T> {
             Option::Some(mem) => {
                 ptr::copy(ptr, mem.ptr, len);
 
-                return KVec {
+                return Vec {
                     mem: mem,
                     length: len,
                 };
             }
             Option::None => {
-                return KVec::new();
+                return Self::new();
             }
         }
     }
@@ -78,13 +78,13 @@ impl <T> KVec<T> {
             Option::Some(mem) => {
                 unsafe { ptr::copy(slice.as_ptr(), mem.ptr, slice.len()) };
 
-                return KVec {
+                return Vec {
                     mem: mem,
                     length: slice.len(),
                 };
             }
             Option::None => {
-                return KVec::new();
+                return Vec::new();
             }
         }
     }
@@ -153,7 +153,7 @@ impl <T> KVec<T> {
         }
     }
 
-    /// Push an element to a kvector
+    /// Push an element to a vector
     pub fn push(&mut self, value: T) {
         let new_length = self.length + 1;
         if self.mem.renew(new_length) {
@@ -178,15 +178,15 @@ impl <T> KVec<T> {
         Option::None
     }
 
-    /// Get the length of the kvector
+    /// Get the length of the vector
     pub fn len(&self) -> usize {
         self.length
     }
 
     /// Create an iterator
-    pub fn iter(&self) -> KVecIterator<T> {
-        KVecIterator {
-            kvec: self,
+    pub fn iter(&self) -> VecIterator<T> {
+        VecIterator {
+            vec: self,
             offset: 0,
         }
     }
@@ -205,7 +205,7 @@ impl <T> KVec<T> {
 
         let length = j - i;
         if length == 0 {
-            return KVec::new();
+            return Vec::new();
         }
 
         match Memory::new(length) {
@@ -217,13 +217,13 @@ impl <T> KVec<T> {
                     };
                 }
 
-                return KVec {
+                return Vec {
                     mem: mem,
                     length: length,
                 };
             }
             Option::None => {
-                return KVec::new();
+                return Self::new();
             }
         }
     }
@@ -237,15 +237,15 @@ impl <T> KVec<T> {
     }
 }
 
-impl<T> KVec<T> where T: Clone {
-    /// Append a kvector to another kvector
-    pub fn push_all(&mut self, kvec: &Self) {
+impl<T> Vec<T> where T: Clone {
+    /// Append a vector to another vector
+    pub fn push_all(&mut self, vec: &Self) {
         let mut i = self.length as isize;
-        let new_length = self.length + kvec.len();
+        let new_length = self.length + vec.len();
         if self.mem.renew(new_length) {
             self.length = new_length;
 
-            for value in kvec.iter() {
+            for value in vec.iter() {
                 unsafe { ptr::write(self.mem.ptr.offset(i), value.clone()) };
                 i += 1;
             }
@@ -253,15 +253,15 @@ impl<T> KVec<T> where T: Clone {
     }
 }
 
-impl<T> Clone for KVec<T> where T: Clone {
+impl<T> Clone for Vec<T> where T: Clone {
     fn clone(&self) -> Self {
-        let mut ret = KVec::new();
+        let mut ret = Self::new();
         ret.push_all(self);
         ret
     }
 }
 
-impl<T> Drop for KVec<T> {
+impl<T> Drop for Vec<T> {
     fn drop(&mut self) {
         unsafe {
             for i in 0..self.len() {

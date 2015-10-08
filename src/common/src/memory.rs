@@ -87,11 +87,19 @@ impl<T> Memory<T> {
         intrinsics::atomic_singlethreadfence();
         ptr::write(self.ptr.offset(i as isize), value)
     }
+
+    pub unsafe fn into_raw(&mut self) -> *mut T {
+        let ptr = self.ptr;
+        self.ptr = 0 as *mut T;
+        ptr
+    }
 }
 
 impl<T> Drop for Memory<T> {
     fn drop(&mut self) {
-        unsafe { unalloc(self.ptr as usize) }
+        if self.ptr as usize > 0 {
+            unsafe { unalloc(self.ptr as usize) };
+        }
     }
 }
 
