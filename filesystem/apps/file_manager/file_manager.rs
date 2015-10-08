@@ -198,7 +198,6 @@ impl FileManager {
                         self.draw_content(&mut window);
                     }
                 }
-                EventOption::None => sys_yield(),
                 _ => (),
             }
         }

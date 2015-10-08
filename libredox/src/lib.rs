@@ -8,148 +8,199 @@
 #![crate_name="redox"]
 #![crate_type="rlib"]
 #![feature(alloc)]
+#![feature(allow_internal_unstable)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
-#![feature(core_slice_ext)]
-#![feature(core_str_ext)]
+#![feature(core)]
+#![feature(core_intrinsics)]
+#![feature(core_panic)]
+#![feature(core_simd)]
 #![feature(lang_items)]
+#![feature(macro_reexport)]
+#![feature(rand)]
+#![feature(raw)]
 #![feature(vec_push_all)]
+#![feature(unicode)]
 #![feature(no_std)]
 #![no_std]
 
-// Yep I'm evil (this is a good idea!)
-#![warn(missing_docs)]
+//#![warn(missing_docs)]
 
-#[macro_use]
-extern crate alloc;
+/* STD COPY { */
+    // We want to reexport a few macros from core but libcore has already been
+    // imported by the compiler (via our #[no_std] attribute) In this case we just
+    // add a new crate name so we can attach the reexports to it.
+    #[macro_reexport(assert, assert_eq, debug_assert, debug_assert_eq, panic,
+                     unreachable, unimplemented, write, writeln)]
+    extern crate core as __core;
 
-#[macro_use]
-extern crate collections;
+    #[macro_use]
+    #[macro_reexport(vec, format)]
+    extern crate collections as core_collections;
 
-pub use alloc::boxed::Box;
+    #[allow(deprecated)] extern crate rand as core_rand;
+    extern crate alloc;
+    extern crate rustc_unicode;
+    //TODO extern crate libc;
 
-pub use collections::*;
-pub use collections::string::ToString;
+    // NB: These reexports are in the order they should be listed in rustdoc
 
-pub use common::random::*;
-pub use common::time::*;
+    pub use core::any;
+    pub use core::cell;
+    pub use core::clone;
+    pub use core::cmp;
+    pub use core::convert;
+    pub use core::default;
+    pub use core::hash;
+    pub use core::intrinsics;
+    pub use core::iter;
+    pub use core::marker;
+    pub use core::mem;
+    pub use core::ops;
+    pub use core::ptr;
+    pub use core::raw;
+    #[allow(deprecated)]
+    pub use core::simd;
+    pub use core::result;
+    pub use core::option;
+    // TODO pub mod error;
 
-pub use externs::*;
+    pub use alloc::boxed;
+    pub use alloc::rc;
 
-pub use syscall::call::*;
+    pub use core_collections::borrow;
+    pub use core_collections::fmt;
+    pub use core_collections::slice;
+    pub use core_collections::str;
+    pub use core_collections::string;
+    pub use core_collections::vec;
 
-pub use audio::wav::*;
-pub use console::*;
-pub use env::*;
-pub use event::*;
-pub use fs::file::*;
-pub use graphics::bmp::*;
-pub use orbital::*;
+    pub use rustc_unicode::char;
 
-/// A module for common functionalities.
-/// Primary functionality provided by std.
-#[path="../../src/common/src/"]
-mod common {
-    pub mod debug;
-    pub mod random;
+    /* Exported macros */
+
+    // TODO #[macro_use]
+    // TODO mod macros;
+
+    // TODO mod rtdeps;
+
+    /* The Prelude. */
+
+    // TODO pub mod prelude;
+
+
+    /* Primitive types */
+
+    // NB: slice and str are primitive types too, but their module docs + primitive
+    // doc pages are inlined from the public re-exports of core_collections::{slice,
+    // str} above.
+
+    pub use core::isize;
+    pub use core::i8;
+    pub use core::i16;
+    pub use core::i32;
+    pub use core::i64;
+
+    pub use core::usize;
+    pub use core::u8;
+    pub use core::u16;
+    pub use core::u32;
+    pub use core::u64;
+
+    //TODO #[path = "num/f32.rs"]   pub mod f32;
+    //TODO #[path = "num/f64.rs"]   pub mod f64;
+
+    //TODO pub mod ascii;
+
+    /* Common traits */
+
+    //TODO pub mod num;
+
+    /* Runtime and platform support */
+
+    // TODO #[macro_use]
+    // TODO pub mod thread;
+
+    // TODO pub mod collections;
+    // TODO pub mod dynamic_lib;
+    pub mod env;
+    // TODO pub mod ffi;
+    pub mod fs;
+    // TODO pub mod io;
+    // TODO pub mod net;
+    // TODO pub mod os;
+    // TODO pub mod path;
+    // TODO pub mod process;
+    // TODO pub mod sync;
     pub mod time;
-}
 
-/// A module for necessary C and assembly constructs
-#[path="../../src/externs.rs"]
-pub mod externs;
+    //TODO #[macro_use]
+    //TODO #[path = "sys/common/mod.rs"] mod sys_common;
 
-/// A module for system calls
-#[path="../../src/syscall/src"]
-mod syscall {
-    /// Calls
-    pub mod call;
-    /// Common
-    pub mod common;
-}
+    //TODO #[cfg(unix)]
+    //TODO #[path = "sys/unix/mod.rs"] mod sys;
+    //TODO #[cfg(windows)]
+    //TODO #[path = "sys/windows/mod.rs"] mod sys;
 
-/// A module for audio
-mod audio {
-    pub mod wav;
-}
+    //TODO pub mod rt;
+    //TODO mod panicking;
+    pub use __core::panicking;
 
-/// A module for console functionality
-#[macro_use]
-pub mod console;
-/// A module for commands and enviroment
-pub mod env;
-/// A module for events
-pub mod event;
-/// A module for the filesystem
-#[path="fs/lib.rs"]
-mod fs;
-/// Graphics support
-mod graphics {
-    pub mod bmp;
-}
-/// A module for window support
-pub mod orbital;
+    mod rand;
 
-/// A module for shell based functions
-pub mod ion;
+    // Some external utilities of the standard library rely on randomness (aka
+    // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
+    // here. This module is not at all intended for stabilization as-is, however,
+    // but it may be stabilized long-term. As a result we're exposing a hidden,
+    // unstable module so we can get our build working.
+    #[doc(hidden)]
+    //TODO #[unstable(feature = "rand", issue = "0")]
+    pub mod __rand {
+        pub use core_rand::{/*TODO thread_rng, ThreadRng,*/ Rng};
+    }
+/* } STD COPY */
 
-/* Extensions for String { */
-/// Parse the string to a integer using a given radix
-pub trait ToNum {
-    fn to_num_radix(&self, radix: usize) -> usize;
-    fn to_num_radix_signed(&self, radix: usize) -> isize;
-    fn to_num(&self) -> usize;
-    fn to_num_signed(&self) -> isize;
-}
+/* Additional Stuff { */
+    pub use boxed::Box;
+    pub use env::*;
+    pub use fs::file::*;
+    pub use rand::*;
+    pub use string::*;
+    pub use vec::Vec;
 
-impl ToNum for String {
-    fn to_num_radix(&self, radix: usize) -> usize {
-        if radix == 0 {
-            return 0;
-        }
+    pub use audio::wav::*;
+    pub use console::*;
+    pub use event::*;
+    pub use graphics::bmp::*;
+    pub use orbital::*;
+    pub use to_num::*;
 
-        let mut num = 0;
-        for c in self.chars() {
-            let digit;
-            if c >= '0' && c <= '9' {
-                digit = c as usize - '0' as usize
-            } else if c >= 'A' && c <= 'Z' {
-                digit = c as usize - 'A' as usize + 10
-            } else if c >= 'a' && c <= 'z' {
-                digit = c as usize - 'a' as usize + 10
-            } else {
-                break;
-            }
+    /// A module for necessary C and assembly constructs
+    pub mod externs;
 
-            if digit >= radix {
-                break;
-            }
+    /// A module for system calls
+    pub mod syscall;
 
-            num *= radix;
-            num += digit;
-        }
-
-        num
+    /// A module for audio
+    mod audio {
+        pub mod wav;
     }
 
-    /// Parse the string as a signed integer using a given radix
-    fn to_num_radix_signed(&self, radix: usize) -> isize {
-        if self.starts_with('-') {
-            -(self[1 .. self.len()].to_string().to_num_radix(radix) as isize)
-        } else {
-            self.to_num_radix(radix) as isize
-        }
+    /// A module for console functionality
+    #[macro_use]
+    pub mod console;
+    /// A module for events
+    pub mod event;
+    /// Graphics support
+    mod graphics {
+        pub mod bmp;
     }
+    /// A module for window support
+    pub mod orbital;
 
-    /// Parse it as a unsigned integer in base 10
-    fn to_num(&self) -> usize {
-        self.to_num_radix(10)
-    }
+    /// A module for shell based functions
+    pub mod ion;
 
-    /// Parse it as a signed integer in base 10
-    fn to_num_signed(&self) -> isize {
-        self.to_num_radix_signed(10)
-    }
-}
-/* } Extensions for String */
+    pub mod to_num;
+/* } Additional Stuff */

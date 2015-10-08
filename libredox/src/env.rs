@@ -1,10 +1,10 @@
 use core::mem::size_of;
 use core::ptr;
 
-use collections::string::*;
-use collections::vec::Vec;
+use string::*;
+use vec::Vec;
 
-use syscall::call::*;
+use syscall::{sys_alloc, sys_unalloc};
 
 static mut _args: *mut Vec<String> = 0 as *mut Vec<String>;
 

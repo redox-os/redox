@@ -21,12 +21,12 @@ extern crate redox;
 
 use application::main;
 
-use core::ptr;
-
 #[path="APPLICATION_PATH"]
 mod application;
 
 use redox::*;
+
+use redox::syscall::sys_exit;
 
 #[inline(never)]
 unsafe fn _start_stack(stack: *const u32) {
