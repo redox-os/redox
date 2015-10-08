@@ -22,8 +22,8 @@ use programs::common::SessionItem;
 
 pub struct Session {
     pub display: Display,
-    pub background: BMP,
-    pub cursor: BMP,
+    pub background: BMPFile,
+    pub cursor: BMPFile,
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
     pub items: Vec<Box<SessionItem>>,
@@ -38,8 +38,8 @@ impl Session {
         unsafe {
             Session {
                 display: Display::root(),
-                background: BMP::new(),
-                cursor: BMP::new(),
+                background: BMPFile::new(),
+                cursor: BMPFile::new(),
                 mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
