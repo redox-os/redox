@@ -6,8 +6,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::debug::*;
 use common::queue::Queue;
-use common::memory;
-use common::memory::Memory;
+use common::memory::{self, Memory};
 use common::scheduler::*;
 
 use drivers::pio::*;

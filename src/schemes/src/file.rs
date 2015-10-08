@@ -10,8 +10,7 @@ use drivers::pciconfig::PCIConfig;
 
 use common::debug;
 use common::queue::Queue;
-use common::memory;
-use common::memory::Memory;
+use common::memory::{self, Memory};
 use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
 use common::scheduler::*;
 use common::string::{String, ToString};
@@ -83,10 +82,10 @@ impl FileSystem {
             if disk.identify() {
                 debug::d(" Disk Found");
 
-                let header_ptr: *const Header = memory::alloc_type();
-                disk.read(1, 1, header_ptr as usize);
-                let header = ptr::read(header_ptr);
-                memory::unalloc(header_ptr as usize);
+                let header_ptr = Memory::<Header>::new(1).unwrap();
+                disk.read(1, 1, header_ptr.address());
+                let header = header_ptr.read(0);
+                drop(header_ptr);
 
                 if header.signature[0] == 'R' as u8 &&
                     header.signature[1] == 'E' as u8 &&
