@@ -100,71 +100,63 @@ impl FileSystem {
                     let mut nodes = Vec::new();
                     for extent in &header.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            let mut node_data: Vec<NodeData> = Vec::new();
-                            unsafe {
-                                let data = Memory::<u8>::new(extent.length as usize).unwrap();
-                                if data.address() > 0 {
-                                    let sectors = (extent.length as usize + 511) / 512;
-                                    let mut sector: usize = 0;
-                                    while sectors - sector >= 65536 {
-                                        let request = Request {
-                                            extent: Extent {
-                                                block: extent.block + sector as u64,
-                                                length: 65536 * 512,
-                                            },
-                                            mem: data.address() + sector * 512,
-                                            read: true,
-                                            complete: Arc::new(AtomicBool::new(false)),
-                                        };
-
-                                        disk.read(extent.block + sector as u64,
-                                                  0,
-                                                  data.address() + sector * 512);
-
-                                            /*
-                                            disk.request(request.clone());
-
-                                            while request.complete.load(Ordering::SeqCst) == false {
-                                                disk.on_poll();
-                                            }
-                                            */
-
-                                        sector += 65535;
-                                    }
-                                    if sector < sectors {
-                                        let request = Request {
-                                            extent: Extent {
-                                                block: extent.block + sector as u64,
-                                                length: (sectors - sector) as u64 * 512,
-                                            },
-                                            mem: data.address() + sector * 512,
-                                            read: true,
-                                            complete: Arc::new(AtomicBool::new(false)),
-                                        };
-
-                                        disk.read(extent.block + sector as u64,
-                                                  (sectors - sector) as u16,
-                                                  data.address() + sector * 512);
-
-                                            /*
-                                            disk.request(request.clone());
-
-                                            while request.complete.load(Ordering::SeqCst) == false {
-                                                disk.on_poll();
-                                            }
-                                            */
-                                    }
-
-                                    node_data = Vec {
-                                        mem: Memory::<NodeData>::new(data.size()).unwrap(),
-                                        length: extent.length as usize / mem::size_of::<NodeData>(),
+                            if let Some(mut data) = Memory::<NodeData>::new(extent.length as usize / mem::size_of::<NodeData>()) {
+                                let sectors = (extent.length as usize + 511) / 512;
+                                let mut sector: usize = 0;
+                                while sectors - sector >= 65536 {
+                                    let request = Request {
+                                        extent: Extent {
+                                            block: extent.block + sector as u64,
+                                            length: 65536 * 512,
+                                        },
+                                        mem: data.address() + sector * 512,
+                                        read: true,
+                                        complete: Arc::new(AtomicBool::new(false)),
                                     };
-                                }
-                            }
 
-                            for i in 0..node_data.len() {
-                                if let Some(data) = node_data.get(i) {
-                                    nodes.push(Node::new(extent.block + i as u64, data));
+                                    unsafe {
+                                        disk.read(extent.block + sector as u64,
+                                              0,
+                                              data.address() + sector * 512);
+                                    }
+
+                                        /*
+                                        disk.request(request.clone());
+
+                                        while request.complete.load(Ordering::SeqCst) == false {
+                                            disk.on_poll();
+                                        }
+                                        */
+
+                                    sector += 65535;
+                                }
+                                if sector < sectors {
+                                    let request = Request {
+                                        extent: Extent {
+                                            block: extent.block + sector as u64,
+                                            length: (sectors - sector) as u64 * 512,
+                                        },
+                                        mem: data.address() + sector * 512,
+                                        read: true,
+                                        complete: Arc::new(AtomicBool::new(false)),
+                                    };
+
+                                    unsafe {
+                                        disk.read(extent.block + sector as u64,
+                                              (sectors - sector) as u16,
+                                              data.address() + sector * 512);
+                                    }
+                                        /*
+                                        disk.request(request.clone());
+
+                                        while request.complete.load(Ordering::SeqCst) == false {
+                                            disk.on_poll();
+                                        }
+                                        */
+                                }
+
+                                for i in 0..extent.length as usize / mem::size_of::<NodeData>() {
+                                    nodes.push(Node::new(extent.block + i as u64, &data[i]));
                                 }
                             }
                         }
@@ -480,53 +472,54 @@ impl SessionItem for FileScheme {
                     //TODO: Handle more extents
                     for extent in &node.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            unsafe {
-                                let data = Memory::<u8>::new(extent.length as usize).unwrap();
-                                if data.address() > 0 {
-                                    let sectors = (extent.length as usize + 511) / 512;
-                                    let mut sector: usize = 0;
-                                    while sectors - sector >= 65536 {
-                                        let request = Request {
-                                            extent: Extent {
-                                                block: extent.block + sector as u64,
-                                                length: 65536 * 512,
-                                            },
-                                            mem: data.address() + sector * 512,
-                                            read: true,
-                                            complete: Arc::new(AtomicBool::new(false)),
-                                        };
+                            if let Some(mut data) = Memory::<u8>::new(extent.length as usize) {
+                                let sectors = (extent.length as usize + 511) / 512;
+                                let mut sector: usize = 0;
+                                while sectors - sector >= 65536 {
+                                    let request = Request {
+                                        extent: Extent {
+                                            block: extent.block + sector as u64,
+                                            length: 65536 * 512,
+                                        },
+                                        mem: unsafe { data.address() } + sector * 512,
+                                        read: true,
+                                        complete: Arc::new(AtomicBool::new(false)),
+                                    };
 
+                                    unsafe {
                                         self.fs.disk.request(request.clone());
-
-                                        while request.complete.load(Ordering::SeqCst) == false {
-                                            sys_yield();
-                                        }
-
-                                        sector += 65535;
-                                    }
-                                    if sector < sectors {
-                                        let request = Request {
-                                            extent: Extent {
-                                                block: extent.block + sector as u64,
-                                                length: (sectors - sector) as u64 * 512,
-                                            },
-                                            mem: data.address() + sector * 512,
-                                            read: true,
-                                            complete: Arc::new(AtomicBool::new(false)),
-                                        };
-
-                                        self.fs.disk.request(request.clone());
-
-                                        while request.complete.load(Ordering::SeqCst) == false {
-                                            sys_yield();
-                                        }
                                     }
 
-                                    vec.push_all(&Vec {
-                                        mem: Memory::<u8>::new(data.size()).unwrap(),
-                                        length: extent.length as usize,
-                                    });
+                                    while request.complete.load(Ordering::SeqCst) == false {
+                                        sys_yield();
+                                    }
+
+                                    sector += 65535;
                                 }
+                                if sector < sectors {
+                                    let request = Request {
+                                        extent: Extent {
+                                            block: extent.block + sector as u64,
+                                            length: (sectors - sector) as u64 * 512,
+                                        },
+                                        mem: unsafe { data.address() } + sector * 512,
+                                        read: true,
+                                        complete: Arc::new(AtomicBool::new(false)),
+                                    };
+
+                                    unsafe {
+                                        self.fs.disk.request(request.clone());
+                                    }
+
+                                    while request.complete.load(Ordering::SeqCst) == false {
+                                        sys_yield();
+                                    }
+                                }
+
+                                vec.push_all(&Vec {
+                                    data: unsafe{ data.into_raw() },
+                                    length: extent.length as usize,
+                                });
                             }
                         }
                     }
