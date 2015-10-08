@@ -102,8 +102,8 @@ impl FileSystem {
                         if extent.block > 0 && extent.length > 0 {
                             let mut node_data: Vec<NodeData> = Vec::new();
                             unsafe {
-                                let data = memory::alloc(extent.length as usize);
-                                if data > 0 {
+                                let data = Memory::<u8>::new(extent.length as usize).unwrap();
+                                if data.address() > 0 {
                                     let sectors = (extent.length as usize + 511) / 512;
                                     let mut sector: usize = 0;
                                     while sectors - sector >= 65536 {
@@ -112,14 +112,14 @@ impl FileSystem {
                                                 block: extent.block + sector as u64,
                                                 length: 65536 * 512,
                                             },
-                                            mem: data + sector * 512,
+                                            mem: data.address() + sector * 512,
                                             read: true,
                                             complete: Arc::new(AtomicBool::new(false)),
                                         };
 
                                         disk.read(extent.block + sector as u64,
                                                   0,
-                                                  data + sector * 512);
+                                                  data.address() + sector * 512);
 
                                             /*
                                             disk.request(request.clone());
@@ -137,14 +137,14 @@ impl FileSystem {
                                                 block: extent.block + sector as u64,
                                                 length: (sectors - sector) as u64 * 512,
                                             },
-                                            mem: data + sector * 512,
+                                            mem: data.address() + sector * 512,
                                             read: true,
                                             complete: Arc::new(AtomicBool::new(false)),
                                         };
 
                                         disk.read(extent.block + sector as u64,
                                                   (sectors - sector) as u16,
-                                                  data + sector * 512);
+                                                  data.address() + sector * 512);
 
                                             /*
                                             disk.request(request.clone());
@@ -156,7 +156,7 @@ impl FileSystem {
                                     }
 
                                     node_data = Vec {
-                                        data: data as *mut NodeData,
+                                        mem: Memory::<NodeData>::new(data.size()).unwrap(),
                                         length: extent.length as usize / mem::size_of::<NodeData>(),
                                     };
                                 }
@@ -481,8 +481,8 @@ impl SessionItem for FileScheme {
                     for extent in &node.extents {
                         if extent.block > 0 && extent.length > 0 {
                             unsafe {
-                                let data = memory::alloc(extent.length as usize);
-                                if data > 0 {
+                                let data = Memory::<u8>::new(extent.length as usize).unwrap();
+                                if data.address() > 0 {
                                     let sectors = (extent.length as usize + 511) / 512;
                                     let mut sector: usize = 0;
                                     while sectors - sector >= 65536 {
@@ -491,7 +491,7 @@ impl SessionItem for FileScheme {
                                                 block: extent.block + sector as u64,
                                                 length: 65536 * 512,
                                             },
-                                            mem: data + sector * 512,
+                                            mem: data.address() + sector * 512,
                                             read: true,
                                             complete: Arc::new(AtomicBool::new(false)),
                                         };
@@ -510,7 +510,7 @@ impl SessionItem for FileScheme {
                                                 block: extent.block + sector as u64,
                                                 length: (sectors - sector) as u64 * 512,
                                             },
-                                            mem: data + sector * 512,
+                                            mem: data.address() + sector * 512,
                                             read: true,
                                             complete: Arc::new(AtomicBool::new(false)),
                                         };
@@ -523,7 +523,7 @@ impl SessionItem for FileScheme {
                                     }
 
                                     vec.push_all(&Vec {
-                                        data: data as *mut u8,
+                                        mem: Memory::<u8>::new(data.size()).unwrap(),
                                         length: extent.length as usize,
                                     });
                                 }

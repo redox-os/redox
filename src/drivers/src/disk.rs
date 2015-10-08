@@ -321,20 +321,18 @@ impl Disk {
             return false;
         }
 
-        let destination = memory::alloc(512) as *mut u16;
+        let mut destination = Memory::<u16>::new(512).unwrap();
         for word in 0..256 {
-            *destination.offset(word) = inw(self.base + ATA_REG_DATA);
+            destination.write(word, inw(self.base + ATA_REG_DATA));
         }
 
         d(" Size: ");
-        let sectors = (*destination.offset(100) as u64) |
-                      ((*destination.offset(101) as u64) << 16) |
-                      ((*destination.offset(102) as u64) << 32) |
-                      ((*destination.offset(103) as u64) << 48);
+        let sectors = (destination.read(100) as u64) |
+                      ((destination.read(101) as u64) << 16) |
+                      ((destination.read(102) as u64) << 32) |
+                      ((destination.read(103) as u64) << 48);
         dd((sectors / 2048) as usize);
         d(" MB");
-
-        memory::unalloc(destination as usize);
 
         true
     }
