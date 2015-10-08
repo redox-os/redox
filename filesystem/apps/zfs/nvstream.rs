@@ -97,14 +97,12 @@ fn encode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
 
 /// Decodes a NvList in XDR format
 pub fn decode_nv_list(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
-    println!("Decoding NvList");
     try!(decode_nv_list_header(xdr));
 
     decode_nv_list_embedded(xdr)
 }
 
 pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
-    println!("Decoding NvList Embedded");
     // Decode version and nvflag
     let version = try!(xdr.decode_i32());
     let nvflag = try!(xdr.decode_u32());
@@ -118,8 +116,6 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
 
     // Decode the pairs
     loop {
-        println!("Decoding NvValue");
-
         // Decode decoded/decoded size
         let encoded_size = try!(xdr.decode_u32());
         let decoded_size = try!(xdr.decode_u32());
@@ -142,32 +138,24 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         // Decode the number of elements
         let num_elements = try!(xdr.decode_i32()) as usize;
 
-        println!("Decoding value: {}\t{:?}", name, data_type);
-
         // Decode the value
         let value = try!(decode_nv_value(xdr, data_type, num_elements));
 
         // Add the value to the list
         nv_list.pairs.push((name, value));
-
-        println!("Finished decoding value");
     }
 
     Ok(nv_list)
 }
 
 fn decode_nv_list_header(xdr: &mut xdr::Xdr) -> xdr::XdrResult<()> {
-    println!("Decoding header");
     let mut bytes: [u8; 4] = [0; 4];
     try!(xdr.decode_opaque(&mut bytes));
     let header: NvsHeader = unsafe { mem::transmute(bytes) };
 
-    println!("header: {:?}", header);
-
     if header.encoding != NV_ENCODE_XDR {
         return Err(xdr::XdrError);
     }
-    println!("header is compatible");
     Ok(())
 }
 
