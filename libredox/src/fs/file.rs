@@ -52,18 +52,6 @@ impl File {
     }
 
 
-    /// Write to the file
-    // TODO: Move this to a write trait
-    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe {
-            let count = sys_write(self.fd, buf.as_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
-                Option::None
-            } else {
-                Option::Some(count)
-            }
-        }
-    }
 
     /// Seek a given position
     pub fn seek(&mut self, pos: Seek) -> Option<usize> {
@@ -87,6 +75,7 @@ impl File {
     }
 }
 
+/// Types you can read
 pub trait Read {
 
     /// Read a file to a buffer
@@ -119,10 +108,29 @@ pub trait Read {
     }
 }
 
+/// Types you can write
+pub trait Write {
+    /// Write to the file
+    fn write(&mut self, buf: &[u8]) -> Option<usize>;
+}
+
 impl Read for File {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         unsafe {
             let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
+            if count == 0xFFFFFFFF {
+                Option::None
+            } else {
+                Option::Some(count)
+            }
+        }
+    }
+}
+
+impl Write for File {
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        unsafe {
+            let count = sys_write(self.fd, buf.as_ptr(), buf.len());
             if count == 0xFFFFFFFF {
                 Option::None
             } else {
