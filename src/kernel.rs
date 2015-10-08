@@ -33,7 +33,6 @@ use common::string::{String, ToString};
 use common::time::Duration;
 use common::vec::Vec;
 
-use drivers::disk::*;
 use drivers::pci::*;
 use drivers::pio::*;
 use drivers::ps2::*;
@@ -46,8 +45,6 @@ use graphics::bmp::*;
 use graphics::color::Color;
 use graphics::display::{self, Display};
 use graphics::point::Point;
-use graphics::size::Size;
-use graphics::window::Window;
 
 use programs::package::*;
 use programs::session::*;
@@ -56,7 +53,6 @@ use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
-use schemes::file::*;
 use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
@@ -107,7 +103,7 @@ mod network;
 mod programs;
 
 #[path="schemes/src/lib.rs"]
-mod schemes; 
+mod schemes;
 
 #[path="syscall/src/lib.rs"]
 mod syscall;
@@ -271,22 +267,6 @@ pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x01);
 }
 
-unsafe fn test_disk(disk: Disk) {
-    if disk.identify() {
-        debug::d(" Disk Found");
-
-        let fs = FileSystem::from_disk(disk);
-        if fs.valid() {
-            debug::d(" Redox Filesystem");
-        } else {
-            debug::d(" Unknown Filesystem");
-        }
-    } else {
-        debug::d(" Disk Not Found");
-    }
-    debug::dl();
-}
-
 unsafe fn init(font_data: usize) {
     start_no_ints();
 
@@ -311,10 +291,6 @@ unsafe fn init(font_data: usize) {
 
     debug_init();
 
-    debug::dd(mem::size_of::<usize>() * 8);
-    debug::d(" bits");
-    debug::dl();
-
     Page::init();
     memory::cluster_init();
     //Unmap first page to catch null pointer errors (after reading memory map)
@@ -328,6 +304,11 @@ unsafe fn init(font_data: usize) {
     debug_draw = true;
     debug_command = memory::alloc_type();
     ptr::write(debug_command, String::new());
+
+    debug::d("Redox ");
+    debug::dd(mem::size_of::<usize>() * 8);
+    debug::d(" bits ");
+    debug::dl();
 
     clock_realtime = RTC::new().time();
 
@@ -348,23 +329,8 @@ unsafe fn init(font_data: usize) {
 
     pci_init(session);
 
-    debug::d("Primary Master:");
-    test_disk(Disk::primary_master());
-
-    debug::d("Primary Slave:");
-    test_disk(Disk::primary_slave());
-
-    debug::d("Secondary Master:");
-    test_disk(Disk::secondary_master());
-
-    debug::d("Secondary Slave:");
-    test_disk(Disk::secondary_slave());
-
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
-    session.items.push(box FileScheme {
-        fs: FileSystem::from_disk(Disk::primary_master())
-    });
     session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
     session.items.push(box RandomScheme);
@@ -396,28 +362,29 @@ unsafe fn init(font_data: usize) {
         ICMPScheme::reply_loop();
     });
 
+    debug::d("Reenabling interrupts\n");
+
     //Start interrupts
     end_no_ints(true);
 
+    //Load cursor before getting out of debug mode
     {
         let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
-        session.cursor = BMP::from_data(&vec);
-    }
 
-    {
-        let mut resource = URL::from_str("file:///ui/background.bmp").open();
+        let cursor = BMPFile::from_data(&vec);
 
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-        session.background = BMP::from_data(&vec)
+        let reenable = start_no_ints();
+        session.cursor = cursor;
+        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        end_no_ints(reenable);
     }
 
     debug_draw = false;
 
-    session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+    context_enabled = true;
 
     {
         let mut resource = URL::from_str("file:///apps/").open();
@@ -427,9 +394,28 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()) {
-                session.packages.push(Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder))));
+                let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
+
+                let reenable = start_no_ints();
+                session.packages.push(package);
+                session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+                end_no_ints(reenable);
             }
         }
+    }
+
+    {
+        let mut resource = URL::from_str("file:///ui/background.bmp").open();
+
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        let background = BMPFile::from_data(&vec);
+
+        let reenable = start_no_ints();
+        session.background = background;
+        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        end_no_ints(reenable);
     }
 }
 
@@ -558,7 +544,6 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
         0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize);
-            context_enabled = true;
             idle_loop();
         }
         0x0 => exception!("Divide by zero exception"),

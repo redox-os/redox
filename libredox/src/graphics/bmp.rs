@@ -3,7 +3,7 @@ use collections::vec::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap
-pub struct BMP {
+pub struct BMPFile {
     /// The bitmap width
     w: usize,
     /// The bitmap height
@@ -12,10 +12,10 @@ pub struct BMP {
     data: Vec<[u8; 4]>,
 }
 
-impl BMP {
+impl BMPFile {
     /// Create a new bitmap
     pub fn new(width: usize, height: usize) -> Self {
-        BMP {
+        BMPFile {
             w: width,
             h: height,
             data: Vec::new(),
@@ -28,7 +28,7 @@ impl BMP {
     }
 
     /// Create a bitmap from some data
-    pub fn from_data(file_data: &Vec<u8>) -> Self {
+    pub fn from_data(file_data: &[u8]) -> Self {
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
                 Option::Some(byte) => *byte,
@@ -47,7 +47,7 @@ impl BMP {
             (start..start + len).map(|i| get(i) as char).collect::<String>()
         };
 
-        let mut ret: BMP;
+        let mut ret: BMPFile;
 
         if gets(0, 2) == "BM" {
             //let file_size = getd(2);
@@ -91,7 +91,7 @@ impl BMP {
                 alpha_shift += 1;
             }
 
-            ret = BMP::new(width as usize, height as usize);
+            ret = Self::new(width as usize, height as usize);
 
             for y in 0..height {
                 for x in 0..width {
@@ -110,7 +110,7 @@ impl BMP {
                 }
             }
         }
-        else { ret = BMP::default(); }
+        else { ret = Self::default(); }
 
         ret
     }

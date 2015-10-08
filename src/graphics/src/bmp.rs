@@ -10,17 +10,17 @@ use graphics::size::*;
 
 // TODO: Follow naming convention
 /// A bitmap
-pub struct BMP {
+pub struct BMPFile {
     /// The data of the bitmap
     pub data: Vec<u32>,
     /// The bitmap size
     pub size: Size,
 }
 
-impl BMP {
+impl BMPFile {
     /// Create a new empty bitmap
     pub fn new() -> Self {
-        BMP {
+        BMPFile {
             data: Vec::new(),
             size: Size {
                 width: 0,
@@ -31,7 +31,7 @@ impl BMP {
 
     /// Create a bitmap from some data
     pub fn from_data(file_data: &Vec<u8>) -> Self {
-        let mut ret = BMP::new();
+        let mut ret = BMPFile::new();
 
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
