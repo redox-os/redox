@@ -152,8 +152,16 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         // Decode the number of elements
         let num_elements = try!(xdr.decode_i32()) as usize;
 
+        println!("num elements: {:?}", num_elements);
+
+        readln!();
+
         // Decode the value
         let value = try!(decode_nv_value(xdr, data_type, num_elements));
+
+        println!("value: {:?}", value);
+
+        readln!();
         
         // Add the value to the list
         nv_list.pairs.push((name, value));
@@ -262,7 +270,7 @@ fn decode_nv_value(xdr: &mut xdr::Xdr, data_type: DataType, num_elements: usize)
             Ok(NvValue::Uint64Array(v))
         },
         DataType::HrTime => {
-            Ok(NvValue::HrTime)
+            Ok(NvValue::HrTime(try!(xdr.decode_i64())))
         },
         DataType::NvList => {
             let nv_list = Box::new(try!(decode_nv_list_embedded(xdr)));

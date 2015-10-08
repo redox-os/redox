@@ -213,6 +213,9 @@ impl<T: XdrOps> Xdr for T {
 
     fn decode_string(&mut self) -> XdrResult<String> {
         let count = try!(self.decode_u32());
+        if count > 1024 {
+            return Err(XdrError);
+        }
         println!("Decoding string of length: {}", count);
         let mut bytes = vec![0; count as usize];
         try!(self.decode_opaque(&mut bytes[..]));
