@@ -216,7 +216,6 @@ impl<T: XdrOps> Xdr for T {
         if count > 1024 {
             return Err(XdrError);
         }
-        println!("Decoding string of length: {}", count);
         let mut bytes = vec![0; count as usize];
         try!(self.decode_opaque(&mut bytes[..]));
         String::from_utf8(bytes).map_err(|_| XdrError)

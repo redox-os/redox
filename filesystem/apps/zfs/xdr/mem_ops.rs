@@ -23,19 +23,13 @@ impl<'a> MemOps<'a> {
 // up 4 bytes when serialized.
 impl<'a> XdrOps for MemOps<'a> {
     fn get_i64(&mut self) -> XdrResult<i64> {
-        println!("Reading i64...");
-        readln!();
         if self.pos >= self.buffer.len() {
             Err(XdrError)
         } else if self.buffer.len()-self.pos < 8 {
             Err(XdrError)
         } else {
-            println!("getting i64 data...");
-            readln!();
             let d: &i64 = unsafe { mem::transmute(&self.buffer[self.pos]) };
             let val_d = i64::from_be(*d);
-            println!("got i64 data... {} {} {:?}", self.pos, self.buffer.len(), &self.buffer[self.pos..self.pos+8]);
-            readln!();
             self.pos += 8;
             Ok(i64::from_be(*d))
         }
