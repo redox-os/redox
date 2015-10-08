@@ -371,7 +371,8 @@ impl Disk {
                 }
 
                 for word in 0..256 {
-                    ptr::write((destination + sector*512 + word*2) as *mut u16, inw(self.base + ATA_REG_DATA));
+                    ptr::write((destination + sector*512 + word*2) as *mut u16,
+                               inw(self.base + ATA_REG_DATA));
                 }
             }
         }
@@ -411,7 +412,8 @@ impl Disk {
                 }
 
                 for word in 0..256 {
-                    outw(self.base + ATA_REG_DATA, ptr::read((source + sector*512 + word*2) as *const u16));
+                    outw(self.base + ATA_REG_DATA,
+                         ptr::read((source + sector*512 + word*2) as *const u16));
                 }
 
                 self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
@@ -464,7 +466,7 @@ impl Disk {
 
         if let Some(ref req) = self.request {
             if req.mem > 0 {
-                let sectors = (req.extent.length + 511)/512;
+                let sectors = (req.extent.length + 511) / 512;
                 let mut prdt_set = false;
                 if let Some(ref mut prdt) = self.prdt {
                     let mut size = sectors * 512;
@@ -477,11 +479,12 @@ impl Disk {
                             eot = 0;
                         }
 
-                        unsafe{
-                            prdt.mem.store(i, PRD {
-                               addr: (req.mem + i * 65536) as u32,
-                               size: eot,
-                            });
+                        unsafe {
+                            prdt.mem.store(i,
+                                           PRD {
+                                               addr: (req.mem + i * 65536) as u32,
+                                               size: eot,
+                                           });
                         }
 
                         size -= 65536;
@@ -489,10 +492,11 @@ impl Disk {
                     }
                     if size > 0 && i < 8192 {
                         unsafe {
-                            prdt.mem.store(i, PRD {
-                               addr: (req.mem + i * 65536) as u32,
-                               size: size as u32 | PRD_EOT,
-                            });
+                            prdt.mem.store(i,
+                                           PRD {
+                                               addr: (req.mem + i * 65536) as u32,
+                                               size: size as u32 | PRD_EOT,
+                                           });
                         }
 
                         size = 0;
@@ -503,15 +507,15 @@ impl Disk {
                         if size == 0 {
                             prdt.reg.write(prdt.mem.ptr as u32);
                             prdt_set = true;
-                        }else{
+                        } else {
                             d("IDE Request too large: ");
                             dd(size as usize);
                             d(" remaining\n");
                         }
-                    }else{
+                    } else {
                         d("IDE Request size is 0\n");
                     }
-                }else{
+                } else {
                     d("PRDT not allocated\n");
                 }
 
@@ -528,14 +532,18 @@ impl Disk {
                         }
 
                         self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA3,
+                                       ((req.extent.block >> 24) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA4,
+                                       ((req.extent.block >> 32) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA5,
+                                       ((req.extent.block >> 40) & 0xFF) as u8);
 
                         self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA2,
+                                       ((req.extent.block >> 16) & 0xFF) as u8);
                         self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
 
                         self.cmd.write(CMD_ACT | CMD_DIR);
@@ -551,20 +559,24 @@ impl Disk {
                         }
 
                         self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA3,
+                                       ((req.extent.block >> 24) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA4,
+                                       ((req.extent.block >> 32) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA5,
+                                       ((req.extent.block >> 40) & 0xFF) as u8);
 
                         self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA2,
+                                       ((req.extent.block >> 16) & 0xFF) as u8);
                         self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
 
                         self.cmd.write(CMD_ACT);
                     }
                 }
-            }else{
+            } else {
                 d("IDE Request mem is 0\n");
             }
         }
