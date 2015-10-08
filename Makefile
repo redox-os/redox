@@ -104,6 +104,10 @@ help:
 	@echo "    make clean"
 	@echo "        Clean build directory."
 	@echo
+	@echo
+	@echo " .........................................................."
+	@echo " For more information check out 'github.com/redox-os/redox'"
+	@echo " or 'redox-os.org'"
 
 all: build/harddrive.bin
 
