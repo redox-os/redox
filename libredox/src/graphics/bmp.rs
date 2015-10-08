@@ -109,8 +109,9 @@ impl BMPFile {
                     }
                 }
             }
+        } else {
+            ret = Self::default();
         }
-        else { ret = Self::default(); }
 
         ret
     }
