@@ -134,6 +134,7 @@ pub extern fn __moddi3(a: i32, b: i32) -> i32 {
 pub extern fn __divdi3(a: i32, b: i32) -> i32 {
     return a/b;
 }
+*/
 
 #[no_mangle]
 pub extern fn __umoddi3(a: u32, b: u32) -> u32 {
@@ -144,4 +145,3 @@ pub extern fn __umoddi3(a: u32, b: u32) -> u32 {
 pub extern fn __udivdi3(a: u32, b: u32) -> u32 {
     return a/b;
 }
-*/
