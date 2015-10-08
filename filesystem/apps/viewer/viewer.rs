@@ -13,7 +13,7 @@ pub fn main() {
     let mut vec: Vec<u8> = Vec::new();
     resource.read_to_end(&mut vec);
 
-    let bmp = BMP::from_data(&vec);
+    let bmp = BMPFile::from_data(&vec);
 
     let mut window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,

@@ -374,7 +374,7 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let cursor = BMP::from_data(&vec);
+        let cursor = BMPFile::from_data(&vec);
 
         let reenable = start_no_ints();
         session.cursor = cursor;
@@ -410,7 +410,7 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let background = BMP::from_data(&vec);
+        let background = BMPFile::from_data(&vec);
 
         let reenable = start_no_ints();
         session.background = background;
