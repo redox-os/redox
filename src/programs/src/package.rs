@@ -12,7 +12,7 @@ pub struct Package {
     pub id: String,
     pub name: String,
     pub binary: URL,
-    pub icon: BMP,
+    pub icon: BMPFile,
     pub accepts: Vec<String>,
     pub authors: Vec<String>,
     pub descriptions: Vec<String>,
@@ -25,7 +25,7 @@ impl Package {
             id: String::new(),
             name: String::new(),
             binary: URL::new(),
-            icon: BMP::new(),
+            icon: BMPFile::new(),
             accepts: Vec::new(),
             authors: Vec::new(),
             descriptions: Vec::new(),
@@ -57,7 +57,7 @@ impl Package {
                 let mut resource = URL::from_string(&line.substr(5, line.len() - 5)).open();
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
-                package.icon = BMP::from_data(&vec);
+                package.icon = BMPFile::from_data(&vec);
             } else if line.starts_with("accept=".to_string()) {
                 package.accepts.push(line.substr(7, line.len() - 7));
             } else if line.starts_with("author=".to_string()) {

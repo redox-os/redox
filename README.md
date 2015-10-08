@@ -34,11 +34,11 @@ make virtualbox
 ## Running on Debian/Ubuntu (Qemu, Advanced)
 - Install Qemu
 ```bash
-sudo apt-get install qemu-system-x86 qemu-kvm uml-utilities
+sudo apt-get install qemu-system-x86 qemu-kvm
 ```
 - Run Qemu
 ```bash
-make qemu_tap
+make qemu
 ```
 ## Building on Arch Linux
 - Run the setup script and enter your password when prompted (to install the Rust compiler and its dependencies)
@@ -67,7 +67,7 @@ $ sudo pacman -S qemu
 ```
 - Run redox
 ```bash
-$ make qemu_tap
+$ make qemu
 ```
 
 ## Building on Fedora
@@ -84,11 +84,12 @@ make all
 ## Running on Fedora (Qemu, Advanced)
 - Install Qemu
 ```bash
-sudo yum install qemu-system-x86 qemu-kvm tunctl
+sudo yum install qemu-system-x86 qemu-kvm
 ```
 - Run Qemu
 ```bash
-make qemu_tap
+make qemu
+```
 
 ## Building on OS X
 - Install MacPorts or Homebrew

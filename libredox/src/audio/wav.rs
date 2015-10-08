@@ -26,7 +26,7 @@ impl WAV {
     }
 
     /// Create a WAV file from data
-    pub fn from_data(file_data: &Vec<u8>) -> Self {
+    pub fn from_data(file_data: &[u8]) -> Self {
         let mut ret = WAV::new();
 
         let get = |i: usize| -> u8 {

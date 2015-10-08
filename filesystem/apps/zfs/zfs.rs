@@ -20,19 +20,10 @@ impl ZFS {
 
     //TODO: Error handling
     pub fn read(&mut self, start: usize, length: usize) -> Vec<u8> {
-        let mut ret: Vec<u8> = Vec::new();
+        let mut ret: Vec<u8> = vec![0; length*512];
 
-        for sector in start..start + length {
-            //TODO: Check error
-            self.disk.seek(Seek::Start(sector * 512));
-
-            let mut data: [u8; 512] = [0; 512];
-            self.disk.read(&mut data);
-
-            for i in 0..512 {
-                ret.push(data[i]);
-            }
-        }
+        self.disk.seek(Seek::Start(start * 512));
+        self.disk.read(&mut ret);
 
         return ret;
     }
@@ -49,6 +40,17 @@ pub struct VdevLabel {
     pub boot_header: [u8; 8 * 1024],
     pub nv_pairs: [u8; 112 * 1024],
     pub uberblocks: [Uberblock; 128],
+}
+
+impl VdevLabel {
+    pub fn from(data: &[u8]) -> Option<Self> {
+        if data.len() >= 262144 {
+            let vdev_label = unsafe { ptr::read(data.as_ptr() as *const VdevLabel) };
+            Some(vdev_label)
+        } else {
+            Option::None
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -131,14 +133,13 @@ impl Gang {
 
 //TODO: Find a way to remove all the to_string's
 pub fn main() {
-    console_title(&"ZFS".to_string());
+    console_title("ZFS");
 
     let red = [255, 127, 127, 255];
     let green = [127, 255, 127, 255];
     let blue = [127, 127, 255, 255];
 
     println!("Type open zfs.img to open the image file");
-    println!("This may take up to 30 seconds");
 
     let mut zfs_option: Option<ZFS> = Option::None;
 
@@ -191,6 +192,18 @@ pub fn main() {
                             }
                             Option::None => println_color!(red, "No valid uberblock found!"),
                         }
+                    } else if *command == "vdev_label".to_string() {
+                        let mut vdev_label = VdevLabel::from(&zfs.read(0, 256 * 2)); // 256KB of vdev label
+                        match vdev_label {
+                            Some(ref mut vdev_label) => {
+                                let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
+                                let nv_list = nvstream::decode_nv_list(&mut xdr);
+                                println_color!(green, "Successfully read nv_list");
+                                //readln!();
+                                //println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                            },
+                            None => { println_color!(red, "Couldn't read vdev_label"); },
+                        }
                     } else if *command == "list".to_string() {
                         println_color!(green, "List volumes");
                     } else if *command == "dump".to_string() {
@@ -218,7 +231,7 @@ pub fn main() {
                         println_color!(red, "Closing");
                         close = true;
                     } else {
-                        println_color!(blue, "Commands: uber list dump close");
+                        println_color!(blue, "Commands: uber vdev_label list dump close");
                     }
                 }
                 Option::None => {
