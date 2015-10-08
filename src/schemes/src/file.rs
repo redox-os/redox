@@ -297,22 +297,44 @@ impl Resource for FileResource {
                         let data = self.vec.as_ptr().offset(pos) as usize;
                         //TODO: Make sure data is copied safely into an zeroed area of the right size!
 
-                        let reenable = start_no_ints();
-
+                        let sectors = (extent.length as usize + 511) / 512;
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
-                            (*self.scheme).fs.disk.write(extent.block + sector as u64,
-                                            65535,
-                                            data + sector * 512);
+                            let request = Request {
+                                extent: Extent {
+                                    block: extent.block + sector as u64,
+                                    length: 65536 * 512,
+                                },
+                                mem: data + sector * 512,
+                                read: false,
+                                complete: Arc::new(AtomicBool::new(false)),
+                            };
+
+                            (*self.scheme).fs.disk.request(request.clone());
+
+                            while request.complete.load(Ordering::SeqCst) == false {
+                                sys_yield();
+                            }
+
                             sector += 65535;
                         }
                         if sector < sectors {
-                            (*self.scheme).fs.disk.write(extent.block + sector as u64,
-                                            (sectors - sector) as u16,
-                                            data + sector * 512);
-                        }
+                            let request = Request {
+                                extent: Extent {
+                                    block: extent.block + sector as u64,
+                                    length: (sectors - sector) as u64 * 512,
+                                },
+                                mem: data + sector * 512,
+                                read: false,
+                                complete: Arc::new(AtomicBool::new(false)),
+                            };
 
-                        end_no_ints(reenable);
+                            (*self.scheme).fs.disk.request(request.clone());
+
+                            while request.complete.load(Ordering::SeqCst) == false {
+                                sys_yield();
+                            }
+                        }
                     }
 
                     pos += size as isize;
