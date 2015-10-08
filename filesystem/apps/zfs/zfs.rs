@@ -5,6 +5,116 @@ mod nvpair;
 mod nvstream;
 mod xdr;
 
+#[repr(packed)]
+pub struct VdevLabel {
+    pub blank: [u8; 8 * 1024],
+    pub boot_header: [u8; 8 * 1024],
+    pub nv_pairs: [u8; 112 * 1024],
+    pub uberblocks: [Uberblock; 128],
+}
+
+impl VdevLabel {
+    pub fn from(data: &[u8]) -> Option<Self> {
+        if data.len() >= mem::size_of::<VdevLabel>() {
+            let vdev_label = unsafe { ptr::read(data.as_ptr() as *const VdevLabel) };
+            Some(vdev_label)
+        } else {
+            Option::None
+        }
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+#[repr(packed)]
+pub struct Uberblock {
+    pub magic: u64,
+    pub version: u64,
+    pub txg: u64,
+    pub guid_sum: u64,
+    pub timestamp: u64,
+    pub rootbp: BlockPtr,
+}
+
+impl Uberblock {
+    pub fn magic_little() -> u64 {
+        return 0x0cb1ba00;
+    }
+
+    pub fn magic_big() -> u64 {
+        return 0x00bab10c;
+    }
+
+    pub fn from(data: &Vec<u8>) -> Option<Self> {
+        if data.len() >= mem::size_of::<Uberblock>() {
+            let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
+            if uberblock.magic == Uberblock::magic_little() {
+                return Option::Some(uberblock);
+            } else if uberblock.magic == Uberblock::magic_big() {
+                return Option::Some(uberblock);
+            } else if uberblock.magic > 0 {
+                println!("Unknown Magic: {:X}", uberblock.magic as usize);
+            }
+        }
+
+        Option::None
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+#[repr(packed)]
+pub struct DVAddr {
+    pub vdev: u64,
+    pub offset: u64,
+}
+
+impl DVAddr {
+    /// Sector address is the offset plus two vdev labels and one boot block (4 MB, or 8192 sectors)
+    pub fn sector(&self) -> u64 {
+        self.offset + 0x2000
+    }
+
+    pub fn asize(&self) -> u64 {
+        self.vdev & 0xFFFFFF + 1
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+#[repr(packed)]
+pub struct BlockPtr {
+    pub dvas: [DVAddr; 3],
+    pub flags_size: u64,
+    pub padding: [u64; 3],
+    pub birth_txg: u64,
+    pub fill_count: u64,
+    pub checksum: [u64; 4],
+}
+
+impl BlockPtr {
+    pub fn lsize(&self) -> u64 {
+        (self.flags_size) & 0xFFFF + 1
+    }
+
+    pub fn psize(&self) -> u64 {
+        ((self.flags_size) >> 16) & 0xFFFF + 1
+    }
+}
+
+#[derive(Copy, Clone, Debug)]
+#[repr(packed)]
+pub struct Gang {
+    pub bps: [BlockPtr; 3],
+    pub padding: [u64; 14],
+    pub magic: u64,
+    pub checksum: u64,
+}
+
+impl Gang {
+    pub fn magic() -> u64 {
+        return 0x117a0cb17ada1002;
+    }
+}
+
+
 pub struct ZFS {
     disk: File,
 }
@@ -28,102 +138,30 @@ impl ZFS {
         self.disk.seek(Seek::Start(block * 512));
         self.disk.write(data);
     }
-}
 
-#[repr(packed)]
-pub struct VdevLabel {
-    pub blank: [u8; 8 * 1024],
-    pub boot_header: [u8; 8 * 1024],
-    pub nv_pairs: [u8; 112 * 1024],
-    pub uberblocks: [Uberblock; 128],
-}
+    pub fn uber(&mut self) -> Option<Uberblock> {
+        let mut newest_uberblock: Option<Uberblock> = Option::None;
+        for i in 0..128 {
+            match Uberblock::from(&self.read(256 + i * 2, 2)) {
+                Option::Some(uberblock) => {
+                    let mut newest = false;
+                    match newest_uberblock {
+                        Option::Some(previous) => {
+                            if uberblock.txg > previous.txg {
+                                newest = true;
+                            }
+                        }
+                        Option::None => newest = true,
+                    }
 
-impl VdevLabel {
-    pub fn from(data: &[u8]) -> Option<Self> {
-        if data.len() >= 262144 {
-            let vdev_label = unsafe { ptr::read(data.as_ptr() as *const VdevLabel) };
-            Some(vdev_label)
-        } else {
-            Option::None
-        }
-    }
-}
-
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct Uberblock {
-    pub magic: u64,
-    pub version: u64,
-    pub txg: u64,
-    pub guid_sum: u64,
-    pub timestamp: u64,
-    pub rootbp: BlockPtr,
-}
-
-impl Uberblock {
-    pub fn magic_little() -> u64 {
-        return 0x0cb1ba00;
-    }
-
-    pub fn magic_big() -> u64 {
-        return 0x00bab10c;
-    }
-
-    pub fn from(data: &Vec<u8>) -> Option<Self> {
-        if data.len() >= 1024 {
-            let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
-            if uberblock.magic == Uberblock::magic_little() {
-                println!("Little Magic");
-                return Option::Some(uberblock);
-            } else if uberblock.magic == Uberblock::magic_big() {
-                println!("Big Magic");
-                return Option::Some(uberblock);
-            } else if uberblock.magic > 0 {
-                println!("Unknown Magic: {:X}", uberblock.magic as usize);
+                    if newest {
+                        newest_uberblock = Option::Some(uberblock);
+                    }
+                }
+                Option::None => (), //Invalid uberblock
             }
         }
-
-        Option::None
-    }
-}
-
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct DVAddr {
-    pub vdev: u64,
-    pub offset: u64,
-}
-
-impl DVAddr {
-    /// Sector address is the offset plus two vdev labels and one boot block (4 MB, or 8192 sectors)
-    pub fn sector(&self) -> u64 {
-        self.offset + 0x2000
-    }
-}
-
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct BlockPtr {
-    pub dvas: [DVAddr; 3],
-    pub flags_size: u64,
-    pub padding: [u64; 3],
-    pub birth_txg: u64,
-    pub fill_count: u64,
-    pub checksum: [u64; 4],
-}
-
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct Gang {
-    pub bps: [BlockPtr; 3],
-    pub padding: [u64; 14],
-    pub magic: u64,
-    pub checksum: u64,
-}
-
-impl Gang {
-    pub fn magic() -> u64 {
-        return 0x117a0cb17ada1002;
+        return newest_uberblock;
     }
 }
 
@@ -153,44 +191,18 @@ pub fn main() {
                 Option::Some(ref mut zfs) => {
                     if *command == "uber".to_string() {
                         //128 KB of ubers after 128 KB of other stuff
-                        let mut newest_uberblock: Option<Uberblock> = Option::None;
-                        for i in 0..128 {
-                            match Uberblock::from(&zfs.read(256 + i * 2, 2)) {
-                                Option::Some(uberblock) => {
-                                    let mut newest = false;
-                                    match newest_uberblock {
-                                        Option::Some(previous) => {
-                                            if uberblock.txg > previous.txg {
-                                                newest = true;
-                                            }
-                                        }
-                                        Option::None => newest = true,
-                                    }
-
-                                    if newest {
-                                        newest_uberblock = Option::Some(uberblock);
-                                    }
-                                }
-                                Option::None => (), //Invalid uberblock
+                        match zfs.uber() {
+                            Some(uberblock) => {
+                                println_color!(green, "Newest Uberblock {:X}", uberblock.magic);
+                                println!("Version {}", uberblock.version);
+                                println!("TXG {}", uberblock.txg);
+                                println!("GUID {:X}", uberblock.guid_sum);
+                                println!("Timestamp {}", uberblock.timestamp);
                             }
-                        }
-
-                        match newest_uberblock {
-                            Option::Some(uberblock) => {
-                                println_color!(green, "Newest Uberblock");
-                                //TODO: Do not use as usize
-                                println!("Magic: {:X}", uberblock.magic as usize);
-                                println!("Version: {}", uberblock.version as usize);
-                                println!("TXG: {}", uberblock.txg as usize);
-                                println!("Timestamp: {}", uberblock.timestamp as usize);
-                                println!("MOS: {}",
-                                         uberblock.rootbp.dvas[0].sector() as usize);
-                            }
-                            Option::None => println_color!(red, "No valid uberblock found!"),
+                            None => println_color!(red, "No valid uberblock found!"),
                         }
                     } else if *command == "vdev_label".to_string() {
-                        let mut vdev_label = VdevLabel::from(&zfs.read(0, 256 * 2)); // 256KB of vdev label
-                        match vdev_label {
+                        match VdevLabel::from(&zfs.read(0, 256 * 2)) {
                             Some(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
@@ -198,11 +210,21 @@ pub fn main() {
                             },
                             None => { println_color!(red, "Couldn't read vdev_label"); },
                         }
-                    } else if *command == "list".to_string() {
-                        println_color!(green, "List volumes");
+                    } else if *command == "mos".to_string() {
+                        match zfs.uber() {
+                            Some(uberblock) => {
+                                let mos_dva = uberblock.rootbp.dvas[0];
+                                println_color!(green, "DVA: {:?}", mos_dva);
+                                let mut mos = zfs.read(mos_dva.sector() as usize, mos_dva.asize() as usize);
+                                let mut xdr = xdr::MemOps::new(&mut mos);
+                                let nv_list = nvstream::decode_nv_list(&mut xdr);
+                                println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                            },
+                            None => println_color!(red, "No valid uberblock found!"),
+                        }
                     } else if *command == "dump".to_string() {
                         match args.get(1) {
-                            Option::Some(arg) => {
+                            Some(arg) => {
                                 let sector = arg.to_num();
                                 println_color!(green, "Dump sector: {}", sector);
 
@@ -219,13 +241,13 @@ pub fn main() {
                                 }
                                 print!("\n");
                             }
-                            Option::None => println_color!(red, "No sector specified!"),
+                            None => println_color!(red, "No sector specified!"),
                         }
                     } else if *command == "close".to_string() {
                         println_color!(red, "Closing");
                         close = true;
                     } else {
-                        println_color!(blue, "Commands: uber vdev_label list dump close");
+                        println_color!(blue, "Commands: uber vdev_label mos dump close");
                     }
                 }
                 Option::None => {
