@@ -1,7 +1,7 @@
 use collections::string::*;
 use collections::vec::Vec;
 use collections::boxed::Box;
-use file::*;
+use fs::file::*;
 use event::*;
 use console::*;
 use env::*;
