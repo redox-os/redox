@@ -2,8 +2,8 @@ use core::mem;
 use core::ops::DerefMut;
 use core::slice;
 
-use collections::string::*;
-use collections::Vec;
+use string::*;
+use vec::Vec;
 
 use event::*;
 

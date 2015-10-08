@@ -1,10 +1,10 @@
 use core::char;
 use core::ptr;
 
-use collections::string::*;
-use collections::vec::Vec;
+use string::*;
+use vec::Vec;
 
-use syscall::call::*;
+use syscall::{sys_alloc, sys_unalloc, sys_trigger};
 
 /// An optional event
 pub enum EventOption {
@@ -115,31 +115,57 @@ impl MouseEvent {
     }
 }
 
+/// Escape key
 pub const K_ESC: u8 = 0x01;
+/// Backspace key
 pub const K_BKSP: u8 = 0x0E;
-pub const K_TAP: u8 = 0x0F;
+/// Tab key
+pub const K_TAB: u8 = 0x0F;
+/// Control key
 pub const K_CTRL: u8 = 0x1D;
+/// Alt key
 pub const K_ALT: u8 = 0x38;
+/// F1 key
 pub const K_F1: u8 = 0x3B;
+/// F2 key
 pub const K_F2: u8 = 0x3C;
+/// F3 key
 pub const K_F3: u8 = 0x3D;
+/// F4 key
 pub const K_F4: u8 = 0x3E;
+/// F5 key
 pub const K_F5: u8 = 0x3F;
+/// F6 key
 pub const K_F6: u8 = 0x40;
+/// F7 key
 pub const K_F7: u8 = 0x41;
+/// F8 key
 pub const K_F8: u8 = 0x42;
+/// F9 key
 pub const K_F9: u8 = 0x43;
+/// F10 key
 pub const K_F10: u8 = 0x44;
+/// Home key
 pub const K_HOME: u8 = 0x47;
+/// Up key
 pub const K_UP: u8 = 0x48;
+/// Page up key
 pub const K_PGUP: u8 = 0x49;
+/// Left key
 pub const K_LEFT: u8 = 0x4B;
+/// Right key
 pub const K_RIGHT: u8 = 0x4D;
+/// End key
 pub const K_END: u8 = 0x4F;
+/// Down key
 pub const K_DOWN: u8 = 0x50;
+/// Page down key
 pub const K_PGDN: u8 = 0x51;
+/// Delete key
 pub const K_DEL: u8 = 0x53;
+/// F11 key
 pub const K_F11: u8 = 0x57;
+/// F12 key
 pub const K_F12: u8 = 0x58;
 
 /// A key event (such as a pressed key)
