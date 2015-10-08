@@ -321,9 +321,10 @@ impl Disk {
             return false;
         }
 
-        let mut destination = Memory::<u16>::new(512).unwrap();
+        let mut data = PIO16::new(self.base + ATA_REG_DATA);
+        let mut destination = Memory::<u16>::new(256).unwrap();
         for word in 0..256 {
-            destination.write(word, inw(self.base + ATA_REG_DATA));
+            destination.write(word, data.read());
         }
 
         d(" Size: ");
