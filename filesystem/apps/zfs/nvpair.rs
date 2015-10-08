@@ -4,7 +4,7 @@ use redox::*;
 pub const NV_VERSION: i32 = 0;
 
 // nvlist header
-#[derive(Debug)]
+//#[derive(Debug)]
 pub struct NvList {
     pub version: i32,
     pub nvflag:  u32, // persistent flags
@@ -21,7 +21,19 @@ impl NvList {
     }
 }
 
-#[derive(Debug)]
+impl fmt::Debug for NvList {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "NvList {{ version: {:X}, nvflag: {:X}, pairs: [\n", self.version, self.nvflag));
+        for &(ref name, ref value) in &self.pairs {
+            try!(write!(f, "{} : {:?}\n", name, value));
+        }
+        try!(write!(f, "] }}\n"));
+        Ok(())
+    }
+}
+
+// TODO Auto implement Debug. format! currently crashes with big u32 values
+//#[derive(Debug)]
 pub enum NvValue {
     Unknown,
     Boolean,
@@ -87,16 +99,16 @@ impl NvValue {
 
     pub fn num_elements(&self) -> usize {
         match *self {
-            NvValue::Unknown => 0,
-            NvValue::Boolean => 0,
-            NvValue::Byte(_) => 0,
-            NvValue::Int16(_) => 0,
-            NvValue::Uint16(_) => 0,
-            NvValue::Int32(_) => 0,
-            NvValue::Uint32(_) => 0,
-            NvValue::Int64(_) => 0,
-            NvValue::Uint64(_) => 0,
-            NvValue::String(_) => 0,
+            NvValue::Unknown => 1,
+            NvValue::Boolean => 1,
+            NvValue::Byte(_) => 1,
+            NvValue::Int16(_) => 1,
+            NvValue::Uint16(_) => 1,
+            NvValue::Int32(_) => 1,
+            NvValue::Uint32(_) => 1,
+            NvValue::Int64(_) => 1,
+            NvValue::Uint64(_) => 1,
+            NvValue::String(_) => 1,
             NvValue::ByteArray(ref a) => a.len(),
             NvValue::Int16Array(ref a) => a.len(),
             NvValue::Uint16Array(ref a) => a.len(),
@@ -105,15 +117,34 @@ impl NvValue {
             NvValue::Int64Array(ref a) => a.len(),
             NvValue::Uint64Array(ref a) => a.len(),
             NvValue::StringArray(ref a) => a.len(),
-            NvValue::HrTime(_) => 0,
-            NvValue::NvList(_) => 0,
+            NvValue::HrTime(_) => 1,
+            NvValue::NvList(_) => 1,
             NvValue::NvListArray(ref a) => a.len(),
-            NvValue::BooleanValue(_) => 0,
-            NvValue::Int8(_) => 0,
-            NvValue::Uint8(_) => 0,
+            NvValue::BooleanValue(_) => 1,
+            NvValue::Int8(_) => 1,
+            NvValue::Uint8(_) => 1,
             NvValue::BooleanArray(ref a) => a.len(),
             NvValue::Int8Array(ref a) => a.len(),
             NvValue::Uint8Array(ref a) => a.len(),
+        }
+    }
+}
+
+impl fmt::Debug for NvValue {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            NvValue::Int64(v) => write!(f, "Int64(0x{:X})", v),
+            NvValue::Uint64(v) => write!(f, "Uint64(0x{:X})", v),
+            NvValue::NvList(ref v) => write!(f, "NvList({:?})", **v),
+            NvValue::NvListArray(ref v) => {
+                try!(write!(f, "NvListArray(["));
+                for nv_list in v {
+                    try!(write!(f, "NvList({:?})", **nv_list));
+                }
+                write!(f, "])")
+            },
+            NvValue::String(ref v) => { write!(f, "String({})", v) },
+            _ => write!(f, "{:?}", self),
         }
     }
 }
