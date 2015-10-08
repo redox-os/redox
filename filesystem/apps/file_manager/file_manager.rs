@@ -1,8 +1,8 @@
 use redox::*;
 
 pub struct FileManager {
-    folder_icon: BMP,
-    file_icon: BMP,
+    folder_icon: BMPFile,
+    file_icon: BMPFile,
     files: Vec<String>,
     selected: isize,
 }
@@ -16,7 +16,7 @@ impl FileManager {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
-            file_icon = BMP::from_data(&vec);
+            file_icon = BMPFile::from_data(&vec);
         }
 
         let folder_icon;
@@ -26,7 +26,7 @@ impl FileManager {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
-            folder_icon = BMP::from_data(&vec);
+            folder_icon = BMPFile::from_data(&vec);
         }
 
         return FileManager {
