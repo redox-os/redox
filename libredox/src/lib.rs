@@ -6,7 +6,7 @@
 //! with shell style functions, an event system, and environment argument support.
 
 #![crate_name="redox"]
-#![crate_type="staticlib"]
+#![crate_type="rlib"]
 #![feature(alloc)]
 #![feature(allow_internal_unstable)]
 #![feature(asm)]
@@ -14,6 +14,7 @@
 #![feature(collections)]
 #![feature(core)]
 #![feature(core_intrinsics)]
+#![feature(core_panic)]
 #![feature(core_simd)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -144,6 +145,8 @@
 
     //TODO pub mod rt;
     //TODO mod panicking;
+    pub use __core::panicking;
+
     mod rand;
 
     // Some external utilities of the standard library rely on randomness (aka
@@ -159,11 +162,19 @@
 /* } STD COPY */
 
 /* Additional Stuff { */
+    pub use boxed::Box;
+    pub use env::*;
+    pub use fs::file::*;
+    pub use rand::*;
+    pub use string::*;
+    pub use vec::Vec;
+
     pub use audio::wav::*;
     pub use console::*;
     pub use event::*;
     pub use graphics::bmp::*;
     pub use orbital::*;
+    pub use to_num::*;
 
     /// A module for necessary C and assembly constructs
     pub mod externs;

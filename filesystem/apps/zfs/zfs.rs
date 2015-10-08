@@ -1,9 +1,5 @@
-extern crate redox;
-
 //To use this, please install zfs-fuse
 use redox::*;
-
-use core::ptr;
 
 mod nvpair;
 mod nvstream;
