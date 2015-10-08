@@ -18,6 +18,7 @@ pub struct Package {
     //    /// The developer's signature of this package
     //    pub dev_signature: String,
     //    /// Signatures of the developers public key from people who trusts the developers.
+    //    // TODO: Move this to other file
     //    pub trust: Vec<String>,
     //    /// The signatures of this package
     //    pub signatures: Vec<String>,
