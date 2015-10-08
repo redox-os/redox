@@ -1,3 +1,10 @@
+//! # The Redox Library
+//!
+//! The Redox Library contains a collection of commonly used low-level software
+//! constructs to be used on top of the base operating system, including graphics 
+//! support and windowing, a basic filesystem, audio support, a simple console
+//! with shell style functions, an event system, and environment argument support.
+
 #![crate_name="redox"]
 #![crate_type="rlib"]
 #![feature(alloc)]
@@ -49,6 +56,7 @@ mod common {
     pub mod time;
 }
 
+/// A module for necessary C and assembly constructs
 #[path="../../src/externs.rs"]
 pub mod externs;
 
