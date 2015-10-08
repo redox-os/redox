@@ -4,6 +4,7 @@ use redox::*;
 pub const NV_VERSION: i32 = 0;
 
 // nvlist header
+#[derive(Debug)]
 pub struct NvList {
     pub version: i32,
     pub nvflag:  u32, // persistent flags
@@ -20,6 +21,7 @@ impl NvList {
     }
 }
 
+#[derive(Debug)]
 pub enum NvValue {
     Unknown,
     Boolean,
@@ -39,7 +41,7 @@ pub enum NvValue {
     Int64Array(Vec<i64>),
     Uint64Array(Vec<u64>),
     StringArray(Vec<String>),
-    HrTime,
+    HrTime(i64),
     NvList(Box<NvList>),
     NvListArray(Vec<Box<NvList>>),
     BooleanValue(bool),
@@ -71,7 +73,7 @@ impl NvValue {
             NvValue::Int64Array(_) => DataType::Int64Array,
             NvValue::Uint64Array(_) => DataType::Uint64Array,
             NvValue::StringArray(_) => DataType::StringArray,
-            NvValue::HrTime => DataType::HrTime,
+            NvValue::HrTime(_) => DataType::HrTime,
             NvValue::NvList(_) => DataType::NvList,
             NvValue::NvListArray(_) => DataType::NvListArray,
             NvValue::BooleanValue(_) => DataType::BooleanValue,
@@ -103,7 +105,7 @@ impl NvValue {
             NvValue::Int64Array(ref a) => a.len(),
             NvValue::Uint64Array(ref a) => a.len(),
             NvValue::StringArray(ref a) => a.len(),
-            NvValue::HrTime => 0,
+            NvValue::HrTime(_) => 0,
             NvValue::NvList(_) => 0,
             NvValue::NvListArray(ref a) => a.len(),
             NvValue::BooleanValue(_) => 0,
@@ -116,7 +118,7 @@ impl NvValue {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum DataType {
     Unknown = 0,
     Boolean,
