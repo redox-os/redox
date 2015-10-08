@@ -17,6 +17,7 @@ impl fmt::Write for DebugStream {
 }
 
 #[lang="panic_fmt"]
+#[allow(unused_must_use)]
 pub extern fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> ! {
     fmt::write(&mut DebugStream, args);
     fmt::write(&mut DebugStream, format_args!(" in {}:{}\n", file, line));
@@ -91,6 +92,38 @@ pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
         : "intel", "volatile");
 }
 
+#[no_mangle]
+//TODO Make this better
+/// 64 bit remainder on 32 bit arch
+pub extern "C" fn __umoddi3(a: u64, b: u64) -> u64 {
+    if b == 0 {
+        return 0;
+    }
+
+    let mut rem = a;
+    while rem >= b {
+        rem -= b;
+    }
+    rem
+}
+
+#[no_mangle]
+//TODO Make this better
+/// 64 bit division on 32 bit arch
+pub extern "C" fn __udivdi3(a: u64, b: u64) -> u64 {
+    if b == 0 {
+        return 0;
+    }
+
+    let mut quot = 0;
+    let mut rem = a;
+    while rem >= b {
+        rem -= b;
+        quot += 1;
+    }
+    quot
+}
+
 /*
 pub fn unsupported() {
     unsafe { asm!("int 3" : : : : "intel", "volatile") }
@@ -145,13 +178,3 @@ pub extern fn __divdi3(a: i32, b: i32) -> i32 {
     return a/b;
 }
 */
-
-#[no_mangle]
-pub extern "C" fn __umoddi3(a: u32, b: u32) -> u32 {
-    return a % b;
-}
-
-#[no_mangle]
-pub extern "C" fn __udivdi3(a: u32, b: u32) -> u32 {
-    return a / b;
-}
