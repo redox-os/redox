@@ -133,14 +133,13 @@ impl Gang {
 
 //TODO: Find a way to remove all the to_string's
 pub fn main() {
-    console_title(&"ZFS".to_string());
+    console_title("ZFS");
 
     let red = [255, 127, 127, 255];
     let green = [127, 255, 127, 255];
     let blue = [127, 127, 255, 255];
 
     println!("Type open zfs.img to open the image file");
-    println!("This may take up to 30 seconds");
 
     let mut zfs_option: Option<ZFS> = Option::None;
 
@@ -231,7 +230,7 @@ pub fn main() {
                         println_color!(red, "Closing");
                         close = true;
                     } else {
-                        println_color!(blue, "Commands: uber list dump close");
+                        println_color!(blue, "Commands: uber vdev_label list dump close");
                     }
                 }
                 Option::None => {
