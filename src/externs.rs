@@ -137,11 +137,11 @@ pub extern fn __divdi3(a: i32, b: i32) -> i32 {
 */
 
 #[no_mangle]
-pub extern fn __umoddi3(a: u32, b: u32) -> u32 {
-    return a%b;
+pub extern "C" fn __umoddi3(a: u32, b: u32) -> u32 {
+    return a % b;
 }
 
 #[no_mangle]
-pub extern fn __udivdi3(a: u32, b: u32) -> u32 {
-    return a/b;
+pub extern "C" fn __udivdi3(a: u32, b: u32) -> u32 {
+    return a / b;
 }

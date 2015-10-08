@@ -136,7 +136,7 @@ impl ConsoleWindow {
     }
 
     /// Set the window title
-    pub fn set_title(&mut self, title: &str){
+    pub fn set_title(&mut self, title: &str) {
         //TODO THIS IS A HACK, should use self.window.setTitle(title);
         self.window = Window::new(self.window.x(),
                                   self.window.y(),
@@ -173,8 +173,9 @@ impl ConsoleWindow {
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.command.len() {
-                                self.command = self.command[0 .. self.offset].to_string() +
-                                               &self.command[self.offset + 1 .. self.command.len() - 1];
+                                self.command =
+                                    self.command[0 .. self.offset].to_string() +
+                                    &self.command[self.offset + 1 .. self.command.len() - 1];
                             },
                             K_HOME => self.offset = 0,
                             K_UP => {
