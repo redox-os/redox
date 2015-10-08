@@ -200,8 +200,7 @@ pub fn main() {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
                                 println_color!(green, "Successfully read nv_list");
-                                //readln!();
-                                //println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                                println_color!(green, "Got nv_list:\n{:?}", nv_list);
                             },
                             None => { println_color!(red, "Couldn't read vdev_label"); },
                         }

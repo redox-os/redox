@@ -21,7 +21,8 @@ impl NvList {
     }
 }
 
-#[derive(Debug)]
+// TODO Auto implement Debug. format! currently crashes with big u32 values
+//#[derive(Debug)]
 pub enum NvValue {
     Unknown,
     Boolean,
@@ -114,6 +115,16 @@ impl NvValue {
             NvValue::BooleanArray(ref a) => a.len(),
             NvValue::Int8Array(ref a) => a.len(),
             NvValue::Uint8Array(ref a) => a.len(),
+        }
+    }
+}
+
+impl fmt::Debug for NvValue {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            NvValue::Int64(v) => write!(f, "Int64(0x{:X})", v),
+            NvValue::Uint64(v) => write!(f, "Uint64(0x{:X})", v),
+            _ => write!(f, "{:?}", self),
         }
     }
 }
