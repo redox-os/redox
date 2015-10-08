@@ -88,91 +88,94 @@ impl FileSystem {
                 let header = ptr::read(header_ptr);
                 memory::unalloc(header_ptr as usize);
 
-                if header.signature[0] == 'R' as u8 &&
-                    header.signature[1] == 'E' as u8 &&
-                    header.signature[2] == 'D' as u8 &&
-                    header.signature[3] == 'O' as u8 &&
-                    header.signature[4] == 'X' as u8 &&
-                    header.signature[5] == 'F' as u8 &&
-                    header.signature[6] == 'S' as u8 &&
-                    header.signature[7] == '\0' as u8 &&
-                    header.version == 0xFFFFFFFF {
-                        debug::d(" Redox Filesystem\n");
+                if header.signature[0] == 'R' as u8 && header.signature[1] == 'E' as u8 &&
+                   header.signature[2] == 'D' as u8 &&
+                   header.signature[3] == 'O' as u8 &&
+                   header.signature[4] == 'X' as u8 &&
+                   header.signature[5] == 'F' as u8 &&
+                   header.signature[6] == 'S' as u8 &&
+                   header.signature[7] == '\0' as u8 &&
+                   header.version == 0xFFFFFFFF {
+                    debug::d(" Redox Filesystem\n");
 
-                        let mut nodes = Vec::new();
-                        for extent in &header.extents {
-                            if extent.block > 0 && extent.length > 0 {
-                                let mut node_data: Vec<NodeData> = Vec::new();
-                                unsafe {
-                                    let data = memory::alloc(extent.length as usize);
-                                    if data > 0 {
-                                        let sectors = (extent.length as usize + 511) / 512;
-                                        let mut sector: usize = 0;
-                                        while sectors - sector >= 65536 {
-                                            let request = Request {
-                                                extent: Extent {
-                                                    block: extent.block + sector as u64,
-                                                    length: 65536 * 512,
-                                                },
-                                                mem: data + sector * 512,
-                                                read: true,
-                                                complete: Arc::new(AtomicBool::new(false)),
-                                            };
-
-                                            disk.read(extent.block + sector as u64, 0, data + sector * 512);
-
-                                            /*
-                                            disk.request(request.clone());
-
-                                            while request.complete.load(Ordering::SeqCst) == false {
-                                                disk.on_poll();
-                                            }
-                                            */
-
-                                            sector += 65535;
-                                        }
-                                        if sector < sectors {
-                                            let request = Request {
-                                                extent: Extent {
-                                                    block: extent.block + sector as u64,
-                                                    length: (sectors - sector) as u64 * 512,
-                                                },
-                                                mem: data + sector * 512,
-                                                read: true,
-                                                complete: Arc::new(AtomicBool::new(false)),
-                                            };
-
-                                            disk.read(extent.block + sector as u64, (sectors - sector) as u16, data + sector * 512);
-
-                                            /*
-                                            disk.request(request.clone());
-
-                                            while request.complete.load(Ordering::SeqCst) == false {
-                                                disk.on_poll();
-                                            }
-                                            */
-                                        }
-
-                                        node_data = Vec {
-                                            data: data as *mut NodeData,
-                                            length: extent.length as usize/mem::size_of::<NodeData>(),
+                    let mut nodes = Vec::new();
+                    for extent in &header.extents {
+                        if extent.block > 0 && extent.length > 0 {
+                            let mut node_data: Vec<NodeData> = Vec::new();
+                            unsafe {
+                                let data = memory::alloc(extent.length as usize);
+                                if data > 0 {
+                                    let sectors = (extent.length as usize + 511) / 512;
+                                    let mut sector: usize = 0;
+                                    while sectors - sector >= 65536 {
+                                        let request = Request {
+                                            extent: Extent {
+                                                block: extent.block + sector as u64,
+                                                length: 65536 * 512,
+                                            },
+                                            mem: data + sector * 512,
+                                            read: true,
+                                            complete: Arc::new(AtomicBool::new(false)),
                                         };
-                                    }
-                                }
 
-                                for i in 0..node_data.len() {
-                                    if let Some(data) = node_data.get(i) {
-                                        nodes.push(Node::new(extent.block + i as u64, data));
+                                        disk.read(extent.block + sector as u64,
+                                                  0,
+                                                  data + sector * 512);
+
+                                            /*
+                                            disk.request(request.clone());
+
+                                            while request.complete.load(Ordering::SeqCst) == false {
+                                                disk.on_poll();
+                                            }
+                                            */
+
+                                        sector += 65535;
                                     }
+                                    if sector < sectors {
+                                        let request = Request {
+                                            extent: Extent {
+                                                block: extent.block + sector as u64,
+                                                length: (sectors - sector) as u64 * 512,
+                                            },
+                                            mem: data + sector * 512,
+                                            read: true,
+                                            complete: Arc::new(AtomicBool::new(false)),
+                                        };
+
+                                        disk.read(extent.block + sector as u64,
+                                                  (sectors - sector) as u16,
+                                                  data + sector * 512);
+
+                                            /*
+                                            disk.request(request.clone());
+
+                                            while request.complete.load(Ordering::SeqCst) == false {
+                                                disk.on_poll();
+                                            }
+                                            */
+                                    }
+
+                                    node_data = Vec {
+                                        data: data as *mut NodeData,
+                                        length: extent.length as usize / mem::size_of::<NodeData>(),
+                                    };
+                                }
+                            }
+
+                            for i in 0..node_data.len() {
+                                if let Some(data) = node_data.get(i) {
+                                    nodes.push(Node::new(extent.block + i as u64, data));
                                 }
                             }
                         }
+                    }
 
-                        return Some(FileSystem {
-                            disk: disk,
-                            header: header,
-                            nodes: nodes,
-                        });
+                    return Some(FileSystem {
+                        disk: disk,
+                        header: header,
+                        nodes: nodes,
+                    });
                 } else {
                     debug::d(" Unknown Filesystem\n");
                 }

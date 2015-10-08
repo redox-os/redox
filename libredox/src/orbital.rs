@@ -41,7 +41,7 @@ impl Window {
                 font_file.seek(Seek::Start(0));
                 font_file.read(&mut font);
             },
-            None => font = Vec::new()
+            None => font = Vec::new(),
         }
 
         Window {
@@ -52,7 +52,7 @@ impl Window {
             t: title.to_string(),
             file: File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)),
             font: font,
-            data: vec![0; w * h * 4]
+            data: vec![0; w * h * 4],
         }
     }
 
