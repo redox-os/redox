@@ -94,7 +94,7 @@ impl Window {
     /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
-            self.border_color = Color::alpha(192, 192, 192, 128);
+            self.border_color = Color::alpha(128, 128, 128, 192);
         } else {
             self.border_color = Color::alpha(64, 64, 64, 128);
         }
