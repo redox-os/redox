@@ -13,7 +13,7 @@ use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::common::*;
+use programs::session::SessionItem;
 
 use syscall::call::sys_yield;
 

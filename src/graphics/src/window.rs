@@ -6,7 +6,7 @@ use core::ops::DerefMut;
 
 use common::event::*;
 use common::queue::*;
-use common::scheduler::*;
+use common::scheduler;
 use common::string::*;
 
 use super::color::*;
@@ -77,9 +77,9 @@ impl Window {
     pub fn poll(&mut self) -> Option<Event> {
         let event_option;
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             event_option = self.events.pop();
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
 
         return event_option;
@@ -129,11 +129,11 @@ impl Window {
                          self.border_color);
 
             unsafe {
-                let reenable = start_no_ints();
+                let reenable = scheduler::start_no_ints();
                 display.image(self.point,
                               self.content.onscreen as *const u32,
                               Size::new(self.content.width, self.content.height));
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
             }
         }
     }
@@ -141,9 +141,9 @@ impl Window {
     /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             self.events.push(key_event.to_event());
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
@@ -204,9 +204,9 @@ impl Window {
 
         if caught && !self.dragging {
             unsafe {
-                let reenable = start_no_ints();
+                let reenable = scheduler::start_no_ints();
                 self.events.push(mouse_event.to_event());
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
             }
         }
 

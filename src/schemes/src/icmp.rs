@@ -7,7 +7,7 @@ use common::resource::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 use syscall::call;
 
