@@ -214,13 +214,10 @@ impl Session {
                 let i = self.windows.len() - 1 - reverse_i;
                 match self.windows.get(i) {
                     Option::Some(window_ptr) => unsafe {
-                        if reverse_i == 0 ||
-                           (mouse_event.left_button && !self.last_mouse_event.left_button) {
-                            if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
-                                catcher = i as isize;
+                        if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
+                            catcher = i as isize;
 
-                                self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
-                            }
+                            self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
                         }
                     },
                     Option::None => (),
