@@ -5,7 +5,7 @@ use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct PS2 {
     data: PIO8,

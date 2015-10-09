@@ -28,7 +28,7 @@ use common::memory;
 use common::paging::*;
 use common::queue::Queue;
 use common::resource::URL;
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 use common::time::Duration;
 use common::vec::Vec;
@@ -179,11 +179,11 @@ unsafe fn event_loop() -> ! {
     let mut cmd = String::new();
     loop {
         loop {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             let event_option = events.pop();
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
 
             match event_option {
                 Option::Some(event) => {
@@ -203,9 +203,9 @@ unsafe fn event_loop() -> ! {
                                         _ => match key_event.character {
                                             '\0' => (),
                                             '\n' => {
-                                                let reenable = start_no_ints();
+                                                let reenable = scheduler::start_no_ints();
                                                 *::debug_command = cmd + '\n';
-                                                end_no_ints(reenable);
+                                                scheduler::end_no_ints(reenable);
 
                                                 cmd = String::new();
                                                 debug::dl();
@@ -267,7 +267,7 @@ pub unsafe fn debug_init() {
 }
 
 unsafe fn init(font_data: usize) {
-    start_no_ints();
+    scheduler::start_no_ints();
 
     debug_display = 0 as *mut Box<Display>;
     debug_point = Point { x: 0, y: 0 };
@@ -364,7 +364,7 @@ unsafe fn init(font_data: usize) {
     debug::d("Reenabling interrupts\n");
 
     //Start interrupts
-    end_no_ints(true);
+    scheduler::end_no_ints(true);
 
     //Load cursor before getting out of debug mode
     {
@@ -375,10 +375,10 @@ unsafe fn init(font_data: usize) {
 
         let cursor = BMPFile::from_data(&vec);
 
-        let reenable = start_no_ints();
+        let reenable = scheduler::start_no_ints();
         session.cursor = cursor;
         session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
-        end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
     }
 
     debug_draw = false;
@@ -395,10 +395,10 @@ unsafe fn init(font_data: usize) {
             if folder.ends_with("/".to_string()) {
                 let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
 
-                let reenable = start_no_ints();
+                let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
                 session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
             }
         }
     }
@@ -411,10 +411,10 @@ unsafe fn init(font_data: usize) {
 
         let background = BMPFile::from_data(&vec);
 
-        let reenable = start_no_ints();
+        let reenable = scheduler::start_no_ints();
         session.background = background;
         session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
-        end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
     }
 }
 
@@ -523,10 +523,10 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
     match interrupt {
         0x20 => {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             clock_realtime = clock_realtime + PIT_DURATION;
             clock_monotonic = clock_monotonic + PIT_DURATION;
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
 
             context_switch(true);
         }

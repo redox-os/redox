@@ -7,11 +7,11 @@ use drivers::pciconfig::*;
 use common::debug;
 use common::memory;
 use common::resource::{Resource, ResourceSeek, ResourceType, URL};
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 use common::time::{self, Duration};
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 #[repr(packed)]
 struct Stream {
@@ -300,9 +300,9 @@ impl IntelHDA {
             }
         }
 
-        let disable = start_ints();
+        let disable = scheduler::start_ints();
         Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-        end_ints(disable);
+        scheduler::end_ints(disable);
 
         debug::d(" GCTL ");
         debug::dh(ptr::read(gctl) as usize);

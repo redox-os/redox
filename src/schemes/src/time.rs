@@ -3,9 +3,9 @@ use alloc::boxed::Box;
 use common::resource::{Resource, ResourceType, URL, VecResource};
 use common::string::{String, ToString};
 
-use common::scheduler::*;
+use common::scheduler;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct TimeScheme;
 
@@ -18,10 +18,10 @@ impl SessionItem for TimeScheme {
         let clock_realtime;
         let clock_monotonic;
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             clock_realtime = ::clock_realtime;
             clock_monotonic = ::clock_monotonic;
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
 
         return box VecResource::new(URL::from_str("time://"),
