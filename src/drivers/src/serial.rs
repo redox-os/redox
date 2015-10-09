@@ -4,6 +4,7 @@ use drivers::pio::*;
 
 use programs::session::SessionItem;
 
+/// Serial
 pub struct Serial {
     pub data: PIO8,
     pub status: PIO8,
@@ -13,6 +14,7 @@ pub struct Serial {
 }
 
 impl Serial {
+    /// Create new
     pub fn new(port: u16, irq: u8) -> Self {
         Serial {
             data: PIO8::new(port),
