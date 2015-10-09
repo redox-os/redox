@@ -259,7 +259,8 @@ impl FileManager {
                     if redraw {
                         self.draw_content(&mut window);
                     }
-                    
+
+                    if mouse_event.left_button 
                     self.last_mouse_event = mouse_event;
                 }
                 _ => (),
