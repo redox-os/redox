@@ -10,7 +10,7 @@ use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct EthernetResource {
     network: Box<Resource>,

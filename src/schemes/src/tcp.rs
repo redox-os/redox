@@ -10,7 +10,7 @@ use common::vec::Vec;
 use network::common::*;
 use network::tcp::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct TCPResource {
     ip: Box<Resource>,

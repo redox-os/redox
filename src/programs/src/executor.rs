@@ -4,7 +4,7 @@ use common::context::*;
 use common::elf::*;
 use common::memory;
 use common::resource::URL;
-use common::scheduler::*;
+use common::scheduler;
 use common::string::String;
 use common::vec::Vec;
 
@@ -71,11 +71,11 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
                 resource: URL::from_str("debug://").open(),
             });
 
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {
                 (*contexts_ptr).push(context);
             }
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         } else if physical_address > 0 {
             memory::unalloc(physical_address);
         }

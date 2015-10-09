@@ -2,7 +2,7 @@ use drivers::pciconfig::*;
 
 use common::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 #[repr(packed)]
 struct STE {

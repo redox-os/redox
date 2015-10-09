@@ -10,7 +10,7 @@ use drivers::pciconfig::*;
 use network::intel8254x::*;
 use network::rtl8139::*;
 
-use programs::session::*;
+use programs::session::Session;
 
 use schemes::file::*;
 

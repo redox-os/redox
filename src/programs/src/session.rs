@@ -7,7 +7,7 @@ use core::{cmp, ptr, mem};
 
 use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
 use common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -17,8 +17,6 @@ use graphics::display::Display;
 use graphics::point::Point;
 use graphics::size::Size;
 use graphics::window::Window;
-
-use programs::common::SessionItem;
 
 #[allow(unused_variables)]
 pub trait SessionItem {
@@ -124,17 +122,17 @@ impl Session {
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
         for item in self.items.iter() {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             item.on_irq(irq);
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
     pub unsafe fn on_poll(&mut self) {
         for item in self.items.iter() {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             item.on_poll();
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
@@ -342,7 +340,7 @@ impl Session {
             }
             //}
 
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             self.display.flip();
 
@@ -356,7 +354,7 @@ impl Session {
 
             self.redraw = event::REDRAW_NONE;
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 

@@ -6,7 +6,7 @@ use common::debug;
 use common::memory;
 use common::queue::Queue;
 use common::resource::{Resource, URL};
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -16,7 +16,7 @@ use drivers::pio::*;
 use network::common::*;
 use network::scheme::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 #[repr(packed)]
 struct TXD {
@@ -232,15 +232,15 @@ impl SessionItem for RTL8139 {
 impl NetworkScheme for RTL8139 {
     fn add(&mut self, resource: *mut NetworkResource) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             self.resources.push(resource);
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
     fn remove(&mut self, resource: *mut NetworkResource) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             let mut i = 0;
             while i < self.resources.len() {
                 let mut remove = false;
@@ -258,13 +258,13 @@ impl NetworkScheme for RTL8139 {
                     self.resources.remove(i);
                 }
             }
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
     fn sync(&mut self) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             for resource in self.resources.iter() {
                 while let Option::Some(bytes) = (**resource).outbound.pop() {
@@ -282,7 +282,7 @@ impl NetworkScheme for RTL8139 {
                 }
             }
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 }
