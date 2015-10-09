@@ -107,11 +107,6 @@ pub trait Read {
         // TODO: Do flat map to make it able to read more than 1024 bytes
         buf.into_iter()
     }
-    fn bytes_unbuf(&mut self) -> BytesIter<Self> {
-        BytesIter {
-            file: *self,
-        }
-    }
 }
 
 /// Types you can write
@@ -133,10 +128,6 @@ impl Read for File {
     }
 }
 
-struct BytesIter<T: Read + Sized> {
-    pub file: T,
-}
-
 impl Write for File {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
@@ -150,15 +141,6 @@ impl Write for File {
     }
 }
 
-impl<T: Read + Sized> Iterator for BytesIter<T> {
-    type Item = u8;
-    fn next(&mut self) -> Option<u8> {
-        let mut data = [0];
-        self.file.read(&mut data);
-
-        Some(data[0])
-    }
-}
 
 impl Drop for File {
     fn drop(&mut self) {
