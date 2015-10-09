@@ -273,6 +273,9 @@ pub fn main() {
                                 println!("TXG {}", uberblock.txg);
                                 println!("GUID {:X}", uberblock.guid_sum);
                                 println!("Timestamp {}", uberblock.timestamp);
+                                println!("ROOTBP[0] {:?}", uberblock.rootbp.dvas[0]);
+                                println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
+                                println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
                             }
                             None => println_color!(red, "No valid uberblock found!"),
                         }
