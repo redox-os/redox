@@ -238,7 +238,7 @@ impl Session {
     pub unsafe fn redraw(&mut self) {
         if self.redraw > event::REDRAW_NONE {
             //if self.redraw >= REDRAW_ALL {
-            self.display.set(Color::new(64, 64, 64));
+            self.display.set(Color::new(75, 163, 253));
             if self.background.data.len() > 0 {
                 self.background.draw(&self.display,
                                      Point::new((self.display.width as isize -
