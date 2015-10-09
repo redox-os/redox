@@ -81,7 +81,7 @@ impl Thread {
         debug_assert_eq!(ret, 0);
     }
 
-    #[cfg(any(target_os = "linux", target_os = "android"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     pub fn set_name(name: &str) {
         // pthread wrapper only appeared in glibc 2.12, so we use syscall
         // directly.
@@ -172,6 +172,7 @@ impl Drop for Thread {
 }
 
 #[cfg(all(not(target_os = "linux"),
+          not(target_os = "redox"),
           not(target_os = "macos"),
           not(target_os = "bitrig"),
           not(all(target_os = "netbsd", not(target_vendor = "rumprun"))),
@@ -183,6 +184,7 @@ pub mod guard {
 
 
 #[cfg(any(target_os = "linux",
+          target_os = "redox",
           target_os = "macos",
           target_os = "bitrig",
           all(target_os = "netbsd", not(target_vendor = "rumprun")),
@@ -210,7 +212,7 @@ pub mod guard {
         current().map(|s| s as *mut libc::c_void)
     }
 
-    #[cfg(any(target_os = "linux", target_os = "android", target_os = "netbsd"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android", target_os = "netbsd"))]
     unsafe fn get_stack_start() -> Option<*mut libc::c_void> {
         use super::pthread_attr_init;
 
@@ -261,7 +263,7 @@ pub mod guard {
             panic!("failed to allocate a guard page");
         }
 
-        let offset = if cfg!(target_os = "linux") {2} else {1};
+        let offset = if cfg!(any(target_os = "linux", target_os = "redox")) {2} else {1};
 
         Some(stackaddr as usize + offset * psize)
     }
@@ -303,7 +305,7 @@ pub mod guard {
         })
     }
 
-    #[cfg(any(target_os = "linux", target_os = "android", target_os = "netbsd"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android", target_os = "netbsd"))]
     pub unsafe fn current() -> Option<usize> {
         use super::pthread_attr_init;
 
@@ -330,7 +332,7 @@ pub mod guard {
         ret
     }
 
-    #[cfg(any(target_os = "linux", target_os = "android", target_os = "netbsd"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android", target_os = "netbsd"))]
     extern {
         fn pthread_getattr_np(native: libc::pthread_t,
                               attr: *mut libc::pthread_attr_t) -> libc::c_int;
@@ -355,7 +357,7 @@ pub mod guard {
 // case.  We previously used weak linkage (under the same assumption),
 // but that caused Debian to detect an unnecessarily strict versioned
 // dependency on libc6 (#23628).
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 fn min_stack_size(attr: *const libc::pthread_attr_t) -> usize {
     use dynamic_lib::DynamicLibrary;
     use sync::Once;
@@ -384,7 +386,7 @@ fn min_stack_size(attr: *const libc::pthread_attr_t) -> usize {
 
 // No point in looking up __pthread_get_minstack() on non-glibc
 // platforms.
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(any(target_os = "linux", target_os = "redox")))]
 fn min_stack_size(_: *const libc::pthread_attr_t) -> usize {
     PTHREAD_STACK_MIN as usize
 }

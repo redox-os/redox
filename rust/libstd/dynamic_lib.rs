@@ -157,6 +157,7 @@ mod tests {
 
     #[test]
     #[cfg(any(target_os = "linux",
+              target_os = "redox",
               target_os = "macos",
               target_os = "freebsd",
               target_os = "dragonfly",
@@ -175,6 +176,7 @@ mod tests {
 }
 
 #[cfg(any(target_os = "linux",
+          target_os = "redox",
           target_os = "android",
           target_os = "macos",
           target_os = "ios",

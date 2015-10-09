@@ -139,7 +139,7 @@ mod os {
     pub const PTHREAD_MUTEX_RECURSIVE: libc::c_int = 2;
 }
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 mod os {
     use libc;
 
