@@ -14,6 +14,7 @@ use syscall::call::*;
 
 /// A trait for types that can be converted to `String`
 pub trait ToString {
+    /// Convert the type to strings
     fn to_string(&self) -> String;
 }
 
@@ -26,12 +27,15 @@ impl ToString for &'static str {
 
 /// An iterator over unicode characters
 pub struct Chars<'a> {
+    /// The string iterating over
     string: &'a String,
+    /// The offset of the iterator
     offset: usize,
 }
 
 impl <'a> Iterator for Chars<'a> {
     type Item = char;
+
     fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
             let ret = Option::Some(self.string[self.offset]);
@@ -45,8 +49,11 @@ impl <'a> Iterator for Chars<'a> {
 
 /// A split
 pub struct Split<'a> {
+    /// The string being split
     string: &'a String,
+    /// The offset of the split
     offset: usize,
+    /// The string seperator
     seperator: String,
 }
 
@@ -74,6 +81,7 @@ impl <'a> Iterator for Split<'a> {
 
 /// A heap allocated, owned string.
 pub struct String {
+    /// The vector of the chars
     pub vec: Vec<char>,
 }
 
@@ -383,6 +391,7 @@ impl String {
         self.to_num_radix_signed(10)
     }
 
+    /// Debug
     pub fn d(&self) {
         for c in self.chars() {
             dc(c);

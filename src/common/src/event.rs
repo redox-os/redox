@@ -6,11 +6,17 @@ use syscall::call::*;
 
 /// An optional event
 pub enum EventOption {
+    /// A mouse event
     Mouse(MouseEvent),
+    /// A key event
     Key(KeyEvent),
+    /// A redraw event
     Redraw(RedrawEvent),
+    /// A open event
     Open(OpenEvent),
+    /// A unknown event
     Unknown(Event),
+    /// No event
     None,
 }
 
