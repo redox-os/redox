@@ -11,7 +11,7 @@ use common::vec::Vec;
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
     unsafe {
         let mut physical_address = 0;
-        let virtual_address = LOAD_ADDR;
+        let virtual_address = 0x80000000;
         let mut virtual_size = 0;
         let mut entry = 0;
         {
