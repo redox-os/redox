@@ -44,7 +44,7 @@ impl FileManager {
                 left_button: false,
                 middle_button: false,
                 right_button: false,
-            }
+            },
             click_time: Duration::new(0, 0),
         }
     }
@@ -219,21 +219,7 @@ impl FileManager {
                         for c in file.chars() {
                             if mouse_event.y >= 32 * row as isize &&
                                mouse_event.y < 32 * row as isize + 32 {
-                                let click_time = Duration::realtime();
-                                if self.selected == i {
-                                    if click_time - self.click_time < Duration::new(0, 500 * NANOS_PER_MILLI) {
-                                        match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => OpenEvent {
-                                                url_string: path.to_string() + &file,
-                                            }.trigger(),
-                                            Option::None => (),
-                                        }
-                                        self.click_time = Duration::new(0, 0);
-                                    }
-                                } else {
-                                    self.selected = i;
-                                    self.click_time = click_time;
-                                }
+                                self.selected = i;
                                 redraw = true;
                             }
 
@@ -260,7 +246,26 @@ impl FileManager {
                         self.draw_content(&mut window);
                     }
 
-                    if mouse_event.left_button 
+                    //Check for double click
+                    if mouse_event.left_button {
+                        let click_time = Duration::realtime();
+
+                        if click_time - self.click_time < Duration::new(0, 500 * NANOS_PER_MILLI)
+                            && (self.last_mouse_event.x - mouse_event.x).abs() <= 4
+                            && (self.last_mouse_event.y - mouse_event.y).abs() <= 4 {
+                            if self.selected >= 0 && self.selected < self.files.len() as isize {
+                                match self.files.get(self.selected as usize) {
+                                    Option::Some(file) => OpenEvent {
+                                        url_string: path.to_string() + &file,
+                                    }.trigger(),
+                                    Option::None => (),
+                                }
+                            }
+                            self.click_time = Duration::new(0, 0);
+                        } else {
+                            self.click_time = click_time;
+                        }
+                    }
                     self.last_mouse_event = mouse_event;
                 }
                 _ => (),
