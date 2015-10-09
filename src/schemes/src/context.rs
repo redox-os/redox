@@ -2,10 +2,10 @@ use alloc::boxed::Box;
 
 use common::context::*;
 use common::resource::{Resource, ResourceType, URL, VecResource};
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct ContextScheme;
 
@@ -18,10 +18,10 @@ impl SessionItem for ContextScheme {
         let i;
         let len;
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             i = context_i;
             len = (*contexts_ptr).len();
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
 
         return box VecResource::new(URL::from_str("context://"),
