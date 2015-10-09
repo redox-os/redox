@@ -4,6 +4,7 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
+#![feature(convert)]
 #![feature(core_slice_ext)]
 #![feature(no_std)]
 #![feature(vec_push_all)]
