@@ -1,5 +1,6 @@
 use collections::string::*;
 use collections::vec::{IntoIter, Vec};
+use core::marker::Sized;
 
 use core::ptr;
 
@@ -100,11 +101,16 @@ pub trait Read {
     }
     /// Return an iterator of the bytes
     fn bytes(&mut self) -> IntoIter<u8> {
-        // TODO: This is only a temporary implementation. Make this read one byte at a time.
         let mut buf = Vec::new();
         self.read_to_end(&mut buf);
 
+        // TODO: Do flat map to make it able to read more than 1024 bytes
         buf.into_iter()
+    }
+    fn bytes_unbuf(&mut self) -> BytesIter<Self> {
+        BytesIter {
+            file: *self,
+        }
     }
 }
 
@@ -127,6 +133,10 @@ impl Read for File {
     }
 }
 
+struct BytesIter<T: Read + Sized> {
+    pub file: T,
+}
+
 impl Write for File {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
@@ -137,6 +147,16 @@ impl Write for File {
                 Option::Some(count)
             }
         }
+    }
+}
+
+impl<T: Read + Sized> Iterator for BytesIter<T> {
+    type Item = u8;
+    fn next(&mut self) -> Option<u8> {
+        let mut data = [0];
+        self.file.read(&mut data);
+
+        Some(data[0])
     }
 }
 
