@@ -23,7 +23,7 @@ pub unsafe fn context_switch(interrupted: bool) {
     if context_enabled {
         let current_i = context_i;
         context_i += 1;
-        //The only garbage collection in Redox
+        // The only garbage collection in Redox
         loop {
             if context_i >= contexts.len() {
                 context_i -= contexts.len();

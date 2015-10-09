@@ -15,6 +15,7 @@ pub enum EventOption {
 }
 
 /// An event
+// TODO: Make this a scheme
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct Event {
@@ -27,7 +28,7 @@ pub struct Event {
 }
 
 impl Event {
-    //// Create a null event
+    /// Create a null event
     pub fn new() -> Event {
         Event {
             code: '\0',
@@ -64,10 +65,15 @@ impl Event {
 /// A event related to the mouse
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
+    /// The x coordinate
     pub x: isize,
+    /// The y coordinate
     pub y: isize,
+    /// Is the left button pressed?
     pub left_button: bool,
+    /// Is the right button pressed?
     pub right_button: bool,
+    /// Is the midle button pressed?
     pub middle_button: bool,
 }
 
@@ -132,8 +138,11 @@ pub const K_F12: u8 = 0x58;
 /// A key event (such as a pressed key)
 #[derive(Copy, Clone)]
 pub struct KeyEvent {
+    /// The char of the key
     pub character: char,
+    /// The scancode of the key
     pub scancode: u8,
+    /// Is the key pressed?
     pub pressed: bool,
 }
 
@@ -173,12 +182,17 @@ impl KeyEvent {
     }
 }
 
+/// The "redraw none" code
 pub const REDRAW_NONE: usize = 0;
+/// The "redraw cursor" code
 pub const REDRAW_CURSOR: usize = 1;
+/// The "redraw all" code
 pub const REDRAW_ALL: usize = 2;
+// TODO: Redraw rect
 
 /// A redraw event
 pub struct RedrawEvent {
+    /// The redraw code
     pub redraw: usize,
 }
 
