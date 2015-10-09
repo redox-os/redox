@@ -1,4 +1,5 @@
 use redox::*;
+use redox::time::*;
 
 pub struct FileManager {
     folder_icon: BMPFile,
@@ -11,6 +12,8 @@ pub struct FileManager {
     file_icon: BMPFile,
     files: Vec<String>,
     selected: isize,
+    last_mouse_event: MouseEvent,
+    click_time: Duration,
 }
 
 fn load_icon(path: &str) -> BMPFile {
@@ -35,6 +38,14 @@ impl FileManager {
             file_icon: load_icon("unknown"),
             files: Vec::new(),
             selected: -1,
+            last_mouse_event: MouseEvent {
+                x: 0,
+                y: 0,
+                left_button: false,
+                middle_button: false,
+                right_button: false,
+            }
+            click_time: Duration::new(0, 0),
         }
     }
 
@@ -208,7 +219,21 @@ impl FileManager {
                         for c in file.chars() {
                             if mouse_event.y >= 32 * row as isize &&
                                mouse_event.y < 32 * row as isize + 32 {
-                                self.selected = i;
+                                let click_time = Duration::realtime();
+                                if self.selected == i {
+                                    if click_time - self.click_time < Duration::new(0, 500 * NANOS_PER_MILLI) {
+                                        match self.files.get(self.selected as usize) {
+                                            Option::Some(file) => OpenEvent {
+                                                url_string: path.to_string() + &file,
+                                            }.trigger(),
+                                            Option::None => (),
+                                        }
+                                        self.click_time = Duration::new(0, 0);
+                                    }
+                                } else {
+                                    self.selected = i;
+                                    self.click_time = click_time;
+                                }
                                 redraw = true;
                             }
 
@@ -234,6 +259,8 @@ impl FileManager {
                     if redraw {
                         self.draw_content(&mut window);
                     }
+                    
+                    self.last_mouse_event = mouse_event;
                 }
                 _ => (),
             }
