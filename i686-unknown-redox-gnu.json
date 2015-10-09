@@ -4,7 +4,7 @@
         "target-endian": "little",
         "target-pointer-width": "32",
         "features": "-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
-        "os": "none",
+        "os": "redox",
         "arch": "x86",
         "pre-link-args": ["-m32"],
         "relocation_model": "static",
