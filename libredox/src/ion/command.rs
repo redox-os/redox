@@ -398,6 +398,7 @@ impl Application {
     pub fn main(&mut self) {
         console_title(&"Terminal".to_string());
 
+        println!("Type help for a command list");
         if let Option::Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
             println!("# {}", command);

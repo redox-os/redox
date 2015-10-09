@@ -7,6 +7,7 @@ pub fn main() {
     let green = [127, 255, 127, 255];
     let blue = [127, 127, 255, 255];
 
+    println!("Type help for a command list");
     while let Option::Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
         for arg in line.split(' ') {

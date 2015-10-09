@@ -23,6 +23,7 @@ use redox::*;
 pub fn main() {
     console_title("Test");
 
+    println!("Type help for a command list");
     while let Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
         for arg in line.split(' ') {

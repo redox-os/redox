@@ -58,7 +58,7 @@ impl Editor {
         let mut redraw = false;
 
         {
-            window.set([0, 0, 0, 196]);
+            window.set([255, 255, 255, 255]);
 
             let scroll_x = self.scroll_x;
             let scroll_y = self.scroll_y;
@@ -98,7 +98,7 @@ impl Editor {
                     col += 8 - col % 8;
                 } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.char(8 * col, 16 * row, c, [255, 255, 255, 255]);
+                        window.char(8 * col, 16 * row, c, [0, 0, 0, 255]);
                     }
                     col += 1;
                 }
@@ -138,7 +138,7 @@ impl Editor {
                                      (rand() % 300 + 50) as isize,
                                      576,
                                      400,
-                                      "Editor (Loading)");
+                                      &("Editor (".to_string() + url + ")"));
 
         self.url = url.to_string();
         self.file = Option::Some(File::open(&self.url));
