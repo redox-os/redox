@@ -8,9 +8,12 @@ pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;
 pub const NANOS_PER_SEC: i32 = 1000000000;
 
+/// A duration
 #[derive(Copy, Clone)]
 pub struct Duration {
+    /// The seconds
     pub secs: i64,
+    /// The nano seconds
     pub nanos: i32,
 }
 
