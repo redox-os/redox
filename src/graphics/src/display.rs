@@ -6,7 +6,7 @@ use core::mem::transmute;
 use core::ops::Drop;
 use core::simd::*;
 
-use common::scheduler::*;
+use common::scheduler;
 
 use graphics::color::*;
 use graphics::point::*;
@@ -180,7 +180,7 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
@@ -188,7 +188,7 @@ impl Display {
                 swap(&mut (*self_mut).offscreen,
                      &mut (*self_mut).onscreen);
             }
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 

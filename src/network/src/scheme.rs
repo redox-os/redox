@@ -5,7 +5,7 @@ use core::ops::DerefMut;
 use common::debug::*;
 use common::queue::*;
 use common::resource::*;
-use common::scheduler::*;
+use common::scheduler;
 use common::vec::*;
 
 use syscall::call::sys_yield;
@@ -61,9 +61,9 @@ impl Resource for NetworkResource {
             unsafe {
                 (*self.nic).sync();
 
-                let reenable = start_no_ints();
+                let reenable = scheduler::start_no_ints();
                 let option = (*self.ptr).inbound.pop();
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
 
                 if let Option::Some(bytes) = option {
                     vec.push_all(&bytes);
@@ -77,9 +77,9 @@ impl Resource for NetworkResource {
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
 
             (*self.nic).sync();
         }

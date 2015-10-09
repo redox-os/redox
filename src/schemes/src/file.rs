@@ -12,11 +12,10 @@ use common::debug;
 use common::queue::Queue;
 use common::memory::{self, Memory};
 use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
-use common::scheduler::*;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 use syscall::call::sys_yield;
 

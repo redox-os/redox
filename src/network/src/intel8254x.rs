@@ -6,7 +6,7 @@ use common::debug;
 use common::memory;
 use common::queue::Queue;
 use common::resource::{Resource, URL};
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -15,7 +15,7 @@ use drivers::pciconfig::*;
 use network::common::*;
 use network::scheme::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;
@@ -139,15 +139,15 @@ impl SessionItem for Intel8254x {
 impl NetworkScheme for Intel8254x {
     fn add(&mut self, resource: *mut NetworkResource) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             self.resources.push(resource);
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
     fn remove(&mut self, resource: *mut NetworkResource) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             let mut i = 0;
             while i < self.resources.len() {
                 let mut remove = false;
@@ -165,13 +165,13 @@ impl NetworkScheme for Intel8254x {
                     self.resources.remove(i);
                 }
             }
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
     fn sync(&mut self) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             for resource in self.resources.iter() {
                 while let Option::Some(bytes) = (**resource).outbound.pop() {
@@ -189,7 +189,7 @@ impl NetworkScheme for Intel8254x {
                 }
             }
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 }

@@ -1,10 +1,10 @@
 use alloc::boxed::Box;
 
 use common::resource::{Resource, ResourceSeek, ResourceType, URL};
-use common::scheduler::*;
+use common::scheduler;
 use common::string::{String, ToString};
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 use syscall::call;
 
@@ -22,18 +22,18 @@ impl Resource for DebugResource {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         unsafe {
             loop {
-                let reenable = start_no_ints();
+                let reenable = scheduler::start_no_ints();
 
                 if (*::debug_command).len() > 0 {
                     break;
                 }
 
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
 
                 call::sys_yield();
             }
 
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             //TODO: Unicode
             let mut i = 0;
@@ -45,7 +45,7 @@ impl Resource for DebugResource {
                 i += 1;
             }
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
 
             return Option::Some(i);
         }
