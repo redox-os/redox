@@ -1,9 +1,9 @@
 //To use this, please install zfs-fuse
 use redox::*;
 
-mod nvpair;
-mod nvstream;
-mod xdr;
+pub mod nvpair;
+pub mod nvstream;
+pub mod xdr;
 
 #[repr(packed)]
 pub struct VdevLabel {
