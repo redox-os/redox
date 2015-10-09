@@ -38,7 +38,7 @@ use libc;
           target_os = "openbsd"))]
 pub const FIOCLEX: libc::c_ulong = 0x20006601;
 
-#[cfg(any(all(target_os = "linux",
+#[cfg(any(all(any(target_os = "linux", target_os = "redox"),
               any(target_arch = "x86",
                   target_arch = "x86_64",
                   target_arch = "arm",
@@ -46,7 +46,7 @@ pub const FIOCLEX: libc::c_ulong = 0x20006601;
           target_os = "android"))]
 pub const FIOCLEX: libc::c_ulong = 0x5451;
 
-#[cfg(all(target_os = "linux",
+#[cfg(all(any(target_os = "linux", target_os = "redox"),
           any(target_arch = "mips",
               target_arch = "mipsel",
               target_arch = "powerpc")))]
@@ -54,7 +54,7 @@ pub const FIOCLEX: libc::c_ulong = 0x6601;
 
 pub const WNOHANG: libc::c_int = 1;
 
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub const _SC_GETPW_R_SIZE_MAX: libc::c_int = 70;
 #[cfg(any(target_os = "macos",
           target_os = "freebsd",
@@ -69,7 +69,7 @@ pub const _SC_GETPW_R_SIZE_MAX: libc::c_int = 48;
 pub const _SC_GETPW_R_SIZE_MAX: libc::c_int = 0x0048;
 
 #[repr(C)]
-#[cfg(target_os = "linux")]
+#[cfg(any(target_os = "linux", target_os = "redox"))]
 pub struct passwd {
     pub pw_name: *mut libc::c_char,
     pub pw_passwd: *mut libc::c_char,
@@ -175,6 +175,7 @@ pub unsafe fn sigemptyset(set: *mut sigset_t) -> libc::c_int {
 }
 
 #[cfg(any(target_os = "linux",
+          target_os = "redox",
           target_os = "android"))]
 mod signal_os {
     pub use self::arch::{SA_ONSTACK, SA_SIGINFO, SIGBUS, SIG_SETMASK,
@@ -205,13 +206,13 @@ mod signal_os {
         pub si_addr: *mut libc::c_void
     }
 
-    #[cfg(all(target_os = "linux", target_pointer_width = "32"))]
+    #[cfg(all(any(target_os = "linux", target_os = "redox"), target_pointer_width = "32"))]
     #[repr(C)]
     pub struct sigset_t {
         __val: [libc::c_ulong; 32],
     }
 
-    #[cfg(all(target_os = "linux", target_pointer_width = "64"))]
+    #[cfg(all(any(target_os = "linux", target_os = "redox"), target_pointer_width = "64"))]
     #[repr(C)]
     pub struct sigset_t {
         __val: [libc::c_ulong; 16],
@@ -240,7 +241,7 @@ mod signal_os {
 
         pub const SIG_SETMASK: libc::c_int = 2;
 
-        #[cfg(target_os = "linux")]
+        #[cfg(any(target_os = "linux", target_os = "redox"))]
         #[repr(C)]
         pub struct sigaction {
             pub sa_sigaction: sighandler_t,
@@ -289,7 +290,7 @@ mod signal_os {
 
         pub const SIG_SETMASK: libc::c_int = 3;
 
-        #[cfg(all(target_os = "linux", not(target_env = "musl")))]
+        #[cfg(all(any(target_os = "linux", target_os = "redox"), not(target_env = "musl")))]
         #[repr(C)]
         pub struct sigaction {
             pub sa_flags: libc::c_uint,

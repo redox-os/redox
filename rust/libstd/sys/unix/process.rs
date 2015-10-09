@@ -411,7 +411,7 @@ fn make_envp(env: Option<&HashMap<OsString, OsString>>)
 
 fn translate_status(status: c_int) -> ExitStatus {
     #![allow(non_snake_case)]
-    #[cfg(any(target_os = "linux", target_os = "android"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     mod imp {
         pub fn WIFEXITED(status: i32) -> bool { (status & 0xff) == 0 }
         pub fn WEXITSTATUS(status: i32) -> i32 { (status >> 8) & 0xff }

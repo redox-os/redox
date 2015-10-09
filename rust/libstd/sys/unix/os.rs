@@ -54,7 +54,7 @@ pub fn errno() -> i32 {
         __errno()
     }
 
-    #[cfg(any(target_os = "linux", target_os = "android"))]
+    #[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
     unsafe fn errno_location() -> *const c_int {
         extern { fn __errno_location() -> *const c_int; }
         __errno_location()
@@ -67,13 +67,13 @@ pub fn errno() -> i32 {
 
 /// Gets a detailed string description for the given error number.
 pub fn error_string(errno: i32) -> String {
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "redox"))]
     extern {
         #[link_name = "__xpg_strerror_r"]
         fn strerror_r(errnum: c_int, buf: *mut c_char,
                       buflen: libc::size_t) -> c_int;
     }
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(not(any(target_os = "linux", target_os = "redox")))]
     extern {
         fn strerror_r(errnum: c_int, buf: *mut c_char,
                       buflen: libc::size_t) -> c_int;
@@ -240,7 +240,7 @@ pub fn current_exe() -> io::Result<PathBuf> {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "android"))]
+#[cfg(any(target_os = "linux", target_os = "redox", target_os = "android"))]
 pub fn current_exe() -> io::Result<PathBuf> {
     ::fs::read_link("/proc/self/exe")
 }
@@ -356,6 +356,7 @@ pub fn args() -> Args {
 }
 
 #[cfg(any(target_os = "linux",
+          target_os = "redox",
           target_os = "android",
           target_os = "freebsd",
           target_os = "dragonfly",

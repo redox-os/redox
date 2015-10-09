@@ -689,6 +689,17 @@ mod os {
     pub const EXE_EXTENSION: &'static str = "";
 }
 
+#[cfg(target_os = "redox")]
+mod os {
+    pub const FAMILY: &'static str = "unix";
+    pub const OS: &'static str = "redox";
+    pub const DLL_PREFIX: &'static str = "lib";
+    pub const DLL_SUFFIX: &'static str = ".so";
+    pub const DLL_EXTENSION: &'static str = "so";
+    pub const EXE_SUFFIX: &'static str = ".bin";
+    pub const EXE_EXTENSION: &'static str = "bin";
+}
+
 #[cfg(target_os = "macos")]
 mod os {
     pub const FAMILY: &'static str = "unix";

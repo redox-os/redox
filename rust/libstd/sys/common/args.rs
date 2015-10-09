@@ -33,6 +33,7 @@ pub unsafe fn cleanup() { imp::cleanup() }
 pub fn clone() -> Option<Vec<Vec<u8>>> { imp::clone() }
 
 #[cfg(any(target_os = "linux",
+          target_os = "redox",
           target_os = "android",
           target_os = "freebsd",
           target_os = "dragonfly",
