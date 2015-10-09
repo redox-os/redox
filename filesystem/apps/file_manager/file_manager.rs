@@ -2,39 +2,40 @@ use redox::*;
 
 pub struct FileManager {
     folder_icon: BMPFile,
+    audio_icon: BMPFile,
+    bin_icon: BMPFile,
+    image_icon: BMPFile,
+    source_icon: BMPFile,
+    script_icon: BMPFile,
+    text_icon: BMPFile,
     file_icon: BMPFile,
     files: Vec<String>,
     selected: isize,
 }
 
+fn load_icon(path: &str) -> BMPFile {
+    let mut resource = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp"));
+
+    let mut vec: Vec<u8> = Vec::new();
+    resource.read_to_end(&mut vec);
+
+    BMPFile::from_data(&vec)
+}
+
 impl FileManager {
     pub fn new() -> Self {
-        let file_icon;
-        {
-            let mut resource = File::open("file:///ui/mimetypes/unknown.bmp");
-
-            let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
-
-            file_icon = BMPFile::from_data(&vec);
-        }
-
-        let folder_icon;
-        {
-            let mut resource = File::open("file:///ui/places/folder.bmp");
-
-            let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
-
-            folder_icon = BMPFile::from_data(&vec);
-        }
-
-        return FileManager {
-            file_icon: file_icon,
-            folder_icon: folder_icon,
+        FileManager {
+            folder_icon: load_icon("inode-directory"),
+            audio_icon: load_icon("audio-x-wav"),
+            bin_icon: load_icon("application-x-executable"),
+            image_icon: load_icon("image-x-generic"),
+            source_icon: load_icon("text-x-makefile"),
+            script_icon: load_icon("text-x-script"),
+            text_icon: load_icon("text-x-generic"),
+            file_icon: load_icon("unknown"),
             files: Vec::new(),
             selected: -1,
-        };
+        }
     }
 
     fn draw_content(&mut self, window: &mut Window) {
@@ -54,6 +55,42 @@ impl FileManager {
                              self.folder_icon.width(),
                              self.folder_icon.height(),
                              self.folder_icon.as_slice());
+            } else if string.ends_with(".wav") {
+                window.image(0,
+                             32 * row as isize,
+                             self.audio_icon.width(),
+                             self.audio_icon.height(),
+                             self.audio_icon.as_slice());
+            } else if string.ends_with(".bin") {
+                window.image(0,
+                             32 * row as isize,
+                             self.bin_icon.width(),
+                             self.bin_icon.height(),
+                             self.bin_icon.as_slice());
+            } else if string.ends_with(".bmp") {
+                window.image(0,
+                             32 * row as isize,
+                             self.image_icon.width(),
+                             self.image_icon.height(),
+                             self.image_icon.as_slice());
+            } else if string.ends_with(".rs") || string.ends_with(".asm") || string.ends_with(".list") {
+                window.image(0,
+                             32 * row as isize,
+                             self.source_icon.width(),
+                             self.source_icon.height(),
+                             self.source_icon.as_slice());
+            } else if string.ends_with(".sh") || string.ends_with(".lua") {
+                window.image(0,
+                             32 * row as isize,
+                             self.script_icon.width(),
+                             self.script_icon.height(),
+                             self.script_icon.as_slice());
+            } else if string.ends_with(".md") || string.ends_with(".txt") {
+                window.image(0,
+                             32 * row as isize,
+                             self.text_icon.width(),
+                             self.text_icon.height(),
+                             self.text_icon.as_slice());
             } else {
                 window.image(0,
                              32 * row as isize,
@@ -115,7 +152,7 @@ impl FileManager {
                                      (rand() % 300 + 50) as isize,
                                      width,
                                      height,
-                                     &("File Manager (".to_string() + &path + ")"));
+                                     &path);
 
         self.draw_content(&mut window);
 

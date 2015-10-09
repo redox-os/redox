@@ -4,5 +4,7 @@ accept=*_REDOX
 accept=*.md
 accept=*.asm
 accept=*.rs
+accept=*.txt
+accept=*.list
 author=Jeremy Soller
 description=Editor for Redox
