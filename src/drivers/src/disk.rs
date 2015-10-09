@@ -7,7 +7,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use common::debug::*;
 use common::queue::Queue;
 use common::memory::{self, Memory};
-use common::scheduler::*;
+use common::scheduler;
 
 use drivers::pio::*;
 
@@ -424,7 +424,7 @@ impl Disk {
 
     pub fn request(&mut self, request: Request) {
         unsafe {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             self.requests.push(request);
 
@@ -432,7 +432,7 @@ impl Disk {
                 self.next_request();
             }
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
@@ -449,7 +449,7 @@ impl Disk {
     }
 
     unsafe fn next_request(&mut self) {
-        let reenable = start_no_ints();
+        let reenable = scheduler::start_no_ints();
 
         self.cmd.write(CMD_DIR);
         if let Some(ref mut prdt) = self.prdt {
@@ -579,6 +579,6 @@ impl Disk {
             }
         }
 
-        end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
     }
 }

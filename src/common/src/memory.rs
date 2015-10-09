@@ -4,7 +4,7 @@ use core::mem::size_of;
 use core::ops::{Index, IndexMut};
 use core::ptr;
 
-use common::scheduler::*;
+use common::scheduler;
 
 pub const PAGE_DIRECTORY: usize = 0x300000;
 pub const PAGE_TABLE_SIZE: usize = 1024;
@@ -172,7 +172,7 @@ pub unsafe fn alloc(size: usize) -> usize {
     let mut ret = 0;
 
     //Memory allocation must be atomic
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if size > 0 {
         let mut number = 0;
@@ -201,7 +201,7 @@ pub unsafe fn alloc(size: usize) -> usize {
     }
 
     //Memory allocation must be atomic
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -210,7 +210,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     let mut ret = 0;
 
     //Memory allocation must be atomic
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if size > 0 {
         let mut number = 0;
@@ -239,7 +239,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     }
 
     //Memory allocation must be atomic
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -252,7 +252,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
     let mut size = 0;
 
     //Memory allocation must be atomic
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if ptr > 0 {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
@@ -265,14 +265,14 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
     }
 
     //Memory allocation must be atomic
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     size
 }
 
 pub unsafe fn unalloc(ptr: usize) {
     //Memory allocation must be atomic
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if ptr > 0 {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
@@ -285,14 +285,14 @@ pub unsafe fn unalloc(ptr: usize) {
     }
 
     //Memory allocation must be atomic
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 }
 
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
     let mut ret = 0;
 
     //Memory allocation must be atomic
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if size == 0 {
         if ptr > 0 {
@@ -315,7 +315,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -333,7 +333,7 @@ pub fn memory_used() -> usize {
     let mut ret = 0;
     unsafe {
         //Memory allocation must be atomic
-        let reenable = start_no_ints();
+        let reenable = scheduler::start_no_ints();
 
         for i in 0..CLUSTER_COUNT {
             if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
@@ -342,7 +342,7 @@ pub fn memory_used() -> usize {
         }
 
         //Memory allocation must be atomic
-        end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
     }
     ret
 }
@@ -351,7 +351,7 @@ pub fn memory_free() -> usize {
     let mut ret = 0;
     unsafe {
         //Memory allocation must be atomic
-        let reenable = start_no_ints();
+        let reenable = scheduler::start_no_ints();
 
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 {
@@ -360,7 +360,7 @@ pub fn memory_free() -> usize {
         }
 
         //Memory allocation must be atomic
-        end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
     }
     ret
 }
