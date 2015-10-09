@@ -25,6 +25,7 @@ fn test() {
     assert!(Permission::from_str("rw=file:home/*-rw=file:veryimportant").test(PermissionUnit::from_str("rw=file:home/lal")));
     assert!(Permission::from_str("rw=file:home/*-rw=file:veryimportant").test(PermissionUnit::from_str("rw=file:home/veryimportant")));
     assert!(Permission::from_str("rw=i\\+can\\+do\\+like\\+this").test(PermissionUnit::from_str("rw=file:i+can+do+like+this")));
-    // assert!(!Permission::from_str("RW=http:*+").test(PermissionUnit::from_str("rw=http://google.com")));
+
+    // assert!(!Permission::from_str("RW=http:*").test(PermissionUnit::from_str("rw=http://google.com")));
     // TODO: Failes when using uppercase RW
 }
