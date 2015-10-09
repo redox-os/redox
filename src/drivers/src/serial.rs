@@ -2,7 +2,7 @@ use common::event;
 
 use drivers::pio::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct Serial {
     pub data: PIO8,

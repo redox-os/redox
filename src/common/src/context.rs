@@ -5,7 +5,7 @@ use core::ptr;
 use common::memory;
 use common::paging::*;
 use common::resource::*;
-use common::scheduler::*;
+use common::scheduler;
 use common::string::*;
 use common::vec::*;
 
@@ -17,7 +17,7 @@ pub static mut context_enabled: bool = false;
 
 /// Switch context
 pub unsafe fn context_switch(interrupted: bool) {
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
     if context_enabled {
@@ -63,12 +63,12 @@ pub unsafe fn context_switch(interrupted: bool) {
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 }
 
 //TODO: To clean up memory leak, current must be destroyed!
 pub unsafe extern "cdecl" fn context_exit() {
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
@@ -78,7 +78,7 @@ pub unsafe extern "cdecl" fn context_exit() {
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     context_switch(false);
 }
@@ -177,11 +177,11 @@ impl Context {
             context_box_args.push(box_fn_ptr as u32);
             context_box_args.push(context_exit as u32);
 
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {
                 (*contexts_ptr).push(Context::new(context_box as u32, &context_box_args));
             }
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 

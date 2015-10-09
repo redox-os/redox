@@ -10,7 +10,7 @@ use common::vec::Vec;
 use network::common::*;
 use network::udp::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct UDPResource {
     ip: Box<Resource>,
