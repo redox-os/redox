@@ -4,7 +4,7 @@ use common::memory;
 use common::resource::{Resource, ResourceType, URL, VecResource};
 use common::string::{String, ToString};
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct MemoryScheme;
 

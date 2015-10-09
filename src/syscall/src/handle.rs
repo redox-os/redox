@@ -8,7 +8,7 @@ use common::debug::*;
 use common::event::*;
 use common::memory::*;
 use common::resource::*;
-use common::scheduler::*;
+use common::scheduler;
 use common::string::*;
 use common::time::*;
 
@@ -20,7 +20,7 @@ use graphics::size::*;
 use syscall::common::*;
 
 pub unsafe fn do_sys_debug(byte: u8) {
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if ::debug_display as usize > 0 {
         let display = &*(*::debug_display);
@@ -64,7 +64,7 @@ pub unsafe fn do_sys_debug(byte: u8) {
     let mut serial_data = PIO8::new(0x3F8);
     serial_data.write(byte);
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 }
 
 pub unsafe fn do_sys_exit(status: isize) {
@@ -74,27 +74,27 @@ pub unsafe fn do_sys_exit(status: isize) {
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
 
                 if let Option::Some(count) = file.resource
                                                  .read(slice::from_raw_parts_mut(buf, count)) {
                     ret = count;
                 }
 
-                start_no_ints();
+                scheduler::start_no_ints();
 
                 break;
             }
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -102,27 +102,27 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
 
                 if let Option::Some(count) = file.resource
                                                  .write(slice::from_raw_parts(buf, count)) {
                     ret = count;
                 }
 
-                start_no_ints();
+                scheduler::start_no_ints();
 
                 break;
             }
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -133,21 +133,21 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     //TODO: Handle more path derivatives
 
     if path_str.find(":".to_string()).is_none() {
-        let reenable = start_no_ints();
+        let reenable = scheduler::start_no_ints();
 
         let contexts = &*contexts_ptr;
         if let Option::Some(current) = contexts.get(context_i) {
             path_str = current.cwd.clone() + path_str;
         }
 
-        end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
     }
 
     let resource = (*::session_ptr).open(&URL::from_string(&path_str));
 
     let mut fd = 0xFFFFFFFF;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
@@ -164,7 +164,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
         });
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     fd
 }
@@ -172,7 +172,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 pub unsafe fn do_sys_close(fd: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
@@ -186,11 +186,11 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 
             if remove {
                 if let Option::Some(file) = current.files.remove(i) {
-                    end_no_ints(reenable);
+                    scheduler::end_no_ints(reenable);
 
                     drop(file);
 
-                    start_no_ints();
+                    scheduler::start_no_ints();
 
                     ret = 0;
                 }
@@ -200,7 +200,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -208,20 +208,20 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
             if let Option::Some(file) = current.files.get(i) {
                 if file.fd == fd {
-                    end_no_ints(reenable);
+                    scheduler::end_no_ints(reenable);
 
                     if file.resource.sync() {
                         ret = 0;
                     }
 
-                    start_no_ints();
+                    scheduler::start_no_ints();
 
                     break;
                 }
@@ -229,7 +229,7 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -237,13 +237,13 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
-                end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
 
                 match whence {
                     0 => if let Option::Some(count) =
@@ -261,20 +261,20 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
                     _ => (),
                 }
 
-                start_no_ints();
+                scheduler::start_no_ints();
 
                 break;
             }
         }
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
 
 pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     if tv as usize > 0 {
         ptr::write(tv.offset(0), ::clock_realtime.secs as usize);
@@ -285,7 +285,7 @@ pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
         ptr::write(tz.offset(1), 0);
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     0
 }
@@ -294,7 +294,7 @@ pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
 pub unsafe fn do_sys_brk(addr: usize) -> usize {
     let mut ret = 0;
 
-    let reenable = start_no_ints();
+    let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
@@ -333,7 +333,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
         d("BRK: Contexts disabled\n");
     }
 
-    end_no_ints(reenable);
+    scheduler::end_no_ints(reenable);
 
     ret
 }
@@ -366,7 +366,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_TRIGGER => {
             let mut event = ptr::read(ebx as *const Event);
 
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             if event.code == 'm' {
                 event.a = max(0,
@@ -383,12 +383,12 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
             //TODO: Dispatch to appropriate window
             (*::events_ptr).push(event);
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
 
         // Misc
         SYS_TIME => {
-            let reenable = start_no_ints();
+            let reenable = scheduler::start_no_ints();
 
             if ecx == 0 {
                 ptr::write(ebx as *mut Duration, ::clock_monotonic);
@@ -396,7 +396,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
                 ptr::write(ebx as *mut Duration, ::clock_realtime);
             }
 
-            end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
         _ => {
             d("Unknown Syscall: ");

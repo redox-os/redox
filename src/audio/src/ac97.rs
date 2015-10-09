@@ -11,7 +11,7 @@ use common::time::{self, Duration};
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 #[repr(packed)]
 struct BD {

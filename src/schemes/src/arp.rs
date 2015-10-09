@@ -5,7 +5,7 @@ use common::vec::Vec;
 use network::arp::*;
 use network::common::*;
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 use syscall::call;
 

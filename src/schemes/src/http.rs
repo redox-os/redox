@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use common::resource::{Resource, URL};
 use common::string::{String, ToString};
 
-use programs::common::SessionItem;
+use programs::session::SessionItem;
 
 pub struct HTTPScheme;
 
