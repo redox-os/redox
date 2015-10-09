@@ -1,4 +1,3 @@
-/* For use with STD
 use std::io;
 
 macro_rules! readln {
@@ -16,10 +15,8 @@ macro_rules! readln {
 fn console_title(title: &str){
 
 }
-*/
 
-use redox::*;
-
+#[no_mangle]
 pub fn main() {
     console_title("Test");
 

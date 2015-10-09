@@ -1,7 +1,8 @@
 use string::*;
-use vec::{IntoIter, Vec};
 
 use core::ptr;
+
+use io::{Read, Write};
 
 use syscall::{sys_alloc, sys_unalloc, sys_open, sys_close, sys_read, sys_write, sys_lseek, sys_fsync};
 
@@ -73,45 +74,6 @@ impl File {
     pub fn sync(&mut self) -> bool {
         unsafe { sys_fsync(self.fd) == 0 }
     }
-}
-
-/// Types you can read
-pub trait Read {
-
-    /// Read a file to a buffer
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
-
-    /// Read the file to the end
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        let mut read = 0;
-        loop {
-            let mut bytes = [0; 1024];
-            match self.read(&mut bytes) {
-                Option::Some(0) => return Option::Some(read),
-                Option::None => return Option::None,
-                Option::Some(count) => {
-                    for i in 0..count {
-                        vec.push(bytes[i]);
-                    }
-                    read += count;
-                }
-            }
-        }
-    }
-    /// Return an iterator of the bytes
-    fn bytes(&mut self) -> IntoIter<u8> {
-        // TODO: This is only a temporary implementation. Make this read one byte at a time.
-        let mut buf = Vec::new();
-        self.read_to_end(&mut buf);
-
-        buf.into_iter()
-    }
-}
-
-/// Types you can write
-pub trait Write {
-    /// Write to the file
-    fn write(&mut self, buf: &[u8]) -> Option<usize>;
 }
 
 impl Read for File {

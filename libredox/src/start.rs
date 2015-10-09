@@ -1,32 +1,15 @@
-#![crate_type="staticlib"]
-#![allow(unused_features)]
-#![feature(alloc)]
-#![feature(asm)]
-#![feature(box_syntax)]
-#![feature(collections)]
-#![feature(core_slice_ext)]
-#![feature(no_std)]
-#![feature(vec_push_all)]
-#![feature(vec_resize)]
-#![no_std]
+use ptr;
+use slice;
+use str;
 
-#[macro_use]
-extern crate alloc;
+use env::*;
+use vec::Vec;
 
-#[macro_use]
-extern crate collections;
+use syscall::sys_exit;
 
-#[macro_use]
-extern crate redox;
-
-use application::main;
-
-#[path="APPLICATION_PATH"]
-mod application;
-
-use redox::*;
-
-use redox::syscall::sys_exit;
+extern {
+    fn main();
+}
 
 #[inline(never)]
 unsafe fn _start_stack(stack: *const u32) {
@@ -48,9 +31,7 @@ unsafe fn _start_stack(stack: *const u32) {
     }
 
     args_init(args);
-    console_init();
     main();
-    console_destroy();
     args_destroy();
     sys_exit(0);
 }
