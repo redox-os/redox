@@ -1,5 +1,6 @@
 use str_match::str_match;
 
+#[derive(Clone)]
 pub struct PermissionUnit {
     /// Permission to read
     pub read: bool,
@@ -54,9 +55,56 @@ impl PermissionUnit {
 
     /// Does this permission unit implies another one
     pub fn implies(&self, lhs: PermissionUnit) -> bool {
-        // TODO
-        self
-        && str_match(self.param, lhs.param)
+        // Self implies lhs
+        (!self.read || lhs.read)
+            && (!self.write || lhs.write)
+            && (!self.read_foc || lhs.read_foc)
+            && (!self.write_foc || lhs.write_foc)
+            // The parameter of lhs matches the parameter of self
+            && str_match(&self.param, &lhs.param)
+    }
+
+    /// Does this permission unit apply to another one
+    pub fn applies(&self, other: &PermissionUnit) -> bool {
+        str_match(&self.param, &other.param)
+    }
+
+    /// Is this permission unit readable?
+    pub fn read(&self) -> bool {
+        self.read
+    }
+    /// Is this permission unit writable?
+    pub fn write(&self) -> bool {
+        self.write
+    }
+    /// Is this permission unit readable when focused?
+    pub fn read_foc(&self) -> bool {
+        self.read || self.read_foc
+    }
+    /// Is this permission unit writable when focused?
+    pub fn write_foc(&self) -> bool {
+        self.write || self.write_foc
+    }
+
+    /// Is this given permission unit readble following the permission unit?
+    pub fn is_readable(&self, other: PermissionUnit) -> bool {
+        (!self.read || other.read)
+            && str_match(&self.param, &other.param)
+    }
+    /// Readble on focus?
+    pub fn is_readable_foc(&self, other: PermissionUnit) -> bool {
+        (!self.read_foc() || other.read_foc())
+            && str_match(&self.param, &other.param)
+    }
+    /// Is this unit writable?
+    pub fn is_writeable(&self, other: PermissionUnit) -> bool {
+        (!self.write || other.write)
+            && str_match(&self.param, &other.param)
+    }
+    /// Writable on focus?
+    pub fn is_writeable_foc(&self, other: PermissionUnit) -> bool {
+        (!self.write_foc() || other.write_foc())
+            && str_match(&self.param, &other.param)
     }
 }
 
