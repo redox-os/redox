@@ -1,3 +1,5 @@
+//! ELF executables
+
 use core::ops::Drop;
 use core::ptr;
 
@@ -5,29 +7,50 @@ use common::debug::*;
 use common::memory;
 use common::string::*;
 
+/// An ELF header
 #[repr(packed)]
 pub struct ELFHeader {
+    /// The "magic number" (4 bytes)
     pub magic: [u8; 4],
+    /// 64 or 32 bit?
     pub class: u8,
+    /// Little (1) or big endianness (2)?
     pub endian: u8,
+    /// The ELF version (set to 1 for default)
     pub ver: u8,
+    /// Operating system ABI (0x03 for Linux)
     pub abi: [u8; 2],
+    /// Unused
     pub pad: [u8; 7],
+    /// Specify whether the object is relocatable, executable, shared, or core (in order).
     pub _type: u16,
+    /// Instruction set archcitecture
     pub machine: u16,
+    /// Second version
     pub ver_2: u32,
+    /// The ELF entry
     pub entry: u32,
+    /// The program header table offset
     pub ph_off: u32,
+    /// The section header table offset
     pub sh_off: u32,
+    /// The flags set
     pub flags: u32,
+    /// The header table length
     pub h_len: u16,
+    /// The program header table entry length
     pub ph_ent_len: u16,
+    /// The program head table length
     pub ph_len: u16,
+    /// The section header table entry length
     pub sh_ent_len: u16,
+    /// The section header table length
     pub sh_len: u16,
+    /// The section header table string index
     pub sh_str_index: u16,
 }
 
+/// An ELF segment
 #[repr(packed)]
 pub struct ELFSegment {
     pub _type: u32,
@@ -40,6 +63,7 @@ pub struct ELFSegment {
     pub align: u32,
 }
 
+/// An ELF section
 #[repr(packed)]
 pub struct ELFSection {
     pub name: u32,
@@ -54,6 +78,7 @@ pub struct ELFSection {
     pub ent_len: u32,
 }
 
+/// An ELF symbol
 #[repr(packed)]
 pub struct ELFSymbol {
     pub name: u32,
@@ -64,17 +89,21 @@ pub struct ELFSymbol {
     pub sh_index: u16,
 }
 
+/// The load address
 pub const LOAD_ADDR: usize = 0x80000000;
 
+/// An ELF executable
 pub struct ELF {
     pub data: usize,
 }
 
 impl ELF {
+    /// Create a new empty ELF executable
     pub fn new() -> Self {
         ELF { data: 0 }
     }
 
+    /// Create a ELF executable from data
     pub fn from_data(file_data: usize) -> Self {
         let data;
         unsafe {
@@ -95,6 +124,7 @@ impl ELF {
         ELF { data: data }
     }
 
+    /// Debug
     pub unsafe fn d(&self) {
         if self.data > 0 {
             d("Debug ELF\n");
@@ -281,6 +311,7 @@ impl ELF {
         }
     }
 
+    /// Get the entry field of the header
     pub unsafe fn entry(&self) -> usize {
         if self.data > 0 {
             // TODO: Support 64-bit version
@@ -292,6 +323,7 @@ impl ELF {
         0
     }
 
+    /// ELF symbol
     pub unsafe fn symbol(&self, name: String) -> usize {
         if self.data > 0 {
             let header = &*(self.data as *const ELFHeader);

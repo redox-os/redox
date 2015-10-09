@@ -18,6 +18,7 @@ use usb::ehci::*;
 use usb::uhci::*;
 use usb::xhci::*;
 
+/// PCI device
 pub unsafe fn pci_device(session: &mut Session,
                          mut pci: PCIConfig,
                          class_id: u32,
@@ -106,6 +107,7 @@ pub unsafe fn pci_device(session: &mut Session,
     }
 }
 
+/// Initialize PCI session
 pub unsafe fn pci_init(session: &mut Session) {
     for bus in 0..256 {
         for slot in 0..32 {

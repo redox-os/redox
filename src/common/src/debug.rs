@@ -2,6 +2,7 @@ use core::str::StrExt;
 
 use syscall::call::sys_debug;
 
+/// Set debug level
 pub fn db(byte: u8) {
     unsafe {
         sys_debug(byte);

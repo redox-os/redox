@@ -7,12 +7,14 @@ fn cvt_bcd(value: usize) -> usize {
     (value & 0xF) + ((value / 16) * 10)
 }
 
+/// RTC
 pub struct RTC {
     addr: PIO8,
     data: PIO8,
 }
 
 impl RTC {
+    /// Create new empty RTC
     pub fn new() -> Self {
         return RTC {
             addr: PIO8::new(0x70),
@@ -20,16 +22,19 @@ impl RTC {
         }
     }
 
+    /// Read
     unsafe fn read(&mut self, reg: u8) -> u8 {
         self.addr.write(reg);
         return self.data.read();
     }
 
+    /// Wait
     unsafe fn wait(&mut self) {
         while self.read(0xA) & 0x80 != 0x80 {}
         while self.read(0xA) & 0x80 == 0x80 {}
     }
 
+    /// Get time
     pub fn time(&mut self) -> Duration {
         let mut second;
         let mut minute;

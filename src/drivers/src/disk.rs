@@ -11,6 +11,7 @@ use common::scheduler;
 
 use drivers::pio::*;
 
+/// An disk extent
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct Extent {
@@ -162,6 +163,7 @@ const ATA_REG_CONTROL: u16 = 0x0C;
 const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
 
+/// A disk (data storage)
 pub struct Disk {
     base: u16,
     ctrl: u16,
@@ -175,6 +177,7 @@ pub struct Disk {
 }
 
 impl Disk {
+    /// Get the primary master
     pub fn primary_master(base: u16) -> Self {
         Disk {
             base: 0x1F0,
@@ -189,6 +192,7 @@ impl Disk {
         }
     }
 
+    /// Get the primary slave
     pub fn primary_slave(base: u16) -> Self {
         Disk {
             base: 0x1F0,
@@ -203,6 +207,7 @@ impl Disk {
         }
     }
 
+    /// Get the secondary master
     pub fn secondary_master(base: u16) -> Self {
         Disk {
             base: 0x170,
@@ -217,6 +222,7 @@ impl Disk {
         }
     }
 
+    /// Get the secondary slave
     pub fn secondary_slave(base: u16) -> Self {
         Disk {
             base: 0x170,
@@ -281,6 +287,7 @@ impl Disk {
         0
     }
 
+    /// Identify
     pub unsafe fn identify(&self) -> bool {
         if self.ide_read(ATA_REG_STATUS) == 0xFF {
             d(" Floating Bus");
@@ -338,6 +345,7 @@ impl Disk {
         true
     }
 
+    /// Read from the disk
     //TODO: Make sure count is not zero!
     pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8 {
         if destination > 0 {
@@ -378,6 +386,7 @@ impl Disk {
         0
     }
 
+    /// Write to the disk
     //TODO: Fix and make sure count is not zero!
     pub unsafe fn write(&self, lba: u64, count: u16, source: usize) -> u8 {
         if source > 0 {
@@ -422,6 +431,7 @@ impl Disk {
         0
     }
 
+    /// Send request
     pub fn request(&mut self, request: Request) {
         unsafe {
             let reenable = scheduler::start_no_ints();
