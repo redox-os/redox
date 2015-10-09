@@ -70,11 +70,15 @@ pub struct DVAddr {
 impl DVAddr {
     /// Sector address is the offset plus two vdev labels and one boot block (4 MB, or 8192 sectors)
     pub fn sector(&self) -> u64 {
-        self.offset + 0x2000
+        self.offset() + 0x2000
+    }
+
+    pub fn offset(&self) -> u64 {
+        self.offset & 0x7FFFFFFFFFFFFFFF
     }
 
     pub fn asize(&self) -> u64 {
-        self.vdev & 0xFFFFFF + 1
+        (self.vdev & 0xFFFFFF) + 1
     }
 }
 
@@ -114,6 +118,77 @@ impl Gang {
     }
 }
 
+#[repr(packed)]
+pub struct DNodePhys {
+    pub object_type: u8,
+    pub indblkshift: u8, // ln2(indirect block size)
+    pub nlevels: u8, // 1=blkptr->data blocks
+    pub nblkptr: u8, // length of blkptr
+    pub bonustype: u8, // type of data in bonus buffer
+    pub checksum: u8, // ZIO_CHECKSUM type
+    pub compress: u8, // ZIO_COMPRESS type
+    pub flags: u8, // DNODE_FLAG_*
+    pub datablkszsec: u16, // data block size in 512b sectors
+    pub bonuslen: u16, // length of bonus
+    pub pad2: [u8; 4],
+
+    // accounting is protected by dirty_mtx
+    pub maxblkid: u64, // largest allocated block ID
+    pub used: u64, // bytes (or sectors) of disk space
+
+    pub pad3: [u64; 4],
+
+    blkptr_bonus: [u8; 448],
+}
+
+impl DNodePhys {
+    pub fn from(data: &[u8]) -> Option<Self> {
+        if data.len() >= mem::size_of::<DNodePhys>() {
+            Some(unsafe { ptr::read(data.as_ptr() as *const DNodePhys) })
+        } else {
+            Option::None
+        }
+    }
+
+    pub fn get_blkptr<'a>(&self, i: usize) -> &'a BlockPtr {
+        unsafe { mem::transmute(&self.blkptr_bonus[i*128]) }
+    }
+
+    pub fn get_bonus(&self) -> &[u8] {
+        &self.blkptr_bonus[(self.nblkptr as usize)*128..]
+    }
+}
+
+impl fmt::Debug for DNodePhys {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "DNodePhys {{ object_type: {:X}, nlevels: {:X}, nblkptr: {},}}\n", self.object_type, self.nlevels, self.nblkptr));
+        Ok(())
+    }
+}
+
+#[repr(packed)]
+pub struct ObjectSetPhys {
+    meta_dnode: DNodePhys,
+    zil_header: ZilHeader,
+    os_type: u64,
+    pad: [u8; 360],
+}
+
+impl ObjectSetPhys {
+    pub fn from(data: &[u8]) -> Option<Self> {
+        if data.len() >= mem::size_of::<ObjectSetPhys>() {
+            Some(unsafe { ptr::read(data.as_ptr() as *const ObjectSetPhys) })
+        } else {
+            Option::None
+        }
+    }
+}
+
+pub struct ZilHeader {
+    claim_txg: u64,
+    replay_seq: u64,
+    log: BlockPtr,
+}
 
 pub struct ZFS {
     disk: File,
@@ -215,10 +290,17 @@ pub fn main() {
                             Some(uberblock) => {
                                 let mos_dva = uberblock.rootbp.dvas[0];
                                 println_color!(green, "DVA: {:?}", mos_dva);
+                                println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
+                                println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
+                                println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
                                 let mut mos = zfs.read(mos_dva.sector() as usize, mos_dva.asize() as usize);
-                                let mut xdr = xdr::MemOps::new(&mut mos);
+                                let obj_set = ObjectSetPhys::from(&mos[..]);
+                                if let Some(ref obj_set) = obj_set {
+                                    println!("{:?}", obj_set.meta_dnode);
+                                }
+                                /*let mut xdr = xdr::MemOps::new(&mut mos);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
-                                println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                                println_color!(green, "Got nv_list:\n{:?}", nv_list);*/
                             },
                             None => println_color!(red, "No valid uberblock found!"),
                         }
