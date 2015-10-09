@@ -8,6 +8,7 @@ use vec::Vec;
 use event::*;
 
 use fs::file::*;
+use io::*;
 
 /// A window
 pub struct Window {

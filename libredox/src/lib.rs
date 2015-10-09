@@ -5,7 +5,6 @@
 //! support and windowing, a basic filesystem, audio support, a simple console
 //! with shell style functions, an event system, and environment argument support.
 
-#![crate_name="redox"]
 #![crate_type="rlib"]
 #![feature(alloc)]
 #![feature(allow_internal_unstable)]
@@ -16,12 +15,18 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(core_simd)]
+#![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
 #![feature(rand)]
 #![feature(raw)]
-#![feature(vec_push_all)]
+#![feature(reflect_marker)]
+#![feature(slice_concat_ext)]
 #![feature(unicode)]
+#![feature(unsafe_no_drop_flag)]
+#![feature(vec_push_all)]
+#![feature(wrapping)]
+#![feature(zero_one)]
 #![feature(no_std)]
 #![no_std]
 
@@ -31,8 +36,8 @@
     // We want to reexport a few macros from core but libcore has already been
     // imported by the compiler (via our #[no_std] attribute) In this case we just
     // add a new crate name so we can attach the reexports to it.
-    #[macro_reexport(assert, assert_eq, debug_assert, debug_assert_eq, panic,
-                     unreachable, unimplemented, write, writeln)]
+    #[macro_reexport(assert, assert_eq, debug_assert, debug_assert_eq,
+                    unreachable, unimplemented, write, writeln)]
     extern crate core as __core;
 
     #[macro_use]
@@ -64,7 +69,7 @@
     pub use core::simd;
     pub use core::result;
     pub use core::option;
-    // TODO pub mod error;
+    pub mod error;
 
     pub use alloc::boxed;
     pub use alloc::rc;
@@ -80,14 +85,15 @@
 
     /* Exported macros */
 
-    // TODO #[macro_use]
-    // TODO mod macros;
+    #[cfg(std)]
+    #[macro_use]
+    mod macros;
 
     // TODO mod rtdeps;
 
     /* The Prelude. */
 
-    // TODO pub mod prelude;
+    pub mod prelude;
 
 
     /* Primitive types */
@@ -111,11 +117,11 @@
     //TODO #[path = "num/f32.rs"]   pub mod f32;
     //TODO #[path = "num/f64.rs"]   pub mod f64;
 
-    //TODO pub mod ascii;
+    pub mod ascii;
 
     /* Common traits */
 
-    //TODO pub mod num;
+    pub mod num;
 
     /* Runtime and platform support */
 
@@ -127,7 +133,7 @@
     pub mod env;
     // TODO pub mod ffi;
     pub mod fs;
-    // TODO pub mod io;
+    pub mod io;
     // TODO pub mod net;
     // TODO pub mod os;
     // TODO pub mod path;
@@ -143,11 +149,12 @@
     //TODO #[cfg(windows)]
     //TODO #[path = "sys/windows/mod.rs"] mod sys;
 
-    //TODO pub mod rt;
+    #[cfg(std)]
+    pub mod rt;
     //TODO mod panicking;
     pub use __core::panicking;
 
-    mod rand;
+    mod rand_old;
 
     // Some external utilities of the standard library rely on randomness (aka
     // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
@@ -156,8 +163,8 @@
     // unstable module so we can get our build working.
     #[doc(hidden)]
     //TODO #[unstable(feature = "rand", issue = "0")]
-    pub mod __rand {
-        pub use core_rand::{/*TODO thread_rng, ThreadRng,*/ Rng};
+    pub mod rand {
+        pub use core_rand::{/*thread_rng, ThreadRng,*/ Rng};
     }
 /* } STD COPY */
 
@@ -165,16 +172,22 @@
     pub use boxed::Box;
     pub use env::*;
     pub use fs::file::*;
-    pub use rand::*;
+    pub use io::*;
+    pub use rand_old::*;
     pub use string::*;
     pub use vec::Vec;
 
     pub use audio::wav::*;
+    #[cfg(not(std))]
     pub use console::*;
     pub use event::*;
     pub use graphics::bmp::*;
     pub use orbital::*;
     pub use to_num::*;
+    
+    /// A module for starting
+    #[cfg(std)]
+    pub mod start;
 
     /// A module for necessary C and assembly constructs
     pub mod externs;
@@ -188,6 +201,7 @@
     }
 
     /// A module for console functionality
+    #[cfg(not(std))]
     #[macro_use]
     pub mod console;
     /// A module for events
@@ -200,6 +214,7 @@
     pub mod orbital;
 
     /// A module for shell based functions
+    #[cfg(not(std))]
     pub mod ion;
 
     pub mod to_num;

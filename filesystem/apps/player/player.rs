@@ -3,7 +3,7 @@ use redox::*;
 pub fn main() {
     let url = match args().get(1) {
         Option::Some(arg) => arg.clone(),
-        Option::None => "none://".to_string(),
+        Option::None => "none://",
     };
 
     let mut resource = File::open(&url);
