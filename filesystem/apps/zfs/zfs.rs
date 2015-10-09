@@ -184,6 +184,7 @@ impl ObjectSetPhys {
     }
 }
 
+#[repr(packed)]
 pub struct ZilHeader {
     claim_txg: u64,
     replay_seq: u64,
@@ -296,7 +297,8 @@ pub fn main() {
                                 let mut mos = zfs.read(mos_dva.sector() as usize, mos_dva.asize() as usize);
                                 let obj_set = ObjectSetPhys::from(&mos[..]);
                                 if let Some(ref obj_set) = obj_set {
-                                    println!("{:?}", obj_set.meta_dnode);
+                                    println!("meta dnode: {:?}", obj_set.meta_dnode);
+                                    println!("os_type: {:X}", obj_set.os_type);
                                 }
                                 /*let mut xdr = xdr::MemOps::new(&mut mos);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
