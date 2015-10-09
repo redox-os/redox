@@ -1,6 +1,6 @@
 ![Redox](img/transp_background_with_text.png)
 
-**Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at https://redox-os.org
+**Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at http://www.redox-os.org
 
 ## What it looks like
 
