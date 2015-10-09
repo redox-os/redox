@@ -16,6 +16,11 @@ impl Component {
     }
 }
 
+pub enum ComponentType {
+    And,
+    Except,
+}
+
 /// A permission rule
 #[derive(Clone)]
 pub struct Permission {
@@ -26,15 +31,49 @@ pub struct Permission {
 impl Permission {
     /// Create a permission from a string
     pub fn from_str(string: &str) -> Permission {
-        
+        let mut comps = Vec::new();
+        let mut component_type = ComponentType::And;
+        let mut escape = false;
+        let mut cur = String::new();
+        for c in string.chars() {
+            if escape {
+                cur.push(c);
+                escape = false;
+            } else if c == '\\' {
+                escape = true;
+            } else if c == '+' || c == '-' {
+                comps.push(match component_type {
+                    ComponentType::And => Component::And(PermissionUnit::from_str(&cur)),
+                    ComponentType::Except => Component::Except(PermissionUnit::from_str(&cur)),
+                });
+                cur.clear();
+
+                component_type = match c {
+                    '+' => ComponentType::And,
+                    '-' => ComponentType::Except,
+                    _ => ComponentType::And, // This shouldn't happen
+                };
+            } else {
+                cur.push(c);
+            }
+        }
+
+        comps.push(match component_type {
+            ComponentType::And => Component::And(PermissionUnit::from_str(&cur)),
+            ComponentType::Except => Component::Except(PermissionUnit::from_str(&cur)),
+        });
+
+        Permission {
+            components: comps,
+        }
     }
 
     /// Test if this permission unit is allowed
     pub fn test(&self, unit: PermissionUnit) -> bool {
-        let mut read = true;
-        let mut write = true;
-        let mut read_foc = true;
-        let mut write_foc = true;
+        let mut read = false;
+        let mut write = false;
+        let mut read_foc = false;
+        let mut write_foc = false;
 
         for i in self.components.clone() {
             if i.unit().applies(&unit) {
@@ -74,7 +113,7 @@ impl Permission {
 
         (!read || unit.read())
             && (!write || unit.write())
-            && (!read_foc || unit.read_foc())
-            && (!write_foc || unit.write_foc())
+            && (!(read || read_foc) || unit.read_foc())
+            && (!(write || write_foc) || unit.write_foc())
     }
 }
