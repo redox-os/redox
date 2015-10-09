@@ -7,18 +7,28 @@ use drivers::pio::*;
 
 use programs::session::SessionItem;
 
+/// PS2
 pub struct PS2 {
+    /// The data
     data: PIO8,
+    /// The command
     cmd: PIO8,
+    /// Left shift?
     lshift: bool,
+    /// Right shift?
     rshift: bool,
+    /// Caps lock?
     caps_lock: bool,
+    /// Caps lock toggle
     caps_lock_toggle: bool,
+    /// The mouse packet
     mouse_packet: [u8; 4],
+    /// Mouse
     mouse_i: usize,
 }
 
 impl PS2 {
+    /// Create new PS2 data
     pub fn new() -> Box<Self> {
         let mut module = box PS2 {
             data: PIO8::new(0x60),
@@ -90,6 +100,7 @@ impl PS2 {
         self.data.read();
     }
 
+    /// Keyboard interrupt
     pub fn keyboard_interrupt(&mut self) -> Option<KeyEvent> {
         let scancode = unsafe { self.data.read() };
 
@@ -140,6 +151,7 @@ impl PS2 {
         self.data.read()
     }
 
+    /// Initialize mouse
     pub unsafe fn mouse_init(&mut self) {
         //The Init Dance
         self.wait1();
@@ -161,6 +173,7 @@ impl PS2 {
         self.mouse_cmd(0xF4);
     }
 
+    /// Mouse interrupt
     pub fn mouse_interrupt(&mut self) -> Option<MouseEvent> {
         let byte = unsafe { self.data.read() };
         if self.mouse_i == 0 {
