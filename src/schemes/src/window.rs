@@ -17,10 +17,14 @@ use programs::session::SessionItem;
 
 use syscall::call::sys_yield;
 
+/// A window scheme
 pub struct WindowScheme;
 
+/// A window resource
 pub struct WindowResource {
+    /// The window
     pub window: Box<Window>,
+    /// Seek point
     pub seek: usize,
 }
 

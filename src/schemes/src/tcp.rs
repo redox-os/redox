@@ -12,6 +12,7 @@ use network::tcp::*;
 
 use programs::session::SessionItem;
 
+/// A TCP resource
 pub struct TCPResource {
     ip: Box<Resource>,
     peer_addr: IPv4Addr,
@@ -167,8 +168,9 @@ impl Resource for TCPResource {
 }
 
 impl TCPResource {
+    /// Etablish client
     pub fn client_establish(&mut self) -> bool {
-        //Send SYN
+        // Send SYN
         let mut tcp = TCP {
             header: TCPHeader {
                 src: n16::new(self.host_port),
@@ -264,7 +266,7 @@ impl TCPResource {
         }
     }
 
-    //Try to establish a server connection
+    /// Try to establish a server connection
     pub fn server_establish(&mut self, syn: TCP) -> bool {
         //Send SYN-ACK
         self.acknowledge += 1;
@@ -372,6 +374,7 @@ impl Drop for TCPResource {
     }
 }
 
+/// A TCP scheme
 pub struct TCPScheme;
 
 impl SessionItem for TCPScheme {
