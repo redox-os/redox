@@ -1,12 +1,12 @@
-const NBBY = 8; // Number of bits per byte
-const MATCH_BITS = 6;
-const MATCH_MIN = 3;
-const MATCH_MAX = ((1 << MATCH_BITS) + (MATCH_MIN - 1));
-const OFFSET_MASK = ((1 << (16 - MATCH_BITS)) - 1);
-const LEMPEL_SIZE = 1024;
+const NBBY: usize = 8; // Number of bits per byte
+const MATCH_BITS: usize = 6;
+const MATCH_MIN: usize = 3;
+const MATCH_MAX: usize = ((1 << MATCH_BITS) + (MATCH_MIN - 1));
+const OFFSET_MASK: usize = ((1 << (16 - MATCH_BITS)) - 1);
+const LEMPEL_SIZE: usize = 1024;
 
 /// LZJB compress the bytes in `src` into `dst`
-pub fn lzjb_compress(src: &[u8], dst: &mut [u8]) -> usize {
+pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
     let mut src_i = 0; // Current index in src
     let mut dst_i = 0; // Current index in dst
 
@@ -100,7 +100,7 @@ pub fn lzjb_compress(src: &[u8], dst: &mut [u8]) -> usize {
     return dst_i;
 }
 
-pub fn lzjb_decompress(src: &[u8], dst: &mut [u8]) -> bool {
+pub fn decompress(src: &[u8], dst: &mut [u8]) -> bool {
     let mut src_i = 0;
     let mut dst_i = 0;
     let mut copymap: u8 = 0;

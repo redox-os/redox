@@ -1,6 +1,7 @@
 //To use this, please install zfs-fuse
 use redox::*;
 
+pub mod lzjb;
 pub mod nvpair;
 pub mod nvstream;
 pub mod xdr;
@@ -178,7 +179,7 @@ impl DNodePhys {
         }
     }
 
-    pub fn get_blkptr<'a>(&self, i: usize) -> &'a BlockPtr {
+    pub fn get_blockptr<'a>(&self, i: usize) -> &'a BlockPtr {
         unsafe { mem::transmute(&self.blkptr_bonus[i*128]) }
     }
 
@@ -197,7 +198,6 @@ impl fmt::Debug for DNodePhys {
 
 #[repr(packed)]
 pub struct ObjectSetPhys {
-    pad: u8,
     meta_dnode: DNodePhys,
     zil_header: ZilHeader,
     os_type: u64,
@@ -328,10 +328,53 @@ pub fn main() {
                                 println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
                                 println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
                                 let mut mos = zfs.read(mos_dva.sector() as usize, mos_dva.asize() as usize);
-                                let obj_set = ObjectSetPhys::from(&mos[..]);
+                                let obj_set =
+                                    match uberblock.rootbp.compression() {
+                                        2 => {
+                                            // compression off
+                                            ObjectSetPhys::from(&mos[..])
+                                        },
+                                        1 | 3 => {
+                                            // lzjb compression
+                                            let mut decompressed = vec![0; 2048];
+                                            lzjb::decompress(&mos, &mut decompressed);
+                                            ObjectSetPhys::from(&decompressed)
+                                        },
+                                        _ => None,
+                                    };
                                 if let Some(ref obj_set) = obj_set {
-                                    println!("meta dnode: {:?}", obj_set.meta_dnode);
-                                    println!("os_type: {:X}", obj_set.os_type);
+                                    println_color!(green, "Got meta object set");
+                                    println_color!(green, "os_type: {:X}", obj_set.os_type);
+                                    println_color!(green, "meta dnode: {:?}", obj_set.meta_dnode);
+
+                                    println_color!(green, "Reading MOS...");
+                                    let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
+                                    let mos_array_dva = mos_block_ptr.dvas[0];
+
+                                    println_color!(green, "DVA: {:?}", mos_array_dva);
+                                    println_color!(green, "type: {:X}", mos_block_ptr.object_type());
+                                    println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
+                                    println_color!(green, "compression: {:X}", mos_block_ptr.compression());
+                                    println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
+                                    println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
+                                    println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
+                                    let mut mos_array = zfs.read(mos_array_dva.sector() as usize, mos_array_dva.asize() as usize);
+                                    let dnode =
+                                        match mos_block_ptr.compression() {
+                                            2 => {
+                                                // compression off
+                                                DNodePhys::from(&mos_array[..])
+                                            },
+                                            1 | 3 => {
+                                                // lzjb compression
+                                                let mut decompressed = vec![0; mos_array.len()];
+                                                lzjb::decompress(&mos_array, &mut decompressed);
+                                                DNodePhys::from(&decompressed)
+                                            },
+                                            _ => None,
+                                        };
+                                    println_color!(green, "Got MOS dnode array");
+                                    println_color!(green, "dnode: {:?}", dnode);
                                 }
                                 /*let mut xdr = xdr::MemOps::new(&mut mos);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
