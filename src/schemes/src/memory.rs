@@ -6,6 +6,7 @@ use common::string::{String, ToString};
 
 use programs::session::SessionItem;
 
+/// A memory scheme
 pub struct MemoryScheme;
 
 impl SessionItem for MemoryScheme {
