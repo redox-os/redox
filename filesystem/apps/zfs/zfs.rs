@@ -60,7 +60,7 @@ impl Uberblock {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct DVAddr {
     pub vdev: u64,
@@ -73,12 +73,28 @@ impl DVAddr {
         self.offset() + 0x2000
     }
 
+    pub fn gang(&self) -> bool {
+        if self.offset&0x8000000000000000 == 1 {
+            true
+        } else {
+            false
+        }
+    }
+
     pub fn offset(&self) -> u64 {
         self.offset & 0x7FFFFFFFFFFFFFFF
     }
 
     pub fn asize(&self) -> u64 {
         (self.vdev & 0xFFFFFF) + 1
+    }
+}
+
+impl fmt::Debug for DVAddr {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        try!(write!(f, "DVAddr {{ offset: {:X}, gang: {}, asize: {:X} }}\n",
+                    self.offset(), self.gang(), self.asize()));
+        Ok(())
     }
 }
 
@@ -94,6 +110,18 @@ pub struct BlockPtr {
 }
 
 impl BlockPtr {
+    pub fn object_type(&self) -> u64 {
+        (self.flags_size >> 48) & 0xFF
+    }
+
+    pub fn checksum(&self) -> u64 {
+        (self.flags_size >> 40) & 0xFF
+    }
+
+    pub fn compression(&self) -> u64 {
+        (self.flags_size >> 32) & 0xFF
+    }
+
     pub fn lsize(&self) -> u64 {
         (self.flags_size) & 0xFFFF + 1
     }
@@ -124,12 +152,12 @@ pub struct DNodePhys {
     pub indblkshift: u8, // ln2(indirect block size)
     pub nlevels: u8, // 1=blkptr->data blocks
     pub nblkptr: u8, // length of blkptr
-    pub bonustype: u8, // type of data in bonus buffer
+    pub bonus_type: u8, // type of data in bonus buffer
     pub checksum: u8, // ZIO_CHECKSUM type
     pub compress: u8, // ZIO_COMPRESS type
     pub flags: u8, // DNODE_FLAG_*
-    pub datablkszsec: u16, // data block size in 512b sectors
-    pub bonuslen: u16, // length of bonus
+    pub data_blk_sz_sec: u16, // data block size in 512b sectors
+    pub bonus_len: u16, // length of bonus
     pub pad2: [u8; 4],
 
     // accounting is protected by dirty_mtx
@@ -161,17 +189,19 @@ impl DNodePhys {
 
 impl fmt::Debug for DNodePhys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "DNodePhys {{ object_type: {:X}, nlevels: {:X}, nblkptr: {},}}\n", self.object_type, self.nlevels, self.nblkptr));
+        try!(write!(f, "DNodePhys {{ object_type: {:X}, nlevels: {:X}, nblkptr: {:X}, bonus_type: {:X}, bonus_len: {:X}}}\n",
+                    self.object_type, self.nlevels, self.nblkptr, self.bonus_type, self.bonus_len));
         Ok(())
     }
 }
 
 #[repr(packed)]
 pub struct ObjectSetPhys {
+    pad: u8,
     meta_dnode: DNodePhys,
     zil_header: ZilHeader,
     os_type: u64,
-    pad: [u8; 360],
+    //pad: [u8; 360],
 }
 
 impl ObjectSetPhys {
@@ -184,6 +214,7 @@ impl ObjectSetPhys {
     }
 }
 
+#[repr(packed)]
 pub struct ZilHeader {
     claim_txg: u64,
     replay_seq: u64,
@@ -290,13 +321,17 @@ pub fn main() {
                             Some(uberblock) => {
                                 let mos_dva = uberblock.rootbp.dvas[0];
                                 println_color!(green, "DVA: {:?}", mos_dva);
+                                println_color!(green, "type: {:X}", uberblock.rootbp.object_type());
+                                println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
+                                println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
                                 println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
                                 println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
                                 println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
                                 let mut mos = zfs.read(mos_dva.sector() as usize, mos_dva.asize() as usize);
                                 let obj_set = ObjectSetPhys::from(&mos[..]);
                                 if let Some(ref obj_set) = obj_set {
-                                    println!("{:?}", obj_set.meta_dnode);
+                                    println!("meta dnode: {:?}", obj_set.meta_dnode);
+                                    println!("os_type: {:X}", obj_set.os_type);
                                 }
                                 /*let mut xdr = xdr::MemOps::new(&mut mos);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
