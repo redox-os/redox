@@ -36,19 +36,19 @@ pub fn main() {
             println!("# {}", line);
             let console_commands = ["panic", "ls", "ptr_write"];
 
-            match &command[..]
-            {
-                command if command == console_commands[0] => panic!("Test panic"),
+            match &command[..] {
+                command if command == console_commands[0] =>
+                    panic!("Test panic"),
                 command if command == console_commands[1] => {
                     // TODO: import std::fs functions into libredox
                     //fs::read_dir("/").unwrap().map(|dir| println!("{}", dir));
                 }
                 command if command == console_commands[2] => {
                     let a_ptr = rand() as *mut u8;
-                    // TODO: import Box::{from_raw, to_raw} methods in libredox
-                    //let mut a_box = Box::new(rand() as u8);
+                    let mut a_box = Box::new(rand() as u8);
                     unsafe {
                         ptr::write(a_ptr, rand() as u8);
+                        // TODO: import Box::{from_raw, to_raw} methods in libredox
                         //ptr::write(a_box.to_raw(), rand() as u8);
                     }
                 }
