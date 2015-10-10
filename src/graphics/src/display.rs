@@ -232,6 +232,75 @@ impl Display {
         }
     }
 
+    /// Set the color of a pixel
+    pub fn pixel(&self, point: Point, color: Color) {
+        unsafe {
+            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
+               point.y < self.height as isize {
+                *((self.offscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
+            }
+        }
+    }
+
+    /// Draw an line (without antialiasing) with width 1
+    /// (using Bresenham's algorithm)
+    pub fn line(&self, point_a: Point, point_b: Point, color: Color) {
+        // Calculate delta
+        let delta = point_b - point_a;
+
+        if delta.x == 0 { // Handle case where delta x = 0
+            // Set offset
+            let mut y = point_a.y;
+
+            // While the endpoint isn't reached
+            while y != point_b.y {
+                // Set pixel
+                self.pixel(Point::new(point_a.x, y), color);
+                // Increase
+                y += 1;
+            }
+        } else {
+            // Find error and error change
+            let mut error = 0.0;
+            // This is a bit annoying... but libcore does not have .abs() defined on f64 ;-(
+            let mut delta_error = {
+                let delta_error_signed = ((delta.y as f64) / (delta.x as f64));
+                if delta_error_signed < 0.0 {
+                    -delta_error_signed
+                } else {
+                    delta_error_signed
+                }
+            };
+
+            let mut y = 0;
+
+            for x in point_a.x .. point_b.x {
+                // Draw pixel
+                self.pixel(Point::new(x, y), color);
+
+                // Update error
+                error += delta_error;
+
+                while error >= 0.5 {
+                    // Draw pixel
+                    self.pixel(Point::new(x, y), color);
+
+                    // Update y
+                    y += if delta.y > 0 {
+                        1
+                    } else {
+                        -1
+                    };
+
+                    // Decrease error
+                    error -= 1.0;
+                }
+            }
+        }
+    }
+    // TODO: Antialiased lines
+    // TODO: Lines with other width
+
     /// Draw an image
     pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
@@ -316,16 +385,6 @@ impl Display {
         }
     }
 
-    /// Set the color of a pixel
-    pub fn pixel(&self, point: Point, color: Color) {
-        unsafe {
-            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
-               point.y < self.height as isize {
-                *((self.offscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
-            }
-        }
-    }
-
     /// Draw a char
     pub fn char(&self, point: Point, character: char, color: Color) {
         unsafe {
@@ -345,6 +404,7 @@ impl Display {
         }
     }
 
+    /// Draw a image with a given alpha on the screen
     /* Cursor hacks { */
     pub unsafe fn image_alpha_onscreen(&self, point: Point, data: *const u32, size: Size) {
         let start_y = max(0, point.y) as usize;
