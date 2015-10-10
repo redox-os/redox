@@ -5,7 +5,7 @@ extern crate alloc;
 extern crate core;
 
 use alloc::boxed::Box;
-use std::{io, fs, rand};
+use std::{io, rand};
 use core::ptr;
 
 macro_rules! readln {
@@ -13,8 +13,8 @@ macro_rules! readln {
         {
             let mut line = String::new();
             match io::stdin().read_line(&mut line) {
-                Ok(n) => Some(line.trim().to_string()),
-                Err(e) => None
+                Ok(_) => Some(line.trim().to_string()),
+                Err(_) => None
             }
         }
     };

@@ -211,7 +211,7 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Option::Some(current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
             if let Option::Some(file) = current.files.get(i) {
                 if file.fd == fd {

@@ -94,7 +94,7 @@ impl<T: XdrOps> Xdr for T {
                 false => 0,
                 true => 1,
             };
-        self.put_i32(b as i32)
+        self.put_i32(i)
     }
 
     fn decode_bool(&mut self) -> XdrResult<bool> {
@@ -172,7 +172,7 @@ impl<T: XdrOps> Xdr for T {
 
     fn encode_opaque(&mut self, bytes: &[u8]) -> XdrResult<()> {
         // XDR byte strings always have len%4 == 0
-        let mut crud: [u8; 4] = [0; 4];
+        let crud: [u8; 4] = [0; 4];
         let mut round_up = bytes.len()%4;
         if round_up > 0 {
             round_up = 4 - round_up;

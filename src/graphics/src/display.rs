@@ -263,8 +263,8 @@ impl Display {
             // Find error and error change
             let mut error = 0.0;
             // This is a bit annoying... but libcore does not have .abs() defined on f64 ;-(
-            let mut delta_error = {
-                let delta_error_signed = ((delta.y as f64) / (delta.x as f64));
+            let delta_error = {
+                let delta_error_signed = (delta.y as f64) / (delta.x as f64);
                 if delta_error_signed < 0.0 {
                     -delta_error_signed
                 } else {

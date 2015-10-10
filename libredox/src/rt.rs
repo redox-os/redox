@@ -1,4 +1,4 @@
-use syscall::{sys_debug, sys_exit};
+use syscall::sys_exit;
 
 pub fn begin_unwind(string: &'static str, file_line: &(&'static str, u32)) -> ! {
     let &(file, line) = file_line;

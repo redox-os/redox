@@ -143,8 +143,8 @@ impl SessionItem for WindowScheme {
             }
         }
 
-        let mut p: Point = Point::new(pointx, pointy);
-        let mut s: Size = Size::new(size_width, size_height);
+        let p: Point = Point::new(pointx, pointy);
+        let s: Size = Size::new(size_width, size_height);
 
         return box WindowResource {
             window: Window::new(p, s, title),
