@@ -12,6 +12,7 @@ use network::udp::*;
 
 use programs::session::SessionItem;
 
+/// UDP resource
 pub struct UDPResource {
     ip: Box<Resource>,
     data: Vec<u8>,
@@ -106,6 +107,7 @@ impl Resource for UDPResource {
     }
 }
 
+/// UDP scheme
 pub struct UDPScheme;
 
 impl SessionItem for UDPScheme {
