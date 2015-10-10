@@ -180,7 +180,7 @@ impl Session {
         let mut catcher = -1;
 
         if mouse_event.y >= self.display.height as isize - 32 {
-            if mouse_event.left_button && !self.last_mouse_event.left_button {
+            if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
