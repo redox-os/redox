@@ -389,7 +389,6 @@ unsafe fn init(font_data: usize) {
     {
         let reenable = scheduler::start_no_ints();
         session.items.push(SchemeItem::from_url(&"example".to_string(), &URL::from_str("file:///schemes/example/example.bin")));
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
         scheduler::end_no_ints(reenable);
     }
 

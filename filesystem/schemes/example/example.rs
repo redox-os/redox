@@ -35,6 +35,7 @@ pub struct Scheme;
 
 impl Scheme {
     pub fn new() -> Box<Self> {
+        write!(io::stdout(), "New example scheme\n");
         box Scheme
     }
 
