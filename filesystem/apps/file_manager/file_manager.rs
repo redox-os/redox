@@ -1,5 +1,11 @@
-use redox::*;
-use redox::time::*;
+use redox::{self, env, BMPFile};
+use redox::event::{self, EventOption, MouseEvent, OpenEvent};
+use redox::fs::file::File;
+use redox::io::Read;
+use redox::orbital::Window;
+use redox::time::{self, Duration};
+use redox::vec::Vec;
+use redox::string::{String, ToString};
 
 pub struct FileManager {
     folder_icon: BMPFile,
@@ -159,8 +165,8 @@ impl FileManager {
             }
         }
 
-        let mut window = Window::new((rand() % 400 + 50) as isize,
-                                     (rand() % 300 + 50) as isize,
+        let mut window = Window::new((redox::rand() % 400 + 50) as isize,
+                                     (redox::rand() % 300 + 50) as isize,
                                      width,
                                      height,
                                      &path);
@@ -172,13 +178,13 @@ impl FileManager {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         match key_event.scancode {
-                            K_ESC => break,
-                            K_HOME => self.selected = 0,
-                            K_UP => if self.selected > 0 {
+                            event::K_ESC => break,
+                            event::K_HOME => self.selected = 0,
+                            event::K_UP => if self.selected > 0 {
                                 self.selected -= 1;
                             },
-                            K_END => self.selected = self.files.len() as isize - 1,
-                            K_DOWN => if self.selected < self.files.len() as isize - 1 {
+                            event::K_END => self.selected = self.files.len() as isize - 1,
+                            event::K_DOWN => if self.selected < self.files.len() as isize - 1 {
                                 self.selected += 1;
                             },
                             _ => match key_event.character {
@@ -250,7 +256,7 @@ impl FileManager {
                     if mouse_event.left_button {
                         let click_time = Duration::realtime();
 
-                        if click_time - self.click_time < Duration::new(0, 500 * NANOS_PER_MILLI)
+                        if click_time - self.click_time < Duration::new(0, 500 * time::NANOS_PER_MILLI)
                             && (self.last_mouse_event.x - mouse_event.x).abs() <= 4
                             && (self.last_mouse_event.y - mouse_event.y).abs() <= 4 {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
@@ -275,7 +281,7 @@ impl FileManager {
 }
 
 pub fn main() {
-    match args().get(1) {
+    match env::args().get(1) {
         Option::Some(arg) => FileManager::new().main(arg),
         Option::None => FileManager::new().main("file:///"),
     }
