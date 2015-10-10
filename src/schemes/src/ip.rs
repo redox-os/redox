@@ -13,6 +13,7 @@ use common::vec::Vec;
 
 use programs::session::SessionItem;
 
+/// A IP (internet protocole) resource
 pub struct IPResource {
     link: Box<Resource>,
     data: Vec<u8>,
@@ -104,11 +105,13 @@ impl Resource for IPResource {
     }
 }
 
+/// A ARP entry (MAC + IP)
 pub struct ARPEntry {
     ip: IPv4Addr,
     mac: MACAddr,
 }
 
+/// A IP scheme
 pub struct IPScheme {
     pub arp: Vec<ARPEntry>,
 }

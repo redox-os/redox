@@ -10,7 +10,7 @@ use event::*;
 
 use orbital::*;
 
-use rand::*;
+use rand_old::*;
 
 use syscall::{sys_alloc, sys_unalloc};
 

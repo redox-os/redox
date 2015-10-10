@@ -10,6 +10,7 @@
 .DS_Store
 libc/build/
 setup/rust/
+build
 target
 zfs.img
 *.swp

@@ -2,6 +2,7 @@ use string::*;
 use vec::Vec;
 use boxed::Box;
 use fs::file::*;
+use io::*;
 use event::*;
 use console::*;
 use env::*;

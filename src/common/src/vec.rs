@@ -9,6 +9,7 @@ use core::slice::SliceExt;
 
 use common::memory::*;
 
+/// Create a vector filled with given elements
 #[macro_export]
 macro_rules! vec {
     ($($x:expr),*) => (
@@ -19,7 +20,9 @@ macro_rules! vec {
 
 /// An iterator over a vec
 pub struct VecIterator<'a, T: 'a> {
+    /// Vector
     vec: &'a Vec<T>,
+    /// Offset
     offset: usize,
 }
 
@@ -63,7 +66,9 @@ impl<'a, T> Iterator for OwnedVecIterator<T>
 }
 /// A owned, heap allocated list of elements
 pub struct Vec<T> {
+    /// The data
     pub data: *mut T,
+    /// The length
     pub length: usize,
 }
 
@@ -93,6 +98,7 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Create a vector from a slice
     pub fn from_slice(slice: &[T]) -> Self {
         let data;
         unsafe {
@@ -216,6 +222,8 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Extract a "subvector" of a given vector.
+    /// NOTE: Is not recommended use slice instead.
     // TODO: Consider returning a slice instead
     pub fn sub(&self, start: usize, count: usize) -> Self {
         let mut i = start;
@@ -248,6 +256,7 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Convert the vector to a slice
     pub fn as_slice(&self) -> &[T] {
         if self.data as usize > 0 && self.length > 0 {
             unsafe { slice::from_raw_parts(self.data, self.length) }

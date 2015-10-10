@@ -6,6 +6,7 @@ use common::string::{String, ToString};
 
 use programs::session::SessionItem;
 
+/// A pseudorandomness scheme
 pub struct RandomScheme;
 
 impl SessionItem for RandomScheme {
