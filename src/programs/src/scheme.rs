@@ -8,7 +8,6 @@ use common::elf::*;
 use common::memory;
 use common::paging::Page;
 use common::resource::URL;
-use common::scheduler;
 use common::string::*;
 use common::vec::Vec;
 

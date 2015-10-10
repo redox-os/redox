@@ -1,16 +1,14 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 
-use core::{cmp, mem, ptr};
+use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use drivers::disk::*;
-use drivers::pio::*;
 use drivers::pciconfig::PCIConfig;
 
 use common::debug;
-use common::queue::Queue;
-use common::memory::{self, Memory};
+use common::memory::Memory;
 use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
 use common::string::{String, ToString};
 use common::vec::Vec;
@@ -121,19 +119,17 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
-                                        disk.read(extent.block + sector as u64,
-                                                  0,
-                                                  data.address() + sector * 512);
+                                    disk.read(extent.block + sector as u64,
+                                              0,
+                                              data.address() + sector * 512);
+
+                                    /*
+                                    disk.request(request.clone());
+
+                                    while request.complete.load(Ordering::SeqCst) == false {
+                                        disk.on_poll();
                                     }
-
-                                        /*
-                                        disk.request(request.clone());
-
-                                        while request.complete.load(Ordering::SeqCst) == false {
-                                            disk.on_poll();
-                                        }
-                                        */
+                                    */
 
                                     sector += 65535;
                                 }
@@ -290,7 +286,6 @@ impl Resource for FileResource {
                     let max_size = current_sectors * 512;
 
                     let size = cmp::min(remaining as usize, max_size);
-                    let sectors = (size + block_size - 1) / block_size;
 
                     if size as u64 != extent.length {
                         extent.length = size as u64;
@@ -498,11 +493,9 @@ impl SessionItem for FileScheme {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
-                                        self.fs.disk.request(request.clone());
-                                    }
+                                    self.fs.disk.request(request.clone());
 
-                                    while request.complete.load(Ordering::SeqCst) == false {
+                                    while !request.complete.load(Ordering::SeqCst) {
                                         sys_yield();
                                     }
 
@@ -519,11 +512,9 @@ impl SessionItem for FileScheme {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
-                                        self.fs.disk.request(request.clone());
-                                    }
+                                    self.fs.disk.request(request.clone());
 
-                                    while request.complete.load(Ordering::SeqCst) == false {
+                                    while !request.complete.load(Ordering::SeqCst) {
                                         sys_yield();
                                     }
                                 }

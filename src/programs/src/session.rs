@@ -3,7 +3,7 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
-use core::{cmp, ptr, mem};
+use core::cmp;
 
 use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
 use common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
