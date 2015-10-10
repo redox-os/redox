@@ -89,9 +89,6 @@ pub struct ELFSymbol {
     pub sh_index: u16,
 }
 
-/// The load address
-pub const LOAD_ADDR: usize = 0x80000000;
-
 /// An ELF executable
 pub struct ELF {
     pub data: usize,
