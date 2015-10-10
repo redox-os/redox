@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 
-use common::debug;
 use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
