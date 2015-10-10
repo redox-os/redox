@@ -32,22 +32,19 @@ use redox::syscall::sys_exit;
 #[inline(never)]
 unsafe fn _start_stack(stack: *const u32) {
     let argc = ptr::read(stack);
-    let mut args: Vec<String> = Vec::new();
+    let mut args: Vec<&'static str> = Vec::new();
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {
-            let mut utf8: Vec<u8> = Vec::new();
+            let mut len = 0;
             for j in 0..4096 /* Max arg length */ {
-                let b = ptr::read(arg.offset(j));
-                if b == 0 {
+                len = j;
+                if ptr::read(arg.offset(j)) == 0 {
                     break;
-                }else{
-                    utf8.push(b);
                 }
             }
-            args.push(String::from_utf8_unchecked(utf8));
-        } else {
-            args.push(String::new());
+            let utf8: &'static [u8] = slice::from_raw_parts(arg, len as usize);
+            args.push(str::from_utf8_unchecked(utf8));
         }
     }
 
@@ -60,8 +57,9 @@ unsafe fn _start_stack(stack: *const u32) {
 }
 
 #[cold]
+#[inline(never)]
 #[no_mangle]
-pub unsafe fn _start() {
+pub unsafe extern "C" fn _start() {
     let stack: *const u32;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);

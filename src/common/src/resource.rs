@@ -9,8 +9,11 @@ use common::vec::*;
 
 /// Resource seek
 pub enum ResourceSeek {
+    /// Start point
     Start(usize),
+    /// Current point
     Current(isize),
+    /// End point
     End(isize),
 }
 
@@ -31,6 +34,7 @@ pub trait Resource {
     fn url(&self) -> URL;
     /// Return the type of this resource
     fn stat(&self) -> ResourceType;
+    // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
     /// Write to resource
@@ -353,6 +357,7 @@ impl Clone for URL {
     }
 }
 
+/// Empty resource
 pub struct NoneResource;
 
 impl Resource for NoneResource {
@@ -381,6 +386,7 @@ impl Resource for NoneResource {
     }
 }
 
+/// A vector resource
 pub struct VecResource {
     url: URL,
     resource_type: ResourceType,

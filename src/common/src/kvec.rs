@@ -7,6 +7,7 @@ use core::slice::{self, SliceExt};
 
 use common::memory::*;
 
+/// Create a vector with some predefined elements
 #[macro_export]
 macro_rules! vec {
     ($($x:expr),*) => (
@@ -17,7 +18,9 @@ macro_rules! vec {
 
 /// An iterator over a vec
 pub struct VecIterator<'a, T: 'a> {
+    /// The vector to iterate over
     vec: &'a Vec<T>,
+    /// The offset
     offset: usize,
 }
 
@@ -38,7 +41,9 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
 
 /// A owned, heap allocated list of elements
 pub struct Vec<T> {
+    /// The vector data
     pub mem: Memory<T>, // TODO: Option<Memory>
+    /// The length of the vector
     pub length: usize,
 }
 
@@ -73,6 +78,7 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Create a vector from a slice
     pub fn from_slice(slice: &[T]) -> Self {
         match Memory::new(slice.len()) {
             Option::Some(mem) => {
@@ -113,7 +119,7 @@ impl <T> Vec<T> {
             if self.mem.renew(new_length) {
                 self.length = new_length;
 
-                //Move all things ahead of insert forward one
+                // Move all things ahead of insert forward one
                 let mut j = self.length - 1;
                 while j > i {
                     unsafe {
@@ -135,7 +141,7 @@ impl <T> Vec<T> {
 
             let item = unsafe { ptr::read(self.mem.ptr.offset(i as isize)) };
 
-            //Move all things ahead of remove back one
+            //  Move all things ahead of remove back one
             let mut j = i;
             while j < self.length {
                 unsafe {
@@ -191,6 +197,8 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Get a "subvector" of a vector
+    /// (Is not recommended use slice instead)
     // TODO: Consider returning a slice instead
     pub fn sub(&self, start: usize, count: usize) -> Self {
         let mut i = start;
@@ -228,6 +236,7 @@ impl <T> Vec<T> {
         }
     }
 
+    /// Get a slice of the whole vector
     pub fn as_slice(&self) -> &[T] {
         if self.length > 0 {
             unsafe { slice::from_raw_parts(self.mem.ptr, self.length) }

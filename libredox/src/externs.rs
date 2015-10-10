@@ -1,12 +1,13 @@
 use core::fmt;
+use core::fmt::Write;
 use core::ptr;
 use core::result;
 
 use syscall::{sys_debug, sys_exit};
 
-struct DebugStream;
+pub struct DebugStream;
 
-impl fmt::Write for DebugStream {
+impl Write for DebugStream {
     fn write_str(&mut self, s: &str) -> fmt::Result {
         for b in s.bytes() {
             unsafe { sys_debug(b) };
@@ -18,9 +19,10 @@ impl fmt::Write for DebugStream {
 
 #[lang="panic_fmt"]
 #[allow(unused_must_use)]
-pub extern fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> ! {
-    fmt::write(&mut DebugStream, args);
-    fmt::write(&mut DebugStream, format_args!(" in {}:{}\n", file, line));
+pub extern fn panic_impl(args: fmt::Arguments, file: &'static str, line: u32) -> ! {
+    let mut stream = DebugStream;
+    fmt::write(&mut stream, args);
+    fmt::write(&mut stream, format_args!(" in {}:{}\n", file, line));
 
     unsafe {
         sys_exit(-1);

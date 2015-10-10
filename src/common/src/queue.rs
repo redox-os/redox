@@ -1,7 +1,8 @@
 use common::vec::*;
 
-//A FIFO Queue
+/// A FIFO Queue
 pub struct Queue<T> {
+    /// The queue as a vector
     pub vec: Vec<T>,
 }
 

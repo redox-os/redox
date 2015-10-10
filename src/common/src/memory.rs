@@ -1,3 +1,5 @@
+// TODO: Doc the rest
+
 use core::cmp::min;
 use core::intrinsics;
 use core::mem::size_of;
@@ -15,6 +17,7 @@ pub const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SI
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
 pub const CLUSTER_SIZE: usize = 4 * 1024; // Of 4 K chunks
 
+/// A memory map entry
 #[repr(packed)]
 struct MemoryMapEntry {
     base: u64,
@@ -23,11 +26,13 @@ struct MemoryMapEntry {
     acpi: u32,
 }
 
+/// A wrapper around raw pointers
 pub struct Memory<T> {
     pub ptr: *mut T,
 }
 
 impl<T> Memory<T> {
+    /// Create an empty
     pub fn new(count: usize) -> Option<Self> {
         let alloc = unsafe { alloc(count * size_of::<T>()) };
         if alloc > 0 {
@@ -46,6 +51,7 @@ impl<T> Memory<T> {
         }
     }
 
+    /// Renew the memory
     pub fn renew(&mut self, count: usize) -> bool {
         let address = unsafe { realloc(self.ptr as usize, count * size_of::<T>()) };
         if address > 0 {
@@ -56,38 +62,44 @@ impl<T> Memory<T> {
         }
     }
 
-    // The size in bytes
+    /// Get the size in bytes
     pub fn size(&self) -> usize {
         unsafe { alloc_size(self.ptr as usize) }
     }
 
-    // The length in T elements
+    /// Get the length in T elements
     pub fn length(&self) -> usize {
         unsafe { alloc_size(self.ptr as usize) / size_of::<T>() }
     }
 
+    /// Get the address
     pub unsafe fn address(&self) -> usize {
         self.ptr as usize
     }
 
+    /// Read the memory
     pub unsafe fn read(&self, i: usize) -> T {
         ptr::read(self.ptr.offset(i as isize))
     }
 
+    /// Load the memory
     pub unsafe fn load(&self, i: usize) -> T {
         intrinsics::atomic_singlethreadfence();
         ptr::read(self.ptr.offset(i as isize))
     }
 
+    /// Overwrite the memory
     pub unsafe fn write(&mut self, i: usize, value: T) {
         ptr::write(self.ptr.offset(i as isize), value);
     }
 
+    /// Store the memory
     pub unsafe fn store(&mut self, i: usize, value: T) {
         intrinsics::atomic_singlethreadfence();
         ptr::write(self.ptr.offset(i as isize), value)
     }
 
+    /// Convert into a raw pointer
     pub unsafe fn into_raw(&mut self) -> *mut T {
         let ptr = self.ptr;
         self.ptr = 0 as *mut T;
@@ -168,6 +180,7 @@ pub unsafe fn cluster_init() {
     }
 }
 
+/// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
     let mut ret = 0;
 

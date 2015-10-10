@@ -147,9 +147,20 @@ build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/l
 
 build/librand.rlib: rust/librand/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib build/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+	
+build/liblibc.rlib: rust/liblibc/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
+	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
+
+#TODO: Rust libstd
+#build/libstd.rlib: rust/libstd/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib build/liblibc.rlib
+#	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
+
+#Custom libstd
+build/libstd.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name std --cfg std -o $@ $<
 
 build/libredox.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
 build/kernel.rlib: src/kernel.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
@@ -164,6 +175,10 @@ filesystem/%.bin: filesystem/%.asm src/program.ld
 	$(MKDIR) -p build
 	$(AS) -f elf -o build/`$(BASENAME) $*.o` $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.o
+	
+filesystem/apps/test/test.bin: filesystem/apps/test/test.rs build/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/test.rlib $<
+	$(LD) $(LDARGS) -o $@ -T src/program.ld build/test.rlib build/libstd.rlib
 
 filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../$<|" src/program.rs > build/`$(BASENAME) $*`.gen
