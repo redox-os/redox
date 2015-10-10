@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, fs};
 
 macro_rules! readln {
     () => {
@@ -22,18 +22,19 @@ pub fn main() {
 
     println!("Type help for a command list");
     while let Some(line) = readln!() {
-        let mut args: Vec<String> = Vec::new();
-        for arg in line.split(' ') {
-            args.push(arg.to_string());
-        }
+        let args: Vec<String> = line.split(' ').map(|arg| arg.to_string()).collect();
 
         if let Some(command) = args.get(0) {
             println!("# {}", line);
 
-            if command == "panic" {
-                panic!("Test panic");
-            } else {
-                println!("Commands: panic");
+            match &command[..]
+            {
+                "panic" => panic!("Test panic"),
+                "ls" => {
+                    // TODO: when libredox is completed
+                    //fs::read_dir("/").unwrap().map(|dir| println!("{}", dir));
+                }
+                _ => println!("Commands: panic"),
             }
         }
     }
