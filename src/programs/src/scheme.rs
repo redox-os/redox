@@ -3,6 +3,7 @@ use alloc::boxed::Box;
 use core::ptr;
 
 use common::context::*;
+use common::resource::{Resource, ResourceSeek, ResourceType, NoneResource};
 use common::elf::*;
 use common::memory;
 use common::paging::Page;
@@ -11,7 +12,118 @@ use common::scheduler;
 use common::string::*;
 use common::vec::Vec;
 
-pub struct Scheme {
+use programs::session::SessionItem;
+
+pub struct SchemeResource {
+    handle: usize,
+    memory: ContextMemory,
+    _read: usize,
+    _write: usize,
+    _lseek: usize,
+    _fsync: usize,
+    _close: usize,
+}
+
+impl SchemeResource {
+    fn valid(&self, addr: usize) -> bool {
+        addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
+    }
+
+    unsafe fn map(&mut self) {
+        for i in 0..(self.memory.virtual_size + 4095) / 4096 {
+            Page::new(self.memory.virtual_address + i * 4096).map(self.memory.physical_address + i * 4096);
+        }
+    }
+
+    unsafe fn unmap(&mut self) {
+        for i in 0..(self.memory.virtual_size + 4095) / 4096 {
+            Page::new(self.memory.virtual_address + i * 4096).map_identity();
+        }
+    }
+}
+
+impl Resource for SchemeResource {
+    /// Return the url of this resource
+    //TODO
+    fn url(&self) -> URL {
+        URL::new()
+    }
+
+    /// Return the type of this resource
+    fn stat(&self) -> ResourceType {
+        ResourceType::File
+    }
+
+    /// Read data to buffer
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        if self.valid(self._read) {
+            let result;
+            unsafe {
+                self.map();
+                let fn_ptr: *const usize = &self._read;
+                result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, buf.as_mut_ptr(), buf.len());
+                self.unmap();
+            }
+            if result != 0xFFFFFFFF {
+                return Some(result);
+            }
+        }
+        None
+    }
+
+    /// Write to resource
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        if self.valid(self._write) {
+            let result;
+            unsafe {
+                self.map();
+                let fn_ptr: *const usize = &self._write;
+                result = (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, buf.as_ptr(), buf.len());
+                self.unmap();
+            }
+            if result != 0xFFFFFFFF {
+                return Some(result);
+            }
+        }
+        None
+    }
+
+    /// Seek
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        Some(0)
+    }
+
+    /// Sync the resource
+    fn sync(&mut self) -> bool {
+        if self.valid(self._fsync) {
+            let result;
+            unsafe {
+                self.map();
+                let fn_ptr: *const usize = &self._fsync;
+                result = (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
+                self.unmap();
+            }
+            return result == 0;
+        }
+        false
+    }
+}
+
+impl Drop for SchemeResource {
+    fn drop(&mut self){
+        if self.valid(self._close) {
+            unsafe {
+                self.map();
+                let fn_ptr: *const usize = &self._close;
+                (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
+                self.unmap();
+            }
+        }
+    }
+}
+
+pub struct SchemeItem {
+    scheme: String,
     handle: usize,
     memory: ContextMemory,
     _start: usize,
@@ -24,9 +136,10 @@ pub struct Scheme {
     _close: usize,
 }
 
-impl Scheme {
-    pub fn from_url(url: &URL) -> Box<Scheme> {
-        let mut scheme = box Scheme {
+impl SchemeItem {
+    pub fn from_url(scheme: &String, url: &URL) -> Box<SchemeItem> {
+        let mut scheme_item = box SchemeItem {
+            scheme: scheme.clone(),
             handle: 0,
             memory: ContextMemory {
                 physical_address: 0,
@@ -52,35 +165,35 @@ impl Scheme {
             unsafe {
                 let executable = ELF::from_data(vec.as_ptr() as usize);
                 if executable.data > 0 {
-                    scheme.memory.virtual_size = memory::alloc_size(executable.data) - 4096;
-                    scheme.memory.physical_address = memory::alloc(scheme.memory.virtual_size);
+                    scheme_item.memory.virtual_size = memory::alloc_size(executable.data) - 4096;
+                    scheme_item.memory.physical_address = memory::alloc(scheme_item.memory.virtual_size);
                     ptr::copy((executable.data + 4096) as *const u8,
-                              scheme.memory.physical_address as *mut u8,
-                              scheme.memory.virtual_size);
+                              scheme_item.memory.physical_address as *mut u8,
+                              scheme_item.memory.virtual_size);
 
-                    scheme._start = executable.symbol("_start".to_string());
-                    scheme._stop = executable.symbol("_stop".to_string());
-                    scheme._open = executable.symbol("_open".to_string());
-                    scheme._read = executable.symbol("_read".to_string());
-                    scheme._write = executable.symbol("_write".to_string());
-                    scheme._lseek = executable.symbol("_lseek".to_string());
-                    scheme._fsync = executable.symbol("_fsync".to_string());
-                    scheme._close = executable.symbol("_close".to_string());
+                    scheme_item._start = executable.symbol("_start".to_string());
+                    scheme_item._stop = executable.symbol("_stop".to_string());
+                    scheme_item._open = executable.symbol("_open".to_string());
+                    scheme_item._read = executable.symbol("_read".to_string());
+                    scheme_item._write = executable.symbol("_write".to_string());
+                    scheme_item._lseek = executable.symbol("_lseek".to_string());
+                    scheme_item._fsync = executable.symbol("_fsync".to_string());
+                    scheme_item._close = executable.symbol("_close".to_string());
                 }
             }
         }
 
-        if scheme.valid(scheme._start) {
+        if scheme_item.valid(scheme_item._start) {
             //TODO: Allow schemes to be called inside of other schemes
             unsafe {
-                scheme.map();
-                let fn_ptr: *const usize = &scheme._start;
-                scheme.handle = (*(fn_ptr as *const extern "C" fn() -> usize))();
-                scheme.unmap();
+                scheme_item.map();
+                let fn_ptr: *const usize = &scheme_item._start;
+                scheme_item.handle = (*(fn_ptr as *const extern "C" fn() -> usize))();
+                scheme_item.unmap();
             }
         }
 
-        scheme
+        scheme_item
     }
 
     fn valid(&self, addr: usize) -> bool {
@@ -98,26 +211,51 @@ impl Scheme {
             Page::new(self.memory.virtual_address + i * 4096).map_identity();
         }
     }
+}
 
-    pub fn open(&mut self, path: &str) -> usize {
+impl SessionItem for SchemeItem {
+    fn scheme(&self) -> String {
+        return self.scheme.clone();
+    }
+
+    fn open(&mut self, url: &URL) -> Box<Resource> {
         if self.valid(self._open) && self.handle > 0 {
-            let ret;
+            let fd;
             unsafe {
+                let c_str = url.to_string().to_c_str();
+
                 self.map();
                 let fn_ptr: *const usize = &self._open;
-                ret = (*(fn_ptr as *const extern "C" fn(usize, &str) -> usize))(self.handle, path);
+                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, c_str);
                 self.unmap();
+
+                memory::unalloc(c_str as usize);
             }
-            ret
-        } else {
-            0xFFFFFFFF
+            if fd != 0xFFFFFFFF {
+                //TODO: Count number of handles, don't allow drop until 0
+                return box SchemeResource {
+                    handle: fd,
+                    memory: ContextMemory {
+                        physical_address: self.memory.physical_address,
+                        virtual_address: self.memory.virtual_address,
+                        virtual_size: self.memory.virtual_size,
+                    },
+                    _read: self._read,
+                    _write: self._write,
+                    _lseek: self._lseek,
+                    _fsync: self._fsync,
+                    _close: self._close,
+                };
+            }
         }
+
+        box NoneResource
     }
 }
 
-impl Drop for Scheme {
+impl Drop for SchemeItem {
     fn drop(&mut self) {
-        if self.valid(self._stop) && self.handle > 0 {
+        if self.valid(self._stop) {
             unsafe {
                 self.map();
                 let fn_ptr: *const usize = &self._stop;
