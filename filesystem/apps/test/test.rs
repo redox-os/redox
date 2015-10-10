@@ -12,7 +12,7 @@ macro_rules! readln {
     };
 }
 
-fn console_title(title: &str){
+fn console_title(title: &str) {
 
 }
 
