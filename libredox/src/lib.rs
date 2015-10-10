@@ -184,7 +184,7 @@
     pub use graphics::bmp::*;
     pub use orbital::*;
     pub use to_num::*;
-    
+
     /// A module for starting
     #[cfg(std)]
     pub mod start;
