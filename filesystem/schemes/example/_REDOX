@@ -1,0 +1,4 @@
+name=Example
+author=Jeremy Soller
+provide=example:*
+description=Example Scheme
