@@ -12,10 +12,15 @@ use common::vec::Vec;
 
 use programs::session::SessionItem;
 
+/// A ethernet resource
 pub struct EthernetResource {
+    /// The network
     network: Box<Resource>,
+    /// The data
     data: Vec<u8>,
+    /// The MAC addresss
     peer_addr: MACAddr,
+    /// The ethernet type
     ethertype: u16,
 }
 

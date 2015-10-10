@@ -8,6 +8,7 @@ use programs::session::SessionItem;
 
 use syscall::call;
 
+/// A debug resource
 pub struct DebugResource;
 
 impl Resource for DebugResource {

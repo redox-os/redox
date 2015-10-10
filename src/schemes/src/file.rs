@@ -19,6 +19,7 @@ use programs::session::SessionItem;
 
 use syscall::call::sys_yield;
 
+/// The header of the fs
 #[repr(packed)]
 pub struct Header {
     pub signature: [u8; 8],
@@ -27,12 +28,14 @@ pub struct Header {
     pub extents: [Extent; 16],
 }
 
+/// Data for a node
 #[repr(packed)]
 pub struct NodeData {
     pub name: [u8; 256],
     pub extents: [Extent; 16],
 }
 
+/// A file node
 pub struct Node {
     pub address: u64,
     pub name: String,
@@ -40,6 +43,7 @@ pub struct Node {
 }
 
 impl Node {
+    /// Create a new file node from an address and some data
     pub fn new(address: u64, data: &NodeData) -> Self {
         let mut utf8: Vec<u8> = Vec::new();
         for i in 0..data.name.len() {
@@ -69,6 +73,7 @@ impl Clone for Node {
     }
 }
 
+/// A file system
 pub struct FileSystem {
     pub disk: Disk,
     pub header: Header,
@@ -76,6 +81,7 @@ pub struct FileSystem {
 }
 
 impl FileSystem {
+    /// Create a file system from a disk
     pub fn from_disk(mut disk: Disk) -> Option<Self> {
         unsafe {
             if disk.identify() {
@@ -94,12 +100,14 @@ impl FileSystem {
                    header.signature[6] == 'S' as u8 &&
                    header.signature[7] == '\0' as u8 &&
                    header.version == 0xFFFFFFFF {
+
                     debug::d(" Redox Filesystem\n");
 
                     let mut nodes = Vec::new();
                     for extent in &header.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            if let Some(mut data) = Memory::<NodeData>::new(extent.length as usize / mem::size_of::<NodeData>()) {
+                            if let Some(mut data) = Memory::<NodeData>::new(extent.length as usize /
+                                                           mem::size_of::<NodeData>()) {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
                                 while sectors - sector >= 65536 {
@@ -115,8 +123,8 @@ impl FileSystem {
 
                                     unsafe {
                                         disk.read(extent.block + sector as u64,
-                                              0,
-                                              data.address() + sector * 512);
+                                                  0,
+                                                  data.address() + sector * 512);
                                     }
 
                                         /*
@@ -142,8 +150,8 @@ impl FileSystem {
 
                                     unsafe {
                                         disk.read(extent.block + sector as u64,
-                                              (sectors - sector) as u16,
-                                              data.address() + sector * 512);
+                                                  (sectors - sector) as u16,
+                                                  data.address() + sector * 512);
                                     }
                                         /*
                                         disk.request(request.clone());
@@ -177,6 +185,7 @@ impl FileSystem {
         Option::None
     }
 
+    /// Get node with a given filename
     pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
             if node.name == *filename {
@@ -187,6 +196,7 @@ impl FileSystem {
         return Option::None;
     }
 
+    /// List nodes in a given directory
     pub fn list(&self, directory: &String) -> Vec<String> {
         let mut ret = Vec::<String>::new();
 
@@ -200,6 +210,7 @@ impl FileSystem {
     }
 }
 
+/// A file resource
 pub struct FileResource {
     pub scheme: *mut FileScheme,
     pub node: Node,
@@ -358,6 +369,7 @@ impl Drop for FileResource {
     }
 }
 
+/// A file scheme (pci + fs)
 pub struct FileScheme {
     pci: PCIConfig,
     fs: FileSystem,
@@ -365,6 +377,7 @@ pub struct FileScheme {
 
 impl FileScheme {
     ///TODO Allow busmaster for secondary
+    /// Create a new file scheme from a PCI configuration
     pub fn new(mut pci: PCIConfig) -> Option<Box<Self>> {
         unsafe { pci.flag(4, 4, true) }; // Bus mastering
 
@@ -516,7 +529,7 @@ impl SessionItem for FileScheme {
                                 }
 
                                 vec.push_all(&Vec {
-                                    data: unsafe{ data.into_raw() },
+                                    data: unsafe { data.into_raw() },
                                     length: extent.length as usize,
                                 });
                             }

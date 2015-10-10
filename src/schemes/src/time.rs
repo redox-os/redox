@@ -7,6 +7,7 @@ use common::scheduler;
 
 use programs::session::SessionItem;
 
+/// A time scheme
 pub struct TimeScheme;
 
 impl SessionItem for TimeScheme {
