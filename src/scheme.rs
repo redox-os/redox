@@ -28,11 +28,13 @@ mod scheme;
 
 use redox::Box;
 use redox::fs::file::Seek;
+use redox::ptr;
 use redox::slice;
+use redox::str;
 
 #[no_mangle]
 pub unsafe extern "C" fn _start() -> *mut Scheme {
-    Box::into_raw(Box::new(Scheme::new()))
+    Box::into_raw(Scheme::new())
 }
 
 #[no_mangle]
@@ -41,8 +43,16 @@ pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: &str) -> *mut Resource {
-    Box::into_raw(Box::new((*scheme).open(path)))
+pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Resource {
+    let mut len = 0;
+    for i in 0..4096 {
+        len = i as usize;
+        if ptr::read(path.offset(i)) == 0 {
+            break;
+        }
+    }
+
+    Box::into_raw((*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len))))
 }
 
 #[no_mangle]

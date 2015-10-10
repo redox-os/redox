@@ -193,7 +193,7 @@ filesystem/apps/test/test.bin: filesystem/apps/test/test.rs src/program.ld build
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/test.rlib $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/test.rlib build/libstd.rlib
 
-filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.ld build/libredox.rlib
+filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld build/libredox.rlib
 	$(SED) "s|SCHEME_PATH|../$<|" src/scheme.rs > build/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`$(BASENAME) $*`.rlib build/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T src/scheme.ld build/`$(BASENAME) $*`.rlib build/libredox.rlib

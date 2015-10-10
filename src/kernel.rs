@@ -47,6 +47,7 @@ use graphics::display::{self, Display};
 use graphics::point::Point;
 
 use programs::package::*;
+use programs::scheme::*;
 use programs::session::*;
 
 use schemes::arp::*;
@@ -384,6 +385,13 @@ unsafe fn init(font_data: usize) {
     debug_draw = false;
 
     context_enabled = true;
+
+    {
+        let reenable = scheduler::start_no_ints();
+        session.items.push(SchemeItem::from_url(&"example".to_string(), &URL::from_str("file:///schemes/example/example.bin")));
+        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        scheduler::end_no_ints(reenable);
+    }
 
     {
         let mut resource = URL::from_str("file:///apps/").open();
