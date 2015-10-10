@@ -161,7 +161,7 @@ impl RTL8139 {
         while let Option::Some(bytes) = self.outbound.pop() {
             if let Option::Some(txd) = self.txds.get(self.txd_i) {
                 if bytes.len() < 4096 {
-                    let mut tx_status = 0;
+                    let mut tx_status;
                     loop {
                         tx_status = ind(txd.status_port);
                         if tx_status & (1 << 13) == (1 << 13) {

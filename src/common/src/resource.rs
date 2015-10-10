@@ -118,24 +118,11 @@ impl URL {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> String {
-        let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
-            match part_i {
-                0 => {
-                    let scheme_part_i = 0;
-                    for scheme_part in part.split(":".to_string()) {
-                        match scheme_part_i {
-                            0 => return scheme_part,
-                            _ => break,
-                        }
-                        scheme_part_i += 1;
-                    }
-                }
-                _ => break,
+        if let Some(part) = self.string.split("/".to_string()).next() {
+            if let Some(scheme_part) = part.split(":".to_string()).next() {
+                return scheme_part;
             }
-            part_i += 1;
         }
-
         return String::new();
     }
 
