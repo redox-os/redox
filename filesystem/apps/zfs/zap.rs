@@ -57,9 +57,15 @@ pub struct MZapEntPhys{
 
 impl fmt::Debug for MZapEntPhys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "MZapEntPhys {{\nvalue: {:X},\ncd: {:X},\n",
+        try!(write!(f, "MZapEntPhys {{\nvalue: {:X},\ncd: {:X},\nname: ",
                     self.value, self.cd));
-        try!(write!(f, "}}\n"));
+        for i in 0..MZAP_NAME_LEN {
+            if self.name[i] == 0 {
+                break;
+            }
+            try!(write!(f, "{}", self.name[i] as char));
+        }
+        try!(write!(f, "\n}}\n"));
         Ok(())
     }
 }
