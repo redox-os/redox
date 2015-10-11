@@ -11,17 +11,27 @@ pub struct Resource {
 
 impl Resource {
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        write!(io::stdout(), "Read {} bytes to {}\n", buf.len(), self.path);
+        write!(io::stdout(), "Read {} bytes from {}\n", buf.len(), self.path);
         Some(0)
     }
 
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        write!(io::stdout(), "Write {} bytes from {}\n", buf.len(), self.path);
+        write!(io::stdout(), "Write {} bytes to {}\n", buf.len(), self.path);
         Some(0)
     }
 
     pub fn seek(&mut self, seek: Seek) -> Option<usize> {
-        write!(io::stdout(), "Seek to TODO in {}\n", self.path);
+        match seek {
+            Seek::Start(offset) => {
+                write!(io::stdout(), "Seek to Start({}) in {}\n", offset, self.path);
+            },
+            Seek::Current(offset) => {
+                write!(io::stdout(), "Seek to Current({}) in {}\n", offset, self.path);
+            },
+            Seek::End(offset) => {
+                write!(io::stdout(), "Seek to End({}) in {}\n", offset, self.path);
+            }
+        }
         Some(0)
     }
 

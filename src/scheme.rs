@@ -32,16 +32,22 @@ use redox::ptr;
 use redox::slice;
 use redox::str;
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _start() -> *mut Scheme {
     Box::into_raw(Scheme::new())
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
     drop(Box::from_raw(scheme));
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Resource {
     let mut len = 0;
@@ -55,6 +61,8 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Res
     Box::into_raw((*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len))))
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
     match (*resource).read(slice::from_raw_parts_mut(buf, len)) {
@@ -63,6 +71,8 @@ pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize
     }
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _write(resource: *mut Resource, buf: *const u8, len: usize) -> usize {
     match (*resource).write(slice::from_raw_parts(buf, len)) {
@@ -74,6 +84,8 @@ pub unsafe extern "C" fn _write(resource: *mut Resource, buf: *const u8, len: us
 const SEEK_SET: isize = 0;
 const SEEK_CUR: isize = 1;
 const SEEK_END: isize = 2;
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: isize) -> usize {
     if whence == SEEK_SET {
@@ -93,6 +105,8 @@ pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: 
     0xFFFFFFFF
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fsync(resource: *mut Resource) -> usize {
     if (*resource).sync() {
@@ -102,6 +116,8 @@ pub unsafe extern "C" fn _fsync(resource: *mut Resource) -> usize {
     }
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _close(resource: *mut Resource) -> usize {
     drop(Box::from_raw(resource));
