@@ -8,6 +8,7 @@ use common::elf::*;
 use common::memory;
 use common::paging::Page;
 use common::resource::URL;
+use common::scheduler::{start_no_ints, end_no_ints};
 use common::string::*;
 use common::vec::Vec;
 
@@ -58,10 +59,12 @@ impl Resource for SchemeResource {
         if self.valid(self._read) {
             let result;
             unsafe {
+                let reenable = start_no_ints();
                 self.map();
                 let fn_ptr: *const usize = &self._read;
                 result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, buf.as_mut_ptr(), buf.len());
                 self.unmap();
+                end_no_ints(reenable);
             }
             if result != 0xFFFFFFFF {
                 return Some(result);
@@ -75,10 +78,12 @@ impl Resource for SchemeResource {
         if self.valid(self._write) {
             let result;
             unsafe {
+                let reenable = start_no_ints();
                 self.map();
                 let fn_ptr: *const usize = &self._write;
                 result = (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, buf.as_ptr(), buf.len());
                 self.unmap();
+                end_no_ints(reenable);
             }
             if result != 0xFFFFFFFF {
                 return Some(result);
@@ -89,7 +94,38 @@ impl Resource for SchemeResource {
 
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        Some(0)
+        if self.valid(self._lseek) {
+            let offset;
+            let whence;
+            match pos {
+                ResourceSeek::Start(off) => {
+                    whence = 0;
+                    offset = off as isize;
+                },
+                ResourceSeek::Current(off) => {
+                    whence = 1;
+                    offset = off;
+                },
+                ResourceSeek::End(off) => {
+                    whence = 2;
+                    offset = off;
+                }
+            }
+
+            let result;
+            unsafe {
+                let reenable = start_no_ints();
+                self.map();
+                let fn_ptr: *const usize = &self._lseek;
+                result = (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(self.handle, offset, whence);
+                self.unmap();
+                end_no_ints(reenable);
+            }
+            if result != 0xFFFFFFFF {
+                return Some(result);
+            }
+        }
+        None
     }
 
     /// Sync the resource
@@ -97,10 +133,12 @@ impl Resource for SchemeResource {
         if self.valid(self._fsync) {
             let result;
             unsafe {
+                let reenable = start_no_ints();
                 self.map();
                 let fn_ptr: *const usize = &self._fsync;
                 result = (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
                 self.unmap();
+                end_no_ints(reenable);
             }
             return result == 0;
         }
@@ -112,10 +150,12 @@ impl Drop for SchemeResource {
     fn drop(&mut self){
         if self.valid(self._close) {
             unsafe {
+                let reenable = start_no_ints();
                 self.map();
                 let fn_ptr: *const usize = &self._close;
                 (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
                 self.unmap();
+                end_no_ints(reenable);
             }
         }
     }
@@ -185,10 +225,12 @@ impl SchemeItem {
         if scheme_item.valid(scheme_item._start) {
             //TODO: Allow schemes to be called inside of other schemes
             unsafe {
+                let reenable = start_no_ints();
                 scheme_item.map();
                 let fn_ptr: *const usize = &scheme_item._start;
                 scheme_item.handle = (*(fn_ptr as *const extern "C" fn() -> usize))();
                 scheme_item.unmap();
+                end_no_ints(reenable);
             }
         }
 
@@ -218,15 +260,17 @@ impl SessionItem for SchemeItem {
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
-        if self.valid(self._open) && self.handle > 0 {
+        if self.valid(self._open) {
             let fd;
             unsafe {
                 let c_str = url.to_string().to_c_str();
 
+                let reenable = start_no_ints();
                 self.map();
                 let fn_ptr: *const usize = &self._open;
                 fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, c_str);
                 self.unmap();
+                end_no_ints(reenable);
 
                 memory::unalloc(c_str as usize);
             }
@@ -256,10 +300,12 @@ impl Drop for SchemeItem {
     fn drop(&mut self) {
         if self.valid(self._stop) {
             unsafe {
+                let reenable = start_no_ints();
                 self.map();
                 let fn_ptr: *const usize = &self._stop;
                 (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
                 self.unmap();
+                end_no_ints(reenable);
             }
         }
     }
