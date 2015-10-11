@@ -363,13 +363,11 @@ pub fn main() {
                                 println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
                                 println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
                                 println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
-                                println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
-                                println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
                                 let obj_set: Option<ObjectSetPhys> = zfs.read_type(&uberblock.rootbp);
                                 if let Some(ref obj_set) = obj_set {
                                     println_color!(green, "Got meta object set");
                                     println_color!(green, "os_type: {:X}", obj_set.os_type);
-                                    println_color!(green, "meta dnode: {:?}", obj_set.meta_dnode);
+                                    println_color!(green, "meta dnode: {:?}\n", obj_set.meta_dnode);
 
                                     println_color!(green, "Reading MOS...");
                                     let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
@@ -380,15 +378,16 @@ pub fn main() {
                                     println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
                                     println_color!(green, "compression: {:X}", mos_block_ptr.compression());
                                     println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
-                                    println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
-                                    println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
                                     let dnode: Option<DNodePhys> = zfs.read_type_array(&mos_block_ptr, 1);
                                     println_color!(green, "Got MOS dnode array");
                                     println_color!(green, "dnode: {:?}", dnode);
+
+                                    if let Some(ref dnode) = dnode {
+                                        println_color!(green, "Reading object directory zap object...");
+                                        let zap_obj: Option<zap::MZapPhys> = zfs.read_type(dnode.get_blockptr(0));
+                                        println!("{:?}", zap_obj);
+                                    }
                                 }
-                                /*let mut xdr = xdr::MemOps::new(&mut mos);
-                                let nv_list = nvstream::decode_nv_list(&mut xdr);
-                                println_color!(green, "Got nv_list:\n{:?}", nv_list);*/
                             },
                             None => println_color!(red, "No valid uberblock found!"),
                         }
