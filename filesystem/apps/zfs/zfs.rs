@@ -5,6 +5,11 @@ pub mod lzjb;
 pub mod nvpair;
 pub mod nvstream;
 pub mod xdr;
+pub mod zap;
+
+pub trait FromBytes {
+    fn from_bytes(data: &[u8]) -> Option<Self>;
+}
 
 #[repr(packed)]
 pub struct VdevLabel {
@@ -14,8 +19,8 @@ pub struct VdevLabel {
     pub uberblocks: [Uberblock; 128],
 }
 
-impl VdevLabel {
-    pub fn from(data: &[u8]) -> Option<Self> {
+impl FromBytes for VdevLabel {
+    fn from_bytes(data: &[u8]) -> Option<Self> {
         if data.len() >= mem::size_of::<VdevLabel>() {
             let vdev_label = unsafe { ptr::read(data.as_ptr() as *const VdevLabel) };
             Some(vdev_label)
@@ -45,7 +50,10 @@ impl Uberblock {
         return 0x00bab10c;
     }
 
-    pub fn from(data: &Vec<u8>) -> Option<Self> {
+}
+
+impl FromBytes for Uberblock {
+    fn from_bytes(data: &[u8]) -> Option<Self> {
         if data.len() >= mem::size_of::<Uberblock>() {
             let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
             if uberblock.magic == Uberblock::magic_little() {
@@ -171,20 +179,22 @@ pub struct DNodePhys {
 }
 
 impl DNodePhys {
-    pub fn from(data: &[u8]) -> Option<Self> {
-        if data.len() >= mem::size_of::<DNodePhys>() {
-            Some(unsafe { ptr::read(data.as_ptr() as *const DNodePhys) })
-        } else {
-            Option::None
-        }
-    }
-
     pub fn get_blockptr<'a>(&self, i: usize) -> &'a BlockPtr {
         unsafe { mem::transmute(&self.blkptr_bonus[i*128]) }
     }
 
     pub fn get_bonus(&self) -> &[u8] {
         &self.blkptr_bonus[(self.nblkptr as usize)*128..]
+    }
+}
+
+impl FromBytes for DNodePhys {
+    fn from_bytes(data: &[u8]) -> Option<Self> {
+        if data.len() >= mem::size_of::<DNodePhys>() {
+            Some(unsafe { ptr::read(data.as_ptr() as *const DNodePhys) })
+        } else {
+            Option::None
+        }
     }
 }
 
@@ -204,8 +214,8 @@ pub struct ObjectSetPhys {
     //pad: [u8; 360],
 }
 
-impl ObjectSetPhys {
-    pub fn from(data: &[u8]) -> Option<Self> {
+impl FromBytes for ObjectSetPhys {
+    fn from_bytes(data: &[u8]) -> Option<Self> {
         if data.len() >= mem::size_of::<ObjectSetPhys>() {
             Some(unsafe { ptr::read(data.as_ptr() as *const ObjectSetPhys) })
         } else {
@@ -245,10 +255,35 @@ impl ZFS {
         self.disk.write(data);
     }
 
+    pub fn read_dva(&mut self, dva: &DVAddr) -> Vec<u8> {
+        self.read(dva.sector() as usize, dva.asize() as usize)
+    }
+
+    pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Option<T> {
+        self.read_type_array(block_ptr, 0)
+    }
+
+    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Option<T> {
+        let data = self.read_dva(&block_ptr.dvas[0]);
+        match block_ptr.compression() {
+            2 => {
+                // compression off
+                T::from_bytes(&data[offset*mem::size_of::<T>()..])
+            },
+            1 | 3 => {
+                // lzjb compression
+                let mut decompressed = vec![0; 2048];
+                lzjb::decompress(&data, &mut decompressed);
+                T::from_bytes(&decompressed[offset*mem::size_of::<T>()..])
+            },
+            _ => None,
+        }
+    }
+
     pub fn uber(&mut self) -> Option<Uberblock> {
         let mut newest_uberblock: Option<Uberblock> = Option::None;
         for i in 0..128 {
-            match Uberblock::from(&self.read(256 + i * 2, 2)) {
+            match Uberblock::from_bytes(&self.read(256 + i * 2, 2)) {
                 Option::Some(uberblock) => {
                     let mut newest = false;
                     match newest_uberblock {
@@ -311,7 +346,7 @@ pub fn main() {
                             None => println_color!(red, "No valid uberblock found!"),
                         }
                     } else if *command == "vdev_label".to_string() {
-                        match VdevLabel::from(&zfs.read(0, 256 * 2)) {
+                        match VdevLabel::from_bytes(&zfs.read(0, 256 * 2)) {
                             Some(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
@@ -328,27 +363,11 @@ pub fn main() {
                                 println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
                                 println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
                                 println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
-                                println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
-                                println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
-                                let mut mos = zfs.read(mos_dva.sector() as usize, mos_dva.asize() as usize);
-                                let obj_set =
-                                    match uberblock.rootbp.compression() {
-                                        2 => {
-                                            // compression off
-                                            ObjectSetPhys::from(&mos[..])
-                                        },
-                                        1 | 3 => {
-                                            // lzjb compression
-                                            let mut decompressed = vec![0; 2048];
-                                            lzjb::decompress(&mos, &mut decompressed);
-                                            ObjectSetPhys::from(&decompressed)
-                                        },
-                                        _ => None,
-                                    };
+                                let obj_set: Option<ObjectSetPhys> = zfs.read_type(&uberblock.rootbp);
                                 if let Some(ref obj_set) = obj_set {
                                     println_color!(green, "Got meta object set");
                                     println_color!(green, "os_type: {:X}", obj_set.os_type);
-                                    println_color!(green, "meta dnode: {:?}", obj_set.meta_dnode);
+                                    println_color!(green, "meta dnode: {:?}\n", obj_set.meta_dnode);
 
                                     println_color!(green, "Reading MOS...");
                                     let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
@@ -359,29 +378,16 @@ pub fn main() {
                                     println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
                                     println_color!(green, "compression: {:X}", mos_block_ptr.compression());
                                     println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
-                                    println!("ObjectSetPhys size: {}", mem::size_of::<ObjectSetPhys>());
-                                    println!("DNodePhys size: {}", mem::size_of::<DNodePhys>());
-                                    let mut mos_array = zfs.read(mos_array_dva.sector() as usize, mos_array_dva.asize() as usize);
-                                    let dnode =
-                                        match mos_block_ptr.compression() {
-                                            2 => {
-                                                // compression off
-                                                DNodePhys::from(&mos_array[..])
-                                            },
-                                            1 | 3 => {
-                                                // lzjb compression
-                                                let mut decompressed = vec![0; mos_array.len()];
-                                                lzjb::decompress(&mos_array, &mut decompressed);
-                                                DNodePhys::from(&decompressed)
-                                            },
-                                            _ => None,
-                                        };
+                                    let dnode: Option<DNodePhys> = zfs.read_type_array(&mos_block_ptr, 1);
                                     println_color!(green, "Got MOS dnode array");
                                     println_color!(green, "dnode: {:?}", dnode);
+
+                                    if let Some(ref dnode) = dnode {
+                                        println_color!(green, "Reading object directory zap object...");
+                                        let zap_obj: Option<zap::MZapPhys> = zfs.read_type(dnode.get_blockptr(0));
+                                        println!("{:?}", zap_obj);
+                                    }
                                 }
-                                /*let mut xdr = xdr::MemOps::new(&mut mos);
-                                let nv_list = nvstream::decode_nv_list(&mut xdr);
-                                println_color!(green, "Got nv_list:\n{:?}", nv_list);*/
                             },
                             None => println_color!(red, "No valid uberblock found!"),
                         }
