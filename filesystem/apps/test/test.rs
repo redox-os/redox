@@ -1,10 +1,8 @@
-#![feature(alloc)]
 #![feature(core)]
 
-extern crate alloc;
 extern crate core;
 
-use alloc::boxed::Box;
+use std::Box;
 use std::{io, rand};
 use core::ptr;
 
@@ -32,11 +30,14 @@ pub fn main() {
     while let Some(line) = readln!() {
         let args: Vec<String> = line.split(' ').map(|arg| arg.to_string()).collect();
 
-        if let Some(command) = args.get(0) {
+        if let Some(a_command) = args.get(0) {
             println!("# {}", line);
-            let console_commands = ["panic", "ls", "ptr_write"];
+            let console_commands = ["panic",
+                                    "ls",
+                                    "ptr_write",
+                                    "box_write",];
 
-            match &command[..] {
+            match &a_command[..] {
                 command if command == console_commands[0] =>
                     panic!("Test panic"),
                 command if command == console_commands[1] => {
@@ -45,12 +46,11 @@ pub fn main() {
                 }
                 command if command == console_commands[2] => {
                     let a_ptr = rand() as *mut u8;
+                    unsafe { ptr::write(a_ptr, rand() as u8); }
+                }
+                command if command == console_commands[3] => {
                     let mut a_box = Box::new(rand() as u8);
-                    unsafe {
-                        ptr::write(a_ptr, rand() as u8);
-                        // TODO: import Box::{from_raw, to_raw} methods in libredox
-                        //ptr::write(a_box.to_raw(), rand() as u8);
-                    }
+                    unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
                 }
                 _ => println!("Commands: {}", console_commands.join(" ")),
             }
