@@ -1,5 +1,6 @@
 use fmt;
 use result;
+use str;
 use string::String;
 use vec::{IntoIter, Vec};
 use syscall::{sys_read, sys_write};
@@ -16,38 +17,34 @@ pub trait Read {
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         let mut read = 0;
         loop {
-            let mut bytes = [0; 1024];
+            let mut bytes = [0; 4096];
             match self.read(&mut bytes) {
                 Some(0) => return Some(read),
                 None => return None,
                 Some(count) => {
-                    for i in 0..count {
-                        vec.push(bytes[i]);
-                    }
+                    vec.push_all(&bytes[0..count]);
                     read += count;
                 }
             }
         }
     }
-    
+
     /// Read the file to a string
     fn read_to_string(&mut self, string: &mut String) -> Option<usize> {
         let mut read = 0;
         loop {
-            let mut bytes = [0; 1024];
+            let mut bytes = [0; 4096];
             match self.read(&mut bytes) {
                 Some(0) => return Some(read),
                 None => return None,
                 Some(count) => {
-                    for i in 0..count {
-                        string.push(bytes[i] as char); //TODO Allow UTF8
-                    }
+                    string.push_str(unsafe { &str::from_utf8_unchecked(&bytes[0..count]) });
                     read += count;
                 }
             }
         }
     }
-    
+
     /// Return an iterator of the bytes
     fn bytes(&mut self) -> IntoIter<u8> {
         // TODO: This is only a temporary implementation. Make this read one byte at a time.
@@ -62,6 +59,20 @@ pub trait Read {
 pub trait Write {
     /// Write to the file
     fn write(&mut self, buf: &[u8]) -> Option<usize>;
+}
+
+/// Seek Location
+pub enum SeekFrom {
+    /// The start point
+    Start(usize),
+    /// The current point
+    Current(isize),
+    /// The end point
+    End(isize),
+}
+
+pub trait Seek {
+    fn seek(&mut self, pos: SeekFrom) -> Option<usize>;
 }
 
 /// Standard Input

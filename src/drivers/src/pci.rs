@@ -118,15 +118,15 @@ pub unsafe fn pci_init(session: &mut Session) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
-                    d("Bus ");
+                    d(" * PCI ");
                     dd(bus);
-                    d(" Slot ");
-                    dd(slot);
-                    d(" Function ");
-                    dd(func);
-                    d(": ");
-                    dh(id as usize);
                     d(", ");
+                    dd(slot);
+                    d(", ");
+                    dd(func);
+                    d(": ID ");
+                    dh(id as usize);
+                    d(" CL ");
                     dh(class_id as usize);
 
                     for i in 0..6 {
@@ -136,6 +136,15 @@ pub unsafe fn pci_init(session: &mut Session) {
                             dd(i as usize);
                             d(": ");
                             dh(bar as usize);
+
+                            pci.write(i * 4 + 0x10, 0xFFFFFFFF);
+                            let size = (0xFFFFFFFF - (pci.read(i * 4 + 0x10) & 0xFFFFFFF0)) + 1;
+                            pci.write(i * 4 + 0x10, bar);
+
+                            if size > 0 {
+                                d(" ");
+                                dd(size as usize);
+                            }
                         }
                     }
 

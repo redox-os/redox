@@ -205,6 +205,42 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &*contexts_ptr;
+    if let Option::Some(current) = contexts.get(context_i) {
+        for i in 0..current.files.len() {
+            if let Option::Some(file) = current.files.get(i) {
+                if file.fd == fd {
+                    scheduler::end_no_ints(reenable);
+
+                    ret = 0;
+                    //TODO: Improve performance
+                    for b in file.resource.url().to_string().to_utf8().iter() {
+                        if ret < len {
+                            ptr::write(buf.offset(ret as isize), *b);
+                        } else {
+                            break;
+                        }
+                        ret += 1;
+                    }
+
+                    scheduler::start_no_ints();
+
+                    break;
+                }
+            }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
 pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
@@ -350,6 +386,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_OPEN =>
             eax = do_sys_open(ebx as *mut u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
         SYS_CLOSE => eax = do_sys_close(ebx as usize) as u32,
+        SYS_FPATH => eax = do_sys_fpath(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_FSYNC => eax = do_sys_fsync(ebx as usize) as u32,
         SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
         SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
