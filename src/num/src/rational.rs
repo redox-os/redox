@@ -12,11 +12,11 @@
 
 use Integer;
 
-use std::cmp;
-use std::error::Error;
-use std::fmt;
-use std::ops::{Add, Div, Mul, Neg, Rem, Sub};
-use std::str::FromStr;
+use redox::cmp;
+use redox::error::Error;
+use redox::fmt;
+use redox::ops::{Add, Div, Mul, Neg, Rem, Sub};
+use redox::str::FromStr;
 
 #[cfg(feature = "bigint")]
 use bigint::{BigInt, BigUint, Sign};
@@ -500,8 +500,8 @@ mod test {
     use super::{Ratio, Rational};
     #[cfg(feature = "bigint")]
     use super::BigRational;
-    use std::str::FromStr;
-    use std::i32;
+    use redox::str::FromStr;
+    use redox::i32;
     use {Zero, One, Signed, FromPrimitive, Float};
 
     pub const _0 : Rational = Ratio { numer: 0, denom: 1};
@@ -853,7 +853,7 @@ mod test {
     #[cfg(feature = "bigint")]
     #[test]
     fn test_from_float_fail() {
-        use std::{f32, f64};
+        use redox::{f32, f64};
 
         assert_eq!(Ratio::from_float(f32::NAN), None);
         assert_eq!(Ratio::from_float(f32::INFINITY), None);

@@ -11,8 +11,8 @@
 
 //! Complex numbers.
 
-use std::fmt;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use redox::fmt;
+use redox::ops::{Add, Div, Mul, Neg, Sub};
 
 use {Zero, One, Num, Float};
 
@@ -258,7 +258,7 @@ mod test {
     #![allow(non_upper_case_globals)]
 
     use super::{Complex64, Complex};
-    use std::f64;
+    use redox::f64;
 
     use {Zero, One, Float};
 

@@ -58,6 +58,8 @@ extern crate rustc_serialize;
 #[cfg(feature = "rand")]
 extern crate rand;
 
+extern crate redox;
+
 #[cfg(feature = "bigint")]
 pub use bigint::{BigInt, BigUint};
 #[cfg(feature = "rational")]
@@ -72,9 +74,9 @@ pub use traits::{Num, Zero, One, Signed, Unsigned, Bounded,
                  Saturating, CheckedAdd, CheckedSub, CheckedMul, CheckedDiv,
                  PrimInt, Float, ToPrimitive, FromPrimitive, NumCast, cast};
 
-#[cfg(test)] use std::hash;
+#[cfg(test)] use redox::hash;
 
-use std::ops::{Mul};
+use redox::ops::{Mul};
 
 #[cfg(feature = "bigint")]
 pub mod bigint;
@@ -157,7 +159,7 @@ pub fn pow<T: Clone + One + Mul<T, Output = T>>(mut base: T, mut exp: usize) -> 
 
 #[cfg(test)]
 fn hash<T: hash::Hash>(x: &T) -> u64 {
-    use std::hash::Hasher;
+    use redox::hash::Hasher;
     let mut hasher = hash::SipHasher::new();
     x.hash(&mut hasher);
     hasher.finish()
