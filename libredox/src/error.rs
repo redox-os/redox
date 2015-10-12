@@ -115,7 +115,9 @@ impl<'a, 'b> From<&'b str> for Box<Error + Send + Sync + 'a> {
 }
 
 impl Error for str::ParseBoolError {
-    fn description(&self) -> &str { "failed to parse bool" }
+    fn description(&self) -> &str {
+        "failed to parse bool"
+    }
 }
 
 impl Error for str::Utf8Error {

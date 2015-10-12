@@ -242,6 +242,8 @@ impl Display {
         }
     }
 
+    // TODO: Move to orbital?
+    
     /// Draw an line (without antialiasing) with width 1
     /// (using Bresenham's algorithm)
     pub fn line(&self, point_a: Point, point_b: Point, color: Color) {
@@ -263,8 +265,8 @@ impl Display {
             // Find error and error change
             let mut error = 0.0;
             // This is a bit annoying... but libcore does not have .abs() defined on f64 ;-(
-            let mut delta_error = {
-                let delta_error_signed = ((delta.y as f64) / (delta.x as f64));
+            let delta_error = {
+                let delta_error_signed = (delta.y as f64) / (delta.x as f64);
                 if delta_error_signed < 0.0 {
                     -delta_error_signed
                 } else {
@@ -300,6 +302,47 @@ impl Display {
     }
     // TODO: Antialiased lines
     // TODO: Lines with other width
+
+    /* Commented because std::f64 is required
+    fn line_aa(&self, mut point_a: Point, mut point_b: Point, color: RgbColor) {
+        // TODO: Xiaolin Wu line drawing
+        use core::mem::swap;
+
+        let steep = (point_b.y - point_a.y).abs() > (point_b.x - point_a.x);
+
+        if steep {
+            // Swap the x and y
+            swap(&mut point_a.x, &mut point_a.y);
+            swap(&mut point_b.x, &mut point_b.y);
+        }
+
+        if point_a.x > point_b.x {
+            // Swap point_a and point_b
+            swap(&mut point_a.x, &mut point_b.x);
+            swap(&mut point_a.y, &mut point_b.y);
+        }
+
+        // Calculate delta
+        let dx = point_b.x - point_a.x;
+        let dy = point_b.y - point_a.y;
+        // Calculate gradient
+        let gradient = (dy as f64) / (dx as f64);
+
+        // First endpoint
+        let x_end = point_b.x.round();
+        let y_end = point_b.y + gradient * (x_end - point_b.x);
+
+        let x_pxl2 = x_end;
+        let y_pxl2 = y_end.floor();
+
+        if steep {
+            self
+        } else {
+            self
+        };
+
+    }
+    */
 
     /// Draw an image
     pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
