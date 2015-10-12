@@ -54,7 +54,6 @@ use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
-use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
@@ -324,13 +323,12 @@ unsafe fn init(font_data: usize) {
     let session = &mut *session_ptr;
 
     session.items.push(PS2::new());
-    session.items.push(box Serial::new(0x3F8, 0x4));
+    session.items.push(Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
-    session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
@@ -367,6 +365,7 @@ unsafe fn init(font_data: usize) {
 
     //Load cursor before getting out of debug mode
     {
+        debug::d("Loading cursor\n");
         let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
@@ -380,11 +379,8 @@ unsafe fn init(font_data: usize) {
         scheduler::end_no_ints(reenable);
     }
 
-    debug_draw = false;
-
-    context_enabled = true;
-
     {
+        debug::d("Loading schemes\n");
         let mut resource = URL::from_str("file:///schemes/").open();
 
         let mut vec: Vec<u8> = Vec::new();
@@ -405,6 +401,7 @@ unsafe fn init(font_data: usize) {
     }
 
     {
+        debug::d("Loading apps\n");
         let mut resource = URL::from_str("file:///apps/").open();
 
         let mut vec: Vec<u8> = Vec::new();
@@ -423,6 +420,7 @@ unsafe fn init(font_data: usize) {
     }
 
     {
+        debug::d("Loading background\n");
         let mut resource = URL::from_str("file:///ui/background.bmp").open();
 
         let mut vec: Vec<u8> = Vec::new();
@@ -435,6 +433,10 @@ unsafe fn init(font_data: usize) {
         session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
         scheduler::end_no_ints(reenable);
     }
+
+    debug::d("Enabling context switching\n");
+    debug_draw = false;
+    context_enabled = true;
 }
 
 fn dr(reg: &str, value: u32) {
