@@ -27,7 +27,7 @@ use scheme::Scheme;
 mod scheme;
 
 use redox::Box;
-use redox::fs::file::Seek;
+use redox::io::{Read, Write, Seek, SeekFrom};
 use redox::ptr;
 use redox::slice;
 use redox::str;
@@ -58,7 +58,10 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Res
         }
     }
 
-    Box::into_raw((*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len))))
+    match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len))) {
+        Some(resource) => return Box::into_raw(resource),
+        None => return 0xFFFFFFFF as *mut Resource
+    }
 }
 
 #[cold]
@@ -89,15 +92,15 @@ const SEEK_END: isize = 2;
 #[no_mangle]
 pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: isize) -> usize {
     if whence == SEEK_SET {
-        if let Some(bytes) = (*resource).seek(Seek::Start(offset as usize)) {
+        if let Some(bytes) = (*resource).seek(SeekFrom::Start(offset as usize)) {
             return bytes;
         }
     } else if whence == SEEK_CUR {
-        if let Some(bytes) = (*resource).seek(Seek::Current(offset)) {
+        if let Some(bytes) = (*resource).seek(SeekFrom::Current(offset)) {
             return bytes;
         }
     } else if whence == SEEK_END {
-        if let Some(bytes) = (*resource).seek(Seek::End(offset)) {
+        if let Some(bytes) = (*resource).seek(SeekFrom::End(offset)) {
             return bytes;
         }
     }

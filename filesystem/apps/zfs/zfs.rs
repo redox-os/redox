@@ -244,14 +244,14 @@ impl ZFS {
     pub fn read(&mut self, start: usize, length: usize) -> Vec<u8> {
         let mut ret: Vec<u8> = vec![0; length*512];
 
-        self.disk.seek(Seek::Start(start * 512));
+        self.disk.seek(SeekFrom::Start(start * 512));
         self.disk.read(&mut ret);
 
         return ret;
     }
 
     pub fn write(&mut self, block: usize, data: &[u8; 512]) {
-        self.disk.seek(Seek::Start(block * 512));
+        self.disk.seek(SeekFrom::Start(block * 512));
         self.disk.write(data);
     }
 

@@ -1,9 +1,8 @@
 use core::fmt::Write;
 
 use redox::Box;
-use redox::fs::file::Seek;
 use redox::string::*;
-use redox::io;
+use redox::io::{self, SeekFrom};
 
 pub struct Resource {
     path: String
@@ -20,15 +19,15 @@ impl Resource {
         Some(0)
     }
 
-    pub fn seek(&mut self, seek: Seek) -> Option<usize> {
+    pub fn seek(&mut self, seek: SeekFrom) -> Option<usize> {
         match seek {
-            Seek::Start(offset) => {
+            SeekFrom::Start(offset) => {
                 write!(io::stdout(), "Seek to Start({}) in {}\n", offset, self.path);
             },
-            Seek::Current(offset) => {
+            SeekFrom::Current(offset) => {
                 write!(io::stdout(), "Seek to Current({}) in {}\n", offset, self.path);
             },
-            Seek::End(offset) => {
+            SeekFrom::End(offset) => {
                 write!(io::stdout(), "Seek to End({}) in {}\n", offset, self.path);
             }
         }
@@ -49,10 +48,10 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, path: &str) -> Box<Resource> {
+    pub fn open(&mut self, path: &str) -> Option<Box<Resource>> {
         write!(io::stdout(), "Open {}\n", path);
-        box Resource {
+        Some(box Resource {
             path: path.to_string()
-        }
+        })
     }
 }
