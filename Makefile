@@ -111,7 +111,7 @@ help:
 
 all: build/harddrive.bin
 
-docs: src/kernel.rs src/common/src/lib.rs libredox/src/lib.rs rust/libcore/lib.rs rust/liballoc/lib.rs src/graphics/src/lib.rs src/schemes/src/lib.rs src/usb/src/lib.rs src/syscall/src/lib.rs
+docs: rust/libcore/lib.rs src/kernel.rs src/common/src/lib.rs libredox/src/lib.rs rust/liballoc/lib.rs src/graphics/src/lib.rs src/schemes/src/lib.rs src/usb/src/lib.rs src/syscall/src/lib.rs
 	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
