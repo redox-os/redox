@@ -14,14 +14,14 @@ rational, and complex types.
 """
 
 [dependencies]
-rustc-serialize = { version = "0.3.13", optional = true }
 rand = { version = "0.3.8", optional = true }
+redox = { path = "../../libredox" }
 
 [features]
 
 complex = []
 rational = []
-bigint = ["rustc-serialize", "rand"]
+bigint = ["rand"]
 default = ["complex", "rational", "bigint"]
 
 [[bench]]

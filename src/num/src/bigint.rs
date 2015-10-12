@@ -20,7 +20,7 @@
 //!
 //! ```rust
 //! use num::{BigUint, Zero, One};
-//! use std::mem::replace;
+//! use redox::mem::replace;
 //!
 //! // Calculate large fibonacci numbers.
 //! fn fib(n: usize) -> BigUint {
@@ -60,15 +60,15 @@
 
 use Integer;
 
-use std::default::Default;
-use std::error::Error;
-use std::iter::repeat;
-use std::num::ParseIntError;
-use std::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Rem, Shl, Shr, Sub};
-use std::str::{self, FromStr};
-use std::{cmp, fmt, hash, mem};
-use std::cmp::Ordering::{self, Less, Greater, Equal};
-use std::{i64, u64};
+use redox::default::Default;
+use redox::error::Error;
+use redox::iter::repeat;
+use redox::num::ParseIntError;
+use redox::ops::{Add, BitAnd, BitOr, BitXor, Div, Mul, Neg, Rem, Shl, Shr, Sub};
+use redox::str::{self, FromStr};
+use redox::{cmp, fmt, hash, mem};
+use redox::cmp::Ordering::{self, Less, Greater, Equal};
+use redox::{i64, u64};
 
 use rand::Rng;
 use rustc_serialize::hex::ToHex;
@@ -1862,11 +1862,11 @@ mod biguint_tests {
     use super::{BigInt, RandBigInt, ToBigInt};
     use super::Sign::Plus;
 
-    use std::cmp::Ordering::{Less, Equal, Greater};
-    use std::i64;
-    use std::iter::repeat;
-    use std::str::FromStr;
-    use std::u64;
+    use redox::cmp::Ordering::{Less, Equal, Greater};
+    use redox::i64;
+    use redox::iter::repeat;
+    use redox::str::FromStr;
+    use redox::u64;
 
     use rand::thread_rng;
     use {Num, Zero, One, CheckedAdd, CheckedSub, CheckedMul, CheckedDiv};
@@ -2387,7 +2387,7 @@ mod biguint_tests {
         a - b;
     }
 
-    const M: u32 = ::std::u32::MAX;
+    const M: u32 = ::redox::u32::MAX;
     const MUL_TRIPLES: &'static [(&'static [BigDigit],
                                   &'static [BigDigit],
                                   &'static [BigDigit])] = &[
@@ -2789,11 +2789,11 @@ mod bigint_tests {
     use super::{Sign, BigInt, RandBigInt, ToBigInt, big_digit};
     use super::Sign::{Minus, NoSign, Plus};
 
-    use std::cmp::Ordering::{Less, Equal, Greater};
-    use std::i64;
-    use std::iter::repeat;
-    use std::u64;
-    use std::ops::{Neg};
+    use redox::cmp::Ordering::{Less, Equal, Greater};
+    use redox::i64;
+    use redox::iter::repeat;
+    use redox::u64;
+    use redox::ops::{Neg};
 
     use rand::thread_rng;
 
@@ -3061,7 +3061,7 @@ mod bigint_tests {
         }
     }
 
-    const M: u32 = ::std::u32::MAX;
+    const M: u32 = ::redox::u32::MAX;
     static MUL_TRIPLES: &'static [(&'static [BigDigit],
                                    &'static [BigDigit],
                                    &'static [BigDigit])] = &[

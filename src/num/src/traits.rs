@@ -10,13 +10,13 @@
 
 //! Numeric traits for generic mathematics
 
-use std::ops::{Add, Sub, Mul, Div, Rem, Neg};
-use std::ops::{Not, BitAnd, BitOr, BitXor, Shl, Shr};
-use std::{usize, u8, u16, u32, u64};
-use std::{isize, i8, i16, i32, i64};
-use std::{f32, f64};
-use std::mem::{self, size_of};
-use std::num::FpCategory;
+use redox::ops::{Add, Sub, Mul, Div, Rem, Neg};
+use redox::ops::{Not, BitAnd, BitOr, BitXor, Shl, Shr};
+use redox::{usize, u8, u16, u32, u64};
+use redox::{isize, i8, i16, i32, i64};
+use redox::{f32, f64};
+use redox::mem::{self, size_of};
+use redox::num::FpCategory;
 
 /// The base trait for numeric types
 pub trait Num: PartialEq + Zero + One
@@ -33,9 +33,9 @@ pub trait Num: PartialEq + Zero + One
 macro_rules! int_trait_impl {
     ($name:ident for $($t:ty)*) => ($(
         impl $name for $t {
-            type FromStrRadixErr = ::std::num::ParseIntError;
+            type FromStrRadixErr = ::redox::num::ParseIntError;
             fn from_str_radix(s: &str, radix: u32)
-                              -> Result<Self, ::std::num::ParseIntError>
+                              -> Result<Self, ::redox::num::ParseIntError>
             {
                 <$t>::from_str_radix(s, radix)
             }
@@ -43,8 +43,8 @@ macro_rules! int_trait_impl {
     )*)
 }
 
-// FIXME: Temporary replacements for unstable ::std::num::ParseFloatError and
-// ::std::num::FloatErrorKind. These can be removed once the std float implementation of
+// FIXME: Temporary replacements for unstable ::redox::num::ParseFloatError and
+// ::redox::num::FloatErrorKind. These can be removed once the std float implementation of
 // from_str_radix stabilises.
 pub enum FloatErrorKind { Empty, Invalid }
 pub struct ParseFloatError { pub kind: FloatErrorKind }
@@ -1126,7 +1126,7 @@ macro_rules! impl_to_primitive_float_to_float {
             Some($slf as $DstT)
         } else {
             let n = $slf as f64;
-            let max_value: $SrcT = ::std::$SrcT::MAX;
+            let max_value: $SrcT = ::redox::$SrcT::MAX;
             if -max_value as f64 <= n && n <= max_value as f64 {
                 Some($slf as $DstT)
             } else {
@@ -1357,7 +1357,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f32;
+    /// use redox::f32;
     ///
     /// let infinity: f32 = Float::infinity();
     ///
@@ -1370,7 +1370,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f32;
+    /// use redox::f32;
     ///
     /// let neg_infinity: f32 = Float::neg_infinity();
     ///
@@ -1398,7 +1398,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x: f64 = Float::min_value();
     ///
@@ -1410,7 +1410,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x: f64 = Float::min_positive_value();
     ///
@@ -1422,7 +1422,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x: f64 = Float::max_value();
     /// assert_eq!(x, f64::MAX);
@@ -1433,7 +1433,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let nan = f64::NAN;
     /// let f = 7.0;
@@ -1448,7 +1448,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f32;
+    /// use redox::f32;
     ///
     /// let f = 7.0f32;
     /// let inf: f32 = Float::infinity();
@@ -1467,7 +1467,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f32;
+    /// use redox::f32;
     ///
     /// let f = 7.0f32;
     /// let inf: f32 = Float::infinity();
@@ -1487,7 +1487,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f32;
+    /// use redox::f32;
     ///
     /// let min = f32::MIN_POSITIVE; // 1.17549435e-38f32
     /// let max = f32::MAX;
@@ -1512,8 +1512,8 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::num::FpCategory;
-    /// use std::f32;
+    /// use redox::num::FpCategory;
+    /// use redox::f32;
     ///
     /// let num = 12.4f32;
     /// let inf = f32::INFINITY;
@@ -1596,7 +1596,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x = 3.5;
     /// let y = -3.5;
@@ -1619,7 +1619,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let f = 3.5;
     ///
@@ -1635,7 +1635,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let nan: f64 = f64::NAN;
     ///
@@ -1654,7 +1654,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let nan = f64::NAN;
     ///
@@ -1910,7 +1910,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x = f64::consts::PI/2.0;
     ///
@@ -1924,7 +1924,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x = 2.0*f64::consts::PI;
     ///
@@ -1938,7 +1938,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x = f64::consts::PI/4.0;
     /// let abs_difference = (x.tan() - 1.0).abs();
@@ -1953,7 +1953,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let f = f64::consts::PI / 2.0;
     ///
@@ -1970,7 +1970,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let f = f64::consts::PI / 4.0;
     ///
@@ -2005,7 +2005,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let pi = f64::consts::PI;
     /// // All angles from horizontal right (+x)
@@ -2030,7 +2030,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x = f64::consts::PI/4.0;
     /// let f = x.sin_cos();
@@ -2063,7 +2063,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let x = f64::consts::E - 1.0;
     ///
@@ -2078,7 +2078,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let e = f64::consts::E;
     /// let x = 1.0;
@@ -2096,7 +2096,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let e = f64::consts::E;
     /// let x = 1.0;
@@ -2114,7 +2114,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let e = f64::consts::E;
     /// let x = 1.0;
@@ -2160,7 +2160,7 @@ pub trait Float
     ///
     /// ```
     /// use num::traits::Float;
-    /// use std::f64;
+    /// use redox::f64;
     ///
     /// let e = f64::consts::E;
     /// let f = e.tanh().atanh();
@@ -2200,15 +2200,15 @@ macro_rules! float_impl {
     ($T:ident $decode:ident) => (
         impl Float for $T {
             fn nan() -> Self {
-                ::std::$T::NAN
+                ::redox::$T::NAN
             }
 
             fn infinity() -> Self {
-                ::std::$T::INFINITY
+                ::redox::$T::INFINITY
             }
 
             fn neg_infinity() -> Self {
-                ::std::$T::NEG_INFINITY
+                ::redox::$T::NEG_INFINITY
             }
 
             fn neg_zero() -> Self {
@@ -2216,15 +2216,15 @@ macro_rules! float_impl {
             }
 
             fn min_value() -> Self {
-                ::std::$T::MIN
+                ::redox::$T::MIN
             }
 
             fn min_positive_value() -> Self {
-                ::std::$T::MIN_POSITIVE
+                ::redox::$T::MIN_POSITIVE
             }
 
             fn max_value() -> Self {
-                ::std::$T::MAX
+                ::redox::$T::MAX
             }
 
             fn is_nan(self) -> bool {

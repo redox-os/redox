@@ -11,7 +11,7 @@
 //! External iterators for generic mathematics
 
 use {Integer, Zero, One, CheckedAdd, ToPrimitive};
-use std::ops::{Add, Sub};
+use redox::ops::{Add, Sub};
 
 /// An iterator over the range [start, stop)
 #[derive(Clone)]
@@ -258,9 +258,9 @@ impl<A> Iterator for RangeStepInclusive<A>
 
 #[cfg(test)]
 mod tests {
-    use std::usize;
-    use std::ops::{Add, Mul};
-    use std::cmp::Ordering;
+    use redox::usize;
+    use redox::ops::{Add, Mul};
+    use redox::cmp::Ordering;
     use {One, ToPrimitive};
 
     #[test]
