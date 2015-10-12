@@ -22,7 +22,5 @@ pub mod random;
 pub mod tcp;
 /// Time scheme
 pub mod time;
-/// UDP scheme
-pub mod udp;
 /// Window scheme
 pub mod window;

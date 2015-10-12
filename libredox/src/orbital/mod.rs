@@ -35,11 +35,11 @@ impl Window {
         let mut font_file = File::open("file:///ui/unifont.font");
 
         let mut font;
-        match font_file.seek(Seek::End(0)) {
+        match font_file.seek(SeekFrom::End(0)) {
             Some(length) => {
                 font = vec![0; length];
 
-                font_file.seek(Seek::Start(0));
+                font_file.seek(SeekFrom::Start(0));
                 font_file.read(&mut font);
             },
             None => font = Vec::new(),
@@ -174,7 +174,7 @@ impl Window {
 
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
-        self.file.seek(Seek::Start(0));
+        self.file.seek(SeekFrom::Start(0));
         self.file.write(&self.data);
         return self.file.sync();
     }
