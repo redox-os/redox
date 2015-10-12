@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["FixedSizeArray","Utility trait implemented only on arrays of fixed size"]]});

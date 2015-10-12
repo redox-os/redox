@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Eq` trait in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Eq">
+
+    <title>core::cmp::Eq - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>cmp</a></p><script>window.sidebarCurrent = {name: 'Eq', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>core</a>::<wbr><a href='index.html'>cmp</a>::<wbr><a class='trait' href=''>Eq</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-21083' class='srclink' href='../../src/core/cmp.rs.html#73-85' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Eq: <a class='trait' href='../../core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a>&lt;Self&gt; { }</pre><div class='docblock'><p>Trait for equality comparisons which are <a href="https://en.wikipedia.org/wiki/Equivalence_relation">equivalence relations</a>.</p>
+
+<p>This means, that in addition to <code>a == b</code> and <code>a != b</code> being strict inverses, the equality must
+be (for all <code>a</code>, <code>b</code> and <code>c</code>):</p>
+
+<ul>
+<li>reflexive: <code>a == a</code>;</li>
+<li>symmetric: <code>a == b</code> implies <code>b == a</code>; and</li>
+<li>transitive: <code>a == b</code> and <code>b == c</code> implies <code>a == c</code>.</li>
+</ul>
+
+<p>This property cannot be checked by the compiler, and therefore <code>Eq</code> implies
+<code>PartialEq</code>, and has no extra methods.</p>
+</div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../../core/nonzero/trait.Zeroable.html' title='core::nonzero::Zeroable'>Zeroable</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/nonzero/struct.NonZero.html' title='core::nonzero::NonZero'>NonZero</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for *const T</code></li>
+<li><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for *mut T</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/marker/struct.PhantomData.html' title='core::marker::PhantomData'>PhantomData</a>&lt;T&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/ops/struct.RangeFull.html' title='core::ops::RangeFull'>RangeFull</a></code></li>
+<li><code>impl&lt;Idx: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/ops/struct.Range.html' title='core::ops::Range'>Range</a>&lt;Idx&gt;</code></li>
+<li><code>impl&lt;Idx: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/ops/struct.RangeFrom.html' title='core::ops::RangeFrom'>RangeFrom</a>&lt;Idx&gt;</code></li>
+<li><code>impl&lt;Idx: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/ops/struct.RangeTo.html' title='core::ops::RangeTo'>RangeTo</a>&lt;Idx&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for ()</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for bool</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for char</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for usize</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for u8</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for u16</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for u32</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for u64</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for isize</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for i8</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for i16</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for i32</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for i64</code></li>
+<li><code>impl&lt;'a, A: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for &amp;'a A <span class='where'>where A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a></span></code></li>
+<li><code>impl&lt;'a, A: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for &amp;'a mut A <span class='where'>where A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a></span></code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a></code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/any/struct.TypeId.html' title='core::any::TypeId'>TypeId</a></code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 0]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 1]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 2]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 3]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 4]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 5]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 6]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 7]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 8]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 9]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 10]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 11]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 12]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 13]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 14]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 15]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 16]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 17]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 18]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 19]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 20]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 21]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 22]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 23]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 24]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 25]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 26]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 27]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 28]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 29]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 30]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 31]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T; 32]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> + <a class='trait' href='../../core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/cell/struct.Cell.html' title='core::cell::Cell'>Cell</a>&lt;T&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../core/cell/enum.BorrowState.html' title='core::cell::BorrowState'>BorrowState</a></code></li>
+<li><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/cell/struct.RefCell.html' title='core::cell::RefCell'>RefCell</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for [T]</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../core/str/pattern/enum.SearchStep.html' title='core::str::pattern::SearchStep'>SearchStep</a></code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for str</code></li>
+<li><code>impl <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='struct' href='../../core/str/struct.Utf8Error.html' title='core::str::Utf8Error'>Utf8Error</a></code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A,)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, G: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F, G)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, G: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, H: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F, G, H)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, G: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, H: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, I: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F, G, H, I)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, G: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, H: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, I: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, J: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F, G, H, I, J)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, G: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, H: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, I: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, J: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, K: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F, G, H, I, J, K)</code></li>
+<li><code>impl&lt;A: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, B: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, C: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, D: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, F: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, G: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, H: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, I: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, J: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, K: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, L: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for (A, B, C, D, E, F, G, H, I, J, K, L)</code></li>
+</ul><script type="text/javascript" async
+                              src="../../implementors/core/cmp/trait.Eq.js">
+                      </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `UpperHex` trait in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, UpperHex">
+
+    <title>core::fmt::UpperHex - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>fmt</a></p><script>window.sidebarCurrent = {name: 'UpperHex', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>core</a>::<wbr><a href='index.html'>fmt</a>::<wbr><a class='trait' href=''>UpperHex</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-34749' class='srclink' href='../../src/core/fmt/mod.rs.html#614-618' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait UpperHex {
+    fn <a href='#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, &amp;mut <a class='struct' href='../../core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='../../core/fmt/type.Result.html' title='core::fmt::Result'>Result</a>;
+}</pre><div class='docblock'><p>Format trait for the <code>X</code> character.</p>
+
+<p>The <code>UpperHex</code> trait should format its output as a number in hexidecimal, with <code>A</code> through <code>F</code>
+in upper case.</p>
+
+<p>The alternate flag, <code>#</code>, adds a <code>0x</code> in front of the output.</p>
+
+<p>For more information on formatters, see <a href="../index.html">the module-level documentation</a>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>Basic usage with <code>i32</code>:</p>
+<span class='rusttest'>fn main() {
+    let x = 42; // 42 is &#39;2A&#39; in hex
+    
+    assert_eq!(format!(&quot;{:X}&quot;, x), &quot;2A&quot;);
+    assert_eq!(format!(&quot;{:#X}&quot;, x), &quot;0x2A&quot;);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span> <span class='op'>=</span> <span class='number'>42</span>; <span class='comment'>// 42 is &#39;2A&#39; in hex</span>
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:X}&quot;</span>, <span class='ident'>x</span>), <span class='string'>&quot;2A&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;{:#X}&quot;</span>, <span class='ident'>x</span>), <span class='string'>&quot;0x2A&quot;</span>);</pre>
+
+<p>Implementing <code>UpperHex</code> on a type:</p>
+<span class='rusttest'>fn main() {
+    use std::fmt;
+    
+    struct Length(i32);
+    
+    impl fmt::UpperHex for Length {
+        fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+            let val = self.0;
+    
+            write!(f, &quot;{:X}&quot;, val) // delegate to i32&#39;s implementation
+        }
+    }
+    
+    let l = Length(9);
+    
+    println!(&quot;l as hex is: {:X}&quot;, l);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
+
+<span class='kw'>struct</span> <span class='ident'>Length</span>(<span class='ident'>i32</span>);
+
+<span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>UpperHex</span> <span class='kw'>for</span> <span class='ident'>Length</span> {
+    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
+        <span class='kw'>let</span> <span class='ident'>val</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='number'>0</span>;
+
+        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;{:X}&quot;</span>, <span class='ident'>val</span>) <span class='comment'>// delegate to i32&#39;s implementation</span>
+    }
+}
+
+<span class='kw'>let</span> <span class='ident'>l</span> <span class='op'>=</span> <span class='ident'>Length</span>(<span class='number'>9</span>);
+
+<span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;l as hex is: {:X}&quot;</span>, <span class='ident'>l</span>);</pre>
+</div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.fmt' class='method stab '><code>fn <a href='#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, &amp;mut <a class='struct' href='../../core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='../../core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h3><div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for isize</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for usize</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for i8</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for u8</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for i16</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for u16</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for i32</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for u32</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for i64</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for u64</code></li>
+<li><code>impl&lt;'a, T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a>&gt; <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for &amp;'a T</code></li>
+<li><code>impl&lt;'a, T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a>&gt; <a class='trait' href='../../core/fmt/trait.UpperHex.html' title='core::fmt::UpperHex'>UpperHex</a> for &amp;'a mut T</code></li>
+</ul><script type="text/javascript" async
+                              src="../../implementors/core/fmt/trait.UpperHex.js">
+                      </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

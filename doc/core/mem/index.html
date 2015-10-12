@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `mem` mod in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, mem">
+
+    <title>core::mem - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a></p><script>window.sidebarCurrent = {name: 'mem', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>core</a>::<wbr><a class='mod' href=''>mem</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-5003' class='srclink' href='../../src/core/mem.rs.html#11-560' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Basic functions for dealing with memory</p>
+
+<p>This module contains functions for querying the size and alignment of
+types, initializing and manipulating memory.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>pub use intrinsics::<a class='fn' href='../../core/intrinsics/fn.transmute.html' title='core::intrinsics::transmute'>transmute</a>;</code></td></tr></table><h2 id='constants' class='section-header'><a href="#constants">Constants</a></h2>
+<table>
+                    <tr class='unstable module-item'>
+                        <td><a class='constant' href='constant.POST_DROP_U32.html'
+                               title='core::mem::POST_DROP_U32'>POST_DROP_U32</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] 
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='constant' href='constant.POST_DROP_U64.html'
+                               title='core::mem::POST_DROP_U64'>POST_DROP_U64</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] 
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='constant' href='constant.POST_DROP_U8.html'
+                               title='core::mem::POST_DROP_U8'>POST_DROP_U8</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] 
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='constant' href='constant.POST_DROP_USIZE.html'
+                               title='core::mem::POST_DROP_USIZE'>POST_DROP_USIZE</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] 
+                        </td>
+                    </tr>
+                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.align_of.html'
+                               title='core::mem::align_of'>align_of</a></td>
+                        <td class='docblock short'>
+                             <p>Returns the alignment in memory for a type.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.align_of_val.html'
+                               title='core::mem::align_of_val'>align_of_val</a></td>
+                        <td class='docblock short'>
+                             <p>Returns the ABI-required minimum alignment of the type of the value that <code>val</code> points to</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.drop.html'
+                               title='core::mem::drop'>drop</a></td>
+                        <td class='docblock short'>
+                             <p>Disposes of a value.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.forget.html'
+                               title='core::mem::forget'>forget</a></td>
+                        <td class='docblock short'>
+                             <p>Leaks a value into the void, consuming ownership and never running its
+destructor.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' deprecated module-item'>
+                        <td><a class='fn' href='fn.min_align_of.html'
+                               title='core::mem::min_align_of'>min_align_of</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab  deprecated'>Deprecated</em>] <p>Returns the ABI-required minimum alignment of a type</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' deprecated module-item'>
+                        <td><a class='fn' href='fn.min_align_of_val.html'
+                               title='core::mem::min_align_of_val'>min_align_of_val</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab  deprecated'>Deprecated</em>] <p>Returns the ABI-required minimum alignment of the type of the value that <code>val</code> points to</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.replace.html'
+                               title='core::mem::replace'>replace</a></td>
+                        <td class='docblock short'>
+                             <p>Replaces the value at a mutable location with a new one, returning the old value, without
+deinitialising or copying either one.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.size_of.html'
+                               title='core::mem::size_of'>size_of</a></td>
+                        <td class='docblock short'>
+                             <p>Returns the size of a type in bytes.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.size_of_val.html'
+                               title='core::mem::size_of_val'>size_of_val</a></td>
+                        <td class='docblock short'>
+                             <p>Returns the size of the type that <code>val</code> points to in bytes.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.swap.html'
+                               title='core::mem::swap'>swap</a></td>
+                        <td class='docblock short'>
+                             <p>Swap the values at two mutable locations of the same type, without deinitialising or copying
+either one.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.transmute_copy.html'
+                               title='core::mem::transmute_copy'>transmute_copy</a></td>
+                        <td class='docblock short'>
+                             <p>Interprets <code>src</code> as <code>&amp;U</code>, and then reads <code>src</code> without moving the contained
+value.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.uninitialized.html'
+                               title='core::mem::uninitialized'>uninitialized</a></td>
+                        <td class='docblock short'>
+                             <p>Bypasses Rust&#39;s normal memory-initialization checks by pretending to
+produce a value of type T, while doing nothing at all.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.zeroed.html'
+                               title='core::mem::zeroed'>zeroed</a></td>
+                        <td class='docblock short'>
+                             <p>Creates a value initialized to zero.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='fn' href='fn.dropped.html'
+                               title='core::mem::dropped'>dropped</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Creates a value initialized to an unspecified series of bytes.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

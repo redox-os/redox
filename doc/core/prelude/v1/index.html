@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `v1` mod in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, v1">
+
+    <title>core::prelude::v1 - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../../index.html'>core</a>::<wbr><a href='../index.html'>prelude</a></p><script>window.sidebarCurrent = {name: 'v1', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../../index.html'>core</a>::<wbr><a href='../index.html'>prelude</a>::<wbr><a class='mod' href=''>v1</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-4395' class='srclink' href='../../../src/core/prelude/v1.rs.html#11-39' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>The core prelude</p>
+
+<p>This module is intended for users of libcore which do not link to libstd as
+well. This module is imported by default when <code>#![no_std]</code> is used in the
+same manner as the standard library&#39;s prelude.</p>
+</div><h2 id='reexports' class='section-header'><a href="#reexports">Reexports</a></h2>
+<table><tr><td><code>pub use marker::{<a class='trait' href='../../../core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a>, <a class='trait' href='../../../core/marker/trait.Send.html' title='core::marker::Send'>Send</a>, <a class='trait' href='../../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>, <a class='trait' href='../../../core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a>};</code></td></tr><tr><td><code>pub use ops::{<a class='trait' href='../../../core/ops/trait.Drop.html' title='core::ops::Drop'>Drop</a>, <a class='trait' href='../../../core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>, <a class='trait' href='../../../core/ops/trait.FnMut.html' title='core::ops::FnMut'>FnMut</a>, <a class='trait' href='../../../core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>};</code></td></tr><tr><td><code>pub use mem::<a class='fn' href='../../../core/mem/fn.drop.html' title='core::mem::drop'>drop</a>;</code></td></tr><tr><td><code>pub use clone::<a class='trait' href='../../../core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>;</code></td></tr><tr><td><code>pub use cmp::{<a class='trait' href='../../../core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a>, <a class='trait' href='../../../core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a>, <a class='trait' href='../../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, <a class='trait' href='../../../core/cmp/trait.Ord.html' title='core::cmp::Ord'>Ord</a>};</code></td></tr><tr><td><code>pub use convert::{<a class='trait' href='../../../core/convert/trait.AsRef.html' title='core::convert::AsRef'>AsRef</a>, <a class='trait' href='../../../core/convert/trait.AsMut.html' title='core::convert::AsMut'>AsMut</a>, <a class='trait' href='../../../core/convert/trait.Into.html' title='core::convert::Into'>Into</a>, <a class='trait' href='../../../core/convert/trait.From.html' title='core::convert::From'>From</a>};</code></td></tr><tr><td><code>pub use default::<a class='trait' href='../../../core/default/trait.Default.html' title='core::default::Default'>Default</a>;</code></td></tr><tr><td><code>pub use iter::{<a class='trait' href='../../../core/iter/trait.Iterator.html' title='core::iter::Iterator'>Iterator</a>, <a class='trait' href='../../../core/iter/trait.Extend.html' title='core::iter::Extend'>Extend</a>, <a class='trait' href='../../../core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a>};</code></td></tr><tr><td><code>pub use iter::{<a class='trait' href='../../../core/iter/trait.DoubleEndedIterator.html' title='core::iter::DoubleEndedIterator'>DoubleEndedIterator</a>, <a class='trait' href='../../../core/iter/trait.ExactSizeIterator.html' title='core::iter::ExactSizeIterator'>ExactSizeIterator</a>};</code></td></tr><tr><td><code>pub use option::Option::{<a class='enum' href='../../../core/option/enum.Option.html' title='core::option::Option'>self</a>, <a class='enum' href='../../../core/option/enum.Option.html' title='core::option::Option'>Some</a>, <a class='enum' href='../../../core/option/enum.Option.html' title='core::option::Option'>None</a>};</code></td></tr><tr><td><code>pub use result::Result::{<a class='enum' href='../../../core/result/enum.Result.html' title='core::result::Result'>self</a>, <a class='enum' href='../../../core/result/enum.Result.html' title='core::result::Result'>Ok</a>, <a class='enum' href='../../../core/result/enum.Result.html' title='core::result::Result'>Err</a>};</code></td></tr><tr><td><code>pub use slice::SliceExt;</code></td></tr><tr><td><code>pub use str::StrExt;</code></td></tr><tr><td><code>pub use char::CharExt;</code></td></tr></table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    <script src="../../../playpen.js"></script>
+    <script async src="../../../search-index.js"></script>
+</body>
+</html>

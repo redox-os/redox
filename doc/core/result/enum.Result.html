@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Result` enum in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Result">
+
+    <title>core::result::Result - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>result</a></p><script>window.sidebarCurrent = {name: 'Result', ty: 'enum', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content enum">
+<h1 class='fqn'><span class='in-band'>Enum <a href='../index.html'>core</a>::<wbr><a href='index.html'>result</a>::<wbr><a class='enum' href=''>Result</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-29319' class='srclink' href='../../src/core/result.rs.html#247-255' title='goto source code'>[src]</a></span></h1>
+<pre class='rust enum'>#[must_use]
+pub enum Result&lt;T, E&gt; {
+    Ok(T),
+    Err(E),
+}</pre><div class='docblock'><p><code>Result</code> is a type that represents either success (<code>Ok</code>) or failure (<code>Err</code>).</p>
+
+<p>See the <a href="index.html"><code>std::result</code></a> module documentation for details.</p>
+</div><h2 class='variants'>Variants</h2>
+<table><tr><td id='variant.Ok'><code>Ok</code></td><td><div class='docblock'><p>Contains the success value</p>
+</div></td></tr><tr><td id='variant.Err'><code>Err</code></td><td><div class='docblock'><p>Contains the error value</p>
+</div></td></tr></table><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;T, E&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.is_ok' class='method'><code>fn <a href='#method.is_ok' class='fnname'>is_ok</a>(&amp;self) -&gt; bool</code></h4>
+<div class='docblock'><p>Returns true if the result is <code>Ok</code></p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;i32, &amp;str&gt; = Ok(-3);
+    assert_eq!(x.is_ok(), true);
+    
+    let x: Result&lt;i32, &amp;str&gt; = Err(&quot;Some error message&quot;);
+    assert_eq!(x.is_ok(), false);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='op'>-</span><span class='number'>3</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>is_ok</span>(), <span class='boolval'>true</span>);
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Some error message&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>is_ok</span>(), <span class='boolval'>false</span>);</pre>
+</div><h4 id='method.is_err' class='method'><code>fn <a href='#method.is_err' class='fnname'>is_err</a>(&amp;self) -&gt; bool</code></h4>
+<div class='docblock'><p>Returns true if the result is <code>Err</code></p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;i32, &amp;str&gt; = Ok(-3);
+    assert_eq!(x.is_err(), false);
+    
+    let x: Result&lt;i32, &amp;str&gt; = Err(&quot;Some error message&quot;);
+    assert_eq!(x.is_err(), true);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='op'>-</span><span class='number'>3</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>is_err</span>(), <span class='boolval'>false</span>);
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Some error message&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>is_err</span>(), <span class='boolval'>true</span>);</pre>
+</div><h4 id='method.ok' class='method'><code>fn <a href='#method.ok' class='fnname'>ok</a>(self) -&gt; <a class='enum' href='../../core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Converts from <code>Result&lt;T, E&gt;</code> to <code>Option&lt;T&gt;</code></p>
+
+<p>Converts <code>self</code> into an <code>Option&lt;T&gt;</code>, consuming <code>self</code>,
+and discarding the error, if any.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    assert_eq!(x.ok(), Some(2));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;Nothing here&quot;);
+    assert_eq!(x.ok(), None);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>ok</span>(), <span class='prelude-val'>Some</span>(<span class='number'>2</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Nothing here&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>ok</span>(), <span class='prelude-val'>None</span>);</pre>
+</div><h4 id='method.err' class='method'><code>fn <a href='#method.err' class='fnname'>err</a>(self) -&gt; <a class='enum' href='../../core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;E&gt;</code></h4>
+<div class='docblock'><p>Converts from <code>Result&lt;T, E&gt;</code> to <code>Option&lt;E&gt;</code></p>
+
+<p>Converts <code>self</code> into an <code>Option&lt;E&gt;</code>, consuming <code>self</code>,
+and discarding the success value, if any.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    assert_eq!(x.err(), None);
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;Nothing here&quot;);
+    assert_eq!(x.err(), Some(&quot;Nothing here&quot;));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>err</span>(), <span class='prelude-val'>None</span>);
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Nothing here&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>err</span>(), <span class='prelude-val'>Some</span>(<span class='string'>&quot;Nothing here&quot;</span>));</pre>
+</div><h4 id='method.as_ref' class='method'><code>fn <a href='#method.as_ref' class='fnname'>as_ref</a>(&amp;self) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;&amp;T, &amp;E&gt;</code></h4>
+<div class='docblock'><p>Converts from <code>Result&lt;T, E&gt;</code> to <code>Result&lt;&amp;T, &amp;E&gt;</code></p>
+
+<p>Produces a new <code>Result</code>, containing a reference
+into the original, leaving the original in place.</p>
+<span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    assert_eq!(x.as_ref(), Ok(&amp;2));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;Error&quot;);
+    assert_eq!(x.as_ref(), Err(&amp;&quot;Error&quot;));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>as_ref</span>(), <span class='prelude-val'>Ok</span>(<span class='kw-2'>&amp;</span><span class='number'>2</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;Error&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>as_ref</span>(), <span class='prelude-val'>Err</span>(<span class='kw-2'>&amp;</span><span class='string'>&quot;Error&quot;</span>));</pre>
+</div><h4 id='method.as_mut' class='method'><code>fn <a href='#method.as_mut' class='fnname'>as_mut</a>(&amp;mut self) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;&amp;mut T, &amp;mut E&gt;</code></h4>
+<div class='docblock'><p>Converts from <code>Result&lt;T, E&gt;</code> to <code>Result&lt;&amp;mut T, &amp;mut E&gt;</code></p>
+<span class='rusttest'>fn main() {
+    fn mutate(r: &amp;mut Result&lt;i32, i32&gt;) {
+        match r.as_mut() {
+            Ok(&amp;mut ref mut v) =&gt; *v = 42,
+            Err(&amp;mut ref mut e) =&gt; *e = 0,
+        }
+    }
+    
+    let mut x: Result&lt;i32, i32&gt; = Ok(2);
+    mutate(&amp;mut x);
+    assert_eq!(x.unwrap(), 42);
+    
+    let mut x: Result&lt;i32, i32&gt; = Err(13);
+    mutate(&amp;mut x);
+    assert_eq!(x.unwrap_err(), 0);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>mutate</span>(<span class='ident'>r</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='ident'>i32</span><span class='op'>&gt;</span>) {
+    <span class='kw'>match</span> <span class='ident'>r</span>.<span class='ident'>as_mut</span>() {
+        <span class='prelude-val'>Ok</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>v</span>) <span class='op'>=&gt;</span> <span class='op'>*</span><span class='ident'>v</span> <span class='op'>=</span> <span class='number'>42</span>,
+        <span class='prelude-val'>Err</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='kw-2'>ref</span> <span class='kw-2'>mut</span> <span class='ident'>e</span>) <span class='op'>=&gt;</span> <span class='op'>*</span><span class='ident'>e</span> <span class='op'>=</span> <span class='number'>0</span>,
+    }
+}
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='ident'>i32</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='ident'>mutate</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>x</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>unwrap</span>(), <span class='number'>42</span>);
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='ident'>i32</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='number'>13</span>);
+<span class='ident'>mutate</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>x</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>unwrap_err</span>(), <span class='number'>0</span>);</pre>
+</div><h4 id='method.as_slice' class='method'><code>fn <a href='#method.as_slice' class='fnname'>as_slice</a>(&amp;self) -&gt; &amp;[T]</code></h4>
+<div class='stability'><em class='stab unstable deprecated'>Deprecated since 1.4.0<p>: niche API, unclear of usefulness</p>
+</em></div><div class='docblock'><p>Converts from <code>Result&lt;T, E&gt;</code> to <code>&amp;[T]</code> (without copying)</p>
+</div><h4 id='method.as_mut_slice' class='method'><code>fn <a href='#method.as_mut_slice' class='fnname'>as_mut_slice</a>(&amp;mut self) -&gt; &amp;mut [T]</code></h4>
+<div class='stability'><em class='stab unstable deprecated'>Deprecated since 1.4.0<p>: niche API, unclear of usefulness</p>
+</em></div><div class='docblock'><p>Converts from <code>Result&lt;T, E&gt;</code> to <code>&amp;mut [T]</code> (without copying)</p>
+<span class='rusttest'>#![feature(as_slice)]
+
+fn main() {
+    let mut x: Result&lt;&amp;str, u32&gt; = Ok(&quot;Gold&quot;);
+    {
+        let v = x.as_mut_slice();
+        assert!(v == [&quot;Gold&quot;]);
+        v[0] = &quot;Silver&quot;;
+        assert!(v == [&quot;Silver&quot;]);
+    }
+    assert_eq!(x, Ok(&quot;Silver&quot;));
+    
+    let mut x: Result&lt;&amp;str, u32&gt; = Err(45);
+    assert!(x.as_mut_slice().is_empty());
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>as_slice</span>)]</span>
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='string'>&quot;Gold&quot;</span>);
+{
+    <span class='kw'>let</span> <span class='ident'>v</span> <span class='op'>=</span> <span class='ident'>x</span>.<span class='ident'>as_mut_slice</span>();
+    <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>v</span> <span class='op'>==</span> [<span class='string'>&quot;Gold&quot;</span>]);
+    <span class='ident'>v</span>[<span class='number'>0</span>] <span class='op'>=</span> <span class='string'>&quot;Silver&quot;</span>;
+    <span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>v</span> <span class='op'>==</span> [<span class='string'>&quot;Silver&quot;</span>]);
+}
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>, <span class='prelude-val'>Ok</span>(<span class='string'>&quot;Silver&quot;</span>));
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='number'>45</span>);
+<span class='macro'>assert</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>as_mut_slice</span>().<span class='ident'>is_empty</span>());</pre>
+</div><h4 id='method.map' class='method'><code>fn <a href='#method.map' class='fnname'>map</a>&lt;U, F: <a class='trait' href='../../core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(T) -&gt; U&gt;(self, op: F) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;U, E&gt;</code></h4>
+<div class='docblock'><p>Maps a <code>Result&lt;T, E&gt;</code> to <code>Result&lt;U, E&gt;</code> by applying a function to an
+contained <code>Ok</code> value, leaving an <code>Err</code> value untouched.</p>
+
+<p>This function can be used to compose the results of two functions.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>Print the numbers on each line of a string multiplied by two.</p>
+<span class='rusttest'>fn main() {
+    let line = &quot;1\n2\n3\n4\n&quot;;
+    
+    for num in line.lines() {
+        match num.parse::&lt;i32&gt;().map(|i| i * 2) {
+            Ok(n) =&gt; println!(&quot;{}&quot;, n),
+            Err(..) =&gt; {}
+        }
+    }
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>line</span> <span class='op'>=</span> <span class='string'>&quot;1\n2\n3\n4\n&quot;</span>;
+
+<span class='kw'>for</span> <span class='ident'>num</span> <span class='kw'>in</span> <span class='ident'>line</span>.<span class='ident'>lines</span>() {
+    <span class='kw'>match</span> <span class='ident'>num</span>.<span class='ident'>parse</span>::<span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;</span>().<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>i</span><span class='op'>|</span> <span class='ident'>i</span> <span class='op'>*</span> <span class='number'>2</span>) {
+        <span class='prelude-val'>Ok</span>(<span class='ident'>n</span>) <span class='op'>=&gt;</span> <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='ident'>n</span>),
+        <span class='prelude-val'>Err</span>(..) <span class='op'>=&gt;</span> {}
+    }
+}</pre>
+</div><h4 id='method.map_err' class='method'><code>fn <a href='#method.map_err' class='fnname'>map_err</a>&lt;F, O: <a class='trait' href='../../core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(E) -&gt; F&gt;(self, op: O) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, F&gt;</code></h4>
+<div class='docblock'><p>Maps a <code>Result&lt;T, E&gt;</code> to <code>Result&lt;T, F&gt;</code> by applying a function to an
+contained <code>Err</code> value, leaving an <code>Ok</code> value untouched.</p>
+
+<p>This function can be used to pass through a successful result while handling
+an error.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    fn stringify(x: u32) -&gt; String { format!(&quot;error code: {}&quot;, x) }
+    
+    let x: Result&lt;u32, u32&gt; = Ok(2);
+    assert_eq!(x.map_err(stringify), Ok(2));
+    
+    let x: Result&lt;u32, u32&gt; = Err(13);
+    assert_eq!(x.map_err(stringify), Err(&quot;error code: 13&quot;.to_string()));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>stringify</span>(<span class='ident'>x</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='ident'>String</span> { <span class='macro'>format</span><span class='macro'>!</span>(<span class='string'>&quot;error code: {}&quot;</span>, <span class='ident'>x</span>) }
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>map_err</span>(<span class='ident'>stringify</span>), <span class='prelude-val'>Ok</span>(<span class='number'>2</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='number'>13</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>map_err</span>(<span class='ident'>stringify</span>), <span class='prelude-val'>Err</span>(<span class='string'>&quot;error code: 13&quot;</span>.<span class='ident'>to_string</span>()));</pre>
+</div><h4 id='method.iter' class='method'><code>fn <a href='#method.iter' class='fnname'>iter</a>(&amp;self) -&gt; <a class='struct' href='../../core/result/struct.Iter.html' title='core::result::Iter'>Iter</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Returns an iterator over the possibly contained value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(7);
+    assert_eq!(x.iter().next(), Some(&amp;7));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;nothing!&quot;);
+    assert_eq!(x.iter().next(), None);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>7</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>iter</span>().<span class='ident'>next</span>(), <span class='prelude-val'>Some</span>(<span class='kw-2'>&amp;</span><span class='number'>7</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;nothing!&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>iter</span>().<span class='ident'>next</span>(), <span class='prelude-val'>None</span>);</pre>
+</div><h4 id='method.iter_mut' class='method'><code>fn <a href='#method.iter_mut' class='fnname'>iter_mut</a>(&amp;mut self) -&gt; <a class='struct' href='../../core/result/struct.IterMut.html' title='core::result::IterMut'>IterMut</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Returns a mutable iterator over the possibly contained value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let mut x: Result&lt;u32, &amp;str&gt; = Ok(7);
+    match x.iter_mut().next() {
+        Some(v) =&gt; *v = 40,
+        None =&gt; {},
+    }
+    assert_eq!(x, Ok(40));
+    
+    let mut x: Result&lt;u32, &amp;str&gt; = Err(&quot;nothing!&quot;);
+    assert_eq!(x.iter_mut().next(), None);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>7</span>);
+<span class='kw'>match</span> <span class='ident'>x</span>.<span class='ident'>iter_mut</span>().<span class='ident'>next</span>() {
+    <span class='prelude-val'>Some</span>(<span class='ident'>v</span>) <span class='op'>=&gt;</span> <span class='op'>*</span><span class='ident'>v</span> <span class='op'>=</span> <span class='number'>40</span>,
+    <span class='prelude-val'>None</span> <span class='op'>=&gt;</span> {},
+}
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>, <span class='prelude-val'>Ok</span>(<span class='number'>40</span>));
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;nothing!&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>iter_mut</span>().<span class='ident'>next</span>(), <span class='prelude-val'>None</span>);</pre>
+</div><h4 id='method.and' class='method'><code>fn <a href='#method.and' class='fnname'>and</a>&lt;U&gt;(self, res: <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;U, E&gt;) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;U, E&gt;</code></h4>
+<div class='docblock'><p>Returns <code>res</code> if the result is <code>Ok</code>, otherwise returns the <code>Err</code> value of <code>self</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    let y: Result&lt;&amp;str, &amp;str&gt; = Err(&quot;late error&quot;);
+    assert_eq!(x.and(y), Err(&quot;late error&quot;));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;early error&quot;);
+    let y: Result&lt;&amp;str, &amp;str&gt; = Ok(&quot;foo&quot;);
+    assert_eq!(x.and(y), Err(&quot;early error&quot;));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;not a 2&quot;);
+    let y: Result&lt;&amp;str, &amp;str&gt; = Err(&quot;late error&quot;);
+    assert_eq!(x.and(y), Err(&quot;not a 2&quot;));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    let y: Result&lt;&amp;str, &amp;str&gt; = Ok(&quot;different result type&quot;);
+    assert_eq!(x.and(y), Ok(&quot;different result type&quot;));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;late error&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>and</span>(<span class='ident'>y</span>), <span class='prelude-val'>Err</span>(<span class='string'>&quot;late error&quot;</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;early error&quot;</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='string'>&quot;foo&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>and</span>(<span class='ident'>y</span>), <span class='prelude-val'>Err</span>(<span class='string'>&quot;early error&quot;</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;not a 2&quot;</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;late error&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>and</span>(<span class='ident'>y</span>), <span class='prelude-val'>Err</span>(<span class='string'>&quot;not a 2&quot;</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>str</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='string'>&quot;different result type&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>and</span>(<span class='ident'>y</span>), <span class='prelude-val'>Ok</span>(<span class='string'>&quot;different result type&quot;</span>));</pre>
+</div><h4 id='method.and_then' class='method'><code>fn <a href='#method.and_then' class='fnname'>and_then</a>&lt;U, F: <a class='trait' href='../../core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(T) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;U, E&gt;&gt;(self, op: F) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;U, E&gt;</code></h4>
+<div class='docblock'><p>Calls <code>op</code> if the result is <code>Ok</code>, otherwise returns the <code>Err</code> value of <code>self</code>.</p>
+
+<p>This function can be used for control flow based on result values.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    fn sq(x: u32) -&gt; Result&lt;u32, u32&gt; { Ok(x * x) }
+    fn err(x: u32) -&gt; Result&lt;u32, u32&gt; { Err(x) }
+    
+    assert_eq!(Ok(2).and_then(sq).and_then(sq), Ok(16));
+    assert_eq!(Ok(2).and_then(sq).and_then(err), Err(4));
+    assert_eq!(Ok(2).and_then(err).and_then(sq), Err(2));
+    assert_eq!(Err(3).and_then(sq).and_then(sq), Err(3));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>sq</span>(<span class='ident'>x</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> { <span class='prelude-val'>Ok</span>(<span class='ident'>x</span> <span class='op'>*</span> <span class='ident'>x</span>) }
+<span class='kw'>fn</span> <span class='ident'>err</span>(<span class='ident'>x</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> { <span class='prelude-val'>Err</span>(<span class='ident'>x</span>) }
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Ok</span>(<span class='number'>2</span>).<span class='ident'>and_then</span>(<span class='ident'>sq</span>).<span class='ident'>and_then</span>(<span class='ident'>sq</span>), <span class='prelude-val'>Ok</span>(<span class='number'>16</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Ok</span>(<span class='number'>2</span>).<span class='ident'>and_then</span>(<span class='ident'>sq</span>).<span class='ident'>and_then</span>(<span class='ident'>err</span>), <span class='prelude-val'>Err</span>(<span class='number'>4</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Ok</span>(<span class='number'>2</span>).<span class='ident'>and_then</span>(<span class='ident'>err</span>).<span class='ident'>and_then</span>(<span class='ident'>sq</span>), <span class='prelude-val'>Err</span>(<span class='number'>2</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Err</span>(<span class='number'>3</span>).<span class='ident'>and_then</span>(<span class='ident'>sq</span>).<span class='ident'>and_then</span>(<span class='ident'>sq</span>), <span class='prelude-val'>Err</span>(<span class='number'>3</span>));</pre>
+</div><h4 id='method.or' class='method'><code>fn <a href='#method.or' class='fnname'>or</a>&lt;F&gt;(self, res: <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, F&gt;) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, F&gt;</code></h4>
+<div class='docblock'><p>Returns <code>res</code> if the result is <code>Err</code>, otherwise returns the <code>Ok</code> value of <code>self</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    let y: Result&lt;u32, &amp;str&gt; = Err(&quot;late error&quot;);
+    assert_eq!(x.or(y), Ok(2));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;early error&quot;);
+    let y: Result&lt;u32, &amp;str&gt; = Ok(2);
+    assert_eq!(x.or(y), Ok(2));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;not a 2&quot;);
+    let y: Result&lt;u32, &amp;str&gt; = Err(&quot;late error&quot;);
+    assert_eq!(x.or(y), Err(&quot;late error&quot;));
+    
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    let y: Result&lt;u32, &amp;str&gt; = Ok(100);
+    assert_eq!(x.or(y), Ok(2));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;late error&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>or</span>(<span class='ident'>y</span>), <span class='prelude-val'>Ok</span>(<span class='number'>2</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;early error&quot;</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>or</span>(<span class='ident'>y</span>), <span class='prelude-val'>Ok</span>(<span class='number'>2</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;not a 2&quot;</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;late error&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>or</span>(<span class='ident'>y</span>), <span class='prelude-val'>Err</span>(<span class='string'>&quot;late error&quot;</span>));
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='kw'>let</span> <span class='ident'>y</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>100</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>or</span>(<span class='ident'>y</span>), <span class='prelude-val'>Ok</span>(<span class='number'>2</span>));</pre>
+</div><h4 id='method.or_else' class='method'><code>fn <a href='#method.or_else' class='fnname'>or_else</a>&lt;F, O: <a class='trait' href='../../core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(E) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, F&gt;&gt;(self, op: O) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, F&gt;</code></h4>
+<div class='docblock'><p>Calls <code>op</code> if the result is <code>Err</code>, otherwise returns the <code>Ok</code> value of <code>self</code>.</p>
+
+<p>This function can be used for control flow based on result values.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    fn sq(x: u32) -&gt; Result&lt;u32, u32&gt; { Ok(x * x) }
+    fn err(x: u32) -&gt; Result&lt;u32, u32&gt; { Err(x) }
+    
+    assert_eq!(Ok(2).or_else(sq).or_else(sq), Ok(2));
+    assert_eq!(Ok(2).or_else(err).or_else(sq), Ok(2));
+    assert_eq!(Err(3).or_else(sq).or_else(err), Ok(9));
+    assert_eq!(Err(3).or_else(err).or_else(err), Err(3));
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>sq</span>(<span class='ident'>x</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> { <span class='prelude-val'>Ok</span>(<span class='ident'>x</span> <span class='op'>*</span> <span class='ident'>x</span>) }
+<span class='kw'>fn</span> <span class='ident'>err</span>(<span class='ident'>x</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='ident'>u32</span><span class='op'>&gt;</span> { <span class='prelude-val'>Err</span>(<span class='ident'>x</span>) }
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Ok</span>(<span class='number'>2</span>).<span class='ident'>or_else</span>(<span class='ident'>sq</span>).<span class='ident'>or_else</span>(<span class='ident'>sq</span>), <span class='prelude-val'>Ok</span>(<span class='number'>2</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Ok</span>(<span class='number'>2</span>).<span class='ident'>or_else</span>(<span class='ident'>err</span>).<span class='ident'>or_else</span>(<span class='ident'>sq</span>), <span class='prelude-val'>Ok</span>(<span class='number'>2</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Err</span>(<span class='number'>3</span>).<span class='ident'>or_else</span>(<span class='ident'>sq</span>).<span class='ident'>or_else</span>(<span class='ident'>err</span>), <span class='prelude-val'>Ok</span>(<span class='number'>9</span>));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Err</span>(<span class='number'>3</span>).<span class='ident'>or_else</span>(<span class='ident'>err</span>).<span class='ident'>or_else</span>(<span class='ident'>err</span>), <span class='prelude-val'>Err</span>(<span class='number'>3</span>));</pre>
+</div><h4 id='method.unwrap_or' class='method'><code>fn <a href='#method.unwrap_or' class='fnname'>unwrap_or</a>(self, optb: T) -&gt; T</code></h4>
+<div class='docblock'><p>Unwraps a result, yielding the content of an <code>Ok</code>.
+Else it returns <code>optb</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let optb = 2;
+    let x: Result&lt;u32, &amp;str&gt; = Ok(9);
+    assert_eq!(x.unwrap_or(optb), 9);
+    
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;error&quot;);
+    assert_eq!(x.unwrap_or(optb), optb);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>optb</span> <span class='op'>=</span> <span class='number'>2</span>;
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>9</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>unwrap_or</span>(<span class='ident'>optb</span>), <span class='number'>9</span>);
+
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;error&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>unwrap_or</span>(<span class='ident'>optb</span>), <span class='ident'>optb</span>);</pre>
+</div><h4 id='method.unwrap_or_else' class='method'><code>fn <a href='#method.unwrap_or_else' class='fnname'>unwrap_or_else</a>&lt;F: <a class='trait' href='../../core/ops/trait.FnOnce.html' title='core::ops::FnOnce'>FnOnce</a>(E) -&gt; T&gt;(self, op: F) -&gt; T</code></h4>
+<div class='docblock'><p>Unwraps a result, yielding the content of an <code>Ok</code>.
+If the value is an <code>Err</code> then it calls <code>op</code> with its value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    fn count(x: &amp;str) -&gt; usize { x.len() }
+    
+    assert_eq!(Ok(2).unwrap_or_else(count), 2);
+    assert_eq!(Err(&quot;foo&quot;).unwrap_or_else(count), 3);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>count</span>(<span class='ident'>x</span>: <span class='kw-2'>&amp;</span><span class='ident'>str</span>) <span class='op'>-&gt;</span> <span class='ident'>usize</span> { <span class='ident'>x</span>.<span class='ident'>len</span>() }
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Ok</span>(<span class='number'>2</span>).<span class='ident'>unwrap_or_else</span>(<span class='ident'>count</span>), <span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='prelude-val'>Err</span>(<span class='string'>&quot;foo&quot;</span>).<span class='ident'>unwrap_or_else</span>(<span class='ident'>count</span>), <span class='number'>3</span>);</pre>
+</div></div><h3 class='impl'><code>impl&lt;T, E: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.unwrap' class='method'><code>fn <a href='#method.unwrap' class='fnname'>unwrap</a>(self) -&gt; T</code></h4>
+<div class='docblock'><p>Unwraps a result, yielding the content of an <code>Ok</code>.</p>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>Panics if the value is an <code>Err</code>, with a panic message provided by the
+<code>Err</code>&#39;s value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    assert_eq!(x.unwrap(), 2);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>unwrap</span>(), <span class='number'>2</span>);</pre>
+<span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;emergency failure&quot;);
+    x.unwrap(); // panics with `emergency failure`
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;emergency failure&quot;</span>);
+<span class='ident'>x</span>.<span class='ident'>unwrap</span>(); <span class='comment'>// panics with `emergency failure`</span></pre>
+</div><h4 id='method.expect' class='method'><code>fn <a href='#method.expect' class='fnname'>expect</a>(self, msg: &amp;str) -&gt; T</code></h4>
+<div class='docblock'><p>Unwraps a result, yielding the content of an <code>Ok</code>.</p>
+
+<p>Panics if the value is an <code>Err</code>, with a panic message including the
+passed message, and the content of the <code>Err</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;emergency failure&quot;);
+    x.expect(&quot;Testing expect&quot;); // panics with `Testing expect: emergency failure`
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;emergency failure&quot;</span>);
+<span class='ident'>x</span>.<span class='ident'>expect</span>(<span class='string'>&quot;Testing expect&quot;</span>); <span class='comment'>// panics with `Testing expect: emergency failure`</span></pre>
+</div></div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, E&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.unwrap_err' class='method'><code>fn <a href='#method.unwrap_err' class='fnname'>unwrap_err</a>(self) -&gt; E</code></h4>
+<div class='docblock'><p>Unwraps a result, yielding the content of an <code>Err</code>.</p>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>Panics if the value is an <code>Ok</code>, with a custom panic message provided
+by the <code>Ok</code>&#39;s value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Ok(2);
+    x.unwrap_err(); // panics with `2`
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>2</span>);
+<span class='ident'>x</span>.<span class='ident'>unwrap_err</span>(); <span class='comment'>// panics with `2`</span></pre>
+<span class='rusttest'>fn main() {
+    let x: Result&lt;u32, &amp;str&gt; = Err(&quot;emergency failure&quot;);
+    assert_eq!(x.unwrap_err(), &quot;emergency failure&quot;);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>u32</span>, <span class='kw-2'>&amp;</span><span class='ident'>str</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Err</span>(<span class='string'>&quot;emergency failure&quot;</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>x</span>.<span class='ident'>unwrap_err</span>(), <span class='string'>&quot;emergency failure&quot;</span>);</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;T, E&gt; <a class='trait' href='../../core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Item' class='type'><code>type Item = T</code></h4>
+<h4 id='assoc_type.IntoIter' class='type'><code>type IntoIter = <a class='struct' href='../../core/result/struct.IntoIter.html' title='core::result::IntoIter'>IntoIter</a>&lt;T&gt;</code></h4>
+<h4 id='method.into_iter' class='method'><code>fn <a href='../../core/iter/trait.IntoIterator.html#method.into_iter' class='fnname'>into_iter</a>(self) -&gt; <a class='struct' href='../../core/result/struct.IntoIter.html' title='core::result::IntoIter'>IntoIter</a>&lt;T&gt;</code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, T, E&gt; <a class='trait' href='../../core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a> for &amp;'a <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Item' class='type'><code>type Item = &amp;'a T</code></h4>
+<h4 id='assoc_type.IntoIter' class='type'><code>type IntoIter = <a class='struct' href='../../core/result/struct.Iter.html' title='core::result::Iter'>Iter</a>&lt;'a, T&gt;</code></h4>
+<h4 id='method.into_iter' class='method'><code>fn <a href='../../core/iter/trait.IntoIterator.html#method.into_iter' class='fnname'>into_iter</a>(self) -&gt; <a class='struct' href='../../core/result/struct.Iter.html' title='core::result::Iter'>Iter</a>&lt;'a, T&gt;</code></h4>
+</div><h3 class='impl'><code>impl&lt;'a, T, E&gt; <a class='trait' href='../../core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a> for &amp;'a mut <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Item' class='type'><code>type Item = &amp;'a mut T</code></h4>
+<h4 id='assoc_type.IntoIter' class='type'><code>type IntoIter = <a class='struct' href='../../core/result/struct.IterMut.html' title='core::result::IterMut'>IterMut</a>&lt;'a, T&gt;</code></h4>
+<h4 id='method.into_iter' class='method'><code>fn <a href='../../core/iter/trait.IntoIterator.html#method.into_iter' class='fnname'>into_iter</a>(self) -&gt; <a class='struct' href='../../core/result/struct.IterMut.html' title='core::result::IterMut'>IterMut</a>&lt;'a, T&gt;</code></h4>
+</div><h3 class='impl'><code>impl&lt;A, E, V: <a class='trait' href='../../core/iter/trait.FromIterator.html' title='core::iter::FromIterator'>FromIterator</a>&lt;A&gt;&gt; <a class='trait' href='../../core/iter/trait.FromIterator.html' title='core::iter::FromIterator'>FromIterator</a>&lt;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;A, E&gt;&gt; for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;V, E&gt;</code></h3><div class='impl-items'><h4 id='method.from_iter' class='method'><code>fn <a href='../../core/iter/trait.FromIterator.html#method.from_iter' class='fnname'>from_iter</a>&lt;I: <a class='trait' href='../../core/iter/trait.IntoIterator.html' title='core::iter::IntoIterator'>IntoIterator</a>&lt;Item=<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;A, E&gt;&gt;&gt;(iter: I) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;V, E&gt;</code></h4>
+</div><h3 id='derived_implementations'>Derived Implementations </h3><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a>, E: <a class='trait' href='../../core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a>&gt; <a class='trait' href='../../core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.hash' class='method'><code>fn <a href='../../core/hash/trait.Hash.html#method.hash' class='fnname'>hash</a>&lt;__H: <a class='trait' href='../../core/hash/trait.Hasher.html' title='core::hash::Hasher'>Hasher</a>&gt;(&amp;self, __arg_0: &amp;mut __H)</code></h4>
+<h4 id='method.hash_slice' class='method'><code>fn <a href='../../core/hash/trait.Hash.html#method.hash_slice' class='fnname'>hash_slice</a>&lt;H: <a class='trait' href='../../core/hash/trait.Hasher.html' title='core::hash::Hasher'>Hasher</a>&gt;(data: &amp;[Self], state: &amp;mut H) <span class='where'>where Self: <a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a></span></code></h4>
+</div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, E: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='../../core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, __arg_0: &amp;mut <a class='struct' href='../../core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='../../core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Ord.html' title='core::cmp::Ord'>Ord</a>, E: <a class='trait' href='../../core/cmp/trait.Ord.html' title='core::cmp::Ord'>Ord</a>&gt; <a class='trait' href='../../core/cmp/trait.Ord.html' title='core::cmp::Ord'>Ord</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.cmp' class='method'><code>fn <a href='../../core/cmp/trait.Ord.html#method.cmp' class='fnname'>cmp</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; <a class='enum' href='../../core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>, E: <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a>&gt; <a class='trait' href='../../core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'></div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a>, E: <a class='trait' href='../../core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a>&gt; <a class='trait' href='../../core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.partial_cmp' class='method'><code>fn <a href='../../core/cmp/trait.PartialOrd.html#method.partial_cmp' class='fnname'>partial_cmp</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; <a class='enum' href='../../core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='enum' href='../../core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a>&gt;</code></h4>
+<h4 id='method.lt' class='method'><code>fn <a href='../../core/cmp/trait.PartialOrd.html#method.lt' class='fnname'>lt</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; bool</code></h4>
+<h4 id='method.le' class='method'><code>fn <a href='../../core/cmp/trait.PartialOrd.html#method.le' class='fnname'>le</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; bool</code></h4>
+<h4 id='method.gt' class='method'><code>fn <a href='../../core/cmp/trait.PartialOrd.html#method.gt' class='fnname'>gt</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; bool</code></h4>
+<h4 id='method.ge' class='method'><code>fn <a href='../../core/cmp/trait.PartialOrd.html#method.ge' class='fnname'>ge</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; bool</code></h4>
+</div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a>, E: <a class='trait' href='../../core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a>&gt; <a class='trait' href='../../core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='../../core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; bool</code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='../../core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, __arg_0: &amp;<a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;) -&gt; bool</code></h4>
+</div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a>, E: <a class='trait' href='../../core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a>&gt; <a class='trait' href='../../core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'></div><h3 class='impl'><code>impl&lt;T: <a class='trait' href='../../core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>, E: <a class='trait' href='../../core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a>&gt; <a class='trait' href='../../core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='../../core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='../../core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

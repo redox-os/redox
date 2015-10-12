@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Not` trait in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Not">
+
+    <title>core::ops::Not - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>ops</a></p><script>window.sidebarCurrent = {name: 'Not', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>core</a>::<wbr><a href='index.html'>ops</a>::<wbr><a class='trait' href=''>Not</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-13846' class='srclink' href='../../src/core/ops.rs.html#599-607' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Not {
+    type Output;
+    fn <a href='#tymethod.not' class='fnname'>not</a>(self) -&gt; Self::<a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Output</a>;
+}</pre><div class='docblock'><p>The <code>Not</code> trait is used to specify the functionality of unary <code>!</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>A trivial implementation of <code>Not</code>. When <code>!Foo</code> happens, it ends up calling
+<code>not</code>, and therefore, <code>main</code> prints <code>Not-ing!</code>.</p>
+<span class='rusttest'>use std::ops::Not;
+
+#[derive(Copy, Clone)]
+struct Foo;
+
+impl Not for Foo {
+    type Output = Foo;
+
+    fn not(self) -&gt; Foo {
+        println!(&quot;Not-ing!&quot;);
+        self
+    }
+}
+
+fn main() {
+    !Foo;
+}
+</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::<span class='ident'>Not</span>;
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Foo</span>;
+
+<span class='kw'>impl</span> <span class='ident'>Not</span> <span class='kw'>for</span> <span class='ident'>Foo</span> {
+    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>Foo</span>;
+
+    <span class='kw'>fn</span> <span class='ident'>not</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='ident'>Foo</span> {
+        <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Not-ing!&quot;</span>);
+        <span class='self'>self</span>
+    }
+}
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='op'>!</span><span class='ident'>Foo</span>;
+}</pre>
+</div>
+            <h2 id='associated-types'>Associated Types</h2>
+            <div class='methods'>
+        <h3 id='associatedtype.Output' class='method stab '><code>type Output</code></h3><div class='docblock'><p>The resulting type after applying the <code>!</code> operator</p>
+</div></div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.not' class='method stab '><code>fn <a href='#tymethod.not' class='fnname'>not</a>(self) -&gt; Self::<a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Output</a></code></h3><div class='docblock'><p>The method for the unary <code>!</code> operator</p>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;usize&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;u8&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;u16&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;u32&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;u64&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;isize&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;i8&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;i16&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;i32&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;i64&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for bool</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a bool</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for usize</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a usize</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for u8</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a u8</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for u16</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a u16</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for u32</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a u32</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for u64</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a u64</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for isize</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a isize</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for i8</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a i8</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for i16</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a i16</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for i32</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a i32</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for i64</code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/ops/trait.Not.html' title='core::ops::Not'>Not</a> for &amp;'a i64</code></li>
+</ul><script type="text/javascript" async
+                              src="../../implementors/core/ops/trait.Not.js">
+                      </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

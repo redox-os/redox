@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `SipHasher` struct in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, SipHasher">
+
+    <title>core::hash::SipHasher - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>hash</a></p><script>window.sidebarCurrent = {name: 'SipHasher', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>core</a>::<wbr><a href='index.html'>hash</a>::<wbr><a class='struct' href=''>SipHasher</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-33004' class='srclink' href='../../src/core/hash/sip.rs.html#32-46' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct SipHasher {
+    // some fields omitted
+}</pre><div class='docblock'><p>An implementation of SipHash 2-4.</p>
+
+<p>See: <a href="http://131002.net/siphash/">http://131002.net/siphash/</a></p>
+
+<p>Consider this as a main &quot;general-purpose&quot; hash for all hashtables: it
+runs at good speed (competitive with spooky and city) and permits
+strong <em>keyed</em> hashing. Key your hashtables from a strong RNG,
+such as <code>rand::Rng</code>.</p>
+
+<p>Although the SipHash algorithm is considered to be cryptographically
+strong, this implementation has not been reviewed for such purposes.
+As such, all cryptographic uses of this implementation are strongly
+discouraged.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>fn <a href='#method.new' class='fnname'>new</a>() -&gt; <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h4>
+<div class='docblock'><p>Creates a new <code>SipHasher</code> with the two initial keys set to 0.</p>
+</div><h4 id='method.new_with_keys' class='method'><code>fn <a href='#method.new_with_keys' class='fnname'>new_with_keys</a>(key0: u64, key1: u64) -&gt; <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h4>
+<div class='docblock'><p>Creates a <code>SipHasher</code> that is keyed off the provided keys.</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../core/hash/trait.Hasher.html' title='core::hash::Hasher'>Hasher</a> for <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h3><div class='impl-items'><h4 id='method.write' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write' class='fnname'>write</a>(&amp;mut self, msg: &amp;[u8])</code></h4>
+<h4 id='method.finish' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.finish' class='fnname'>finish</a>(&amp;self) -&gt; u64</code></h4>
+<h4 id='method.write_u8' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_u8' class='fnname'>write_u8</a>(&amp;mut self, i: u8)</code></h4>
+<h4 id='method.write_u16' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_u16' class='fnname'>write_u16</a>(&amp;mut self, i: u16)</code></h4>
+<h4 id='method.write_u32' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_u32' class='fnname'>write_u32</a>(&amp;mut self, i: u32)</code></h4>
+<h4 id='method.write_u64' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_u64' class='fnname'>write_u64</a>(&amp;mut self, i: u64)</code></h4>
+<h4 id='method.write_usize' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_usize' class='fnname'>write_usize</a>(&amp;mut self, i: usize)</code></h4>
+<h4 id='method.write_i8' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_i8' class='fnname'>write_i8</a>(&amp;mut self, i: i8)</code></h4>
+<h4 id='method.write_i16' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_i16' class='fnname'>write_i16</a>(&amp;mut self, i: i16)</code></h4>
+<h4 id='method.write_i32' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_i32' class='fnname'>write_i32</a>(&amp;mut self, i: i32)</code></h4>
+<h4 id='method.write_i64' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_i64' class='fnname'>write_i64</a>(&amp;mut self, i: i64)</code></h4>
+<h4 id='method.write_isize' class='method'><code>fn <a href='../../core/hash/trait.Hasher.html#method.write_isize' class='fnname'>write_isize</a>(&amp;mut self, i: isize)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../core/clone/trait.Clone.html' title='core::clone::Clone'>Clone</a> for <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h3><div class='impl-items'><h4 id='method.clone' class='method'><code>fn <a href='../../core/clone/trait.Clone.html#method.clone' class='fnname'>clone</a>(&amp;self) -&gt; <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h4>
+<h4 id='method.clone_from' class='method'><code>fn <a href='../../core/clone/trait.Clone.html#method.clone_from' class='fnname'>clone_from</a>(&amp;mut self, source: &amp;Self)</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h3><div class='impl-items'><h4 id='method.default' class='method'><code>fn <a href='../../core/default/trait.Default.html#method.default' class='fnname'>default</a>() -&gt; <a class='struct' href='../../core/hash/struct.SipHasher.html' title='core::hash::SipHasher'>SipHasher</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

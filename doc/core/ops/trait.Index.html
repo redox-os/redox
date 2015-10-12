@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Index` trait in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Index">
+
+    <title>core::ops::Index - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>ops</a></p><script>window.sidebarCurrent = {name: 'Index', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>core</a>::<wbr><a href='index.html'>ops</a>::<wbr><a class='trait' href=''>Index</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-20793' class='srclink' href='../../src/core/ops.rs.html#1489-1497' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Index&lt;Idx: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; {
+    type Output: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>;
+    fn <a href='#tymethod.index' class='fnname'>index</a>(&amp;self, index: Idx) -&gt; &amp;Self::<a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Output</a>;
+}</pre><div class='docblock'><p>The <code>Index</code> trait is used to specify the functionality of indexing operations
+like <code>arr[idx]</code> when used in an immutable context.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>A trivial implementation of <code>Index</code>. When <code>Foo[Bar]</code> happens, it ends up
+calling <code>index</code>, and therefore, <code>main</code> prints <code>Indexing!</code>.</p>
+<span class='rusttest'>use std::ops::Index;
+
+#[derive(Copy, Clone)]
+struct Foo;
+struct Bar;
+
+impl Index&lt;Bar&gt; for Foo {
+    type Output = Foo;
+
+    fn index&lt;&#39;a&gt;(&amp;&#39;a self, _index: Bar) -&gt; &amp;&#39;a Foo {
+        println!(&quot;Indexing!&quot;);
+        self
+    }
+}
+
+fn main() {
+    Foo[Bar];
+}
+</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::<span class='ident'>Index</span>;
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Foo</span>;
+<span class='kw'>struct</span> <span class='ident'>Bar</span>;
+
+<span class='kw'>impl</span> <span class='ident'>Index</span><span class='op'>&lt;</span><span class='ident'>Bar</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Foo</span> {
+    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>Foo</span>;
+
+    <span class='kw'>fn</span> <span class='ident'>index</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='self'>self</span>, <span class='ident'>_index</span>: <span class='ident'>Bar</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='lifetime'>&#39;a</span> <span class='ident'>Foo</span> {
+        <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Indexing!&quot;</span>);
+        <span class='self'>self</span>
+    }
+}
+
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='ident'>Foo</span>[<span class='ident'>Bar</span>];
+}</pre>
+</div>
+            <h2 id='associated-types'>Associated Types</h2>
+            <div class='methods'>
+        <h3 id='associatedtype.Output' class='method stab '><code>type Output: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a></code></h3><div class='docblock'><p>The returned type after indexing</p>
+</div></div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.index' class='method stab '><code>fn <a href='#tymethod.index' class='fnname'>index</a>(&amp;self, index: Idx) -&gt; &amp;Self::<a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Output</a></code></h3><div class='docblock'><p>The method for the indexing (<code>Foo[Bar]</code>) operation</p>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl&lt;T&gt; <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;usize&gt; for [T]</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.Range.html' title='core::ops::Range'>Range</a>&lt;usize&gt;&gt; for [T]</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.RangeTo.html' title='core::ops::RangeTo'>RangeTo</a>&lt;usize&gt;&gt; for [T]</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.RangeFrom.html' title='core::ops::RangeFrom'>RangeFrom</a>&lt;usize&gt;&gt; for [T]</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.RangeFull.html' title='core::ops::RangeFull'>RangeFull</a>&gt; for [T]</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.Range.html' title='core::ops::Range'>Range</a>&lt;usize&gt;&gt; for str</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.RangeTo.html' title='core::ops::RangeTo'>RangeTo</a>&lt;usize&gt;&gt; for str</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.RangeFrom.html' title='core::ops::RangeFrom'>RangeFrom</a>&lt;usize&gt;&gt; for str</code></li>
+<li><code>impl <a class='trait' href='../../core/ops/trait.Index.html' title='core::ops::Index'>Index</a>&lt;<a class='struct' href='../../core/ops/struct.RangeFull.html' title='core::ops::RangeFull'>RangeFull</a>&gt; for str</code></li>
+</ul><script type="text/javascript" async
+                              src="../../implementors/core/ops/trait.Index.js">
+                      </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

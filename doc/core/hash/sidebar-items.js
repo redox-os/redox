@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SipHasher","An implementation of SipHash 2-4."]],"trait":[["Hash","A hashable type."],["Hasher","A trait which represents the ability to hash an arbitrary stream of bytes."]]});

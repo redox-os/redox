@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `AtomicUsize` struct in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, AtomicUsize">
+
+    <title>core::sync::atomic::AtomicUsize - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../../index.html'>core</a>::<wbr><a href='../index.html'>sync</a>::<wbr><a href='index.html'>atomic</a></p><script>window.sidebarCurrent = {name: 'AtomicUsize', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../../index.html'>core</a>::<wbr><a href='../index.html'>sync</a>::<wbr><a href='index.html'>atomic</a>::<wbr><a class='struct' href=''>AtomicUsize</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-26874' class='srclink' href='../../../src/core/sync/atomic.rs.html#115-117' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct AtomicUsize {
+    // some fields omitted
+}</pre><div class='docblock'><p>An unsigned integer type which can be safely shared between threads.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl <a class='struct' href='../../../core/sync/atomic/struct.AtomicUsize.html' title='core::sync::atomic::AtomicUsize'>AtomicUsize</a></code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>const fn <a href='#method.new' class='fnname'>new</a>(v: usize) -&gt; <a class='struct' href='../../../core/sync/atomic/struct.AtomicUsize.html' title='core::sync::atomic::AtomicUsize'>AtomicUsize</a></code></h4>
+<div class='docblock'><p>Creates a new <code>AtomicUsize</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::AtomicUsize;
+    
+    let atomic_forty_two = AtomicUsize::new(42);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::<span class='ident'>AtomicUsize</span>;
+
+<span class='kw'>let</span> <span class='ident'>atomic_forty_two</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>42</span>);</pre>
+</div><h4 id='method.load' class='method'><code>fn <a href='#method.load' class='fnname'>load</a>(&amp;self, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Loads a value from the usize.</p>
+
+<p><code>load</code> takes an <code>Ordering</code> argument which describes the memory ordering of this operation.</p>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>Panics if <code>order</code> is <code>Release</code> or <code>AcqRel</code>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let some_usize = AtomicUsize::new(5);
+    
+    assert_eq!(some_usize.load(Ordering::Relaxed), 5);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>some_usize</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>5</span>);
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>5</span>);</pre>
+</div><h4 id='method.store' class='method'><code>fn <a href='#method.store' class='fnname'>store</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>)</code></h4>
+<div class='docblock'><p>Stores a value into the usize.</p>
+
+<p><code>store</code> takes an <code>Ordering</code> argument which describes the memory ordering of this operation.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let some_usize = AtomicUsize::new(5);
+    
+    some_usize.store(10, Ordering::Relaxed);
+    assert_eq!(some_usize.load(Ordering::Relaxed), 10);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>some_usize</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>5</span>);
+
+<span class='ident'>some_usize</span>.<span class='ident'>store</span>(<span class='number'>10</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>10</span>);</pre>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>Panics if <code>order</code> is <code>Acquire</code> or <code>AcqRel</code>.</p>
+</div><h4 id='method.swap' class='method'><code>fn <a href='#method.swap' class='fnname'>swap</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Stores a value into the usize, returning the old value.</p>
+
+<p><code>swap</code> takes an <code>Ordering</code> argument which describes the memory ordering of this operation.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let some_usize= AtomicUsize::new(5);
+    
+    assert_eq!(some_usize.swap(10, Ordering::Relaxed), 5);
+    assert_eq!(some_usize.load(Ordering::Relaxed), 10);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>some_usize</span><span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>5</span>);
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>swap</span>(<span class='number'>10</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>5</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>10</span>);</pre>
+</div><h4 id='method.compare_and_swap' class='method'><code>fn <a href='#method.compare_and_swap' class='fnname'>compare_and_swap</a>(&amp;self, current: usize, new: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Stores a value into the <code>usize</code> if the current value is the same as the <code>current</code> value.</p>
+
+<p>The return value is always the previous value. If it is equal to <code>current</code>, then the value
+was updated.</p>
+
+<p><code>compare_and_swap</code> also takes an <code>Ordering</code> argument which describes the memory ordering of
+this operation.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let some_usize = AtomicUsize::new(5);
+    
+    assert_eq!(some_usize.compare_and_swap(5, 10, Ordering::Relaxed), 5);
+    assert_eq!(some_usize.load(Ordering::Relaxed), 10);
+    
+    assert_eq!(some_usize.compare_and_swap(6, 12, Ordering::Relaxed), 10);
+    assert_eq!(some_usize.load(Ordering::Relaxed), 10);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>some_usize</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>5</span>);
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>compare_and_swap</span>(<span class='number'>5</span>, <span class='number'>10</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>5</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>10</span>);
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>compare_and_swap</span>(<span class='number'>6</span>, <span class='number'>12</span>, <span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>10</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>some_usize</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>Relaxed</span>), <span class='number'>10</span>);</pre>
+</div><h4 id='method.fetch_add' class='method'><code>fn <a href='#method.fetch_add' class='fnname'>fetch_add</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Add to the current usize, returning the previous value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let foo = AtomicUsize::new(0);
+    assert_eq!(foo.fetch_add(10, Ordering::SeqCst), 0);
+    assert_eq!(foo.load(Ordering::SeqCst), 10);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>0</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>fetch_add</span>(<span class='number'>10</span>, <span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>10</span>);</pre>
+</div><h4 id='method.fetch_sub' class='method'><code>fn <a href='#method.fetch_sub' class='fnname'>fetch_sub</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Subtract from the current usize, returning the previous value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let foo = AtomicUsize::new(10);
+    assert_eq!(foo.fetch_sub(10, Ordering::SeqCst), 10);
+    assert_eq!(foo.load(Ordering::SeqCst), 0);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>10</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>fetch_sub</span>(<span class='number'>10</span>, <span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>10</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0</span>);</pre>
+</div><h4 id='method.fetch_and' class='method'><code>fn <a href='#method.fetch_and' class='fnname'>fetch_and</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Bitwise and with the current usize, returning the previous value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let foo = AtomicUsize::new(0b101101);
+    assert_eq!(foo.fetch_and(0b110011, Ordering::SeqCst), 0b101101);
+    assert_eq!(foo.load(Ordering::SeqCst), 0b100001);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>0b101101</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>fetch_and</span>(<span class='number'>0b110011</span>, <span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0b101101</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0b100001</span>);</pre>
+</div><h4 id='method.fetch_or' class='method'><code>fn <a href='#method.fetch_or' class='fnname'>fetch_or</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Bitwise or with the current usize, returning the previous value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let foo = AtomicUsize::new(0b101101);
+    assert_eq!(foo.fetch_or(0b110011, Ordering::SeqCst), 0b101101);
+    assert_eq!(foo.load(Ordering::SeqCst), 0b111111);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>0b101101</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>fetch_or</span>(<span class='number'>0b110011</span>, <span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0b101101</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0b111111</span>);</pre>
+</div><h4 id='method.fetch_xor' class='method'><code>fn <a href='#method.fetch_xor' class='fnname'>fetch_xor</a>(&amp;self, val: usize, order: <a class='enum' href='../../../core/sync/atomic/enum.Ordering.html' title='core::sync::atomic::Ordering'>Ordering</a>) -&gt; usize</code></h4>
+<div class='docblock'><p>Bitwise xor with the current usize, returning the previous value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::sync::atomic::{AtomicUsize, Ordering};
+    
+    let foo = AtomicUsize::new(0b101101);
+    assert_eq!(foo.fetch_xor(0b110011, Ordering::SeqCst), 0b101101);
+    assert_eq!(foo.load(Ordering::SeqCst), 0b011110);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>sync</span>::<span class='ident'>atomic</span>::{<span class='ident'>AtomicUsize</span>, <span class='ident'>Ordering</span>};
+
+<span class='kw'>let</span> <span class='ident'>foo</span> <span class='op'>=</span> <span class='ident'>AtomicUsize</span>::<span class='ident'>new</span>(<span class='number'>0b101101</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>fetch_xor</span>(<span class='number'>0b110011</span>, <span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0b101101</span>);
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>foo</span>.<span class='ident'>load</span>(<span class='ident'>Ordering</span>::<span class='ident'>SeqCst</span>), <span class='number'>0b011110</span>);</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../../core/default/trait.Default.html' title='core::default::Default'>Default</a> for <a class='struct' href='../../../core/sync/atomic/struct.AtomicUsize.html' title='core::sync::atomic::AtomicUsize'>AtomicUsize</a></code></h3><div class='impl-items'><h4 id='method.default' class='method'><code>fn <a href='../../../core/default/trait.Default.html#method.default' class='fnname'>default</a>() -&gt; Self</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../../core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> for <a class='struct' href='../../../core/sync/atomic/struct.AtomicUsize.html' title='core::sync::atomic::AtomicUsize'>AtomicUsize</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='../../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../../core/sync/atomic/struct.AtomicUsize.html' title='core::sync::atomic::AtomicUsize'>AtomicUsize</a></code></h3><div class='impl-items'><h4 id='method.fmt' class='method'><code>fn <a href='../../../core/fmt/trait.Debug.html#method.fmt' class='fnname'>fmt</a>(&amp;self, f: &amp;mut <a class='struct' href='../../../core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='../../../core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../../jquery.js"></script>
+    <script src="../../../main.js"></script>
+    <script src="../../../playpen.js"></script>
+    <script async src="../../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `unreachable!` macro in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, unreachable!">
+
+    <title>core::unreachable! - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='index.html'>core</a></p><script>window.sidebarCurrent = {name: 'unreachable!', ty: 'macro', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content macro">
+<h1 class='fqn'><span class='in-band'><a href='index.html'>core</a>::<wbr><a class='macro' href=''>unreachable!</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-36760' class='srclink' href='../src/core/macros.rs.html#244-254' title='goto source code'>[src]</a></span></h1>
+<pre class='rust macro'>
+<span class='macro'>macro_rules</span><span class='macro'>!</span> <span class='ident'>unreachable</span> {
+    () <span class='op'>=&gt;</span> ({
+        <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;internal error: entered unreachable code&quot;</span>)
+    });
+    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>msg</span>:<span class='ident'>expr</span>) <span class='op'>=&gt;</span> ({
+        <span class='macro'>unreachable</span><span class='macro'>!</span>(<span class='string'>&quot;{}&quot;</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>msg</span>)
+    });
+    (<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fmt</span>:<span class='ident'>expr</span>, $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>:<span class='ident'>tt</span>)<span class='op'>*</span>) <span class='op'>=&gt;</span> ({
+        <span class='macro'>panic</span><span class='macro'>!</span>(<span class='macro'>concat</span><span class='macro'>!</span>(<span class='string'>&quot;internal error: entered unreachable code: &quot;</span>, <span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>fmt</span>), $(<span class='macro-nonterminal'>$</span><span class='macro-nonterminal'>arg</span>)<span class='op'>*</span>)
+    });
+}</pre>
+<div class='docblock'><p>A utility macro for indicating unreachable code.</p>
+
+<p>This is useful any time that the compiler can&#39;t determine that some code is unreachable. For
+example:</p>
+
+<ul>
+<li>Match arms with guard conditions.</li>
+<li>Loops that dynamically terminate.</li>
+<li>Iterators that dynamically terminate.</li>
+</ul>
+
+<h1 id='panics' class='section-header'><a href='#panics'>Panics</a></h1>
+<p>This will always panic.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>Match arms:</p>
+<span class='rusttest'>fn main() {
+    fn foo(x: Option&lt;i32&gt;) {
+        match x {
+            Some(n) if n &gt;= 0 =&gt; println!(&quot;Some(Non-negative)&quot;),
+            Some(n) if n &lt;  0 =&gt; println!(&quot;Some(Negative)&quot;),
+            Some(_)           =&gt; unreachable!(), // compile error if commented out
+            None              =&gt; println!(&quot;None&quot;)
+        }
+    }
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>foo</span>(<span class='ident'>x</span>: <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>i32</span><span class='op'>&gt;</span>) {
+    <span class='kw'>match</span> <span class='ident'>x</span> {
+        <span class='prelude-val'>Some</span>(<span class='ident'>n</span>) <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&gt;=</span> <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Some(Non-negative)&quot;</span>),
+        <span class='prelude-val'>Some</span>(<span class='ident'>n</span>) <span class='kw'>if</span> <span class='ident'>n</span> <span class='op'>&lt;</span>  <span class='number'>0</span> <span class='op'>=&gt;</span> <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;Some(Negative)&quot;</span>),
+        <span class='prelude-val'>Some</span>(_)           <span class='op'>=&gt;</span> <span class='macro'>unreachable</span><span class='macro'>!</span>(), <span class='comment'>// compile error if commented out</span>
+        <span class='prelude-val'>None</span>              <span class='op'>=&gt;</span> <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;None&quot;</span>)
+    }
+}</pre>
+
+<p>Iterators:</p>
+<span class='rusttest'>fn main() {
+    fn divide_by_three(x: u32) -&gt; u32 { // one of the poorest implementations of x/3
+        for i in 0.. {
+            if 3*i &lt; i { panic!(&quot;u32 overflow&quot;); }
+            if x &lt; 3*i { return i-1; }
+        }
+        unreachable!();
+    }
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>fn</span> <span class='ident'>divide_by_three</span>(<span class='ident'>x</span>: <span class='ident'>u32</span>) <span class='op'>-&gt;</span> <span class='ident'>u32</span> { <span class='comment'>// one of the poorest implementations of x/3</span>
+    <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>.. {
+        <span class='kw'>if</span> <span class='number'>3</span><span class='op'>*</span><span class='ident'>i</span> <span class='op'>&lt;</span> <span class='ident'>i</span> { <span class='macro'>panic</span><span class='macro'>!</span>(<span class='string'>&quot;u32 overflow&quot;</span>); }
+        <span class='kw'>if</span> <span class='ident'>x</span> <span class='op'>&lt;</span> <span class='number'>3</span><span class='op'>*</span><span class='ident'>i</span> { <span class='kw'>return</span> <span class='ident'>i</span><span class='op'>-</span><span class='number'>1</span>; }
+    }
+    <span class='macro'>unreachable</span><span class='macro'>!</span>();
+}</pre>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    <script src="../playpen.js"></script>
+    <script async src="../search-index.js"></script>
+</body>
+</html>

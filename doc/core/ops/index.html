@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ops` mod in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ops">
+
+    <title>core::ops - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a></p><script>window.sidebarCurrent = {name: 'ops', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>core</a>::<wbr><a class='mod' href=''>ops</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-12296' class='srclink' href='../../src/core/ops.rs.html#11-1945' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Overloadable operators</p>
+
+<p>Implementing these traits allows you to get an effect similar to
+overloading operators.</p>
+
+<p>Some of these traits are imported by the prelude, so they are available in
+every Rust program.</p>
+
+<p>Many of the operators take their operands by value. In non-generic
+contexts involving built-in types, this is usually not a problem.
+However, using these operators in generic code, requires some
+attention if values have to be reused as opposed to letting the operators
+consume them. One option is to occasionally use <code>clone()</code>.
+Another option is to rely on the types involved providing additional
+operator implementations for references. For example, for a user-defined
+type <code>T</code> which is supposed to support addition, it is probably a good
+idea to have both <code>T</code> and <code>&amp;T</code> implement the traits <code>Add&lt;T&gt;</code> and <code>Add&lt;&amp;T&gt;</code>
+so that generic code can be written without unnecessary cloning.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>This example creates a <code>Point</code> struct that implements <code>Add</code> and <code>Sub</code>, and
+then demonstrates adding and subtracting two <code>Point</code>s.</p>
+<span class='rusttest'>use std::ops::{Add, Sub};
+
+#[derive(Debug)]
+struct Point {
+    x: i32,
+    y: i32
+}
+
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, other: Point) -&gt; Point {
+        Point {x: self.x + other.x, y: self.y + other.y}
+    }
+}
+
+impl Sub for Point {
+    type Output = Point;
+
+    fn sub(self, other: Point) -&gt; Point {
+        Point {x: self.x - other.x, y: self.y - other.y}
+    }
+}
+fn main() {
+    println!(&quot;{:?}&quot;, Point {x: 1, y: 0} + Point {x: 2, y: 3});
+    println!(&quot;{:?}&quot;, Point {x: 1, y: 0} - Point {x: 2, y: 3});
+}
+</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::{<span class='ident'>Add</span>, <span class='ident'>Sub</span>};
+
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Point</span> {
+    <span class='ident'>x</span>: <span class='ident'>i32</span>,
+    <span class='ident'>y</span>: <span class='ident'>i32</span>
+}
+
+<span class='kw'>impl</span> <span class='ident'>Add</span> <span class='kw'>for</span> <span class='ident'>Point</span> {
+    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>Point</span>;
+
+    <span class='kw'>fn</span> <span class='ident'>add</span>(<span class='self'>self</span>, <span class='ident'>other</span>: <span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Point</span> {
+        <span class='ident'>Point</span> {<span class='ident'>x</span>: <span class='self'>self</span>.<span class='ident'>x</span> <span class='op'>+</span> <span class='ident'>other</span>.<span class='ident'>x</span>, <span class='ident'>y</span>: <span class='self'>self</span>.<span class='ident'>y</span> <span class='op'>+</span> <span class='ident'>other</span>.<span class='ident'>y</span>}
+    }
+}
+
+<span class='kw'>impl</span> <span class='ident'>Sub</span> <span class='kw'>for</span> <span class='ident'>Point</span> {
+    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>Point</span>;
+
+    <span class='kw'>fn</span> <span class='ident'>sub</span>(<span class='self'>self</span>, <span class='ident'>other</span>: <span class='ident'>Point</span>) <span class='op'>-&gt;</span> <span class='ident'>Point</span> {
+        <span class='ident'>Point</span> {<span class='ident'>x</span>: <span class='self'>self</span>.<span class='ident'>x</span> <span class='op'>-</span> <span class='ident'>other</span>.<span class='ident'>x</span>, <span class='ident'>y</span>: <span class='self'>self</span>.<span class='ident'>y</span> <span class='op'>-</span> <span class='ident'>other</span>.<span class='ident'>y</span>}
+    }
+}
+<span class='kw'>fn</span> <span class='ident'>main</span>() {
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='ident'>Point</span> {<span class='ident'>x</span>: <span class='number'>1</span>, <span class='ident'>y</span>: <span class='number'>0</span>} <span class='op'>+</span> <span class='ident'>Point</span> {<span class='ident'>x</span>: <span class='number'>2</span>, <span class='ident'>y</span>: <span class='number'>3</span>});
+    <span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;{:?}&quot;</span>, <span class='ident'>Point</span> {<span class='ident'>x</span>: <span class='number'>1</span>, <span class='ident'>y</span>: <span class='number'>0</span>} <span class='op'>-</span> <span class='ident'>Point</span> {<span class='ident'>x</span>: <span class='number'>2</span>, <span class='ident'>y</span>: <span class='number'>3</span>});
+}</pre>
+
+<p>See the documentation for each trait for a minimum implementation that
+prints something to the screen.</p>
+</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Range.html'
+                               title='core::ops::Range'>Range</a></td>
+                        <td class='docblock short'>
+                             <p>A (half-open) range which is bounded at both ends.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.RangeFrom.html'
+                               title='core::ops::RangeFrom'>RangeFrom</a></td>
+                        <td class='docblock short'>
+                             <p>A range which is only bounded below.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.RangeFull.html'
+                               title='core::ops::RangeFull'>RangeFull</a></td>
+                        <td class='docblock short'>
+                             <p>An unbounded range.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.RangeTo.html'
+                               title='core::ops::RangeTo'>RangeTo</a></td>
+                        <td class='docblock short'>
+                             <p>A range which is only bounded above.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Add.html'
+                               title='core::ops::Add'>Add</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Add</code> trait is used to specify the functionality of <code>+</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.BitAnd.html'
+                               title='core::ops::BitAnd'>BitAnd</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>BitAnd</code> trait is used to specify the functionality of <code>&amp;</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.BitOr.html'
+                               title='core::ops::BitOr'>BitOr</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>BitOr</code> trait is used to specify the functionality of <code>|</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.BitXor.html'
+                               title='core::ops::BitXor'>BitXor</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>BitXor</code> trait is used to specify the functionality of <code>^</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Deref.html'
+                               title='core::ops::Deref'>Deref</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Deref</code> trait is used to specify the functionality of dereferencing
+operations like <code>*v</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.DerefMut.html'
+                               title='core::ops::DerefMut'>DerefMut</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>DerefMut</code> trait is used to specify the functionality of dereferencing
+mutably like <code>*v = 1;</code></p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Div.html'
+                               title='core::ops::Div'>Div</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Div</code> trait is used to specify the functionality of <code>/</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Drop.html'
+                               title='core::ops::Drop'>Drop</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Drop</code> trait is used to run some code when a value goes out of scope.
+This is sometimes called a &#39;destructor&#39;.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Fn.html'
+                               title='core::ops::Fn'>Fn</a></td>
+                        <td class='docblock short'>
+                             <p>A version of the call operator that takes an immutable receiver.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.FnMut.html'
+                               title='core::ops::FnMut'>FnMut</a></td>
+                        <td class='docblock short'>
+                             <p>A version of the call operator that takes a mutable receiver.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.FnOnce.html'
+                               title='core::ops::FnOnce'>FnOnce</a></td>
+                        <td class='docblock short'>
+                             <p>A version of the call operator that takes a by-value receiver.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Index.html'
+                               title='core::ops::Index'>Index</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Index</code> trait is used to specify the functionality of indexing operations
+like <code>arr[idx]</code> when used in an immutable context.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.IndexMut.html'
+                               title='core::ops::IndexMut'>IndexMut</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>IndexMut</code> trait is used to specify the functionality of indexing
+operations like <code>arr[idx]</code>, when used in a mutable context.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Mul.html'
+                               title='core::ops::Mul'>Mul</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Mul</code> trait is used to specify the functionality of <code>*</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Neg.html'
+                               title='core::ops::Neg'>Neg</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Neg</code> trait is used to specify the functionality of unary <code>-</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Not.html'
+                               title='core::ops::Not'>Not</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Not</code> trait is used to specify the functionality of unary <code>!</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Rem.html'
+                               title='core::ops::Rem'>Rem</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Rem</code> trait is used to specify the functionality of <code>%</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Shl.html'
+                               title='core::ops::Shl'>Shl</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Shl</code> trait is used to specify the functionality of <code>&lt;&lt;</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Shr.html'
+                               title='core::ops::Shr'>Shr</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Shr</code> trait is used to specify the functionality of <code>&gt;&gt;</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='trait' href='trait.Sub.html'
+                               title='core::ops::Sub'>Sub</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Sub</code> trait is used to specify the functionality of <code>-</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.AddAssign.html'
+                               title='core::ops::AddAssign'>AddAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>AddAssign</code> trait is used to specify the functionality of <code>+=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.BitAndAssign.html'
+                               title='core::ops::BitAndAssign'>BitAndAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>BitAndAssign</code> trait is used to specify the functionality of <code>&amp;=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.BitOrAssign.html'
+                               title='core::ops::BitOrAssign'>BitOrAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>BitOrAssign</code> trait is used to specify the functionality of <code>|=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.BitXorAssign.html'
+                               title='core::ops::BitXorAssign'>BitXorAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>BitXorAssign</code> trait is used to specify the functionality of <code>^=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.BoxPlace.html'
+                               title='core::ops::BoxPlace'>BoxPlace</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Specialization of <code>Place</code> trait supporting <code>box EXPR</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.Boxed.html'
+                               title='core::ops::Boxed'>Boxed</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Core trait for the <code>box EXPR</code> form.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.CoerceUnsized.html'
+                               title='core::ops::CoerceUnsized'>CoerceUnsized</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Trait that indicates that this is a pointer or a wrapper for one,
+where unsizing can be performed on the pointee.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.DivAssign.html'
+                               title='core::ops::DivAssign'>DivAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>DivAssign</code> trait is used to specify the functionality of <code>/=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.InPlace.html'
+                               title='core::ops::InPlace'>InPlace</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Specialization of <code>Place</code> trait supporting <code>in (PLACE) EXPR</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.MulAssign.html'
+                               title='core::ops::MulAssign'>MulAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>MulAssign</code> trait is used to specify the functionality of <code>*=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.Place.html'
+                               title='core::ops::Place'>Place</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Both <code>in (PLACE) EXPR</code> and <code>box EXPR</code> desugar into expressions
+that allocate an intermediate &quot;place&quot; that holds uninitialized
+state.  The desugaring evaluates EXPR, and writes the result at
+the address returned by the <code>pointer</code> method of this trait.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.Placer.html'
+                               title='core::ops::Placer'>Placer</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Interface to implementations of  <code>in (PLACE) EXPR</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.RemAssign.html'
+                               title='core::ops::RemAssign'>RemAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>RemAssign</code> trait is used to specify the functionality of <code>%=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.ShlAssign.html'
+                               title='core::ops::ShlAssign'>ShlAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>ShlAssign</code> trait is used to specify the functionality of <code>&lt;&lt;=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.ShrAssign.html'
+                               title='core::ops::ShrAssign'>ShrAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>ShrAssign</code> trait is used to specify the functionality of <code>&gt;&gt;=</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='trait' href='trait.SubAssign.html'
+                               title='core::ops::SubAssign'>SubAssign</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>The <code>SubAssign</code> trait is used to specify the functionality of <code>-=</code>.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

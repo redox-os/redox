@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `UnsafeCell` struct in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, UnsafeCell">
+
+    <title>core::cell::UnsafeCell - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>cell</a></p><script>window.sidebarCurrent = {name: 'UnsafeCell', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>core</a>::<wbr><a href='index.html'>cell</a>::<wbr><a class='struct' href=''>UnsafeCell</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-27381' class='srclink' href='../../src/core/cell.rs.html#792-794' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct UnsafeCell&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>The core primitive for interior mutability in Rust.</p>
+
+<p><code>UnsafeCell&lt;T&gt;</code> is a type that wraps some <code>T</code> and indicates unsafe interior operations on the
+wrapped type. Types with an <code>UnsafeCell&lt;T&gt;</code> field are considered to have an &#39;unsafe interior&#39;.
+The <code>UnsafeCell&lt;T&gt;</code> type is the only legal way to obtain aliasable data that is considered
+mutable. In general, transmuting an <code>&amp;T</code> type into an <code>&amp;mut T</code> is considered undefined behavior.</p>
+
+<p>Types like <code>Cell&lt;T&gt;</code> and <code>RefCell&lt;T&gt;</code> use this type to wrap their internal data.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::cell::UnsafeCell;
+    use std::marker::Sync;
+    
+    struct NotThreadSafe&lt;T&gt; {
+        value: UnsafeCell&lt;T&gt;,
+    }
+    
+    unsafe impl&lt;T&gt; Sync for NotThreadSafe&lt;T&gt; {}
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>UnsafeCell</span>;
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>::<span class='ident'>Sync</span>;
+
+<span class='kw'>struct</span> <span class='ident'>NotThreadSafe</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
+    <span class='ident'>value</span>: <span class='ident'>UnsafeCell</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span>,
+}
+
+<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>Sync</span> <span class='kw'>for</span> <span class='ident'>NotThreadSafe</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {}</pre>
+
+<p><strong>NOTE:</strong> <code>UnsafeCell&lt;T&gt;</code>&#39;s fields are public to allow static initializers. It is not
+recommended to access its fields directly, <code>get</code> should be used instead.</p>
+</div><h2 id='methods'>Methods</h2><h3 class='impl'><code>impl&lt;T&gt; <a class='struct' href='../../core/cell/struct.UnsafeCell.html' title='core::cell::UnsafeCell'>UnsafeCell</a>&lt;T&gt;</code></h3><div class='impl-items'><h4 id='method.new' class='method'><code>const fn <a href='#method.new' class='fnname'>new</a>(value: T) -&gt; <a class='struct' href='../../core/cell/struct.UnsafeCell.html' title='core::cell::UnsafeCell'>UnsafeCell</a>&lt;T&gt;</code></h4>
+<div class='docblock'><p>Constructs a new instance of <code>UnsafeCell</code> which will wrap the specified
+value.</p>
+
+<p>All access to the inner value through methods is <code>unsafe</code>, and it is highly discouraged to
+access the fields directly.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::cell::UnsafeCell;
+    
+    let uc = UnsafeCell::new(5);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>UnsafeCell</span>;
+
+<span class='kw'>let</span> <span class='ident'>uc</span> <span class='op'>=</span> <span class='ident'>UnsafeCell</span>::<span class='ident'>new</span>(<span class='number'>5</span>);</pre>
+</div><h4 id='method.into_inner' class='method'><code>unsafe fn <a href='#method.into_inner' class='fnname'>into_inner</a>(self) -&gt; T</code></h4>
+<div class='docblock'><p>Unwraps the value.</p>
+
+<h1 id='unsafety' class='section-header'><a href='#unsafety'>Unsafety</a></h1>
+<p>This function is unsafe because this thread or another thread may currently be
+inspecting the inner value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::cell::UnsafeCell;
+    
+    let uc = UnsafeCell::new(5);
+    
+    let five = unsafe { uc.into_inner() };
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>UnsafeCell</span>;
+
+<span class='kw'>let</span> <span class='ident'>uc</span> <span class='op'>=</span> <span class='ident'>UnsafeCell</span>::<span class='ident'>new</span>(<span class='number'>5</span>);
+
+<span class='kw'>let</span> <span class='ident'>five</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>uc</span>.<span class='ident'>into_inner</span>() };</pre>
+</div></div><h3 class='impl'><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; <a class='struct' href='../../core/cell/struct.UnsafeCell.html' title='core::cell::UnsafeCell'>UnsafeCell</a>&lt;T&gt;</code></h3><div class='impl-items'><h4 id='method.get' class='method'><code>fn <a href='#method.get' class='fnname'>get</a>(&amp;self) -&gt; *mut T</code></h4>
+<div class='docblock'><p>Gets a mutable pointer to the wrapped value.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1><span class='rusttest'>fn main() {
+    use std::cell::UnsafeCell;
+    
+    let uc = UnsafeCell::new(5);
+    
+    let five = uc.get();
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>cell</span>::<span class='ident'>UnsafeCell</span>;
+
+<span class='kw'>let</span> <span class='ident'>uc</span> <span class='op'>=</span> <span class='ident'>UnsafeCell</span>::<span class='ident'>new</span>(<span class='number'>5</span>);
+
+<span class='kw'>let</span> <span class='ident'>five</span> <span class='op'>=</span> <span class='ident'>uc</span>.<span class='ident'>get</span>();</pre>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a>&gt; !<a class='trait' href='../../core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> for <a class='struct' href='../../core/cell/struct.UnsafeCell.html' title='core::cell::UnsafeCell'>UnsafeCell</a>&lt;T&gt;</code></h3><div class='impl-items'></div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

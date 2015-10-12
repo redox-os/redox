@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `Debug` trait in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, Debug">
+
+    <title>core::fmt::Debug - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a>::<wbr><a href='index.html'>fmt</a></p><script>window.sidebarCurrent = {name: 'Debug', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../index.html'>core</a>::<wbr><a href='index.html'>fmt</a>::<wbr><a class='trait' href=''>Debug</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-34729' class='srclink' href='../../src/core/fmt/mod.rs.html#381-385' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Debug {
+    fn <a href='#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, &amp;mut <a class='struct' href='../../core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='../../core/fmt/type.Result.html' title='core::fmt::Result'>Result</a>;
+}</pre><div class='docblock'><p>Format trait for the <code>?</code> character.</p>
+
+<p><code>Debug</code> should format the output in a programmer-facing, debugging context.</p>
+
+<p>Generally speaking, you should just <code>derive</code> a <code>Debug</code> implementation.</p>
+
+<p>When used with the alternate format specifier <code>#?</code>, the output is pretty-printed.</p>
+
+<p>For more information on formatters, see <a href="../index.html">the module-level documentation</a>.</p>
+
+<h1 id='examples' class='section-header'><a href='#examples'>Examples</a></h1>
+<p>Deriving an implementation:</p>
+<span class='rusttest'>fn main() {
+    #[derive(Debug)]
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+    
+    let origin = Point { x: 0, y: 0 };
+    
+    println!(&quot;The origin is: {:?}&quot;, origin);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Point</span> {
+    <span class='ident'>x</span>: <span class='ident'>i32</span>,
+    <span class='ident'>y</span>: <span class='ident'>i32</span>,
+}
+
+<span class='kw'>let</span> <span class='ident'>origin</span> <span class='op'>=</span> <span class='ident'>Point</span> { <span class='ident'>x</span>: <span class='number'>0</span>, <span class='ident'>y</span>: <span class='number'>0</span> };
+
+<span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;The origin is: {:?}&quot;</span>, <span class='ident'>origin</span>);</pre>
+
+<p>Manually implementing:</p>
+<span class='rusttest'>fn main() {
+    use std::fmt;
+    
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+    
+    impl fmt::Debug for Point {
+        fn fmt(&amp;self, f: &amp;mut fmt::Formatter) -&gt; fmt::Result {
+            write!(f, &quot;({}, {})&quot;, self.x, self.y)
+        }
+    }
+    
+    let origin = Point { x: 0, y: 0 };
+    
+    println!(&quot;The origin is: {:?}&quot;, origin);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>fmt</span>;
+
+<span class='kw'>struct</span> <span class='ident'>Point</span> {
+    <span class='ident'>x</span>: <span class='ident'>i32</span>,
+    <span class='ident'>y</span>: <span class='ident'>i32</span>,
+}
+
+<span class='kw'>impl</span> <span class='ident'>fmt</span>::<span class='ident'>Debug</span> <span class='kw'>for</span> <span class='ident'>Point</span> {
+    <span class='kw'>fn</span> <span class='ident'>fmt</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>f</span>: <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>fmt</span>::<span class='ident'>Formatter</span>) <span class='op'>-&gt;</span> <span class='ident'>fmt</span>::<span class='prelude-ty'>Result</span> {
+        <span class='macro'>write</span><span class='macro'>!</span>(<span class='ident'>f</span>, <span class='string'>&quot;({}, {})&quot;</span>, <span class='self'>self</span>.<span class='ident'>x</span>, <span class='self'>self</span>.<span class='ident'>y</span>)
+    }
+}
+
+<span class='kw'>let</span> <span class='ident'>origin</span> <span class='op'>=</span> <span class='ident'>Point</span> { <span class='ident'>x</span>: <span class='number'>0</span>, <span class='ident'>y</span>: <span class='number'>0</span> };
+
+<span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;The origin is: {:?}&quot;</span>, <span class='ident'>origin</span>);</pre>
+
+<p>This outputs:</p>
+
+<pre><code class="language-text">The origin is: Point { x: 0, y: 0 }
+</code></pre>
+
+<p>There are a number of <code>debug_*</code> methods on <code>Formatter</code> to help you with manual
+implementations, such as <a href="../std/fmt/struct.Formatter.html#method.debug_struct"><code>debug_struct</code></a>.</p>
+
+<p><code>Debug</code> implementations using either <code>derive</code> or the debug builder API
+on <code>Formatter</code> support pretty printing using the alternate flag: <code>{:#?}</code>.</p>
+
+<p>Pretty printing with <code>#?</code>:</p>
+<span class='rusttest'>fn main() {
+    #[derive(Debug)]
+    struct Point {
+        x: i32,
+        y: i32,
+    }
+    
+    let origin = Point { x: 0, y: 0 };
+    
+    println!(&quot;The origin is: {:#?}&quot;, origin);
+    
+}</span><pre class='rust rust-example-rendered'>
+<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>)]</span>
+<span class='kw'>struct</span> <span class='ident'>Point</span> {
+    <span class='ident'>x</span>: <span class='ident'>i32</span>,
+    <span class='ident'>y</span>: <span class='ident'>i32</span>,
+}
+
+<span class='kw'>let</span> <span class='ident'>origin</span> <span class='op'>=</span> <span class='ident'>Point</span> { <span class='ident'>x</span>: <span class='number'>0</span>, <span class='ident'>y</span>: <span class='number'>0</span> };
+
+<span class='macro'>println</span><span class='macro'>!</span>(<span class='string'>&quot;The origin is: {:#?}&quot;</span>, <span class='ident'>origin</span>);</pre>
+
+<p>This outputs:</p>
+
+<pre><code class="language-text">The origin is: Point {
+    x: 0,
+    y: 0
+}
+</code></pre>
+</div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.fmt' class='method stab '><code>fn <a href='#tymethod.fmt' class='fnname'>fmt</a>(&amp;self, &amp;mut <a class='struct' href='../../core/fmt/struct.Formatter.html' title='core::fmt::Formatter'>Formatter</a>) -&gt; <a class='type' href='../../core/fmt/type.Result.html' title='core::fmt::Result'>Result</a></code></h3><div class='docblock'><p>Formats the value using the given formatter.</p>
+</div></div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/num/struct.Wrapping.html' title='core::num::Wrapping'>Wrapping</a>&lt;T&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/num/enum.FpCategory.html' title='core::num::FpCategory'>FpCategory</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/num/struct.ParseIntError.html' title='core::num::ParseIntError'>ParseIntError</a></code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> + <a class='trait' href='../../core/nonzero/trait.Zeroable.html' title='core::nonzero::Zeroable'>Zeroable</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/nonzero/struct.NonZero.html' title='core::nonzero::NonZero'>NonZero</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn() -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I, J) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl&lt;Ret, A, B, C, D, E, F, G, H, I, J, K, L&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for unsafe  extern "C" fn(A, B, C, D, E, F, G, H, I, J, K, L) -&gt; Ret</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/ops/struct.RangeFull.html' title='core::ops::RangeFull'>RangeFull</a></code></li>
+<li><code>impl&lt;Idx: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/ops/struct.Range.html' title='core::ops::Range'>Range</a>&lt;Idx&gt;</code></li>
+<li><code>impl&lt;Idx: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/ops/struct.RangeFrom.html' title='core::ops::RangeFrom'>RangeFrom</a>&lt;Idx&gt;</code></li>
+<li><code>impl&lt;Idx: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/ops/struct.RangeTo.html' title='core::ops::RangeTo'>RangeTo</a>&lt;Idx&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='trait' href='../../core/any/trait.Any.html' title='core::any::Any'>Any</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='trait' href='../../core/any/trait.Any.html' title='core::any::Any'>Any</a> + <a class='trait' href='../../core/marker/trait.Send.html' title='core::marker::Send'>Send</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/any/struct.TypeId.html' title='core::any::TypeId'>TypeId</a></code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 0]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 1]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 2]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 3]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 4]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 5]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 6]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 7]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 8]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 9]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 10]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 11]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 12]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 13]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 14]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 15]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 16]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 17]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 18]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 19]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 20]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 21]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 22]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 23]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 24]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 25]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 26]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 27]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 28]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 29]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 30]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 31]</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T; 32]</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/sync/atomic/struct.AtomicUsize.html' title='core::sync::atomic::AtomicUsize'>AtomicUsize</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/sync/atomic/struct.AtomicIsize.html' title='core::sync::atomic::AtomicIsize'>AtomicIsize</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/sync/atomic/struct.AtomicBool.html' title='core::sync::atomic::AtomicBool'>AtomicBool</a></code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/sync/atomic/struct.AtomicPtr.html' title='core::sync::atomic::AtomicPtr'>AtomicPtr</a>&lt;T&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/cell/enum.BorrowState.html' title='core::cell::BorrowState'>BorrowState</a></code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, E: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;T, E&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.i8x16.html' title='core::simd::i8x16'>i8x16</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.i16x8.html' title='core::simd::i16x8'>i16x8</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.i32x4.html' title='core::simd::i32x4'>i32x4</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.i64x2.html' title='core::simd::i64x2'>i64x2</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.u8x16.html' title='core::simd::u8x16'>u8x16</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.u16x8.html' title='core::simd::u16x8'>u16x8</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.u32x4.html' title='core::simd::u32x4'>u32x4</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.u64x2.html' title='core::simd::u64x2'>u64x2</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.f32x4.html' title='core::simd::f32x4'>f32x4</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/simd/struct.f64x2.html' title='core::simd::f64x2'>f64x2</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='enum' href='../../core/str/pattern/enum.SearchStep.html' title='core::str::pattern::SearchStep'>SearchStep</a></code></li>
+<li><code>impl&lt;'a, 'b&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/str/pattern/struct.StrSearcher.html' title='core::str::pattern::StrSearcher'>StrSearcher</a>&lt;'a, 'b&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/str/struct.ParseBoolError.html' title='core::str::ParseBoolError'>ParseBoolError</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/str/struct.Utf8Error.html' title='core::str::Utf8Error'>Utf8Error</a></code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;isize, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for isize</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;usize, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for usize</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;i8, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for i8</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;u8, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for u8</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;i16, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for i16</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;u16, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for u16</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;i32, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for i32</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;u32, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for u32</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;i64, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for i64</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.RadixFmt.html' title='core::fmt::RadixFmt'>RadixFmt</a>&lt;u64, <a class='struct' href='../../core/fmt/struct.Radix.html' title='core::fmt::Radix'>Radix</a>&gt;</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for u64</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.Error.html' title='core::fmt::Error'>Error</a></code></li>
+<li><code>impl&lt;'a&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/fmt/struct.Arguments.html' title='core::fmt::Arguments'>Arguments</a>&lt;'a&gt;</code></li>
+<li><code>impl&lt;'a, T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for &amp;'a T</code></li>
+<li><code>impl&lt;'a, T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for &amp;'a mut T</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for bool</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for str</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for char</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for f32</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for f64</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for *const T</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for *mut T</code></li>
+<li><code>impl&lt;T0: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T1: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T2: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T3: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T4: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T5: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T1: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T2: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T3: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T4: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T5: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T2: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T3: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T4: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T5: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T3: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T4: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T5: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T3, T4, T5, T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T4: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T5: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T4, T5, T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T5: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T5, T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T6: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T6, T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T7: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T7, T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T8: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T8, T9, T10, T11)</code></li>
+<li><code>impl&lt;T9: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T9, T10, T11)</code></li>
+<li><code>impl&lt;T10: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>, T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T10, T11)</code></li>
+<li><code>impl&lt;T11: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for (T11,)</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for [T]</code></li>
+<li><code>impl <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for ()</code></li>
+<li><code>impl&lt;T&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/marker/struct.PhantomData.html' title='core::marker::PhantomData'>PhantomData</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: <a class='trait' href='../../core/marker/trait.Copy.html' title='core::marker::Copy'>Copy</a> + <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/cell/struct.Cell.html' title='core::cell::Cell'>Cell</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/cell/struct.RefCell.html' title='core::cell::RefCell'>RefCell</a>&lt;T&gt;</code></li>
+<li><code>impl&lt;'b, T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/cell/struct.Ref.html' title='core::cell::Ref'>Ref</a>&lt;'b, T&gt;</code></li>
+<li><code>impl&lt;'b, T: ?<a class='trait' href='../../core/marker/trait.Sized.html' title='core::marker::Sized'>Sized</a> + <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a>&gt; <a class='trait' href='../../core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> for <a class='struct' href='../../core/cell/struct.RefMut.html' title='core::cell::RefMut'>RefMut</a>&lt;'b, T&gt;</code></li>
+</ul><script type="text/javascript" async
+                              src="../../implementors/core/fmt/trait.Debug.js">
+                      </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

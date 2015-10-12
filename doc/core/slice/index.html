@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `slice` mod in crate `core`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, slice">
+
+    <title>core::slice - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    <link rel="shortcut icon" href="https://doc.rust-lang.org/favicon.ico">
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <a href='../../core/index.html'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png' alt='' width='100'></a>
+        <p class='location'><a href='../index.html'>core</a></p><script>window.sidebarCurrent = {name: 'slice', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>core</a>::<wbr><a class='mod' href=''>slice</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-30365' class='srclink' href='../../src/core/slice.rs.html#11-1599' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Slice management and manipulation</p>
+
+<p>For more details <code>std::slice</code>.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                    <tr class='unstable module-item'>
+                        <td><a class='mod' href='bytes/index.html'
+                               title='core::slice::bytes'>bytes</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Operations on <code>[u8]</code>.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Chunks.html'
+                               title='core::slice::Chunks'>Chunks</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over a slice in (non-overlapping) chunks (<code>size</code> elements at a
+time).</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.ChunksMut.html'
+                               title='core::slice::ChunksMut'>ChunksMut</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over a slice in (non-overlapping) mutable chunks (<code>size</code>
+elements at a time). When the slice len is not evenly divided by the chunk
+size, the last slice of the iteration will be the remainder.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Iter.html'
+                               title='core::slice::Iter'>Iter</a></td>
+                        <td class='docblock short'>
+                             <p>Immutable slice iterator</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.IterMut.html'
+                               title='core::slice::IterMut'>IterMut</a></td>
+                        <td class='docblock short'>
+                             <p>Mutable slice iterator.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.RSplitN.html'
+                               title='core::slice::RSplitN'>RSplitN</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over subslices separated by elements that match a
+predicate function, limited to a given number of splits, starting
+from the end of the slice.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.RSplitNMut.html'
+                               title='core::slice::RSplitNMut'>RSplitNMut</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over subslices separated by elements that match a
+predicate function, limited to a given number of splits, starting
+from the end of the slice.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Split.html'
+                               title='core::slice::Split'>Split</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over subslices separated by elements that match a predicate
+function.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.SplitMut.html'
+                               title='core::slice::SplitMut'>SplitMut</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over the subslices of the vector which are separated
+by elements that match <code>pred</code>.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.SplitN.html'
+                               title='core::slice::SplitN'>SplitN</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over subslices separated by elements that match a predicate
+function, limited to a given number of splits.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.SplitNMut.html'
+                               title='core::slice::SplitNMut'>SplitNMut</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over subslices separated by elements that match a predicate
+function, limited to a given number of splits.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Windows.html'
+                               title='core::slice::Windows'>Windows</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over overlapping subslices of length <code>size</code>.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.from_raw_parts.html'
+                               title='core::slice::from_raw_parts'>from_raw_parts</a></td>
+                        <td class='docblock short'>
+                             <p>Forms a slice from a pointer and a length.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='fn' href='fn.from_raw_parts_mut.html'
+                               title='core::slice::from_raw_parts_mut'>from_raw_parts_mut</a></td>
+                        <td class='docblock short'>
+                             <p>Performs the same functionality as <code>from_raw_parts</code>, except that a mutable
+slice is returned.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='fn' href='fn.mut_ref_slice.html'
+                               title='core::slice::mut_ref_slice'>mut_ref_slice</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Converts a pointer to A into a slice of length 1 (without copying).</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class='unstable module-item'>
+                        <td><a class='fn' href='fn.ref_slice.html'
+                               title='core::slice::ref_slice'>ref_slice</a></td>
+                        <td class='docblock short'>
+                            [<em class='stab unstable'>Unstable</em>] <p>Converts a pointer to A into a slice of length 1 (without copying).</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "core";
+        window.playgroundUrl = "https://play.rust-lang.org/";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    <script src="../../playpen.js"></script>
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["copy_memory","Copies data from `src` to `dst`"]],"trait":[["MutableByteVector","A trait for operations on mutable `[u8]`s."]]});
