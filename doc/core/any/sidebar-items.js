@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["TypeId","A `TypeId` represents a globally unique identifier for a type."]],"trait":[["Any","A type to emulate dynamic typing."]]});

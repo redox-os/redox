@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["Clone","A common trait for cloning an object."]]});

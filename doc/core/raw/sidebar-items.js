@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Slice","The representation of a slice like `&[T]`."],["TraitObject","The representation of a trait object like `&SomeTrait`."]],"trait":[["Repr","This trait is meant to map equivalences between raw structs and their corresponding rust values."]]});

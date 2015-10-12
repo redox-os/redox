@@ -1,1 +1,0 @@
-initSidebarItems({"trait":[["Default","A trait for giving a type a useful default value."]]});

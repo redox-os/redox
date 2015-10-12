@@ -14,3 +14,4 @@ build
 target
 zfs.img
 *.swp
+doc
