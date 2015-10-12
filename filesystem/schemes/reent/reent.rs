@@ -8,6 +8,19 @@ pub struct Resource {
 }
 
 impl Resource {
+    pub fn dup(&self) -> Option<Box<Resource>> {
+        match self.file.dup() {
+            Some(file) => Some(box Resource {
+                file: file
+            }),
+            None => None
+        }
+    }
+
+    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
+        self.file.path(buf)
+    }
+
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         self.file.read(buf)
     }

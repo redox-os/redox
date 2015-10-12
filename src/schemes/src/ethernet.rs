@@ -6,7 +6,7 @@ use network::common::*;
 use network::ethernet::*;
 
 use common::debug;
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{NoneResource, Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -25,13 +25,18 @@ pub struct EthernetResource {
 }
 
 impl Resource for EthernetResource {
+    fn dup(&self) -> Box<Resource> {
+        box EthernetResource {
+            network: self.network.dup(),
+            data: self.data.clone(),
+            peer_addr: self.peer_addr,
+            ethertype: self.ethertype,
+        }
+    }
+
     fn url(&self) -> URL {
         return URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
                                   String::from_num_radix(self.ethertype as usize, 16)));
-    }
-
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

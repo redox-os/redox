@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::ptr;
 
 use common::context::*;
-use common::resource::{Resource, ResourceSeek, ResourceType, NoneResource};
+use common::resource::{Resource, ResourceSeek, NoneResource};
 use common::elf::*;
 use common::memory;
 use common::paging::Page;
@@ -74,6 +74,8 @@ impl SchemeContext {
 pub struct SchemeResource {
     handle: usize,
     memory: ContextMemory,
+    _dup: usize,
+    _fpath: usize,
     _read: usize,
     _write: usize,
     _lseek: usize,
@@ -88,15 +90,56 @@ impl SchemeResource {
 }
 
 impl Resource for SchemeResource {
-    /// Return the url of this resource
-    //TODO
-    fn url(&self) -> URL {
-        URL::new()
+    /// Duplicate the resource
+    fn dup(&self) -> Box<Resource> {
+        if self.valid(self._dup) {
+            let fd;
+            unsafe {
+                let context = SchemeContext::enter(&self.memory);
+                let fn_ptr: *const usize = &self._dup;
+                fd = (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
+                context.exit();
+            }
+            if fd != 0xFFFFFFFF {
+                //TODO: Count number of handles, don't allow drop until 0
+                return box SchemeResource {
+                    handle: fd,
+                    memory: ContextMemory {
+                        physical_address: self.memory.physical_address,
+                        virtual_address: self.memory.virtual_address,
+                        virtual_size: self.memory.virtual_size,
+                    },
+                    _dup: self._dup,
+                    _fpath: self._fpath,
+                    _read: self._read,
+                    _write: self._write,
+                    _lseek: self._lseek,
+                    _fsync: self._fsync,
+                    _close: self._close,
+                };
+            }
+        }
+
+        box NoneResource
     }
 
-    /// Return the type of this resource
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
+    /// Return the url of this resource
+    fn url(&self) -> URL {
+        if self.valid(self._fpath) {
+            let mut buf: [u8; 4096] = [0; 4096];
+            let result;
+            unsafe {
+
+                let context = SchemeContext::enter(&self.memory);
+                let fn_ptr: *const usize = &self._fpath;
+                result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, context.translate_mut(buf.as_mut_ptr()), buf.len());
+                context.exit();
+            }
+            if result != 0xFFFFFFFF {
+                return URL::from_string(&String::from_c_slice(&buf));
+            }
+        }
+        URL::new()
     }
 
     /// Read data to buffer
@@ -203,6 +246,8 @@ pub struct SchemeItem {
     _start: usize,
     _stop: usize,
     _open: usize,
+    _dup: usize,
+    _fpath: usize,
     _read: usize,
     _write: usize,
     _lseek: usize,
@@ -223,6 +268,8 @@ impl SchemeItem {
             _start: 0,
             _stop: 0,
             _open: 0,
+            _dup: 0,
+            _fpath: 0,
             _read: 0,
             _write: 0,
             _lseek: 0,
@@ -248,6 +295,8 @@ impl SchemeItem {
                     scheme_item._start = executable.symbol("_start".to_string());
                     scheme_item._stop = executable.symbol("_stop".to_string());
                     scheme_item._open = executable.symbol("_open".to_string());
+                    scheme_item._dup = executable.symbol("_dup".to_string());
+                    scheme_item._fpath = executable.symbol("_fpath".to_string());
                     scheme_item._read = executable.symbol("_read".to_string());
                     scheme_item._write = executable.symbol("_write".to_string());
                     scheme_item._lseek = executable.symbol("_lseek".to_string());
@@ -302,6 +351,8 @@ impl SessionItem for SchemeItem {
                         virtual_address: self.memory.virtual_address,
                         virtual_size: self.memory.virtual_size,
                     },
+                    _dup: self._dup,
+                    _fpath: self._fpath,
                     _read: self._read,
                     _write: self._write,
                     _lseek: self._lseek,

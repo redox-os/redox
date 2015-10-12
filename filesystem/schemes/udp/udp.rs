@@ -60,6 +60,35 @@ pub struct Resource {
 }
 
 impl Resource {
+    pub fn dup(&self) -> Option<Box<Resource>> {
+        match self.ip.dup() {
+            Some(ip) => Some(box Resource {
+                ip: ip,
+                data: self.data.clone(),
+                peer_addr: self.peer_addr,
+                peer_port: self.peer_port,
+                host_port: self.host_port,
+            }),
+            None => None
+        }
+    }
+
+    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
+        let path = format!("udp://{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port);
+
+        let mut i = 0;
+        for b in path.bytes() {
+            if i < buf.len() {
+                buf[i] = b;
+                i += 1;
+            } else {
+                break;
+            }
+        }
+
+        Some(i)
+    }
+
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         /*
 

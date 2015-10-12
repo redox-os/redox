@@ -9,7 +9,7 @@ use drivers::pciconfig::PCIConfig;
 
 use common::debug;
 use common::memory::Memory;
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
+use common::resource::{NoneResource, Resource, ResourceSeek, URL, VecResource};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -216,12 +216,18 @@ pub struct FileResource {
 }
 
 impl Resource for FileResource {
-    fn url(&self) -> URL {
-        return URL::from_string(&("file:///".to_string() + &self.node.name));
+    fn dup(&self) -> Box<Resource> {
+        box FileResource {
+            scheme: self.scheme,
+            node: self.node.clone(),
+            vec: self.vec.clone(),
+            seek: self.seek,
+            dirty: self.dirty,
+        }
     }
 
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+    fn url(&self) -> URL {
+        return URL::from_string(&("file:///".to_string() + &self.node.name));
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -471,7 +477,7 @@ impl SessionItem for FileScheme {
                 }
             }
 
-            return box VecResource::new(url.clone(), ResourceType::Dir, list.to_utf8());
+            return box VecResource::new(url.clone(), list.to_utf8());
         } else {
             match self.fs.node(&path) {
                 Option::Some(node) => {

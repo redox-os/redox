@@ -1,3 +1,5 @@
+use alloc::boxed::*;
+
 use core::cmp::max;
 use core::cmp::min;
 use core::ptr;
@@ -167,6 +169,35 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     scheduler::end_no_ints(reenable);
 
     fd
+}
+
+pub unsafe fn do_sys_dup(fd: usize) -> usize {
+    let mut new_fd = 0xFFFFFFFF;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &*contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        let mut resource: Box<Resource> = box NoneResource;
+        new_fd = 0;
+        for file in current.files.iter() {
+            if file.fd == fd {
+                resource = file.resource.dup();
+            }
+            if file.fd >= new_fd {
+                new_fd = file.fd + 1;
+            }
+        }
+
+        current.files.push(ContextFile {
+            fd: new_fd,
+            resource: resource,
+        });
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    new_fd
 }
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
@@ -389,6 +420,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_FPATH => eax = do_sys_fpath(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_FSYNC => eax = do_sys_fsync(ebx as usize) as u32,
         SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
+        SYS_DUP => eax = do_sys_dup(ebx as usize) as u32,
         SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize) as u32,
         SYS_YIELD => context_switch(false),

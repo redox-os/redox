@@ -29,7 +29,13 @@ pub struct WindowResource {
 }
 
 impl Resource for WindowResource {
-     //Required functions
+    fn dup(&self) -> Box<Resource> {
+        box WindowResource {
+            window: Window::new(self.window.point, self.window.size, self.window.title.clone()),
+            seek: self.seek,
+        }
+    }
+
     /// Return the url of this resource
     fn url(&self) -> URL {
         return URL::from_string(&("window://".to_string() + "/" + self.window.point.x + "/" +
@@ -37,11 +43,6 @@ impl Resource for WindowResource {
                                   self.window.size.width + "/" +
                                   self.window.size.height +
                                   "/" + &self.window.title));
-    }
-
-    /// Return the type of this resource
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
     }
 
     /// Read data to buffer
