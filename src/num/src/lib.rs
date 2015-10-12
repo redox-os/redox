@@ -53,8 +53,6 @@
        html_root_url = "http://doc.rust-lang.org/num/",
        html_playground_url = "http://play.rust-lang.org/")]
 
-#[cfg(feature = "rustc-serialize")]
-extern crate rustc_serialize;
 #[cfg(feature = "rand")]
 extern crate rand;
 

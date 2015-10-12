@@ -71,7 +71,6 @@ use redox::cmp::Ordering::{self, Less, Greater, Equal};
 use redox::{i64, u64};
 
 use rand::Rng;
-use rustc_serialize::hex::ToHex;
 
 use traits::{ToPrimitive, FromPrimitive, cast};
 
@@ -121,7 +120,7 @@ pub mod big_digit {
 ///
 /// A `BigUint`-typed value `BigUint { data: vec!(a, b, c) }` represents a number
 /// `(a + b * big_digit::BASE + c * big_digit::BASE^2)`.
-#[derive(Clone, RustcEncodable, RustcDecodable, Debug)]
+#[derive(Clone, Debug)]
 pub struct BigUint {
     data: Vec<BigDigit>
 }
@@ -1107,7 +1106,7 @@ fn get_radix_base(radix: u32) -> (DoubleBigDigit, usize) {
 }
 
 /// A Sign is a `BigInt`'s composing element.
-#[derive(PartialEq, PartialOrd, Eq, Ord, Copy, Clone, Debug, RustcEncodable, RustcDecodable)]
+#[derive(PartialEq, PartialOrd, Eq, Ord, Copy, Clone, Debug)]
 pub enum Sign { Minus, NoSign, Plus }
 
 impl Neg for Sign {
@@ -1125,7 +1124,7 @@ impl Neg for Sign {
 }
 
 /// A big signed integer type.
-#[derive(Clone, RustcEncodable, RustcDecodable, Debug)]
+#[derive(Clone, Debug)]
 pub struct BigInt {
     sign: Sign,
     data: BigUint

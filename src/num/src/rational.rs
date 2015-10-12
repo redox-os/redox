@@ -25,7 +25,6 @@ use {Num, Signed, Zero, One};
 
 /// Represents the ratio between 2 numbers.
 #[derive(Copy, Clone, Hash, Debug)]
-#[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
 #[allow(missing_docs)]
 pub struct Ratio<T> {
     numer: T,
