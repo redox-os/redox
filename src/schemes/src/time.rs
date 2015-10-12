@@ -12,7 +12,7 @@ pub struct TimeScheme;
 
 impl SessionItem for TimeScheme {
     fn scheme(&self) -> String {
-        return "time".to_string();
+        "time".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
@@ -25,12 +25,12 @@ impl SessionItem for TimeScheme {
             scheduler::end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_str("time://"),
+        box VecResource::new(URL::from_str("time://"),
                                     ResourceType::File,
                                     ("Time: ".to_string() +
                                      String::from_num_signed(clock_realtime.secs as isize) +
                                      "\nUptime: " +
                                      String::from_num_signed(clock_monotonic.secs as isize))
-                                        .to_utf8());
+                                        .to_utf8())
     }
 }

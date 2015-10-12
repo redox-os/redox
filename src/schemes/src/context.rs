@@ -11,7 +11,7 @@ pub struct ContextScheme;
 
 impl SessionItem for ContextScheme {
     fn scheme(&self) -> String {
-        return "context".to_string();
+        "context".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Box<Resource> {
@@ -24,8 +24,8 @@ impl SessionItem for ContextScheme {
             scheduler::end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_str("context://"),
+        box VecResource::new(URL::from_str("context://"),
                                     ResourceType::File,
-                                    ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8());
+                                    ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8())
     }
 }

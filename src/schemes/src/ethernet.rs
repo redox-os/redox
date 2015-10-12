@@ -26,17 +26,17 @@ pub struct EthernetResource {
 
 impl Resource for EthernetResource {
     fn url(&self) -> URL {
-        return URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
-                                  String::from_num_radix(self.ethertype as usize, 16)));
+        URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
+                                  String::from_num_radix(self.ethertype as usize, 16)))
     }
 
     fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+        ResourceType::File
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
-        return Option::None;
+        Option::None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
