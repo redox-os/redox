@@ -156,11 +156,3 @@ pub fn pow<T: Clone + One + Mul<T, Output = T>>(mut base: T, mut exp: usize) -> 
         acc
     }
 }
-
-#[cfg(test)]
-fn hash<T: hash::Hash>(x: &T) -> u64 {
-    use redox::hash::Hasher;
-    let mut hasher = hash::SipHasher::new();
-    x.hash(&mut hasher);
-    hasher.finish()
-}
