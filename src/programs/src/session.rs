@@ -6,7 +6,7 @@ use alloc::boxed::Box;
 use core::cmp;
 
 use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
-use common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
+use common::resource::{NoneResource, Resource, URL, VecResource};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
@@ -151,7 +151,7 @@ impl Session {
                 }
             }
 
-            box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8())
+            box VecResource::new(URL::new(), list.to_utf8())
         } else {
             for item in self.items.iter() {
                 if item.scheme() == url.scheme() {

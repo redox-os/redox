@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 
@@ -12,12 +12,12 @@ use syscall::call;
 pub struct DebugResource;
 
 impl Resource for DebugResource {
-    fn url(&self) -> URL {
-        return URL::from_str("debug://");
+    fn dup(&self) -> Box<Resource> {
+        box DebugResource
     }
 
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+    fn url(&self) -> URL {
+        return URL::from_str("debug://");
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

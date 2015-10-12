@@ -17,23 +17,13 @@ pub enum ResourceSeek {
     End(isize),
 }
 
-/// A resource type
-#[derive(Copy, Clone)]
-pub enum ResourceType {
-    None,
-    Array,
-    Dir,
-    File,
-}
-
 /// A system resource
 #[allow(unused_variables)]
 pub trait Resource {
-    //Required functions
+    /// Duplicate the resource
+    fn dup(&self) -> Box<Resource>;
     /// Return the url of this resource
     fn url(&self) -> URL;
-    /// Return the type of this resource
-    fn stat(&self) -> ResourceType;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
@@ -348,12 +338,12 @@ impl Clone for URL {
 pub struct NoneResource;
 
 impl Resource for NoneResource {
-    fn url(&self) -> URL {
-        return URL::from_str("none://");
+    fn dup(&self) -> Box<Resource> {
+        box NoneResource
     }
 
-    fn stat(&self) -> ResourceType {
-        return ResourceType::None;
+    fn url(&self) -> URL {
+        return URL::from_str("none://");
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -376,19 +366,17 @@ impl Resource for NoneResource {
 /// A vector resource
 pub struct VecResource {
     url: URL,
-    resource_type: ResourceType,
     vec: Vec<u8>,
     seek: usize,
 }
 
 impl VecResource {
-    pub fn new(url: URL, resource_type: ResourceType, vec: Vec<u8>) -> Self {
-        return VecResource {
+    pub fn new(url: URL, vec: Vec<u8>) -> Self {
+        VecResource {
             url: url,
-            resource_type: resource_type,
             vec: vec,
             seek: 0,
-        };
+        }
     }
 
     pub fn inner(&self) -> &Vec<u8> {
@@ -397,12 +385,16 @@ impl VecResource {
 }
 
 impl Resource for VecResource {
-    fn url(&self) -> URL {
-        return self.url.clone();
+    fn dup(&self) -> Box<Resource> {
+        box VecResource {
+            url: self.url.clone(),
+            vec: self.vec.clone(),
+            seek: self.seek,
+        }
     }
 
-    fn stat(&self) -> ResourceType {
-        return self.resource_type;
+    fn url(&self) -> URL {
+        return self.url.clone();
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

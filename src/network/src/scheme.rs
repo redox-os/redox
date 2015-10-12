@@ -43,12 +43,25 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
-    fn url(&self) -> URL {
-        URL::from_str("network://")
+    fn dup(&self) -> Box<Resource> {
+        let mut ret = box NetworkResource {
+            nic: self.nic,
+            ptr: 0 as *mut NetworkResource,
+            inbound: self.inbound.clone(),
+            outbound: self.outbound.clone(),
+        };
+
+        unsafe {
+            ret.ptr = ret.deref_mut();
+
+            (*ret.nic).add(ret.ptr);
+        }
+
+        ret
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
+    fn url(&self) -> URL {
+        URL::from_str("network://")
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

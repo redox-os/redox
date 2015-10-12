@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use common::context::*;
-use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::scheduler;
 use common::string::{String, ToString};
 
@@ -25,7 +25,6 @@ impl SessionItem for ContextScheme {
         }
 
         return box VecResource::new(URL::from_str("context://"),
-                                    ResourceType::File,
                                     ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8());
     }
 }

@@ -1,10 +1,8 @@
-use string::*;
-
 use core::ptr;
 
 use io::{Read, Write, Seek, SeekFrom};
 
-use syscall::{sys_alloc, sys_unalloc, sys_open, sys_close, sys_fpath, sys_read, sys_write, sys_lseek, sys_fsync};
+use syscall::{sys_alloc, sys_unalloc, sys_open, sys_dup, sys_close, sys_fpath, sys_read, sys_write, sys_lseek, sys_fsync};
 
 /// A Unix-style file
 pub struct File {
@@ -30,6 +28,20 @@ impl File {
             sys_unalloc(c_str as usize);
 
             ret
+        }
+    }
+
+    /// Duplicate the file
+    pub fn dup(&self) -> Option<File> {
+        unsafe{
+            let new_fd = sys_dup(self.fd);
+            if new_fd == 0xFFFFFFFF {
+                None
+            } else {
+                Some(File {
+                    fd: new_fd
+                })
+            }
         }
     }
 
