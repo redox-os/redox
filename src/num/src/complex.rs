@@ -21,7 +21,6 @@ use {Zero, One, Num, Float};
 
 /// A complex number in Cartesian form.
 #[derive(PartialEq, Copy, Clone, Hash, Debug)]
-#[cfg_attr(feature = "rustc-serialize", derive(RustcEncodable, RustcDecodable))]
 pub struct Complex<T> {
     /// Real portion of the complex number
     pub re: T,
