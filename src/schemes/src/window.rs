@@ -46,18 +46,6 @@ impl Resource for WindowResource {
 
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        /* Reading window contents, might be necessary?
-        let content = &mut self.window.content;
-
-        let size = min(content.size - self.seek, buf.len());
-        unsafe {
-            Display::copy_run(content.offscreen + self.seek, buf.as_ptr() as usize, size);
-        }
-        self.seek += size;
-
-        return Option::Some(size);
-        */
-
         //Read events from window
         let mut i = 0;
         while buf.len() - i >= size_of::<Event>() {

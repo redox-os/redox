@@ -14,6 +14,63 @@ use common::vec::Vec;
 
 use programs::session::SessionItem;
 
+pub struct SchemeContext {
+    interrupts: bool,
+    old_memory: Vec<ContextMemory>,
+}
+
+impl SchemeContext {
+    pub unsafe fn enter(memory: &ContextMemory) -> SchemeContext {
+        let interrupts = start_no_ints();
+        let mut old_memory: Vec<ContextMemory> = Vec::new();
+        for i in 0..(memory.virtual_size + 4095) / 4096 {
+            let mut page = Page::new(memory.virtual_address + i * 4096);
+            //TODO: Use one contextmemory if possible
+            old_memory.push(ContextMemory {
+                physical_address: page.phys_addr(),
+                virtual_address: page.virt_addr(),
+                virtual_size: 4096,
+            });
+            page.map(memory.physical_address + i * 4096);
+        }
+
+        SchemeContext {
+            interrupts: interrupts,
+            old_memory: old_memory,
+        }
+    }
+
+    pub fn translate<T>(&self, ptr: *const T) -> *const T {
+        for memory in self.old_memory.iter() {
+            if (ptr as usize) >= memory.virtual_address && (ptr as usize) < memory.virtual_address + memory.virtual_size {
+                return ((ptr as usize) - memory.virtual_address + memory.physical_address) as *const T;
+            }
+        }
+
+        ptr
+    }
+
+    pub fn translate_mut<T>(&self, ptr: *mut T) -> *mut T {
+        for memory in self.old_memory.iter() {
+            if (ptr as usize) >= memory.virtual_address && (ptr as usize) < memory.virtual_address + memory.virtual_size {
+                return ((ptr as usize) - memory.virtual_address + memory.physical_address) as *mut T;
+            }
+        }
+
+        ptr
+    }
+
+    pub unsafe fn exit(self) {
+        for memory in self.old_memory.iter() {
+            for i in 0..(memory.virtual_size + 4095) / 4096 {
+                let mut page = Page::new(memory.virtual_address + i * 4096);
+                page.map(memory.physical_address + i * 4096);
+            }
+        }
+        end_no_ints(self.interrupts);
+    }
+}
+
 pub struct SchemeResource {
     handle: usize,
     memory: ContextMemory,
@@ -27,18 +84,6 @@ pub struct SchemeResource {
 impl SchemeResource {
     fn valid(&self, addr: usize) -> bool {
         addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
-    }
-
-    unsafe fn map(&mut self) {
-        for i in 0..(self.memory.virtual_size + 4095) / 4096 {
-            Page::new(self.memory.virtual_address + i * 4096).map(self.memory.physical_address + i * 4096);
-        }
-    }
-
-    unsafe fn unmap(&mut self) {
-        for i in 0..(self.memory.virtual_size + 4095) / 4096 {
-            Page::new(self.memory.virtual_address + i * 4096).map_identity();
-        }
     }
 }
 
@@ -59,12 +104,10 @@ impl Resource for SchemeResource {
         if self.valid(self._read) {
             let result;
             unsafe {
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._read;
-                result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, buf.as_mut_ptr(), buf.len());
-                self.unmap();
-                end_no_ints(reenable);
+                result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, context.translate_mut(buf.as_mut_ptr()), buf.len());
+                context.exit();
             }
             if result != 0xFFFFFFFF {
                 return Some(result);
@@ -78,12 +121,10 @@ impl Resource for SchemeResource {
         if self.valid(self._write) {
             let result;
             unsafe {
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._write;
-                result = (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, buf.as_ptr(), buf.len());
-                self.unmap();
-                end_no_ints(reenable);
+                result = (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, context.translate(buf.as_ptr()), buf.len());
+                context.exit();
             }
             if result != 0xFFFFFFFF {
                 return Some(result);
@@ -114,12 +155,10 @@ impl Resource for SchemeResource {
 
             let result;
             unsafe {
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._lseek;
                 result = (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(self.handle, offset, whence);
-                self.unmap();
-                end_no_ints(reenable);
+                context.exit();
             }
             if result != 0xFFFFFFFF {
                 return Some(result);
@@ -133,12 +172,10 @@ impl Resource for SchemeResource {
         if self.valid(self._fsync) {
             let result;
             unsafe {
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._fsync;
                 result = (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
-                self.unmap();
-                end_no_ints(reenable);
+                context.exit();
             }
             return result == 0;
         }
@@ -150,12 +187,10 @@ impl Drop for SchemeResource {
     fn drop(&mut self){
         if self.valid(self._close) {
             unsafe {
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._close;
                 (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
-                self.unmap();
-                end_no_ints(reenable);
+                context.exit();
             }
         }
     }
@@ -225,12 +260,10 @@ impl SchemeItem {
         if scheme_item.valid(scheme_item._start) {
             //TODO: Allow schemes to be called inside of other schemes
             unsafe {
-                let reenable = start_no_ints();
-                scheme_item.map();
+                let context = SchemeContext::enter(&scheme_item.memory);
                 let fn_ptr: *const usize = &scheme_item._start;
                 scheme_item.handle = (*(fn_ptr as *const extern "C" fn() -> usize))();
-                scheme_item.unmap();
-                end_no_ints(reenable);
+                context.exit();
             }
         }
 
@@ -239,18 +272,6 @@ impl SchemeItem {
 
     fn valid(&self, addr: usize) -> bool {
         addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
-    }
-
-    unsafe fn map(&mut self) {
-        for i in 0..(self.memory.virtual_size + 4095) / 4096 {
-            Page::new(self.memory.virtual_address + i * 4096).map(self.memory.physical_address + i * 4096);
-        }
-    }
-
-    unsafe fn unmap(&mut self) {
-        for i in 0..(self.memory.virtual_size + 4095) / 4096 {
-            Page::new(self.memory.virtual_address + i * 4096).map_identity();
-        }
     }
 }
 
@@ -265,12 +286,10 @@ impl SessionItem for SchemeItem {
             unsafe {
                 let c_str = url.to_string().to_c_str();
 
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._open;
-                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, c_str);
-                self.unmap();
-                end_no_ints(reenable);
+                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, context.translate(c_str));
+                context.exit();
 
                 memory::unalloc(c_str as usize);
             }
@@ -300,12 +319,10 @@ impl Drop for SchemeItem {
     fn drop(&mut self) {
         if self.valid(self._stop) {
             unsafe {
-                let reenable = start_no_ints();
-                self.map();
+                let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._stop;
                 (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
-                self.unmap();
-                end_no_ints(reenable);
+                context.exit();
             }
         }
     }

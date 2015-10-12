@@ -1,3 +1,5 @@
+use alloc::boxed::*;
+
 use common::event;
 
 use drivers::pio::*;
@@ -15,8 +17,8 @@ pub struct Serial {
 
 impl Serial {
     /// Create new
-    pub fn new(port: u16, irq: u8) -> Self {
-        Serial {
+    pub fn new(port: u16, irq: u8) -> Box<Self> {
+        box Serial {
             data: PIO8::new(port),
             status: PIO8::new(port + 5),
             irq: irq,

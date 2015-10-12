@@ -30,10 +30,10 @@ impl Editor {
 
         match self.file {
             Option::Some(ref mut file) => {
-                file.seek(Seek::Start(0));
-                let mut vec: Vec<u8> = Vec::new();
-                file.read_to_end(&mut vec);
-                self.string = unsafe { String::from_utf8_unchecked(vec) };
+                file.seek(SeekFrom::Start(0));
+                let mut string = String::new();
+                file.read_to_string(&mut string);
+                self.string = string;
             }
             Option::None => self.string = String::new(),
         }
@@ -43,7 +43,7 @@ impl Editor {
         match self.file {
             Option::Some(ref mut file) => {
                 window.set_title(&("Editor (".to_string() + &self.url + ") Saved"));
-                file.seek(Seek::Start(0));
+                file.seek(SeekFrom::Start(0));
                 file.write(&self.string.as_bytes());
                 file.sync();
             }

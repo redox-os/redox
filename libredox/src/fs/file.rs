@@ -2,24 +2,12 @@ use string::*;
 
 use core::ptr;
 
-use io::{Read, Write};
+use io::{Read, Write, Seek, SeekFrom};
 
-use syscall::{sys_alloc, sys_unalloc, sys_open, sys_close, sys_read, sys_write, sys_lseek, sys_fsync};
-
-/// File seek
-pub enum Seek {
-    /// The start point
-    Start(usize),
-    /// The current point
-    Current(isize),
-    /// The end point
-    End(isize),
-}
+use syscall::{sys_alloc, sys_unalloc, sys_open, sys_close, sys_fpath, sys_read, sys_write, sys_lseek, sys_fsync};
 
 /// A Unix-style file
 pub struct File {
-    /// The path to the file
-    path: String,
     /// The id for the file
     fd: usize,
 }
@@ -36,7 +24,6 @@ impl File {
             ptr::write(c_str.offset(path.len() as isize), 0);
 
             let ret = File {
-                path: path.to_string(),
                 fd: sys_open(c_str, 0, 0),
             };
 
@@ -46,27 +33,15 @@ impl File {
         }
     }
 
-    /// Return the url to the file
-    pub fn url(&self) -> String {
-        //TODO
-        self.path.clone()
-    }
-
-
-
-    /// Seek a given position
-    pub fn seek(&mut self, pos: Seek) -> Option<usize> {
-        let (whence, offset) = match pos {
-            Seek::Start(offset) => (0, offset as isize),
-            Seek::Current(offset) => (1, offset),
-            Seek::End(offset) => (2, offset),
-        };
-
-        let position = unsafe { sys_lseek(self.fd, offset, whence) };
-        if position == 0xFFFFFFFF {
-            Option::None
-        } else {
-            Option::Some(position)
+    /// Get the canonical path of the file
+    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
+        unsafe {
+            let count = sys_fpath(self.fd, buf.as_mut_ptr(), buf.len());
+            if count == 0xFFFFFFFF {
+                None
+            } else {
+                Some(count)
+            }
         }
     }
 
@@ -81,9 +56,9 @@ impl Read for File {
         unsafe {
             let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
             if count == 0xFFFFFFFF {
-                Option::None
+                None
             } else {
-                Option::Some(count)
+                Some(count)
             }
         }
     }
@@ -98,6 +73,24 @@ impl Write for File {
             } else {
                 Option::Some(count)
             }
+        }
+    }
+}
+
+impl Seek for File {
+    /// Seek a given position
+    fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
+        let (whence, offset) = match pos {
+            SeekFrom::Start(offset) => (0, offset as isize),
+            SeekFrom::Current(offset) => (1, offset),
+            SeekFrom::End(offset) => (2, offset),
+        };
+
+        let position = unsafe { sys_lseek(self.fd, offset, whence) };
+        if position == 0xFFFFFFFF {
+            Option::None
+        } else {
+            Option::Some(position)
         }
     }
 }

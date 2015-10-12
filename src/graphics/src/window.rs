@@ -41,7 +41,7 @@ pub struct Window {
 impl Window {
     /// Create a new window
     pub fn new(point: Point, size: Size, title: String) -> Box<Self> {
-        let mut ret = Box::new(Window {
+        let mut ret = box Window {
             point: point,
             size: size,
             title: title,
@@ -60,7 +60,7 @@ impl Window {
             },
             events: Queue::new(),
             ptr: 0 as *mut Window,
-        });
+        };
 
         unsafe {
             ret.ptr = ret.deref_mut();

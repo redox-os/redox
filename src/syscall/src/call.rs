@@ -36,6 +36,10 @@ pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd as u32, 0, 0) as usize
 }
 
+pub unsafe fn sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
+    syscall(SYS_FPATH, fd as u32, buf as u32, len as u32) as usize
+}
+
 pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd as u32, offset as u32, whence as u32) as usize
 }
