@@ -255,6 +255,7 @@ unsafe fn redraw_loop() -> ! {
     }
 }
 
+/// Initialize debug
 pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x00);
     PIO8::new(0x3F8 + 3).write(0x80);
@@ -425,8 +426,10 @@ fn dr(reg: &str, value: u32) {
     debug::dl();
 }
 
+
 #[no_mangle]
 //Take regs for kernel calls and exceptions
+/// Kernel
 pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, mut eax: u32, eip: u32, eflags: u32, error: u32) -> u32 {
     macro_rules! exception {
         ($name:expr) => ({

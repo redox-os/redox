@@ -193,7 +193,7 @@ impl FileSystem {
             }
         }
 
-        return Option::None;
+        Option::None
     }
 
     /// List nodes in a given directory
@@ -206,7 +206,7 @@ impl FileSystem {
             }
         }
 
-        return ret;
+        ret
     }
 }
 
@@ -221,11 +221,11 @@ pub struct FileResource {
 
 impl Resource for FileResource {
     fn url(&self) -> URL {
-        return URL::from_string(&("file:///".to_string() + &self.node.name));
+        URL::from_string(&("file:///".to_string() + &self.node.name))
     }
 
     fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+        ResourceType::File
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -238,7 +238,7 @@ impl Resource for FileResource {
             self.seek += 1;
             i += 1;
         }
-        return Option::Some(i);
+        Option::Some(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -256,7 +256,7 @@ impl Resource for FileResource {
         if i > 0 {
             self.dirty = true;
         }
-        return Option::Some(i);
+        Option::Some(i)
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -270,7 +270,7 @@ impl Resource for FileResource {
         while self.vec.len() < self.seek {
             self.vec.push(0);
         }
-        return Option::Some(self.seek);
+        Option::Some(self.seek)
     }
 
     // TODO: Rename to sync
@@ -359,7 +359,7 @@ impl Resource for FileResource {
                 return false;
             }
         }
-        return true;
+        true
     }
 }
 
