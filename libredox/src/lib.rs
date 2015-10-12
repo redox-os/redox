@@ -134,7 +134,7 @@
     // TODO pub mod ffi;
     pub mod fs;
     pub mod io;
-    // TODO pub mod net;
+    pub mod net;
     // TODO pub mod os;
     // TODO pub mod path;
     // TODO pub mod process;
