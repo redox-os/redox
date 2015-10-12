@@ -8,8 +8,6 @@ pub mod debug;
 pub mod ethernet;
 /// File scheme
 pub mod file;
-/// HTTP scheme
-pub mod http;
 /// ICMP scheme
 pub mod icmp;
 /// IP scheme
