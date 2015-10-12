@@ -119,7 +119,7 @@ docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
 
-schemes: schemes/example
+schemes: schemes/example schemes/reent
 
 tests: tests/success tests/failure
 

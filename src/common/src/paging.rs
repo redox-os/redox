@@ -54,6 +54,16 @@ impl Page {
             : "intel", "volatile");
     }
 
+    /// Get the current physical address
+    pub fn phys_addr(&self) -> usize {
+        unsafe { (ptr::read(self.entry_address() as *mut u32) & 0xFFFFF000) as usize }
+    }
+
+    /// Get the current virtual address
+    pub fn virt_addr(&self) -> usize {
+        self.virtual_address & 0xFFFFF000
+    }
+
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u32,
