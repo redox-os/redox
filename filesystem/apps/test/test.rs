@@ -1,10 +1,8 @@
-#![feature(core)]
-
-extern crate core;
+#![feature(asm)]
 
 use std::Box;
 use std::{io, rand};
-use core::ptr;
+use std::ptr;
 
 macro_rules! readln {
     () => {
@@ -35,7 +33,9 @@ pub fn main() {
             let console_commands = ["panic",
                                     "ls",
                                     "ptr_write",
-                                    "box_write",];
+                                    "box_write",
+                                    "reboot",
+                                    "shutdown"];
 
             match &a_command[..] {
                 command if command == console_commands[0] =>
@@ -51,6 +51,27 @@ pub fn main() {
                 command if command == console_commands[3] => {
                     let mut a_box = Box::new(rand() as u8);
                     unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
+                }
+                command if command == console_commands[4] => {
+                    unsafe {
+                        let mut good: u8 = 2;
+                        while good & 2 == 2 {
+                            asm!("in al, dx" : "={al}"(good) : "{dx}"(0x64) : : "intel", "volatile");
+                        }
+                        asm!("out dx, al" : : "{dx}"(0x64), "{al}"(0xFE) : : "intel", "volatile");
+                        loop {
+                            asm!("cli" : : : : "intel", "volatile");
+                            asm!("hlt" : : : : "intel", "volatile");
+                        }
+                    }
+                }
+                command if command == console_commands[5] => {
+                    unsafe {
+                        loop {
+                            asm!("cli" : : : : "intel", "volatile");
+                            asm!("hlt" : : : : "intel", "volatile");
+                        }
+                    }
                 }
                 _ => println!("Commands: {}", console_commands.join(" ")),
             }
