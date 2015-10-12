@@ -19,6 +19,8 @@ Hey there! Here's a bunch of stuff that needs done:
 
 - [ ] Add the multithreading functionality that the std provides.
 
+- [ ] Remove the uses of `return` statements.
+
 
 Add more stuff if you want.
 
