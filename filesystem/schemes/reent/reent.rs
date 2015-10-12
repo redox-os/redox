@@ -1,7 +1,7 @@
 use redox::Box;
-use redox::fs::file::{File, Seek};
+use redox::fs::file::File;
 use redox::string::*;
-use redox::io::{Read, Write};
+use redox::io::{Read, Write, Seek, SeekFrom};
 
 pub struct Resource {
     file: File
@@ -16,7 +16,7 @@ impl Resource {
         self.file.write(buf)
     }
 
-    pub fn seek(&mut self, seek: Seek) -> Option<usize> {
+    pub fn seek(&mut self, seek: SeekFrom) -> Option<usize> {
         self.file.seek(seek)
     }
 
@@ -32,9 +32,9 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, path: &str) -> Box<Resource> {
-        box Resource {
+    pub fn open(&mut self, path: &str) -> Option<Box<Resource>> {
+        Some(box Resource {
             file: File::open(&("example:".to_string() + path))
-        }
+        })
     }
 }

@@ -61,7 +61,6 @@ use schemes::memory::*;
 use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
-use schemes::udp::*;
 use schemes::window::*;
 
 use syscall::call;
@@ -343,7 +342,6 @@ unsafe fn init(font_data: usize) {
     });
     session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
-    session.items.push(box UDPScheme);
     session.items.push(box WindowScheme);
 
     Context::spawn(box move || {

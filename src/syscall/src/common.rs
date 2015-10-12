@@ -25,3 +25,4 @@ pub const SYS_TRIGGER: u32 = 2000;
 
 //Misc
 pub const SYS_TIME: u32 = 3000;
+pub const SYS_FPATH: u32 = 3001;
