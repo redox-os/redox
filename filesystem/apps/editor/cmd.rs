@@ -78,6 +78,23 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 editor.offset = 0;
                                 ::core::mem::swap(last_change, &mut editor.string);
                             },
+                            (Normal, 'o') => {
+                                exec(editor, mode, multiplier, last_change, KeyEvent {
+                                    character: '$',
+                                    scancode: 0,
+                                    pressed: true,
+                                }, window);
+                                exec(editor, mode, multiplier, last_change, KeyEvent {
+                                    character: 'i',
+                                    scancode: 0,
+                                    pressed: true,
+                                }, window);
+                                exec(editor, mode, multiplier, last_change, KeyEvent {
+                                    character: '\n',
+                                    scancode: 0,
+                                    pressed: true,
+                                }, window);
+                            },
                             (Normal, '$') => {
                                 let mut new_offset = editor.string.len();
                                 for i in editor.offset..editor.string.len() {
