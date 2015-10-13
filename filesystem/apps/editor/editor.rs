@@ -217,12 +217,13 @@ impl Editor {
 
         let mut last_change = String::new();
         let mut multiplier: Option<u32> = None;
+        let mut swap = 0;
 
         while let Option::Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
-                        cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window);
+                        cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window, &mut swap);
 
                         self.draw_content(&mut window);
                     }

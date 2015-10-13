@@ -4,7 +4,7 @@ use super::Mode;
 use super::Mode::*;
 use super::Editor;
 
-pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, last_change: &mut String, key_event: KeyEvent, window: &mut Window) {
+pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, last_change: &mut String, key_event: KeyEvent, window: &mut Window, swap: &mut usize) {
     match (*mode, key_event.scancode) {
         (Insert, K_ESC) => {
             *mode = Normal;
@@ -42,7 +42,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                 '4' => times = times * 10 + 4,
 
                 '5' if no_mult => times = 5,
-                '5' => times = times * 10 + 5,
+                 '5' => times = times * 10 + 5,
 
                 '6' if no_mult => times = 6,
                 '6' => times = times * 10 + 6,
@@ -79,44 +79,47 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 editor.offset = 0;
                                 ::core::mem::swap(last_change, &mut editor.string);
                             },
+                            (Normal, 's') => {
+                                ::core::mem::swap(&mut editor.offset, swap);
+                            },
                             (Normal, 'o') => {
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: '$',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: 'i',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: '\n',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                             },
                             (Normal, 'O') => {
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: 'k',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: '$',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: 'i',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                                 exec(editor, mode, multiplier, last_change, KeyEvent {
                                     character: '\n',
                                     scancode: 0,
                                     pressed: true,
-                                }, window);
+                                }, window, swap);
                             },
                             (Normal, '$') => {
                                 let mut new_offset = editor.string.len();
