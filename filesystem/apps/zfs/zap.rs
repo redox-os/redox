@@ -1,6 +1,6 @@
 use redox::*;
 
-use super::FromBytes;
+use super::from_bytes::FromBytes;
 
 const MZAP_ENT_LEN: usize = 64;
 const MZAP_NAME_LEN: usize = MZAP_ENT_LEN - 8 - 4 - 2;
@@ -16,11 +16,11 @@ pub enum ZapObjectType {
 /// Microzap
 #[repr(packed)]
 pub struct MZapPhys {
-    block_type: ZapObjectType, // ZapObjectType::Micro
-    salt: u64,
-    norm_flags: u64,
+    pub block_type: ZapObjectType, // ZapObjectType::Micro
+    pub salt: u64,
+    pub norm_flags: u64,
     pad: [u64; 5],
-    chunk: [MZapEntPhys; 1],
+    pub chunk: [MZapEntPhys; 1],
     // actually variable size depending on block size
 }
 

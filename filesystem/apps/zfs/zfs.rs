@@ -1,15 +1,18 @@
 //To use this, please install zfs-fuse
 use redox::*;
 
+use self::dsl_dataset::DslDatasetPhys;
+use self::dsl_dir::DslDirPhys;
+use self::from_bytes::FromBytes;
+
+pub mod dsl_dataset;
+pub mod dsl_dir;
+pub mod from_bytes;
 pub mod lzjb;
 pub mod nvpair;
 pub mod nvstream;
 pub mod xdr;
 pub mod zap;
-
-pub trait FromBytes {
-    fn from_bytes(data: &[u8]) -> Option<Self>;
-}
 
 #[repr(packed)]
 pub struct VdevLabel {
@@ -19,16 +22,7 @@ pub struct VdevLabel {
     pub uberblocks: [Uberblock; 128],
 }
 
-impl FromBytes for VdevLabel {
-    fn from_bytes(data: &[u8]) -> Option<Self> {
-        if data.len() >= mem::size_of::<VdevLabel>() {
-            let vdev_label = unsafe { ptr::read(data.as_ptr() as *const VdevLabel) };
-            Some(vdev_label)
-        } else {
-            Option::None
-        }
-    }
-}
+impl FromBytes for VdevLabel { }
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
@@ -132,11 +126,11 @@ impl BlockPtr {
     }
 
     pub fn lsize(&self) -> u64 {
-        (self.flags_size) & 0xFFFF + 1
+        (self.flags_size & 0xFFFF) + 1
     }
 
     pub fn psize(&self) -> u64 {
-        ((self.flags_size) >> 16) & 0xFFFF + 1
+        ((self.flags_size >> 16) & 0xFFFF) + 1
     }
 }
 
@@ -188,15 +182,7 @@ impl DNodePhys {
     }
 }
 
-impl FromBytes for DNodePhys {
-    fn from_bytes(data: &[u8]) -> Option<Self> {
-        if data.len() >= mem::size_of::<DNodePhys>() {
-            Some(unsafe { ptr::read(data.as_ptr() as *const DNodePhys) })
-        } else {
-            Option::None
-        }
-    }
-}
+impl FromBytes for DNodePhys { }
 
 impl fmt::Debug for DNodePhys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -214,15 +200,7 @@ pub struct ObjectSetPhys {
     //pad: [u8; 360],
 }
 
-impl FromBytes for ObjectSetPhys {
-    fn from_bytes(data: &[u8]) -> Option<Self> {
-        if data.len() >= mem::size_of::<ObjectSetPhys>() {
-            Some(unsafe { ptr::read(data.as_ptr() as *const ObjectSetPhys) })
-        } else {
-            Option::None
-        }
-    }
-}
+impl FromBytes for ObjectSetPhys { }
 
 #[repr(packed)]
 pub struct ZilHeader {
@@ -272,12 +250,54 @@ impl ZFS {
             },
             1 | 3 => {
                 // lzjb compression
-                let mut decompressed = vec![0; 2048];
+                let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
                 lzjb::decompress(&data, &mut decompressed);
                 T::from_bytes(&decompressed[offset*mem::size_of::<T>()..])
             },
             _ => None,
         }
+    }
+
+    pub fn read_file(&mut self, uberblock: &Uberblock) {
+        let mos_dva = uberblock.rootbp.dvas[0];
+        let mos: ObjectSetPhys = self.read_type(&uberblock.rootbp).unwrap();
+        let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
+        let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
+        let mos_block_ptr3 = mos.meta_dnode.get_blockptr(2);
+
+        let dnode1: DNodePhys = self.read_type_array(&mos_block_ptr1, 1).unwrap();
+
+        let root_ds: zap::MZapPhys = self.read_type(dnode1.get_blockptr(0)).unwrap();
+
+        let root_ds_dnode: DNodePhys =
+            self.read_type_array(&mos_block_ptr1, root_ds.chunk[0].value as usize).unwrap();
+
+        let dsl_dir = DslDirPhys::from_bytes(root_ds_dnode.get_bonus()).unwrap();
+        let head_ds_dnode: DNodePhys =
+            self.read_type_array(&mos_block_ptr1, dsl_dir.head_dataset_obj as usize).unwrap();
+        println!("head_ds_dnode: {:?}", head_ds_dnode);
+
+        let root_dataset = DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()).unwrap();
+
+        let fs_objset: ObjectSetPhys = self.read_type(&root_dataset.bp).unwrap();
+        println!("fs_objset.meta_dnode: {:?}", fs_objset.meta_dnode);
+        println!("fs_objset.meta_dnode.dvas: {:?}", fs_objset.meta_dnode.get_blockptr(0).dvas);
+
+        for i in 0..root_dataset.bp.lsize() as usize {
+            let mut fs_dnode: DNodePhys = self.read_type_array(fs_objset.meta_dnode.get_blockptr(0), i).unwrap();
+            println!("fs object: {:?}", fs_dnode);
+        }
+        return;
+
+        let mut indirect_dnode: DNodePhys = self.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 1).unwrap();
+        while indirect_dnode.nlevels > 1 {
+            println!("L{} fs dnode: {:?}", indirect_dnode.nlevels, indirect_dnode);
+            readln!();
+            indirect_dnode = self.read_type(indirect_dnode.get_blockptr(0)).unwrap();
+        }
+
+        println!("L0 fs dnode: {:?}", indirect_dnode);
+        println!("L0 fs dnode dvas: {:?}", indirect_dnode.get_blockptr(0).dvas);
     }
 
     pub fn uber(&mut self) -> Option<Uberblock> {
@@ -353,6 +373,10 @@ pub fn main() {
                                 println_color!(green, "Got nv_list:\n{:?}", nv_list);
                             },
                             None => { println_color!(red, "Couldn't read vdev_label"); },
+                        }
+                    } else if *command == "file".to_string() {
+                        if let Some(uberblock) = zfs.uber() {
+                            zfs.read_file(&uberblock);
                         }
                     } else if *command == "mos".to_string() {
                         match zfs.uber() {
