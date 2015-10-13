@@ -20,6 +20,10 @@ pub unsafe fn sys_exit(status: isize) {
     syscall(SYS_EXIT, (status as i32) as u32, 0, 0);
 }
 
+pub unsafe fn sys_fork() -> usize {
+    syscall(SYS_FORK, 0, 0, 0) as usize
+}
+
 pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     syscall(SYS_READ, fd as u32, buf as u32, count as u32) as usize
 }

@@ -13,6 +13,7 @@ use common::resource::*;
 use common::scheduler;
 use common::string::*;
 use common::time::*;
+use common::vec::*;
 
 use drivers::pio::*;
 
@@ -71,6 +72,34 @@ pub unsafe fn do_sys_debug(byte: u8) {
 
 pub unsafe fn do_sys_exit(status: isize) {
     context_exit();
+}
+
+pub unsafe fn do_sys_fork() -> usize {
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = scheduler::start_no_ints();
+
+    let parent_i = context_i;
+
+    let contexts = &mut *contexts_ptr;
+
+    let mut context_fork_args: Vec<u32> = Vec::new();
+    context_fork_args.push(parent_i as u32);
+    context_fork_args.push(context_exit as u32);
+
+    contexts.push(Context::new(context_fork as u32, &context_fork_args));
+
+    context_switch(true);
+
+    if context_i == parent_i {
+        ret = 0;
+    }else{
+        ret = context_i;
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
 }
 
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
@@ -412,6 +441,7 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
 
         // Linux
         SYS_EXIT => do_sys_exit((ebx as i32) as isize),
+        SYS_FORK => eax = do_sys_fork() as u32,
         SYS_READ => eax = do_sys_read(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_WRITE => eax = do_sys_write(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_OPEN =>
