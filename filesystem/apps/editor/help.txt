@@ -1,0 +1,40 @@
+Manual for the Redox editor
+===========================
+
+The Redox editor is a Vi-like editor, which
+can be used for editing plain text. The editor
+consists of a number of modes and commands.
+
+You start in normal mode. In normal mode following
+commands are valid:
+
+- hjkl: Motion
+- i: Go to insert mode
+- d: Delete the rest of the line
+- 0: Go to the start of the line
+- $: Go to the end of the line
+- a: Insert text after the cursor
+- o: Create a new line under the current one
+     and go to insert mode.
+- O: Same as `o` but instead over the current line.
+- x: Delete char after cursor.
+- X: Delete char before cursor.
+- d: Delete the rest of the line.
+- s: Go to the other cursor.
+- u: Undo (only one undo level, to redo: u)
+- g: Go to the top
+- G: Go to the bottom
+
+A command can be preceded by a numeral. The command
+will the be repeated the number of times given.
+
+In insert mode, you can type text. To go back to
+normal mode press escape.
+
+## Tips and tricks
+
+(in normal mode)
+
+- g[n]j: Go to the n'th line.
+- 0d: Delete the current line.
+- Go: Insert text at the buttom.
