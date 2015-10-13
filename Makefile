@@ -207,6 +207,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool create redox_zfs /dev/loop0
 	-sudo zfs create -o compression=off redox_zfs/root
 	-sudo cp README.md /redox_zfs/root/
+	-sudo cp README.md /redox_zfs/
 	-sudo sync
 	-sudo zfs unmount redox_zfs/root
 	-sudo zpool destroy redox_zfs
