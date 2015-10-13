@@ -6,7 +6,7 @@ use drivers::pciconfig::*;
 
 use common::debug;
 use common::memory;
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::time::{self, Duration};
@@ -49,12 +49,14 @@ struct IntelHDAResource {
 }
 
 impl Resource for IntelHDAResource {
-    fn url(&self) -> URL {
-        URL::from_str("hda://")
+    fn dup(&self) -> Box<Resource> {
+        box IntelHDAResource {
+            base: self.base
+        }
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
+    fn url(&self) -> URL {
+        URL::from_str("hda://")
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

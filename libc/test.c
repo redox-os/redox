@@ -16,6 +16,15 @@ int main(int argc, char ** argv){
             printf("Malloc %x\n", test);
             free(test);
             printf("Free\n");
+
+	    pid_t pid = fork();
+            if(pid == 0){
+                printf("Fork Parent\n");
+            }else if(pid > 0){
+                printf("Fork Child %d\n", pid);
+            }else{
+                printf("Fork Failed\n");
+            }
         }else{
             printf("Malloc Failed\n");
         }

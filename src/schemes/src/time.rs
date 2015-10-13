@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
 use common::scheduler;
@@ -26,7 +26,6 @@ impl SessionItem for TimeScheme {
         }
 
         return box VecResource::new(URL::from_str("time://"),
-                                    ResourceType::File,
                                     ("Time: ".to_string() +
                                      String::from_num_signed(clock_realtime.secs as isize) +
                                      "\nUptime: " +

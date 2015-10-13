@@ -87,8 +87,12 @@ impl Window {
 
     /// Redraw the window
     pub fn redraw(&mut self) {
-        self.content.flip();
-        RedrawEvent { redraw: REDRAW_ALL }.to_event().trigger();
+        unsafe {
+            let reenable = scheduler::start_no_ints();
+            self.content.flip();
+            (*::session_ptr).redraw = true;
+            scheduler::end_no_ints(reenable);
+        }
     }
 
     /// Draw the window using a `Display`

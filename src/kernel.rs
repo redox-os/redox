@@ -62,29 +62,13 @@ use schemes::tcp::*;
 use schemes::time::*;
 use schemes::window::*;
 
-use syscall::call;
 use syscall::handle::*;
 
 #[path="audio/src/lib.rs"]
 mod audio;
 
-#[path="common/src"]
-mod common {
-    pub mod context;
-    pub mod debug;
-    pub mod elf;
-    pub mod event;
-    pub mod queue;
-    pub mod memory;
-    pub mod mutex;
-    pub mod paging;
-    pub mod random;
-    pub mod resource;
-    pub mod scheduler;
-    pub mod string;
-    pub mod time;
-    pub mod vec;
-}
+#[path="common/src/lib.rs"]
+mod common;
 
 #[path="drivers/src/lib.rs"]
 mod drivers;
@@ -168,7 +152,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        call::sys_yield();
+        context_switch(false);
     }
 }
 
@@ -193,7 +177,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = cmp::max((*::session_ptr).redraw, event::REDRAW_ALL);
+                                            (*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
@@ -232,7 +216,7 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        call::sys_yield();
+        context_switch(false);
     }
 }
 
@@ -250,7 +234,7 @@ unsafe fn redraw_loop() -> ! {
             session.redraw();
         }
 
-        call::sys_yield();
+        context_switch(false);
     }
 }
 
@@ -375,7 +359,7 @@ unsafe fn init(font_data: usize) {
 
         let reenable = scheduler::start_no_ints();
         session.cursor = cursor;
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 
@@ -413,7 +397,7 @@ unsafe fn init(font_data: usize) {
 
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
-                session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+                session.redraw = true;
                 scheduler::end_no_ints(reenable);
             }
         }
@@ -430,7 +414,7 @@ unsafe fn init(font_data: usize) {
 
         let reenable = scheduler::start_no_ints();
         session.background = background;
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 
@@ -483,7 +467,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            call::sys_exit(-1);
+            do_sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");
@@ -526,7 +510,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            call::sys_exit(-1);
+            do_sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");

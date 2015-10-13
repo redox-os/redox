@@ -1,14 +1,32 @@
-use core::fmt::Write;
-
 use redox::Box;
 use redox::string::*;
-use redox::io::{self, SeekFrom};
+use redox::io::{self, SeekFrom, Write};
 
 pub struct Resource {
     path: String
 }
 
 impl Resource {
+    pub fn dup(&self) -> Option<Box<Resource>> {
+        Some(box Resource {
+            path: self.path.clone()
+        })
+    }
+
+    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
+        let mut i = 0;
+        for b in self.path.bytes() {
+            if i < buf.len() {
+                buf[i] = b;
+                i += 1;
+            } else {
+                break;
+            }
+        }
+
+        Some(i)
+    }
+
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         write!(io::stdout(), "Read {} bytes from {}\n", buf.len(), self.path);
         Some(0)

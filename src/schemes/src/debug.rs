@@ -1,23 +1,24 @@
 use alloc::boxed::Box;
 
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::context::context_switch;
+use common::resource::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 
 use programs::session::SessionItem;
 
-use syscall::call;
+use syscall::handle;
 
 /// A debug resource
 pub struct DebugResource;
 
 impl Resource for DebugResource {
-    fn url(&self) -> URL {
-        return URL::from_str("debug://");
+    fn dup(&self) -> Box<Resource> {
+        box DebugResource
     }
 
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+    fn url(&self) -> URL {
+        return URL::from_str("debug://");
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -31,7 +32,7 @@ impl Resource for DebugResource {
 
                 scheduler::end_no_ints(reenable);
 
-                call::sys_yield();
+                context_switch(false);
             }
 
             let reenable = scheduler::start_no_ints();
@@ -55,7 +56,7 @@ impl Resource for DebugResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         for byte in buf {
             unsafe {
-                call::sys_debug(*byte);
+                handle::do_sys_debug(*byte);
             }
         }
         return Option::Some(buf.len());

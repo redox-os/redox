@@ -1,3 +1,5 @@
+use core::clone::Clone;
+
 use common::vec::*;
 
 /// A FIFO Queue
@@ -25,5 +27,13 @@ impl<T> Queue<T> {
     /// Get the length of the queue
     pub fn len(&self) -> usize {
         self.vec.len()
+    }
+}
+
+impl<T> Clone for Queue<T> where T: Clone {
+    fn clone(&self) -> Self {
+        Queue {
+            vec: self.vec.clone()
+        }
     }
 }

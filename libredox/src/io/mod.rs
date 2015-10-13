@@ -1,5 +1,4 @@
 use fmt;
-use result;
 use str;
 use string::String;
 use vec::{IntoIter, Vec};
@@ -59,6 +58,14 @@ pub trait Read {
 pub trait Write {
     /// Write to the file
     fn write(&mut self, buf: &[u8]) -> Option<usize>;
+
+    /// Write a format to the file
+    fn write_fmt(&mut self, args: fmt::Arguments) -> Result<(), Error> {
+        match self.write(fmt::format(args).as_bytes()) {
+            Some(_) => Ok(()),
+            None => Err(Error)
+        }
+    }
 }
 
 /// Seek Location
@@ -134,14 +141,6 @@ impl Write for Stdout {
     }
 }
 
-impl fmt::Write for Stdout {
-    fn write_str(&mut self, s: &str) -> fmt::Result {
-        self.write(s.as_bytes());
-
-        result::Result::Ok(())
-    }
-}
-
 /// Standard Error
 pub struct Stderr;
 
@@ -164,6 +163,7 @@ impl Write for Stderr {
     }
 }
 
+#[allow(unused_must_use)]
 pub fn _print(args: fmt::Arguments) {
-    fmt::write(&mut stdout(), args);
+    stdout().write_fmt(args);
 }
