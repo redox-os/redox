@@ -243,8 +243,7 @@ impl Editor {
                                 let mut is_none = false;
 
                                 match key_event.character {
-                                    '0' if no_mult => times = 0,
-                                    '0' => times *= 10,
+                                    '0' if !no_mult => times *= 10,
 
                                     '1' if no_mult => times = 1,
                                     '1' => times = times * 10 + 1,
@@ -294,6 +293,35 @@ impl Editor {
                                                 (Normal, 'u') => {
                                                     self.offset = 0;
                                                     ::core::mem::swap(&mut last_change, &mut self.string);
+                                                },
+                                                (Normal, '$') => {
+                                                    let mut new_offset = self.string.len();
+                                                    for i in self.offset..self.string.len() {
+                                                        match self.string.as_bytes()[i] {
+                                                            0 => break,
+                                                            10 => {
+                                                                new_offset = i;
+                                                                break;
+                                                            }
+                                                            _ => (),
+                                                        }
+                                                    }
+                                                    self.offset = new_offset;
+                                                },
+                                                (Normal, '0') => {
+
+                                                    let mut new_offset = 0;
+                                                    for i in 2..self.offset {
+                                                        match self.string.as_bytes()[self.offset - i] {
+                                                            0 => break,
+                                                            10 => {
+                                                                new_offset = self.offset - i + 1;
+                                                                break;
+                                                            }
+                                                            _ => (),
+                                                        }
+                                                    }
+                                                    self.offset = new_offset;
                                                 },
                                                 (Insert, '\0') => (),
                                                 (Insert, _) => {
