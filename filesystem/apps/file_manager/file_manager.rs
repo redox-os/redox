@@ -257,8 +257,8 @@ impl FileManager {
                         let click_time = Duration::realtime();
 
                         if click_time - self.click_time < Duration::new(0, 500 * time::NANOS_PER_MILLI)
-                            && (self.last_mouse_event.x - mouse_event.x).abs() <= 4
-                            && (self.last_mouse_event.y - mouse_event.y).abs() <= 4 {
+                            && self.last_mouse_event.x == mouse_event.x
+                            && self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 match self.files.get(self.selected as usize) {
                                     Option::Some(file) => {
