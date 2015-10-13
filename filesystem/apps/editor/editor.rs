@@ -214,6 +214,7 @@ impl Editor {
         let mut mode = Mode::Normal;
 
         let mut last_change = String::new();
+        let mut multiplier: Option<u32> = None;
 
         while let Option::Some(event) = window.poll() {
             match event.to_option() {
@@ -234,36 +235,87 @@ impl Editor {
                             (_, K_RIGHT) => self.right(),
                             (_, K_END) => self.offset = self.string.len(),
                             (_, K_DOWN) => self.down(),
-                            (m, _) => match (m, key_event.character) {
-                                (Normal, 'i') => {
-                                    mode = Insert;
-                                    last_change = self.string.clone();
-                                },
-                                (Normal, 'h') => self.left(),
-                                (Normal, 'l') => self.right(),
-                                (Normal, 'k') => self.up(),
-                                (Normal, 'j') => self.down(),
-                                (Normal, 'G') => self.offset = self.string.len(),
-                                (Normal, 'a') => {
-                                    self.right();
-                                    mode = Insert;
-                                    last_change = self.string.clone();
-                                },
-                                (Normal, 'x') => self.delete(&mut window),
-                                (Normal, 'X') => self.backspace(&mut window),
-                                (Normal, 'u') => {
-                                    self.offset = 0;
-                                    ::core::mem::swap(&mut last_change, &mut self.string);
-                                },
-                                (Insert, '\0') => (),
-                                (Insert, _) => {
-                                    window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                    self.string = self.string[0 .. self.offset].to_string() +
-                                                  &key_event.character.to_string() +
-                                                  &self.string[self.offset .. self.string.len()];
-                                    self.offset += 1;
-                                },
-                                _ => {},
+                            (m, _) => {
+                                let (no_mult, mut times) = match multiplier {
+                                    Some(n) => (false, n),
+                                    None => (true, 1),
+                                };
+                                let mut is_none = false;
+
+                                match key_event.character {
+                                    '0' if no_mult => times = 0,
+                                    '0' => times *= 10,
+
+                                    '1' if no_mult => times = 1,
+                                    '1' => times = times * 10 + 1,
+
+                                    '2' if no_mult => times = 2,
+                                    '2' => times = times * 10 + 2,
+
+                                    '3' if no_mult => times = 3,
+                                    '3' => times = times * 10 + 3,
+
+                                    '4' if no_mult => times = 4,
+                                    '4' => times = times * 10 + 4,
+
+                                    '5' if no_mult => times = 5,
+                                    '5' => times = times * 10 + 5,
+
+                                    '6' if no_mult => times = 6,
+                                    '6' => times = times * 10 + 6,
+
+                                    '7' if no_mult => times = 7,
+                                    '7' => times = times * 10 + 7,
+
+                                    '8' if no_mult => times = 8,
+                                    '8' => times = times * 10 + 8,
+
+                                    '9' if no_mult => times = 9,
+                                    '9' => times = times * 10 + 9,
+                                    _ => {
+                                        for _ in 0 .. times {
+                                            match (m, key_event.character) {
+                                                (Normal, 'i') => {
+                                                    mode = Insert;
+                                                    last_change = self.string.clone();
+                                                },
+                                                (Normal, 'h') => self.left(),
+                                                (Normal, 'l') => self.right(),
+                                                (Normal, 'k') => self.up(),
+                                                (Normal, 'j') => self.down(),
+                                                (Normal, 'G') => self.offset = self.string.len(),
+                                                (Normal, 'a') => {
+                                                    self.right();
+                                                    mode = Insert;
+                                                    last_change = self.string.clone();
+                                                },
+                                                (Normal, 'x') => self.delete(&mut window),
+                                                (Normal, 'X') => self.backspace(&mut window),
+                                                (Normal, 'u') => {
+                                                    self.offset = 0;
+                                                    ::core::mem::swap(&mut last_change, &mut self.string);
+                                                },
+                                                (Insert, '\0') => (),
+                                                (Insert, _) => {
+                                                    window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
+                                                    self.string = self.string[0 .. self.offset].to_string() +
+                                                        &key_event.character.to_string() +
+                                                        &self.string[self.offset .. self.string.len()];
+                                                    self.offset += 1;
+                                                },
+                                                _ => {},
+                                            }
+                                        }
+                                        is_none = true;
+                                    }
+                                }
+
+                                if !is_none {
+                                    multiplier = Some(times);
+                                } else {
+                                    multiplier = None;
+                                }
+
                             }
                         }
 
