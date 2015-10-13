@@ -26,6 +26,7 @@ commands are valid:
 - G: Go to the bottom
 - ,: Start/stop recording a period
 - !: Play a period
+- ^: Go to the first non blank char of the line.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.
