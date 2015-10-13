@@ -28,6 +28,23 @@ impl Editor {
         }
     }
 
+    fn backspace(&mut self, window: &mut Window) {
+         if self.offset > 0 {
+             window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
+             self.string = self.string[0 .. self.offset - 1].to_string() +
+                 &self.string[self.offset .. self.string.len()];
+             self.offset -= 1;
+         }
+    }
+
+    fn delete(&mut self, window: &mut Window) {
+        if self.offset < self.string.len() {
+            window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
+            self.string = self.string[0 .. self.offset + 1].to_string() +
+                &self.string[self.offset + 1 .. self.string.len() - 1];
+        }
+    }
+
     fn up(&mut self) {
         let mut new_offset = 0;
         for i in 2..self.offset {
@@ -203,17 +220,8 @@ impl Editor {
                         use self::Mode::*;
                         match (mode, key_event.scancode) {
                             (Insert, K_ESC) => mode = Normal,
-                            (Insert, K_BKSP) => if self.offset > 0 {
-                                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                self.string = self.string[0 .. self.offset - 1].to_string() +
-                                              &self.string[self.offset .. self.string.len()];
-                                self.offset -= 1;
-                            },
-                            (Insert, K_DEL) => if self.offset < self.string.len() {
-                                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                self.string = self.string[0 .. self.offset].to_string() +
-                                              &self.string[self.offset + 1 .. self.string.len() - 1];
-                            },
+                            (Insert, K_BKSP) => self.backspace(&mut window),
+                            (Insert, K_DEL) => self.delete(&mut window),
                             (_, K_F5) => self.reload(&mut window),
                             (_, K_F6) => self.save(&mut window),
                             (_, K_HOME) => self.offset = 0,
@@ -233,6 +241,8 @@ impl Editor {
                                     self.right();
                                     mode = Insert;
                                 },
+                                (Normal, 'x') => self.delete(&mut window),
+                                (Normal, 'X') => self.backspace(&mut window),
                                 (Insert, '\0') => (),
                                 (Insert, _) => {
                                     window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
