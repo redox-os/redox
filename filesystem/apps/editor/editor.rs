@@ -252,6 +252,7 @@ impl Editor {
                                 (Normal, 'x') => self.delete(&mut window),
                                 (Normal, 'X') => self.backspace(&mut window),
                                 (Normal, 'u') => {
+                                    self.offset = 0;
                                     ::core::mem::swap(&mut last_change, &mut self.string);
                                 },
                                 (Insert, '\0') => (),
