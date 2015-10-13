@@ -66,6 +66,58 @@ pub unsafe fn context_switch(interrupted: bool) {
     scheduler::end_no_ints(reenable);
 }
 
+pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &mut *contexts_ptr;
+    let mut context_option: Option<Box<Context>> = None;
+    if let Some(parent) = contexts.get(parent_i) {
+        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+        if stack > 0 {
+            ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
+
+            let mut mem: Vec<ContextMemory> = Vec::new();
+            for entry in parent.memory.iter() {
+                let physical_address = memory::alloc(entry.virtual_size);
+                if physical_address > 0 {
+                    ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
+                    mem.push(ContextMemory {
+                        physical_address: physical_address,
+                        virtual_address: entry.virtual_address,
+                        virtual_size: entry.virtual_size,
+                    });
+                }
+            }
+
+            let mut files: Vec<ContextFile> = Vec::new();
+            for file in parent.files.iter() {
+                files.push(ContextFile {
+                    fd: file.fd,
+                    resource: file.resource.dup()
+                });
+            }
+
+            context_option = Some(box Context {
+                stack: stack,
+                stack_ptr: (parent.stack_ptr as usize - parent.stack + stack) as u32,
+                fx: stack + CONTEXT_STACK_SIZE,
+                fx_enabled: parent.fx_enabled,
+                memory: mem,
+                cwd: parent.cwd.clone(),
+                files: files,
+                interrupted: parent.interrupted,
+                exited: parent.exited,
+            });
+        }
+    }
+
+    if let Some(context) = context_option {
+        contexts.push(context);
+    }
+
+    scheduler::end_no_ints(reenable);
+}
+
 //TODO: To clean up memory leak, current must be destroyed!
 pub unsafe extern "cdecl" fn context_exit() {
     let reenable = scheduler::start_no_ints();

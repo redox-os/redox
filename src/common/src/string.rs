@@ -8,9 +8,8 @@ use core::slice::SliceExt;
 use core::str::StrExt;
 
 use common::debug::*;
+use common::memory::*;
 use common::vec::*;
-
-use syscall::call::*;
 
 /// A trait for types that can be converted to `String`
 pub trait ToString {
@@ -332,7 +331,7 @@ impl String {
     pub unsafe fn to_c_str(&self) -> *const u8 {
         let length = self.len() + 1;
 
-        let data = sys_alloc(length) as *mut u8;
+        let data = alloc(length) as *mut u8;
 
         for i in 0..self.len() {
             ptr::write(data.offset(i as isize), self[i] as u8);

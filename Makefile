@@ -119,7 +119,7 @@ docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
 
-schemes: schemes/example schemes/reent schemes/udp
+schemes: schemes/console schemes/example schemes/reent schemes/udp
 
 tests: tests/success tests/failure
 
@@ -199,7 +199,7 @@ filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld bu
 	$(LD) $(LDARGS) -o $@ -T src/scheme.ld build/`$(BASENAME) $*`.rlib build/libredox.rlib
 
 filesystem/%.list: filesystem/%.bin
-	$(OBJDUMP -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/apps/zfs/zfs.img:
 	dd if=/dev/zero of=$@ bs=64M count=1

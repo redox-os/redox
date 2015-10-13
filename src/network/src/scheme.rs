@@ -2,13 +2,12 @@ use alloc::boxed::*;
 
 use core::ops::DerefMut;
 
+use common::context::context_switch;
 use common::debug::*;
 use common::queue::*;
 use common::resource::*;
 use common::scheduler;
 use common::vec::*;
-
-use syscall::call::sys_yield;
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -43,12 +42,25 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
-    fn url(&self) -> URL {
-        URL::from_str("network://")
+    fn dup(&self) -> Box<Resource> {
+        let mut ret = box NetworkResource {
+            nic: self.nic,
+            ptr: 0 as *mut NetworkResource,
+            inbound: self.inbound.clone(),
+            outbound: self.outbound.clone(),
+        };
+
+        unsafe {
+            ret.ptr = ret.deref_mut();
+
+            (*ret.nic).add(ret.ptr);
+        }
+
+        ret
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
+    fn url(&self) -> URL {
+        URL::from_str("network://")
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -70,7 +82,7 @@ impl Resource for NetworkResource {
                     return Option::Some(bytes.len());
                 }
 
-                sys_yield();
+                context_switch(false);
             }
         }
     }

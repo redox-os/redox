@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::mem;
 
 use common::{debug, random};
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{NoneResource, Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -23,14 +23,21 @@ pub struct TCPResource {
 }
 
 impl Resource for TCPResource {
+    fn dup(&self) -> Box<Resource> {
+        box TCPResource {
+            ip: self.ip.dup(),
+            peer_addr: self.peer_addr,
+            peer_port: self.peer_port,
+            host_port: self.host_port,
+            sequence: self.sequence,
+            acknowledge: self.acknowledge,
+        }
+    }
+
     fn url(&self) -> URL {
         return URL::from_string(&("tcp://".to_string() + self.peer_addr.to_string() + ':' +
                                   self.peer_port as usize +
                                   '/' + self.host_port as usize));
-    }
-
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

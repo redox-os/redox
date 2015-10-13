@@ -1,5 +1,5 @@
 use redox::{self, env, BMPFile};
-use redox::event::{self, EventOption, MouseEvent, OpenEvent};
+use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::file::File;
 use redox::io::Read;
 use redox::orbital::Window;
@@ -193,9 +193,9 @@ impl FileManager {
                                     if self.selected >= 0 &&
                                        self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => OpenEvent {
-                                                url_string: path.to_string() + &file,
-                                            }.trigger(),
+                                            Option::Some(file) => {
+                                                File::exec(&(path.to_string() + &file));
+                                            },
                                             Option::None => (),
                                         }
                                     }
@@ -261,9 +261,9 @@ impl FileManager {
                             && (self.last_mouse_event.y - mouse_event.y).abs() <= 4 {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 match self.files.get(self.selected as usize) {
-                                    Option::Some(file) => OpenEvent {
-                                        url_string: path.to_string() + &file,
-                                    }.trigger(),
+                                    Option::Some(file) => {
+                                        File::exec(&(path.to_string() + &file));
+                                    },
                                     Option::None => (),
                                 }
                             }

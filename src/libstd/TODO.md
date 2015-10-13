@@ -1,5 +1,0 @@
-- [ ] Prelude
-- [ ] IO
-- [ ] network
-- [ ] Macros
-- [ ] Reexports
