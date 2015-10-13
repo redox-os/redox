@@ -121,11 +121,9 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
-                                        disk.read(extent.block + sector as u64,
-                                                  0,
-                                                  data.address() + sector * 512);
-                                    }
+                                    disk.read(extent.block + sector as u64,
+                                              0,
+                                              data.address() + sector * 512);
 
                                         /*
                                         disk.request(request.clone());
@@ -498,9 +496,7 @@ impl SessionItem for FileScheme {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
-                                        self.fs.disk.request(request.clone());
-                                    }
+                                    self.fs.disk.request(request.clone());
 
                                     while request.complete.load(Ordering::SeqCst) == false {
                                         sys_yield();
@@ -519,9 +515,7 @@ impl SessionItem for FileScheme {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
-                                        self.fs.disk.request(request.clone());
-                                    }
+                                    self.fs.disk.request(request.clone());
 
                                     while request.complete.load(Ordering::SeqCst) == false {
                                         sys_yield();
