@@ -158,6 +158,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     editor.offset = new_offset;
                                 },
                                 (Normal, 'd') => {
+                                    // TODO: Is this crash proof?
                                     let mut new_offset = editor.string.len();
                                     for i in editor.offset..editor.string.len() {
                                         match editor.string.as_bytes()[i] {
