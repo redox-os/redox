@@ -20,27 +20,36 @@ pub struct MZapPhys {
     pub salt: u64,
     pub norm_flags: u64,
     pad: [u64; 5],
-    pub chunk: [MZapEntPhys; 1],
-    // actually variable size depending on block size
 }
 
-impl FromBytes for MZapPhys {
+pub struct MZapWrapper {
+    pub phys: MZapPhys,
+    pub chunks: Vec<MZapEntPhys>, // variable size depending on block size
+}
+
+impl FromBytes for MZapWrapper {
     fn from_bytes(data: &[u8]) -> Option<Self> {
         if data.len() >= mem::size_of::<MZapPhys>() {
             let mzap_phys = unsafe { ptr::read(data.as_ptr() as *const MZapPhys) };
-            Some(mzap_phys)
+            let mut mzap_entries = Vec::new();
+            for i in (0..(data.len()-mem::size_of::<MZapPhys>())/mem::size_of::<MZapEntPhys>()) {
+                let entry_pos = mem::size_of::<MZapPhys>() + i*mem::size_of::<MZapEntPhys>();
+                let mzap_ent = unsafe { ptr::read(data[entry_pos..].as_ptr() as *const MZapEntPhys) };
+                mzap_entries.push(mzap_ent);
+            }
+            Some(MZapWrapper { phys: mzap_phys, chunks: mzap_entries })
         } else {
             Option::None
         }
     }
 }
 
-impl fmt::Debug for MZapPhys {
+impl fmt::Debug for MZapWrapper {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "MZapPhys {{\nblock_type: {:?},\nsalt: {:X},\nnorm_flags: {:X},\nchunk: [\n",
-                    self.block_type, self.salt, self.norm_flags));
-        for chunk in &self.chunk {
-            try!(write!(f, "{:?}", chunk));
+                    self.phys.block_type, self.phys.salt, self.phys.norm_flags));
+        for chunk in &self.chunks {
+            try!(write!(f, "{:?}\n", chunk));
         }
         try!(write!(f, "] }}\n"));
         Ok(())
@@ -53,6 +62,18 @@ pub struct MZapEntPhys{
     pub cd: u32,
     pub pad: u16,
     pub name: [u8; MZAP_NAME_LEN],
+}
+
+impl MZapEntPhys {
+    pub fn name(&self) -> Option<&str> {
+        let mut len = 0;
+        for c in &self.name[..] {
+            if *c == 0 { break; }
+            len += 1;
+        }
+
+        str::from_utf8(&self.name[..len]).ok()
+    }
 }
 
 impl fmt::Debug for MZapEntPhys {
