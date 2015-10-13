@@ -64,6 +64,27 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Res
     }
 }
 
+
+#[cold]
+#[inline(never)]
+#[no_mangle]
+pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
+    match (*resource).dup() {
+        Some(resource) => return Box::into_raw(resource),
+        None => return 0xFFFFFFFF as *mut Resource
+    }
+}
+
+#[cold]
+#[inline(never)]
+#[no_mangle]
+pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
+    match (*resource).path(slice::from_raw_parts_mut(buf, len)) {
+        Some(bytes) => return bytes,
+        None => return 0xFFFFFFFF
+    }
+}
+
 #[cold]
 #[inline(never)]
 #[no_mangle]

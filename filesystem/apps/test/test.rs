@@ -3,6 +3,7 @@
 use std::Box;
 use std::{io, rand};
 use std::ptr;
+use std::syscall::sys_fork;
 
 macro_rules! readln {
     () => {
@@ -35,7 +36,8 @@ pub fn main() {
                                     "ptr_write",
                                     "box_write",
                                     "reboot",
-                                    "shutdown"];
+                                    "shutdown",
+                                    "fork"];
 
             match &a_command[..] {
                 command if command == console_commands[0] =>
@@ -70,6 +72,15 @@ pub fn main() {
                         loop {
                             asm!("cli" : : : : "intel", "volatile");
                             asm!("hlt" : : : : "intel", "volatile");
+                        }
+                    }
+                }
+                command if command == console_commands[6] => {
+                    unsafe {
+                        if sys_fork() == 0 {
+                            println!("Parent from fork");
+                        }else {
+                            println!("Child from fork");
                         }
                     }
                 }

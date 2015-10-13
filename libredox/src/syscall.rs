@@ -23,6 +23,10 @@ pub unsafe fn sys_exit(status: isize) {
     syscall(SYS_EXIT, (status as i32) as u32, 0, 0);
 }
 
+pub unsafe fn sys_fork() -> usize {
+    syscall(SYS_FORK, 0, 0, 0) as usize
+}
+
 pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     syscall(SYS_READ, fd as u32, buf as u32, count as u32) as usize
 }
@@ -35,12 +39,20 @@ pub unsafe fn sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     syscall(SYS_OPEN, path as u32, (flags as i32) as u32, (mode as i32) as u32) as usize
 }
 
+pub unsafe fn sys_dup(fd: usize) -> usize {
+    syscall(SYS_DUP, fd as u32, 0, 0) as usize
+}
+
 pub unsafe fn sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
     syscall(SYS_FPATH, fd as u32, buf as u32, len as u32) as usize
 }
 
 pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd as u32, 0, 0) as usize
+}
+
+pub unsafe fn sys_execve(path: *const u8) -> usize {
+    syscall(SYS_EXECVE, path as u32, 0, 0) as usize
 }
 
 pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
@@ -64,10 +76,6 @@ pub fn sys_yield() {
     unsafe {
         syscall(SYS_YIELD, 0, 0, 0);
     }
-}
-
-pub unsafe fn sys_trigger(event_ptr: usize) {
-    syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
 }
 
 pub unsafe fn sys_alloc(size: usize) -> usize {

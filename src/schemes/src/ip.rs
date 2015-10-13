@@ -7,7 +7,7 @@ use network::common::*;
 use network::ipv4::*;
 
 use common::{debug, random};
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{NoneResource, Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -23,13 +23,19 @@ pub struct IPResource {
 }
 
 impl Resource for IPResource {
+    fn dup(&self) -> Box<Resource> {
+        box IPResource {
+            link: self.link.dup(),
+            data: self.data.clone(),
+            peer_addr: self.peer_addr,
+            proto: self.proto,
+            id: self.id,
+        }
+    }
+
     fn url(&self) -> URL {
         return URL::from_string(&("ip://".to_string() + self.peer_addr.to_string() + '/' +
                                   String::from_num_radix(self.proto as usize, 16)));
-    }
-
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

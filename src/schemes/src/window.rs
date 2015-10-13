@@ -4,6 +4,7 @@ use core::cmp::{min, max};
 use core::mem::size_of;
 use core::ptr;
 
+use common::context::context_switch;
 use common::event::*;
 use common::string::*;
 use common::resource::*;
@@ -14,8 +15,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::SessionItem;
-
-use syscall::call::sys_yield;
 
 /// A window scheme
 pub struct WindowScheme;
@@ -29,7 +28,13 @@ pub struct WindowResource {
 }
 
 impl Resource for WindowResource {
-     //Required functions
+    fn dup(&self) -> Box<Resource> {
+        box WindowResource {
+            window: Window::new(self.window.point, self.window.size, self.window.title.clone()),
+            seek: self.seek,
+        }
+    }
+
     /// Return the url of this resource
     fn url(&self) -> URL {
         return URL::from_string(&("window://".to_string() + "/" + self.window.point.x + "/" +
@@ -37,11 +42,6 @@ impl Resource for WindowResource {
                                   self.window.size.width + "/" +
                                   self.window.size.height +
                                   "/" + &self.window.title));
-    }
-
-    /// Return the type of this resource
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
     }
 
     /// Read data to buffer
@@ -54,7 +54,7 @@ impl Resource for WindowResource {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();
                 }
-                Option::None => sys_yield(),
+                Option::None => unsafe { context_switch(false) },
             }
         }
 

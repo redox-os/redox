@@ -4,7 +4,7 @@ use core::{cmp, ptr, mem};
 
 use common::debug;
 use common::memory;
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::time::{self, Duration};
 
@@ -25,12 +25,15 @@ struct AC97Resource {
 }
 
 impl Resource for AC97Resource {
-    fn url(&self) -> URL {
-        URL::from_str("audio://")
+    fn dup(&self) -> Box<Resource> {
+        box AC97Resource {
+            audio: self.audio,
+            bus_master: self.bus_master,
+        }
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
+    fn url(&self) -> URL {
+        URL::from_str("audio://")
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

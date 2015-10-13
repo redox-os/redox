@@ -46,8 +46,7 @@ int execve(char *name, char **argv, char **env) {
 }
 
 int fork(void) {
-    errno = EAGAIN;
-    return -1;
+    return (int)syscall(SYS_FORK, 0, 0, 0);
 }
 
 int fstat(int file, struct stat *st) {
@@ -89,7 +88,7 @@ int read(int file, char *ptr, int len) {
     return (int)syscall(SYS_READ, (uint)file, (uint)ptr, (uint)len);
 }
 
-void *sbrk(ptrdiff_t increment) /* SHOULD be ptrdiff_t */{
+void *sbrk(ptrdiff_t increment){
     char * curr_brk = (char *)syscall(SYS_BRK, 0, 0, 0);
     char * new_brk = (char *)syscall(SYS_BRK, (uint)(curr_brk + increment), 0, 0);
     if (new_brk != curr_brk + increment){

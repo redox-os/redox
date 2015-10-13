@@ -1,10 +1,8 @@
-use string::*;
-
 use core::ptr;
 
 use io::{Read, Write, Seek, SeekFrom};
 
-use syscall::{sys_alloc, sys_unalloc, sys_open, sys_close, sys_fpath, sys_read, sys_write, sys_lseek, sys_fsync};
+use syscall::{sys_alloc, sys_unalloc, sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_read, sys_write, sys_lseek, sys_fsync};
 
 /// A Unix-style file
 pub struct File {
@@ -13,6 +11,22 @@ pub struct File {
 }
 
 impl File {
+    pub fn exec(path: &str) -> bool {
+        unsafe {
+            let c_str = sys_alloc(path.len() + 1) as *mut u8;
+            if path.len() > 0 {
+                ptr::copy(path.as_ptr(), c_str, path.len());
+            }
+            ptr::write(c_str.offset(path.len() as isize), 0);
+
+            let ret = sys_execve(c_str);
+
+            sys_unalloc(c_str as usize);
+
+            ret == 0
+        }
+    }
+
     /// Open a new file using a path
     // TODO: Return Option<File>
     pub fn open(path: &str) -> Self {
@@ -30,6 +44,20 @@ impl File {
             sys_unalloc(c_str as usize);
 
             ret
+        }
+    }
+
+    /// Duplicate the file
+    pub fn dup(&self) -> Option<File> {
+        unsafe{
+            let new_fd = sys_dup(self.fd);
+            if new_fd == 0xFFFFFFFF {
+                None
+            } else {
+                Some(File {
+                    fd: new_fd
+                })
+            }
         }
     }
 

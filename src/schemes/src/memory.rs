@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use common::memory;
-use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
 use programs::session::SessionItem;
@@ -18,7 +18,6 @@ impl SessionItem for MemoryScheme {
         let string = "Memory Used: ".to_string() + memory::memory_used() / 1024 + " KB\n" +
                      "Memory Free: " + memory::memory_free() / 1024 + " KB";
         return box VecResource::new(URL::from_str("memory://"),
-                                    ResourceType::File,
                                     string.to_utf8());
     }
 }
