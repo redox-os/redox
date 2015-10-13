@@ -213,13 +213,17 @@ impl Editor {
 
         let mut mode = Mode::Normal;
 
+        let mut last_change = String::new();
+
         while let Option::Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         use self::Mode::*;
                         match (mode, key_event.scancode) {
-                            (Insert, K_ESC) => mode = Normal,
+                            (Insert, K_ESC) => {
+                                mode = Normal;
+                            },
                             (Insert, K_BKSP) => self.backspace(&mut window),
                             (Insert, K_DEL) => self.delete(&mut window),
                             (_, K_F5) => self.reload(&mut window),
@@ -231,7 +235,10 @@ impl Editor {
                             (_, K_END) => self.offset = self.string.len(),
                             (_, K_DOWN) => self.down(),
                             (m, _) => match (m, key_event.character) {
-                                (Normal, 'i') => mode = Insert,
+                                (Normal, 'i') => {
+                                    mode = Insert;
+                                    last_change = self.string.clone();
+                                },
                                 (Normal, 'h') => self.left(),
                                 (Normal, 'l') => self.right(),
                                 (Normal, 'k') => self.up(),
@@ -240,9 +247,13 @@ impl Editor {
                                 (Normal, 'a') => {
                                     self.right();
                                     mode = Insert;
+                                    last_change = self.string.clone();
                                 },
                                 (Normal, 'x') => self.delete(&mut window),
                                 (Normal, 'X') => self.backspace(&mut window),
+                                (Normal, 'u') => {
+                                    ::core::mem::swap(&mut last_change, &mut self.string);
+                                },
                                 (Insert, '\0') => (),
                                 (Insert, _) => {
                                     window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
