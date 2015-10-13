@@ -205,7 +205,8 @@ filesystem/apps/zfs/zfs.img:
 	dd if=/dev/zero of=$@ bs=64M count=1
 	sudo losetup /dev/loop0 $@
 	-sudo zpool create redox_zfs /dev/loop0
-	-sudo cp README.md /redox_zfs/
+	-sudo mkdir /redox_zfs/home/
+	-sudo cp LICENSE.md README.md /redox_zfs/home/
 	-sudo sync
 	-sleep 1
 	-sudo zfs unmount redox_zfs
