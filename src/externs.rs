@@ -4,7 +4,7 @@ use core::result;
 
 use common::debug::*;
 
-use syscall::call::*;
+use syscall::handle::do_sys_exit;
 
 struct DebugStream;
 
@@ -26,7 +26,7 @@ pub extern fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> 
     dl();
 
     unsafe {
-        sys_exit(-1);
+        do_sys_exit(-1);
         loop {
             asm!("sti");
             asm!("hlt");

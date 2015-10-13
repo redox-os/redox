@@ -6,13 +6,12 @@ use core::mem::transmute;
 use core::ops::Drop;
 use core::simd::*;
 
+use common::memory::*;
 use common::scheduler;
 
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
-
-use syscall::call::*;
 
 /// The info of the VBE mode
 #[derive(Copy, Clone)]
@@ -72,7 +71,7 @@ impl Display {
         let mode_info = &*VBEMODEINFO;
 
         let ret = Display {
-            offscreen: sys_alloc(mode_info.bytesperscanline as usize *
+            offscreen: alloc(mode_info.bytesperscanline as usize *
                                  mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
@@ -95,8 +94,8 @@ impl Display {
             let memory_size = bytesperrow * height;
 
             let ret = Display {
-                offscreen: sys_alloc(memory_size),
-                onscreen: sys_alloc(memory_size),
+                offscreen: alloc(memory_size),
+                onscreen: alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width: width,
@@ -409,11 +408,11 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                sys_unalloc(self.offscreen);
+                unalloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                sys_unalloc(self.onscreen);
+                unalloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

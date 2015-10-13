@@ -4,6 +4,7 @@ use core::cmp::{min, max};
 use core::mem::size_of;
 use core::ptr;
 
+use common::context::context_switch;
 use common::event::*;
 use common::string::*;
 use common::resource::*;
@@ -14,8 +15,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::SessionItem;
-
-use syscall::call::sys_yield;
 
 /// A window scheme
 pub struct WindowScheme;
@@ -55,7 +54,7 @@ impl Resource for WindowResource {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();
                 }
-                Option::None => sys_yield(),
+                Option::None => unsafe { context_switch(false) },
             }
         }
 

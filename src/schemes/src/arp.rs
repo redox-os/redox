@@ -1,3 +1,4 @@
+use common::context::context_switch;
 use common::resource::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
@@ -6,8 +7,6 @@ use network::arp::*;
 use network::common::*;
 
 use programs::session::SessionItem;
-
-use syscall::call;
 
 pub struct ARPScheme;
 
@@ -41,7 +40,7 @@ impl ARPScheme {
                         }
                     }
                 }
-                Option::None => call::sys_yield(),
+                Option::None => unsafe { context_switch(false) },
             }
         }
     }

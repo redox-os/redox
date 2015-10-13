@@ -386,7 +386,6 @@ pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
     0
 }
 
-#[inline(never)]
 pub unsafe fn do_sys_brk(addr: usize) -> usize {
     let mut ret = 0;
 
@@ -434,7 +433,45 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     ret
 }
 
-#[inline(never)]
+pub unsafe fn do_sys_alloc(size: usize) -> usize {
+    alloc(size)
+}
+
+pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
+    realloc(ptr, size)
+}
+
+pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
+    realloc_inplace(ptr, size)
+}
+
+pub unsafe fn do_sys_unalloc(ptr: usize) {
+    unalloc(ptr)
+}
+
+pub unsafe fn do_sys_trigger(event: *const Event){
+    let mut event = ptr::read(event);
+
+    let reenable = scheduler::start_no_ints();
+
+    if event.code == 'm' {
+        event.a = max(0,
+                      min((*::session_ptr).display.width as isize - 1,
+                          (*::session_ptr).mouse_point.x + event.a));
+        event.b = max(0,
+                      min((*::session_ptr).display.height as isize - 1,
+                          (*::session_ptr).mouse_point.y + event.b));
+        (*::session_ptr).mouse_point.x = event.a;
+        (*::session_ptr).mouse_point.y = event.b;
+        (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
+    }
+
+    //TODO: Dispatch to appropriate window
+    (*::events_ptr).push(event);
+
+    scheduler::end_no_ints(reenable);
+}
+
 pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),
@@ -456,34 +493,13 @@ pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 
         SYS_YIELD => context_switch(false),
 
         // Rust Memory
-        SYS_ALLOC => eax = alloc(ebx as usize) as u32,
-        SYS_REALLOC => eax = realloc(ebx as usize, ecx as usize) as u32,
-        SYS_REALLOC_INPLACE => eax = realloc_inplace(ebx as usize, ecx as usize) as u32,
-        SYS_UNALLOC => unalloc(ebx as usize),
+        SYS_ALLOC => eax = do_sys_alloc(ebx as usize) as u32,
+        SYS_REALLOC => eax = do_sys_realloc(ebx as usize, ecx as usize) as u32,
+        SYS_REALLOC_INPLACE => eax = do_sys_realloc_inplace(ebx as usize, ecx as usize) as u32,
+        SYS_UNALLOC => do_sys_unalloc(ebx as usize),
 
         // Windows
-        SYS_TRIGGER => {
-            let mut event = ptr::read(ebx as *const Event);
-
-            let reenable = scheduler::start_no_ints();
-
-            if event.code == 'm' {
-                event.a = max(0,
-                              min((*::session_ptr).display.width as isize - 1,
-                                  (*::session_ptr).mouse_point.x + event.a));
-                event.b = max(0,
-                              min((*::session_ptr).display.height as isize - 1,
-                                  (*::session_ptr).mouse_point.y + event.b));
-                (*::session_ptr).mouse_point.x = event.a;
-                (*::session_ptr).mouse_point.y = event.b;
-                (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
-            }
-
-            //TODO: Dispatch to appropriate window
-            (*::events_ptr).push(event);
-
-            scheduler::end_no_ints(reenable);
-        }
+        SYS_TRIGGER => do_sys_trigger(ebx as *const Event),
 
         // Misc
         SYS_TIME => {

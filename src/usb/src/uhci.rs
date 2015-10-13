@@ -15,8 +15,6 @@ use drivers::pio::*;
 
 use programs::session::SessionItem;
 
-use syscall::call;
-
 pub struct UHCI {
     pub base: usize,
     pub irq: u8,
@@ -552,7 +550,7 @@ impl UHCI {
                                         break;
                                     }
 
-                                    call::sys_yield();
+                                    context_switch(false);
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);
