@@ -533,16 +533,16 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
 
             context_switch(true);
         }
-        0x21 => (*session_ptr).on_irq(0x1), //keyboard
+        0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
-        0x28 => (*session_ptr).on_irq(0x8), //RTC
-        0x29 => (*session_ptr).on_irq(0x9), //pci
-        0x2A => (*session_ptr).on_irq(0xA), //pci
-        0x2B => (*session_ptr).on_irq(0xB), //pci
-        0x2C => (*session_ptr).on_irq(0xC), //mouse
-        0x2E => (*session_ptr).on_irq(0xE), //disk
-        0x2F => (*session_ptr).on_irq(0xF), //disk
+        0x28 => (*session_ptr).on_irq(0x8), // RTC
+        0x29 => (*session_ptr).on_irq(0x9), // pci
+        0x2A => (*session_ptr).on_irq(0xA), // pci
+        0x2B => (*session_ptr).on_irq(0xB), // pci
+        0x2C => (*session_ptr).on_irq(0xC), // mouse
+        0x2E => (*session_ptr).on_irq(0xE), // disk
+        0x2F => (*session_ptr).on_irq(0xF), // disk
         0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize);
