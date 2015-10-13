@@ -460,7 +460,7 @@ pub fn main() {
                         }
                     } else if *command == "file".to_string() {
                         if let Some(uberblock) = zfs.uber() {
-                            zfs.read_file(&uberblock, "root/README.md");
+                            zfs.read_file(&uberblock, "root/foo/README.md");
                         }
                     } else if *command == "mos".to_string() {
                         match zfs.uber() {
