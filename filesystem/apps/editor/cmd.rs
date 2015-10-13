@@ -26,36 +26,36 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
             };
             let mut is_none = false;
 
-            match key_event.character {
-                '0' if !no_mult => times *= 10,
+            match (*mode, key_event.character) {
+                (Normal, '0') if !no_mult => times *= 10,
 
-                '1' if no_mult => times = 1,
-                '1' => times = times * 10 + 1,
+                (Normal, '1') if no_mult => times = 1,
+                (Normal, '1') => times = times * 10 + 1,
 
-                '2' if no_mult => times = 2,
-                '2' => times = times * 10 + 2,
+                (Normal, '2') if no_mult => times = 2,
+                (Normal, '2') => times = times * 10 + 2,
 
-                '3' if no_mult => times = 3,
-                '3' => times = times * 10 + 3,
+                (Normal, '3') if no_mult => times = 3,
+                (Normal, '3') => times = times * 10 + 3,
 
-                '4' if no_mult => times = 4,
-                '4' => times = times * 10 + 4,
+                (Normal, '4') if no_mult => times = 4,
+                (Normal, '4') => times = times * 10 + 4,
 
-                '5' if no_mult => times = 5,
-                 '5' => times = times * 10 + 5,
+                (Normal, '5') if no_mult => times = 5,
+                (Normal, '5') => times = times * 10 + 5,
 
-                '6' if no_mult => times = 6,
-                '6' => times = times * 10 + 6,
+                (Normal, '6') if no_mult => times = 6,
+                (Normal, '6') => times = times * 10 + 6,
 
-                '7' if no_mult => times = 7,
-                '7' => times = times * 10 + 7,
+                (Normal, '7') if no_mult => times = 7,
+                (Normal, '7') => times = times * 10 + 7,
 
-                '8' if no_mult => times = 8,
-                '8' => times = times * 10 + 8,
+                (Normal, '8') if no_mult => times = 8,
+                (Normal, '8') => times = times * 10 + 8,
 
-                '9' if no_mult => times = 9,
-                '9' => times = times * 10 + 9,
-                _ => {
+                (Normal, '9') if no_mult => times = 9,
+                (Normal, '9') => times = times * 10 + 9,
+                (_, _) => {
                     for _ in 0 .. times {
                         match (m, key_event.character) {
                             (Normal, 'i') => {
@@ -147,6 +147,23 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         }
                                         _ => (),
                                     }
+                                }
+                                editor.offset = new_offset;
+                            },
+                            (Normal, 'd') => {
+                                let mut new_offset = editor.string.len();
+                                for i in editor.offset..editor.string.len() {
+                                    match editor.string.as_bytes()[i] {
+                                        0 => break,
+                                        10 => {
+                                            new_offset = i;
+                                            break;
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                                for _ in 1..new_offset {
+                                    editor.delete(window);
                                 }
                                 editor.offset = new_offset;
                             },
