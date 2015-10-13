@@ -205,11 +205,11 @@ filesystem/apps/zfs/zfs.img:
 	dd if=/dev/zero of=$@ bs=64M count=1
 	sudo losetup /dev/loop0 $@
 	-sudo zpool create redox_zfs /dev/loop0
-	-sudo zfs create -o compression=off redox_zfs/root
-	-sudo cp README.md /redox_zfs/root/
 	-sudo cp README.md /redox_zfs/
 	-sudo sync
-	-sudo zfs unmount redox_zfs/root
+	-sleep 1
+	-sudo zfs unmount redox_zfs
+	-sleep 1
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
