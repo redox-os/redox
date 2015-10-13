@@ -4,7 +4,7 @@ use super::Mode;
 use super::Mode::*;
 use super::Editor;
 
-pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, last_change: &mut String, key_event: KeyEvent, window: &mut Window, swap: &mut usize) {
+pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, last_change: &mut String, key_event: KeyEvent, window: &mut Window, swap: &mut usize, period: &mut String, is_recording: &mut bool) {
     match (*mode, key_event.scancode) {
         (Insert, K_ESC) => {
             *mode = Normal;
@@ -56,126 +56,147 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                 (Normal, '9') if no_mult => times = 9,
                 (Normal, '9') => times = times * 10 + 9,
                 (_, _) => {
-                    for _ in 0 .. times {
-                        match (m, key_event.character) {
-                            (Normal, 'i') => {
-                                *mode = Insert;
-                                *last_change = editor.string.clone();
-                            },
-                            (Normal, 'h') => editor.left(),
-                            (Normal, 'l') => editor.right(),
-                            (Normal, 'k') => editor.up(),
-                            (Normal, 'j') => editor.down(),
-                            (Normal, 'g') => editor.offset = 0,
-                            (Normal, 'G') => editor.offset = editor.string.len(),
-                            (Normal, 'a') => {
-                                editor.right();
-                                *mode = Insert;
-                                *last_change = editor.string.clone();
-                            },
-                            (Normal, 'x') => editor.delete(window),
-                            (Normal, 'X') => editor.backspace(window),
-                            (Normal, 'u') => {
-                                editor.offset = 0;
-                                ::core::mem::swap(last_change, &mut editor.string);
-                            },
-                            (Normal, 's') => {
-                                ::core::mem::swap(&mut editor.offset, swap);
-                            },
-                            (Normal, 'o') => {
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: '$',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: 'i',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: '\n',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                            },
-                            (Normal, 'O') => {
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: 'k',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: '$',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: 'i',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                                exec(editor, mode, multiplier, last_change, KeyEvent {
-                                    character: '\n',
-                                    scancode: 0,
-                                    pressed: true,
-                                }, window, swap);
-                            },
-                            (Normal, '$') => {
-                                let mut new_offset = editor.string.len();
-                                for i in editor.offset..editor.string.len() {
-                                    match editor.string.as_bytes()[i] {
-                                        0 => break,
-                                        10 => {
-                                            new_offset = i;
-                                            break;
+                    if *is_recording {
+                        if key_event.character == ',' {
+                            *is_recording = false;
+                        } else {
+                            period.push(key_event.character);
+                        }
+                    } else {
+                        for _ in 0 .. times {
+                            match (m, key_event.character) {
+                                (Normal, 'i') => {
+                                    *mode = Insert;
+                                    *last_change = editor.string.clone();
+                                },
+                                (Normal, 'h') => editor.left(),
+                                (Normal, 'l') => editor.right(),
+                                (Normal, 'k') => editor.up(),
+                                (Normal, 'j') => editor.down(),
+                                (Normal, 'g') => editor.offset = 0,
+                                (Normal, 'G') => editor.offset = editor.string.len(),
+                                (Normal, 'a') => {
+                                    editor.right();
+                                    *mode = Insert;
+                                    *last_change = editor.string.clone();
+                                },
+                                (Normal, 'x') => editor.delete(window),
+                                (Normal, 'X') => editor.backspace(window),
+                                (Normal, 'u') => {
+                                    editor.offset = 0;
+                                    ::core::mem::swap(last_change, &mut editor.string);
+                                },
+                                (Normal, 's') => {
+                                    ::core::mem::swap(&mut editor.offset, swap);
+                                },
+                                (Normal, 'o') => {
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: '$',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: 'i',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: '\n',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                },
+                                (Normal, 'O') => {
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: 'k',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: '$',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: 'i',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                    exec(editor, mode, multiplier, last_change, KeyEvent {
+                                        character: '\n',
+                                        scancode: 0,
+                                        pressed: true,
+                                    }, window, swap, period, is_recording);
+                                },
+                                (Normal, '$') => {
+                                    let mut new_offset = editor.string.len();
+                                    for i in editor.offset..editor.string.len() {
+                                        match editor.string.as_bytes()[i] {
+                                            0 => break,
+                                            10 => {
+                                                new_offset = i;
+                                                break;
+                                            }
+                                            _ => (),
                                         }
-                                        _ => (),
                                     }
-                                }
-                                editor.offset = new_offset;
-                            },
-                            (Normal, '0') => {
+                                    editor.offset = new_offset;
+                                },
+                                (Normal, '0') => {
 
-                                let mut new_offset = 0;
-                                for i in 2..editor.offset {
-                                    match editor.string.as_bytes()[editor.offset - i] {
-                                        0 => break,
-                                        10 => {
-                                            new_offset = editor.offset - i + 1;
-                                            break;
+                                    let mut new_offset = 0;
+                                    for i in 2..editor.offset {
+                                        match editor.string.as_bytes()[editor.offset - i] {
+                                            0 => break,
+                                            10 => {
+                                                new_offset = editor.offset - i + 1;
+                                                break;
+                                            }
+                                            _ => (),
                                         }
-                                        _ => (),
                                     }
-                                }
-                                editor.offset = new_offset;
-                            },
-                            (Normal, 'd') => {
-                                let mut new_offset = editor.string.len();
-                                for i in editor.offset..editor.string.len() {
-                                    match editor.string.as_bytes()[i] {
-                                        0 => break,
-                                        10 => {
-                                            new_offset = i;
-                                            break;
+                                    editor.offset = new_offset;
+                                },
+                                (Normal, 'd') => {
+                                    let mut new_offset = editor.string.len();
+                                    for i in editor.offset..editor.string.len() {
+                                        match editor.string.as_bytes()[i] {
+                                            0 => break,
+                                            10 => {
+                                                new_offset = i;
+                                                break;
+                                            }
+                                            _ => {}
                                         }
-                                        _ => {}
                                     }
-                                }
-                                for _ in 1..new_offset {
-                                    editor.delete(window);
-                                }
-                                editor.offset = new_offset;
-                            },
-                            (Insert, '\0') => (),
-                            (Insert, _) => {
-                                window.set_title(&format!("{}{}{}","Editor (", &editor.url, ") Changed"));
-                                editor.string = editor.string[0 .. editor.offset].to_string() +
-                                    &key_event.character.to_string() +
-                                    &editor.string[editor.offset .. editor.string.len()];
-                                editor.offset += 1;
-                            },
-                            _ => {},
+                                    for _ in 1..new_offset {
+                                        editor.delete(window);
+                                    }
+                                    editor.offset = new_offset;
+                                },
+                                (Normal, ',') => {
+                                    *is_recording = true;
+                                    *period = String::new();
+                                },
+                                (Normal, '!') => {
+                                    for c in period.clone().chars() {
+                                        exec(editor, mode, multiplier, last_change, KeyEvent {
+                                            character: c,
+                                            scancode: 0,
+                                            pressed: true,
+                                        }, window, swap, period, is_recording);
+                                    }
+                                },
+                                (Insert, '\0') => (),
+                                (Insert, _) => {
+                                    window.set_title(&format!("{}{}{}","Editor (", &editor.url, ") Changed"));
+                                    editor.string = editor.string[0 .. editor.offset].to_string() +
+                                        &key_event.character.to_string() +
+                                        &editor.string[editor.offset .. editor.string.len()];
+                                    editor.offset += 1;
+                                },
+                                _ => {},
+                            }
                         }
                     }
                     is_none = true;

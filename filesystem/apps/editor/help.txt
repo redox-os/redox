@@ -24,6 +24,8 @@ commands are valid:
 - u: Undo (only one undo level, to redo: u)
 - g: Go to the top
 - G: Go to the bottom
+- ,: Start/stop recording a period
+- !: Play a period
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.
@@ -38,3 +40,5 @@ normal mode press escape.
 - g[n]j: Go to the n'th line.
 - 0d: Delete the current line.
 - Go: Insert text at the buttom.
+- 0,0jx,[n]!: Delete the first char on the n next
+              lines.
