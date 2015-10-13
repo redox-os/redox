@@ -211,9 +211,5 @@
     /// A module for window support
     pub mod orbital;
 
-    /// A module for shell based functions
-    #[cfg(not(std))]
-    pub mod ion;
-
     pub mod to_num;
 /* } Additional Stuff */
