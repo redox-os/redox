@@ -9,6 +9,7 @@ You start in normal mode. In normal mode following
 commands are valid:
 
 - hjkl: Motion
+- JK: Big horizontal motion (15).
 - i: Go to insert mode
 - d: Delete the rest of the line
 - 0: Go to the start of the line

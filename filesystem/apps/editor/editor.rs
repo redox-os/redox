@@ -47,6 +47,7 @@ impl Editor {
         }
     }
 
+    // TODO: Add methods for multiple movements
     fn up(&mut self) {
         let mut new_offset = 0;
         for i in 2..self.offset {
