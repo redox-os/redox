@@ -243,25 +243,30 @@ impl ZFS {
         self.read(dva.sector() as usize, dva.asize() as usize)
     }
 
-    pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Option<T> {
-        self.read_type_array(block_ptr, 0)
-    }
-
-    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Option<T> {
+    pub fn read_block(&mut self, block_ptr: &BlockPtr) -> Option<Vec<u8>> {
         let data = self.read_dva(&block_ptr.dvas[0]);
         match block_ptr.compression() {
             2 => {
                 // compression off
-                T::from_bytes(&data[offset*mem::size_of::<T>()..])
+                Some(data)
             },
             1 | 3 => {
                 // lzjb compression
                 let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
                 lzjb::decompress(&data, &mut decompressed);
-                T::from_bytes(&decompressed[offset*mem::size_of::<T>()..])
+                Some(decompressed)
             },
             _ => None,
         }
+    }
+
+    pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Option<T> {
+        self.read_type_array(block_ptr, 0)
+    }
+
+    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Option<T> {
+        let data = self.read_block(block_ptr);
+        data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
     pub fn read_file(&mut self, uberblock: &Uberblock, path: &str) -> Option<String> {
@@ -322,13 +327,12 @@ impl ZFS {
                 }
                 match root {
                     Some(root) => {
-                        let mut root_node: DNodePhys = self.read_type_array(&indirect,
+                        let mut cur_node: DNodePhys = self.read_type_array(&indirect,
                                                                             root as usize).unwrap();
-                        println!("Got root fs dnode: {:?}", root_node);
-                        let mut dir_contents: zap::MZapWrapper = self.read_type(root_node.get_blockptr(0)).unwrap();
                         for folder in path.split('/') {
-                            println!("Finding folder: {}", folder);
-                            readln!();
+                            println!("fs dnode: {:?}", cur_node);
+                            let dir_contents: zap::MZapWrapper = self.read_type(cur_node.get_blockptr(0)).unwrap();
+                            println!("Finding fs object: {}", folder);
                             let ls: Vec<String> =
                                 dir_contents.chunks
                                             .iter()
@@ -336,7 +340,6 @@ impl ZFS {
                                             .take_while(|x| x.len() > 0)
                                             .collect();
                             println!("Read directory contents: {:?}", ls);
-                            readln!();
                             let mut next_dir = None;
                             for chunk in &dir_contents.chunks {
                                 if chunk.name().unwrap().len() == 0 {
@@ -344,7 +347,6 @@ impl ZFS {
                                 }
                                 if chunk.name().unwrap() == folder {
                                     println!("Found folder");
-                                    readln!();
                                     next_dir = Some(chunk.value);
                                     break;
                                 }
@@ -352,15 +354,11 @@ impl ZFS {
                             match next_dir {
                                 Some(next_dir) => {
                                     println!("Reading dnode");
-                                    readln!();
-                                    let mut next_dnode: DNodePhys =
-                                        self.read_type_array(&indirect,
-                                                             next_dir as usize).unwrap();
-                                    println!("dnode: {:?}", next_dnode);
-                                    println!("Reading mzap");
-                                    readln!();
-                                    dir_contents = self.read_type(next_dnode.get_blockptr(0)).unwrap();
-                                    println!("zap: {:?}", dir_contents.phys.block_type);
+                                    cur_node = self.read_type_array(&indirect,
+                                                                    next_dir as usize).unwrap();
+                                    if cur_node.object_type == 0x13 {
+                                        break;
+                                    }
                                 },
                                 None => {
                                     println_color!(red, "ERROR: path doesn't exist: {}", path);
@@ -368,6 +366,9 @@ impl ZFS {
                                 },
                             }
                         }
+                        let file_contents = self.read_block(cur_node.get_blockptr(0)).unwrap();
+                        let file_contents: Vec<u8> = file_contents.into_iter().take_while(|c| *c != 0).collect();
+                        return String::from_utf8(file_contents).ok();
                     },
                     None => {
                         println_color!(red, "ERROR: Failed to find ROOT entry in master node");
@@ -459,8 +460,19 @@ pub fn main() {
                             None => { println_color!(red, "Couldn't read vdev_label"); },
                         }
                     } else if *command == "file".to_string() {
-                        if let Some(uberblock) = zfs.uber() {
-                            zfs.read_file(&uberblock, "root/foo/README.md");
+                        match args.get(1) {
+                            Some(arg) => {
+                                if let Some(uberblock) = zfs.uber() {
+                                    let file = zfs.read_file(&uberblock, arg.as_str());
+                                    match file {
+                                        Some(file) => {
+                                            println!("File contents: {}", file);
+                                        },
+                                        None => println_color!(red, "Failed to read file"),
+                                    }
+                                }
+                            }
+                            None => println_color!(red, "Usage: file <path>"),
                         }
                     } else if *command == "mos".to_string() {
                         match zfs.uber() {
@@ -524,7 +536,7 @@ pub fn main() {
                         println_color!(red, "Closing");
                         close = true;
                     } else {
-                        println_color!(blue, "Commands: uber vdev_label mos dump close");
+                        println_color!(blue, "Commands: uber vdev_label mos file dump close");
                     }
                 }
                 Option::None => {
