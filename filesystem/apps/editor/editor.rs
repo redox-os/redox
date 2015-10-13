@@ -42,8 +42,8 @@ impl Editor {
     fn delete(&mut self, window: &mut Window) {
         if self.offset < self.string.len() {
             window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-            self.string = self.string[0 .. self.offset + 1].to_string() +
-                &self.string[self.offset + 1 .. self.string.len() - 1];
+            self.string = self.string[0 .. self.offset].to_string() +
+                &self.string[self.offset + 1 .. self.string.len()];
         }
     }
 
