@@ -1,5 +1,11 @@
 use redox::*;
 
+#[derive(Copy, Clone)]
+pub enum Mode {
+    Insert,
+    Normal,
+}
+
 pub struct Editor {
     url: String,
     file: Option<File>,
@@ -22,6 +28,48 @@ impl Editor {
         }
     }
 
+    fn up(&mut self) {
+        let mut new_offset = 0;
+        for i in 2..self.offset {
+            match self.string.as_bytes()[self.offset - i] {
+                0 => break,
+                10 => {
+                    new_offset = self.offset - i + 1;
+                    break;
+                }
+                _ => (),
+            }
+        }
+        self.offset = new_offset;
+    }
+
+    fn left(&mut self) {
+        if self.offset > 0 {
+            self.offset -= 1;
+        }
+    }
+
+    fn right(&mut self) {
+        if self.offset < self.string.len() {
+            self.offset += 1;
+        }
+    }
+
+    fn down(&mut self) {
+        let mut new_offset = self.string.len();
+        for i in self.offset..self.string.len() {
+            match self.string.as_bytes()[i] {
+                0 => break,
+                10 => {
+                    new_offset = i + 1;
+                    break;
+                }
+                _ => (),
+            }
+        }
+        self.offset = new_offset;
+    }
+
     fn reload(&mut self, window: &mut Window) {
         window.set_title(&("Editor (".to_string() + &self.url + ")"));
         self.offset = 0;
@@ -34,7 +82,7 @@ impl Editor {
                 let mut vec: Vec<u8> = Vec::new();
                 file.read_to_end(&mut vec);
                 self.string = unsafe { String::from_utf8_unchecked(vec) };
-            }
+            },
             Option::None => self.string = String::new(),
         }
     }
@@ -146,71 +194,55 @@ impl Editor {
         self.reload(&mut window);
         self.draw_content(&mut window);
 
+        let mut mode = Mode::Normal;
+
         while let Option::Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
-                        match key_event.scancode {
-                            K_ESC => break,
-                            K_BKSP => if self.offset > 0 {
+                        use self::Mode::*;
+                        match (mode, key_event.scancode) {
+                            (Insert, K_ESC) => mode = Normal,
+                            (Insert, K_BKSP) => if self.offset > 0 {
                                 window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                 self.string = self.string[0 .. self.offset - 1].to_string() +
                                               &self.string[self.offset .. self.string.len()];
                                 self.offset -= 1;
                             },
-                            K_DEL => if self.offset < self.string.len() {
+                            (Insert, K_DEL) => if self.offset < self.string.len() {
                                 window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                 self.string = self.string[0 .. self.offset].to_string() +
                                               &self.string[self.offset + 1 .. self.string.len() - 1];
                             },
-                            K_F5 => self.reload(&mut window),
-                            K_F6 => self.save(&mut window),
-                            K_HOME => self.offset = 0,
-                            K_UP => {
-                                let mut new_offset = 0;
-                                for i in 2..self.offset {
-                                    match self.string.as_bytes()[self.offset - i] {
-                                        0 => break,
-                                        10 => {
-                                            new_offset = self.offset - i + 1;
-                                            break;
-                                        }
-                                        _ => (),
-                                    }
-                                }
-                                self.offset = new_offset;
-                            }
-                            K_LEFT => if self.offset > 0 {
-                                self.offset -= 1;
-                            },
-                            K_RIGHT => if self.offset < self.string.len() {
-                                self.offset += 1;
-                            },
-                            K_END => self.offset = self.string.len(),
-                            K_DOWN => {
-                                let mut new_offset = self.string.len();
-                                for i in self.offset..self.string.len() {
-                                    match self.string.as_bytes()[i] {
-                                        0 => break,
-                                        10 => {
-                                            new_offset = i + 1;
-                                            break;
-                                        }
-                                        _ => (),
-                                    }
-                                }
-                                self.offset = new_offset;
-                            }
-                            _ => match key_event.character {
-                                '\0' => (),
-                                _ => {
+                            (_, K_F5) => self.reload(&mut window),
+                            (_, K_F6) => self.save(&mut window),
+                            (_, K_HOME) => self.offset = 0,
+                            (_, K_UP) => self.up(),
+                            (_, K_LEFT) => self.left(),
+                            (_, K_RIGHT) => self.right(),
+                            (_, K_END) => self.offset = self.string.len(),
+                            (_, K_DOWN) => self.down(),
+                            (m, _) => match (m, key_event.character) {
+                                (Normal, 'i') => mode = Insert,
+                                (Normal, 'h') => self.left(),
+                                (Normal, 'l') => self.right(),
+                                (Normal, 'k') => self.up(),
+                                (Normal, 'j') => self.down(),
+                                (Normal, 'G') => self.offset = self.string.len(),
+                                (Normal, 'a') => {
+                                    self.right();
+                                    mode = Insert;
+                                },
+                                (Insert, '\0') => (),
+                                (Insert, _) => {
                                     window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                     self.string = self.string[0 .. self.offset].to_string() +
                                                   &key_event.character.to_string() +
                                                   &self.string[self.offset .. self.string.len()];
                                     self.offset += 1;
-                                }
-                            },
+                                },
+                                _ => {},
+                            }
                         }
 
                         self.draw_content(&mut window);
