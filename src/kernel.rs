@@ -209,16 +209,16 @@ unsafe fn event_loop() -> ! {
 
                                                 cmd = String::new();
                                                 debug::dl();
-                                            }
+                                            },
                                             _ => {
                                                 cmd.vec.push(key_event.character);
                                                 debug::dc(key_event.character);
-                                            }
-                                        }
+                                            },
+                                        },
                                     }
                                 }
                             },
-                            _ => ()
+                            _ => (),
                         }
                     } else {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
@@ -229,7 +229,7 @@ unsafe fn event_loop() -> ! {
                         }
                     }
                 },
-                Option::None => break
+                Option::None => break,
             }
         }
 
