@@ -2,7 +2,7 @@ use redox::*;
 
 mod cmd;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Mode {
     Insert,
     Normal,
