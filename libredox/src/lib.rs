@@ -180,9 +180,9 @@
     pub use audio::wav::*;
     #[cfg(not(std))]
     pub use console::*;
-    pub use event::*;
     pub use graphics::bmp::*;
     pub use orbital::*;
+    pub use orbital::event::*;
     pub use to_num::*;
 
     /// A module for starting
@@ -204,8 +204,6 @@
     #[cfg(not(std))]
     #[macro_use]
     pub mod console;
-    /// A module for events
-    pub mod event;
     /// Graphics support
     mod graphics {
         pub mod bmp;

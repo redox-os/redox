@@ -1,9 +1,8 @@
 use core::char;
+use core::cmp::{min, max};
 
-use common::memory::unalloc;
+use common::scheduler;
 use common::string::*;
-
-use syscall::handle::do_sys_trigger;
 
 /// An optional event
 pub enum EventOption {
@@ -11,10 +10,6 @@ pub enum EventOption {
     Mouse(MouseEvent),
     /// A key event
     Key(KeyEvent),
-    /// A redraw event
-    Redraw(RedrawEvent),
-    /// A open event
-    Open(OpenEvent),
     /// A unknown event
     Unknown(Event),
     /// No event
@@ -30,8 +25,6 @@ pub struct Event {
     pub a: isize,
     pub b: isize,
     pub c: isize,
-    pub d: isize,
-    pub e: isize,
 }
 
 impl Event {
@@ -42,8 +35,6 @@ impl Event {
             a: 0,
             b: 0,
             c: 0,
-            d: 0,
-            e: 0,
         }
     }
 
@@ -53,8 +44,6 @@ impl Event {
         match self.code {
             'm' => EventOption::Mouse(MouseEvent::from_event(self)),
             'k' => EventOption::Key(KeyEvent::from_event(self)),
-            'r' => EventOption::Redraw(RedrawEvent::from_event(self)),
-            'o' => EventOption::Open(OpenEvent::from_event(self)),
             '\0' => EventOption::None,
             _ => EventOption::Unknown(self),
         }
@@ -62,9 +51,27 @@ impl Event {
 
     /// Event trigger
     pub fn trigger(&self) {
+        let mut event = *self;
+
         unsafe {
-            let event_ptr: *const Event = self;
-            do_sys_trigger(event_ptr);
+            let reenable = scheduler::start_no_ints();
+
+            if event.code == 'm' {
+                event.a = max(0,
+                              min((*::session_ptr).display.width as isize - 1,
+                                  (*::session_ptr).mouse_point.x + event.a));
+                event.b = max(0,
+                              min((*::session_ptr).display.height as isize - 1,
+                                  (*::session_ptr).mouse_point.y + event.b));
+                (*::session_ptr).mouse_point.x = event.a;
+                (*::session_ptr).mouse_point.y = event.b;
+                (*::session_ptr).redraw = true;
+            }
+
+            //TODO: Dispatch to appropriate window
+            (*::events_ptr).push(event);
+
+            scheduler::end_no_ints(reenable);
         }
     }
 }
@@ -91,9 +98,7 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: self.left_button as isize,
-            d: self.middle_button as isize,
-            e: self.right_button as isize,
+            c: (self.left_button as isize) | (self.right_button as isize) << 1 | (self.middle_button as isize) << 2,
         }
     }
 
@@ -102,9 +107,9 @@ impl MouseEvent {
         MouseEvent {
             x: event.a,
             y: event.b,
-            left_button: event.c > 0,
-            middle_button: event.d > 0,
-            right_button: event.e > 0,
+            left_button: event.c & 1 == 1,
+            middle_button: event.c & 4 == 4,
+            right_button: event.c & 2 == 2,
         }
     }
 
@@ -115,31 +120,57 @@ impl MouseEvent {
     }
 }
 
+/// Escape key
 pub const K_ESC: u8 = 0x01;
+/// Backspace key
 pub const K_BKSP: u8 = 0x0E;
-pub const K_TAP: u8 = 0x0F;
+/// Tab key
+pub const K_TAB: u8 = 0x0F;
+/// Control key
 pub const K_CTRL: u8 = 0x1D;
+/// Alt key
 pub const K_ALT: u8 = 0x38;
+/// F1 key
 pub const K_F1: u8 = 0x3B;
+/// F2 key
 pub const K_F2: u8 = 0x3C;
+/// F3 key
 pub const K_F3: u8 = 0x3D;
+/// F4 key
 pub const K_F4: u8 = 0x3E;
+/// F5 key
 pub const K_F5: u8 = 0x3F;
+/// F6 key
 pub const K_F6: u8 = 0x40;
+/// F7 key
 pub const K_F7: u8 = 0x41;
+/// F8 key
 pub const K_F8: u8 = 0x42;
+/// F9 key
 pub const K_F9: u8 = 0x43;
+/// F10 key
 pub const K_F10: u8 = 0x44;
+/// Home key
 pub const K_HOME: u8 = 0x47;
+/// Up key
 pub const K_UP: u8 = 0x48;
+/// Page up key
 pub const K_PGUP: u8 = 0x49;
+/// Left key
 pub const K_LEFT: u8 = 0x4B;
+/// Right key
 pub const K_RIGHT: u8 = 0x4D;
+/// End key
 pub const K_END: u8 = 0x4F;
+/// Down key
 pub const K_DOWN: u8 = 0x50;
+/// Page down key
 pub const K_PGDN: u8 = 0x51;
+/// Delete key
 pub const K_DEL: u8 = 0x53;
+/// F11 key
 pub const K_F11: u8 = 0x57;
+/// F12 key
 pub const K_F12: u8 = 0x58;
 
 /// A key event (such as a pressed key)
@@ -161,8 +192,6 @@ impl KeyEvent {
             a: self.character as isize,
             b: self.scancode as isize,
             c: self.pressed as isize,
-            d: 0,
-            e: 0,
         }
     }
 
@@ -184,81 +213,6 @@ impl KeyEvent {
 
     /// Key event trigger
     #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
-    }
-}
-
-/// The "redraw none" code
-pub const REDRAW_NONE: usize = 0;
-/// The "redraw cursor" code
-pub const REDRAW_CURSOR: usize = 1;
-/// The "redraw all" code
-pub const REDRAW_ALL: usize = 2;
-// TODO: Redraw rect
-
-/// A redraw event
-pub struct RedrawEvent {
-    /// The redraw code
-    pub redraw: usize,
-}
-
-impl RedrawEvent {
-    /// Convert to an `Event`
-    pub fn to_event(&self) -> Event {
-        Event {
-            code: 'r',
-            a: self.redraw as isize,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-        }
-    }
-
-    /// Convert from an `Event`
-    pub fn from_event(event: Event) -> Self {
-        RedrawEvent { redraw: event.a as usize }
-    }
-
-    /// Redraw trigger
-    #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
-    }
-}
-
-/// A "open event" (such as a IO request)
-pub struct OpenEvent {
-    /// The URL, see wiki.
-    pub url_string: String,
-}
-
-impl OpenEvent {
-    /// Convert to an `Event`
-    pub fn to_event(&self) -> Event {
-        unsafe {
-            Event {
-                code: 'o',
-                a: self.url_string.to_c_str() as isize,
-                b: 0,
-                c: 0,
-                d: 0,
-                e: 0,
-            }
-        }
-    }
-
-    /// Convert from an `Event`
-    pub fn from_event(event: Event) -> Self {
-        unsafe {
-            let ret = OpenEvent { url_string: String::from_c_str(event.a as *const u8) };
-            unalloc(event.a as usize);
-            ret
-        }
-    }
-
-    /// Event trigger
     pub fn trigger(&self) {
         self.to_event().trigger();
     }
