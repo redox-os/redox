@@ -66,6 +66,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                             (Normal, 'l') => editor.right(),
                             (Normal, 'k') => editor.up(),
                             (Normal, 'j') => editor.down(),
+                            (Normal, 'g') => editor.offset = 0,
                             (Normal, 'G') => editor.offset = editor.string.len(),
                             (Normal, 'a') => {
                                 editor.right();
