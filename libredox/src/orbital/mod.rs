@@ -10,6 +10,8 @@ use event::*;
 use fs::file::*;
 use io::*;
 
+pub mod event;
+
 /// A window
 pub struct Window {
     /// The x coordinate of the window

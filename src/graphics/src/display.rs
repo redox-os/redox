@@ -6,13 +6,12 @@ use core::mem::transmute;
 use core::ops::Drop;
 use core::simd::*;
 
+use common::memory::*;
 use common::scheduler;
 
 use graphics::color::*;
 use graphics::point::*;
 use graphics::size::*;
-
-use syscall::call::*;
 
 /// The info of the VBE mode
 #[derive(Copy, Clone)]
@@ -72,7 +71,7 @@ impl Display {
         let mode_info = &*VBEMODEINFO;
 
         let ret = Display {
-            offscreen: sys_alloc(mode_info.bytesperscanline as usize *
+            offscreen: alloc(mode_info.bytesperscanline as usize *
                                  mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
@@ -95,8 +94,8 @@ impl Display {
             let memory_size = bytesperrow * height;
 
             let ret = Display {
-                offscreen: sys_alloc(memory_size),
-                onscreen: sys_alloc(memory_size),
+                offscreen: alloc(memory_size),
+                onscreen: alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width: width,
@@ -403,69 +402,17 @@ impl Display {
             }
         }
     }
-
-    /// Draw a image with a given alpha on the screen
-    /* Cursor hacks { */
-    pub unsafe fn image_alpha_onscreen(&self, point: Point, data: *const u32, size: Size) {
-        let start_y = max(0, point.y) as usize;
-        let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
-
-        let start_x = max(0, point.x) as usize;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 -
-                  start_x * 4;
-        let onscreen_offset = self.onscreen + start_x * 4;
-
-        let bytesperrow = size.width * 4;
-        let data_offset = data as usize - start_y * bytesperrow -
-                          (point.x - start_x as isize) as usize * 4;
-
-        for y in start_y..end_y {
-            Display::copy_run_alpha(data_offset + y * bytesperrow,
-                                    onscreen_offset + y * self.bytesperrow,
-                                    len);
-        }
-    }
-
-    /// Draw a pixel on the screen (absolute)
-    pub fn pixel_onscreen(&self, point: Point, color: Color) {
-        unsafe {
-            if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
-               point.y < self.height as isize {
-                *((self.onscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
-            }
-        }
-    }
-
-    /// Draw a char on the screen (absolute)
-    pub fn char_onscreen(&self, point: Point, character: char, color: Color) {
-        unsafe {
-            if *FONTS > 0 {
-                let bitmap_location = *FONTS + 16 * (character as usize);
-                for row in 0..16 {
-                    let row_data = *((bitmap_location + row) as *const u8);
-                    for col in 0..8 {
-                        let pixel = (row_data >> (7 - col)) & 1;
-                        if pixel > 0 {
-                            self.pixel_onscreen(Point::new(point.x + col, point.y + row as isize),
-                                                color);
-                        }
-                    }
-                }
-            }
-        }
-    }
-    /* } Cursor hacks */
 }
 
 impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                sys_unalloc(self.offscreen);
+                unalloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                sys_unalloc(self.onscreen);
+                unalloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

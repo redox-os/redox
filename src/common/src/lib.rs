@@ -1,15 +1,25 @@
 #![feature(asm)]
 
+/// Context
+pub mod context;
 /// Debug
-pub mod debug; // Not needed
+pub mod debug;
+/// ELF File Support
+pub mod elf;
 /// Event input
 pub mod event;
+/// Kernel memory allocation
+pub mod memory;
+/// Paging
+pub mod paging;
 /// A module for queues
 pub mod queue;
 /// A module for pseudorandom generator
-pub mod random; // Should remove
+pub mod random;
+/// Kernel resource handling
+pub mod resource;
 /// A module for scheduling
-pub mod scheduler; // Should remove
+pub mod scheduler;
 /// A module for owned strings
 pub mod string;
 /// A module for time

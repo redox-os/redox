@@ -1,18 +1,20 @@
-use core::cmp::max;
-use core::cmp::min;
+use alloc::boxed::*;
+
 use core::ptr;
 use core::slice;
 
 use common::context::*;
 use common::debug::*;
-use common::event::*;
 use common::memory::*;
 use common::resource::*;
 use common::scheduler;
 use common::string::*;
 use common::time::*;
+use common::vec::*;
 
 use drivers::pio::*;
+
+use programs::executor::execute;
 
 use graphics::color::*;
 use graphics::size::*;
@@ -69,6 +71,34 @@ pub unsafe fn do_sys_debug(byte: u8) {
 
 pub unsafe fn do_sys_exit(status: isize) {
     context_exit();
+}
+
+pub unsafe fn do_sys_fork() -> usize {
+    let mut ret = 0xFFFFFFFF;
+
+    let reenable = scheduler::start_no_ints();
+
+    let parent_i = context_i;
+
+    let contexts = &mut *contexts_ptr;
+
+    let mut context_fork_args: Vec<u32> = Vec::new();
+    context_fork_args.push(parent_i as u32);
+    context_fork_args.push(context_exit as u32);
+
+    contexts.push(Context::new(context_fork as u32, &context_fork_args));
+
+    context_switch(true);
+
+    if context_i == parent_i {
+        ret = 0;
+    }else{
+        ret = context_i;
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
 }
 
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
@@ -169,6 +199,35 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     fd
 }
 
+pub unsafe fn do_sys_dup(fd: usize) -> usize {
+    let mut new_fd = 0xFFFFFFFF;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &*contexts_ptr;
+    if let Option::Some(mut current) = contexts.get(context_i) {
+        let mut resource: Box<Resource> = box NoneResource;
+        new_fd = 0;
+        for file in current.files.iter() {
+            if file.fd == fd {
+                resource = file.resource.dup();
+            }
+            if file.fd >= new_fd {
+                new_fd = file.fd + 1;
+            }
+        }
+
+        current.files.push(ContextFile {
+            fd: new_fd,
+            resource: resource,
+        });
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    new_fd
+}
+
 pub unsafe fn do_sys_close(fd: usize) -> usize {
     let mut ret = 0xFFFFFFFF;
 
@@ -195,6 +254,42 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
                     ret = 0;
                 }
 
+                break;
+            }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_execve(path: *const u8) -> usize {
+    let mut ret = 0xFFFFFFFF;
+
+    let url_string = String::from_c_str(path);
+
+    let reenable = scheduler::start_no_ints();
+
+    if url_string.ends_with(".bin".to_string()) {
+        execute(&URL::from_string(&url_string),
+                &URL::new(),
+                &Vec::new());
+        ret = 0;
+    } else {
+        for package in (*::session_ptr).packages.iter() {
+            let mut accepted = false;
+            for accept in package.accepts.iter() {
+                if url_string.ends_with(accept.substr(1, accept.len() - 1)) {
+                    accepted = true;
+                    break;
+                }
+            }
+            if accepted {
+                let mut args: Vec<String> = Vec::new();
+                args.push(url_string.clone());
+                execute(&package.binary, &package.url, &args);
+                ret = 0;
                 break;
             }
         }
@@ -326,7 +421,6 @@ pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
     0
 }
 
-#[inline(never)]
 pub unsafe fn do_sys_brk(addr: usize) -> usize {
     let mut ret = 0;
 
@@ -374,54 +468,46 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     ret
 }
 
-#[inline(never)]
+pub unsafe fn do_sys_alloc(size: usize) -> usize {
+    alloc(size)
+}
+
+pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
+    realloc(ptr, size)
+}
+
+pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
+    realloc_inplace(ptr, size)
+}
+
+pub unsafe fn do_sys_unalloc(ptr: usize) {
+    unalloc(ptr)
+}
+
 pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),
-
         // Linux
         SYS_EXIT => do_sys_exit((ebx as i32) as isize),
+        SYS_FORK => eax = do_sys_fork() as u32,
         SYS_READ => eax = do_sys_read(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_WRITE => eax = do_sys_write(ebx as usize, ecx as *mut u8, edx as usize) as u32,
-        SYS_OPEN =>
-            eax = do_sys_open(ebx as *mut u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
+        SYS_OPEN => eax = do_sys_open(ebx as *const u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
         SYS_CLOSE => eax = do_sys_close(ebx as usize) as u32,
+        SYS_EXECVE => eax = do_sys_execve(ebx as *const u8) as u32,
         SYS_FPATH => eax = do_sys_fpath(ebx as usize, ecx as *mut u8, edx as usize) as u32,
         SYS_FSYNC => eax = do_sys_fsync(ebx as usize) as u32,
         SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
+        SYS_DUP => eax = do_sys_dup(ebx as usize) as u32,
         SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize) as u32,
         SYS_YIELD => context_switch(false),
 
         // Rust Memory
-        SYS_ALLOC => eax = alloc(ebx as usize) as u32,
-        SYS_REALLOC => eax = realloc(ebx as usize, ecx as usize) as u32,
-        SYS_REALLOC_INPLACE => eax = realloc_inplace(ebx as usize, ecx as usize) as u32,
-        SYS_UNALLOC => unalloc(ebx as usize),
-
-        // Windows
-        SYS_TRIGGER => {
-            let mut event = ptr::read(ebx as *const Event);
-
-            let reenable = scheduler::start_no_ints();
-
-            if event.code == 'm' {
-                event.a = max(0,
-                              min((*::session_ptr).display.width as isize - 1,
-                                  (*::session_ptr).mouse_point.x + event.a));
-                event.b = max(0,
-                              min((*::session_ptr).display.height as isize - 1,
-                                  (*::session_ptr).mouse_point.y + event.b));
-                (*::session_ptr).mouse_point.x = event.a;
-                (*::session_ptr).mouse_point.y = event.b;
-                (*::session_ptr).redraw = max((*::session_ptr).redraw, REDRAW_CURSOR);
-            }
-
-            //TODO: Dispatch to appropriate window
-            (*::events_ptr).push(event);
-
-            scheduler::end_no_ints(reenable);
-        }
+        SYS_ALLOC => eax = do_sys_alloc(ebx as usize) as u32,
+        SYS_REALLOC => eax = do_sys_realloc(ebx as usize, ecx as usize) as u32,
+        SYS_REALLOC_INPLACE => eax = do_sys_realloc_inplace(ebx as usize, ecx as usize) as u32,
+        SYS_UNALLOC => do_sys_unalloc(ebx as usize),
 
         // Misc
         SYS_TIME => {

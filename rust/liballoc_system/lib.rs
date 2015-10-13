@@ -38,48 +38,9 @@ const MIN_ALIGN: usize = 16;
 
 extern {
     fn memmove(dst: *mut u8, src: *const u8, size: usize);
-}
-
-use syscall::common::*;
-
-#[path="../../src/syscall/src"]
-mod syscall {
-    pub mod common;
-}
-
-unsafe fn syscall(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
-    asm!("int 0x80"
-        : "={eax}"(eax)
-        : "{eax}"(eax), "{ebx}"(ebx), "{ecx}"(ecx), "{edx}"(edx)
-        : "memory"
-        : "intel", "volatile");
-
-    return eax;
-}
-
-#[no_mangle]
-pub extern fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
-    unsafe { syscall(SYS_ALLOC, size as u32, 0, 0) as *mut u8 }
-}
-
-#[no_mangle]
-pub extern fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    unsafe { syscall(SYS_UNALLOC, ptr as u32, 0, 0); }
-}
-
-#[no_mangle]
-pub extern fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize,
-                                align: usize) -> *mut u8 {
-    unsafe { syscall(SYS_REALLOC, ptr as u32, size as u32, 0) as *mut u8 }
-}
-
-#[no_mangle]
-pub extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize,
-                                        size: usize, align: usize) -> usize {
-    unsafe { syscall(SYS_REALLOC_INPLACE, ptr as u32, size as u32, 0) as usize }
-}
-
-#[no_mangle]
-pub extern fn __rust_usable_size(size: usize, align: usize) -> usize {
-    size
+    fn __rust_allocate(size: usize, align: usize) -> *mut u8;
+    fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize);
+    fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8;
+    fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> usize;
+    fn __rust_usable_size(size: usize, align: usize) -> usize;
 }
