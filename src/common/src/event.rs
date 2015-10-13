@@ -1,8 +1,9 @@
 use core::char;
 
+use common::memory::unalloc;
 use common::string::*;
 
-use syscall::call::*;
+use syscall::handle::do_sys_trigger;
 
 /// An optional event
 pub enum EventOption {
@@ -63,7 +64,7 @@ impl Event {
     pub fn trigger(&self) {
         unsafe {
             let event_ptr: *const Event = self;
-            sys_trigger(event_ptr as usize);
+            do_sys_trigger(event_ptr);
         }
     }
 }
@@ -252,7 +253,7 @@ impl OpenEvent {
     pub fn from_event(event: Event) -> Self {
         unsafe {
             let ret = OpenEvent { url_string: String::from_c_str(event.a as *const u8) };
-            sys_unalloc(event.a as usize);
+            unalloc(event.a as usize);
             ret
         }
     }

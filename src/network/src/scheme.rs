@@ -2,13 +2,12 @@ use alloc::boxed::*;
 
 use core::ops::DerefMut;
 
+use common::context::context_switch;
 use common::debug::*;
 use common::queue::*;
 use common::resource::*;
 use common::scheduler;
 use common::vec::*;
-
-use syscall::call::sys_yield;
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -83,7 +82,7 @@ impl Resource for NetworkResource {
                     return Option::Some(bytes.len());
                 }
 
-                sys_yield();
+                context_switch(false);
             }
         }
     }

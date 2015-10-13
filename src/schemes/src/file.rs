@@ -7,6 +7,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use drivers::disk::*;
 use drivers::pciconfig::PCIConfig;
 
+use common::context::context_switch;
 use common::debug;
 use common::memory::Memory;
 use common::resource::{NoneResource, Resource, ResourceSeek, URL, VecResource};
@@ -14,8 +15,6 @@ use common::string::{String, ToString};
 use common::vec::Vec;
 
 use programs::session::SessionItem;
-
-use syscall::call::sys_yield;
 
 /// The header of the fs
 #[repr(packed)]
@@ -318,7 +317,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                sys_yield();
+                                context_switch(false);
                             }
 
                             sector += 65535;
@@ -337,7 +336,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                sys_yield();
+                                context_switch(false);
                             }
                         }
                     }
@@ -502,7 +501,7 @@ impl SessionItem for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        sys_yield();
+                                        unsafe { context_switch(false) };
                                     }
 
                                     sector += 65535;
@@ -521,7 +520,7 @@ impl SessionItem for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        sys_yield();
+                                        unsafe { context_switch(false) };
                                     }
                                 }
 

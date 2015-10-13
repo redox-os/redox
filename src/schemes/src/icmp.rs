@@ -3,13 +3,12 @@ use core::mem;
 use network::common::*;
 use network::icmp::*;
 
+use common::context::context_switch;
 use common::resource::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
 use programs::session::SessionItem;
-
-use syscall::call;
 
 pub struct ICMPScheme;
 
@@ -50,7 +49,7 @@ impl ICMPScheme {
                         }
                     }
                 }
-                Option::None => call::sys_yield(),
+                Option::None => unsafe { context_switch(false) },
             }
         }
     }
