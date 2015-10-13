@@ -1,5 +1,7 @@
 use redox::*;
 
+mod cmd;
+
 #[derive(Copy, Clone)]
 pub enum Mode {
     Insert,
@@ -220,132 +222,7 @@ impl Editor {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
-                        use self::Mode::*;
-                        match (mode, key_event.scancode) {
-                            (Insert, K_ESC) => {
-                                mode = Normal;
-                            },
-                            (Insert, K_BKSP) => self.backspace(&mut window),
-                            (Insert, K_DEL) => self.delete(&mut window),
-                            (_, K_F5) => self.reload(&mut window),
-                            (_, K_F6) => self.save(&mut window),
-                            (_, K_HOME) => self.offset = 0,
-                            (_, K_UP) => self.up(),
-                            (_, K_LEFT) => self.left(),
-                            (_, K_RIGHT) => self.right(),
-                            (_, K_END) => self.offset = self.string.len(),
-                            (_, K_DOWN) => self.down(),
-                            (m, _) => {
-                                let (no_mult, mut times) = match multiplier {
-                                    Some(n) => (false, n),
-                                    None => (true, 1),
-                                };
-                                let mut is_none = false;
-
-                                match key_event.character {
-                                    '0' if !no_mult => times *= 10,
-
-                                    '1' if no_mult => times = 1,
-                                    '1' => times = times * 10 + 1,
-
-                                    '2' if no_mult => times = 2,
-                                    '2' => times = times * 10 + 2,
-
-                                    '3' if no_mult => times = 3,
-                                    '3' => times = times * 10 + 3,
-
-                                    '4' if no_mult => times = 4,
-                                    '4' => times = times * 10 + 4,
-
-                                    '5' if no_mult => times = 5,
-                                    '5' => times = times * 10 + 5,
-
-                                    '6' if no_mult => times = 6,
-                                    '6' => times = times * 10 + 6,
-
-                                    '7' if no_mult => times = 7,
-                                    '7' => times = times * 10 + 7,
-
-                                    '8' if no_mult => times = 8,
-                                    '8' => times = times * 10 + 8,
-
-                                    '9' if no_mult => times = 9,
-                                    '9' => times = times * 10 + 9,
-                                    _ => {
-                                        for _ in 0 .. times {
-                                            match (m, key_event.character) {
-                                                (Normal, 'i') => {
-                                                    mode = Insert;
-                                                    last_change = self.string.clone();
-                                                },
-                                                (Normal, 'h') => self.left(),
-                                                (Normal, 'l') => self.right(),
-                                                (Normal, 'k') => self.up(),
-                                                (Normal, 'j') => self.down(),
-                                                (Normal, 'G') => self.offset = self.string.len(),
-                                                (Normal, 'a') => {
-                                                    self.right();
-                                                    mode = Insert;
-                                                    last_change = self.string.clone();
-                                                },
-                                                (Normal, 'x') => self.delete(&mut window),
-                                                (Normal, 'X') => self.backspace(&mut window),
-                                                (Normal, 'u') => {
-                                                    self.offset = 0;
-                                                    ::core::mem::swap(&mut last_change, &mut self.string);
-                                                },
-                                                (Normal, '$') => {
-                                                    let mut new_offset = self.string.len();
-                                                    for i in self.offset..self.string.len() {
-                                                        match self.string.as_bytes()[i] {
-                                                            0 => break,
-                                                            10 => {
-                                                                new_offset = i;
-                                                                break;
-                                                            }
-                                                            _ => (),
-                                                        }
-                                                    }
-                                                    self.offset = new_offset;
-                                                },
-                                                (Normal, '0') => {
-
-                                                    let mut new_offset = 0;
-                                                    for i in 2..self.offset {
-                                                        match self.string.as_bytes()[self.offset - i] {
-                                                            0 => break,
-                                                            10 => {
-                                                                new_offset = self.offset - i + 1;
-                                                                break;
-                                                            }
-                                                            _ => (),
-                                                        }
-                                                    }
-                                                    self.offset = new_offset;
-                                                },
-                                                (Insert, '\0') => (),
-                                                (Insert, _) => {
-                                                    window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-                                                    self.string = self.string[0 .. self.offset].to_string() +
-                                                        &key_event.character.to_string() +
-                                                        &self.string[self.offset .. self.string.len()];
-                                                    self.offset += 1;
-                                                },
-                                                _ => {},
-                                            }
-                                        }
-                                        is_none = true;
-                                    }
-                                }
-
-                                if !is_none {
-                                    multiplier = Some(times);
-                                } else {
-                                    multiplier = None;
-                                }
-
-                            }
-                        }
+                        cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window);
 
                         self.draw_content(&mut window);
                     }
