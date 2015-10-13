@@ -1,5 +1,4 @@
 use fmt;
-use result;
 use str;
 use string::String;
 use vec::{IntoIter, Vec};

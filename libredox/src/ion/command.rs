@@ -3,7 +3,6 @@ use vec::Vec;
 use boxed::Box;
 use fs::file::*;
 use io::*;
-use event::*;
 use console::*;
 use env::*;
 
@@ -57,7 +56,9 @@ impl Command {
             name: "open".to_string(),
             main: box |args: &Vec<String>| {
                 match args.get(1) {
-                    Option::Some(arg) => OpenEvent { url_string: arg.clone() }.trigger(),
+                    Option::Some(arg) => {
+                        File::exec(arg);
+                    },
                     Option::None => (),
                 }
             },

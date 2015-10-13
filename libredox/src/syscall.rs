@@ -51,6 +51,10 @@ pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd as u32, 0, 0) as usize
 }
 
+pub unsafe fn sys_execve(path: *const u8) -> usize {
+    syscall(SYS_EXECVE, path as u32, 0, 0) as usize
+}
+
 pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd as u32, offset as u32, whence as u32) as usize
 }
@@ -72,10 +76,6 @@ pub fn sys_yield() {
     unsafe {
         syscall(SYS_YIELD, 0, 0, 0);
     }
-}
-
-pub unsafe fn sys_trigger(event_ptr: usize) {
-    syscall(SYS_TRIGGER, event_ptr as u32, 0, 0);
 }
 
 pub unsafe fn sys_alloc(size: usize) -> usize {

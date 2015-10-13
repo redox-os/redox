@@ -177,7 +177,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = cmp::max((*::session_ptr).redraw, event::REDRAW_ALL);
+                                            (*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
@@ -359,7 +359,7 @@ unsafe fn init(font_data: usize) {
 
         let reenable = scheduler::start_no_ints();
         session.cursor = cursor;
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 
@@ -397,7 +397,7 @@ unsafe fn init(font_data: usize) {
 
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
-                session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+                session.redraw = true;
                 scheduler::end_no_ints(reenable);
             }
         }
@@ -414,7 +414,7 @@ unsafe fn init(font_data: usize) {
 
         let reenable = scheduler::start_no_ints();
         session.background = background;
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 

@@ -47,7 +47,7 @@ pub struct Session {
     pub packages: Vec<Box<Package>>,
     pub windows: Vec<*mut Window>,
     pub windows_ordered: Vec<*mut Window>,
-    pub redraw: usize,
+    pub redraw: bool,
 }
 
 impl Session {
@@ -69,7 +69,7 @@ impl Session {
                 packages: Vec::new(),
                 windows: Vec::new(),
                 windows_ordered: Vec::new(),
-                redraw: event::REDRAW_ALL,
+                redraw: true,
             }
         }
     }
@@ -77,7 +77,7 @@ impl Session {
     pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window) {
         self.windows.push(add_window_ptr);
         self.windows_ordered.push(add_window_ptr);
-        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+        self.redraw = true;
     }
 
     pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
@@ -117,7 +117,7 @@ impl Session {
             }
         }
 
-        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+        self.redraw = true;
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
@@ -168,7 +168,7 @@ impl Session {
                 Option::Some(window_ptr) => {
                     unsafe {
                         (**window_ptr).on_key(key_event);
-                        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+                        self.redraw = true;
                     }
                 }
                 Option::None => (),
@@ -220,7 +220,7 @@ impl Session {
                                 Option::None => break,
                             }
                         }
-                        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+                        self.redraw = true;
                         break;
                     }
                     x += w as isize;
@@ -234,7 +234,7 @@ impl Session {
                         if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
                             catcher = i as isize;
 
-                            self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+                            self.redraw = true;
                         }
                     },
                     Option::None => (),
@@ -253,8 +253,7 @@ impl Session {
     }
 
     pub unsafe fn redraw(&mut self) {
-        if self.redraw > event::REDRAW_NONE {
-            //if self.redraw >= REDRAW_ALL {
+        if self.redraw {
             self.display.set(Color::new(75, 163, 253));
             if self.background.data.len() > 0 {
                 self.background.draw(&self.display,
@@ -338,21 +337,12 @@ impl Session {
                                   'X',
                                   Color::new(255, 255, 255));
             }
-            //}
 
             let reenable = scheduler::start_no_ints();
 
             self.display.flip();
 
-            /*
-            if self.cursor.data.len() > 0 {
-                self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
-            } else {
-                self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
-            }
-            */
-
-            self.redraw = event::REDRAW_NONE;
+            self.redraw = false;
 
             scheduler::end_no_ints(reenable);
         }
@@ -362,33 +352,6 @@ impl Session {
         match event.to_option() {
             EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
             EventOption::Key(key_event) => self.on_key(key_event),
-            EventOption::Redraw(redraw_event) =>
-                self.redraw = cmp::max(self.redraw, redraw_event.redraw),
-            EventOption::Open(open_event) => {
-                let url_string = open_event.url_string;
-
-                if url_string.ends_with(".bin".to_string()) {
-                    execute(&URL::from_string(&url_string),
-                            &URL::new(),
-                            &Vec::new());
-                } else {
-                    for package in self.packages.iter() {
-                        let mut accepted = false;
-                        for accept in package.accepts.iter() {
-                            if url_string.ends_with(accept.substr(1, accept.len() - 1)) {
-                                accepted = true;
-                                break;
-                            }
-                        }
-                        if accepted {
-                            let mut args: Vec<String> = Vec::new();
-                            args.push(url_string.clone());
-                            execute(&package.binary, &package.url, &args);
-                            break;
-                        }
-                    }
-                }
-            }
             _ => (),
         }
     }
