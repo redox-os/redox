@@ -89,6 +89,18 @@ impl Editor {
         self.offset = new_offset;
     }
 
+    fn cur(&self) -> char {
+        self.string.chars().nth(self.offset).unwrap_or('\0')
+    }
+
+    fn insert(&mut self, c: char, window: &mut Window) {
+        window.set_title(&format!("{}{}{}","self (", &self.url, ") Changed"));
+        self.string = self.string[0 .. self.offset].to_string() +
+            &c.to_string() +
+            &self.string[self.offset .. self.string.len()];
+        self.offset += 1;
+    }
+
     fn reload(&mut self, window: &mut Window) {
         window.set_title(&("Editor (".to_string() + &self.url + ")"));
         self.offset = 0;

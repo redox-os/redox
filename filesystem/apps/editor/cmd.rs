@@ -1,5 +1,7 @@
 use redox::*;
 
+// TODO: Structure using loops
+
 use super::Mode;
 use super::Mode::*;
 use super::Editor;
@@ -90,90 +92,40 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     ::core::mem::swap(&mut editor.offset, swap);
                                 },
                                 (Normal, 'o') => {
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: '$',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: 'i',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: '\n',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
+                                    while editor.cur() != '\n' &&
+                                          editor.cur() != '\0' {
+                                        editor.right();
+                                    }
+                                    editor.insert('\n', window);
+                                    *mode = Insert;
                                 },
                                 (Normal, 'O') => {
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: 'k',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: '$',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: 'i',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
-                                    exec(editor, mode, multiplier, last_change, KeyEvent {
-                                        character: '\n',
-                                        scancode: 0,
-                                        pressed: true,
-                                    }, window, swap, period, is_recording);
+                                    while editor.cur() != '\n' &&
+                                          editor.cur() != '\0' {
+                                        editor.left();
+                                    }
+                                    editor.insert('\n', window);
+                                    editor.left();
+                                    *mode = Insert;
                                 },
                                 (Normal, '$') => {
-                                    let mut new_offset = editor.string.len();
-                                    for i in editor.offset..editor.string.len() {
-                                        match editor.string.as_bytes()[i] {
-                                            0 => break,
-                                            10 => {
-                                                new_offset = i;
-                                                break;
-                                            }
-                                            _ => (),
-                                        }
+                                    while editor.cur() != '\n' &&
+                                          editor.cur() != '\0' {
+                                        editor.right();
                                     }
-                                    editor.offset = new_offset;
                                 },
                                 (Normal, '0') => {
-
-                                    let mut new_offset = 0;
-                                    for i in 2..editor.offset {
-                                        match editor.string.as_bytes()[editor.offset - i] {
-                                            0 => break,
-                                            10 => {
-                                                new_offset = editor.offset - i + 1;
-                                                break;
-                                            }
-                                            _ => (),
-                                        }
+                                    while editor.cur() != '\n' &&
+                                          editor.cur() != '\0' {
+                                        editor.left();
                                     }
-                                    editor.offset = new_offset;
+                                    editor.right();
                                 },
                                 (Normal, 'd') => {
-                                    // TODO: Is this crash proof?
-                                    let mut new_offset = editor.string.len();
-                                    for i in editor.offset..editor.string.len() {
-                                        match editor.string.as_bytes()[i] {
-                                            0 => break,
-                                            10 => {
-                                                new_offset = i;
-                                                break;
-                                            }
-                                            _ => {}
-                                        }
-                                    }
-                                    for _ in 1..new_offset {
+                                    while editor.cur() != '\n' &&
+                                          editor.cur() != '\0' {
                                         editor.delete(window);
                                     }
-                                    editor.offset = new_offset;
                                 },
                                 (Normal, ',') => {
                                     *is_recording = true;
@@ -189,12 +141,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     }
                                 },
                                 (Insert, '\0') => (),
-                                (Insert, _) => {
-                                    window.set_title(&format!("{}{}{}","Editor (", &editor.url, ") Changed"));
-                                    editor.string = editor.string[0 .. editor.offset].to_string() +
-                                        &key_event.character.to_string() +
-                                        &editor.string[editor.offset .. editor.string.len()];
-                                    editor.offset += 1;
+                                (Insert, c) => {
+                                    editor.insert(c, window);
                                 },
                                 _ => {},
                             }
