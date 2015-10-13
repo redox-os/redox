@@ -243,7 +243,7 @@ impl Display {
     }
 
     // TODO: Move to orbital?
-    
+
     /// Draw an line (without antialiasing) with width 1
     /// (using Bresenham's algorithm)
     pub fn line(&self, point_a: Point, point_b: Point, color: Color) {
@@ -276,7 +276,7 @@ impl Display {
 
             let mut y = 0;
 
-            for x in point_a.x .. point_b.x {
+            for x in point_a.x..point_b.x {
                 // Draw pixel
                 self.pixel(Point::new(x, y), color);
 
