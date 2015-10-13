@@ -1,8 +1,6 @@
-use core::fmt::Write;
-
 use redox::Box;
 use redox::string::*;
-use redox::io::{self, SeekFrom};
+use redox::io::{self, SeekFrom, Write};
 
 pub struct Resource {
     path: String
