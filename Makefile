@@ -213,7 +213,7 @@ virtualbox: build/harddrive.bin
 	echo "Create VM"
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
-	$(VBM) modifyvm Redox --memory 512
+	$(VBM) modifyvm Redox --memory 1024
 	$(VBM) modifyvm Redox --vram 64
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
@@ -237,17 +237,17 @@ qemu: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_bare: build/harddrive.bin
-	-qemu-system-i386 -net none -serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
+	-qemu-system-i386 -net none -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_no_kvm: build/harddrive.bin
 	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -m 512 -d guest_errors -hda $<
+			-serial mon:stdio -m 1024 -d guest_errors -hda $<
 
 qemu_tap: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
@@ -256,7 +256,7 @@ qemu_tap: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -267,7 +267,7 @@ qemu_tap_8254x: build/harddrive.bin
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
-			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
+			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
@@ -282,7 +282,7 @@ virtualbox_tap: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
 	echo "Set Configuration"
-	$(VBM) modifyvm Redox --memory 512
+	$(VBM) modifyvm Redox --memory 1024
 	$(VBM) modifyvm Redox --vram 64
 	$(VBM) modifyvm Redox --nic1 bridged
 	$(VBM) modifyvm Redox --nictype1 82540EM
