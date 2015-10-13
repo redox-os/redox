@@ -3,7 +3,9 @@ Hey there! Here's a bunch of stuff that needs done:
 ## TODO
 
 - [ ] Cargoify 'em all.
-    Note: libredox, common, and graphics makes use of cargo. However, **they do not compile using cargo**. This is because they depends on non-cargo crates, which is quite a pain. What we want is to throw GNU make out of the window and use cargo instead.
+      On the progress: All the crates are now cargoified and are using the cargo
+      file structure, however they do not compile using cargo. So the task is
+      not complete. What is needed is linking the crates.
 
 - [ ] Expand the common module with new methods. Look at std for inspiration.
 
@@ -13,7 +15,9 @@ Hey there! Here's a bunch of stuff that needs done:
 
 - [ ] ZFS (WIP)
 
-- [ ] Documentation: Lots of docs are needed. Libredox and common are documented. The rest is almost.... non-documented.
+- [ ] Documentation: Lots of docs are needed. Libredox and common are documented.
+      It's all documented however it's not well documented. Many of the docs are
+      extremely short and poorly explain.
 
 - [ ] Port toml-rs to redox
 
