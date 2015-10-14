@@ -1,4 +1,4 @@
-use redox::*;
+ use redox::*;
 
 // TODO: Structure using loops
 // TODO: Make capital commands doing the reverse of the command
@@ -75,9 +75,9 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     *mode = Insert;
                                     *last_change = editor.string.clone();
                                 },
-                                (Normal, 'h') => editor.left(),
+                                (Normal, 'h') | (Normal, ' ') => editor.left(),
                                 (Normal, 'l') => editor.right(),
-                                (Normal, 'k') | (Normal, ' ') => editor.up(),
+                                (Normal, 'k') => editor.up(),
                                 (Normal, 'j') | (Normal, '\n') => editor.down(),
                                 (Normal, 'K') => {
                                     for _ in 1..15 {
