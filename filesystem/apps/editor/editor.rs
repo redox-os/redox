@@ -22,8 +22,7 @@ impl Editor {
         }
     }
 
-    fn reload(&mut self, window: &mut Window) {
-        window.set_title(&("Editor (".to_string() + &self.url + ")"));
+    fn reload(&mut self) {
         self.offset = 0;
         self.scroll_x = 0;
         self.scroll_y = 0;
@@ -39,17 +38,15 @@ impl Editor {
         }
     }
 
-    fn save(&mut self, window: &mut Window) {
+    fn save(&mut self) {
         match self.file {
             Option::Some(ref mut file) => {
-                window.set_title(&("Editor (".to_string() + &self.url + ") Saved"));
                 file.seek(SeekFrom::Start(0));
                 file.write(&self.string.as_bytes());
                 file.sync();
             }
             Option::None => {
                 //TODO: Ask for file to save to
-                window.set_title(&("Editor (".to_string() + &self.url + ") No Open File"));
             }
         }
     }
@@ -138,12 +135,12 @@ impl Editor {
                                      (rand() % 300 + 50) as isize,
                                      576,
                                      400,
-                                      &("Editor (".to_string() + url + ")"));
+                                      &("Editor (".to_string() + url + ")")).unwrap();
 
         self.url = url.to_string();
-        self.file = Option::Some(File::open(&self.url));
+        self.file = File::open(&self.url);
 
-        self.reload(&mut window);
+        self.reload();
         self.draw_content(&mut window);
 
         while let Option::Some(event) = window.poll() {
@@ -153,18 +150,16 @@ impl Editor {
                         match key_event.scancode {
                             K_ESC => break,
                             K_BKSP => if self.offset > 0 {
-                                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                 self.string = self.string[0 .. self.offset - 1].to_string() +
                                               &self.string[self.offset .. self.string.len()];
                                 self.offset -= 1;
                             },
                             K_DEL => if self.offset < self.string.len() {
-                                window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                 self.string = self.string[0 .. self.offset].to_string() +
                                               &self.string[self.offset + 1 .. self.string.len() - 1];
                             },
-                            K_F5 => self.reload(&mut window),
-                            K_F6 => self.save(&mut window),
+                            K_F5 => self.reload(),
+                            K_F6 => self.save(),
                             K_HOME => self.offset = 0,
                             K_UP => {
                                 let mut new_offset = 0;
@@ -204,7 +199,6 @@ impl Editor {
                             _ => match key_event.character {
                                 '\0' => (),
                                 _ => {
-                                    window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
                                     self.string = self.string[0 .. self.offset].to_string() +
                                                   &key_event.character.to_string() +
                                                   &self.string[self.offset .. self.string.len()];
