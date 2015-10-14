@@ -1,3 +1,5 @@
+// TODO: Refactor using a matrix for performance
+
 use redox::*;
 
 mod cmd;
