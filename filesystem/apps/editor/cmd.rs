@@ -113,6 +113,16 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         editor.delete(window);
                                     }
                                 },
+                                (Normal, 'Z') => {
+                                    *clipboard = String::new();
+                                    while editor.cur() != '\n' &&
+                                          editor.offset >= 0 {
+                                        clipboard.push(editor.cur());
+                                        editor.backspace(window);
+                                        editor.left();
+                                    }
+                                    editor.right();
+                                },
                                 (Normal, 's') => {
                                     editor.delete(window);
                                     *mode = Insert;
