@@ -51,34 +51,34 @@ impl Editor {
 
     // TODO: Add methods for multiple movements
     fn up(&mut self) {
-        let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
-        let original_c = self.cur();
-
-        while self.cur() != '\n' {
+        if self.cur() == '\n' || self.cur() == '\0' {
             self.left();
-        }
-        self.right();
-        let mut new_offset = 0;
-
-
-        for i in 2..self.offset {
-            match self.string.as_bytes()[self.offset - i] {
-                0 => break,
-                10 => {
-                    new_offset = self.offset - i + 1;
-                    break;
-                }
-                _ => (),
-            }
-        }
-        self.offset = new_offset;
-        if original_c == '\n' {
             while self.cur() != '\n' &&
                   self.cur() != '\0' &&
-                  self.offset < self.string.len() {
-                self.right();
+                  self.offset >= 0 {
+                self.left();
             }
         } else {
+            let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
+
+            while self.cur() != '\n' {
+                self.left();
+            }
+            self.right();
+            let mut new_offset = 0;
+
+
+            for i in 2..self.offset {
+                match self.string.as_bytes()[self.offset - i] {
+                    0 => break,
+                    10 => {
+                        new_offset = self.offset - i + 1;
+                        break;
+                    }
+                    _ => (),
+                }
+            }
+            self.offset = new_offset;
             for _ in 1..x {
                 if self.cur() != '\n' {
                     self.right();
