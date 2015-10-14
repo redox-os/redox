@@ -1,3 +1,5 @@
+use alloc::boxed::Box;
+
 use core::mem;
 use core::ops::DerefMut;
 use core::slice;
@@ -33,29 +35,24 @@ pub struct Window {
 
 impl Window {
     /// Create a new window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Self {
-        let mut font_file = File::open("file:///ui/unifont.font");
-
-        let mut font;
-        match font_file.seek(SeekFrom::End(0)) {
-            Some(length) => {
-                font = vec![0; length];
-
-                font_file.seek(SeekFrom::Start(0));
-                font_file.read(&mut font);
-            },
-            None => font = Vec::new(),
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
+        let mut font = Vec::new();
+        if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
+            font_file.read_to_end(&mut font);
         }
 
-        Window {
-            x: x,
-            y: y,
-            w: w,
-            h: h,
-            t: title.to_string(),
-            file: File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)),
-            font: font,
-            data: vec![0; w * h * 4],
+        match File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
+            Some(file) => Some(box Window {
+                x: x,
+                y: y,
+                w: w,
+                h: h,
+                t: title.to_string(),
+                file: file,
+                font: font,
+                data: vec![0; w * h * 4],
+            }),
+            None => None
         }
     }
 

@@ -42,7 +42,7 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
-    fn dup(&self) -> Box<Resource> {
+    fn dup(&self) -> Option<Box<Resource>> {
         let mut ret = box NetworkResource {
             nic: self.nic,
             ptr: 0 as *mut NetworkResource,
@@ -56,7 +56,7 @@ impl Resource for NetworkResource {
             (*ret.nic).add(ret.ptr);
         }
 
-        ret
+        Some(ret)
     }
 
     fn url(&self) -> URL {
