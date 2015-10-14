@@ -41,6 +41,7 @@ commands are valid:
      spaces.
 - %: Go to the matching delimiter.
 - y: Yank the rest of the line.
+- Y: Yank the rest of the line before the cursor.
 - p: Paste the clipboard.
 - z: Clip the rest after the line.
 
