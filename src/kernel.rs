@@ -127,11 +127,11 @@ unsafe fn idle_loop() -> ! {
         let contexts = & *contexts_ptr;
         for i in 1..contexts.len() {
             match contexts.get(i) {
-                Option::Some(context) => if context.interrupted {
+                Some(context) => if context.interrupted {
                     halt = false;
                     break;
                 },
-                Option::None => ()
+                None => ()
             }
         }
 
@@ -169,7 +169,7 @@ unsafe fn event_loop() -> ! {
             scheduler::end_no_ints(reenable);
 
             match event_option {
-                Option::Some(event) => {
+                Some(event) => {
                     if debug_draw {
                         match event.to_option() {
                             EventOption::Key(key_event) => {
@@ -212,7 +212,7 @@ unsafe fn event_loop() -> ! {
                         }
                     }
                 },
-                Option::None => break
+                None => break
             }
         }
 

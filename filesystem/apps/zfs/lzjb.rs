@@ -17,7 +17,7 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
 
     // Stores the index of the current copy flag in dst
     let mut copymap = 0;
-    
+
     // The current bit in the byte pointed at by `copymap`
     let mut copymask: usize = 1 << (NBBY - 1);
 
@@ -59,7 +59,7 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
         // a valid entry later.
         let offset = (src_i - lempel[hp]) & OFFSET_MASK;
         let cpy = src_i - offset;
-        
+
         // Set the current 3 byte slice as the most recent sighting of it in the
         // cache
         lempel[hp] = src_i;
@@ -78,15 +78,15 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
                 if src[src_i+mlen] != src[cpy+mlen] { break; }
                 mlen += 1;
             }
-            
+
             // Place the match length portion of the copy item
             dst[dst_i] = (((mlen - MATCH_MIN) << (NBBY - MATCH_BITS)) | (offset >> NBBY)) as u8;
             dst_i += 1;
-            
+
             // Place the offset portion of the copy item
             dst[dst_i] = offset as u8;
             dst_i += 1;
-            
+
             // Now we get to skip the repeated sequence!
             src_i += mlen;
         } else {

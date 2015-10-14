@@ -39,7 +39,7 @@ impl FromBytes for MZapWrapper {
             }
             Some(MZapWrapper { phys: mzap_phys, chunks: mzap_entries })
         } else {
-            Option::None
+            None
         }
     }
 }

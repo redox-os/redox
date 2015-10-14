@@ -86,12 +86,12 @@ impl Session {
             let mut remove = false;
 
             match self.windows.get(i) {
-                Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
+                Some(window_ptr) => if *window_ptr == remove_window_ptr {
                     remove = true;
                 } else {
                     i += 1;
                 },
-                Option::None => break,
+                None => break,
             }
 
             if remove {
@@ -104,12 +104,12 @@ impl Session {
             let mut remove = false;
 
             match self.windows_ordered.get(i) {
-                Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
+                Some(window_ptr) => if *window_ptr == remove_window_ptr {
                     remove = true;
                 } else {
                     i += 1;
                 },
-                Option::None => break,
+                None => break,
             }
 
             if remove {
@@ -165,13 +165,13 @@ impl Session {
     fn on_key(&mut self, key_event: KeyEvent) {
         if self.windows.len() > 0 {
             match self.windows.get(self.windows.len() - 1) {
-                Option::Some(window_ptr) => {
+                Some(window_ptr) => {
                     unsafe {
                         (**window_ptr).on_key(key_event);
                         self.redraw = true;
                     }
                 }
-                Option::None => (),
+                None => (),
             }
         }
     }
@@ -205,7 +205,7 @@ impl Session {
                     if mouse_event.x >= x && mouse_event.x < x + w as isize {
                         for j in 0..self.windows.len() {
                             match self.windows.get(j) {
-                                Option::Some(catcher_window_ptr) =>
+                                Some(catcher_window_ptr) =>
                                     if catcher_window_ptr == window_ptr {
                                     unsafe {
                                         if j == self.windows.len() - 1 {
@@ -217,7 +217,7 @@ impl Session {
                                     }
                                     break;
                                 },
-                                Option::None => break,
+                                None => break,
                             }
                         }
                         self.redraw = true;
@@ -230,22 +230,22 @@ impl Session {
             for reverse_i in 0..self.windows.len() {
                 let i = self.windows.len() - 1 - reverse_i;
                 match self.windows.get(i) {
-                    Option::Some(window_ptr) => unsafe {
+                    Some(window_ptr) => unsafe {
                         if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
                             catcher = i as isize;
 
                             self.redraw = true;
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 }
             }
         }
 
         if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
             match self.windows.remove(catcher as usize) {
-                Option::Some(window_ptr) => self.windows.push(window_ptr),
-                Option::None => (),
+                Some(window_ptr) => self.windows.push(window_ptr),
+                None => (),
             }
         }
 
@@ -267,11 +267,11 @@ impl Session {
 
             for i in 0..self.windows.len() {
                 match self.windows.get(i) {
-                    Option::Some(window_ptr) => {
+                    Some(window_ptr) => {
                         (**window_ptr).focused = i == self.windows.len() - 1;
                         (**window_ptr).draw(&self.display);
                     }
-                    Option::None => (),
+                    None => (),
                 }
             }
 

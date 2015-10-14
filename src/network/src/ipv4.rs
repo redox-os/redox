@@ -34,7 +34,7 @@ impl FromBytes for IPv4 {
                 let header = *(bytes.as_ptr() as *const IPv4Header);
                 let header_len = ((header.ver_hlen & 0xF) << 2) as usize;
 
-                return Option::Some(IPv4 {
+                return Some(IPv4 {
                     header: header,
                     options: bytes.sub(size_of::<IPv4Header>(),
                                        header_len - size_of::<IPv4Header>()),
@@ -42,7 +42,7 @@ impl FromBytes for IPv4 {
                 });
             }
         }
-        Option::None
+        None
     }
 }
 
