@@ -39,6 +39,9 @@ commands are valid:
 - B: Navigate to the start of the word seperated by
      spaces.
 - %: Go to the matching delimiter.
+- y: Yank the rest of the line.
+- p: Paste the clipboard.
+- z: Clip the rest after the line.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.

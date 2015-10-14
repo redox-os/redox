@@ -1,12 +1,16 @@
 use redox::*;
 
 // TODO: Structure using loops
+// TODO: Make capital commands doing the reverse of the command
+//       Y: Yank before the cursor
+//       D: Delete before the cursor.
 
 use super::Mode;
 use super::Mode::*;
 use super::Editor;
 
-pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, last_change: &mut String, key_event: KeyEvent, window: &mut Window, swap: &mut usize, period: &mut String, is_recording: &mut bool) {
+// TODO: Move vars to `Editor`
+pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, last_change: &mut String, key_event: KeyEvent, window: &mut Window, swap: &mut usize, period: &mut String, is_recording: &mut bool, clipboard: &mut String) {
     match (*mode, key_event.scancode) {
         (Insert, K_ESC) => {
             *mode = Normal;
@@ -101,6 +105,14 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 (Normal, 'c') => {
                                     ::core::mem::swap(&mut editor.offset, swap);
                                 },
+                                (Normal, 'z') => {
+                                    *clipboard = String::new();
+                                    while editor.cur() != '\n' &&
+                                          editor.offset < editor.string.len() {
+                                        *clipboard = clipboard.clone().to_string() + &editor.cur().to_string();
+                                        editor.delete(window);
+                                    }
+                                },
                                 (Normal, 's') => {
                                     editor.delete(window);
                                     *mode = Insert;
@@ -135,6 +147,25 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                           editor.cur() == '\t') &&
                                           editor.offset < editor.string.len() {
                                         editor.right();
+                                    }
+                                },
+                                (Normal, 'y') => {
+                                    *clipboard = String::new();
+                                    let mut mov = 1;
+                                    while editor.cur() != '\n' &&
+                                          editor.offset < editor.string.len() {
+                                        clipboard.push(editor.cur());
+                                        editor.right();
+                                        mov += 1;
+                                    }
+
+                                    for _ in 1..mov {
+                                        editor.left();
+                                    }
+                                },
+                                (Normal, 'p') => {
+                                    for c in clipboard.chars() {
+                                        editor.insert(c, window);
                                     }
                                 },
                                 (Normal, '$') => {
@@ -242,7 +273,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                                     ')' | ']' | '}' => 1,
                                                     _ => 0,
                                                 };
-                                                if editor.offset >= 0 {
+                                                if editor.offset >= 1 {
                                                     break;
                                                 }
                                             }
@@ -257,7 +288,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                             character: c,
                                             scancode: 0,
                                             pressed: true,
-                                        }, window, swap, period, is_recording);
+                                        }, window, swap, period, is_recording, clipboard);
                                     }
                                 },
                                 (Insert, '\0') => (),
