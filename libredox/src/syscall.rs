@@ -5,70 +5,82 @@ use syscall::common::*;
 #[path="../../src/syscall/src/common.rs"]
 pub mod common;
 
-pub unsafe fn syscall(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
+#[cfg(target_arch = "x86")]
+pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
     asm!("int 0x80"
-        : "={eax}"(eax)
-        : "{eax}"(eax), "{ebx}"(ebx), "{ecx}"(ecx), "{edx}"(edx)
+        : "={eax}"(a)
+        : "{eax}"(a), "{ebx}"(b), "{ecx}"(c), "{edx}"(d)
         : "memory"
         : "intel", "volatile");
 
-    eax
+    a
+}
+
+#[cfg(target_arch = "x86_64")]
+pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
+    asm!("int 0x80"
+        : "={rax}"(a)
+        : "{rax}"(a), "{rbx}"(b), "{rcx}"(c), "{rdx}"(d)
+        : "memory"
+        : "intel", "volatile");
+
+    a
 }
 
 pub unsafe fn sys_debug(byte: u8) {
-    syscall(SYS_DEBUG, byte as u32, 0, 0);
+    syscall(SYS_DEBUG, byte as usize, 0, 0);
 }
 
 pub unsafe fn sys_exit(status: isize) {
-    syscall(SYS_EXIT, (status as i32) as u32, 0, 0);
+    syscall(SYS_EXIT, status as usize, 0, 0);
 }
 
 pub unsafe fn sys_fork() -> usize {
-    syscall(SYS_FORK, 0, 0, 0) as usize
+    syscall(SYS_FORK, 0, 0, 0)
 }
 
 pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
-    syscall(SYS_READ, fd as u32, buf as u32, count as u32) as usize
+    syscall(SYS_READ, fd, buf as usize, count)
 }
 
 pub unsafe fn sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
-    syscall(SYS_WRITE, fd as u32, buf as u32, count as u32) as usize
+    syscall(SYS_WRITE, fd, buf as usize, count)
 }
 
 pub unsafe fn sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
-    syscall(SYS_OPEN, path as u32, (flags as i32) as u32, (mode as i32) as u32) as usize
+    syscall(SYS_OPEN, path as usize, flags as usize, mode as usize)
 }
 
 pub unsafe fn sys_dup(fd: usize) -> usize {
-    syscall(SYS_DUP, fd as u32, 0, 0) as usize
+    syscall(SYS_DUP, fd, 0, 0)
 }
 
 pub unsafe fn sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
-    syscall(SYS_FPATH, fd as u32, buf as u32, len as u32) as usize
+    syscall(SYS_FPATH, fd, buf as usize, len)
 }
 
 pub unsafe fn sys_close(fd: usize) -> usize {
-    syscall(SYS_CLOSE, fd as u32, 0, 0) as usize
+    syscall(SYS_CLOSE, fd, 0, 0)
 }
 
 pub unsafe fn sys_execve(path: *const u8) -> usize {
-    syscall(SYS_EXECVE, path as u32, 0, 0) as usize
+    syscall(SYS_EXECVE, path as usize, 0, 0)
 }
 
 pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
-    syscall(SYS_LSEEK, fd as u32, offset as u32, whence as u32) as usize
+    syscall(SYS_LSEEK, fd, offset as usize, whence as usize)
 }
 
 pub unsafe fn sys_fsync(fd: usize) -> usize {
-    syscall(SYS_FSYNC, fd as u32, 0, 0) as usize
+    syscall(SYS_FSYNC, fd, 0, 0)
 }
 
 pub unsafe fn sys_time(time_ptr: *mut Duration, realtime: bool) {
-    syscall(SYS_TIME, time_ptr as u32, realtime as u32, 0);
+    syscall(SYS_TIME, time_ptr as usize, realtime as usize, 0);
 }
 
 pub unsafe fn sys_brk(addr: usize) -> usize {
-    syscall(SYS_BRK, addr as u32, 0, 0) as usize
+    syscall(SYS_BRK, addr, 0, 0)
 }
 
 pub unsafe fn sys_yield() {
@@ -76,17 +88,17 @@ pub unsafe fn sys_yield() {
 }
 
 pub unsafe fn sys_alloc(size: usize) -> usize {
-    syscall(SYS_ALLOC, size as u32, 0, 0) as usize
+    syscall(SYS_ALLOC, size, 0, 0)
 }
 
 pub unsafe fn sys_realloc(ptr: usize, size: usize) -> usize {
-    syscall(SYS_REALLOC, ptr as u32, size as u32, 0) as usize
+    syscall(SYS_REALLOC, ptr, size, 0)
 }
 
 pub unsafe fn sys_realloc_inplace(ptr: usize, size: usize) -> usize {
-    syscall(SYS_REALLOC_INPLACE, ptr as u32, size as u32, 0) as usize
+    syscall(SYS_REALLOC_INPLACE, ptr, size, 0)
 }
 
 pub unsafe fn sys_unalloc(ptr: usize) {
-    syscall(SYS_UNALLOC, ptr as u32, 0, 0);
+    syscall(SYS_UNALLOC, ptr, 0, 0);
 }

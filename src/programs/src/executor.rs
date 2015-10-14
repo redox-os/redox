@@ -33,20 +33,20 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
 
         if physical_address > 0 && virtual_address > 0 && virtual_size > 0 &&
            entry >= virtual_address && entry < virtual_address + virtual_size {
-            let mut context_args: Vec<u32> = Vec::new();
-            context_args.push(0 as u32); // ENVP
-            context_args.push(0 as u32); // ARGV NULL
+            let mut context_args: Vec<usize> = Vec::new();
+            context_args.push(0); // ENVP
+            context_args.push(0); // ARGV NULL
             let mut argc = 1;
             for i in 0..args.len() {
                 if let Option::Some(arg) = args.get(args.len() - i - 1) {
-                    context_args.push(arg.to_c_str() as u32);
+                    context_args.push(arg.to_c_str() as usize);
                     argc += 1;
                 }
             }
-            context_args.push(url.string.to_c_str() as u32);
-            context_args.push(argc as u32);
+            context_args.push(url.string.to_c_str() as usize);
+            context_args.push(argc);
 
-            let mut context = Context::new(entry as u32, &context_args);
+            let mut context = Context::new(entry, &context_args);
 
             //TODO: Push arg c_strs as things to clean up
             context.memory.push(ContextMemory {

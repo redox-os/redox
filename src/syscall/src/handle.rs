@@ -82,11 +82,11 @@ pub unsafe fn do_sys_fork() -> usize {
 
     let contexts = &mut *contexts_ptr;
 
-    let mut context_fork_args: Vec<u32> = Vec::new();
-    context_fork_args.push(parent_i as u32);
-    context_fork_args.push(context_exit as u32);
+    let mut context_fork_args: Vec<usize> = Vec::new();
+    context_fork_args.push(parent_i);
+    context_fork_args.push(context_exit as usize);
 
-    contexts.push(Context::new(context_fork as u32, &context_fork_args));
+    contexts.push(Context::new(context_fork as usize, &context_fork_args));
 
     context_switch(true);
 
@@ -174,7 +174,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     }
 
     let mut fd = 0xFFFFFFFF;
-    
+
     if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
         let reenable = scheduler::start_no_ints();
 
@@ -487,30 +487,30 @@ pub unsafe fn do_sys_unalloc(ptr: usize) {
     unalloc(ptr)
 }
 
-pub unsafe fn syscall_handle(mut eax: u32, ebx: u32, ecx: u32, edx: u32) -> u32 {
+pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize) -> usize {
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),
         // Linux
-        SYS_EXIT => do_sys_exit((ebx as i32) as isize),
-        SYS_FORK => eax = do_sys_fork() as u32,
-        SYS_READ => eax = do_sys_read(ebx as usize, ecx as *mut u8, edx as usize) as u32,
-        SYS_WRITE => eax = do_sys_write(ebx as usize, ecx as *mut u8, edx as usize) as u32,
-        SYS_OPEN => eax = do_sys_open(ebx as *const u8, (ecx as i32) as isize, (edx as i32) as isize) as u32,
-        SYS_CLOSE => eax = do_sys_close(ebx as usize) as u32,
-        SYS_EXECVE => eax = do_sys_execve(ebx as *const u8) as u32,
-        SYS_FPATH => eax = do_sys_fpath(ebx as usize, ecx as *mut u8, edx as usize) as u32,
-        SYS_FSYNC => eax = do_sys_fsync(ebx as usize) as u32,
-        SYS_LSEEK => eax = do_sys_lseek(ebx as usize, (ecx as i32) as isize, edx as usize) as u32,
-        SYS_DUP => eax = do_sys_dup(ebx as usize) as u32,
-        SYS_BRK => eax = do_sys_brk(ebx as usize) as u32,
-        SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize) as u32,
+        SYS_EXIT => do_sys_exit(ebx as isize),
+        SYS_FORK => eax = do_sys_fork(),
+        SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
+        SYS_WRITE => eax = do_sys_write(ebx, ecx as *mut u8, edx),
+        SYS_OPEN => eax = do_sys_open(ebx as *const u8, ecx as isize, edx as isize),
+        SYS_CLOSE => eax = do_sys_close(ebx as usize),
+        SYS_EXECVE => eax = do_sys_execve(ebx as *const u8),
+        SYS_FPATH => eax = do_sys_fpath(ebx, ecx as *mut u8, edx),
+        SYS_FSYNC => eax = do_sys_fsync(ebx),
+        SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
+        SYS_DUP => eax = do_sys_dup(ebx),
+        SYS_BRK => eax = do_sys_brk(ebx),
+        SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize),
         SYS_YIELD => context_switch(false),
 
         // Rust Memory
-        SYS_ALLOC => eax = do_sys_alloc(ebx as usize) as u32,
-        SYS_REALLOC => eax = do_sys_realloc(ebx as usize, ecx as usize) as u32,
-        SYS_REALLOC_INPLACE => eax = do_sys_realloc_inplace(ebx as usize, ecx as usize) as u32,
-        SYS_UNALLOC => do_sys_unalloc(ebx as usize),
+        SYS_ALLOC => eax = do_sys_alloc(ebx),
+        SYS_REALLOC => eax = do_sys_realloc(ebx, ecx),
+        SYS_REALLOC_INPLACE => eax = do_sys_realloc_inplace(ebx, ecx),
+        SYS_UNALLOC => do_sys_unalloc(ebx),
 
         // Misc
         SYS_TIME => {
