@@ -30,6 +30,7 @@ commands are valid:
 - ^: Go to the first non blank char of the line.
 - s: Remove the char under the cursor and start
      inserting.
+- w: Save the file.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.
