@@ -147,9 +147,10 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     *mode = Insert;
                                 },
                                 (Normal, '^') => {
+                                    editor.left();
                                     while editor.cur() != '\n' &&
                                           editor.cur() != '\0' &&
-                                          editor.offset <= 0 {
+                                          editor.offset >= 0 {
                                         editor.left();
                                     }
                                     editor.right();
