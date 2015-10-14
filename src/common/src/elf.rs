@@ -321,7 +321,7 @@ impl ELF {
     }
 
     /// ELF symbol
-    pub unsafe fn symbol(&self, name: String) -> usize {
+    pub unsafe fn symbol(&self, name: &str) -> usize {
         if self.data > 0 {
             let header = &*(self.data as *const ELFHeader);
 
