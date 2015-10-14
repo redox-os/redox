@@ -1,0 +1,10 @@
+name=Sodium
+icon=file:///ui/apps/accessories-text-editor.bmp
+accept=*_REDOX
+accept=*.md
+accept=*.asm
+accept=*.rs
+accept=*.txt
+accept=*.list
+author=Ticki
+description=A editor inspired by Vim
