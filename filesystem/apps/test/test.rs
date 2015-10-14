@@ -37,7 +37,8 @@ pub fn main() {
                                     "box_write",
                                     "reboot",
                                     "shutdown",
-                                    "fork"];
+                                    "fork",
+                                    "leak_test"];
 
             match &a_command[..] {
                 command if command == console_commands[0] =>
@@ -79,9 +80,15 @@ pub fn main() {
                     unsafe {
                         if sys_fork() == 0 {
                             println!("Parent from fork");
-                        }else {
+                        } else {
                             println!("Child from fork");
                         }
+                    }
+                }
+                command if command == console_commands[7] => {
+                    let mut stack_it: Vec<Box<u8>> = Vec::new();
+                    loop {
+                        stack_it.push(Box::new(rand() as u8))
                     }
                 }
                 _ => println!("Commands: {}", console_commands.join(" ")),
