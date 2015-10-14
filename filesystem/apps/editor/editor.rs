@@ -135,11 +135,45 @@ impl Editor {
     }
 
     fn insert(&mut self, c: char, window: &mut Window) {
+        let ind = if c == '\n' {
+            let mut mov = 0;
+
+            for _ in 0..self.get_x() {
+                self.left();
+                mov += 1;
+            }
+
+            let mut ind = String::new();
+            while (self.cur() == ' ' ||
+                  self.cur() == '\t') &&
+                  self.offset < self.string.len() {
+                ind.push(self.cur());
+                self.right();
+                mov -= 1;
+            }
+
+            for _ in 0..mov {
+                self.right();
+            }
+
+            ind
+        } else {
+            String::new()
+        };
+
         window.set_title(&format!("{}{}{}","self (", &self.url, ") Changed"));
         self.string = self.string[0 .. self.offset].to_string() +
             &c.to_string() +
             &self.string[self.offset .. self.string.len()];
-        self.offset += 1;
+
+        self.right();
+
+        if c == '\n' {
+            for c in ind.chars() {
+                self.insert(c, window);
+            }
+
+        }
     }
 
     fn reload(&mut self, window: &mut Window) {
