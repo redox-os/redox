@@ -9,7 +9,7 @@ boot: ; dl comes with disk
     mov es, ax
     mov ss, ax
     ; initialize stack
-    mov sp, 0x7BF0
+    mov sp, 0x7C00
 
     mov [disk], dl
 
@@ -250,13 +250,23 @@ long_mode:
     mov gs, rax
     mov ss, rax
     ; set up stack
-    mov rsp, 0x1FFFF0
+    mov rsp, 0x200000
 
     ;rust init
-    xor rax, rax
-    mov eax, [kernel_file + 0x18]
-    mov [interrupts.handler], rax
+    xor rdi, rdi
+    mov edi, [kernel_file + 0x18]
+    mov [interrupts.handler], rdi
+
+    mov rsi, rdi
+    add rsi, 0xB000
+    mov rcx, 464*1024
+    cld
+    rep movsb
+
+    xchg bx, bx
+
     mov rax, kernel_file.font
+
     int 255
 .lp:
     sti
@@ -265,24 +275,24 @@ long_mode:
 
 gdtr:
     dw (gdt_end - gdt) + 1  ; size
-    dd gdt                  ; offset
+    dq gdt                  ; offset
 
 gdt:
     ; null entry
     dq 0
     ; code entry
-    dw 0       ; limit 0:15
+    dw 0xffff       ; limit 0:15
     dw 0       ; base 0:15
     db 0         ; base 16:23
     db 0b10011010   ; access byte - code
-    db 0b00100000         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0b00101111   ; flags/(limit 16:19)
     db 0        ; base 24:31
     ; data entry
-    dw 0       ; limit 0:15
+    dw 0xffff       ; limit 0:15
     dw 0       ; base 0:15
     db 0        ; base 16:23
     db 0b10010010   ; access byte - data
-    db 0b00000000         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0b00101111   ; flags/(limit 16:19)
     db 0        ; base 24:31
 gdt_end:
 

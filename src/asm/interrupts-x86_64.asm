@@ -21,12 +21,12 @@ endstruc
 [BITS 64]
 interrupts:
 .first:
-    mov [0x200000], byte 0
+    mov qword [0x100000], qword 0
     jmp qword .handle
 .second:
 %assign i 1
 %rep 255
-    mov [0x200000], byte i
+    mov qword [0x100000], qword i
     jmp qword .handle
 %assign i i+1
 %endrep
@@ -39,31 +39,15 @@ interrupts:
     push rbp
     push rsi
     push rdi
-    push qword [0x200000]
-    push r8
-    push r9
-    push r10
-    push r11
-    push r12
-    push r13
-    push r14
-    push r15
-    call [.handler]
+    push qword [0x100000]
+    call qword [.handler]
     ;Put return value in stack for popad
-    mov [esp + 32], eax
-    pop r15
-    pop r14
-    pop r13
-    pop r12
-    pop r11
-    pop r10
-    pop r9
-    pop r8
-    add esp, 8
+    mov [rsp + 64], rax
+    add rsp, 8
     pop rdi
     pop rsi
     pop rbp
-    add esp, 8
+    add rsp, 8
     pop rbx
     pop rdx
     pop rcx
@@ -82,7 +66,11 @@ idt:
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 		at IDTEntry.selector, dw 0x08
+		at IDTEntry.zero1, db 0
 		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
+		at IDTEntry.offsetm, dw 0
+		at IDTEntry.offseth, dd 0
+		at IDTEntry.zero2, dd 0
 	iend
 %assign i i+1
 %endrep

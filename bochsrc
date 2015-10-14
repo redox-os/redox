@@ -6,7 +6,7 @@ magic_break: enabled=1
 display_library: x, options="gui_debug"
 
 log: -
-debug: action=ignore, harddrv=report, pci_ide=report
+debug: action=ignore
 info: action=report
 error: action=report
 panic: action=ask

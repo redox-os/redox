@@ -530,11 +530,15 @@ pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: 
         0x21 => (*session_ptr).on_irq(0x1), //keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
+        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
+        0x26 => (*session_ptr).on_irq(0x6), //floppy
+        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
         0x28 => (*session_ptr).on_irq(0x8), //RTC
         0x29 => (*session_ptr).on_irq(0x9), //pci
         0x2A => (*session_ptr).on_irq(0xA), //pci
         0x2B => (*session_ptr).on_irq(0xB), //pci
         0x2C => (*session_ptr).on_irq(0xC), //mouse
+        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
@@ -562,11 +566,7 @@ pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: 
         0x13 => exception!("SIMD floating-point exception"),
         0x14 => exception!("Virtualization exception"),
         0x1E => exception_error!("Security exception"),
-        _ => {
-            debug::d("Interrupt: ");
-            debug::dh(interrupt as usize);
-            debug::dl();
-        }
+        _ => exception!("Unknown Interrupt"),
     }
 
     eax

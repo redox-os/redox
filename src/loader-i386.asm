@@ -217,7 +217,7 @@ protected_mode:
     mov gs, eax
     mov ss, eax
     ; set up stack
-    mov esp, 0x1FFFF0
+    mov esp, 0x200000
 
     ;rust init
     mov eax, [kernel_file + 0x18]
