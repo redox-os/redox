@@ -435,7 +435,7 @@ pub fn main() {
             let mut close = false;
             match zfs_option {
                 Option::Some(ref mut zfs) => {
-                    if *command == "uber".to_string() {
+                    if command == "uber" {
                         //128 KB of ubers after 128 KB of other stuff
                         match zfs.uber() {
                             Some(uberblock) => {
@@ -450,7 +450,7 @@ pub fn main() {
                             }
                             None => println_color!(red, "No valid uberblock found!"),
                         }
-                    } else if *command == "vdev_label".to_string() {
+                    } else if command == "vdev_label" {
                         match VdevLabel::from_bytes(&zfs.read(0, 256 * 2)) {
                             Some(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
@@ -459,7 +459,7 @@ pub fn main() {
                             },
                             None => { println_color!(red, "Couldn't read vdev_label"); },
                         }
-                    } else if *command == "file".to_string() {
+                    } else if command == "file" {
                         match args.get(1) {
                             Some(arg) => {
                                 if let Some(uberblock) = zfs.uber() {
@@ -474,7 +474,7 @@ pub fn main() {
                             }
                             None => println_color!(red, "Usage: file <path>"),
                         }
-                    } else if *command == "mos".to_string() {
+                    } else if command == "mos" {
                         match zfs.uber() {
                             Some(uberblock) => {
                                 let mos_dva = uberblock.rootbp.dvas[0];
@@ -511,7 +511,7 @@ pub fn main() {
                             },
                             None => println_color!(red, "No valid uberblock found!"),
                         }
-                    } else if *command == "dump".to_string() {
+                    } else if command == "dump" {
                         match args.get(1) {
                             Some(arg) => {
                                 let sector = arg.to_num();
@@ -532,7 +532,7 @@ pub fn main() {
                             }
                             None => println_color!(red, "No sector specified!"),
                         }
-                    } else if *command == "close".to_string() {
+                    } else if command == "close" {
                         println_color!(red, "Closing");
                         close = true;
                     } else {
@@ -540,7 +540,7 @@ pub fn main() {
                     }
                 }
                 Option::None => {
-                    if *command == "open".to_string() {
+                    if command == "open" {
                         match args.get(1) {
                             Option::Some(arg) => {
                                 println_color!(green, "Open: {}", arg);
