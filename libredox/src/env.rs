@@ -1,8 +1,5 @@
 use alloc::boxed::*;
 
-use core::mem::size_of;
-use core::ptr;
-
 use vec::Vec;
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;

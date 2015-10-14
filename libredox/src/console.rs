@@ -1,8 +1,5 @@
 use alloc::boxed::*;
 
-use core::mem::size_of;
-use core::ptr;
-
 use string::*;
 use vec::Vec;
 

@@ -1,4 +1,4 @@
-use core::ptr;
+use core::usize;
 
 use io::{Read, Write, Seek, SeekFrom};
 
@@ -23,7 +23,7 @@ impl File {
     pub fn open(path: &str) -> Option<File> {
         unsafe {
             let fd = sys_open((path.to_string() + "\0").as_ptr(), 0, 0);
-            if fd == 0xFFFFFFFF {
+            if fd == usize::MAX {
                 None
             }else{
                 Some(File {
@@ -37,7 +37,7 @@ impl File {
     pub fn dup(&self) -> Option<File> {
         unsafe{
             let new_fd = sys_dup(self.fd);
-            if new_fd == 0xFFFFFFFF {
+            if new_fd == usize::MAX {
                 None
             } else {
                 Some(File {
@@ -51,7 +51,7 @@ impl File {
     pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
         unsafe {
             let count = sys_fpath(self.fd, buf.as_mut_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
+            if count == usize::MAX {
                 None
             } else {
                 Some(count)
@@ -69,7 +69,7 @@ impl Read for File {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         unsafe {
             let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
+            if count == usize::MAX {
                 None
             } else {
                 Some(count)
@@ -82,7 +82,7 @@ impl Write for File {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let count = sys_write(self.fd, buf.as_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
+            if count == usize::MAX {
                 None
             } else {
                 Some(count)
@@ -101,7 +101,7 @@ impl Seek for File {
         };
 
         let position = unsafe { sys_lseek(self.fd, offset, whence) };
-        if position == 0xFFFFFFFF {
+        if position == usize::MAX {
             None
         } else {
             Some(position)

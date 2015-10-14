@@ -1,6 +1,7 @@
 use alloc::boxed::Box;
 
 use core::ptr;
+use core::usize;
 
 use common::context::*;
 use common::resource::{Resource, ResourceSeek};
@@ -100,7 +101,7 @@ impl Resource for SchemeResource {
                 fd = (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
                 context.exit();
             }
-            if fd != 0xFFFFFFFF {
+            if fd != usize::MAX {
                 //TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
@@ -134,7 +135,7 @@ impl Resource for SchemeResource {
                 result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, context.translate_mut(buf.as_mut_ptr()), buf.len());
                 context.exit();
             }
-            if result != 0xFFFFFFFF {
+            if result != usize::MAX {
                 return URL::from_string(&String::from_c_slice(&buf));
             }
         }
@@ -151,7 +152,7 @@ impl Resource for SchemeResource {
                 result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, context.translate_mut(buf.as_mut_ptr()), buf.len());
                 context.exit();
             }
-            if result != 0xFFFFFFFF {
+            if result != usize::MAX {
                 return Some(result);
             }
         }
@@ -168,7 +169,7 @@ impl Resource for SchemeResource {
                 result = (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, context.translate(buf.as_ptr()), buf.len());
                 context.exit();
             }
-            if result != 0xFFFFFFFF {
+            if result != usize::MAX {
                 return Some(result);
             }
         }
@@ -202,7 +203,7 @@ impl Resource for SchemeResource {
                 result = (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(self.handle, offset, whence);
                 context.exit();
             }
-            if result != 0xFFFFFFFF {
+            if result != usize::MAX {
                 return Some(result);
             }
         }
@@ -339,7 +340,7 @@ impl SessionItem for SchemeItem {
 
                 memory::unalloc(c_str as usize);
             }
-            if fd != 0xFFFFFFFF {
+            if fd != usize::MAX {
                 //TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,

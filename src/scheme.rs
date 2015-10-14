@@ -31,6 +31,7 @@ use redox::io::{Read, Write, Seek, SeekFrom};
 use redox::ptr;
 use redox::slice;
 use redox::str;
+use redox::usize;
 
 #[cold]
 #[inline(never)]
@@ -60,7 +61,7 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Res
 
     match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len))) {
         Some(resource) => return Box::into_raw(resource),
-        None => return 0xFFFFFFFF as *mut Resource
+        None => return usize::MAX as *mut Resource
     }
 }
 
@@ -71,7 +72,7 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Res
 pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
     match (*resource).dup() {
         Some(resource) => return Box::into_raw(resource),
-        None => return 0xFFFFFFFF as *mut Resource
+        None => return usize::MAX as *mut Resource
     }
 }
 
@@ -81,7 +82,7 @@ pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
 pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
     match (*resource).path(slice::from_raw_parts_mut(buf, len)) {
         Some(bytes) => return bytes,
-        None => return 0xFFFFFFFF
+        None => return usize::MAX
     }
 }
 
@@ -91,7 +92,7 @@ pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usiz
 pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
     match (*resource).read(slice::from_raw_parts_mut(buf, len)) {
         Some(bytes) => return bytes,
-        None => return 0xFFFFFFFF
+        None => return usize::MAX
     }
 }
 
@@ -101,7 +102,7 @@ pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize
 pub unsafe extern "C" fn _write(resource: *mut Resource, buf: *const u8, len: usize) -> usize {
     match (*resource).write(slice::from_raw_parts(buf, len)) {
         Some(bytes) => return bytes,
-        None => return 0xFFFFFFFF
+        None => return usize::MAX
     }
 }
 
@@ -126,7 +127,7 @@ pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: 
         }
     }
 
-    0xFFFFFFFF
+    usize::MAX
 }
 
 #[cold]
@@ -136,7 +137,7 @@ pub unsafe extern "C" fn _fsync(resource: *mut Resource) -> usize {
     if (*resource).sync() {
         0
     } else {
-        0xFFFFFFFF
+        usize::MAX
     }
 }
 

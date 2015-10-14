@@ -2,6 +2,7 @@ use alloc::boxed::*;
 
 use core::ptr;
 use core::slice;
+use core::usize;
 
 use common::context::*;
 use common::debug::*;
@@ -74,7 +75,7 @@ pub unsafe fn do_sys_exit(status: isize) {
 }
 
 pub unsafe fn do_sys_fork() -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -102,7 +103,7 @@ pub unsafe fn do_sys_fork() -> usize {
 }
 
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -130,7 +131,7 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 }
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -173,7 +174,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
         scheduler::end_no_ints(reenable);
     }
 
-    let mut fd = 0xFFFFFFFF;
+    let mut fd = usize::MAX;
 
     if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
         let reenable = scheduler::start_no_ints();
@@ -200,7 +201,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 }
 
 pub unsafe fn do_sys_dup(fd: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -232,7 +233,7 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 }
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -268,7 +269,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 }
 
 pub unsafe fn do_sys_execve(path: *const u8) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let url_string = String::from_c_str(path);
 
@@ -304,7 +305,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
 }
 
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -340,7 +341,7 @@ pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
 }
 
 pub unsafe fn do_sys_fsync(fd: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
@@ -369,7 +370,7 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
 }
 
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
-    let mut ret = 0xFFFFFFFF;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
