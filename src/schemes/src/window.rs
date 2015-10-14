@@ -50,15 +50,15 @@ impl Resource for WindowResource {
         let mut i = 0;
         while buf.len() - i >= size_of::<Event>() {
             match self.window.poll() {
-                Option::Some(event) => {
+                Some(event) => {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();
                 }
-                Option::None => unsafe { context_switch(false) },
+                None => unsafe { context_switch(false) },
             }
         }
 
-        return Option::Some(i);
+        return Some(i);
     }
 
     /// Write to resource
@@ -73,7 +73,7 @@ impl Resource for WindowResource {
         }
         self.seek += size;
 
-        return Option::Some(size);
+        return Some(size);
     }
 
     /// Seek
@@ -86,7 +86,7 @@ impl Resource for WindowResource {
             ResourceSeek::End(offset) => min(end, max(0, end as isize + offset) as usize),
         };
 
-        return Option::Some(self.seek);
+        return Some(self.seek);
     }
 
     /// Sync the resource, should flip

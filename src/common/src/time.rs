@@ -99,15 +99,15 @@ impl PartialOrd for Duration {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         let dif = *self - *other;
         if dif.secs > 0 {
-            Option::Some(Ordering::Greater)
+            Some(Ordering::Greater)
         } else if dif.secs < 0 {
-            Option::Some(Ordering::Less)
+            Some(Ordering::Less)
         } else if dif.nanos > 0 {
-            Option::Some(Ordering::Greater)
+            Some(Ordering::Greater)
         } else if dif.nanos < 0 {
-            Option::Some(Ordering::Less)
+            Some(Ordering::Less)
         } else {
-            Option::Some(Ordering::Equal)
+            Some(Ordering::Equal)
         }
     }
 }

@@ -175,18 +175,18 @@ impl FileSystem {
             }
         }
 
-        Option::None
+        None
     }
 
     /// Get node with a given filename
     pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
             if node.name == *filename {
-                return Option::Some(node.clone());
+                return Some(node.clone());
             }
         }
 
-        return Option::None;
+        return None;
     }
 
     /// List nodes in a given directory
@@ -231,13 +231,13 @@ impl Resource for FileResource {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
-                Option::Some(b) => buf[i] = *b,
-                Option::None => (),
+                Some(b) => buf[i] = *b,
+                None => (),
             }
             self.seek += 1;
             i += 1;
         }
-        return Option::Some(i);
+        return Some(i);
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -255,7 +255,7 @@ impl Resource for FileResource {
         if i > 0 {
             self.dirty = true;
         }
-        return Option::Some(i);
+        return Some(i);
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -269,7 +269,7 @@ impl Resource for FileResource {
         while self.vec.len() < self.seek {
             self.vec.push(0);
         }
-        return Option::Some(self.seek);
+        return Some(self.seek);
     }
 
     // TODO: Rename to sync
@@ -447,7 +447,7 @@ impl SessionItem for FileScheme {
             for file in self.fs.list(&path).iter() {
                 let line;
                 match file.find("/".to_string()) {
-                    Option::Some(index) => {
+                    Some(index) => {
                         let dirname = file.substr(0, index + 1);
                         let mut found = false;
                         for dir in dirs.iter() {
@@ -463,7 +463,7 @@ impl SessionItem for FileScheme {
                             dirs.push(dirname);
                         }
                     }
-                    Option::None => line = file.clone(),
+                    None => line = file.clone(),
                 }
                 if line.len() > 0 {
                     if list.len() > 0 {
@@ -477,7 +477,7 @@ impl SessionItem for FileScheme {
             return Some(box VecResource::new(url.clone(), list.to_utf8()));
         } else {
             match self.fs.node(&path) {
-                Option::Some(node) => {
+                Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
                     //TODO: Handle more extents
                     for extent in &node.extents {
@@ -538,7 +538,7 @@ impl SessionItem for FileScheme {
                         dirty: false,
                     });
                 }
-                Option::None => return None
+                None => return None
             }
         }
     }

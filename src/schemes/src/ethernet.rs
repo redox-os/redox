@@ -44,7 +44,7 @@ impl Resource for EthernetResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
-        return Option::None;
+        return None;
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -52,25 +52,25 @@ impl Resource for EthernetResource {
             let mut bytes: Vec<u8> = Vec::new();
             swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
-            return Option::Some(bytes.len());
+            return Some(bytes.len());
         }
 
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.network.read_to_end(&mut bytes) {
-                Option::Some(_) => {
-                    if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
+                Some(_) => {
+                    if let Some(frame) = EthernetII::from_bytes(bytes) {
                         if frame.header.ethertype.get() == self.ethertype &&
                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
                             frame.header.dst.equals(BROADCAST_MAC_ADDR)) &&
                            (frame.header.src.equals(self.peer_addr) ||
                             self.peer_addr.equals(BROADCAST_MAC_ADDR)) {
                             vec.push_all(&frame.data);
-                            return Option::Some(frame.data.len());
+                            return Some(frame.data.len());
                         }
                     }
                 }
-                Option::None => return Option::None,
+                None => return None,
             }
         }
     }
@@ -88,13 +88,13 @@ impl Resource for EthernetResource {
         }
                                      .to_bytes()
                                      .as_slice()) {
-            Option::Some(_) => return Option::Some(buf.len()),
-            Option::None => return Option::None,
+            Some(_) => return Some(buf.len()),
+            None => return None,
         }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        return None;
     }
 
     fn sync(&mut self) -> bool {
@@ -125,8 +125,8 @@ impl SessionItem for EthernetScheme {
                     loop {
                         let mut bytes: Vec<u8> = Vec::new();
                         match network.read_to_end(&mut bytes) {
-                            Option::Some(_) => {
-                                if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
+                            Some(_) => {
+                                if let Some(frame) = EthernetII::from_bytes(bytes) {
                                     if frame.header.ethertype.get() == ethertype &&
                                        (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
                                         frame.header.dst.equals(BROADCAST_MAC_ADDR)) {
@@ -139,7 +139,7 @@ impl SessionItem for EthernetScheme {
                                     }
                                 }
                             }
-                            Option::None => break,
+                            None => break,
                         }
                     }
                 }

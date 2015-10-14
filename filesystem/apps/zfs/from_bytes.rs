@@ -6,7 +6,7 @@ pub trait FromBytes: Sized {
             let s = unsafe { ptr::read(data.as_ptr() as *const Self) };
             Some(s)
         } else {
-            Option::None
+            None
         }
     }
 }
