@@ -286,30 +286,26 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     match editor.cur() {
                                         '(' | '[' | '{' => {
                                             let mut i = 1;
-                                            while i != 0 {
+                                            while i != 0 &&
+                                                  editor.offset < editor.string.len() {
                                                 editor.right();
                                                 i += match editor.cur() {
                                                     '(' | '[' | '{' => 1,
                                                     ')' | ']' | '}' => -1,
                                                     _ => 0,
                                                 };
-                                                if editor.offset < editor.string.len() {
-                                                    break;
-                                                }
                                             }
                                         },
                                         ')' | ']' | '}' => {
                                             let mut i = 1;
-                                            while i != 0 {
+                                            while i != 0 &&
+                                                  editor.offset < editor.string.len() {
                                                 editor.left();
                                                 i += match editor.cur() {
                                                     '(' | '[' | '{' => -1,
                                                     ')' | ']' | '}' => 1,
                                                     _ => 0,
                                                 };
-                                                if editor.offset >= 1 {
-                                                    break;
-                                                }
                                             }
                                         },
                                         _ => {},
