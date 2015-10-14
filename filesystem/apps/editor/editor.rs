@@ -51,7 +51,14 @@ impl Editor {
 
     // TODO: Add methods for multiple movements
     fn up(&mut self) {
+        let x = self.get_x() - if self.cur() == '\n' { 1 } else { 0 };
+        while self.cur() != '\n' {
+            self.left();
+        }
+        self.right();
         let mut new_offset = 0;
+
+
         for i in 2..self.offset {
             match self.string.as_bytes()[self.offset - i] {
                 0 => break,
@@ -63,6 +70,13 @@ impl Editor {
             }
         }
         self.offset = new_offset;
+        for _ in 1..x {
+            if self.cur() != '\n' {
+                self.right();
+            } else {
+                break;
+            }
+        }
     }
 
     fn left(&mut self) {
@@ -78,7 +92,10 @@ impl Editor {
     }
 
     fn down(&mut self) {
+        let x = self.get_x() - if self.cur() == '\n' { 1 } else { 0 };
         let mut new_offset = self.string.len();
+
+
         for i in self.offset..self.string.len() {
             match self.string.as_bytes()[i] {
                 0 => break,
@@ -90,6 +107,13 @@ impl Editor {
             }
         }
         self.offset = new_offset;
+        for _ in 1..x {
+            if self.cur() != '\n' {
+                self.right();
+            } else {
+                break;
+            }
+        }
     }
 
     fn cur(&self) -> char {
@@ -134,6 +158,21 @@ impl Editor {
                 window.set_title(&("Editor (".to_string() + &self.url + ") No Open File"));
             }
         }
+    }
+
+    fn get_x(&self) -> usize {
+        let mut x = 0;
+        for (n, c) in self.string.chars().enumerate() {
+            if c == '\n' {
+                x = 0;
+            } else {
+                x += 1;
+            }
+            if n >= self.offset {
+                break;
+            }
+        }
+        x
     }
 
     fn draw_content(&mut self, window: &mut Window) {
