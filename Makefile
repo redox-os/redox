@@ -230,6 +230,9 @@ build/filesystem.gen: #apps schemes
 build/harddrive.bin: src/loader-$(ARCH).asm filesystem/kernel.bin build/filesystem.gen
 	$(AS) -f bin -o $@ -ibuild/ -isrc/ -ifilesystem/ $<
 
+build/harddrive.list: src/loader-$(ARCH).asm filesystem/kernel.bin build/filesystem.gen
+	$(AS) -f bin -o build/harddrive.bin -l $@ -ibuild/ -isrc/ -ifilesystem/ $<
+
 virtualbox: build/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
