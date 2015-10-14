@@ -224,7 +224,6 @@ protected_mode:
     mov [interrupts.handler], eax
     mov eax, kernel_file.font
     int 255
-;This is actually the idle process
 .lp:
     sti
     hlt
@@ -253,7 +252,7 @@ gdt:
     db 0x00         ; base 24:31
 gdt_end:
 
-%include "asm/interrupts.asm"
+%include "asm/interrupts-i386.asm"
 
 times (0xC000-0x1000)-0x7C00-($-$$) db 0
 

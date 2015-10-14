@@ -38,7 +38,7 @@ interrupts:
     popad
     iretd
 
-.handler: dw 0
+.handler: dd 0
 
 idtr:
     dw (idt_end - idt) + 1

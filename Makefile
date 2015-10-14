@@ -227,7 +227,7 @@ filesystem/apps/zfs/zfs.img:
 build/filesystem.gen: #apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
+build/harddrive.bin: src/loader-$(ARCH).asm filesystem/kernel.bin build/filesystem.gen
 	$(AS) -f bin -o $@ -ibuild/ -isrc/ -ifilesystem/ $<
 
 virtualbox: build/harddrive.bin
