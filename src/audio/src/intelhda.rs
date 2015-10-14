@@ -60,7 +60,7 @@ impl Resource for IntelHDAResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -194,12 +194,12 @@ impl Resource for IntelHDAResource {
             memory::unalloc(bdl as usize);
             */
 
-            Option::Some(buf.len())
+            Some(buf.len())
         }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn sync(&mut self) -> bool {

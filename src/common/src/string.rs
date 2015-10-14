@@ -37,11 +37,11 @@ impl <'a> Iterator for Chars<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
-            let ret = Option::Some(self.string[self.offset]);
+            let ret = Some(self.string[self.offset]);
             self.offset += 1;
             ret
         } else {
-            Option::None
+            None
         }
     }
 }
@@ -71,9 +71,9 @@ impl <'a> Iterator for Split<'a> {
                     len += 1;
                 }
             }
-            Option::Some(self.string.substr(start, len))
+            Some(self.string.substr(start, len))
         } else {
-            Option::None
+            None
         }
     }
 }
@@ -239,11 +239,11 @@ impl String {
         if self.len() >= other.len() {
             for i in 0..self.len() + 1 - other.len() {
                 if self.substr(i, other.len()) == other {
-                    return Option::Some(i);
+                    return Some(i);
                 }
             }
         }
-        Option::None
+        None
     }
 
     /// Check if the string starts with a given string
@@ -404,8 +404,8 @@ impl Index<usize> for String {
     type Output = char;
     fn index<'a>(&'a self, i: usize) -> &'a Self::Output {
         match self.vec.get(i) {
-            Option::Some(c) => c,
-            Option::None => &NULL_CHAR,
+            Some(c) => c,
+            None => &NULL_CHAR,
         }
     }
 }

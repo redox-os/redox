@@ -107,12 +107,12 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(current) = contexts.get(context_i) {
+    if let Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 scheduler::end_no_ints(reenable);
 
-                if let Option::Some(count) = file.resource
+                if let Some(count) = file.resource
                                                  .read(slice::from_raw_parts_mut(buf, count)) {
                     ret = count;
                 }
@@ -135,12 +135,12 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(current) = contexts.get(context_i) {
+    if let Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 scheduler::end_no_ints(reenable);
 
-                if let Option::Some(count) = file.resource
+                if let Some(count) = file.resource
                                                  .write(slice::from_raw_parts(buf, count)) {
                     ret = count;
                 }
@@ -166,7 +166,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
         let reenable = scheduler::start_no_ints();
 
         let contexts = &*contexts_ptr;
-        if let Option::Some(current) = contexts.get(context_i) {
+        if let Some(current) = contexts.get(context_i) {
             path_str = current.cwd.clone() + path_str;
         }
 
@@ -174,12 +174,12 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     }
 
     let mut fd = 0xFFFFFFFF;
-    
+
     if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
         let reenable = scheduler::start_no_ints();
 
         let contexts = &*contexts_ptr;
-        if let Option::Some(mut current) = contexts.get(context_i) {
+        if let Some(mut current) = contexts.get(context_i) {
             fd = 0;
             for file in current.files.iter() {
                 if file.fd >= fd {
@@ -205,7 +205,7 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Some(mut current) = contexts.get(context_i) {
         let mut resource_option: Option<Box<Resource>> = None;
         let mut new_fd = 0;
         for file in current.files.iter() {
@@ -237,17 +237,17 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
+    if let Some(mut current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
             let mut remove = false;
-            if let Option::Some(file) = current.files.get(i) {
+            if let Some(file) = current.files.get(i) {
                 if file.fd == fd {
                     remove = true;
                 }
             }
 
             if remove {
-                if let Option::Some(file) = current.files.remove(i) {
+                if let Some(file) = current.files.remove(i) {
                     scheduler::end_no_ints(reenable);
 
                     drop(file);
@@ -309,9 +309,9 @@ pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(current) = contexts.get(context_i) {
+    if let Some(current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
-            if let Option::Some(file) = current.files.get(i) {
+            if let Some(file) = current.files.get(i) {
                 if file.fd == fd {
                     scheduler::end_no_ints(reenable);
 
@@ -345,9 +345,9 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(current) = contexts.get(context_i) {
+    if let Some(current) = contexts.get(context_i) {
         for i in 0..current.files.len() {
-            if let Option::Some(file) = current.files.get(i) {
+            if let Some(file) = current.files.get(i) {
                 if file.fd == fd {
                     scheduler::end_no_ints(reenable);
 
@@ -374,22 +374,22 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Option::Some(current) = contexts.get(context_i) {
+    if let Some(current) = contexts.get(context_i) {
         for file in current.files.iter() {
             if file.fd == fd {
                 scheduler::end_no_ints(reenable);
 
                 match whence {
-                    0 => if let Option::Some(count) =
+                    0 => if let Some(count) =
                                 file.resource.seek(ResourceSeek::Start(offset as usize)) {
                         ret = count;
                     },
-                    1 => if let Option::Some(count) = file.resource
+                    1 => if let Some(count) = file.resource
                                                           .seek(ResourceSeek::Current(offset)) {
                         ret = count;
                     },
                     2 =>
-                        if let Option::Some(count) = file.resource.seek(ResourceSeek::End(offset)) {
+                        if let Some(count) = file.resource.seek(ResourceSeek::End(offset)) {
                         ret = count;
                     },
                     _ => (),
@@ -431,10 +431,10 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
     let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
-        if let Option::Some(mut current) = contexts.get(context_i) {
+        if let Some(mut current) = contexts.get(context_i) {
             current.unmap();
 
-            if let Option::Some(mut entry) = current.memory.get(0) {
+            if let Some(mut entry) = current.memory.get(0) {
                 ret = entry.virtual_address + entry.virtual_size;
 
                 if addr == 0 {

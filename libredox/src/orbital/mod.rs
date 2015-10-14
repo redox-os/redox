@@ -166,8 +166,8 @@ impl Window {
         match self.file.read(&mut unsafe {
             slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
         }) {
-            Option::Some(_) => return Option::Some(*event),
-            Option::None => return Option::None,
+            Some(_) => return Some(*event),
+            None => return None,
         }
     }
 

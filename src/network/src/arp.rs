@@ -29,14 +29,14 @@ impl FromBytes for ARP {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<ARPHeader>() {
             unsafe {
-                return Option::Some(ARP {
+                return Some(ARP {
                     header: *(bytes.as_ptr() as *const ARPHeader),
                     data: bytes.sub(size_of::<ARPHeader>(),
                                     bytes.len() - size_of::<ARPHeader>()),
                 });
             }
         }
-        Option::None
+        None
     }
 }
 

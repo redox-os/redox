@@ -2,8 +2,8 @@ use redox::*;
 
 pub fn main() {
     let url = match args().get(1) {
-        Option::Some(arg) => arg.clone(),
-        Option::None => "none://",
+        Some(arg) => arg.clone(),
+        None => "none://",
     };
 
     let mut vec: Vec<u8> = Vec::new();
@@ -24,7 +24,7 @@ pub fn main() {
         audio.write(&wav.data);
     }
 
-    while let Option::Some(event) = window.poll() {
+    while let Some(event) = window.poll() {
         match event.to_option() {
             EventOption::Key(key_event) => {
                 if key_event.pressed && key_event.scancode == K_ESC {

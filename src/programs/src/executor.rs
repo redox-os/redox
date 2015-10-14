@@ -38,7 +38,7 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             context_args.push(0 as u32); // ARGV NULL
             let mut argc = 1;
             for i in 0..args.len() {
-                if let Option::Some(arg) = args.get(args.len() - i - 1) {
+                if let Some(arg) = args.get(args.len() - i - 1) {
                     context_args.push(arg.to_c_str() as u32);
                     argc += 1;
                 }

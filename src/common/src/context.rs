@@ -30,7 +30,7 @@ pub unsafe fn context_switch(interrupted: bool) {
             }
 
             let mut remove = false;
-            if let Option::Some(next) = contexts.get(context_i) {
+            if let Some(next) = contexts.get(context_i) {
                 if next.exited {
                     remove = true;
                 }
@@ -49,16 +49,16 @@ pub unsafe fn context_switch(interrupted: bool) {
 
         if context_i != current_i {
             match contexts.get(current_i) {
-                Option::Some(current) => match contexts.get(context_i) {
-                    Option::Some(next) => {
+                Some(current) => match contexts.get(context_i) {
+                    Some(next) => {
                         current.interrupted = interrupted;
                         next.interrupted = false;
                         current.remap(next);
                         current.switch(next);
                     }
-                    Option::None => (),
+                    None => (),
                 },
-                Option::None => (),
+                None => (),
             }
         }
     }
@@ -127,8 +127,8 @@ pub unsafe extern "cdecl" fn context_exit() {
     let contexts = &*contexts_ptr;
     if context_enabled && context_i > 1 {
         match contexts.get(context_i) {
-            Option::Some(mut current) => current.exited = true,
-            Option::None => (),
+            Some(mut current) => current.exited = true,
+            None => (),
         }
     }
 
@@ -306,11 +306,11 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self) {
-        while let Option::Some(file) = self.files.remove(0) {
+        while let Some(file) = self.files.remove(0) {
             drop(file);
         }
 
-        while let Option::Some(entry) = self.memory.remove(0) {
+        while let Some(entry) = self.memory.remove(0) {
             unsafe {
                 memory::unalloc(entry.physical_address);
             }

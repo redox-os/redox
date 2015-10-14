@@ -83,9 +83,9 @@ impl Write for File {
         unsafe {
             let count = sys_write(self.fd, buf.as_ptr(), buf.len());
             if count == 0xFFFFFFFF {
-                Option::None
+                None
             } else {
-                Option::Some(count)
+                Some(count)
             }
         }
     }
@@ -102,9 +102,9 @@ impl Seek for File {
 
         let position = unsafe { sys_lseek(self.fd, offset, whence) };
         if position == 0xFFFFFFFF {
-            Option::None
+            None
         } else {
-            Option::Some(position)
+            Some(position)
         }
     }
 }
