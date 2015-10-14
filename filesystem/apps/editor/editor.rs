@@ -61,7 +61,8 @@ impl Editor {
         } else {
             let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
 
-            while self.cur() != '\n' {
+            while self.cur() != '\n' &&
+                  self.offset >= 1 {
                 self.left();
             }
             self.right();
@@ -105,7 +106,7 @@ impl Editor {
         let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
         let original_c = self.cur();
 
-        while self.offset >= self.string.len() &&
+        while self.offset < self.string.len() &&
               self.cur() != '\n' &&
               self.cur() != '\0' {
             self.right();
