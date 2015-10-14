@@ -1,3 +1,4 @@
+use core::usize;
 use fmt;
 use str;
 use string::String;
@@ -110,7 +111,7 @@ impl Read for Stdin {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         unsafe {
             let count = sys_read(0, buf.as_mut_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
+            if count == usize::MAX {
                 None
             } else {
                 Some(count)
@@ -132,7 +133,7 @@ impl Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let count = sys_write(1, buf.as_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
+            if count == usize::MAX {
                 None
             } else {
                 Some(count)
@@ -154,7 +155,7 @@ impl Write for Stderr {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let count = sys_write(2, buf.as_ptr(), buf.len());
-            if count == 0xFFFFFFFF {
+            if count == usize::MAX {
                 None
             } else {
                 Some(count)

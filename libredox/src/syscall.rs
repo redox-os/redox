@@ -5,6 +5,8 @@ use syscall::common::*;
 #[path="../../src/syscall/src/common.rs"]
 pub mod common;
 
+#[cold]
+#[inline(never)]
 #[cfg(target_arch = "x86")]
 pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
     asm!("int 0x80"
@@ -16,6 +18,8 @@ pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
     a
 }
 
+#[cold]
+#[inline(never)]
 #[cfg(target_arch = "x86_64")]
 pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
     asm!("int 0x80"
@@ -47,8 +51,8 @@ pub unsafe fn sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     syscall(SYS_WRITE, fd, buf as usize, count)
 }
 
-pub unsafe fn sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
-    syscall(SYS_OPEN, path as usize, flags as usize, mode as usize)
+pub unsafe fn sys_open(path: *const u8, flags: usize, mode: usize) -> usize {
+    syscall(SYS_OPEN, path as usize, flags, mode)
 }
 
 pub unsafe fn sys_dup(fd: usize) -> usize {
@@ -68,7 +72,7 @@ pub unsafe fn sys_execve(path: *const u8) -> usize {
 }
 
 pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
-    syscall(SYS_LSEEK, fd, offset as usize, whence as usize)
+    syscall(SYS_LSEEK, fd, offset as usize, whence)
 }
 
 pub unsafe fn sys_fsync(fd: usize) -> usize {
