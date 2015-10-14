@@ -1,12 +1,12 @@
 #Modify fo different target support
 
 ## x86_64 ##
-#TARGET=x86_64-unknown-redox
-#ELF=elf_x86_64
+TARGET=x86_64-unknown-redox
+ELF=elf_x86_64
 
 ## i686 ##
-TARGET=i686-unknown-redox
-ELF=elf_i386
+#TARGET=i686-unknown-redox
+#ELF=elf_i386
 
 RUSTC=rustc
 RUSTCFLAGS=--target=$(TARGET).json \
@@ -134,7 +134,7 @@ schemes: schemes/console schemes/example schemes/reent schemes/udp
 tests: tests/success tests/failure
 
 clean:
-	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
 
 apps/%:
 	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
