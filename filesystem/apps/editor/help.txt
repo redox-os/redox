@@ -43,7 +43,8 @@ commands are valid:
 - y: Yank the rest of the line.
 - Y: Yank the rest of the line before the cursor.
 - p: Paste the clipboard.
-- z: Clip the rest after the line.
+- z: Clip the rest of the line.
+- Z: Clip the rest of the line before the cursor.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.
