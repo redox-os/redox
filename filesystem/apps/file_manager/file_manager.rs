@@ -23,11 +23,10 @@ pub struct FileManager {
 }
 
 fn load_icon(path: &str) -> BMPFile {
-    let mut resource = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp"));
-
     let mut vec: Vec<u8> = Vec::new();
-    resource.read_to_end(&mut vec);
-
+    if let Some(mut file) = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp")) {
+        file.read_to_end(&mut vec);
+    }
     BMPFile::from_data(&vec)
 }
 
@@ -147,17 +146,15 @@ impl FileManager {
     fn main(&mut self, path: &str) {
         let mut width = 160;
         let mut height = 0;
-        {
-            let mut resource = File::open(path);
+        if let Some(mut file) = File::open(path) {
+            let mut list = String::new();
+            file.read_to_string(&mut list);
 
-            let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
-
-            for file in unsafe { String::from_utf8_unchecked(vec) }.split('\n') {
-                if width < 40 + (file.len() + 1) * 8 {
-                    width = 40 + (file.len() + 1) * 8;
+            for entry in list.split('\n') {
+                if width < 40 + (entry.len() + 1) * 8 {
+                    width = 40 + (entry.len() + 1) * 8;
                 }
-                self.files.push(file.to_string());
+                self.files.push(entry.to_string());
             }
 
             if height < self.files.len() * 32 {
@@ -169,7 +166,7 @@ impl FileManager {
                                      (redox::rand() % 300 + 50) as isize,
                                      width,
                                      height,
-                                     &path);
+                                     &path).unwrap();
 
         self.draw_content(&mut window);
 

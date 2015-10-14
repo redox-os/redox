@@ -12,17 +12,13 @@ use orbital::*;
 
 use rand_old::*;
 
-use syscall::{sys_alloc, sys_unalloc};
-
-static mut window: *mut Box<ConsoleWindow> = 0 as *mut Box<ConsoleWindow>;
+static mut window: *mut ConsoleWindow = 0 as *mut ConsoleWindow;
 
 /// Create a new console window
-pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
+pub fn console_window() -> &'static mut ConsoleWindow {
     unsafe {
         if window as usize == 0 {
-            window = sys_alloc(size_of::<Box<ConsoleWindow>>()) as *mut Box<ConsoleWindow>;
-            ptr::write(window,
-                       ConsoleWindow::new((rand() % 400 + 50) as isize,
+            window = Box::into_raw(ConsoleWindow::new((rand() % 400 + 50) as isize,
                                           (rand() % 300 + 50) as isize,
                                           640,
                                           480,
@@ -35,15 +31,14 @@ pub fn console_window<'a>() -> &'a mut Box<ConsoleWindow> {
 
 /// Initialize console
 pub unsafe fn console_init() {
-    window = 0 as *mut Box<ConsoleWindow>;
+    window = 0 as *mut ConsoleWindow;
 }
 
 /// Destroy the console
 pub unsafe fn console_destroy() {
     if window as usize > 0 {
-        drop(ptr::read(window));
-        sys_unalloc(window as usize);
-        window = 0 as *mut Box<ConsoleWindow>;
+        drop(Box::from_raw(window));
+        window = 0 as *mut ConsoleWindow;
     }
 }
 
@@ -106,7 +101,7 @@ pub struct ConsoleChar {
 /// A console window
 pub struct ConsoleWindow {
     /// The window
-    pub window: Window,
+    pub window: Box<Window>,
     /// The char buffer
     pub output: Vec<ConsoleChar>,
     /// The current input command
@@ -125,7 +120,7 @@ impl ConsoleWindow {
     /// Create a new console window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Box<Self> {
         box ConsoleWindow {
-            window: Window::new(x, y, w, h, title),
+            window: Window::new(x, y, w, h, title).unwrap(),
             output: Vec::new(),
             command: String::new(),
             offset: 0,
@@ -142,7 +137,7 @@ impl ConsoleWindow {
                                   self.window.y(),
                                   self.window.width(),
                                   self.window.height(),
-                                  title);
+                                  title).unwrap();
     }
 
     /// Poll the window

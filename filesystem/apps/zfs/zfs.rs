@@ -542,11 +542,16 @@ pub fn main() {
                 Option::None => {
                     if *command == "open".to_string() {
                         match args.get(1) {
-                            Option::Some(arg) => {
-                                println_color!(green, "Open: {}", arg);
-                                zfs_option = Option::Some(ZFS::new(File::open(arg)));
+                            Some(arg) => {
+                                match File::open(arg) {
+                                    Some(file) => {
+                                        println_color!(green, "Open: {}", arg);
+                                        zfs_option = Some(ZFS::new(file));
+                                    },
+                                    None => println_color!(red, "File not found!"),
+                                }
                             }
-                            Option::None => println_color!(red, "No file specified!"),
+                            None => println_color!(red, "No file specified!"),
                         }
                     } else {
                         println_color!(blue, "Commands: open");

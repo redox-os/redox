@@ -59,7 +59,7 @@ impl Duration {
             if elapsed > *self {
                 break;
             } else {
-                sys_yield();
+                unsafe { sys_yield() };
             }
         }
     }

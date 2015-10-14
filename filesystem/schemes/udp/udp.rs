@@ -184,35 +184,35 @@ impl Scheme {
         if not_scheme.starts_with("/") {
             let host_port = not_scheme[1..not_scheme.len() - 1].to_string().to_num();
             if host_port > 0 && host_port < 65536 {
-                let mut ip = File::open("ip:///11");
+                if let Some(mut ip) = File::open("ip:///11") {
+                    let mut bytes: Vec<u8> = Vec::new();
+                    if ip.read_to_end(&mut bytes).is_some() {
+                        if let Some(datagram) = UDP::from_bytes(bytes) {
+                            if datagram.header.dst.get() as usize == host_port {
+                                let mut url_bytes = [0; 4096];
+                                if let Some(count) = ip.path(&mut url_bytes) {
+                                    let url = unsafe { str::from_utf8_unchecked(&url_bytes[0..count]) };
 
-                let mut bytes: Vec<u8> = Vec::new();
-                if ip.read_to_end(&mut bytes).is_some() {
-                    if let Some(datagram) = UDP::from_bytes(bytes) {
-                        if datagram.header.dst.get() as usize == host_port {
-                            let mut url_bytes = [0; 4096];
-                            if let Some(count) = ip.path(&mut url_bytes) {
-                                let url = unsafe { str::from_utf8_unchecked(&url_bytes[0..count]) };
+                                    //Split scheme from the rest of the URL
+                                    let (scheme, mut not_scheme) = url.split_at(url.find(':').unwrap_or(url.len()));
 
-                                //Split scheme from the rest of the URL
-                                let (scheme, mut not_scheme) = url.split_at(url.find(':').unwrap_or(url.len()));
+                                    //Remove the starting two slashes
+                                    if not_scheme.starts_with("//") {
+                                        not_scheme = &not_scheme[2..not_scheme.len() - 2];
+                                    }
 
-                                //Remove the starting two slashes
-                                if not_scheme.starts_with("//") {
-                                    not_scheme = &not_scheme[2..not_scheme.len() - 2];
+                                    let (host, port) = not_scheme.split_at(not_scheme.find(':').unwrap_or(not_scheme.len()));
+
+                                    let peer_addr = IPv4Addr::from_string(&host.to_string());
+
+                                    return Some(box Resource {
+                                        ip: ip,
+                                        data: datagram.data,
+                                        peer_addr: peer_addr,
+                                        peer_port: datagram.header.src.get(),
+                                        host_port: host_port as u16,
+                                    });
                                 }
-
-                                let (host, port) = not_scheme.split_at(not_scheme.find(':').unwrap_or(not_scheme.len()));
-
-                                let peer_addr = IPv4Addr::from_string(&host.to_string());
-
-                                return Some(box Resource {
-                                    ip: ip,
-                                    data: datagram.data,
-                                    peer_addr: peer_addr,
-                                    peer_port: datagram.header.src.get(),
-                                    host_port: host_port as u16,
-                                });
                             }
                         }
                     }
@@ -225,13 +225,15 @@ impl Scheme {
             if peer_port > 0 && peer_port < 65536 {
                 let host_port = (rand() % 32768 + 32768) as u16;
 
-                return Some(box Resource {
-                    ip: File::open(&format!("ip://{}/11", host)),
-                    data: Vec::new(),
-                    peer_addr: IPv4Addr::from_string(&host.to_string()),
-                    peer_port: peer_port as u16,
-                    host_port: host_port,
-                });
+                if let Some(ip) = File::open(&format!("ip://{}/11", host)) {
+                    return Some(box Resource {
+                        ip: ip,
+                        data: Vec::new(),
+                        peer_addr: IPv4Addr::from_string(&host.to_string()),
+                        peer_port: peer_port as u16,
+                        host_port: host_port,
+                    });
+                }
             }
         }
 
