@@ -143,11 +143,9 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
                                         disk.read(extent.block + sector as u64,
                                                   (sectors - sector) as u16,
                                                   data.address() + sector * 512);
-                                    }
                                         /*
                                         disk.request(request.clone());
 
