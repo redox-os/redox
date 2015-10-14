@@ -30,12 +30,12 @@ impl <'a, T> Iterator for VecIterator<'a, T> {
     type Item = &'a mut T;
     fn next(&mut self) -> Option<Self::Item> {
         match self.vec.get(self.offset) {
-            Option::Some(item) => {
+            Some(item) => {
                 self.offset += 1;
-                Option::Some(item)
+                Some(item)
             }
-            Option::None => {
-                Option::None
+            None => {
+                None
             }
         }
     }
@@ -54,12 +54,12 @@ impl<'a, T> Iterator for OwnedVecIterator<T>
     type Item = T;
     fn next(&mut self) -> Option<Self::Item> {
         match self.vec.get(self.offset) {
-            Option::Some(item) => {
+            Some(item) => {
                 self.offset += 1;
-                Option::Some(item.clone())
+                Some(item.clone())
             }
-            Option::None => {
-                Option::None
+            None => {
+                None
             }
         }
     }
@@ -116,9 +116,9 @@ impl <T> Vec<T> {
     /// Get the nth element. Returns None if out of bounds.
     pub fn get(&self, i: usize) -> Option<&mut T> {
         if i >= self.length {
-            Option::None
+            None
         } else {
-            unsafe { Option::Some(&mut *self.data.offset(i as isize)) }
+            unsafe { Some(&mut *self.data.offset(i as isize)) }
         }
     }
 
@@ -168,10 +168,10 @@ impl <T> Vec<T> {
 
                 self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
-                Option::Some(item)
+                Some(item)
             }
         } else {
-            Option::None
+            None
         }
     }
 
@@ -192,10 +192,10 @@ impl <T> Vec<T> {
                 let item = ptr::read(self.data.offset(self.length as isize));
                 self.data = realloc(self.data as usize, self.length * size_of::<T>()) as *mut T;
 
-                Option::Some(item)
+                Some(item)
             }
         } else {
-            Option::None
+            None
         }
     }
 

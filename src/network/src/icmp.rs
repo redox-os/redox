@@ -24,14 +24,14 @@ impl FromBytes for ICMP {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<ICMPHeader>() {
             unsafe {
-                return Option::Some(ICMP {
+                return Some(ICMP {
                     header: *(bytes.as_ptr() as *const ICMPHeader),
                     data: bytes.sub(size_of::<ICMPHeader>(),
                                     bytes.len() - size_of::<ICMPHeader>()),
                 });
             }
         }
-        Option::None
+        None
     }
 }
 

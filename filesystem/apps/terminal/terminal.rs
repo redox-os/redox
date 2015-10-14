@@ -39,7 +39,7 @@ impl Command {
                 let mut first = true;
                 for i in 1..args.len() {
                     match args.get(i) {
-                        Option::Some(arg) => {
+                        Some(arg) => {
                             if first {
                                 first = false
                             } else {
@@ -47,7 +47,7 @@ impl Command {
                             }
                             echo = echo + arg;
                         }
-                        Option::None => (),
+                        None => (),
                     }
                 }
                 println!("{}", echo);
@@ -58,10 +58,10 @@ impl Command {
             name: "open".to_string(),
             main: box |args: &Vec<String>| {
                 match args.get(1) {
-                    Option::Some(arg) => {
+                    Some(arg) => {
                         File::exec(arg);
                     },
-                    Option::None => (),
+                    None => (),
                 }
             },
         });
@@ -70,7 +70,7 @@ impl Command {
             name: "run".to_string(),
             main: box |args: &Vec<String>| {
                 match args.get(1) {
-                    Option::Some(arg) => {
+                    Some(arg) => {
                         let path = arg.clone();
                         println!("URL: {}", path);
 
@@ -83,7 +83,7 @@ impl Command {
                             exec!(command);
                         }
                     }
-                    Option::None => (),
+                    None => (),
                 }
             },
         });
@@ -93,8 +93,8 @@ impl Command {
             main: box |args: &Vec<String>| {
                 let path;
                 match args.get(1) {
-                    Option::Some(arg) => path = arg.clone(),
-                    Option::None => path = String::new(),
+                    Some(arg) => path = arg.clone(),
+                    None => path = String::new(),
                 }
                 println!("URL: {}", path);
 
@@ -129,16 +129,16 @@ impl Command {
             main: box |args: &Vec<String>| {
                 let path;
                 match args.get(1) {
-                    Option::Some(arg) => path = arg.clone(),
-                    Option::None => path = String::new(),
+                    Some(arg) => path = arg.clone(),
+                    None => path = String::new(),
                 }
                 println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
                     let mut string = String::new();
                     match file.read_to_string(&mut string) {
-                        Option::Some(_) => println!("{}", string),
-                        Option::None => println!("Failed to read"),
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read"),
                     }
                 }
             },
@@ -149,22 +149,22 @@ impl Command {
             main: box |args: &Vec<String>| {
                 let path;
                 match args.get(1) {
-                    Option::Some(arg) => path = arg.clone(),
-                    Option::None => path = String::new(),
+                    Some(arg) => path = arg.clone(),
+                    None => path = String::new(),
                 }
                 println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
                     let mut vec: Vec<u8> = Vec::new();
                     match file.read_to_end(&mut vec) {
-                        Option::Some(_) => {
+                        Some(_) => {
                             let mut line = "HEX:".to_string();
                             for byte in vec.iter() {
                                 line = line + " " + &format!("{:X}", *byte);
                             }
                             println!("{}", line);
                         }
-                        Option::None => println!("Failed to read"),
+                        None => println!("Failed to read"),
                     }
                 }
             },
@@ -261,14 +261,14 @@ impl Application {
 
         //Execute commands
         match args.get(0) {
-            Option::Some(cmd) => {
+            Some(cmd) => {
                 if cmd == "if" {
                     let mut value = false;
 
                     match args.get(1) {
-                        Option::Some(left) => match args.get(2) {
-                            Option::Some(cmp) => match args.get(3) {
-                                Option::Some(right) => {
+                        Some(left) => match args.get(2) {
+                            Some(cmp) => match args.get(3) {
+                                Some(right) => {
                                     if cmp == "==" {
                                         value = *left == *right;
                                     } else if cmp == "!=" {
@@ -285,11 +285,11 @@ impl Application {
                                         println!("Unknown comparison: {}", cmp);
                                     }
                                 }
-                                Option::None => (),
+                                None => (),
                             },
-                            Option::None => (),
+                            None => (),
                         },
-                        Option::None => (),
+                        None => (),
                     }
 
                     self.modes.insert(0, Mode { value: value });
@@ -299,8 +299,8 @@ impl Application {
                 if cmd == "else" {
                     let mut syntax_error = false;
                     match self.modes.get_mut(0) {
-                        Option::Some(mode) => mode.value = !mode.value,
-                        Option::None => syntax_error = true,
+                        Some(mode) => mode.value = !mode.value,
+                        None => syntax_error = true,
                     }
                     if syntax_error {
                         println!("Syntax error: else found with no previous if");
@@ -329,7 +329,7 @@ impl Application {
 
                 //Set variables
                 match cmd.find('=') {
-                    Option::Some(i) => {
+                    Some(i) => {
                         let name = cmd[0 .. i].to_string();
                         let mut value = cmd[i + 1 .. cmd.len()].to_string();
 
@@ -339,8 +339,8 @@ impl Application {
 
                         for i in 1..args.len() {
                             match args.get(i) {
-                                Option::Some(arg) => value = value + " " + &arg,
-                                Option::None => (),
+                                Some(arg) => value = value + " " + &arg,
+                                None => (),
                             }
                         }
 
@@ -348,11 +348,11 @@ impl Application {
                             let mut remove = -1;
                             for i in 0..self.variables.len() {
                                 match self.variables.get(i) {
-                                    Option::Some(variable) => if variable.name == name {
+                                    Some(variable) => if variable.name == name {
                                         remove = i as isize;
                                         break;
                                     },
-                                    Option::None => break,
+                                    None => break,
                                 }
                             }
 
@@ -374,7 +374,7 @@ impl Application {
                         }
                         return;
                     }
-                    Option::None => (),
+                    None => (),
                 }
 
                 //Commands
@@ -391,7 +391,7 @@ impl Application {
                 }
                 println!("{}", help);
             }
-            Option::None => (),
+            None => (),
         }
     }
 
@@ -400,13 +400,13 @@ impl Application {
         console_title(&"Terminal".to_string());
 
         println!("Type help for a command list");
-        if let Option::Some(arg) = args().get(1) {
+        if let Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
             println!("# {}", command);
             self.on_command(&command);
         }
 
-        while let Option::Some(command) = readln!() {
+        while let Some(command) = readln!() {
             println!("# {}", command);
             if command.len() > 0 {
                 self.on_command(&command);
