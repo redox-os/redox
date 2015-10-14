@@ -19,7 +19,7 @@ extern crate alloc;
 
 use alloc::boxed::Box;
 
-use core::{cmp, mem, ptr};
+use core::{mem, ptr};
 
 use common::context::*;
 use common::debug;
