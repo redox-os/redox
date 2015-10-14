@@ -235,7 +235,7 @@ impl Application {
         }
 
         //Show variables
-        if *command_string == "$".to_string() {
+        if *command_string == "$" {
             let mut variables = String::new();
             for variable in self.variables.iter() {
                 variables = variables + "\n" + &variable.name + "=" + &variable.value;
@@ -265,24 +265,24 @@ impl Application {
         //Execute commands
         match args.get(0) {
             Option::Some(cmd) => {
-                if *cmd == "if".to_string() {
+                if cmd == "if" {
                     let mut value = false;
 
                     match args.get(1) {
                         Option::Some(left) => match args.get(2) {
                             Option::Some(cmp) => match args.get(3) {
                                 Option::Some(right) => {
-                                    if *cmp == "==".to_string() {
+                                    if cmp == "==" {
                                         value = *left == *right;
-                                    } else if *cmp == "!=".to_string() {
+                                    } else if cmp == "!=" {
                                         value = *left != *right;
-                                    } else if *cmp == ">".to_string() {
+                                    } else if cmp == ">" {
                                         value = left.to_num_signed() > right.to_num_signed();
-                                    } else if *cmp == ">=".to_string() {
+                                    } else if cmp == ">=" {
                                         value = left.to_num_signed() >= right.to_num_signed();
-                                    } else if *cmp == "<".to_string() {
+                                    } else if cmp == "<" {
                                         value = left.to_num_signed() < right.to_num_signed();
-                                    } else if *cmp == "<=".to_string() {
+                                    } else if cmp == "<=" {
                                         value = left.to_num_signed() <= right.to_num_signed();
                                     } else {
                                         println!("Unknown comparison: {}", cmp);
@@ -299,7 +299,7 @@ impl Application {
                     return;
                 }
 
-                if *cmd == "else".to_string() {
+                if cmd == "else" {
                     let mut syntax_error = false;
                     match self.modes.get_mut(0) {
                         Option::Some(mode) => mode.value = !mode.value,
@@ -311,7 +311,7 @@ impl Application {
                     return;
                 }
 
-                if *cmd == "fi".to_string() {
+                if cmd == "fi" {
                     let mut syntax_error = false;
                     if self.modes.len() > 0 {
                         self.modes.remove(0);
