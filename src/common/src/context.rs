@@ -91,10 +91,12 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
 
             let mut files: Vec<ContextFile> = Vec::new();
             for file in parent.files.iter() {
-                files.push(ContextFile {
-                    fd: file.fd,
-                    resource: file.resource.dup()
-                });
+                if let Some(resource) = file.resource.dup() {
+                    files.push(ContextFile {
+                        fd: file.fd,
+                        resource: resource
+                    });
+                }
             }
 
             context_option = Some(box Context {

@@ -14,7 +14,7 @@ impl SessionItem for ContextScheme {
         return "context".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let i;
         let len;
         unsafe {
@@ -24,7 +24,6 @@ impl SessionItem for ContextScheme {
             scheduler::end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_str("context://"),
-                                    ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8());
+        Some(box VecResource::new(URL::from_str("context://"), ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8()))
     }
 }

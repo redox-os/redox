@@ -14,8 +14,7 @@ impl SessionItem for RandomScheme {
         return "random".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box VecResource::new(URL::from_str("random://"),
-                                    String::from_num(random::rand()).to_utf8());
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box VecResource::new(URL::from_str("random://"), String::from_num(random::rand()).to_utf8()))
     }
 }

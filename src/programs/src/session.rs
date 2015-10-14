@@ -6,7 +6,7 @@ use alloc::boxed::Box;
 use core::cmp;
 
 use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
-use common::resource::{NoneResource, Resource, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
@@ -32,8 +32,8 @@ pub trait SessionItem {
         String::new()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        box NoneResource
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        None
     }
 }
 
@@ -136,7 +136,7 @@ impl Session {
         }
     }
 
-    pub fn open(&self, url: &URL) -> Box<Resource> {
+    pub fn open(&self, url: &URL) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -151,14 +151,14 @@ impl Session {
                 }
             }
 
-            box VecResource::new(URL::new(), list.to_utf8())
+            Some(box VecResource::new(URL::new(), list.to_utf8()))
         } else {
             for item in self.items.iter() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
                 }
             }
-            box NoneResource
+            None
         }
     }
 

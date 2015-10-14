@@ -204,8 +204,8 @@ impl SessionItem for RTL8139 {
         "network".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        NetworkResource::new(self)
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
