@@ -484,3 +484,27 @@ impl Add<isize> for String {
         self + String::from_num_signed(other)
     }
 }
+
+// Slightly modified version of the impl_eq found in the std collections String
+// Ideally, we'd compare these as arrays. However, we'd need to flesh out String a bit more
+macro_rules! impl_chars_eq {
+    ($lhs:ty, $rhs: ty) => {
+        impl<'a> PartialEq<$rhs> for $lhs {
+            #[inline]
+            fn eq(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+            #[inline]
+            fn ne(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+        }
+
+        impl<'a> PartialEq<$lhs> for $rhs {
+            #[inline]
+            fn eq(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+            #[inline]
+            fn ne(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+        }
+
+    }
+}
+
+impl_chars_eq! { String, str }
+impl_chars_eq! { String, &'a str }

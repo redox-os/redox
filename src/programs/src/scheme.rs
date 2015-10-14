@@ -289,16 +289,16 @@ impl SchemeItem {
                               scheme_item.memory.physical_address as *mut u8,
                               scheme_item.memory.virtual_size);
 
-                    scheme_item._start = executable.symbol("_start".to_string());
-                    scheme_item._stop = executable.symbol("_stop".to_string());
-                    scheme_item._open = executable.symbol("_open".to_string());
-                    scheme_item._dup = executable.symbol("_dup".to_string());
-                    scheme_item._fpath = executable.symbol("_fpath".to_string());
-                    scheme_item._read = executable.symbol("_read".to_string());
-                    scheme_item._write = executable.symbol("_write".to_string());
-                    scheme_item._lseek = executable.symbol("_lseek".to_string());
-                    scheme_item._fsync = executable.symbol("_fsync".to_string());
-                    scheme_item._close = executable.symbol("_close".to_string());
+                    scheme_item._start = executable.symbol("_start");
+                    scheme_item._stop = executable.symbol("_stop");
+                    scheme_item._open = executable.symbol("_open");
+                    scheme_item._dup = executable.symbol("_dup");
+                    scheme_item._fpath = executable.symbol("_fpath");
+                    scheme_item._read = executable.symbol("_read");
+                    scheme_item._write = executable.symbol("_write");
+                    scheme_item._lseek = executable.symbol("_lseek");
+                    scheme_item._fsync = executable.symbol("_fsync");
+                    scheme_item._close = executable.symbol("_close");
                 }
             }
         }
