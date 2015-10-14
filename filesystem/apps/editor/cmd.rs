@@ -163,6 +163,20 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         editor.left();
                                     }
                                 },
+                                (Normal, 'Y') => {
+                                    *clipboard = String::new();
+                                    let mut mov = 1;
+                                    while editor.cur() != '\n' &&
+                                          editor.offset < editor.string.len() {
+                                        *clipboard = editor.cur().to_string() + clipboard;
+                                        editor.left();
+                                        mov += 1;
+                                    }
+
+                                    for _ in 1..mov {
+                                        editor.right();
+                                    }
+                                },
                                 (Normal, 'p') => {
                                     for c in clipboard.chars() {
                                         editor.insert(c, window);
