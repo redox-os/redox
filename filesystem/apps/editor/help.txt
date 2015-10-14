@@ -21,13 +21,15 @@ commands are valid:
 - x: Delete char after cursor.
 - X: Delete char before cursor.
 - d: Delete the rest of the line.
-- s: Go to the other cursor.
+- c: Go to the other cursor.
 - u: Undo (only one undo level, to redo: u)
 - g: Go to the top
 - G: Go to the bottom
 - ,: Start/stop recording a period
 - !: Play a period
 - ^: Go to the first non blank char of the line.
+- s: Remove the char under the cursor and start
+     inserting.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.
