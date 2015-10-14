@@ -74,13 +74,13 @@ impl Command {
                         let path = arg.clone();
                         println!("URL: {}", path);
 
-                        let mut resource = File::open(&path);
+                        let mut commands = String::new();
+                        if let Some(mut file) = File::open(&path) {
+                            file.read_to_string(&mut commands);
+                        }
 
-                        let mut vec: Vec<u8> = Vec::new();
-                        resource.read_to_end(&mut vec);
-
-                        let commands = unsafe { String::from_utf8_unchecked(vec) };
                         for command in commands.split('\n') {
+                            exec!(command);
                         }
                     }
                     Option::None => (),
@@ -98,33 +98,28 @@ impl Command {
                 }
                 println!("URL: {}", path);
 
-                let mut resource = File::open(&path);
-
-                let mut vec: Vec<u8> = Vec::new();
-                for i in 2..args.len() {
-                    match args.get(i) {
-                        Option::Some(arg) => {
-                            if i == 2 {
-                                vec.push_all(&arg.as_bytes())
-                            } else {
-                                vec.push_all(&(" ".to_string() + arg).as_bytes())
+                if let Some(mut file) = File::open(&path) {
+                    let mut string = String::new();
+                    for i in 2..args.len() {
+                        if let Some(arg) = args.get(i) {
+                            if i >= 3 {
+                                string.push_str(" ");
                             }
+                            string.push_str(arg);
                         }
-                        Option::None => vec = Vec::new(),
                     }
-                }
-                vec.push_all(&"\r\n\r\n".to_string().as_bytes());
+                    string.push_str("\r\n\r\n");
 
-                match resource.write(&vec) {
-                    Option::Some(size) => println!("Wrote {} bytes", size),
-                    Option::None => println!("Failed to write"),
-                }
+                    match file.write(&string.as_bytes()) {
+                        Some(size) => println!("Wrote {} bytes", size),
+                        None => println!("Failed to write"),
+                    }
 
-                vec = Vec::new();
-                match resource.read_to_end(&mut vec) {
-                    Option::Some(_) =>
-                        println!("{}", unsafe { String::from_utf8_unchecked(vec) }),
-                    Option::None => println!("Failed to read"),
+                    string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read"),
+                    }
                 }
             },
         });
@@ -139,12 +134,12 @@ impl Command {
                 }
                 println!("URL: {}", path);
 
-                let mut resource = File::open(&path);
-
-                let mut vec: Vec<u8> = Vec::new();
-                match resource.read_to_end(&mut vec) {
-                    Option::Some(_) => println!("{}", unsafe { String::from_utf8_unchecked(vec) }),
-                    Option::None => println!("Failed to read"),
+                if let Some(mut file) = File::open(&path) {
+                    let mut string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Option::Some(_) => println!("{}", string),
+                        Option::None => println!("Failed to read"),
+                    }
                 }
             },
         });
@@ -159,18 +154,18 @@ impl Command {
                 }
                 println!("URL: {}", path);
 
-                let mut resource = File::open(&path);
-
-                let mut vec: Vec<u8> = Vec::new();
-                match resource.read_to_end(&mut vec) {
-                    Option::Some(_) => {
-                        let mut line = "HEX:".to_string();
-                        for byte in vec.iter() {
-                            line = line + " " + &format!("{:X}", *byte);
+                if let Some(mut file) = File::open(&path) {
+                    let mut vec: Vec<u8> = Vec::new();
+                    match file.read_to_end(&mut vec) {
+                        Option::Some(_) => {
+                            let mut line = "HEX:".to_string();
+                            for byte in vec.iter() {
+                                line = line + " " + &format!("{:X}", *byte);
+                            }
+                            println!("{}", line);
                         }
-                        println!("{}", line);
+                        Option::None => println!("Failed to read"),
                     }
-                    Option::None => println!("Failed to read"),
                 }
             },
         });
@@ -180,14 +175,16 @@ impl Command {
             main: box |args: &Vec<String>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
+                        if let Some(mut con) = File::open(&("tcp://".to_string() + host)) {
+                            con.write(("GET ".to_string() + req + " HTTP/1.1").as_bytes());
 
-                        let mut con = File::open(&("tcp://".to_string() + host));
-                        con.write(("GET ".to_string() + req + " HTTP/1.1").as_bytes());
-                        let mut res = Vec::new();
-                        con.read_to_end(&mut res);
-                        let mut file = File::open(&req);
+                            let mut res = Vec::new();
+                            con.read_to_end(&mut res);
 
-                        file.write(&res[..]);
+                            if let Some(mut file) = File::open(&req) {
+                                file.write(&res);
+                            }
+                        }
                     } else {
                         println!("No request given");
                     }
@@ -235,7 +232,7 @@ impl Application {
         }
 
         //Show variables
-        if *command_string == "$".to_string() {
+        if *command_string == "$" {
             let mut variables = String::new();
             for variable in self.variables.iter() {
                 variables = variables + "\n" + &variable.name + "=" + &variable.value;
@@ -265,24 +262,24 @@ impl Application {
         //Execute commands
         match args.get(0) {
             Option::Some(cmd) => {
-                if *cmd == "if".to_string() {
+                if cmd == "if" {
                     let mut value = false;
 
                     match args.get(1) {
                         Option::Some(left) => match args.get(2) {
                             Option::Some(cmp) => match args.get(3) {
                                 Option::Some(right) => {
-                                    if *cmp == "==".to_string() {
+                                    if cmp == "==" {
                                         value = *left == *right;
-                                    } else if *cmp == "!=".to_string() {
+                                    } else if cmp == "!=" {
                                         value = *left != *right;
-                                    } else if *cmp == ">".to_string() {
+                                    } else if cmp == ">" {
                                         value = left.to_num_signed() > right.to_num_signed();
-                                    } else if *cmp == ">=".to_string() {
+                                    } else if cmp == ">=" {
                                         value = left.to_num_signed() >= right.to_num_signed();
-                                    } else if *cmp == "<".to_string() {
+                                    } else if cmp == "<" {
                                         value = left.to_num_signed() < right.to_num_signed();
-                                    } else if *cmp == "<=".to_string() {
+                                    } else if cmp == "<=" {
                                         value = left.to_num_signed() <= right.to_num_signed();
                                     } else {
                                         println!("Unknown comparison: {}", cmp);
@@ -299,7 +296,7 @@ impl Application {
                     return;
                 }
 
-                if *cmd == "else".to_string() {
+                if cmd == "else" {
                     let mut syntax_error = false;
                     match self.modes.get_mut(0) {
                         Option::Some(mode) => mode.value = !mode.value,
@@ -311,7 +308,7 @@ impl Application {
                     return;
                 }
 
-                if *cmd == "fi".to_string() {
+                if cmd == "fi" {
                     let mut syntax_error = false;
                     if self.modes.len() > 0 {
                         self.modes.remove(0);

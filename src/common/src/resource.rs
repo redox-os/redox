@@ -21,7 +21,7 @@ pub enum ResourceSeek {
 #[allow(unused_variables)]
 pub trait Resource {
     /// Duplicate the resource
-    fn dup(&self) -> Box<Resource>;
+    fn dup(&self) -> Option<Box<Resource>>;
     /// Return the url of this resource
     fn url(&self) -> URL;
     // TODO: Make use of Write and Read trait
@@ -100,7 +100,7 @@ impl URL {
     }
 
     /// Open this URL (returns a resource)
-    pub fn open(&self) -> Box<Resource> {
+    pub fn open(&self) -> Option<Box<Resource>> {
         unsafe {
             return (*::session_ptr).open(&self);
         }
@@ -334,35 +334,6 @@ impl Clone for URL {
     }
 }
 
-/// Empty resource
-pub struct NoneResource;
-
-impl Resource for NoneResource {
-    fn dup(&self) -> Box<Resource> {
-        box NoneResource
-    }
-
-    fn url(&self) -> URL {
-        return URL::from_str("none://");
-    }
-
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn sync(&mut self) -> bool {
-        return false;
-    }
-}
-
 /// A vector resource
 pub struct VecResource {
     url: URL,
@@ -385,12 +356,12 @@ impl VecResource {
 }
 
 impl Resource for VecResource {
-    fn dup(&self) -> Box<Resource> {
-        box VecResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box VecResource {
             url: self.url.clone(),
             vec: self.vec.clone(),
             seek: self.seek,
-        }
+        })
     }
 
     fn url(&self) -> URL {

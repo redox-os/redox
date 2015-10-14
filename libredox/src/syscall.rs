@@ -71,11 +71,8 @@ pub unsafe fn sys_brk(addr: usize) -> usize {
     syscall(SYS_BRK, addr as u32, 0, 0) as usize
 }
 
-//TODO: Export unsafe
-pub fn sys_yield() {
-    unsafe {
-        syscall(SYS_YIELD, 0, 0, 0);
-    }
+pub unsafe fn sys_yield() {
+    syscall(SYS_YIELD, 0, 0, 0);
 }
 
 pub unsafe fn sys_alloc(size: usize) -> usize {

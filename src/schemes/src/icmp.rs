@@ -20,13 +20,11 @@ impl SessionItem for ICMPScheme {
 
 impl ICMPScheme {
     pub fn reply_loop() {
-        loop {
-            let mut ip = URL::from_str("ip:///1").open();
-
+        while let Some(mut ip) = URL::from_str("ip:///1").open() {
             let mut bytes: Vec<u8> = Vec::new();
             match ip.read_to_end(&mut bytes) {
-                Option::Some(_) => {
-                    if let Option::Some(message) = ICMP::from_bytes(bytes) {
+                Some(_) => {
+                    if let Some(message) = ICMP::from_bytes(bytes) {
                         if message.header._type == 0x08 {
                             let mut response = ICMP {
                                 header: message.header,
@@ -49,7 +47,7 @@ impl ICMPScheme {
                         }
                     }
                 }
-                Option::None => unsafe { context_switch(false) },
+                None => unsafe { context_switch(false) },
             }
         }
     }

@@ -46,8 +46,11 @@ impl Scheme {
     }
 
     pub fn open(&mut self, path: &str) -> Option<Box<Resource>> {
-        Some(box Resource {
-            file: File::open(&("example:".to_string() + path))
-        })
+        match File::open(&("example:".to_string() + path)) {
+            Some(file) => Some(box Resource {
+                file: file
+            }),
+            None => None
+        }
     }
 }
