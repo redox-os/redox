@@ -51,7 +51,9 @@ impl Editor {
 
     // TODO: Add methods for multiple movements
     fn up(&mut self) {
-        let x = self.get_x() - if self.cur() == '\n' { 1 } else { 0 };
+        let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
+        let original_c = self.cur();
+
         while self.cur() != '\n' {
             self.left();
         }
@@ -70,11 +72,19 @@ impl Editor {
             }
         }
         self.offset = new_offset;
-        for _ in 1..x {
-            if self.cur() != '\n' {
+        if original_c == '\n' {
+            while self.cur() != '\n' &&
+                  self.cur() != '\0' &&
+                  self.offset < self.string.len() {
                 self.right();
-            } else {
-                break;
+            }
+        } else {
+            for _ in 1..x {
+                if self.cur() != '\n' {
+                    self.right();
+                } else {
+                    break;
+                }
             }
         }
     }
@@ -92,7 +102,8 @@ impl Editor {
     }
 
     fn down(&mut self) {
-        let x = self.get_x() - if self.cur() == '\n' { 1 } else { 0 };
+        let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
+        let original_c = self.cur();
         let mut new_offset = self.string.len();
 
 
@@ -107,11 +118,19 @@ impl Editor {
             }
         }
         self.offset = new_offset;
-        for _ in 1..x {
-            if self.cur() != '\n' {
+        if original_c == '\n' {
+            while self.cur() != '\n' &&
+                  self.cur() != '\0' &&
+                  self.offset < self.string.len() {
                 self.right();
-            } else {
-                break;
+            }
+        } else {
+            for _ in 1..x {
+                if self.cur() != '\n' {
+                    self.right();
+                } else {
+                    break;
+                }
             }
         }
     }

@@ -107,7 +107,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 },
                                 (Normal, 'o') => {
                                     while editor.cur() != '\n' &&
-                                          editor.cur() != '\0' {
+                                          editor.cur() != '\0' &&
+                                          editor.offset < editor.string.len() {
                                         editor.right();
                                     }
                                     editor.insert('\n', window);
@@ -115,7 +116,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 },
                                 (Normal, 'O') => {
                                     while editor.cur() != '\n' &&
-                                          editor.cur() != '\0' {
+                                          editor.cur() != '\0' &&
+                                          editor.offset >= 0 {
                                         editor.left();
                                     }
                                     editor.insert('\n', window);
@@ -124,31 +126,36 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 },
                                 (Normal, '^') => {
                                     while editor.cur() != '\n' &&
-                                          editor.cur() != '\0' {
+                                          editor.cur() != '\0' &&
+                                          editor.offset <= 0 {
                                         editor.left();
                                     }
                                     editor.right();
-                                    while editor.cur() == ' ' ||
-                                          editor.cur() == '\t' {
+                                    while (editor.cur() == ' ' ||
+                                          editor.cur() == '\t') &&
+                                          editor.offset < editor.string.len() {
                                         editor.right();
                                     }
                                 }
                                 (Normal, '$') => {
                                     while editor.cur() != '\n' &&
-                                          editor.cur() != '\0' {
+                                          editor.cur() != '\0' &&
+                                          editor.offset < editor.string.len() {
                                         editor.right();
                                     }
                                 },
                                 (Normal, '0') => {
                                     while editor.cur() != '\n' &&
-                                          editor.cur() != '\0' {
+                                          editor.cur() != '\0' &&
+                                          editor.offset >= 0 {
                                         editor.left();
                                     }
                                     editor.right();
                                 },
                                 (Normal, 'd') => {
                                     while editor.cur() != '\n' &&
-                                          editor.cur() != '\0' {
+                                          editor.cur() != '\0' &&
+                                          editor.offset < editor.string.len() {
                                         editor.delete(window);
                                     }
                                 },
@@ -169,7 +176,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                           editor.cur() != ';' &&
                                           editor.cur() != '"' &&
                                           editor.cur() != '\'' &&
-                                          editor.cur() != '\n' {
+                                          editor.cur() != '\n' &&
+                                          editor.offset < editor.string.len() {
                                         editor.right();
                                     }
                                 },
@@ -187,19 +195,20 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                           editor.cur() != ';' &&
                                           editor.cur() != '"' &&
                                           editor.cur() != '\'' &&
-                                          editor.cur() != '\n' {
+                                          editor.cur() != '\n' &&
+                                          editor.offset < editor.string.len() {
                                         editor.left();
                                     }
                                 },
                                 (Normal, 'E') => {
                                     editor.right();
-                                    while editor.cur() != ' ' {
-                                        editor.right()
+                                    while editor.cur() != ' ' && editor.offset < editor.string.len() {
+                                        editor.right();
                                     }
                                 },
                                 (Normal, 'B') => {
                                     editor.left();
-                                    while editor.cur() != ' ' {
+                                    while editor.cur() != ' ' && editor.offset < editor.string.len() {
                                         editor.left();
                                     }
                                 },
@@ -217,6 +226,9 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                                     '(' | '[' | '{' => 1,
                                                     ')' | ']' | '}' => -1,
                                                     _ => 0,
+                                                };
+                                                if editor.offset < editor.string.len() {
+                                                    break;
                                                 }
                                             }
                                         },
@@ -228,6 +240,9 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                                     '(' | '[' | '{' => -1,
                                                     ')' | ']' | '}' => 1,
                                                     _ => 0,
+                                                };
+                                                if editor.offset < editor.string.len() {
+                                                    break;
                                                 }
                                             }
                                         },
