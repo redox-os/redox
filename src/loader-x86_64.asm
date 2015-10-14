@@ -253,9 +253,8 @@ long_mode:
     mov rsp, 0x1FFFF0
 
     ;rust init
-    mov rax, [kernel_file + 0x18]
-    cli
-    hlt
+    xor rax, rax
+    mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], rax
     mov rax, kernel_file.font
     int 255
