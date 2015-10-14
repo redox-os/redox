@@ -152,6 +152,9 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         editor.delete(window);
                                     }
                                 },
+                                (Normal, 'w') => {
+                                    editor.save(window);
+                                },
                                 (Normal, ',') => {
                                     *is_recording = true;
                                     *period = String::new();
