@@ -14,7 +14,7 @@ impl Editor {
     pub fn new() -> Self {
         Editor {
             url: String::new(),
-            file: Option::None,
+            file: None,
             string: String::new(),
             offset: 0,
             scroll_x: 0,
@@ -28,24 +28,24 @@ impl Editor {
         self.scroll_y = 0;
 
         match self.file {
-            Option::Some(ref mut file) => {
+            Some(ref mut file) => {
                 file.seek(SeekFrom::Start(0));
                 let mut string = String::new();
                 file.read_to_string(&mut string);
                 self.string = string;
             }
-            Option::None => self.string = String::new(),
+            None => self.string = String::new(),
         }
     }
 
     fn save(&mut self) {
         match self.file {
-            Option::Some(ref mut file) => {
+            Some(ref mut file) => {
                 file.seek(SeekFrom::Start(0));
                 file.write(&self.string.as_bytes());
                 file.sync();
             }
-            Option::None => {
+            None => {
                 //TODO: Ask for file to save to
             }
         }
@@ -143,7 +143,7 @@ impl Editor {
         self.reload();
         self.draw_content(&mut window);
 
-        while let Option::Some(event) = window.poll() {
+        while let Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
@@ -218,7 +218,7 @@ impl Editor {
 
 pub fn main() {
     match args().get(1) {
-        Option::Some(arg) => Editor::new().main(&arg),
-        Option::None => Editor::new().main("none://"),
+        Some(arg) => Editor::new().main(&arg),
+        None => Editor::new().main("none://"),
     }
 }

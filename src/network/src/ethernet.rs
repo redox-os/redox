@@ -23,14 +23,14 @@ impl FromBytes for EthernetII {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= size_of::<EthernetIIHeader>() {
             unsafe {
-                return Option::Some(EthernetII {
+                return Some(EthernetII {
                     header: *(bytes.as_ptr() as *const EthernetIIHeader),
                     data: bytes.sub(size_of::<EthernetIIHeader>(),
                                     bytes.len() - size_of::<EthernetIIHeader>()),
                 });
             }
         }
-        Option::None
+        None
     }
 }
 

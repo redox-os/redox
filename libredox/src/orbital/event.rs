@@ -161,12 +161,12 @@ impl KeyEvent {
     /// Convert from an `Event`
     pub fn from_event(event: Event) -> KeyEvent {
         match char::from_u32(event.a as u32) {
-            Option::Some(character) => KeyEvent {
+            Some(character) => KeyEvent {
                 character: character,
                 scancode: event.b as u8,
                 pressed: event.c > 0,
             },
-            Option::None => KeyEvent {
+            None => KeyEvent {
                 character: '\0',
                 scancode: event.b as u8,
                 pressed: event.c > 0,

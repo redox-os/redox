@@ -35,8 +35,8 @@ impl BMPFile {
 
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
-                Option::Some(byte) => *byte,
-                Option::None => 0,
+                Some(byte) => *byte,
+                None => 0,
             }
         };
 

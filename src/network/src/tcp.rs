@@ -38,7 +38,7 @@ impl FromBytes for TCP {
                 let header = *(bytes.as_ptr() as *const TCPHeader);
                 let header_len = ((header.flags.get() & 0xF000) >> 10) as usize;
 
-                return Option::Some(TCP {
+                return Some(TCP {
                     header: header,
                     options: bytes.sub(size_of::<TCPHeader>(),
                                        header_len - size_of::<TCPHeader>()),
@@ -46,7 +46,7 @@ impl FromBytes for TCP {
                 });
             }
         }
-        Option::None
+        None
     }
 }
 

@@ -25,7 +25,7 @@ pub fn main() {
     window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
     window.sync();
 
-    while let Option::Some(event) = window.poll() {
+    while let Some(event) = window.poll() {
         match event.to_option() {
             EventOption::Key(key_event) => {
                 if key_event.pressed && key_event.scancode == K_ESC {
