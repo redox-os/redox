@@ -205,9 +205,9 @@ impl ELF {
 
                 let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if name == ".symtab".to_string() {
+                if name == ".symtab" {
                     sym_section = section;
-                } else if name == ".strtab".to_string() {
+                } else if name == ".strtab" {
                     str_section = section;
                 }
 
@@ -336,9 +336,9 @@ impl ELF {
 
                 let section_name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if section_name == ".symtab".to_string() {
+                if section_name == ".symtab" {
                     sym_section = section;
-                } else if section_name == ".strtab".to_string() {
+                } else if section_name == ".strtab" {
                     str_section = section;
                 }
             }

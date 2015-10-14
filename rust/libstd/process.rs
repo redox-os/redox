@@ -826,7 +826,7 @@ mod tests {
 
         for (ref k, ref v) in env::vars() {
             // don't check android RANDOM variables
-            if *k != "RANDOM".to_string() {
+            if k != "RANDOM" {
                 assert!(output.contains(&format!("{}={}",
                                                  *k,
                                                  *v)) ||
