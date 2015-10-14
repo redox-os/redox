@@ -98,8 +98,12 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     editor.offset = 0;
                                     ::core::mem::swap(last_change, &mut editor.string);
                                 },
-                                (Normal, 's') => {
+                                (Normal, 'c') => {
                                     ::core::mem::swap(&mut editor.offset, swap);
+                                },
+                                (Normal, 's') => {
+                                    editor.backspace(window);
+                                    *mode = Insert;
                                 },
                                 (Normal, 'o') => {
                                     while editor.cur() != '\n' &&
