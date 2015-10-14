@@ -415,7 +415,7 @@ unsafe fn init(font_data: usize) {
     context_enabled = true;
 }
 
-fn dr(reg: &str, value: u32) {
+fn dr(reg: &str, value: usize) {
     debug::d(reg);
     debug::d(": ");
     debug::dh(value as usize);
@@ -424,13 +424,13 @@ fn dr(reg: &str, value: u32) {
 
 #[no_mangle]
 //Take regs for kernel calls and exceptions
-pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, mut eax: u32, eip: u32, eflags: u32, error: u32) -> u32 {
+pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, eip: usize, eflags: usize, error: usize) -> usize {
     macro_rules! exception {
         ($name:expr) => ({
             debug::d($name);
             debug::dl();
 
-            dr("CONTEXT", context_i as u32);
+            dr("CONTEXT", context_i);
             dr("EFLAGS", eflags);
             dr("EIP", eip);
             dr("EAX", eax);
@@ -443,20 +443,20 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("EDI", edi);
             dr("INT", interrupt);
 
-            let cr0;
-            asm!("mov eax, cr0" : "={eax}"(cr0) : : : "intel", "volatile");
+            let cr0: usize;
+            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
             dr("CR0", cr0);
 
-            let cr2;
-            asm!("mov eax, cr2" : "={eax}"(cr2) : : : "intel", "volatile");
+            let cr2: usize;
+            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
             dr("CR2", cr2);
 
-            let cr3;
-            asm!("mov eax, cr3" : "={eax}"(cr3) : : : "intel", "volatile");
+            let cr3: usize;
+            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
             dr("CR3", cr3);
 
-            let cr4;
-            asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
+            let cr4: usize;
+            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
             do_sys_exit(-1);
@@ -472,7 +472,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             debug::d($name);
             debug::dl();
 
-            dr("CONTEXT", context_i as u32);
+            dr("CONTEXT", context_i);
             dr("EFLAGS", error);
             dr("EIP", eflags);
             dr("ERROR", eip);
@@ -486,20 +486,20 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("EDI", edi);
             dr("INT", interrupt);
 
-            let cr0;
-            asm!("mov eax, cr0" : "={eax}"(cr0) : : : "intel", "volatile");
+            let cr0: usize;
+            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
             dr("CR0", cr0);
 
-            let cr2;
-            asm!("mov eax, cr2" : "={eax}"(cr2) : : : "intel", "volatile");
+            let cr2: usize;
+            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
             dr("CR2", cr2);
 
-            let cr3;
-            asm!("mov eax, cr3" : "={eax}"(cr3) : : : "intel", "volatile");
+            let cr3: usize;
+            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
             dr("CR3", cr3);
 
-            let cr4;
-            asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
+            let cr4: usize;
+            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
             do_sys_exit(-1);

@@ -1,5 +1,6 @@
 use alloc::boxed::*;
 
+use core::mem;
 use core::ptr;
 
 use common::memory;
@@ -101,7 +102,7 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
 
             context_option = Some(box Context {
                 stack: stack,
-                stack_ptr: (parent.stack_ptr as usize - parent.stack + stack) as u32,
+                stack_ptr: (parent.stack_ptr - parent.stack) + stack,
                 fx: stack + CONTEXT_STACK_SIZE,
                 fx_enabled: parent.fx_enabled,
                 memory: mem,
@@ -156,7 +157,7 @@ pub struct ContextFile {
 
 pub struct Context {
     pub stack: usize,
-    pub stack_ptr: u32,
+    pub stack_ptr: usize,
     pub fx: usize,
     pub fx_enabled: bool,
     pub memory: Vec<ContextMemory>,
@@ -181,12 +182,12 @@ impl Context {
         }
     }
 
-    pub unsafe fn new(call: u32, args: &Vec<u32>) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             stack: stack,
-            stack_ptr: (stack + CONTEXT_STACK_SIZE) as u32,
+            stack_ptr: stack + CONTEXT_STACK_SIZE,
             fx: stack + CONTEXT_STACK_SIZE,
             fx_enabled: false,
             memory: Vec::new(),
@@ -227,21 +228,21 @@ impl Context {
             let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
             ptr::write(box_fn_ptr, box_fn);
 
-            let mut context_box_args: Vec<u32> = Vec::new();
-            context_box_args.push(box_fn_ptr as u32);
-            context_box_args.push(context_exit as u32);
+            let mut context_box_args: Vec<usize> = Vec::new();
+            context_box_args.push(box_fn_ptr as usize);
+            context_box_args.push(context_exit as usize);
 
             let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {
-                (*contexts_ptr).push(Context::new(context_box as u32, &context_box_args));
+                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args));
             }
             scheduler::end_no_ints(reenable);
         }
     }
 
-    pub unsafe fn push(&mut self, data: u32) {
-        self.stack_ptr -= 4;
-        ptr::write(self.stack_ptr as *mut u32, data);
+    pub unsafe fn push(&mut self, data: usize) {
+        self.stack_ptr -= mem::size_of::<usize>();
+        ptr::write(self.stack_ptr as *mut usize, data);
     }
 
     pub unsafe fn map(&mut self) {
@@ -269,6 +270,7 @@ impl Context {
     //It should have exactly one extra push/pop of ESI
     #[cold]
     #[inline(never)]
+    #[cfg(target_arch = "x86")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfd
             pushad
@@ -299,6 +301,73 @@ impl Context {
             popfd"
             :
             : "{esi}"(&mut other.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+    }
+
+    //Warning: This function MUST be inspected in disassembly for correct push/pop
+    //It should have exactly one extra push/pop of ESI
+    #[cold]
+    #[inline(never)]
+    #[cfg(target_arch = "x86_64")]
+    pub unsafe fn switch(&mut self, other: &mut Self) {
+        asm!("pushfq
+            push rax
+            push rcx
+            push rdx
+            push rbx
+            push rbp
+            push rsi
+            push rdi
+            push r8
+            push r9
+            push r10
+            push r11
+            push r12
+            push r13
+            push r14
+            push r15
+            mov [rsi], rsp"
+            :
+            : "{rsi}"(&mut self.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("fxsave [rsi]"
+            :
+            : "{rsi}"(self.fx)
+            : "memory"
+            : "intel", "volatile");
+        self.fx_enabled = true;
+
+        //TODO: Clear registers
+        if other.fx_enabled {
+            asm!("fxrstor [rsi]"
+                :
+                : "{rsi}"(other.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
+
+        asm!("mov rsp, [rsi]
+            pop r15
+            pop r14
+            pop r13
+            pop r12
+            pop r11
+            pop r10
+            pop r9
+            pop r8
+            pop rdi
+            pop rsi
+            pop rbp
+            pop rbx
+            pop rdx
+            pop rcx
+            pop rax
+            popfq"
+            :
+            : "{rsi}"(&mut other.stack_ptr)
             : "memory"
             : "intel", "volatile");
     }

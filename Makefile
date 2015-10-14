@@ -1,5 +1,15 @@
+#Modify fo different target support
+
+## x86_64 ##
+#TARGET=x86_64-unknown-redox
+#ELF=elf_x86_64
+
+## i686 ##
+TARGET=i686-unknown-redox
+ELF=elf_i386
+
 RUSTC=rustc
-RUSTCFLAGS=--target=i686-unknown-redox-gnu.json \
+RUSTCFLAGS=--target=$(TARGET).json \
 	-C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
@@ -10,7 +20,7 @@ BASENAME=basename
 CUT=cut
 FIND=find
 LD=ld
-LDARGS=-m elf_i386
+LDARGS=-m $(ELF)
 MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
@@ -115,7 +125,7 @@ help:
 all: build/harddrive.bin
 
 docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
-	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
+	rustdoc --target=$(TARGET).json -L. $<
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
 

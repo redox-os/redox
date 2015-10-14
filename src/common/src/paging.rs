@@ -21,12 +21,12 @@ impl Page {
             }
         }
 
-        asm!("mov cr3, $0\n
-            mov $0, cr0\n
-            or $0, 0x80000000\n
-            mov cr0, $0\n"
+        asm!("mov cr3, $0
+            mov $0, cr0
+            or $0, $1
+            mov cr0, $0"
             :
-            : "{eax}"(memory::PAGE_DIRECTORY)
+            : "r"(memory::PAGE_DIRECTORY), "r"(0x80000000 as usize)
             : "memory"
             : "intel", "volatile");
     }
