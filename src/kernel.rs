@@ -348,10 +348,8 @@ unsafe fn init(font_data: usize) {
     scheduler::end_no_ints(true);
 
     //Load cursor before getting out of debug mode
-    {
-        debug::d("Loading cursor\n");
-        let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
-
+    debug::d("Loading cursor\n");
+    if let Some(mut resource) = URL::from_str("file:///ui/cursor.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
@@ -363,10 +361,8 @@ unsafe fn init(font_data: usize) {
         scheduler::end_no_ints(reenable);
     }
 
-    {
-        debug::d("Loading schemes\n");
-        let mut resource = URL::from_str("file:///schemes/").open();
-
+    debug::d("Loading schemes\n");
+    if let Some(mut resource) = URL::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
@@ -384,10 +380,8 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    {
-        debug::d("Loading apps\n");
-        let mut resource = URL::from_str("file:///apps/").open();
-
+    debug::d("Loading apps\n");
+    if let Some(mut resource) = URL::from_str("file:///apps/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
@@ -403,10 +397,8 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    {
-        debug::d("Loading background\n");
-        let mut resource = URL::from_str("file:///ui/background.bmp").open();
-
+    debug::d("Loading background\n");
+    if let Some(mut resource) = URL::from_str("file:///ui/background.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 

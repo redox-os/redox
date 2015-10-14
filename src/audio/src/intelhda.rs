@@ -49,10 +49,10 @@ struct IntelHDAResource {
 }
 
 impl Resource for IntelHDAResource {
-    fn dup(&self) -> Box<Resource> {
-        box IntelHDAResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box IntelHDAResource {
             base: self.base
-        }
+        })
     }
 
     fn url(&self) -> URL {
@@ -219,8 +219,8 @@ impl SessionItem for IntelHDA {
         "hda".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        box IntelHDAResource { base: self.base }
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box IntelHDAResource { base: self.base })
     }
 
     fn on_irq(&mut self, irq: u8) {

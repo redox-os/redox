@@ -10,7 +10,7 @@ use drivers::pciconfig::PCIConfig;
 use common::context::context_switch;
 use common::debug;
 use common::memory::Memory;
-use common::resource::{NoneResource, Resource, ResourceSeek, URL, VecResource};
+use common::resource::{Resource, ResourceSeek, URL, VecResource};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -215,14 +215,14 @@ pub struct FileResource {
 }
 
 impl Resource for FileResource {
-    fn dup(&self) -> Box<Resource> {
-        box FileResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box FileResource {
             scheme: self.scheme,
             node: self.node.clone(),
             vec: self.vec.clone(),
             seek: self.seek,
             dirty: self.dirty,
-        }
+        })
     }
 
     fn url(&self) -> URL {
@@ -440,7 +440,7 @@ impl SessionItem for FileScheme {
         return "file".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let path = url.path();
         if path.len() == 0 || path.ends_with("/".to_string()) {
             let mut list = String::new();
@@ -476,7 +476,7 @@ impl SessionItem for FileScheme {
                 }
             }
 
-            return box VecResource::new(url.clone(), list.to_utf8());
+            return Some(box VecResource::new(url.clone(), list.to_utf8()));
         } else {
             match self.fs.node(&path) {
                 Option::Some(node) => {
@@ -532,17 +532,15 @@ impl SessionItem for FileScheme {
                         }
                     }
 
-                    return box FileResource {
+                    return Some(box FileResource {
                         scheme: self,
                         node: node,
                         vec: vec,
                         seek: 0,
                         dirty: false,
-                    };
+                    });
                 }
-                Option::None => {
-                    return box NoneResource;
-                }
+                Option::None => return None
             }
         }
     }

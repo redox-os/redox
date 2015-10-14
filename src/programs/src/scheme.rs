@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::ptr;
 
 use common::context::*;
-use common::resource::{Resource, ResourceSeek, NoneResource};
+use common::resource::{Resource, ResourceSeek};
 use common::elf::*;
 use common::memory;
 use common::paging::Page;
@@ -91,7 +91,7 @@ impl SchemeResource {
 
 impl Resource for SchemeResource {
     /// Duplicate the resource
-    fn dup(&self) -> Box<Resource> {
+    fn dup(&self) -> Option<Box<Resource>> {
         if self.valid(self._dup) {
             let fd;
             unsafe {
@@ -102,7 +102,7 @@ impl Resource for SchemeResource {
             }
             if fd != 0xFFFFFFFF {
                 //TODO: Count number of handles, don't allow drop until 0
-                return box SchemeResource {
+                return Some(box SchemeResource {
                     handle: fd,
                     memory: ContextMemory {
                         physical_address: self.memory.physical_address,
@@ -116,11 +116,11 @@ impl Resource for SchemeResource {
                     _lseek: self._lseek,
                     _fsync: self._fsync,
                     _close: self._close,
-                };
+                });
             }
         }
 
-        box NoneResource
+        None
     }
 
     /// Return the url of this resource
@@ -129,7 +129,6 @@ impl Resource for SchemeResource {
             let mut buf: [u8; 4096] = [0; 4096];
             let result;
             unsafe {
-
                 let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._fpath;
                 result = (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(self.handle, context.translate_mut(buf.as_mut_ptr()), buf.len());
@@ -277,9 +276,7 @@ impl SchemeItem {
             _close: 0,
         };
 
-        {
-            let mut resource = url.open();
-
+        if let Some(mut resource) = url.open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
@@ -329,7 +326,7 @@ impl SessionItem for SchemeItem {
         return self.scheme.clone();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if self.valid(self._open) {
             let fd;
             unsafe {
@@ -344,7 +341,7 @@ impl SessionItem for SchemeItem {
             }
             if fd != 0xFFFFFFFF {
                 //TODO: Count number of handles, don't allow drop until 0
-                return box SchemeResource {
+                return Some(box SchemeResource {
                     handle: fd,
                     memory: ContextMemory {
                         physical_address: self.memory.physical_address,
@@ -358,11 +355,11 @@ impl SessionItem for SchemeItem {
                     _lseek: self._lseek,
                     _fsync: self._fsync,
                     _close: self._close,
-                };
+                });
             }
         }
 
-        box NoneResource
+        None
     }
 }
 

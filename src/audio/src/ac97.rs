@@ -25,11 +25,11 @@ struct AC97Resource {
 }
 
 impl Resource for AC97Resource {
-    fn dup(&self) -> Box<Resource> {
-        box AC97Resource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
-        }
+        })
     }
 
     fn url(&self) -> URL {
@@ -185,11 +185,11 @@ impl SessionItem for AC97 {
         "audio".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        box AC97Resource {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
-        }
+        })
     }
 
     fn on_irq(&mut self, irq: u8) {

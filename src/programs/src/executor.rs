@@ -14,9 +14,8 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
         let virtual_address = 0x80000000;
         let mut virtual_size = 0;
         let mut entry = 0;
-        {
-            let mut resource = url.open();
 
+        if let Some(mut resource) = url.open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
@@ -58,18 +57,26 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
 
             context.cwd = wd.to_string();
 
-            context.files.push(ContextFile {
-                fd: 0, // STDIN
-                resource: URL::from_str("debug://").open(),
-            });
-            context.files.push(ContextFile {
-                fd: 1, // STDOUT
-                resource: URL::from_str("debug://").open(),
-            });
-            context.files.push(ContextFile {
-                fd: 2, // STDERR
-                resource: URL::from_str("debug://").open(),
-            });
+            if let Some(stdin) = URL::from_str("debug://").open() {
+                context.files.push(ContextFile {
+                    fd: 0, // STDIN
+                    resource: stdin,
+                });
+            }
+
+            if let Some(stdout) = URL::from_str("debug://").open() {
+                context.files.push(ContextFile {
+                    fd: 1, // STDOUT
+                    resource: stdout,
+                });
+            }
+
+            if let Some(stderr) = URL::from_str("debug://").open() {
+                context.files.push(ContextFile {
+                    fd: 2, // STDERR
+                    resource: stderr,
+                });
+            }
 
             let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {

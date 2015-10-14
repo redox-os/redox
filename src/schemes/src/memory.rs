@@ -14,10 +14,9 @@ impl SessionItem for MemoryScheme {
         return "memory".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let string = "Memory Used: ".to_string() + memory::memory_used() / 1024 + " KB\n" +
                      "Memory Free: " + memory::memory_free() / 1024 + " KB";
-        return box VecResource::new(URL::from_str("memory://"),
-                                    string.to_utf8());
+        Some(box VecResource::new(URL::from_str("memory://"), string.to_utf8()))
     }
 }

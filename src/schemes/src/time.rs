@@ -15,7 +15,7 @@ impl SessionItem for TimeScheme {
         return "time".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let clock_realtime;
         let clock_monotonic;
         unsafe {
@@ -25,11 +25,11 @@ impl SessionItem for TimeScheme {
             scheduler::end_no_ints(reenable);
         }
 
-        return box VecResource::new(URL::from_str("time://"),
-                                    ("Time: ".to_string() +
-                                     String::from_num_signed(clock_realtime.secs as isize) +
-                                     "\nUptime: " +
-                                     String::from_num_signed(clock_monotonic.secs as isize))
-                                        .to_utf8());
+        let string = "Time: ".to_string() +
+                    String::from_num_signed(clock_realtime.secs as isize) +
+                    "\nUptime: " +
+                    String::from_num_signed(clock_monotonic.secs as isize);
+
+        Some(box VecResource::new(URL::from_str("time://"), string.to_utf8()))
     }
 }

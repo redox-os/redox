@@ -28,11 +28,11 @@ pub struct WindowResource {
 }
 
 impl Resource for WindowResource {
-    fn dup(&self) -> Box<Resource> {
-        box WindowResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box WindowResource {
             window: Window::new(self.window.point, self.window.size, self.window.title.clone()),
             seek: self.seek,
-        }
+        })
     }
 
     /// Return the url of this resource
@@ -101,7 +101,7 @@ impl SessionItem for WindowScheme {
         return "window".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = url.path_parts();
         let pointx = match url_path.get(0) {
@@ -134,9 +134,9 @@ impl SessionItem for WindowScheme {
         let p: Point = Point::new(pointx, pointy);
         let s: Size = Size::new(size_width, size_height);
 
-        return box WindowResource {
+        Some(box WindowResource {
             window: Window::new(p, s, title),
             seek: 0,
-        };
+        })
     }
 }

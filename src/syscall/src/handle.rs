@@ -173,59 +173,62 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
         scheduler::end_no_ints(reenable);
     }
 
-    let resource = (*::session_ptr).open(&URL::from_string(&path_str));
-
     let mut fd = 0xFFFFFFFF;
+    
+    if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
+        let reenable = scheduler::start_no_ints();
 
-    let reenable = scheduler::start_no_ints();
-
-    let contexts = &*contexts_ptr;
-    if let Option::Some(mut current) = contexts.get(context_i) {
-        fd = 0;
-        for file in current.files.iter() {
-            if file.fd >= fd {
-                fd = file.fd + 1;
+        let contexts = &*contexts_ptr;
+        if let Option::Some(mut current) = contexts.get(context_i) {
+            fd = 0;
+            for file in current.files.iter() {
+                if file.fd >= fd {
+                    fd = file.fd + 1;
+                }
             }
+
+            current.files.push(ContextFile {
+                fd: fd,
+                resource: resource,
+            });
         }
 
-        current.files.push(ContextFile {
-            fd: fd,
-            resource: resource,
-        });
+        scheduler::end_no_ints(reenable);
     }
-
-    scheduler::end_no_ints(reenable);
 
     fd
 }
 
 pub unsafe fn do_sys_dup(fd: usize) -> usize {
-    let mut new_fd = 0xFFFFFFFF;
+    let mut ret = 0xFFFFFFFF;
 
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
     if let Option::Some(mut current) = contexts.get(context_i) {
-        let mut resource: Box<Resource> = box NoneResource;
-        new_fd = 0;
+        let mut resource_option: Option<Box<Resource>> = None;
+        let mut new_fd = 0;
         for file in current.files.iter() {
             if file.fd == fd {
-                resource = file.resource.dup();
+                resource_option = file.resource.dup();
             }
             if file.fd >= new_fd {
                 new_fd = file.fd + 1;
             }
         }
 
-        current.files.push(ContextFile {
-            fd: new_fd,
-            resource: resource,
-        });
+        if let Some(resource) = resource_option {
+            ret = new_fd;
+            current.files.push(ContextFile {
+                fd: new_fd,
+                resource: resource,
+            });
+        }
     }
 
     scheduler::end_no_ints(reenable);
 
-    new_fd
+    ret
 }
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
