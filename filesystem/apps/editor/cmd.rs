@@ -144,7 +144,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         editor.right();
                                     }
                                 },
-                                (Normal, '0') => {
+                                (Normal,  '0') => {
+                                    editor.left();
                                     while editor.cur() != '\n' &&
                                           editor.cur() != '\0' &&
                                           editor.offset >= 1 {
