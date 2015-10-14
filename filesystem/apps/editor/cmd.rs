@@ -207,6 +207,34 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     *is_recording = true;
                                     *period = String::new();
                                 },
+                                (Normal, '%') => {
+                                    match editor.cur() {
+                                        '(' | '[' | '{' => {
+                                            let mut i = 1;
+                                            while i != 0 {
+                                                editor.right();
+                                                i += match editor.cur() {
+                                                    '(' | '[' | '{' => 1,
+                                                    ')' | ']' | '}' => -1,
+                                                    _ => 0,
+                                                }
+                                            }
+                                        },
+                                        ')' | ']' | '}' => {
+                                            let mut i = 1;
+                                            while i != 0 {
+                                                editor.left();
+                                                i += match editor.cur() {
+                                                    '(' | '[' | '{' => -1,
+                                                    ')' | ']' | '}' => 1,
+                                                    _ => 0,
+                                                }
+                                            }
+                                        },
+                                        _ => {},
+
+                                    }
+                                },
                                 (Normal, '!') => {
                                     for c in period.clone().chars() {
                                         exec(editor, mode, multiplier, last_change, KeyEvent {

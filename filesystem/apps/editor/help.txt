@@ -38,6 +38,7 @@ commands are valid:
      spaces.
 - B: Navigate to the start of the word seperated by
      spaces.
+- %: Go to the matching delimiter.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.
