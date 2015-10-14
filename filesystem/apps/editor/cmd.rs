@@ -191,6 +191,13 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         editor.delete(window);
                                     }
                                 },
+                                (Normal, 'D') => {
+                                    while editor.cur() != '\n' &&
+                                          editor.cur() != '\0' &&
+                                          editor.offset <= 1 {
+                                        editor.backspace(window);
+                                    }
+                                },
                                 (Normal, 'w') => {
                                     editor.save(window);
                                 },
