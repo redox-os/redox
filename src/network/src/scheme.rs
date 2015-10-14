@@ -65,7 +65,7 @@ impl Resource for NetworkResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         d("TODO: Implement read for RTL8139\n");
-        Option::None
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -77,9 +77,9 @@ impl Resource for NetworkResource {
                 let option = (*self.ptr).inbound.pop();
                 scheduler::end_no_ints(reenable);
 
-                if let Option::Some(bytes) = option {
+                if let Some(bytes) = option {
                     vec.push_all(&bytes);
-                    return Option::Some(bytes.len());
+                    return Some(bytes.len());
                 }
 
                 context_switch(false);
@@ -96,11 +96,11 @@ impl Resource for NetworkResource {
             (*self.nic).sync();
         }
 
-        Option::Some(buf.len())
+        Some(buf.len())
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn sync(&mut self) -> bool {

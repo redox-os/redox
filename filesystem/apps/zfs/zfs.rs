@@ -51,15 +51,15 @@ impl FromBytes for Uberblock {
         if data.len() >= mem::size_of::<Uberblock>() {
             let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
             if uberblock.magic == Uberblock::magic_little() {
-                return Option::Some(uberblock);
+                return Some(uberblock);
             } else if uberblock.magic == Uberblock::magic_big() {
-                return Option::Some(uberblock);
+                return Some(uberblock);
             } else if uberblock.magic > 0 {
                 println!("Unknown Magic: {:X}", uberblock.magic as usize);
             }
         }
 
-        Option::None
+        None
     }
 }
 
@@ -479,25 +479,25 @@ impl ZFS {
     }
 
     pub fn uber(&mut self) -> Option<Uberblock> {
-        let mut newest_uberblock: Option<Uberblock> = Option::None;
+        let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
             match Uberblock::from_bytes(&self.read(256 + i * 2, 2)) {
-                Option::Some(uberblock) => {
+                Some(uberblock) => {
                     let mut newest = false;
                     match newest_uberblock {
-                        Option::Some(previous) => {
+                        Some(previous) => {
                             if uberblock.txg > previous.txg {
                                 newest = true;
                             }
                         }
-                        Option::None => newest = true,
+                        None => newest = true,
                     }
 
                     if newest {
-                        newest_uberblock = Option::Some(uberblock);
+                        newest_uberblock = Some(uberblock);
                     }
                 }
-                Option::None => (), //Invalid uberblock
+                None => (), //Invalid uberblock
             }
         }
         return newest_uberblock;
@@ -514,20 +514,20 @@ pub fn main() {
 
     println!("Type open zfs.img to open the image file");
 
-    let mut zfs_option: Option<ZFS> = Option::None;
+    let mut zfs_option: Option<ZFS> = None;
 
-    while let Option::Some(line) = readln!() {
+    while let Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
         for arg in line.split(' ') {
             args.push(arg.to_string());
         }
 
-        if let Option::Some(command) = args.get(0) {
+        if let Some(command) = args.get(0) {
             println!("# {}", line);
 
             let mut close = false;
             match zfs_option {
-                Option::Some(ref mut zfs) => {
+                Some(ref mut zfs) => {
                     if command == "uber" {
                         //128 KB of ubers after 128 KB of other stuff
                         match zfs.uber() {
@@ -632,7 +632,7 @@ pub fn main() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);
                                     }
-                                    if let Option::Some(byte) = data.get(i) {
+                                    if let Some(byte) = data.get(i) {
                                         print!(" {:X}", *byte);
                                     } else {
                                         println!(" !");
@@ -649,7 +649,7 @@ pub fn main() {
                         println_color!(blue, "Commands: uber vdev_label mos file ls dump close");
                     }
                 }
-                Option::None => {
+                None => {
                     if command == "open" {
                         match args.get(1) {
                             Some(arg) => {
@@ -669,7 +669,7 @@ pub fn main() {
                 }
             }
             if close {
-                zfs_option = Option::None;
+                zfs_option = None;
             }
         }
     }

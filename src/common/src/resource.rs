@@ -40,9 +40,9 @@ pub trait Resource {
         loop {
             let mut bytes = [0; 1024];
             match self.read(&mut bytes) {
-                Option::Some(0) => return Option::Some(read),
-                Option::None => return Option::None,
-                Option::Some(count) => {
+                Some(0) => return Some(read),
+                None => return None,
+                Some(count) => {
                     for i in 0..count {
                         vec.push(bytes[i]);
                     }
@@ -372,13 +372,13 @@ impl Resource for VecResource {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
-                Option::Some(b) => buf[i] = *b,
-                Option::None => (),
+                Some(b) => buf[i] = *b,
+                None => (),
             }
             self.seek += 1;
             i += 1;
         }
-        return Option::Some(i);
+        return Some(i);
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -393,7 +393,7 @@ impl Resource for VecResource {
             self.seek += 1;
             i += 1;
         }
-        return Option::Some(i);
+        return Some(i);
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -405,7 +405,7 @@ impl Resource for VecResource {
                 self.seek =
                     max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
         }
-        return Option::Some(self.seek);
+        return Some(self.seek);
     }
 
     fn sync(&mut self) -> bool {

@@ -157,7 +157,7 @@ impl ConsoleWindow {
 
     /// Read input
     pub fn read(&mut self) -> Option<String> {
-        while let Option::Some(event) = self.poll() {
+        while let Some(event) = self.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
@@ -194,7 +194,7 @@ impl ConsoleWindow {
                                     let command = self.command.clone();
                                     self.command.clear();
                                     self.offset = 0;
-                                    return Option::Some(command);
+                                    return Some(command);
                                 }
                                 '\x1B' => break,
                                 _ => {
@@ -212,7 +212,7 @@ impl ConsoleWindow {
             }
         }
 
-        return Option::None;
+        return None;
     }
 
     /// Redraw the window

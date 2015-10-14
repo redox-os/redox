@@ -170,7 +170,7 @@ impl FileManager {
 
         self.draw_content(&mut window);
 
-        while let Option::Some(event) = window.poll() {
+        while let Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
@@ -190,10 +190,10 @@ impl FileManager {
                                     if self.selected >= 0 &&
                                        self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => {
+                                            Some(file) => {
                                                 File::exec(&(path.to_string() + &file));
                                             },
-                                            Option::None => (),
+                                            None => (),
                                         }
                                     }
                                 }
@@ -258,10 +258,10 @@ impl FileManager {
                             && self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 match self.files.get(self.selected as usize) {
-                                    Option::Some(file) => {
+                                    Some(file) => {
                                         File::exec(&(path.to_string() + &file));
                                     },
-                                    Option::None => (),
+                                    None => (),
                                 }
                             }
                             self.click_time = Duration::new(0, 0);
@@ -279,7 +279,7 @@ impl FileManager {
 
 pub fn main() {
     match env::args().get(1) {
-        Option::Some(arg) => FileManager::new().main(arg),
-        Option::None => FileManager::new().main("file:///"),
+        Some(arg) => FileManager::new().main(arg),
+        None => FileManager::new().main("file:///"),
     }
 }
