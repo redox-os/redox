@@ -136,7 +136,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                           editor.offset < editor.string.len() {
                                         editor.right();
                                     }
-                                }
+                                },
                                 (Normal, '$') => {
                                     while editor.cur() != '\n' &&
                                           editor.cur() != '\0' &&
