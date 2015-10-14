@@ -33,12 +33,12 @@ impl Editor {
     }
 
     fn backspace(&mut self, window: &mut Window) {
-         if self.offset > 0 {
-             window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-             self.string = self.string[0 .. self.offset - 1].to_string() +
-                 &self.string[self.offset .. self.string.len()];
-             self.offset -= 1;
-         }
+        if self.offset > 0 {
+            window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
+            self.string = self.string[0 .. self.offset - 1].to_string() +
+                &self.string[self.offset .. self.string.len()];
+            self.offset -= 1;
+        }
     }
 
     fn delete(&mut self, window: &mut Window) {
@@ -217,10 +217,10 @@ impl Editor {
 
     fn main(&mut self, url: &str) {
         let mut window = Window::new((rand() % 400 + 50) as isize,
-                                     (rand() % 300 + 50) as isize,
-                                     576,
-                                     400,
-                                      &("Editor (".to_string() + url + ")"));
+        (rand() % 300 + 50) as isize,
+        576,
+        400,
+        &("Editor (".to_string() + url + ")"));
 
         self.url = url.to_string();
         self.file = Option::Some(File::open(&self.url));
