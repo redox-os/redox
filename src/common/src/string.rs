@@ -485,7 +485,8 @@ impl Add<isize> for String {
     }
 }
 
-// Modified version of the impl_eq found in the std collections String
+// Slightly modified version of the impl_eq found in the std collections String
+// Ideally, we'd compare these as arrays. However, we'd need to flesh out String a bit more
 macro_rules! impl_chars_eq {
     ($lhs:ty, $rhs: ty) => {
         impl<'a> PartialEq<$rhs> for $lhs {
