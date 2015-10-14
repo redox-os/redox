@@ -102,7 +102,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     ::core::mem::swap(&mut editor.offset, swap);
                                 },
                                 (Normal, 's') => {
-                                    editor.backspace(window);
+                                    editor.delete(window);
                                     *mode = Insert;
                                 },
                                 (Normal, 'o') => {
