@@ -31,6 +31,13 @@ commands are valid:
 - s: Remove the char under the cursor and start
      inserting.
 - w: Save the file.
+- e: Navigate to the end of the Vi-like word.
+     Note: that the rules differ.
+- b: Navigate to the start of the Vi-like word.
+- E: Navigate to the end of the word seperated by
+     spaces.
+- B: Navigate to the start of the word seperated by
+     spaces.
 
 A command can be preceded by a numeral. The command
 will the be repeated the number of times given.

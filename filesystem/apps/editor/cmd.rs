@@ -155,6 +155,54 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 (Normal, 'w') => {
                                     editor.save(window);
                                 },
+                                (Normal, 'e') => {
+                                    editor.right();
+                                    while editor.cur() != '.' &&
+                                          editor.cur() != '{' &&
+                                          editor.cur() != ',' &&
+                                          editor.cur() != ' ' &&
+                                          editor.cur() != '}' &&
+                                          editor.cur() != '(' &&
+                                          editor.cur() != ')' &&
+                                          editor.cur() != '[' &&
+                                          editor.cur() != ']' &&
+                                          editor.cur() != ';' &&
+                                          editor.cur() != '"' &&
+                                          editor.cur() != '\'' &&
+                                          editor.cur() != '\n' {
+                                        editor.right();
+                                    }
+                                },
+                                (Normal, 'b') => {
+                                    editor.left();
+                                    while editor.cur() != '.' &&
+                                          editor.cur() != '{' &&
+                                          editor.cur() != ',' &&
+                                          editor.cur() != ' ' &&
+                                          editor.cur() != '}' &&
+                                          editor.cur() != '(' &&
+                                          editor.cur() != ')' &&
+                                          editor.cur() != '[' &&
+                                          editor.cur() != ']' &&
+                                          editor.cur() != ';' &&
+                                          editor.cur() != '"' &&
+                                          editor.cur() != '\'' &&
+                                          editor.cur() != '\n' {
+                                        editor.left();
+                                    }
+                                },
+                                (Normal, 'E') => {
+                                    editor.right();
+                                    while editor.cur() != ' ' {
+                                        editor.right()
+                                    }
+                                },
+                                (Normal, 'B') => {
+                                    editor.left();
+                                    while editor.cur() != ' ' {
+                                        editor.left();
+                                    }
+                                },
                                 (Normal, ',') => {
                                     *is_recording = true;
                                     *period = String::new();
