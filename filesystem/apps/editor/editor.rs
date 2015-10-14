@@ -322,12 +322,13 @@ impl Editor {
         let mut swap = 0;
         let mut period = String::new();
         let mut is_recording = false;
+        let mut clipboard = String::new();
 
         while let Option::Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
-                        cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window, &mut swap, &mut period, &mut is_recording);
+                        cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window, &mut swap, &mut period, &mut is_recording, &mut clipboard);
 
                         self.draw_content(&mut window);
                     }
