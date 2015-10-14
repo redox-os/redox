@@ -77,8 +77,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                 },
                                 (Normal, 'h') => editor.left(),
                                 (Normal, 'l') => editor.right(),
-                                (Normal, 'k') => editor.up(),
-                                (Normal, 'j') => editor.down(),
+                                (Normal, 'k') | (Normal, ' ') => editor.up(),
+                                (Normal, 'j') | (Normal, '\n') => editor.down(),
                                 (Normal, 'K') => {
                                     for _ in 1..15 {
                                         editor.up();
