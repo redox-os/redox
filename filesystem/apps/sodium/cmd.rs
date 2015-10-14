@@ -1,5 +1,7 @@
-use redox::collections::VecDeque;
-use redox::collections::HashMap;
+use collections::VecDeque;
+// Temporary hack until libredox get hashmaps
+use collections::btree_map::BTreeMap as HashMap;  //redox::HashMap;
+use redox::*;
 
 #[derive(Clone, Copy, Hash)]
 pub enum InsertMode {
@@ -23,7 +25,7 @@ pub enum Mode {
 }
 
 /// A command mode
-pub enum Command {
+pub enum CommandMode {
 //    Visual(VisualOptions),
     /// Normal mode
     Normal,
@@ -86,16 +88,16 @@ pub struct Editor<I: Iterator<Item = Unit>> {
     /// The commands
     pub commands: HashMap<Mode,
                           HashMap<CommandChar,
-                                  FnMut<<(u16, &mut State, &mut I, c)>>>>,
+                                  FnMut<(u16, &mut State, &mut I, char)>>>,
 }
 
-impl<I: Iterator<Item = Unit> Editor<I> {
+impl<I: Iterator<Item = Unit>> Editor<I> {
     pub fn new() -> Self {
         let mut commands = HashMap::new();
         commands.insert(Mode::Primitive(PrimitiveMode::Insert), {
             let mut hm = HashMap::new();
             hm.insert(CommandChar::Wildcard, |_, state, iter, c| {
-                editor.insert(c);
+                state.insert(c);
             });
             hm
         });
