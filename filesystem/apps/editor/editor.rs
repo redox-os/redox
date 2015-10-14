@@ -55,7 +55,7 @@ impl Editor {
             self.left();
             while self.cur() != '\n' &&
                   self.cur() != '\0' &&
-                  self.offset >= 0 {
+                  self.offset >= 1 {
                 self.left();
             }
         } else {
@@ -104,20 +104,14 @@ impl Editor {
     fn down(&mut self) {
         let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
         let original_c = self.cur();
-        let mut new_offset = self.string.len();
 
-
-        for i in self.offset..self.string.len() {
-            match self.string.as_bytes()[i] {
-                0 => break,
-                10 => {
-                    new_offset = i + 1;
-                    break;
-                }
-                _ => (),
-            }
+        while self.offset >= self.string.len() &&
+              self.cur() != '\n' &&
+              self.cur() != '\0' {
+            self.right();
         }
-        self.offset = new_offset;
+        self.right();
+
         if original_c == '\n' {
             while self.cur() != '\n' &&
                   self.cur() != '\0' &&
