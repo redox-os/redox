@@ -2,11 +2,11 @@
 
 ## x86_64 ##
 TARGET=x86_64-unknown-redox
-ELF=elf_x86_64
+ARCH=x86_64
 
 ## i686 ##
 #TARGET=i686-unknown-redox
-#ELF=elf_i386
+#ARCH=i386
 
 RUSTC=rustc
 RUSTCFLAGS=--target=$(TARGET).json \
@@ -20,7 +20,7 @@ BASENAME=basename
 CUT=cut
 FIND=find
 LD=ld
-LDARGS=-m $(ELF)
+LDARGS=-m elf_$(ARCH)
 MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
@@ -42,7 +42,7 @@ VBM_CLEANUP=\
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
-	LD=windows/i386-elf-ld
+	LD=windows/$(ARCH)-elf-ld
 	AS=windows/nasm
 	AWK=windows/awk
 	BASENAME=windows/basename
@@ -69,9 +69,9 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
-		LD=i386-elf-ld
-		OBJDUMP=i386-elf-objdump
-        RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
+		LD=$(ARCH)-elf-ld
+		OBJDUMP=$(ARCH)-elf-objdump
+        RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-linker
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 		VB_AUDIO="coreaudio"
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
@@ -224,7 +224,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-build/filesystem.gen: apps schemes
+build/filesystem.gen: #apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
@@ -258,17 +258,17 @@ virtualbox: build/harddrive.bin
 	$(VB) --startvm Redox --dbg
 
 qemu: build/harddrive.bin
-	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
 			-serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 
 qemu_bare: build/harddrive.bin
-	-qemu-system-i386 -net none -serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
+	-qemu-system-$(ARCH) -net none -serial mon:stdio -m 512 -d guest_errors -enable-kvm -hda $<
 
 qemu_no_kvm: build/harddrive.bin
-	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
@@ -277,7 +277,7 @@ qemu_no_kvm: build/harddrive.bin
 qemu_tap: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=build/network.pcap \
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
@@ -288,7 +288,7 @@ qemu_tap: build/harddrive.bin
 qemu_tap_8254x: build/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=build/network.pcap \
+	-qemu-system-$(ARCH) -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=build/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
