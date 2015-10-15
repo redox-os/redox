@@ -39,14 +39,6 @@ pub enum PrimitiveMode {
 }
 
 #[derive(Clone, PartialEq, Hash)]
-pub enum Unit {
-    /// Single [repeated] instruction
-    Inst(u16, char),
-    /// Multiple instructions
-    Block(u16, Vec<Unit>),
-}
-
-#[derive(Clone, PartialEq, Hash)]
 /// The state of the editor
 pub struct State {
     /// The current cursor
@@ -59,6 +51,8 @@ pub struct State {
     pub scroll_x: u32,
     /// The y coordinate of the scroll
     pub scroll_y: u32,
+    /// Number of repeation entered
+    pub n: u16,
 }
 
 
@@ -99,19 +93,39 @@ impl Editor {
         }
     }
 
-    pub fn exec(&mut self, cmd: &Unit) {
+    /// Execute a instruction n times
+    pub fn exec(&mut self, n: u16, cmd: char) {
 
-        match *cmd {
-            Unit::Inst(n, ref c) => {
-                // Execute commands
+        match cmd {
+
+        }
+    }
+    
+    /// Feed a char to the editor (as input)
+    fn feed(&mut self, c: char) {
+        match self.state.cursors[self.state.current_cursor as usize].mode {
+            Mode::Primitive(_) => {
+                self.exec(0, c);
             },
-            Unit::Block(n, ref units) => {
-                for _ in 1..n {
-                    for i in units {
-                        self.exec(&i);
+            Mode::Command(_) => {
+                self.n = match c {
+                    '0' if self.n != 0 => self.n * 10,
+                    '1'           => self.n * 10 + 1,
+                    '2'           => self.n * 10 + 2,
+                    '3'           => self.n * 10 + 3,
+                    '4'           => self.n * 10 + 4,
+                    '5'           => self.n * 10 + 5,
+                    '6'           => self.n * 10 + 6,
+                    '7'           => self.n * 10 + 7,
+                    '8'           => self.n * 10 + 8,
+                    '9'           => self.n * 10 + 9,
+                    _             => {
+                        self.exec(if self.n == 0 { 1 } else { self.n }, c);
+                        self.n
                     }
                 }
-            },
+
+            }
         }
     }
 }
@@ -127,88 +141,4 @@ pub struct Cursor {
     pub mode: Mode,
     /// The history of the cursor
     pub history: Vec<Unit>,
-}
 
-/// An iterator over units
-pub struct UnitIterator<'a, I: Iterator<Item = char> + 'a> {
-    /// The iterator over the chars
-    char_iter: &'a mut I,
-    /// The state
-    state: &'a mut State,
-}
-
-impl<'a, I: Iterator<Item = char> + 'a> Iterator for UnitIterator<'a, I> {
-    type Item = Unit;
-
-    fn next(&mut self) -> Option<Unit> {
-        match self.state.cursors[self.state.current_cursor as usize].mode {
-            Mode::Primitive(_) => Some(Unit::Inst(1, match self.char_iter.next() {
-                Some(c) => c,
-                None => return None,
-            })),
-            Mode::Command(_) => {
-                let mut ch = self.char_iter.next().unwrap_or('\0');
-                let mut n = 1;
-
-                let mut unset = true;
-                for c in self.char_iter {
-                    n = match c {
-                        '0' if n != 0 => n * 10,
-                        '1'           => n * 10 + 1,
-                        '2'           => n * 10 + 2,
-                        '3'           => n * 10 + 3,
-                        '4'           => n * 10 + 4,
-                        '5'           => n * 10 + 5,
-                        '6'           => n * 10 + 6,
-                        '7'           => n * 10 + 7,
-                        '8'           => n * 10 + 8,
-                        '9'           => n * 10 + 9,
-                        r             => {
-                            ch = r;
-                            break;
-                        },
-                    };
-
-                    if unset {
-                        unset = false;
-                        n     = 0;
-                    }
-                }
-
-
-                if ch == '(' {
-                    let mut level = 0;
-                    let mut vec = self.char_iter.take_while(|c| {
-                        level = match *c {
-                            '(' => level + 1,
-                            ')' => level - 1,
-                            ';' => 0,
-                            _ => level,
-                        };
-                        level != 0
-                    }).skip(1).collect::<Vec<_>>();
-                    vec.pop();
-                    Some(Unit::Block(n, vec.into_iter().unit_iter(&mut self.state).collect()))
-                } else if let Some(ch) = self.char_iter.next() {
-                    Some(Unit::Inst(n, ch))
-                } else {
-                    None
-                }
-            }
-        }
-    }
-}
-
-pub trait ToUnitIterator<'a>: Iterator<Item = char> + 'a {
-    /// Create a iterator of the unit given by the chars
-    fn unit_iter(&'a mut self, state: &'a mut State) -> UnitIterator<'a, Self>;
-}
-
-impl<'a, I: Iterator<Item = char> + 'a> ToUnitIterator<'a> for I {
-    fn unit_iter(&'a mut self, state: &'a mut State) -> UnitIterator<'a, I> {
-        UnitIterator {
-            char_iter: self,
-            state: state,
-        }
-    }
-}
