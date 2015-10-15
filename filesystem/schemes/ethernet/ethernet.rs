@@ -23,7 +23,7 @@ pub struct Resource {
 }
 
 impl Resource {
-    fn dup(&self) -> Option<Box<Self>> {
+    pub fn dup(&self) -> Option<Box<Self>> {
         match self.network.dup() {
             Some(network) => Some(box Resource {
                 network: network,
@@ -51,7 +51,7 @@ impl Resource {
         Some(i)
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         /*
         if self.data.len() > 0 {
             let mut bytes: Vec<u8> = Vec::new();
@@ -82,7 +82,7 @@ impl Resource {
         None
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let data = Vec::from(buf);
 
         /*
@@ -101,11 +101,11 @@ impl Resource {
         None
     }
 
-    fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
+    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
         None
     }
 
-    fn sync(&mut self) -> bool {
+    pub fn sync(&mut self) -> bool {
         self.network.sync()
     }
 }
@@ -113,11 +113,11 @@ impl Resource {
 pub struct Scheme;
 
 impl Scheme {
-    fn new() -> Box<Self> {
+    pub fn new() -> Box<Self> {
         box Scheme
     }
 
-    fn open(&mut self, url: &str) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &str) -> Option<Box<Resource>> {
         //Split scheme from the rest of the URL
         let (scheme, mut not_scheme) = url.split_at(url.find(':').unwrap_or(url.len()));
 
