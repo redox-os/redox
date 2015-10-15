@@ -21,7 +21,7 @@ endstruc
 [BITS 64]
 interrupts:
 .first:
-	mov [0x100000], byte i
+	mov [0x100000], byte 0
     jmp qword .handle
 .second:
 %assign i 1
