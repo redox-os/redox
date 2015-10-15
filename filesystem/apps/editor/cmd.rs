@@ -299,7 +299,7 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                         ')' | ']' | '}' => {
                                             let mut i = 1;
                                             while i != 0 &&
-                                                  editor.offset >= 0 {
+                                                  editor.offset >= 1 {
                                                 editor.left();
                                                 i += match editor.cur() {
                                                     '(' | '[' | '{' => -1,
