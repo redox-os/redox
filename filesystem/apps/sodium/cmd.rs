@@ -1,46 +1,14 @@
 use collections::VecDeque;
-// Temporary hack until libredox get hashmaps
 use redox::*;
+
+mod mode;
+mod movement;
+mod cursor;
+mod insert;
 
 #[derive(Clone)]
 /// An instruction
-pub Inst(i16, char)
-
-#[derive(Clone, PartialEq, Copy, Hash)]
-pub enum InsertMode {
-    Append,
-    Insert,
-    Replace,
-}
-
-#[derive(Clone, PartialEq, Copy, Hash)]
-pub struct InsertOptions {
-    mode: InsertMode,
-}
-
-/// A mode
-#[derive(Clone, PartialEq, Copy, Hash)]
-pub enum Mode {
-    /// A primitive mode (no repeat, no delimiters, no preprocessing)
-    Primitive(PrimitiveMode),
-    /// Command mode
-    Command(CommandMode),
-}
-
-#[derive(Clone, PartialEq, Copy, Hash)]
-/// A command mode
-pub enum CommandMode {
-//    Visual(VisualOptions),
-    /// Normal mode
-    Normal,
-}
-
-#[derive(Clone, PartialEq, Copy, Hash)]
-/// A primitive mode
-pub enum PrimitiveMode {
-    /// Insert mode
-    Insert(InsertOptions),
-}
+pub struct Inst(i16, char);
 
 #[derive(Clone, PartialEq, Hash)]
 /// The state of the editor
@@ -105,10 +73,6 @@ impl Editor {
         }
     }
 
-    /// Insert text
-    pub fn insert(&mut self, c: char) {
-        
-    }
 
     /// Create new default state editor
     pub fn new() -> Editor {
@@ -123,25 +87,3 @@ impl Editor {
     }
 }
 
-/// A command char
-#[derive(Clone, Copy, Hash, PartialEq)]
-pub enum CommandChar {
-    /// A char
-    Char(char),
-    /// A wildcard
-    Wildcard,
-}
-
-
-#[derive(Clone, PartialEq, Hash)]
-/// A cursor
-pub struct Cursor {
-    /// The x coordinate of the cursor
-    pub x: u32,
-    /// The y coordinate of the cursor
-    pub y: u32,
-    /// The mode of the cursor
-    pub mode: Mode,
-    /// The history of the cursor
-    pub history: Vec<Inst>,
-}
