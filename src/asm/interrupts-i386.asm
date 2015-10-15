@@ -19,23 +19,23 @@ endstruc
 [BITS 32]
 interrupts:
 .first:
-    mov [0x100000], dword 0
+    mov [0x100000], byte 0
     jmp dword .handle
 .second:
 %assign i 1
 %rep 255
-    mov [0x100000], dword i
+    mov [0x100000], byte i
     jmp dword .handle
 %assign i i+1
 %endrep
 .handle:
-    pushad
     push dword [0x100000]
+    pushad
     call [.handler]
     ;Put return value in stack for popad
     mov [esp + 32], eax
-    add esp, 4
     popad
+    add esp, 4
     iretd
 
 .handler: dd 0
@@ -52,7 +52,7 @@ idt:
 		at IDTEntry.selector, dw 0x08
         at IDTEntry.zero, db 0
 		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
-        at IDTEntry.offseth dw 0
+        at IDTEntry.offseth, dw 0
 	iend
 %assign i i+1
 %endrep

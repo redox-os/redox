@@ -426,7 +426,7 @@ fn dr(reg: &str, value: usize) {
 #[inline(never)]
 #[no_mangle]
 //Take regs for kernel calls and exceptions
-pub unsafe extern "cdecl" fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, eip: usize, eflags: usize, error: usize) -> usize {
+pub unsafe extern "cdecl" fn kernel(edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, interrupt: usize, eip: usize, eflags: usize, error: usize) -> usize {
     macro_rules! exception {
         ($name:expr) => ({
             debug::d($name);
@@ -435,6 +435,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, edi: usize, esi: usize, eb
             dr("CONTEXT", context_i);
             dr("EFLAGS", eflags);
             dr("EIP", eip);
+            dr("INT", interrupt);
             dr("EAX", eax);
             dr("ECX", ecx);
             dr("EDX", edx);
@@ -443,7 +444,6 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, edi: usize, esi: usize, eb
             dr("EBP", ebp);
             dr("ESI", esi);
             dr("EDI", edi);
-            dr("INT", interrupt);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
@@ -478,6 +478,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, edi: usize, esi: usize, eb
             dr("EFLAGS", error);
             dr("EIP", eflags);
             dr("ERROR", eip);
+            dr("INT", interrupt);
             dr("EAX", eax);
             dr("ECX", ecx);
             dr("EDX", edx);
@@ -486,7 +487,6 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, edi: usize, esi: usize, eb
             dr("EBP", ebp);
             dr("ESI", esi);
             dr("EDI", edi);
-            dr("INT", interrupt);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");

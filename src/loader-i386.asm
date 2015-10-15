@@ -9,7 +9,7 @@ boot: ; dl comes with disk
     mov es, ax
     mov ss, ax
     ; initialize stack
-    mov sp, 0x7BF0
+    mov sp, 0x7C00
 
     mov [disk], dl
 
