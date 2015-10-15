@@ -211,7 +211,7 @@ startup:
   mov ebx, 1 << 7 | 1 << 1 | 1
   mov ecx, 512
 .setpd:
-  mov DWORD [edi], ebx
+  mov [edi], ebx
   add ebx, 0x200000
   add edi, 8
   loop .setpd

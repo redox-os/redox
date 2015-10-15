@@ -21,18 +21,19 @@ endstruc
 [BITS 64]
 interrupts:
 .first:
-    mov qword [0x100000], qword 0
+	mov [0x100000], byte i
     jmp qword .handle
 .second:
 %assign i 1
 %rep 255
-    mov qword [0x100000], qword i
+	mov [0x100000], byte i
     jmp qword .handle
 %assign i i+1
 %endrep
 .handle:
 	xchg bx, bx
 	mov [0x100010], rsp
+	push qword [0x100000]
     push rax
     push rcx
     push rdx
@@ -41,7 +42,6 @@ interrupts:
     push rbp
     push rsi
     push rdi
-    push qword [0x100000]
 	;push r8
 	;push r9
 	;push r10
@@ -60,8 +60,7 @@ interrupts:
 	;pop r9
 	;pop r8
     ;Put return value in stack for pop
-    mov [rsp + 64], rax
-    add rsp, 8
+    mov [rsp + 56], rax
     pop rdi
     pop rsi
     pop rbp
@@ -70,6 +69,7 @@ interrupts:
     pop rdx
     pop rcx
     pop rax
+    add rsp, 8
     iretq
 
 .handler: dq 0
