@@ -7,7 +7,7 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Resource>> {
+    pub fn dup(&self) -> Option<Box<Self>> {
         Some(box Resource {
             path: self.path.clone()
         })

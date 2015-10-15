@@ -20,7 +20,7 @@ impl Resource {
         unsafe { &mut *self.console_window.get() }
     }
 
-    pub fn dup(&self) -> Option<Box<Resource>> {
+    pub fn dup(&self) -> Option<Box<Self>> {
         Some(box Resource {
             console_window: self.console_window.clone(),
             line_end_toggle: false
