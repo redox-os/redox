@@ -75,8 +75,8 @@ pub fn exec(editor: &mut Editor, mode: &mut Mode, multiplier: &mut Option<u32>, 
                                     *mode = Insert;
                                     *last_change = editor.string.clone();
                                 },
-                                (Normal, 'h') | (Normal, ' ') => editor.left(),
-                                (Normal, 'l') => editor.right(),
+                                (Normal, 'h') => editor.left(),
+                                (Normal, 'l') | (Normal, ' ') => editor.right(),
                                 (Normal, 'k') => editor.up(),
                                 (Normal, 'j') | (Normal, '\n') => editor.down(),
                                 (Normal, 'K') => {
