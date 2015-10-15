@@ -1,3 +1,3 @@
 mod cmd;
 
-fn main() {}
+pub fn main() {}
