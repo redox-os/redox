@@ -151,7 +151,7 @@ impl<'a, I: Iterator<Item = char> + 'a> Iterator for UnitIterator<'a, I> {
                 let mut n = 1;
 
                 let mut unset = true;
-                for c in *self.char_iter {
+                for c in self.char_iter {
                     n = match c {
                         '0' if n != 0 => n * 10,
                         '1'           => n * 10 + 1,
@@ -163,8 +163,8 @@ impl<'a, I: Iterator<Item = char> + 'a> Iterator for UnitIterator<'a, I> {
                         '7'           => n * 10 + 7,
                         '8'           => n * 10 + 8,
                         '9'           => n * 10 + 9,
-                        _             => {
-                            ch = c;
+                        r             => {
+                            ch = r;
                             break;
                         },
                     };
