@@ -8,14 +8,11 @@ use core::ptr;
 
 use common::scheduler;
 
-pub const PAGE_DIRECTORY: usize = 0x300000;
-pub const PAGE_TABLE_SIZE: usize = 1024;
-pub const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
-pub const PAGE_SIZE: usize = 4 * 1024;
+use common::paging::PAGE_END;
 
-pub const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * 4 ;
+pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
-pub const CLUSTER_SIZE: usize = 4 * 1024; // Of 4 K chunks
+pub const CLUSTER_SIZE: usize = 4096; // Of 4 K chunks
 
 /// A memory map entry
 #[repr(packed)]

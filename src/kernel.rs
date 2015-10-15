@@ -422,9 +422,11 @@ fn dr(reg: &str, value: usize) {
     debug::dl();
 }
 
+#[cold]
+#[inline(never)]
 #[no_mangle]
 //Take regs for kernel calls and exceptions
-pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, eip: usize, eflags: usize, error: usize) -> usize {
+pub unsafe extern "cdecl" fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, eip: usize, eflags: usize, error: usize) -> usize {
     macro_rules! exception {
         ($name:expr) => ({
             debug::d($name);
