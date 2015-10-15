@@ -1,3 +1,56 @@
-mod cmd;
+mod editor;
+pub use self::editor::*;
 
-pub fn main() {}
+mod mode;
+pub use self::mode::*;
+
+mod movement;
+pub use self::movement::*;
+
+mod cursor;
+pub use self::cursor::*;
+
+mod insert;
+pub use self::insert::*;
+
+mod exec;
+pub use self::exec::*;
+
+use redox::*;
+
+pub fn main() {
+    let mut window = Window::new((rand() % 400 + 50) as isize, 
+								 (rand() % 300 + 50) as isize, 
+								 576, 
+								 400, 
+								 &"Sodium"); 
+
+    let mut editor = Editor::new();
+
+    editor.iter = Some({
+        window.filter_map(|x| {
+            match x.to_option() {
+                EventOption::Key(k) if k.pressed => {
+                    // Redraw window
+                    window.set([255, 255, 255, 255]);
+
+                    for (y, row) in editor.text.iter().enumerate() {
+                        for (x, c) in row.iter().enumerate() {
+                            window.char(8 * (y - editor.scroll_y) as isize, 16 * (x - editor.scroll_x) as isize, *c, [128, 128, 128, 255]);
+                            if editor.cursor().x == x && editor.cursor().y == y {
+                                window.char(8 * (y - editor.scroll_y) as isize, 16 * (x - editor.scroll_x) as isize, '_', [128, 128, 128, 255]);
+                            }
+                        }
+                    }
+
+
+                    Some(k.character)
+                }
+                _ => None,
+            }
+        })
+    });
+
+    editor.init();
+
+}

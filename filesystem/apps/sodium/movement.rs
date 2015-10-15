@@ -1,6 +1,6 @@
-use Editor;
+use super::*;
 
-impl Editor {
+impl<I: Iterator<Item = char>> Editor<I> {
     /// Go to next char
     pub fn next(&mut self) {
         let curs = self.cursor_mut();
@@ -33,8 +33,8 @@ impl Editor {
             curs.y -= 1;
         }
     }
-    /// Go right
-    pub fn right(&mut self) {
+    /// Go down
+    pub fn down(&mut self) {
         let curs = self.cursor_mut();
         if self.text.len() < curs.y {
             curs.y += 1;
