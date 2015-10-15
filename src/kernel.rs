@@ -428,7 +428,7 @@ fn dr(reg: &str, value: usize) {
 //Take regs for kernel calls and exceptions
 pub unsafe extern "cdecl" fn kernel(edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, interrupt: usize, eip: usize, eflags: usize, error: usize) -> usize {
     macro_rules! exception {
-        ($name:expr) => ({
+        ($name:expr) => ({            
             debug::d($name);
             debug::dl();
 
