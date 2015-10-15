@@ -194,31 +194,30 @@ startup:
   ; load protected mode GDT and IDT
   cli
 
-  mov edi, 0x1000    ; Set the destination index to 0x1000.
-  mov cr3, edi       ; Set control register 3 to the destination index.
-  xor eax, eax       ; Nullify the A-register.
-  mov ecx, 4096      ; Set the C-register to 4096.
-  rep stosd          ; Clear the memory.
-  mov edi, cr3       ; Set the destination index to control register 3.
+  mov edi, 0x1000
+  mov cr3, edi
+  xor eax, eax
+  mov ecx, 3 * 1024 ;PML4, PDP, PD
+  rep stosd
+  mov edi, cr3
 
-  mov DWORD [edi], 0x2003      ; Set the uint32_t at the destination index to 0x2003.
-  add edi, 0x1000              ; Add 0x1000 to the destination index.
-  mov DWORD [edi], 0x3003      ; Set the uint32_t at the destination index to 0x3003.
-  add edi, 0x1000              ; Add 0x1000 to the destination index.
-  mov DWORD [edi], 0x4003      ; Set the uint32_t at the destination index to 0x4003.
-  add edi, 0x1000              ; Add 0x1000 to the destination index.
-
-  mov ebx, 0x00000003          ; Set the B-register to 0x00000003.
-  mov ecx, 512                 ; Set the C-register to 512.
-
-.SetEntry:
-  mov DWORD [edi], ebx         ; Set the uint32_t at the destination index to the B-register.
-  add ebx, 0x1000              ; Add 0x1000 to the B-register.
-  add edi, 8                   ; Add eight to the destination index.
-  loop .SetEntry               ; Set the next entry.
+  ;Link first PML4 to PDP
+  mov DWORD [edi], 0x2000 | 1 << 1 | 1
+  add edi, 0x1000
+  ;Link first PDP to PD
+  mov DWORD [edi], 0x3000 | 1 << 1 | 1
+  add edi, 0x1000
+  ;Link first PD to 1 GB of memory
+  mov ebx, 1 << 7 | 1 << 1 | 1
+  mov ecx, 512
+.setpd:
+  mov DWORD [edi], ebx
+  add ebx, 0x200000
+  add edi, 8
+  loop .setpd
 
   mov eax, cr4
-  or eax, 1 << 5
+  or eax, 1 << 5 | 1 << 4
   mov cr4, eax
 
   lgdt [gdtr]
@@ -253,20 +252,20 @@ long_mode:
     mov rsp, 0x200000
 
     ;rust init
-    xor rdi, rdi
-    mov edi, [kernel_file + 0x18]
-    mov [interrupts.handler], rdi
+    xor rax, rax
+    mov eax, [kernel_file + 0x18]
+    mov [interrupts.handler], rax
 
+    mov rdi, 0xC000
     mov rsi, rdi
     add rsi, 0xB000
     mov rcx, 464*1024
     cld
     rep movsb
 
-    xchg bx, bx
-
     mov rax, kernel_file.font
 
+    xchg bx, bx
     int 255
 .lp:
     sti
