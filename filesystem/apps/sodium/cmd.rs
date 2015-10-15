@@ -40,7 +40,7 @@ pub enum PrimitiveMode {
 
 #[derive(Clone, PartialEq, Hash)]
 /// The state of the editor
-pub struct State {
+pub struct Editor {
     /// The current cursor
     pub current_cursor: u8,
     /// The cursors
@@ -56,42 +56,7 @@ pub struct State {
 }
 
 
-impl State {
-    fn insert(&mut self, c: char) {
-
-    }
-    fn new() -> State {
-        State {
-            current_cursor: 0,
-            cursors: Vec::new(),
-            text: VecDeque::new(),
-            scroll_x: 0,
-            scroll_y: 0,
-        }
-    }
-}
-
-/// A command char
-#[derive(Clone, Copy, Hash, PartialEq)]
-pub enum CommandChar {
-    /// A char
-    Char(char),
-    /// A wildcard
-    Wildcard,
-}
-
-/// The editor
-pub struct Editor {
-    /// The state of the editor
-    pub state: State,
-}
-
 impl Editor {
-    pub fn new() -> Self {
-        Editor {
-            state: State::new(),
-        }
-    }
 
     /// Execute a instruction n times
     pub fn exec(&mut self, n: u16, cmd: char) {
@@ -103,7 +68,7 @@ impl Editor {
     
     /// Feed a char to the editor (as input)
     fn feed(&mut self, c: char) {
-        match self.state.cursors[self.state.current_cursor as usize].mode {
+        match self.cursors[self.current_cursor as usize].mode {
             Mode::Primitive(_) => {
                 self.exec(0, c);
             },
@@ -128,7 +93,34 @@ impl Editor {
             }
         }
     }
+
+    /// Insert text
+    fn insert(&mut self, c: char) {
+
+    }
+
+    /// Create new default state editor
+    fn new() -> Editor {
+        Editor {
+            current_cursor: 0,
+            cursors: Vec::new(),
+            text: VecDeque::new(),
+            scroll_x: 0,
+            scroll_y: 0,
+            n: 0,
+        }
+    }
 }
+
+/// A command char
+#[derive(Clone, Copy, Hash, PartialEq)]
+pub enum CommandChar {
+    /// A char
+    Char(char),
+    /// A wildcard
+    Wildcard,
+}
+
 
 #[derive(Clone, PartialEq, Hash)]
 /// A cursor
