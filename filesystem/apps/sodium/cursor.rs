@@ -1,19 +1,20 @@
-use Editor;
+use redox::*;
+use super::*;
 
-#[derive(Clone, PartialEq, Hash)]
+#[derive(Clone)]
 /// A cursor
 pub struct Cursor {
     /// The x coordinate of the cursor
-    pub x: u32,
+    pub x: usize,
     /// The y coordinate of the cursor
-    pub y: u32,
+    pub y: usize,
     /// The mode of the cursor
     pub mode: Mode,
     /// The history of the cursor
     pub history: Vec<Inst>,
 }
 
-impl Editor {
+impl<I: Iterator<Item = char>> Editor<I> {
     /// Get the char under the cursor
     pub fn current(&self) -> char {
         let curs = self.cursor();
@@ -21,17 +22,17 @@ impl Editor {
     }
 
     /// Get the current cursor
-    pub fn cursor_mut(&self) -> &Cursor {
-        self.cursors.get(self.cur_cursor as usize).unwrap()
+    pub fn cursor(&self) -> &Cursor {
+        self.cursors.get(self.current_cursor as usize).unwrap()
     }
 
     /// Get the current cursor mutable
     pub fn cursor_mut(&mut self) -> &mut Cursor {
-        self.cursors.get_mut(self.cur_cursor as usize).unwrap()
+        self.cursors.get_mut(self.current_cursor as usize).unwrap()
     }
 
     /// Go to next cursor
     pub fn next_cursor(&mut self) {
-        self.cursor = (self.cursor + 1) % self.cursors.len();
+        self.current_cursor = (self.current_cursor + 1) % (self.cursors.len() as u8);
     }
 }

@@ -1,5 +1,7 @@
+use super::*;
+
 /// A mode
-#[derive(Clone, PartialEq, Copy, Hash)]
+#[derive(Clone, PartialEq, Copy)]
 pub enum Mode {
     /// A primitive mode (no repeat, no delimiters, no preprocessing)
     Primitive(PrimitiveMode),
@@ -7,7 +9,7 @@ pub enum Mode {
     Command(CommandMode),
 }
 
-#[derive(Clone, PartialEq, Copy, Hash)]
+#[derive(Clone, PartialEq, Copy)]
 /// A command mode
 pub enum CommandMode {
 //    Visual(VisualOptions),
@@ -15,7 +17,7 @@ pub enum CommandMode {
     Normal,
 }
 
-#[derive(Clone, PartialEq, Copy, Hash)]
+#[derive(Clone, PartialEq, Copy)]
 /// A primitive mode
 pub enum PrimitiveMode {
     /// Insert mode
