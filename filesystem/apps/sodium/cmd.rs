@@ -1,22 +1,60 @@
 use collections::VecDeque;
 // Temporary hack until libredox get hashmaps
-use collections::btree_map::BTreeMap as HashMap;  //redox::HashMap;
 use redox::*;
 
-#[derive(Clone, Copy, Hash)]
+/// A temporary, very slow replacement for HashMaps, until redox::collections is finish.
+pub struct HashMapTmp<K, V> {
+    data: Vec<(K, V)>,
+}
+impl<K: PartialEq, V> HashMapTmp<K, V> {
+    pub fn get(&self, key: &K) -> Option<&V> {
+        match self.data.iter().find(|(k, _)| {
+            k == *key
+        }) {
+            Some((k, ref v)) => Some(v),
+            None => None
+        }
+    }
+    pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
+        match self.data.iter().find(|(k, _)| {
+            k == *key
+        }) {
+            Some((k, ref mut v)) => Some(v),
+            None => None
+        }
+    }
+    pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+        let old = self.get_mut(&key);
+
+        match old {
+            Some(v) => {
+                *v = value;
+                Some(*v)
+            },
+            None => {
+                self.data.push((key, value));
+                None
+            },
+        }
+    }
+}
+
+type Map<K, V> = HashMapTmp<K, V>;
+
+#[derive(Clone, PartialEq, Copy, Hash)]
 pub enum InsertMode {
     Append,
     Insert,
     Replace,
 }
 
-#[derive(Clone, Copy, Hash)]
+#[derive(Clone, PartialEq, Copy, Hash)]
 pub struct InsertOptions {
     mode: InsertMode,
 }
 
 /// A mode
-#[derive(Clone, Copy, Hash)]
+#[derive(Clone, PartialEq, Copy, Hash)]
 pub enum Mode {
     /// A primitive mode (no repeat, no delimiters, no preprocessing)
     Primitive(PrimitiveMode),
@@ -24,6 +62,7 @@ pub enum Mode {
     Command(CommandMode),
 }
 
+#[derive(Clone, PartialEq, Copy, Hash)]
 /// A command mode
 pub enum CommandMode {
 //    Visual(VisualOptions),
@@ -31,13 +70,14 @@ pub enum CommandMode {
     Normal,
 }
 
+#[derive(Clone, PartialEq, Copy, Hash)]
 /// A primitive mode
 pub enum PrimitiveMode {
     /// Insert mode
     Insert(InsertOptions),
 }
 
-#[derive(Clone, Hash)]
+#[derive(Clone, PartialEq, Hash)]
 pub enum Unit {
     /// Single [repeated] instruction
     Inst(u16, char),
@@ -45,7 +85,7 @@ pub enum Unit {
     Block(u16, Vec<Unit>),
 }
 
-#[derive(Clone, Hash)]
+#[derive(Clone, PartialEq, Hash)]
 /// The state of the editor
 pub struct State {
     /// The current cursor
@@ -73,6 +113,7 @@ impl State {
 }
 
 /// A command char
+#[derive(Clone, Copy, Hash, PartialEq)]
 pub enum CommandChar {
     /// A char
     Char(char),
@@ -80,22 +121,22 @@ pub enum CommandChar {
     Wildcard,
 }
 
-#[derive(Clone, Hash)]
+#[derive(Clone, PartialEq, Hash)]
 /// The editor
-pub struct Editor<I: Iterator<Item = Unit>> {
+pub struct Editor<'a, I: Iterator<Item = Unit>> {
     /// The state of the editor
     pub state: State,
     /// The commands
-    pub commands: HashMap<Mode,
-                          HashMap<CommandChar,
-                                  FnMut<(u16, &mut State, &mut I, char)>>>,
+    pub commands: Map<Mode,
+                      Map<CommandChar,
+                          Box<FnOnce(u16, &'a mut State, &'a mut I, char)>>>,
 }
 
-impl<I: Iterator<Item = Unit>> Editor<I> {
+impl<'a, I: Iterator<Item = Unit>> Editor<'a, I> {
     pub fn new() -> Self {
-        let mut commands = HashMap::new();
+        let mut commands = Map::new();
         commands.insert(Mode::Primitive(PrimitiveMode::Insert), {
-            let mut hm = HashMap::new();
+            let mut hm = Map::new();
             hm.insert(CommandChar::Wildcard, |_, state, iter, c| {
                 state.insert(c);
             });
@@ -108,11 +149,11 @@ impl<I: Iterator<Item = Unit>> Editor<I> {
     }
 
     pub fn exec(&mut self, cmd: &Unit) {
-        let mut commands = self.commands.get(self.mode).unwrap();
+        let mut commands = self.commands.get(&self.mode).unwrap();
 
         match *cmd {
-            Unit::Single(n, c) => {
-                commands.get(c).call((n, &mut self.state, self.cmd.iter(), c));
+            Unit::Inst(n, c) => {
+                commands.get(&c).call((n, &mut self.state, self.cmd.iter(), c));
             },
             Unit::Block(n, units) => {
                 for _ in 1..n {
@@ -125,7 +166,7 @@ impl<I: Iterator<Item = Unit>> Editor<I> {
     }
 }
 
-#[derive(Clone, Hash)]
+#[derive(Clone, PartialEq, Hash)]
 /// A cursor
 pub struct Cursor {
     /// The x coordinate of the cursor
@@ -138,9 +179,9 @@ pub struct Cursor {
     pub history: Vec<Unit>,
 }
 
-#[derive(Clone, Hash)]
+#[derive(Clone, PartialEq, Hash)]
 /// An iterator over units
-pub struct UnitIterator<'a, I: Iterator<Item = char>> {
+pub struct UnitIterator<'a, I: Iterator<Item = char> + 'a> {
     /// The iterator over the chars
     char_iter: &'a mut I,
     /// The state
@@ -150,9 +191,12 @@ pub struct UnitIterator<'a, I: Iterator<Item = char>> {
 impl<'a, I: Iterator<Item = char>> Iterator for UnitIterator<'a, I> {
     type Item = Unit;
 
-    fn next(&mut self) -> Unit {
+    fn next(&mut self) -> Option<Unit> {
         match self.cursors[self.cursor as usize].mode {
-            Mode::Primitive(_) => Unit::Single(1, self.char_iter.next().unwrap()),
+            Mode::Primitive(_) => Unit::Inst(1, match self.char_iter.next() {
+                Some(c) => c,
+                None => return None,
+            }),
             Mode::Command(_) => {
                 let mut ch = self.first().unwrap_or('\0');
                 let mut n = 1;
@@ -192,18 +236,24 @@ impl<'a, I: Iterator<Item = char>> Iterator for UnitIterator<'a, I> {
                             ';' => 0,
                         }
                     }).skip(1).reverse().skip(1).reverse().unit_iter();
-                    Unit::Block(n, self.collect())
+                    Some(Unit::Block(n, self.collect()))
                 } else if let Some(ch) = self.char_iter.next() {
-                    Unit::Inst(n, ch)
+                    Some(Unit::Inst(n, ch))
+                } else {
+                    None
                 }
             }
         }
     }
 }
 
-impl<I: Iterator<Item = char>> I {
+pub trait ToUnitIterator: Iterator<Item = char> {
     /// Create a iterator of the unit given by the chars
-    pub fn unit_iter<'a>(&'a self, state: &'a mut State) -> UnitIterator<'a, I> {
+    fn unit_iter<'a>(&'a self, state: &'a mut State) -> UnitIterator<'a, Self>;
+}
+
+impl<I: Iterator<Item = char>> ToUnitIterator for I {
+    fn unit_iter<'a>(&'a self, state: &'a mut State) -> UnitIterator<'a, I> {
         UnitIterator {
             char_iter: &mut *self,
             state: state,
