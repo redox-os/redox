@@ -2,24 +2,30 @@ use collections::VecDeque;
 // Temporary hack until libredox get hashmaps
 use redox::*;
 
+#[derive(Clone)]
 /// A temporary, very slow replacement for HashMaps, until redox::collections is finish.
 pub struct HashMapTmp<K, V> {
     data: Vec<(K, V)>,
 }
 impl<K: PartialEq, V> HashMapTmp<K, V> {
+    pub fn new() -> Self {
+        HashMapTmp {
+            data: Vec::new(),
+        }
+    }
     pub fn get(&self, key: &K) -> Option<&V> {
-        match self.data.iter().find(|(k, _)| {
-            k == *key
+        match self.data.iter().find(|&x| {
+            x.0 == *key
         }) {
-            Some((k, ref v)) => Some(v),
+            Some(&(k, ref v)) => Some(v),
             None => None
         }
     }
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
-        match self.data.iter().find(|(k, _)| {
-            k == *key
+        match self.data.iter().find(|&x| {
+            x.0 == *key
         }) {
-            Some((k, ref mut v)) => Some(v),
+            Some(&(k, ref mut v)) => Some(v),
             None => None
         }
     }
@@ -100,7 +106,11 @@ pub struct State {
     pub scroll_y: u32,
 }
 
+
 impl State {
+    fn insert(&mut self, c: char) {
+
+    }
     fn new() -> State {
         State {
             current_cursor: 0,
@@ -121,7 +131,6 @@ pub enum CommandChar {
     Wildcard,
 }
 
-#[derive(Clone, PartialEq, Hash)]
 /// The editor
 pub struct Editor<'a, I: Iterator<Item = Unit>> {
     /// The state of the editor
@@ -135,11 +144,13 @@ pub struct Editor<'a, I: Iterator<Item = Unit>> {
 impl<'a, I: Iterator<Item = Unit>> Editor<'a, I> {
     pub fn new() -> Self {
         let mut commands = Map::new();
-        commands.insert(Mode::Primitive(PrimitiveMode::Insert), {
+        commands.insert(Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
+            mode: InsertMode::Insert,
+        })), {
             let mut hm = Map::new();
-            hm.insert(CommandChar::Wildcard, |_, state, iter, c| {
+            hm.insert(CommandChar::Wildcard, Box::new(|_, state, iter, c| {
                 state.insert(c);
-            });
+            }));
             hm
         });
         Editor {
@@ -181,14 +192,14 @@ pub struct Cursor {
 
 #[derive(Clone, PartialEq, Hash)]
 /// An iterator over units
-pub struct UnitIterator<'a, I: Iterator<Item = char> + 'a> {
+pub struct UnitIterator<'a, I: Iterator<Item = char> + Clone + 'a> {
     /// The iterator over the chars
     char_iter: &'a mut I,
     /// The state
     state: &'a mut State,
 }
 
-impl<'a, I: Iterator<Item = char>> Iterator for UnitIterator<'a, I> {
+impl<'a, I: Iterator<Item = char> + Clone> Iterator for UnitIterator<'a, I> {
     type Item = Unit;
 
     fn next(&mut self) -> Option<Unit> {
@@ -229,13 +240,17 @@ impl<'a, I: Iterator<Item = char>> Iterator for UnitIterator<'a, I> {
 
                 if ch == '(' {
                     let mut level = 0;
-                    *self = self.take_while(|c| {
-                        level = match c {
-                            '(' => level + 1,
-                            ')' => level - 1,
-                            ';' => 0,
-                        }
-                    }).skip(1).reverse().skip(1).reverse().unit_iter();
+                    *self = {
+                        let mut iter = self.take_while(|c| {
+                            level = match c {
+                                '(' => level + 1,
+                                ')' => level - 1,
+                                ';' => 0,
+                            }
+                        }).skip(1).collect();
+                        iter.pop();
+                        iter.unit_iter()
+                    };
                     Some(Unit::Block(n, self.collect()))
                 } else if let Some(ch) = self.char_iter.next() {
                     Some(Unit::Inst(n, ch))
