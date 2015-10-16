@@ -6,8 +6,7 @@ use redox::net::*;
 use redox::ptr;
 use redox::rand;
 use redox::slice;
-use redox::str;
-use redox::{String, ToString};
+use redox::{str, String, ToString};
 use redox::to_num::*;
 use redox::Vec;
 

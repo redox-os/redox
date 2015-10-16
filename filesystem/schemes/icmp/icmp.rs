@@ -10,7 +10,7 @@ use redox::io::SeekFrom;
 pub struct Scheme;
 
 impl Scheme {
-    fn scheme(&self) -> Box<Self> {
+    pub fn scheme(&self) -> Box<Self> {
         box Scheme
     }
 
@@ -48,7 +48,7 @@ impl Scheme {
     }
 
     /*
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &str) -> Option<Box<Resource>> {
     }
     */
 }
