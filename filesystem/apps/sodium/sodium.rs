@@ -33,7 +33,7 @@ pub fn main() {
     let mut editor = Editor::new();
 
     editor.iter = Some({
-        window.filter_map(|x| {
+        window.clone().filter_map(|x| {
             match x.to_option() {
                 EventOption::Key(k) if k.pressed => {
 
@@ -44,6 +44,7 @@ pub fn main() {
             }
         })
     });
+    window.set([255, 255, 255, 255]);
 
 
 }
