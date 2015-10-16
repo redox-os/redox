@@ -127,7 +127,7 @@ all: build/harddrive.bin
 docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
 	rustdoc --target=$(TARGET).json -L. $<
 
-apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
+apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/sodium
 
 schemes: schemes/console schemes/example schemes/reent schemes/udp
 
