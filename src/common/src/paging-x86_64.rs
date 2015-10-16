@@ -59,7 +59,6 @@ impl Page {
             }
         }
 
-        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
         asm!("mov cr3, $0
             mov $0, cr0
             or $0, $1
