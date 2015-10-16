@@ -1,3 +1,5 @@
+// TODO: Move some of this stuff to a parser module
+
 use super::*;
 use redox::*;
 
@@ -41,6 +43,8 @@ impl<'a, I: Iterator<Item = EventOption>> Iterator for InstructionIterator<'a, I
 
                         }
                     }
+                }
+            }
         }
 
         Some(Inst(if n == 0 { 1 } else { n }, last))
@@ -54,14 +58,14 @@ trait ToInstructionIterator {
 impl ToInstructionIterator for Iterator<Item = EventOption> {
     fn inst_iter<'a>(&'a mut self, editor: &'a Editor) -> InstructionIterator<'a, Self> {
         InstructionIterator {
-            editor: self,
+            editor: editor,
             iter: self,
         }
     }
 }
 impl Editor {
     /// Execute a instruction
-    pub fn exec(&mut self, inst: Inst) {
+    pub fn exec<'a, I>(&mut self, inst: Inst, inp: &mut InstructionIterator<'a, I>) {
         
     }
 
