@@ -11,7 +11,7 @@ pub struct ContextScheme;
 
 impl SessionItem for ContextScheme {
     fn scheme(&self) -> String {
-        return "context".to_string();
+        "context".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

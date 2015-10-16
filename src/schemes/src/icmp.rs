@@ -14,7 +14,7 @@ pub struct ICMPScheme;
 
 impl SessionItem for ICMPScheme {
     fn scheme(&self) -> String {
-        return "icmp".to_string();
+        "icmp".to_string()
     }
 }
 

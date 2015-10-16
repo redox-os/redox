@@ -12,7 +12,7 @@ pub struct ARPScheme;
 
 impl SessionItem for ARPScheme {
     fn scheme(&self) -> String {
-        return "arp".to_string();
+        "arp".to_string()
     }
 }
 

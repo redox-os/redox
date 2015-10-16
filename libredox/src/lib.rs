@@ -114,6 +114,9 @@
     pub use core::u32;
     pub use core::u64;
 
+    // TODO: Add methods to f64
+    pub use core::num;
+
     //TODO #[path = "num/f32.rs"]   pub mod f32;
     //TODO #[path = "num/f64.rs"]   pub mod f64;
 
@@ -121,7 +124,7 @@
 
     /* Common traits */
 
-    pub mod num;
+    pub mod floating_num;
 
     /* Runtime and platform support */
 

@@ -419,8 +419,8 @@ impl UHCI {
                        TD {
                            link_ptr: in_td.address() as u32 | 4,
                            ctrl_sts: 1 << 23,
-                           token: (mem::size_of::<SETUP>() as u32 - 1) << 21 | (address as u32) << 8 |
-                                  0x2D,
+                           token: (mem::size_of::<SETUP>() as u32 - 1) << 21 |
+                                  (address as u32) << 8 | 0x2D,
                            buffer: setup.address() as u32,
                        });
 

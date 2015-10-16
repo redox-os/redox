@@ -38,8 +38,8 @@ impl Resource for EthernetResource {
     }
 
     fn url(&self) -> URL {
-        return URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
-                                  String::from_num_radix(self.ethertype as usize, 16)));
+        URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
+                                  String::from_num_radix(self.ethertype as usize, 16)))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

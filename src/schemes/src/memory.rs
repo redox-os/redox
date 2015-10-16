@@ -11,7 +11,7 @@ pub struct MemoryScheme;
 
 impl SessionItem for MemoryScheme {
     fn scheme(&self) -> String {
-        return "memory".to_string();
+        "memory".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
