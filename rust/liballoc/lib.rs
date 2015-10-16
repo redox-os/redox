@@ -72,7 +72,6 @@
        issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
        test(no_crate_inject))]
 #![no_std]
-#![cfg_attr(not(stage0), needs_allocator)]
 
 #![feature(allocator)]
 #![feature(box_syntax)]
@@ -97,13 +96,9 @@
 #![feature(unsize)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![cfg_attr(stage0, feature(alloc_system))]
-#![cfg_attr(not(stage0), feature(needs_allocator))]
+#![feature(needs_allocator)]
 
 #![cfg_attr(test, feature(test, rustc_private, box_heap))]
-
-#[cfg(stage0)]
-extern crate alloc_system;
 
 // Allow testing this library
 
