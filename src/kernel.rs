@@ -192,16 +192,16 @@ unsafe fn event_loop() -> ! {
 
                                                 cmd = String::new();
                                                 debug::dl();
-                                            }
+                                            },
                                             _ => {
                                                 cmd.vec.push(key_event.character);
                                                 debug::dc(key_event.character);
-                                            }
-                                        }
+                                            },
+                                        },
                                     }
                                 }
                             },
-                            _ => ()
+                            _ => (),
                         }
                     } else {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
@@ -238,6 +238,7 @@ unsafe fn redraw_loop() -> ! {
     }
 }
 
+/// Initialize debug
 pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x00);
     PIO8::new(0x3F8 + 3).write(0x80);
@@ -422,6 +423,7 @@ fn dr(reg: &str, value: usize) {
     debug::dl();
 }
 
+
 #[no_mangle]
 //Take regs for kernel calls and exceptions
 pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, eip: usize, eflags: usize, error: usize) -> usize {
@@ -527,16 +529,16 @@ pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: 
 
             context_switch(true);
         }
-        0x21 => (*session_ptr).on_irq(0x1), //keyboard
+        0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
-        0x28 => (*session_ptr).on_irq(0x8), //RTC
-        0x29 => (*session_ptr).on_irq(0x9), //pci
-        0x2A => (*session_ptr).on_irq(0xA), //pci
-        0x2B => (*session_ptr).on_irq(0xB), //pci
-        0x2C => (*session_ptr).on_irq(0xC), //mouse
-        0x2E => (*session_ptr).on_irq(0xE), //disk
-        0x2F => (*session_ptr).on_irq(0xF), //disk
+        0x28 => (*session_ptr).on_irq(0x8), // RTC
+        0x29 => (*session_ptr).on_irq(0x9), // pci
+        0x2A => (*session_ptr).on_irq(0xA), // pci
+        0x2B => (*session_ptr).on_irq(0xB), // pci
+        0x2C => (*session_ptr).on_irq(0xC), // mouse
+        0x2E => (*session_ptr).on_irq(0xE), // disk
+        0x2F => (*session_ptr).on_irq(0xF), // disk
         0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
         0xFF => {
             init(eax as usize);

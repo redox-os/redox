@@ -6,6 +6,7 @@
 *.pcap
 *.rlib
 *.vdi
+*.orig
 .directory
 .DS_Store
 libc/build/
@@ -14,3 +15,4 @@ build
 target
 zfs.img
 *.swp
+doc

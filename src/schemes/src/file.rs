@@ -199,7 +199,7 @@ impl FileSystem {
             }
         }
 
-        return ret;
+        ret
     }
 }
 
@@ -237,7 +237,7 @@ impl Resource for FileResource {
             self.seek += 1;
             i += 1;
         }
-        return Some(i);
+        Some(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -255,7 +255,7 @@ impl Resource for FileResource {
         if i > 0 {
             self.dirty = true;
         }
-        return Some(i);
+        Some(i)
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -269,7 +269,7 @@ impl Resource for FileResource {
         while self.vec.len() < self.seek {
             self.vec.push(0);
         }
-        return Some(self.seek);
+        Some(self.seek)
     }
 
     // TODO: Rename to sync
@@ -357,7 +357,7 @@ impl Resource for FileResource {
                 return false;
             }
         }
-        return true;
+        true
     }
 }
 

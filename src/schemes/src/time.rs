@@ -12,7 +12,7 @@ pub struct TimeScheme;
 
 impl SessionItem for TimeScheme {
     fn scheme(&self) -> String {
-        return "time".to_string();
+        "time".to_string()
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
