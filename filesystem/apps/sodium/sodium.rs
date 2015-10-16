@@ -28,23 +28,18 @@ pub fn main() {
 								 (rand() % 300 + 50) as isize, 
 								 576, 
 								 400, 
-								 &"Sodium"); 
+								 &"Sodium").unwrap(); 
 
     let mut editor = Editor::new();
 
-    editor.iter = Some({
-        window.clone().filter_map(|x| {
-            match x.to_option() {
-                EventOption::Key(k) if k.pressed => {
+    let mut inp = window.event_iter().filter_map(|x| {
+        x.to_option()
+    }).inst_iter();
 
-
-                    Some(k.character)
-                }
-                _ => None,
-            }
-        })
-    });
-//    window.set([255, 255, 255, 255]);
+    for i in inp {
+        editor.exec(i, &mut inp);
+    }
+    window.set([255, 255, 255, 255]);
 
 
 }

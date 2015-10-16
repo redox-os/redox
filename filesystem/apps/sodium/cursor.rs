@@ -14,7 +14,7 @@ pub struct Cursor {
     pub history: Vec<Inst>,
 }
 
-impl<I: Iterator<Item = char>> Editor<I> {
+impl Editor {
     /// Get the char under the cursor
     pub fn current(&self) -> char {
         let curs = self.cursor();

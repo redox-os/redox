@@ -9,7 +9,7 @@ pub struct Inst(pub u16, pub char);
 
 #[derive(Clone)]
 /// The state of the editor
-pub struct Editor<I> {
+pub struct Editor {
     /// The current cursor
     pub current_cursor: u8,
     /// The cursors
@@ -20,27 +20,21 @@ pub struct Editor<I> {
     pub scroll_x: usize,
     /// The y coordinate of the scroll
     pub scroll_y: usize,
-    /// Number of repeation entered
-    pub n: u16,
-    /// The input iterator
-    pub iter: Option<I>,
 }
 
 
-impl<I: Iterator<Item = char>> Editor<I> {
+impl Editor {
 
 
 
     /// Create new default state editor
-    pub fn new() -> Editor<I> {
+    pub fn new() -> Editor {
         Editor {
             current_cursor: 0,
             cursors: Vec::new(),
             text: VecDeque::new(),
             scroll_x: 0,
             scroll_y: 0,
-            n: 0,
-            iter: None,
         }
     }
 }
