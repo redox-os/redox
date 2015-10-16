@@ -1,3 +1,8 @@
+// TODO:
+//      - Simplify using instruction iterators
+//      - Make movement mode
+//      - Record modifiers
+
 mod editor;
 pub use self::editor::*;
 
@@ -51,6 +56,5 @@ pub fn main() {
         })
     });
 
-    editor.init();
 
 }

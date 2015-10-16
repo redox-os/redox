@@ -29,12 +29,6 @@ pub struct Editor<I: Iterator<Item = char>> {
 
 impl<I: Iterator<Item = char>> Editor<I> {
 
-    /// Initialize the editor
-    pub fn init(&mut self) {
-        for c in self.iter.unwrap() {
-            self.feed(c);
-        }
-    }
 
 
     /// Create new default state editor
