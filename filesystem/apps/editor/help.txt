@@ -18,7 +18,7 @@ commands are valid:
 - a: Insert text after the cursor
 - o: Create a new line under the current one
      and go to insert mode.
-- O: Same as `o` but instead over the current line.
+- O: Same as `o` but instead above the current line.
 - x: Delete char after cursor.
 - X: Delete char before cursor.
 - d: Delete the rest of the line.
