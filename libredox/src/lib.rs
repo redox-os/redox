@@ -7,6 +7,7 @@
 
 #![crate_type="rlib"]
 #![feature(alloc)]
+#![feature(allocator)]
 #![feature(allow_internal_unstable)]
 #![feature(asm)]
 #![feature(box_syntax)]
