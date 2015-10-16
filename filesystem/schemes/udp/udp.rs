@@ -60,7 +60,7 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Resource>> {
+    pub fn dup(&self) -> Option<Box<Self>> {
         match self.ip.dup() {
             Some(ip) => Some(box Resource {
                 ip: ip,
@@ -155,7 +155,7 @@ impl Resource {
     }
 
     pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
-        return None;
+        None
     }
 
     pub fn sync(&mut self) -> bool {
@@ -218,7 +218,7 @@ impl Scheme {
                     }
                 }
             }
-        }else{
+        } else {
             let (host, port) = not_scheme.split_at(not_scheme.find(':').unwrap_or(not_scheme.len()));
 
             let peer_port = port.to_string().to_num();
