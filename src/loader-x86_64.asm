@@ -263,6 +263,14 @@ long_mode:
     cld
     rep movsb
 
+    mov rdi, kernel_file.font
+    mov rcx, 0xB000
+    xor rax, rax
+    std
+    rep stosb
+
+    cld
+
     mov rax, kernel_file.font
     int 255
 .lp:

@@ -14,15 +14,6 @@ pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
 pub const CLUSTER_SIZE: usize = 4096; // Of 4 K chunks
 
-/// A memory map entry
-#[repr(packed)]
-struct MemoryMapEntry {
-    base: u64,
-    len: u64,
-    class: u32,
-    acpi: u32,
-}
-
 /// A wrapper around raw pointers
 pub struct Memory<T> {
     pub ptr: *mut T,
@@ -124,6 +115,15 @@ impl<T> IndexMut<usize> for Memory<T> {
     fn index_mut<'a>(&'a mut self, _index: usize) -> &'a mut T {
         unsafe { &mut *self.ptr.offset(_index as isize) }
     }
+}
+
+/// A memory map entry
+#[repr(packed)]
+struct MemoryMapEntry {
+    base: u64,
+    len: u64,
+    class: u32,
+    acpi: u32,
 }
 
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
