@@ -130,7 +130,7 @@ schemes: schemes/console schemes/example schemes/reent schemes/udp
 tests: tests/success tests/failure
 
 clean:
-	$(RM) -rf $(BUILD) filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
+	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
 
 apps/%:
 	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
@@ -179,10 +179,10 @@ $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/libal
 $(BUILD)/kernel.rlib: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-filesystem/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
+$(BUILD)/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
 
-filesystem/kernel.list: filesystem/kernel.bin
+$(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
@@ -223,10 +223,10 @@ filesystem/apps/zfs/zfs.img:
 $(BUILD)/filesystem.gen: #apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-$(BUILD)/harddrive.bin: src/loader-$(ARCH).asm filesystem/kernel.bin $(BUILD)/filesystem.gen
+$(BUILD)/harddrive.bin: src/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
 	$(AS) -f bin -o $@ -i$(BUILD)/ -isrc/ -ifilesystem/ $<
 
-$(BUILD)/harddrive.list: src/loader-$(ARCH).asm filesystem/kernel.bin $(BUILD)/filesystem.gen
+$(BUILD)/harddrive.list: src/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
 	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -i$(BUILD)/ -isrc/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin

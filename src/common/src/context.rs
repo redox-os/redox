@@ -12,7 +12,7 @@ use common::vec::*;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
-pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
+pub static mut contexts_ptr: *mut Vec<Context> = 0 as *mut Vec<Context>;
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
@@ -71,7 +71,7 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
-    let mut context_option: Option<Box<Context>> = None;
+    let mut context_option: Option<Context> = None;
     if let Some(parent) = contexts.get(parent_i) {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
         if stack > 0 {
@@ -100,7 +100,7 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
                 }
             }
 
-            context_option = Some(box Context {
+            context_option = Some(Context {
                 stack: stack,
                 stack_ptr: (parent.stack_ptr - parent.stack) + stack,
                 fx: stack + CONTEXT_STACK_SIZE,
@@ -168,8 +168,8 @@ pub struct Context {
 }
 
 impl Context {
-    pub unsafe fn root() -> Box<Self> {
-        box Context {
+    pub unsafe fn root() -> Self {
+        Context {
             stack: 0,
             stack_ptr: 0,
             fx: memory::alloc(512),
@@ -182,10 +182,10 @@ impl Context {
         }
     }
 
-    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Self {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
-        let mut ret = box Context {
+        let mut ret = Context {
             stack: stack,
             stack_ptr: stack + CONTEXT_STACK_SIZE,
             fx: stack + CONTEXT_STACK_SIZE,

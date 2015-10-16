@@ -1,5 +1,3 @@
-//extern crate common;
-
 /// BMP Support
 pub mod bmp;
 /// Color struct

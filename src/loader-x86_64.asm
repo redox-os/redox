@@ -194,8 +194,6 @@ startup:
   ; load protected mode GDT and IDT
   cli
 
-  xchg bx, bx
-
   mov ax, 0x8000
   mov es, ax
 

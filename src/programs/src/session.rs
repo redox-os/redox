@@ -38,7 +38,7 @@ pub trait SessionItem {
 }
 
 pub struct Session {
-    pub display: Box<Display>,
+    pub display: Display,
     pub background: BMPFile,
     pub cursor: BMPFile,
     pub mouse_point: Point,
@@ -51,9 +51,9 @@ pub struct Session {
 }
 
 impl Session {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Self {
         unsafe {
-            box Session {
+            Session {
                 display: Display::root(),
                 background: BMPFile::new(),
                 cursor: BMPFile::new(),

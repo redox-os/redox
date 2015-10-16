@@ -23,7 +23,7 @@ pub struct Window {
     /// The title of the window
     pub title: String,
     /// The content of the window
-    pub content: Box<Display>,
+    pub content: Display,
     /// The color of the window title
     pub title_color: Color,
     /// The color of the border

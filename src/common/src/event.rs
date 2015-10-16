@@ -2,7 +2,6 @@ use core::char;
 use core::cmp::{min, max};
 
 use common::scheduler;
-use common::string::*;
 
 /// An optional event
 pub enum EventOption {
