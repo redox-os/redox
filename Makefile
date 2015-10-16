@@ -150,33 +150,30 @@ $(BUILD)/libcore.rlib: rust/libcore/lib.rs
 $(BUILD)/liballoc.rlib: rust/liballoc/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liballoc_system.rlib: rust/liballoc_system/lib.rs $(BUILD)/libcore.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
 $(BUILD)/librustc_unicode.rlib: rust/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libcollections.rlib: rust/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/librustc_unicode.rlib
+$(BUILD)/libcollections.rlib: rust/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liblibc.rlib: rust/liblibc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+$(BUILD)/liblibc.rlib: rust/liblibc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
 
 #TODO: Rust libstd
-#$(BUILD)/libstd.rlib: rust/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/liblibc.rlib
+#$(BUILD)/libstd.rlib: rust/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/liblibc.rlib
 #	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
 
 #Custom libstd
-$(BUILD)/libstd.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+$(BUILD)/libstd.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name std --cfg std -o $@ $<
 
-$(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+$(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
-$(BUILD)/kernel.rlib: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib
+$(BUILD)/kernel.rlib: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
@@ -190,7 +187,7 @@ filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
 	$(AS) -f elf -o $(BUILD)/`$(BASENAME) $*.o` $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.o
 
-filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libredox.rlib
+filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../../$<|" src/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
