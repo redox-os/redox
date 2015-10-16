@@ -1,19 +1,19 @@
 use super::*;
 
-struct InstructionIterator<'a, I: 'a> {
-    editor: &'a mut Editor<I>,
+pub struct InstructionIterator<'a, I: 'a> {
+    pub editor: &'a mut Editor<I>,
 }
 
-impl<'a, I: Iterator<Item = char>> Iterator for InstructionIterator<'a, I> {
+impl<'a, I: Iterator<Item = char> + Clone> Iterator for InstructionIterator<'a, I> {
     type Item = Inst;
     
     fn next(&mut self) -> Option<Inst> {
         let mut n = 0;
 
         match self.editor.iter {
-            Some(i) => {
-                let last;
-                for c in i {
+            Some(ref i) => {
+                let mut last = '\0';
+                for c in i.clone() {
                     match self.editor.cursors[self.editor.current_cursor as usize].mode {
                         Mode::Primitive(_) => {
                             Inst(0, c);
