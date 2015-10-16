@@ -1,6 +1,6 @@
 #Modify fo different target support
-ARCH=i386
-#ARCH=x86_64
+#ARCH=i386
+ARCH=x86_64
 
 BUILD=build/$(ARCH)
 
@@ -220,7 +220,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: apps schemes
+$(BUILD)/filesystem.gen: #apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: src/loader-$(ARCH).asm filesystem/kernel.bin $(BUILD)/filesystem.gen

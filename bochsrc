@@ -1,4 +1,4 @@
-ata0-master: type=disk, path="build/harddrive.bin", mode=flat
+ata0-master: type=disk, path="build/x86_64/harddrive.bin", mode=flat
 boot: disk
 megs: 512
 

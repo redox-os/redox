@@ -194,27 +194,37 @@ startup:
   ; load protected mode GDT and IDT
   cli
 
-  mov edi, 0x1000
-  mov cr3, edi
+  xchg bx, bx
+
+  mov ax, 0x8000
+  mov es, ax
+
+  xor edi, edi
   xor eax, eax
   mov ecx, 3 * 1024 ;PML4, PDP, PD
   rep stosd
-  mov edi, cr3
 
+  xor edi, edi
   ;Link first PML4 to PDP
-  mov DWORD [edi], 0x2000 | 1 << 1 | 1
+  mov DWORD [es:edi], 0x81000 | 1 << 1 | 1
   add edi, 0x1000
   ;Link first PDP to PD
-  mov DWORD [edi], 0x3000 | 1 << 1 | 1
+  mov DWORD [es:edi], 0x82000 | 1 << 1 | 1
   add edi, 0x1000
   ;Link first PD to 1 GB of memory
   mov ebx, 1 << 7 | 1 << 1 | 1
   mov ecx, 512
 .setpd:
-  mov [edi], ebx
+  mov [es:edi], ebx
   add ebx, 0x200000
   add edi, 8
   loop .setpd
+
+  xor ax, ax
+  mov es, ax
+
+  mov edi, 0x80000
+  mov cr3, edi
 
   mov eax, cr4
   or eax, 1 << 5 | 1 << 4
