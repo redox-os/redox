@@ -191,7 +191,7 @@ filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.o
 
 filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libredox.rlib
-	$(SED) "s|APPLICATION_PATH|../$<|" src/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
+	$(SED) "s|APPLICATION_PATH|../../$<|" src/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
 
@@ -200,7 +200,7 @@ filesystem/apps/test/test.bin: filesystem/apps/test/test.rs src/program.ld $(BUI
 	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/test.rlib $(BUILD)/libstd.rlib
 
 filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld $(BUILD)/libredox.rlib
-	$(SED) "s|SCHEME_PATH|../$<|" src/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
+	$(SED) "s|SCHEME_PATH|../../$<|" src/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T src/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
 
@@ -220,7 +220,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: #apps schemes
+$(BUILD)/filesystem.gen: apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: src/loader-$(ARCH).asm filesystem/kernel.bin $(BUILD)/filesystem.gen
