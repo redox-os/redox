@@ -1,0 +1,38 @@
+use redox::*;
+use super::*;
+
+#[derive(Clone)]
+/// A cursor
+pub struct Cursor {
+    /// The x coordinate of the cursor
+    pub x: usize,
+    /// The y coordinate of the cursor
+    pub y: usize,
+    /// The mode of the cursor
+    pub mode: Mode,
+    /// The history of the cursor
+    pub history: Vec<Inst>,
+}
+
+impl<I: Iterator<Item = char>> Editor<I> {
+    /// Get the char under the cursor
+    pub fn current(&self) -> char {
+        let curs = self.cursor();
+        self.text[curs.y][curs.x]
+    }
+
+    /// Get the current cursor
+    pub fn cursor(&self) -> &Cursor {
+        self.cursors.get(self.current_cursor as usize).unwrap()
+    }
+
+    /// Get the current cursor mutable
+    pub fn cursor_mut(&mut self) -> &mut Cursor {
+        self.cursors.get_mut(self.current_cursor as usize).unwrap()
+    }
+
+    /// Go to next cursor
+    pub fn next_cursor(&mut self) {
+        self.current_cursor = (self.current_cursor + 1) % (self.cursors.len() as u8);
+    }
+}

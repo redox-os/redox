@@ -178,3 +178,10 @@ impl Window {
         return self.file.sync();
     }
 }
+
+impl Iterator for Window {
+    type Item = Event;
+    fn next(&mut self) -> Option<Event> {
+        self.poll()
+    }
+}
