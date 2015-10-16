@@ -43,6 +43,7 @@ extern "C" fn eh_personality() {
 
 }
 
+#[allocator]
 #[allow(unused_variables)]
 #[no_mangle]
 pub extern fn __rust_allocate(size: usize, align: usize) -> *mut u8 {

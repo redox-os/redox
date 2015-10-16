@@ -1,5 +1,6 @@
 #![crate_type="staticlib"]
 #![feature(alloc)]
+#![feature(allocator)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(core_intrinsics)]
