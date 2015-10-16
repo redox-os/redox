@@ -1,5 +1,4 @@
 ENTRY(kernel)
-OUTPUT_FORMAT(elf32-i386)
 
 MEMORY {
 	lowmem : org = 0xC000, l = 464K

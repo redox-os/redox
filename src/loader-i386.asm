@@ -9,7 +9,7 @@ boot: ; dl comes with disk
     mov es, ax
     mov ss, ax
     ; initialize stack
-    mov sp, 0x7BF0
+    mov sp, 0x7C00
 
     mov [disk], dl
 
@@ -217,14 +217,13 @@ protected_mode:
     mov gs, eax
     mov ss, eax
     ; set up stack
-    mov esp, 0x1FFFF0
+    mov esp, 0x200000
 
     ;rust init
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
     mov eax, kernel_file.font
     int 255
-;This is actually the idle process
 .lp:
     sti
     hlt
@@ -253,7 +252,7 @@ gdt:
     db 0x00         ; base 24:31
 gdt_end:
 
-%include "asm/interrupts.asm"
+%include "asm/interrupts-i386.asm"
 
 times (0xC000-0x1000)-0x7C00-($-$$) db 0
 

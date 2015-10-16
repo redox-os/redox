@@ -1,3 +1,5 @@
+use alloc::boxed::Box;
+
 use core::cmp::min;
 use core::cmp::max;
 use core::mem::size_of;
@@ -67,10 +69,10 @@ pub struct Display {
 }
 
 impl Display {
-    pub unsafe fn root() -> Self {
+    pub unsafe fn root() -> Box<Self> {
         let mode_info = &*VBEMODEINFO;
 
-        let ret = Display {
+        let ret = box Display {
             offscreen: alloc(mode_info.bytesperscanline as usize *
                                  mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
@@ -88,12 +90,12 @@ impl Display {
     }
 
     /// Create a new display
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: usize, height: usize) -> Box<Self> {
         unsafe {
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
 
-            let ret = Display {
+            let ret = box Display {
                 offscreen: alloc(memory_size),
                 onscreen: alloc(memory_size),
                 size: memory_size,

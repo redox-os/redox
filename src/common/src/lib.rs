@@ -10,7 +10,13 @@ pub mod elf;
 pub mod event;
 /// Kernel memory allocation
 pub mod memory;
-/// Paging
+/// Paging (x86)
+#[cfg(target_arch = "x86")]
+#[path="paging-i386.rs"]
+pub mod paging;
+/// Paging (x86_64)
+#[cfg(target_arch = "x86_64")]
+#[path="paging-x86_64.rs"]
 pub mod paging;
 /// A module for queues
 pub mod queue;
