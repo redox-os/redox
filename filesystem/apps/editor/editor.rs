@@ -24,7 +24,7 @@ impl Editor {
     pub fn new() -> Self {
         Editor {
             url: String::new(),
-            file: Option::None,
+            file: None,
             string: String::new(),
             offset: 0,
             scroll_x: 0,
@@ -176,34 +176,43 @@ impl Editor {
         }
     }
 
-    fn reload(&mut self, window: &mut Window) {
-        window.set_title(&("Editor (".to_string() + &self.url + ")"));
+    fn reload(&mut self) {
         self.offset = 0;
         self.scroll_x = 0;
         self.scroll_y = 0;
 
         match self.file {
-            Option::Some(ref mut file) => {
-                file.seek(Seek::Start(0));
-                let mut vec: Vec<u8> = Vec::new();
-                file.read_to_end(&mut vec);
-                self.string = unsafe { String::from_utf8_unchecked(vec) };
-            },
-            Option::None => self.string = String::new(),
+            Some(ref mut file) => {
+                file.seek(SeekFrom::Start(0));
+                let mut string = String::new();
+                file.read_to_string(&mut string);
+                self.string = string;
+            }
+            None => self.string = String::new(),
         }
     }
 
-    fn save(&mut self, window: &mut Window) {
+    fn save(&mut self, window: &Window) {
         match self.file {
-            Option::Some(ref mut file) => {
-                window.set_title(&("Editor (".to_string() + &self.url + ") Saved"));
-                file.seek(Seek::Start(0));
+            Some(ref mut file) => {
+                file.seek(SeekFrom::Start(0));
                 file.write(&self.string.as_bytes());
                 file.sync();
             }
-            Option::None => {
-                //TODO: Ask for file to save to
-                window.set_title(&("Editor (".to_string() + &self.url + ") No Open File"));
+            None => {
+                let mut save_window = {
+                    const width: usize = 400;
+                    const height: usize = 200;
+                    Window::new((window.x() + (window.width()/2 - width/2) as isize),
+                                (window.y() + (window.height()/2 - height/2) as isize),
+                                width,
+                                height,
+                                "Save As").unwrap()
+                };
+                if let Some(event) = save_window.poll() {
+                    //TODO: Create a Save/Cancel button for file saving
+                    // and prompt the user for asking to save
+                }
             }
         }
     }
@@ -304,15 +313,15 @@ impl Editor {
 
     fn main(&mut self, url: &str) {
         let mut window = Window::new((rand() % 400 + 50) as isize,
-        (rand() % 300 + 50) as isize,
-        576,
-        400,
-        &("Editor (".to_string() + url + ")"));
+                                     (rand() % 300 + 50) as isize,
+                                     576,
+                                     400,
+                                     &("Editor (".to_string() + url + ")")).unwrap();
 
         self.url = url.to_string();
-        self.file = Option::Some(File::open(&self.url));
+        self.file = File::open(&self.url);
 
-        self.reload(&mut window);
+        self.reload();
         self.draw_content(&mut window);
 
         let mut mode = Mode::Normal;
@@ -329,7 +338,6 @@ impl Editor {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
                         cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window, &mut swap, &mut period, &mut is_recording, &mut clipboard);
-
                         self.draw_content(&mut window);
                     }
                 }
@@ -341,7 +349,7 @@ impl Editor {
 
 pub fn main() {
     match args().get(1) {
-        Option::Some(arg) => Editor::new().main(&arg),
-        Option::None => Editor::new().main("none://"),
+        Some(arg) => Editor::new().main(&arg),
+        None => Editor::new().main("none://"),
     }
 }

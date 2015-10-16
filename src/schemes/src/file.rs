@@ -1,23 +1,20 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 
-use core::{cmp, mem, ptr};
+use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use drivers::disk::*;
-use drivers::pio::*;
 use drivers::pciconfig::PCIConfig;
 
+use common::context::context_switch;
 use common::debug;
-use common::queue::Queue;
-use common::memory::{self, Memory};
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL, VecResource};
+use common::memory::Memory;
+use common::resource::{Resource, ResourceSeek, URL, VecResource};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
 use programs::session::SessionItem;
-
-use syscall::call::sys_yield;
 
 /// The header of the fs
 #[repr(packed)]
@@ -125,13 +122,13 @@ impl FileSystem {
                                               0,
                                               data.address() + sector * 512);
 
-                                        /*
-                                        disk.request(request.clone());
+                                    /*
+                                    disk.request(request.clone());
 
-                                        while request.complete.load(Ordering::SeqCst) == false {
-                                            disk.on_poll();
-                                        }
-                                        */
+                                    while request.complete.load(Ordering::SeqCst) == false {
+                                        disk.on_poll();
+                                    }
+                                    */
 
                                     sector += 65535;
                                 }
@@ -146,11 +143,9 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    unsafe {
                                         disk.read(extent.block + sector as u64,
                                                   (sectors - sector) as u16,
                                                   data.address() + sector * 512);
-                                    }
                                         /*
                                         disk.request(request.clone());
 
@@ -180,18 +175,18 @@ impl FileSystem {
             }
         }
 
-        Option::None
+        None
     }
 
     /// Get node with a given filename
     pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
             if node.name == *filename {
-                return Option::Some(node.clone());
+                return Some(node.clone());
             }
         }
 
-        Option::None
+        return None;
     }
 
     /// List nodes in a given directory
@@ -218,25 +213,31 @@ pub struct FileResource {
 }
 
 impl Resource for FileResource {
-    fn url(&self) -> URL {
-        URL::from_string(&("file:///".to_string() + &self.node.name))
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box FileResource {
+            scheme: self.scheme,
+            node: self.node.clone(),
+            vec: self.vec.clone(),
+            seek: self.seek,
+            dirty: self.dirty,
+        })
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
+    fn url(&self) -> URL {
+        return URL::from_string(&("file:///".to_string() + &self.node.name));
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
-                Option::Some(b) => buf[i] = *b,
-                Option::None => (),
+                Some(b) => buf[i] = *b,
+                None => (),
             }
             self.seek += 1;
             i += 1;
         }
-        Option::Some(i)
+        Some(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -254,7 +255,7 @@ impl Resource for FileResource {
         if i > 0 {
             self.dirty = true;
         }
-        Option::Some(i)
+        Some(i)
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -268,7 +269,7 @@ impl Resource for FileResource {
         while self.vec.len() < self.seek {
             self.vec.push(0);
         }
-        Option::Some(self.seek)
+        Some(self.seek)
     }
 
     // TODO: Rename to sync
@@ -288,7 +289,6 @@ impl Resource for FileResource {
                     let max_size = current_sectors * 512;
 
                     let size = cmp::min(remaining as usize, max_size);
-                    let sectors = (size + block_size - 1) / block_size;
 
                     if size as u64 != extent.length {
                         extent.length = size as u64;
@@ -315,7 +315,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                sys_yield();
+                                context_switch(false);
                             }
 
                             sector += 65535;
@@ -334,7 +334,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                sys_yield();
+                                context_switch(false);
                             }
                         }
                     }
@@ -438,7 +438,7 @@ impl SessionItem for FileScheme {
         return "file".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let path = url.path();
         if path.len() == 0 || path.ends_with("/".to_string()) {
             let mut list = String::new();
@@ -447,7 +447,7 @@ impl SessionItem for FileScheme {
             for file in self.fs.list(&path).iter() {
                 let line;
                 match file.find("/".to_string()) {
-                    Option::Some(index) => {
+                    Some(index) => {
                         let dirname = file.substr(0, index + 1);
                         let mut found = false;
                         for dir in dirs.iter() {
@@ -463,7 +463,7 @@ impl SessionItem for FileScheme {
                             dirs.push(dirname);
                         }
                     }
-                    Option::None => line = file.clone(),
+                    None => line = file.clone(),
                 }
                 if line.len() > 0 {
                     if list.len() > 0 {
@@ -474,10 +474,10 @@ impl SessionItem for FileScheme {
                 }
             }
 
-            return box VecResource::new(url.clone(), ResourceType::Dir, list.to_utf8());
+            return Some(box VecResource::new(url.clone(), list.to_utf8()));
         } else {
             match self.fs.node(&path) {
-                Option::Some(node) => {
+                Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
                     //TODO: Handle more extents
                     for extent in &node.extents {
@@ -498,8 +498,8 @@ impl SessionItem for FileScheme {
 
                                     self.fs.disk.request(request.clone());
 
-                                    while request.complete.load(Ordering::SeqCst) == false {
-                                        sys_yield();
+                                    while !request.complete.load(Ordering::SeqCst) {
+                                        unsafe { context_switch(false) };
                                     }
 
                                     sector += 65535;
@@ -517,8 +517,8 @@ impl SessionItem for FileScheme {
 
                                     self.fs.disk.request(request.clone());
 
-                                    while request.complete.load(Ordering::SeqCst) == false {
-                                        sys_yield();
+                                    while !request.complete.load(Ordering::SeqCst) {
+                                        unsafe { context_switch(false) };
                                     }
                                 }
 
@@ -530,17 +530,15 @@ impl SessionItem for FileScheme {
                         }
                     }
 
-                    return box FileResource {
+                    return Some(box FileResource {
                         scheme: self,
                         node: node,
                         vec: vec,
                         seek: 0,
                         dirty: false,
-                    };
+                    });
                 }
-                Option::None => {
-                    return box NoneResource;
-                }
+                None => return None
             }
         }
     }

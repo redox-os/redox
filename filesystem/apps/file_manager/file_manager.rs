@@ -1,5 +1,5 @@
 use redox::{self, env, BMPFile};
-use redox::event::{self, EventOption, MouseEvent, OpenEvent};
+use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::file::File;
 use redox::io::Read;
 use redox::orbital::Window;
@@ -23,11 +23,10 @@ pub struct FileManager {
 }
 
 fn load_icon(path: &str) -> BMPFile {
-    let mut resource = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp"));
-
     let mut vec: Vec<u8> = Vec::new();
-    resource.read_to_end(&mut vec);
-
+    if let Some(mut file) = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp")) {
+        file.read_to_end(&mut vec);
+    }
     BMPFile::from_data(&vec)
 }
 
@@ -147,17 +146,15 @@ impl FileManager {
     fn main(&mut self, path: &str) {
         let mut width = 160;
         let mut height = 0;
-        {
-            let mut resource = File::open(path);
+        if let Some(mut file) = File::open(path) {
+            let mut list = String::new();
+            file.read_to_string(&mut list);
 
-            let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
-
-            for file in unsafe { String::from_utf8_unchecked(vec) }.split('\n') {
-                if width < 40 + (file.len() + 1) * 8 {
-                    width = 40 + (file.len() + 1) * 8;
+            for entry in list.split('\n') {
+                if width < 40 + (entry.len() + 1) * 8 {
+                    width = 40 + (entry.len() + 1) * 8;
                 }
-                self.files.push(file.to_string());
+                self.files.push(entry.to_string());
             }
 
             if height < self.files.len() * 32 {
@@ -169,11 +166,11 @@ impl FileManager {
                                      (redox::rand() % 300 + 50) as isize,
                                      width,
                                      height,
-                                     &path);
+                                     &path).unwrap();
 
         self.draw_content(&mut window);
 
-        while let Option::Some(event) = window.poll() {
+        while let Some(event) = window.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
@@ -193,10 +190,10 @@ impl FileManager {
                                     if self.selected >= 0 &&
                                        self.selected < self.files.len() as isize {
                                         match self.files.get(self.selected as usize) {
-                                            Option::Some(file) => OpenEvent {
-                                                url_string: path.to_string() + &file,
-                                            }.trigger(),
-                                            Option::None => (),
+                                            Some(file) => {
+                                                File::exec(&(path.to_string() + &file));
+                                            },
+                                            None => (),
                                         }
                                     }
                                 }
@@ -257,14 +254,14 @@ impl FileManager {
                         let click_time = Duration::realtime();
 
                         if click_time - self.click_time < Duration::new(0, 500 * time::NANOS_PER_MILLI)
-                            && (self.last_mouse_event.x - mouse_event.x).abs() <= 4
-                            && (self.last_mouse_event.y - mouse_event.y).abs() <= 4 {
+                            && self.last_mouse_event.x == mouse_event.x
+                            && self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 match self.files.get(self.selected as usize) {
-                                    Option::Some(file) => OpenEvent {
-                                        url_string: path.to_string() + &file,
-                                    }.trigger(),
-                                    Option::None => (),
+                                    Some(file) => {
+                                        File::exec(&(path.to_string() + &file));
+                                    },
+                                    None => (),
                                 }
                             }
                             self.click_time = Duration::new(0, 0);
@@ -282,7 +279,7 @@ impl FileManager {
 
 pub fn main() {
     match env::args().get(1) {
-        Option::Some(arg) => FileManager::new().main(arg),
-        Option::None => FileManager::new().main("file:///"),
+        Some(arg) => FileManager::new().main(arg),
+        None => FileManager::new().main("file:///"),
     }
 }

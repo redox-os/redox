@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use common::context::*;
-use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::scheduler;
 use common::string::{String, ToString};
 
@@ -14,7 +14,7 @@ impl SessionItem for ContextScheme {
         "context".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let i;
         let len;
         unsafe {
@@ -24,8 +24,6 @@ impl SessionItem for ContextScheme {
             scheduler::end_no_ints(reenable);
         }
 
-        box VecResource::new(URL::from_str("context://"),
-                                    ResourceType::File,
-                                    ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8())
+        Some(box VecResource::new(URL::from_str("context://"), ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8()))
     }
 }

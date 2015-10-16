@@ -1,5 +1,15 @@
+#Modify fo different target support
+
+## x86_64 ##
+#TARGET=x86_64-unknown-redox
+#ELF=elf_x86_64
+
+## i686 ##
+TARGET=i686-unknown-redox
+ELF=elf_i386
+
 RUSTC=rustc
-RUSTCFLAGS=--target=i686-unknown-redox-gnu.json \
+RUSTCFLAGS=--target=$(TARGET).json \
 	-C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
@@ -10,7 +20,7 @@ BASENAME=basename
 CUT=cut
 FIND=find
 LD=ld
-LDARGS=-m elf_i386
+LDARGS=-m $(ELF)
 MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
@@ -98,6 +108,9 @@ help:
 	@echo "    make apps"
 	@echo "        Build apps for Redox."
 	@echo
+	@echo "    make schemes"
+	@echo "        Build schemes for Redox."
+	@echo
 	@echo "    make tests"
 	@echo "        Run tests on Redox."
 	@echo
@@ -111,10 +124,12 @@ help:
 
 all: build/harddrive.bin
 
-docs: rust/libcore/lib.rs src/kernel.rs src/common/src/lib.rs libredox/src/lib.rs rust/liballoc/lib.rs src/graphics/src/lib.rs src/schemes/src/lib.rs src/usb/src/lib.rs src/syscall/src/lib.rs
-	rustdoc --target=i686-unknown-redox-gnu.json -L. $<
+docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
+	rustdoc --target=$(TARGET).json -L. $<
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
+
+schemes: schemes/console schemes/example schemes/reent schemes/udp
 
 tests: tests/success tests/failure
 
@@ -123,6 +138,9 @@ clean:
 
 apps/%:
 	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
+
+schemes/%:
+	@$(MAKE) --no-print-directory filesystem/schemes/$*/$*.bin
 
 FORCE:
 
@@ -147,7 +165,7 @@ build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/l
 
 build/librand.rlib: rust/librand/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib build/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-	
+
 build/liblibc.rlib: rust/liblibc/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
 
@@ -171,35 +189,42 @@ filesystem/kernel.bin: build/kernel.rlib src/kernel.ld
 filesystem/kernel.list: filesystem/kernel.bin
 	$(OBJDUMP) -C -M intel -d $< > $@
 
-filesystem/%.bin: filesystem/%.asm src/program.ld
+filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
 	$(MKDIR) -p build
 	$(AS) -f elf -o build/`$(BASENAME) $*.o` $<
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.o
-	
-filesystem/apps/test/test.bin: filesystem/apps/test/test.rs build/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/test.rlib $<
-	$(LD) $(LDARGS) -o $@ -T src/program.ld build/test.rlib build/libstd.rlib
 
-filesystem/%.bin: filesystem/%.rs src/program.rs src/program.ld build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libredox.rlib
+filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../$<|" src/program.rs > build/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`$(BASENAME) $*`.rlib build/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.rlib
 
+filesystem/apps/test/test.bin: filesystem/apps/test/test.rs src/program.ld build/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/test.rlib $<
+	$(LD) $(LDARGS) -o $@ -T src/program.ld build/test.rlib build/libstd.rlib
+
+filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld build/libredox.rlib
+	$(SED) "s|SCHEME_PATH|../$<|" src/scheme.rs > build/`$(BASENAME) $*`.gen
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`$(BASENAME) $*`.rlib build/`$(BASENAME) $*`.gen
+	$(LD) $(LDARGS) -o $@ -T src/scheme.ld build/`$(BASENAME) $*`.rlib build/libredox.rlib
+
 filesystem/%.list: filesystem/%.bin
-	$(OBJDUMP -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/apps/zfs/zfs.img:
 	dd if=/dev/zero of=$@ bs=64M count=1
 	sudo losetup /dev/loop0 $@
 	-sudo zpool create redox_zfs /dev/loop0
-	-sudo zfs create redox_zfs/root
-	-sudo cp README.md /redox_zfs/root/
+	-sudo mkdir /redox_zfs/home/
+	-sudo cp LICENSE.md README.md /redox_zfs/home/
 	-sudo sync
-	-sudo zfs unmount redox_zfs/root
+	-sleep 1
+	-sudo zfs unmount redox_zfs
+	-sleep 1
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-build/filesystem.gen: apps
+build/filesystem.gen: apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen

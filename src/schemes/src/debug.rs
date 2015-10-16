@@ -1,23 +1,24 @@
 use alloc::boxed::Box;
 
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::context::context_switch;
+use common::resource::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 
 use programs::session::SessionItem;
 
-use syscall::call;
+use syscall::handle;
 
 /// A debug resource
 pub struct DebugResource;
 
 impl Resource for DebugResource {
-    fn url(&self) -> URL {
-        return URL::from_str("debug://");
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box DebugResource)
     }
 
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
+    fn url(&self) -> URL {
+        return URL::from_str("debug://");
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -31,7 +32,7 @@ impl Resource for DebugResource {
 
                 scheduler::end_no_ints(reenable);
 
-                call::sys_yield();
+                context_switch(false);
             }
 
             let reenable = scheduler::start_no_ints();
@@ -40,29 +41,29 @@ impl Resource for DebugResource {
             let mut i = 0;
             while i < buf.len() {
                 match (*::debug_command).vec.remove(0) {
-                    Option::Some(c) => buf[i] = c as u8,
-                    Option::None => break,
+                    Some(c) => buf[i] = c as u8,
+                    None => break,
                 }
                 i += 1;
             }
 
             scheduler::end_no_ints(reenable);
 
-            return Option::Some(i);
+            return Some(i);
         }
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         for byte in buf {
             unsafe {
-                call::sys_debug(*byte);
+                handle::do_sys_debug(*byte);
             }
         }
-        return Option::Some(buf.len());
+        return Some(buf.len());
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        return None;
     }
 
     fn sync(&mut self) -> bool {
@@ -77,7 +78,7 @@ impl SessionItem for DebugScheme {
         return "debug".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box DebugResource;
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box DebugResource)
     }
 }

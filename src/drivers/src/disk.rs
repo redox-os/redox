@@ -1,12 +1,11 @@
 use alloc::arc::Arc;
 
-use core::mem::size_of;
 use core::ptr;
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::debug::*;
 use common::queue::Queue;
-use common::memory::{self, Memory};
+use common::memory::Memory;
 use common::scheduler;
 
 use drivers::pio::*;
@@ -183,7 +182,7 @@ impl Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: true,
-            request: Option::None,
+            request: None,
             requests: Queue::new(),
             cmd: PIO8::new(base),
             sts: PIO8::new(base + 2),
@@ -198,7 +197,7 @@ impl Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: false,
-            request: Option::None,
+            request: None,
             requests: Queue::new(),
             cmd: PIO8::new(base),
             sts: PIO8::new(base + 2),
@@ -213,7 +212,7 @@ impl Disk {
             base: 0x170,
             ctrl: 0x374,
             master: true,
-            request: Option::None,
+            request: None,
             requests: Queue::new(),
             cmd: PIO8::new(base + 8),
             sts: PIO8::new(base + 0xA),
@@ -228,7 +227,7 @@ impl Disk {
             base: 0x170,
             ctrl: 0x374,
             master: false,
-            request: Option::None,
+            request: None,
             requests: Queue::new(),
             cmd: PIO8::new(base + 8),
             sts: PIO8::new(base + 0xA),
@@ -328,7 +327,7 @@ impl Disk {
             return false;
         }
 
-        let mut data = PIO16::new(self.base + ATA_REG_DATA);
+        let data = PIO16::new(self.base + ATA_REG_DATA);
         let mut destination = Memory::<u16>::new(256).unwrap();
         for word in 0..256 {
             destination.write(word, data.read());
@@ -446,13 +445,13 @@ impl Disk {
     }
 
     pub unsafe fn on_poll(&mut self) {
-        let sts = unsafe { self.sts.read() };
+        let sts = self.sts.read();
         if sts & STS_INT == STS_INT {
-            unsafe { self.sts.write(sts) };
+            self.sts.write(sts);
 
-            let cmd = unsafe { self.cmd.read() };
+            let cmd = self.cmd.read();
             if cmd & CMD_ACT == CMD_ACT {
-                unsafe { self.next_request() };
+                self.next_request();
             }
         }
     }
@@ -486,25 +485,21 @@ impl Disk {
                             eot = 0;
                         }
 
-                        unsafe {
-                            prdt.mem.store(i,
-                                           PRD {
-                                               addr: (req.mem + i * 65536) as u32,
-                                               size: eot,
-                                           });
-                        }
+                        prdt.mem.store(i,
+                                       PRD {
+                                           addr: (req.mem + i * 65536) as u32,
+                                           size: eot,
+                                       });
 
                         size -= 65536;
                         i += 1;
                     }
                     if size > 0 && i < 8192 {
-                        unsafe {
-                            prdt.mem.store(i,
-                                           PRD {
-                                               addr: (req.mem + i * 65536) as u32,
-                                               size: size as u32 | PRD_EOT,
-                                           });
-                        }
+                        prdt.mem.store(i,
+                                       PRD {
+                                           addr: (req.mem + i * 65536) as u32,
+                                           size: size as u32 | PRD_EOT,
+                                       });
 
                         size = 0;
                         i += 1;

@@ -6,6 +6,7 @@
 *.pcap
 *.rlib
 *.vdi
+*.orig
 .directory
 .DS_Store
 libc/build/

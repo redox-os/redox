@@ -4,7 +4,7 @@ use core::{cmp, ptr, mem};
 
 use common::debug;
 use common::memory;
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::time::{self, Duration};
 
@@ -25,16 +25,19 @@ struct AC97Resource {
 }
 
 impl Resource for AC97Resource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box AC97Resource {
+            audio: self.audio,
+            bus_master: self.bus_master,
+        })
+    }
+
     fn url(&self) -> URL {
         URL::from_str("audio://")
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
-    }
-
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -159,11 +162,11 @@ impl Resource for AC97Resource {
             debug::dl();
         }
 
-        Option::Some(buf.len())
+        Some(buf.len())
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn sync(&mut self) -> bool {
@@ -182,11 +185,11 @@ impl SessionItem for AC97 {
         "audio".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        box AC97Resource {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
-        }
+        })
     }
 
     fn on_irq(&mut self, irq: u8) {

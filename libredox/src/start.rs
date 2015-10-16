@@ -12,7 +12,7 @@ extern {
 }
 
 #[inline(never)]
-unsafe fn _start_stack(stack: *const u32) {
+unsafe fn _start_stack(stack: *const usize) {
     let argc = ptr::read(stack);
     let mut args: Vec<&'static str> = Vec::new();
     for i in 0..argc as isize {
@@ -39,8 +39,19 @@ unsafe fn _start_stack(stack: *const u32) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
+#[cfg(target_arch = "x86")]
 pub unsafe extern "C" fn _start() {
-    let stack: *const u32;
+    let stack: *const usize;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
+    _start_stack(stack);
+}
+
+#[cold]
+#[inline(never)]
+#[no_mangle]
+#[cfg(target_arch = "x86_64")]
+pub unsafe extern "C" fn _start() {
+    let stack: *const usize;
+    asm!("" : "={rsp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);
 }

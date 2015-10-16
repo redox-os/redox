@@ -89,9 +89,6 @@ pub struct ELFSymbol {
     pub sh_index: u16,
 }
 
-/// The load address
-pub const LOAD_ADDR: usize = 0x80000000;
-
 /// An ELF executable
 pub struct ELF {
     pub data: usize,
@@ -208,9 +205,9 @@ impl ELF {
 
                 let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if name == ".symtab".to_string() {
+                if name == ".symtab" {
                     sym_section = section;
-                } else if name == ".strtab".to_string() {
+                } else if name == ".strtab" {
                     str_section = section;
                 }
 
@@ -324,7 +321,7 @@ impl ELF {
     }
 
     /// ELF symbol
-    pub unsafe fn symbol(&self, name: String) -> usize {
+    pub unsafe fn symbol(&self, name: &str) -> usize {
         if self.data > 0 {
             let header = &*(self.data as *const ELFHeader);
 
@@ -339,9 +336,9 @@ impl ELF {
 
                 let section_name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
 
-                if section_name == ".symtab".to_string() {
+                if section_name == ".symtab" {
                     sym_section = section;
-                } else if section_name == ".strtab".to_string() {
+                } else if section_name == ".strtab" {
                     str_section = section;
                 }
             }

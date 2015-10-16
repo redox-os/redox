@@ -17,23 +17,13 @@ pub enum ResourceSeek {
     End(isize),
 }
 
-/// A resource type
-#[derive(Copy, Clone)]
-pub enum ResourceType {
-    None,
-    Array,
-    Dir,
-    File,
-}
-
 /// A system resource
 #[allow(unused_variables)]
 pub trait Resource {
-    //Required functions
+    /// Duplicate the resource
+    fn dup(&self) -> Option<Box<Resource>>;
     /// Return the url of this resource
     fn url(&self) -> URL;
-    /// Return the type of this resource
-    fn stat(&self) -> ResourceType;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
@@ -50,9 +40,9 @@ pub trait Resource {
         loop {
             let mut bytes = [0; 1024];
             match self.read(&mut bytes) {
-                Option::Some(0) => return Option::Some(read),
-                Option::None => return Option::None,
-                Option::Some(count) => {
+                Some(0) => return Some(read),
+                None => return None,
+                Some(count) => {
                     for i in 0..count {
                         vec.push(bytes[i]);
                     }
@@ -110,7 +100,7 @@ impl URL {
     }
 
     /// Open this URL (returns a resource)
-    pub fn open(&self) -> Box<Resource> {
+    pub fn open(&self) -> Option<Box<Resource>> {
         unsafe {
             return (*::session_ptr).open(&self);
         }
@@ -118,24 +108,11 @@ impl URL {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> String {
-        let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
-            match part_i {
-                0 => {
-                    let scheme_part_i = 0;
-                    for scheme_part in part.split(":".to_string()) {
-                        match scheme_part_i {
-                            0 => return scheme_part,
-                            _ => break,
-                        }
-                        scheme_part_i += 1;
-                    }
-                }
-                _ => break,
+        if let Some(part) = self.string.split("/".to_string()).next() {
+            if let Some(scheme_part) = part.split(":".to_string()).next() {
+                return scheme_part;
             }
-            part_i += 1;
         }
-
         return String::new();
     }
 
@@ -357,51 +334,20 @@ impl Clone for URL {
     }
 }
 
-/// Empty resource
-pub struct NoneResource;
-
-impl Resource for NoneResource {
-    fn url(&self) -> URL {
-        return URL::from_str("none://");
-    }
-
-    fn stat(&self) -> ResourceType {
-        return ResourceType::None;
-    }
-
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
-    }
-
-    fn sync(&mut self) -> bool {
-        return false;
-    }
-}
-
 /// A vector resource
 pub struct VecResource {
     url: URL,
-    resource_type: ResourceType,
     vec: Vec<u8>,
     seek: usize,
 }
 
 impl VecResource {
-    pub fn new(url: URL, resource_type: ResourceType, vec: Vec<u8>) -> Self {
-        return VecResource {
+    pub fn new(url: URL, vec: Vec<u8>) -> Self {
+        VecResource {
             url: url,
-            resource_type: resource_type,
             vec: vec,
             seek: 0,
-        };
+        }
     }
 
     pub fn inner(&self) -> &Vec<u8> {
@@ -410,25 +356,29 @@ impl VecResource {
 }
 
 impl Resource for VecResource {
-    fn url(&self) -> URL {
-        return self.url.clone();
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box VecResource {
+            url: self.url.clone(),
+            vec: self.vec.clone(),
+            seek: self.seek,
+        })
     }
 
-    fn stat(&self) -> ResourceType {
-        return self.resource_type;
+    fn url(&self) -> URL {
+        return self.url.clone();
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
-                Option::Some(b) => buf[i] = *b,
-                Option::None => (),
+                Some(b) => buf[i] = *b,
+                None => (),
             }
             self.seek += 1;
             i += 1;
         }
-        return Option::Some(i);
+        return Some(i);
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -443,7 +393,7 @@ impl Resource for VecResource {
             self.seek += 1;
             i += 1;
         }
-        return Option::Some(i);
+        return Some(i);
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -455,7 +405,7 @@ impl Resource for VecResource {
                 self.seek =
                     max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
         }
-        return Option::Some(self.seek);
+        return Some(self.seek);
     }
 
     fn sync(&mut self) -> bool {

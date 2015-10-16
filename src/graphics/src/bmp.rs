@@ -35,8 +35,8 @@ impl BMPFile {
 
         let get = |i: usize| -> u8 {
             match file_data.get(i) {
-                Option::Some(byte) => *byte,
-                Option::None => 0,
+                Some(byte) => *byte,
+                None => 0,
             }
         };
 
@@ -55,7 +55,7 @@ impl BMPFile {
             ret
         };
 
-        if gets(0, 2) == "BM".to_string() {
+        if gets(0, 2) == "BM" {
             let file_size = getd(2);
             let offset = getd(0xA);
             let header_size = getd(0xE);

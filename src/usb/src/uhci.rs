@@ -15,8 +15,6 @@ use drivers::pio::*;
 
 use programs::session::SessionItem;
 
-use syscall::call;
-
 pub struct UHCI {
     pub base: usize,
     pub irq: u8,
@@ -481,7 +479,7 @@ impl UHCI {
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        (*desc_dev).d();
+        //(*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -497,7 +495,7 @@ impl UHCI {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            desc_cfg.d();
+            //desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
@@ -507,12 +505,12 @@ impl UHCI {
                     DESC_INT => {
                         let desc_int =
                             ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        desc_int.d();
+                        //desc_int.d();
                     }
                     DESC_END => {
                         let desc_end =
                             ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        desc_end.d();
+                        //desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -552,7 +550,7 @@ impl UHCI {
                                         break;
                                     }
 
-                                    call::sys_yield();
+                                    context_switch(false);
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);
@@ -594,7 +592,7 @@ impl UHCI {
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        desc_hid.d();
+                        //desc_hid.d();
                     }
                     _ => {
                         debug::d("Unknown Descriptor Length ");

@@ -6,7 +6,7 @@ use drivers::pciconfig::*;
 
 use common::debug;
 use common::memory;
-use common::resource::{Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::time::{self, Duration};
@@ -49,16 +49,18 @@ struct IntelHDAResource {
 }
 
 impl Resource for IntelHDAResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box IntelHDAResource {
+            base: self.base
+        })
+    }
+
     fn url(&self) -> URL {
         URL::from_str("hda://")
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
-    }
-
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -192,12 +194,12 @@ impl Resource for IntelHDAResource {
             memory::unalloc(bdl as usize);
             */
 
-            Option::Some(buf.len())
+            Some(buf.len())
         }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn sync(&mut self) -> bool {
@@ -217,8 +219,8 @@ impl SessionItem for IntelHDA {
         "hda".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        box IntelHDAResource { base: self.base }
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box IntelHDAResource { base: self.base })
     }
 
     fn on_irq(&mut self, irq: u8) {

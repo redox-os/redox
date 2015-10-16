@@ -1,9 +1,6 @@
-use core::intrinsics::{volatile_load, volatile_store};
 use core::ptr::{read, write};
 
 use common::debug;
-use common::scheduler;
-use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 
@@ -85,6 +82,7 @@ impl EHCI {
         debug::d(" IRQ: ");
         debug::dbh(self.irq);
 
+        debug::dl();
         return;
 
         /*

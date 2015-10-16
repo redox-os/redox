@@ -1,3 +1,5 @@
+use alloc::boxed::Box;
+
 use core::mem;
 use core::ops::DerefMut;
 use core::slice;
@@ -9,6 +11,8 @@ use event::*;
 
 use fs::file::*;
 use io::*;
+
+pub mod event;
 
 /// A window
 pub struct Window {
@@ -31,29 +35,24 @@ pub struct Window {
 
 impl Window {
     /// Create a new window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Self {
-        let mut font_file = File::open("file:///ui/unifont.font");
-
-        let mut font;
-        match font_file.seek(Seek::End(0)) {
-            Some(length) => {
-                font = vec![0; length];
-
-                font_file.seek(Seek::Start(0));
-                font_file.read(&mut font);
-            },
-            None => font = Vec::new(),
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
+        let mut font = Vec::new();
+        if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
+            font_file.read_to_end(&mut font);
         }
 
-        Window {
-            x: x,
-            y: y,
-            w: w,
-            h: h,
-            t: title.to_string(),
-            file: File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)),
-            font: font,
-            data: vec![0; w * h * 4],
+        match File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
+            Some(file) => Some(box Window {
+                x: x,
+                y: y,
+                w: w,
+                h: h,
+                t: title.to_string(),
+                file: file,
+                font: font,
+                data: vec![0; w * h * 4],
+            }),
+            None => None
         }
     }
 
@@ -167,14 +166,14 @@ impl Window {
         match self.file.read(&mut unsafe {
             slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
         }) {
-            Option::Some(_) => return Option::Some(*event),
-            Option::None => return Option::None,
+            Some(_) => return Some(*event),
+            None => return None,
         }
     }
 
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
-        self.file.seek(Seek::Start(0));
+        self.file.seek(SeekFrom::Start(0));
         self.file.write(&self.data);
         return self.file.sync();
     }

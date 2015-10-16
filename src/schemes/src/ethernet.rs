@@ -6,7 +6,7 @@ use network::common::*;
 use network::ethernet::*;
 
 use common::debug;
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -25,18 +25,26 @@ pub struct EthernetResource {
 }
 
 impl Resource for EthernetResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        match self.network.dup() {
+            Some(network) => Some(box EthernetResource {
+                network: network,
+                data: self.data.clone(),
+                peer_addr: self.peer_addr,
+                ethertype: self.ethertype,
+            }),
+            None => None
+        }
+    }
+
     fn url(&self) -> URL {
         URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
                                   String::from_num_radix(self.ethertype as usize, 16)))
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
-    }
-
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
-        Option::None
+        return None;
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -44,25 +52,25 @@ impl Resource for EthernetResource {
             let mut bytes: Vec<u8> = Vec::new();
             swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
-            return Option::Some(bytes.len());
+            return Some(bytes.len());
         }
 
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.network.read_to_end(&mut bytes) {
-                Option::Some(_) => {
-                    if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
+                Some(_) => {
+                    if let Some(frame) = EthernetII::from_bytes(bytes) {
                         if frame.header.ethertype.get() == self.ethertype &&
                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
                             frame.header.dst.equals(BROADCAST_MAC_ADDR)) &&
                            (frame.header.src.equals(self.peer_addr) ||
                             self.peer_addr.equals(BROADCAST_MAC_ADDR)) {
                             vec.push_all(&frame.data);
-                            return Option::Some(frame.data.len());
+                            return Some(frame.data.len());
                         }
                     }
                 }
-                Option::None => return Option::None,
+                None => return None,
             }
         }
     }
@@ -80,13 +88,13 @@ impl Resource for EthernetResource {
         }
                                      .to_bytes()
                                      .as_slice()) {
-            Option::Some(_) => return Option::Some(buf.len()),
-            Option::None => return Option::None,
+            Some(_) => return Some(buf.len()),
+            None => return None,
         }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        return None;
     }
 
     fn sync(&mut self) -> bool {
@@ -101,45 +109,45 @@ impl SessionItem for EthernetScheme {
         return "ethernet".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        let mut network = URL::from_str("network://").open();
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        if let Some(mut network) = URL::from_str("network://").open() {
+            if url.path().len() > 0 {
+                let ethertype = url.path().to_num_radix(16) as u16;
 
-        if url.path().len() > 0 {
-            let ethertype = url.path().to_num_radix(16) as u16;
-
-            if url.host().len() > 0 {
-                return box EthernetResource {
-                    network: network,
-                    data: Vec::new(),
-                    peer_addr: MACAddr::from_string(&url.host()),
-                    ethertype: ethertype,
-                };
-            } else {
-                loop {
-                    let mut bytes: Vec<u8> = Vec::new();
-                    match network.read_to_end(&mut bytes) {
-                        Option::Some(_) => {
-                            if let Option::Some(frame) = EthernetII::from_bytes(bytes) {
-                                if frame.header.ethertype.get() == ethertype &&
-                                   (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
-                                    frame.header.dst.equals(BROADCAST_MAC_ADDR)) {
-                                    return box EthernetResource {
-                                        network: network,
-                                        data: frame.data,
-                                        peer_addr: frame.header.src,
-                                        ethertype: ethertype,
-                                    };
+                if url.host().len() > 0 {
+                    return Some(box EthernetResource {
+                        network: network,
+                        data: Vec::new(),
+                        peer_addr: MACAddr::from_string(&url.host()),
+                        ethertype: ethertype,
+                    });
+                } else {
+                    loop {
+                        let mut bytes: Vec<u8> = Vec::new();
+                        match network.read_to_end(&mut bytes) {
+                            Some(_) => {
+                                if let Some(frame) = EthernetII::from_bytes(bytes) {
+                                    if frame.header.ethertype.get() == ethertype &&
+                                       (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
+                                        frame.header.dst.equals(BROADCAST_MAC_ADDR)) {
+                                        return Some(box EthernetResource {
+                                            network: network,
+                                            data: frame.data,
+                                            peer_addr: frame.header.src,
+                                            ethertype: ethertype,
+                                        });
+                                    }
                                 }
                             }
+                            None => break,
                         }
-                        Option::None => break,
                     }
                 }
+            } else {
+                debug::d("Ethernet: No ethertype provided\n");
             }
-        } else {
-            debug::d("Ethernet: No ethertype provided\n");
         }
 
-        return box NoneResource;
+        None
     }
 }

@@ -1,8 +1,8 @@
 use core::cmp::*;
 use core::ops::*;
 
-use syscall::call::sys_time;
-use syscall::call::sys_yield;
+use common::context::context_switch;
+use common::scheduler;
 
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;
@@ -38,18 +38,22 @@ impl Duration {
 
     /// Get the current duration
     pub fn monotonic() -> Self {
-        let mut ret = Duration::new(0, 0);
+        let ret;
         unsafe {
-            sys_time(&mut ret, false);
+            let reenable = scheduler::start_no_ints();
+            ret = ::clock_monotonic;
+            scheduler::end_no_ints(reenable);
         }
         ret
     }
 
     /// Get the realtime
     pub fn realtime() -> Self {
-        let mut ret = Duration::new(0, 0);
+        let ret;
         unsafe {
-            sys_time(&mut ret, true);
+            let reenable = scheduler::start_no_ints();
+            ret = ::clock_realtime;
+            scheduler::end_no_ints(reenable);
         }
         ret
     }
@@ -62,7 +66,7 @@ impl Duration {
             if elapsed > *self {
                 break;
             } else {
-                sys_yield();
+                unsafe{ context_switch(false) };
             }
         }
     }
@@ -95,15 +99,15 @@ impl PartialOrd for Duration {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         let dif = *self - *other;
         if dif.secs > 0 {
-            Option::Some(Ordering::Greater)
+            Some(Ordering::Greater)
         } else if dif.secs < 0 {
-            Option::Some(Ordering::Less)
+            Some(Ordering::Less)
         } else if dif.nanos > 0 {
-            Option::Some(Ordering::Greater)
+            Some(Ordering::Greater)
         } else if dif.nanos < 0 {
-            Option::Some(Ordering::Less)
+            Some(Ordering::Less)
         } else {
-            Option::Some(Ordering::Equal)
+            Some(Ordering::Equal)
         }
     }
 }
