@@ -50,15 +50,15 @@ pub fn get_package(host: String, name: String, version: String) -> Package {
         let data = i.substr(5, i.len() - 5);
         let key = i.substr(0, 4);
 
-        if key == "name".to_string() {
+        if key == "name" {
             name = data;
-        } else if key == "desc".to_string() {
+        } else if key == "desc" {
             desc = data;
-        } else if key == "host".to_string() {
+        } else if key == "host" {
             host = data;
-        } else if key == "file".to_string() {
+        } else if key == "file" {
             files = data;
-        } else if key == "vers".to_string() {
+        } else if key == "vers" {
             version = data;
         }
     }

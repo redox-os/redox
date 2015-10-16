@@ -158,10 +158,10 @@ impl RTL8139 {
     }
 
     unsafe fn send_outbound(&mut self) {
-        while let Option::Some(bytes) = self.outbound.pop() {
-            if let Option::Some(txd) = self.txds.get(self.txd_i) {
+        while let Some(bytes) = self.outbound.pop() {
+            if let Some(txd) = self.txds.get(self.txd_i) {
                 if bytes.len() < 4096 {
-                    let mut tx_status = 0;
+                    let mut tx_status;
                     loop {
                         tx_status = ind(txd.status_port);
                         if tx_status & (1 << 13) == (1 << 13) {
@@ -204,8 +204,8 @@ impl SessionItem for RTL8139 {
         "network".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        NetworkResource::new(self)
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -246,12 +246,12 @@ impl NetworkScheme for RTL8139 {
                 let mut remove = false;
 
                 match self.resources.get(i) {
-                    Option::Some(ptr) => if *ptr == resource {
+                    Some(ptr) => if *ptr == resource {
                         remove = true;
                     } else {
                         i += 1;
                     },
-                    Option::None => break,
+                    None => break,
                 }
 
                 if remove {
@@ -267,7 +267,7 @@ impl NetworkScheme for RTL8139 {
             let reenable = scheduler::start_no_ints();
 
             for resource in self.resources.iter() {
-                while let Option::Some(bytes) = (**resource).outbound.pop() {
+                while let Some(bytes) = (**resource).outbound.pop() {
                     self.outbound.push(bytes);
                 }
             }
@@ -276,7 +276,7 @@ impl NetworkScheme for RTL8139 {
 
             self.receive_inbound();
 
-            while let Option::Some(bytes) = self.inbound.pop() {
+            while let Some(bytes) = self.inbound.pop() {
                 for resource in self.resources.iter() {
                     (**resource).inbound.push(bytes.clone());
                 }

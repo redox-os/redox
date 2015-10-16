@@ -19,7 +19,7 @@ extern crate alloc;
 
 use alloc::boxed::Box;
 
-use core::{cmp, mem, ptr};
+use core::{mem, ptr};
 
 use common::context::*;
 use common::debug;
@@ -47,45 +47,28 @@ use graphics::display::{self, Display};
 use graphics::point::Point;
 
 use programs::package::*;
+use programs::scheme::*;
 use programs::session::*;
 
 use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
-use schemes::http::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
-use schemes::udp::*;
 use schemes::window::*;
 
-use syscall::call;
 use syscall::handle::*;
 
 #[path="audio/src/lib.rs"]
 mod audio;
 
-#[path="common/src"]
-mod common {
-    pub mod context;
-    pub mod debug;
-    pub mod elf;
-    pub mod event;
-    pub mod queue;
-    pub mod memory;
-    pub mod mutex;
-    pub mod paging;
-    pub mod random;
-    pub mod resource;
-    pub mod scheduler;
-    pub mod string;
-    pub mod time;
-    pub mod vec;
-}
+#[path="common/src/lib.rs"]
+mod common;
 
 #[path="drivers/src/lib.rs"]
 mod drivers;
@@ -144,11 +127,11 @@ unsafe fn idle_loop() -> ! {
         let contexts = & *contexts_ptr;
         for i in 1..contexts.len() {
             match contexts.get(i) {
-                Option::Some(context) => if context.interrupted {
+                Some(context) => if context.interrupted {
                     halt = false;
                     break;
                 },
-                Option::None => ()
+                None => ()
             }
         }
 
@@ -169,7 +152,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        call::sys_yield();
+        context_switch(false);
     }
 }
 
@@ -186,7 +169,7 @@ unsafe fn event_loop() -> ! {
             scheduler::end_no_ints(reenable);
 
             match event_option {
-                Option::Some(event) => {
+                Some(event) => {
                     if debug_draw {
                         match event.to_option() {
                             EventOption::Key(key_event) => {
@@ -194,7 +177,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = cmp::max((*::session_ptr).redraw, event::REDRAW_ALL);
+                                            (*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
@@ -229,11 +212,11 @@ unsafe fn event_loop() -> ! {
                         }
                     }
                 },
-                Option::None => break,
+                None => break
             }
         }
 
-        call::sys_yield();
+        context_switch(false);
     }
 }
 
@@ -251,7 +234,7 @@ unsafe fn redraw_loop() -> ! {
             session.redraw();
         }
 
-        call::sys_yield();
+        context_switch(false);
     }
 }
 
@@ -325,13 +308,12 @@ unsafe fn init(font_data: usize) {
     let session = &mut *session_ptr;
 
     session.items.push(PS2::new());
-    session.items.push(box Serial::new(0x3F8, 0x4));
+    session.items.push(Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
     session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
-    session.items.push(box HTTPScheme);
     session.items.push(box MemoryScheme);
     session.items.push(box RandomScheme);
     session.items.push(box TimeScheme);
@@ -343,7 +325,6 @@ unsafe fn init(font_data: usize) {
     });
     session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
-    session.items.push(box UDPScheme);
     session.items.push(box WindowScheme);
 
     Context::spawn(box move || {
@@ -368,9 +349,8 @@ unsafe fn init(font_data: usize) {
     scheduler::end_no_ints(true);
 
     //Load cursor before getting out of debug mode
-    {
-        let mut resource = URL::from_str("file:///ui/cursor.bmp").open();
-
+    debug::d("Loading cursor\n");
+    if let Some(mut resource) = URL::from_str("file:///ui/cursor.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
@@ -378,17 +358,31 @@ unsafe fn init(font_data: usize) {
 
         let reenable = scheduler::start_no_ints();
         session.cursor = cursor;
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 
-    debug_draw = false;
+    debug::d("Loading schemes\n");
+    if let Some(mut resource) = URL::from_str("file:///schemes/").open() {
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
 
-    context_enabled = true;
+        for folder in String::from_utf8(&vec).split("\n".to_string()) {
+            if folder.ends_with("/".to_string()) {
+                let scheme_item = SchemeItem::from_url(
+                    &folder.substr(0, folder.len() - 1),
+                    &URL::from_string(&("file:///schemes/".to_string() + &folder + &folder.substr(0, folder.len() - 1) + ".bin"))
+                );
 
-    {
-        let mut resource = URL::from_str("file:///apps/").open();
+                let reenable = scheduler::start_no_ints();
+                session.items.push(scheme_item);
+                scheduler::end_no_ints(reenable);
+            }
+        }
+    }
 
+    debug::d("Loading apps\n");
+    if let Some(mut resource) = URL::from_str("file:///apps/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
@@ -398,15 +392,14 @@ unsafe fn init(font_data: usize) {
 
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
-                session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+                session.redraw = true;
                 scheduler::end_no_ints(reenable);
             }
         }
     }
 
-    {
-        let mut resource = URL::from_str("file:///ui/background.bmp").open();
-
+    debug::d("Loading background\n");
+    if let Some(mut resource) = URL::from_str("file:///ui/background.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
@@ -414,12 +407,16 @@ unsafe fn init(font_data: usize) {
 
         let reenable = scheduler::start_no_ints();
         session.background = background;
-        session.redraw = cmp::max(session.redraw, event::REDRAW_ALL);
+        session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
+
+    debug::d("Enabling context switching\n");
+    debug_draw = false;
+    context_enabled = true;
 }
 
-fn dr(reg: &str, value: u32) {
+fn dr(reg: &str, value: usize) {
     debug::d(reg);
     debug::d(": ");
     debug::dh(value as usize);
@@ -429,14 +426,13 @@ fn dr(reg: &str, value: u32) {
 
 #[no_mangle]
 //Take regs for kernel calls and exceptions
-/// Kernel
-pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx: u32, edx: u32, ecx: u32, mut eax: u32, eip: u32, eflags: u32, error: u32) -> u32 {
+pub unsafe fn kernel(interrupt: usize, edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, eip: usize, eflags: usize, error: usize) -> usize {
     macro_rules! exception {
         ($name:expr) => ({
             debug::d($name);
             debug::dl();
 
-            dr("CONTEXT", context_i as u32);
+            dr("CONTEXT", context_i);
             dr("EFLAGS", eflags);
             dr("EIP", eip);
             dr("EAX", eax);
@@ -449,23 +445,23 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("EDI", edi);
             dr("INT", interrupt);
 
-            let cr0;
-            asm!("mov eax, cr0" : "={eax}"(cr0) : : : "intel", "volatile");
+            let cr0: usize;
+            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
             dr("CR0", cr0);
 
-            let cr2;
-            asm!("mov eax, cr2" : "={eax}"(cr2) : : : "intel", "volatile");
+            let cr2: usize;
+            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
             dr("CR2", cr2);
 
-            let cr3;
-            asm!("mov eax, cr3" : "={eax}"(cr3) : : : "intel", "volatile");
+            let cr3: usize;
+            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
             dr("CR3", cr3);
 
-            let cr4;
-            asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
+            let cr4: usize;
+            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            call::sys_exit(-1);
+            do_sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");
@@ -478,7 +474,7 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             debug::d($name);
             debug::dl();
 
-            dr("CONTEXT", context_i as u32);
+            dr("CONTEXT", context_i);
             dr("EFLAGS", error);
             dr("EIP", eflags);
             dr("ERROR", eip);
@@ -492,23 +488,23 @@ pub unsafe fn kernel(interrupt: u32, edi: u32, esi: u32, ebp: u32, esp: u32, ebx
             dr("EDI", edi);
             dr("INT", interrupt);
 
-            let cr0;
-            asm!("mov eax, cr0" : "={eax}"(cr0) : : : "intel", "volatile");
+            let cr0: usize;
+            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
             dr("CR0", cr0);
 
-            let cr2;
-            asm!("mov eax, cr2" : "={eax}"(cr2) : : : "intel", "volatile");
+            let cr2: usize;
+            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
             dr("CR2", cr2);
 
-            let cr3;
-            asm!("mov eax, cr3" : "={eax}"(cr3) : : : "intel", "volatile");
+            let cr3: usize;
+            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
             dr("CR3", cr3);
 
-            let cr4;
-            asm!("mov eax, cr4" : "={eax}"(cr4) : : : "intel", "volatile");
+            let cr4: usize;
+            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            call::sys_exit(-1);
+            do_sys_exit(-1);
             loop {
                 asm!("sti");
                 asm!("hlt");

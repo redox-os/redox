@@ -4,6 +4,7 @@ use core::cmp::{min, max};
 use core::mem::size_of;
 use core::ptr;
 
+use common::context::context_switch;
 use common::event::*;
 use common::string::*;
 use common::resource::*;
@@ -14,8 +15,6 @@ use graphics::size::*;
 use graphics::window::*;
 
 use programs::session::SessionItem;
-
-use syscall::call::sys_yield;
 
 /// A window scheme
 pub struct WindowScheme;
@@ -29,7 +28,13 @@ pub struct WindowResource {
 }
 
 impl Resource for WindowResource {
-     //Required functions
+    fn dup(&self) -> Option<Box<Resource>> {
+        Some(box WindowResource {
+            window: Window::new(self.window.point, self.window.size, self.window.title.clone()),
+            seek: self.seek,
+        })
+    }
+
     /// Return the url of this resource
     fn url(&self) -> URL {
         return URL::from_string(&("window://".to_string() + "/" + self.window.point.x + "/" +
@@ -39,38 +44,21 @@ impl Resource for WindowResource {
                                   "/" + &self.window.title));
     }
 
-    /// Return the type of this resource
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
-    }
-
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        /* Reading window contents, might be necessary?
-        let content = &mut self.window.content;
-
-        let size = min(content.size - self.seek, buf.len());
-        unsafe {
-            Display::copy_run(content.offscreen + self.seek, buf.as_ptr() as usize, size);
-        }
-        self.seek += size;
-
-        return Option::Some(size);
-        */
-
         //Read events from window
         let mut i = 0;
         while buf.len() - i >= size_of::<Event>() {
             match self.window.poll() {
-                Option::Some(event) => {
+                Some(event) => {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += size_of::<Event>();
                 }
-                Option::None => sys_yield(),
+                None => unsafe { context_switch(false) },
             }
         }
 
-        return Option::Some(i);
+        return Some(i);
     }
 
     /// Write to resource
@@ -85,7 +73,7 @@ impl Resource for WindowResource {
         }
         self.seek += size;
 
-        return Option::Some(size);
+        return Some(size);
     }
 
     /// Seek
@@ -98,7 +86,7 @@ impl Resource for WindowResource {
             ResourceSeek::End(offset) => min(end, max(0, end as isize + offset) as usize),
         };
 
-        return Option::Some(self.seek);
+        return Some(self.seek);
     }
 
     /// Sync the resource, should flip
@@ -113,7 +101,7 @@ impl SessionItem for WindowScheme {
         return "window".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = url.path_parts();
         let pointx = match url_path.get(0) {
@@ -143,12 +131,12 @@ impl SessionItem for WindowScheme {
             }
         }
 
-        let mut p: Point = Point::new(pointx, pointy);
-        let mut s: Size = Size::new(size_width, size_height);
+        let p: Point = Point::new(pointx, pointy);
+        let s: Size = Size::new(size_width, size_height);
 
-        return box WindowResource {
+        Some(box WindowResource {
             window: Window::new(p, s, title),
             seek: 0,
-        };
+        })
     }
 }

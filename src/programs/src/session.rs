@@ -3,10 +3,10 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
-use core::{cmp, ptr, mem};
+use core::cmp;
 
 use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
-use common::resource::{NoneResource, Resource, ResourceType, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
@@ -32,8 +32,8 @@ pub trait SessionItem {
         String::new()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        box NoneResource
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        None
     }
 }
 
@@ -47,7 +47,7 @@ pub struct Session {
     pub packages: Vec<Box<Package>>,
     pub windows: Vec<*mut Window>,
     pub windows_ordered: Vec<*mut Window>,
-    pub redraw: usize,
+    pub redraw: bool,
 }
 
 impl Session {
@@ -69,7 +69,7 @@ impl Session {
                 packages: Vec::new(),
                 windows: Vec::new(),
                 windows_ordered: Vec::new(),
-                redraw: event::REDRAW_ALL,
+                redraw: true,
             }
         }
     }
@@ -77,7 +77,7 @@ impl Session {
     pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window) {
         self.windows.push(add_window_ptr);
         self.windows_ordered.push(add_window_ptr);
-        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+        self.redraw = true;
     }
 
     pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
@@ -86,12 +86,12 @@ impl Session {
             let mut remove = false;
 
             match self.windows.get(i) {
-                Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
+                Some(window_ptr) => if *window_ptr == remove_window_ptr {
                     remove = true;
                 } else {
                     i += 1;
                 },
-                Option::None => break,
+                None => break,
             }
 
             if remove {
@@ -104,12 +104,12 @@ impl Session {
             let mut remove = false;
 
             match self.windows_ordered.get(i) {
-                Option::Some(window_ptr) => if *window_ptr == remove_window_ptr {
+                Some(window_ptr) => if *window_ptr == remove_window_ptr {
                     remove = true;
                 } else {
                     i += 1;
                 },
-                Option::None => break,
+                None => break,
             }
 
             if remove {
@@ -117,7 +117,7 @@ impl Session {
             }
         }
 
-        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+        self.redraw = true;
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
@@ -136,7 +136,7 @@ impl Session {
         }
     }
 
-    pub fn open(&self, url: &URL) -> Box<Resource> {
+    pub fn open(&self, url: &URL) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -151,27 +151,27 @@ impl Session {
                 }
             }
 
-            box VecResource::new(URL::new(), ResourceType::Dir, list.to_utf8())
+            Some(box VecResource::new(URL::new(), list.to_utf8()))
         } else {
             for item in self.items.iter() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
                 }
             }
-            box NoneResource
+            None
         }
     }
 
     fn on_key(&mut self, key_event: KeyEvent) {
         if self.windows.len() > 0 {
             match self.windows.get(self.windows.len() - 1) {
-                Option::Some(window_ptr) => {
+                Some(window_ptr) => {
                     unsafe {
                         (**window_ptr).on_key(key_event);
-                        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+                        self.redraw = true;
                     }
                 }
-                Option::None => (),
+                None => (),
             }
         }
     }
@@ -180,7 +180,7 @@ impl Session {
         let mut catcher = -1;
 
         if mouse_event.y >= self.display.height as isize - 32 {
-            if mouse_event.left_button && !self.last_mouse_event.left_button {
+            if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
                 for package in self.packages.iter() {
                     if package.icon.data.len() > 0 {
@@ -205,7 +205,7 @@ impl Session {
                     if mouse_event.x >= x && mouse_event.x < x + w as isize {
                         for j in 0..self.windows.len() {
                             match self.windows.get(j) {
-                                Option::Some(catcher_window_ptr) =>
+                                Some(catcher_window_ptr) =>
                                     if catcher_window_ptr == window_ptr {
                                     unsafe {
                                         if j == self.windows.len() - 1 {
@@ -217,10 +217,10 @@ impl Session {
                                     }
                                     break;
                                 },
-                                Option::None => break,
+                                None => break,
                             }
                         }
-                        self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+                        self.redraw = true;
                         break;
                     }
                     x += w as isize;
@@ -230,22 +230,22 @@ impl Session {
             for reverse_i in 0..self.windows.len() {
                 let i = self.windows.len() - 1 - reverse_i;
                 match self.windows.get(i) {
-                    Option::Some(window_ptr) => unsafe {
+                    Some(window_ptr) => unsafe {
                         if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
                             catcher = i as isize;
 
-                            self.redraw = cmp::max(self.redraw, event::REDRAW_ALL);
+                            self.redraw = true;
                         }
                     },
-                    Option::None => (),
+                    None => (),
                 }
             }
         }
 
         if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
             match self.windows.remove(catcher as usize) {
-                Option::Some(window_ptr) => self.windows.push(window_ptr),
-                Option::None => (),
+                Some(window_ptr) => self.windows.push(window_ptr),
+                None => (),
             }
         }
 
@@ -253,8 +253,7 @@ impl Session {
     }
 
     pub unsafe fn redraw(&mut self) {
-        if self.redraw > event::REDRAW_NONE {
-            //if self.redraw >= REDRAW_ALL {
+        if self.redraw {
             self.display.set(Color::new(75, 163, 253));
             if self.background.data.len() > 0 {
                 self.background.draw(&self.display,
@@ -268,11 +267,11 @@ impl Session {
 
             for i in 0..self.windows.len() {
                 match self.windows.get(i) {
-                    Option::Some(window_ptr) => {
+                    Some(window_ptr) => {
                         (**window_ptr).focused = i == self.windows.len() - 1;
                         (**window_ptr).draw(&self.display);
                     }
-                    Option::None => (),
+                    None => (),
                 }
             }
 
@@ -338,21 +337,12 @@ impl Session {
                                   'X',
                                   Color::new(255, 255, 255));
             }
-            //}
 
             let reenable = scheduler::start_no_ints();
 
             self.display.flip();
 
-            /*
-            if self.cursor.data.len() > 0 {
-                self.display.image_alpha_onscreen(self.mouse_point, self.cursor.data.as_ptr(), self.cursor.size);
-            } else {
-                self.display.char_onscreen(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9), 'X', Color::new(255, 255, 255));
-            }
-            */
-
-            self.redraw = event::REDRAW_NONE;
+            self.redraw = false;
 
             scheduler::end_no_ints(reenable);
         }
@@ -362,33 +352,6 @@ impl Session {
         match event.to_option() {
             EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
             EventOption::Key(key_event) => self.on_key(key_event),
-            EventOption::Redraw(redraw_event) =>
-                self.redraw = cmp::max(self.redraw, redraw_event.redraw),
-            EventOption::Open(open_event) => {
-                let url_string = open_event.url_string;
-
-                if url_string.ends_with(".bin".to_string()) {
-                    execute(&URL::from_string(&url_string),
-                            &URL::new(),
-                            &Vec::new());
-                } else {
-                    for package in self.packages.iter() {
-                        let mut accepted = false;
-                        for accept in package.accepts.iter() {
-                            if url_string.ends_with(accept.substr(1, accept.len() - 1)) {
-                                accepted = true;
-                                break;
-                            }
-                        }
-                        if accepted {
-                            let mut args: Vec<String> = Vec::new();
-                            args.push(url_string.clone());
-                            execute(&package.binary, &package.url, &args);
-                            break;
-                        }
-                    }
-                }
-            }
             _ => (),
         }
     }

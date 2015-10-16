@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 
-use common::debug;
 use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
@@ -105,7 +104,7 @@ impl PS2 {
         let scancode = unsafe { self.data.read() };
 
         if scancode == 0 {
-            return Option::None;
+            return None;
         } else if scancode == 0x2A {
             self.lshift = true;
         } else if scancode == 0xAA {
@@ -134,7 +133,7 @@ impl PS2 {
             shift = self.lshift || self.rshift;
         }
 
-        return Option::Some(KeyEvent {
+        return Some(KeyEvent {
             character: char_for_scancode(scancode & 0x7F, shift),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
@@ -210,7 +209,7 @@ impl PS2 {
 
             self.mouse_i = 0;
 
-            return Option::Some(MouseEvent {
+            return Some(MouseEvent {
                 x: x,
                 y: y,
                 left_button: left_button,
@@ -219,7 +218,7 @@ impl PS2 {
             });
         }
 
-        return Option::None;
+        return None;
     }
 }
 
@@ -234,11 +233,11 @@ impl SessionItem for PS2 {
         loop {
             let status = unsafe { self.cmd.read() };
             if status & 0x21 == 1 {
-                if let Option::Some(key_event) = self.keyboard_interrupt() {
+                if let Some(key_event) = self.keyboard_interrupt() {
                     key_event.trigger();
                 }
             } else if status & 0x21 == 0x21 {
-                if let Option::Some(mouse_event) = self.mouse_interrupt() {
+                if let Some(mouse_event) = self.mouse_interrupt() {
                     mouse_event.trigger();
                 }
             } else {

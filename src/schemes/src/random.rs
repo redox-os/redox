@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use common::random;
-use common::resource::{Resource, ResourceType, URL, VecResource};
+use common::resource::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
 use programs::session::SessionItem;
@@ -14,9 +14,7 @@ impl SessionItem for RandomScheme {
         return "random".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        return box VecResource::new(URL::from_str("random://"),
-                                    ResourceType::File,
-                                    String::from_num(random::rand()).to_utf8());
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(box VecResource::new(URL::from_str("random://"), String::from_num(random::rand()).to_utf8()))
     }
 }

@@ -1,20 +1,17 @@
-#![feature(alloc)]
-#![feature(core)]
+#![feature(asm)]
 
-extern crate alloc;
-extern crate core;
-
-use alloc::boxed::Box;
-use std::{io, fs, rand};
-use core::ptr;
+use std::Box;
+use std::{io, rand};
+use std::ptr;
+use std::syscall::sys_fork;
 
 macro_rules! readln {
     () => {
         {
             let mut line = String::new();
             match io::stdin().read_line(&mut line) {
-                Ok(n) => Some(line.trim().to_string()),
-                Err(e) => None
+                Ok(_) => Some(line.trim().to_string()),
+                Err(_) => None
             }
         }
     };
@@ -32,11 +29,18 @@ pub fn main() {
     while let Some(line) = readln!() {
         let args: Vec<String> = line.split(' ').map(|arg| arg.to_string()).collect();
 
-        if let Some(command) = args.get(0) {
+        if let Some(a_command) = args.get(0) {
             println!("# {}", line);
-            let console_commands = ["panic", "ls", "ptr_write"];
+            let console_commands = ["panic",
+                                    "ls",
+                                    "ptr_write",
+                                    "box_write",
+                                    "reboot",
+                                    "shutdown",
+                                    "fork",
+                                    "leak_test"];
 
-            match &command[..] {
+            match &a_command[..] {
                 command if command == console_commands[0] =>
                     panic!("Test panic"),
                 command if command == console_commands[1] => {
@@ -45,11 +49,46 @@ pub fn main() {
                 }
                 command if command == console_commands[2] => {
                     let a_ptr = rand() as *mut u8;
+                    unsafe { ptr::write(a_ptr, rand() as u8); }
+                }
+                command if command == console_commands[3] => {
                     let mut a_box = Box::new(rand() as u8);
+                    unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
+                }
+                command if command == console_commands[4] => {
                     unsafe {
-                        ptr::write(a_ptr, rand() as u8);
-                        // TODO: import Box::{from_raw, to_raw} methods in libredox
-                        //ptr::write(a_box.to_raw(), rand() as u8);
+                        let mut good: u8 = 2;
+                        while good & 2 == 2 {
+                            asm!("in al, dx" : "={al}"(good) : "{dx}"(0x64) : : "intel", "volatile");
+                        }
+                        asm!("out dx, al" : : "{dx}"(0x64), "{al}"(0xFE) : : "intel", "volatile");
+                        loop {
+                            asm!("cli" : : : : "intel", "volatile");
+                            asm!("hlt" : : : : "intel", "volatile");
+                        }
+                    }
+                }
+                command if command == console_commands[5] => {
+                    unsafe {
+                        loop {
+                            asm!("cli" : : : : "intel", "volatile");
+                            asm!("hlt" : : : : "intel", "volatile");
+                        }
+                    }
+                }
+                command if command == console_commands[6] => {
+                    unsafe {
+                        if sys_fork() == 0 {
+                            println!("Parent from fork");
+                        } else {
+                            println!("Child from fork");
+                        }
+                    }
+                }
+                command if command == console_commands[7] => {
+                    let mut stack_it: Vec<Box<u8>> = Vec::new();
+                    loop {
+                        stack_it.push(Box::new(rand() as u8))
                     }
                 }
                 _ => println!("Commands: {}", console_commands.join(" ")),

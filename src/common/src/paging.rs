@@ -21,12 +21,12 @@ impl Page {
             }
         }
 
-        asm!("mov cr3, $0\n
-            mov $0, cr0\n
-            or $0, 0x80000000\n
-            mov cr0, $0\n"
+        asm!("mov cr3, $0
+            mov $0, cr0
+            or $0, $1
+            mov cr0, $0"
             :
-            : "{eax}"(memory::PAGE_DIRECTORY)
+            : "r"(memory::PAGE_DIRECTORY), "r"(0x80000000 as usize)
             : "memory"
             : "intel", "volatile");
     }
@@ -52,6 +52,16 @@ impl Page {
             : "{eax}"(self.virtual_address)
             : "memory"
             : "intel", "volatile");
+    }
+
+    /// Get the current physical address
+    pub fn phys_addr(&self) -> usize {
+        unsafe { (ptr::read(self.entry_address() as *mut u32) & 0xFFFFF000) as usize }
+    }
+
+    /// Get the current virtual address
+    pub fn virt_addr(&self) -> usize {
+        self.virtual_address & 0xFFFFF000
     }
 
     /// Map the memory page to a given physical memory address

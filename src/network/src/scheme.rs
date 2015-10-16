@@ -2,13 +2,12 @@ use alloc::boxed::*;
 
 use core::ops::DerefMut;
 
+use common::context::context_switch;
 use common::debug::*;
 use common::queue::*;
 use common::resource::*;
 use common::scheduler;
 use common::vec::*;
-
-use syscall::call::sys_yield;
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -43,17 +42,30 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        let mut ret = box NetworkResource {
+            nic: self.nic,
+            ptr: 0 as *mut NetworkResource,
+            inbound: self.inbound.clone(),
+            outbound: self.outbound.clone(),
+        };
+
+        unsafe {
+            ret.ptr = ret.deref_mut();
+
+            (*ret.nic).add(ret.ptr);
+        }
+
+        Some(ret)
+    }
+
     fn url(&self) -> URL {
         URL::from_str("network://")
     }
 
-    fn stat(&self) -> ResourceType {
-        ResourceType::File
-    }
-
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         d("TODO: Implement read for RTL8139\n");
-        Option::None
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -65,12 +77,12 @@ impl Resource for NetworkResource {
                 let option = (*self.ptr).inbound.pop();
                 scheduler::end_no_ints(reenable);
 
-                if let Option::Some(bytes) = option {
+                if let Some(bytes) = option {
                     vec.push_all(&bytes);
-                    return Option::Some(bytes.len());
+                    return Some(bytes.len());
                 }
 
-                sys_yield();
+                context_switch(false);
             }
         }
     }
@@ -84,11 +96,11 @@ impl Resource for NetworkResource {
             (*self.nic).sync();
         }
 
-        Option::Some(buf.len())
+        Some(buf.len())
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        Option::None
+        None
     }
 
     fn sync(&mut self) -> bool {

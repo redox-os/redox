@@ -3,7 +3,7 @@ use core::fmt::Write;
 use core::ptr;
 use core::result;
 
-use syscall::{sys_debug, sys_exit};
+use syscall::*;
 
 pub struct DebugStream;
 
@@ -43,6 +43,38 @@ extern "C" fn eh_personality() {
 
 }
 
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
+    unsafe { sys_alloc(size) as *mut u8 }
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize) {
+    unsafe { sys_unalloc(ptr as usize) }
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize,
+                                align: usize) -> *mut u8 {
+    unsafe { sys_realloc(ptr as usize, size) as *mut u8 }
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize,
+                                        size: usize, align: usize) -> usize {
+    unsafe { sys_realloc_inplace(ptr as usize, size) }
+}
+
+#[allow(unused_variables)]
+#[no_mangle]
+pub extern fn __rust_usable_size(size: usize, align: usize) -> usize {
+    size
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
     for i in 0..len {
@@ -56,6 +88,7 @@ pub unsafe extern "C" fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
 }
 
 #[no_mangle]
+#[cfg(target_arch = "x86")]
 pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, len: usize) {
     if src < dst {
         asm!("std
@@ -75,6 +108,7 @@ pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, len: usize) {
 }
 
 #[no_mangle]
+#[cfg(target_arch = "x86")]
 pub unsafe extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
     asm!("cld
         rep movsb"
@@ -85,6 +119,7 @@ pub unsafe extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
 }
 
 #[no_mangle]
+#[cfg(target_arch = "x86")]
 pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
     asm!("cld
         rep stosb"
@@ -95,6 +130,49 @@ pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
 }
 
 #[no_mangle]
+#[cfg(target_arch = "x86_64")]
+pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, len: usize) {
+    if src < dst {
+        asm!("std
+            rep movsb"
+            :
+            : "{rdi}"(dst.offset(len as isize - 1)), "{rsi}"(src.offset(len as isize - 1)), "{rcx}"(len)
+            : "cc", "memory"
+            : "intel", "volatile");
+    } else {
+        asm!("cld
+            rep movsb"
+            :
+            : "{rdi}"(dst), "{rsi}"(src), "{rcx}"(len)
+            : "cc", "memory"
+            : "intel", "volatile");
+    }
+}
+
+#[no_mangle]
+#[cfg(target_arch = "x86_64")]
+pub unsafe extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
+    asm!("cld
+        rep movsb"
+        :
+        : "{rdi}"(dst), "{rsi}"(src), "{rcx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+}
+
+#[no_mangle]
+#[cfg(target_arch = "x86_64")]
+pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
+    asm!("cld
+        rep stosb"
+        :
+        : "{rax}"(c), "{rdi}"(dst), "{rcx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+}
+
+#[no_mangle]
+#[cfg(target_arch = "x86")]
 //TODO Make this better
 /// 64 bit remainder on 32 bit arch
 pub extern "C" fn __umoddi3(a: u64, b: u64) -> u64 {
@@ -110,6 +188,7 @@ pub extern "C" fn __umoddi3(a: u64, b: u64) -> u64 {
 }
 
 #[no_mangle]
+#[cfg(target_arch = "x86")]
 //TODO Make this better
 /// 64 bit division on 32 bit arch
 pub extern "C" fn __udivdi3(a: u64, b: u64) -> u64 {

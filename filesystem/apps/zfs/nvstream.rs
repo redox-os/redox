@@ -119,7 +119,7 @@ pub fn decode_nv_list_embedded(xdr: &mut xdr::Xdr) -> xdr::XdrResult<NvList> {
         let decoded_size = try!(xdr.decode_u32());
 
         // Check for 2 terminating zeros
-        if (encoded_size == 0 && decoded_size == 0) {
+        if encoded_size == 0 && decoded_size == 0 {
             break;
         }
 

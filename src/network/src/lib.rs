@@ -8,4 +8,3 @@ pub mod ipv6;
 pub mod rtl8139;
 pub mod scheme;
 pub mod tcp;
-pub mod udp;

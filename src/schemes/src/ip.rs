@@ -7,7 +7,7 @@ use network::common::*;
 use network::ipv4::*;
 
 use common::{debug, random};
-use common::resource::{NoneResource, Resource, ResourceSeek, ResourceType, URL};
+use common::resource::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
@@ -23,18 +23,27 @@ pub struct IPResource {
 }
 
 impl Resource for IPResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        match self.link.dup() {
+            Some(link) => Some(box IPResource {
+                link: link,
+                data: self.data.clone(),
+                peer_addr: self.peer_addr,
+                proto: self.proto,
+                id: self.id,
+            }),
+            None => None
+        }
+    }
+
     fn url(&self) -> URL {
         return URL::from_string(&("ip://".to_string() + self.peer_addr.to_string() + '/' +
                                   String::from_num_radix(self.proto as usize, 16)));
     }
 
-    fn stat(&self) -> ResourceType {
-        return ResourceType::File;
-    }
-
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ip://\n");
-        return Option::None;
+        return None;
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -42,22 +51,22 @@ impl Resource for IPResource {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
-            return Option::Some(bytes.len());
+            return Some(bytes.len());
         }
 
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.link.read_to_end(&mut bytes) {
-                Option::Some(_) => {
-                    if let Option::Some(packet) = IPv4::from_bytes(bytes) {
+                Some(_) => {
+                    if let Some(packet) = IPv4::from_bytes(bytes) {
                         if packet.header.proto == self.proto && packet.header.dst.equals(IP_ADDR) &&
                            packet.header.src.equals(self.peer_addr) {
                             vec.push_all(&packet.data);
-                            return Option::Some(packet.data.len());
+                            return Some(packet.data.len());
                         }
                     }
                 }
-                Option::None => return Option::None,
+                None => return None,
             }
         }
     }
@@ -91,13 +100,13 @@ impl Resource for IPResource {
         }
 
         match self.link.write(ip.to_bytes().as_slice()) {
-            Option::Some(_) => return Option::Some(buf.len()),
-            Option::None => return Option::None,
+            Some(_) => return Some(buf.len()),
+            None => return None,
         }
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return Option::None;
+        return None;
     }
 
     fn sync(&mut self) -> bool {
@@ -121,7 +130,7 @@ impl SessionItem for IPScheme {
         return "ip".to_string();
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if url.path().len() > 0 {
             let proto = url.path().to_num_radix(16) as u8;
 
@@ -137,79 +146,74 @@ impl SessionItem for IPScheme {
                 }
 
                 if peer_mac.equals(BROADCAST_MAC_ADDR) {
-                    let mut link = URL::from_string(&("ethernet://".to_string() +
-                                                      peer_mac.to_string() +
-                                                      "/806"))
-                                       .open();
+                    if let Some(mut link) = URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/806")).open() {
+                        let arp = ARP {
+                            header: ARPHeader {
+                                htype: n16::new(1),
+                                ptype: n16::new(0x800),
+                                hlen: 6,
+                                plen: 4,
+                                oper: n16::new(1),
+                                src_mac: unsafe { MAC_ADDR },
+                                src_ip: IP_ADDR,
+                                dst_mac: peer_mac,
+                                dst_ip: peer_addr,
+                            },
+                            data: Vec::new(),
+                        };
 
-                    let arp = ARP {
-                        header: ARPHeader {
-                            htype: n16::new(1),
-                            ptype: n16::new(0x800),
-                            hlen: 6,
-                            plen: 4,
-                            oper: n16::new(1),
-                            src_mac: unsafe { MAC_ADDR },
-                            src_ip: IP_ADDR,
-                            dst_mac: peer_mac,
-                            dst_ip: peer_addr,
-                        },
-                        data: Vec::new(),
-                    };
-
-                    match link.write(arp.to_bytes().as_slice()) {
-                        Option::Some(_) => loop {
-                            let mut bytes: Vec<u8> = Vec::new();
-                            match link.read_to_end(&mut bytes) {
-                                Option::Some(_) =>
-                                    if let Option::Some(packet) = ARP::from_bytes(bytes) {
-                                    if packet.header.oper.get() == 2 &&
-                                       packet.header.src_ip.equals(peer_addr) {
-                                        peer_mac = packet.header.src_mac;
-                                        self.arp.push(ARPEntry {
-                                            ip: peer_addr,
-                                            mac: peer_mac,
-                                        });
-                                        break;
-                                    }
-                                },
-                                Option::None => (),
-                            }
-                        },
-                        Option::None => debug::d("IP: ARP Write Failed!\n"),
+                        match link.write(arp.to_bytes().as_slice()) {
+                            Some(_) => loop {
+                                let mut bytes: Vec<u8> = Vec::new();
+                                match link.read_to_end(&mut bytes) {
+                                    Some(_) =>
+                                        if let Some(packet) = ARP::from_bytes(bytes) {
+                                        if packet.header.oper.get() == 2 &&
+                                           packet.header.src_ip.equals(peer_addr) {
+                                            peer_mac = packet.header.src_mac;
+                                            self.arp.push(ARPEntry {
+                                                ip: peer_addr,
+                                                mac: peer_mac,
+                                            });
+                                            break;
+                                        }
+                                    },
+                                    None => (),
+                                }
+                            },
+                            None => debug::d("IP: ARP Write Failed!\n"),
+                        }
                     }
                 }
 
-                return box IPResource {
-                    link: URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() +
-                                             "/800"))
-                              .open(),
-                    data: Vec::new(),
-                    peer_addr: peer_addr,
-                    proto: proto,
-                    id: (random::rand() % 65536) as u16,
-                };
+                if let Some(link) = URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/800")).open() {
+                    return Some(box IPResource {
+                        link: link,
+                        data: Vec::new(),
+                        peer_addr: peer_addr,
+                        proto: proto,
+                        id: (random::rand() % 65536) as u16,
+                    });
+                }
             } else {
-                loop {
-                    let mut link = URL::from_str("ethernet:///800").open();
-
+                while let Some(mut link) = URL::from_str("ethernet:///800").open() {
                     let mut bytes: Vec<u8> = Vec::new();
                     match link.read_to_end(&mut bytes) {
-                        Option::Some(_) => {
-                            if let Option::Some(packet) = IPv4::from_bytes(bytes) {
+                        Some(_) => {
+                            if let Some(packet) = IPv4::from_bytes(bytes) {
                                 if packet.header.proto == proto &&
                                    packet.header.dst.equals(IP_ADDR) {
-                                    return box IPResource {
+                                    return Some(box IPResource {
                                         link: link,
                                         data: packet.data,
                                         peer_addr: packet.header.src,
                                         proto: proto,
                                         id: (random::rand() % 65536) as u16,
-                                    };
+                                    });
                                 }
                             }
                         }
-                        Option::None => break,
+                        None => break,
                     }
                 }
             }
@@ -217,6 +221,6 @@ impl SessionItem for IPScheme {
             debug::d("IP: No protocol provided\n");
         }
 
-        return box NoneResource;
+        None
     }
 }

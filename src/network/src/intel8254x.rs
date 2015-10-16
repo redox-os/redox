@@ -116,8 +116,8 @@ impl SessionItem for Intel8254x {
         "network".to_string()
     }
 
-    fn open(&mut self, url: &URL) -> Box<Resource> {
-        NetworkResource::new(self)
+    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+        Some(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -153,12 +153,12 @@ impl NetworkScheme for Intel8254x {
                 let mut remove = false;
 
                 match self.resources.get(i) {
-                    Option::Some(ptr) => if *ptr == resource {
+                    Some(ptr) => if *ptr == resource {
                         remove = true;
                     } else {
                         i += 1;
                     },
-                    Option::None => break,
+                    None => break,
                 }
 
                 if remove {
@@ -174,7 +174,7 @@ impl NetworkScheme for Intel8254x {
             let reenable = scheduler::start_no_ints();
 
             for resource in self.resources.iter() {
-                while let Option::Some(bytes) = (**resource).outbound.pop() {
+                while let Some(bytes) = (**resource).outbound.pop() {
                     self.outbound.push(bytes);
                 }
             }
@@ -183,7 +183,7 @@ impl NetworkScheme for Intel8254x {
 
             self.receive_inbound();
 
-            while let Option::Some(bytes) = self.inbound.pop() {
+            while let Some(bytes) = self.inbound.pop() {
                 for resource in self.resources.iter() {
                     (**resource).inbound.push(bytes.clone());
                 }
@@ -220,7 +220,7 @@ impl Intel8254x {
     }
 
     pub unsafe fn send_outbound(&mut self) {
-        while let Option::Some(bytes) = self.outbound.pop() {
+        while let Some(bytes) = self.outbound.pop() {
             let transmit_ring = self.read(TDBAL) as *mut TD;
             let length = self.read(TDLEN);
 

@@ -1,10 +1,4 @@
 use core::char;
-use core::ptr;
-
-use string::*;
-use vec::Vec;
-
-use syscall::{sys_alloc, sys_unalloc, sys_trigger};
 
 /// An optional event
 pub enum EventOption {
@@ -12,10 +6,6 @@ pub enum EventOption {
     Mouse(MouseEvent),
     /// A key event
     Key(KeyEvent),
-    /// A redraw event
-    Redraw(RedrawEvent),
-    /// A open event
-    Open(OpenEvent),
     /// An unknown event
     Unknown(Event),
     /// No event
@@ -30,8 +20,6 @@ pub struct Event {
     pub a: isize,
     pub b: isize,
     pub c: isize,
-    pub d: isize,
-    pub e: isize,
 }
 
 impl Event {
@@ -42,8 +30,6 @@ impl Event {
             a: 0,
             b: 0,
             c: 0,
-            d: 0,
-            e: 0,
         }
     }
 
@@ -53,18 +39,8 @@ impl Event {
         match self.code {
             'm' => EventOption::Mouse(MouseEvent::from_event(self)),
             'k' => EventOption::Key(KeyEvent::from_event(self)),
-            'r' => EventOption::Redraw(RedrawEvent::from_event(self)),
-            'o' => EventOption::Open(OpenEvent::from_event(self)),
             '\0' => EventOption::None,
             _ => EventOption::Unknown(self),
-        }
-    }
-
-    /// Event trigger
-    pub fn trigger(&self) {
-        unsafe {
-            let event_ptr: *const Event = self;
-            sys_trigger(event_ptr as usize);
         }
     }
 }
@@ -91,9 +67,7 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: self.left_button as isize,
-            d: self.middle_button as isize,
-            e: self.right_button as isize,
+            c: self.left_button as isize | (self.right_button as isize) << 1 | (self.right_button as isize) << 2,
         }
     }
 
@@ -102,16 +76,10 @@ impl MouseEvent {
         MouseEvent {
             x: event.a,
             y: event.b,
-            left_button: event.c > 0,
-            middle_button: event.d > 0,
-            right_button: event.e > 0,
+            left_button: event.c & 1 == 1,
+            middle_button: event.c & 4 == 4,
+            right_button: event.c & 2 == 2,
         }
-    }
-
-    /// Mouse event trigger
-    #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
     }
 }
 
@@ -187,114 +155,22 @@ impl KeyEvent {
             a: self.character as isize,
             b: self.scancode as isize,
             c: self.pressed as isize,
-            d: 0,
-            e: 0,
         }
     }
 
     /// Convert from an `Event`
     pub fn from_event(event: Event) -> KeyEvent {
         match char::from_u32(event.a as u32) {
-            Option::Some(character) => KeyEvent {
+            Some(character) => KeyEvent {
                 character: character,
                 scancode: event.b as u8,
                 pressed: event.c > 0,
             },
-            Option::None => KeyEvent {
+            None => KeyEvent {
                 character: '\0',
                 scancode: event.b as u8,
                 pressed: event.c > 0,
             },
         }
-    }
-
-    /// Key event trigger
-    #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
-    }
-}
-
-pub const REDRAW_NONE: usize = 0;
-pub const REDRAW_CURSOR: usize = 1;
-pub const REDRAW_ALL: usize = 2;
-
-/// A redraw event
-pub struct RedrawEvent {
-    pub redraw: usize,
-}
-
-impl RedrawEvent {
-    /// Convert to an `Event`
-    pub fn to_event(&self) -> Event {
-        Event {
-            code: 'r',
-            a: self.redraw as isize,
-            b: 0,
-            c: 0,
-            d: 0,
-            e: 0,
-        }
-    }
-
-    /// Convert from an `Event`
-    pub fn from_event(event: Event) -> RedrawEvent {
-        RedrawEvent { redraw: event.a as usize }
-    }
-
-    /// Redraw trigger
-    #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
-    }
-}
-
-/// A "open event" (such as a IO request)
-pub struct OpenEvent {
-    /// The URL, see wiki.
-    pub url_string: String,
-}
-
-impl OpenEvent {
-    /// Convert to an `Event`
-    pub fn to_event(&self) -> Event {
-        unsafe {
-            let c_str = sys_alloc(self.url_string.len() + 1) as *mut u8;
-            if self.url_string.len() > 0 {
-                ptr::copy(self.url_string.as_ptr(), c_str, self.url_string.len());
-            }
-            ptr::write(c_str.offset(self.url_string.len() as isize), 0);
-            Event {
-                code: 'o',
-                a: c_str as isize,
-                b: 0,
-                c: 0,
-                d: 0,
-                e: 0,
-            }
-        }
-    }
-
-    /// Convert from an `Event`
-    pub fn from_event(event: Event) -> OpenEvent {
-        unsafe {
-            let mut utf8: Vec<u8> = Vec::new();
-            for i in 0..4096 {
-                let b = ptr::read((event.a as *const u8).offset(i));
-                if b == 0 {
-                    break;
-                } else {
-                    utf8.push(b);
-                }
-            }
-            sys_unalloc(event.a as usize);
-
-            OpenEvent { url_string: String::from_utf8_unchecked(utf8) }
-        }
-    }
-
-    /// Event trigger
-    pub fn trigger(&self) {
-        self.to_event().trigger();
     }
 }

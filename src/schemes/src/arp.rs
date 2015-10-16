@@ -1,3 +1,4 @@
+use common::context::context_switch;
 use common::resource::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
@@ -6,8 +7,6 @@ use network::arp::*;
 use network::common::*;
 
 use programs::session::SessionItem;
-
-use syscall::call;
 
 pub struct ARPScheme;
 
@@ -19,13 +18,11 @@ impl SessionItem for ARPScheme {
 
 impl ARPScheme {
     pub fn reply_loop() {
-        loop {
-            let mut link = URL::from_str("ethernet:///806").open();
-
+        while let Some(mut link) = URL::from_str("ethernet:///806").open() {
             let mut bytes: Vec<u8> = Vec::new();
             match link.read_to_end(&mut bytes) {
-                Option::Some(_) => {
-                    if let Option::Some(packet) = ARP::from_bytes(bytes) {
+                Some(_) => {
+                    if let Some(packet) = ARP::from_bytes(bytes) {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
                             let mut response = ARP {
                                 header: packet.header,
@@ -41,7 +38,7 @@ impl ARPScheme {
                         }
                     }
                 }
-                Option::None => call::sys_yield(),
+                None => unsafe { context_switch(false) },
             }
         }
     }

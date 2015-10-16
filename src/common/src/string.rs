@@ -8,9 +8,8 @@ use core::slice::SliceExt;
 use core::str::StrExt;
 
 use common::debug::*;
+use common::memory::*;
 use common::vec::*;
-
-use syscall::call::*;
 
 /// A trait for types that can be converted to `String`
 pub trait ToString {
@@ -38,11 +37,11 @@ impl <'a> Iterator for Chars<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.offset < self.string.len() {
-            let ret = Option::Some(self.string[self.offset]);
+            let ret = Some(self.string[self.offset]);
             self.offset += 1;
             ret
         } else {
-            Option::None
+            None
         }
     }
 }
@@ -72,9 +71,9 @@ impl <'a> Iterator for Split<'a> {
                     len += 1;
                 }
             }
-            Option::Some(self.string.substr(start, len))
+            Some(self.string.substr(start, len))
         } else {
-            Option::None
+            None
         }
     }
 }
@@ -240,11 +239,11 @@ impl String {
         if self.len() >= other.len() {
             for i in 0..self.len() + 1 - other.len() {
                 if self.substr(i, other.len()) == other {
-                    return Option::Some(i);
+                    return Some(i);
                 }
             }
         }
-        Option::None
+        None
     }
 
     /// Check if the string starts with a given string
@@ -332,7 +331,7 @@ impl String {
     pub unsafe fn to_c_str(&self) -> *const u8 {
         let length = self.len() + 1;
 
-        let data = sys_alloc(length) as *mut u8;
+        let data = alloc(length) as *mut u8;
 
         for i in 0..self.len() {
             ptr::write(data.offset(i as isize), self[i] as u8);
@@ -405,8 +404,8 @@ impl Index<usize> for String {
     type Output = char;
     fn index<'a>(&'a self, i: usize) -> &'a Self::Output {
         match self.vec.get(i) {
-            Option::Some(c) => c,
-            Option::None => &NULL_CHAR,
+            Some(c) => c,
+            None => &NULL_CHAR,
         }
     }
 }
@@ -485,3 +484,27 @@ impl Add<isize> for String {
         self + String::from_num_signed(other)
     }
 }
+
+// Slightly modified version of the impl_eq found in the std collections String
+// Ideally, we'd compare these as arrays. However, we'd need to flesh out String a bit more
+macro_rules! impl_chars_eq {
+    ($lhs:ty, $rhs: ty) => {
+        impl<'a> PartialEq<$rhs> for $lhs {
+            #[inline]
+            fn eq(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+            #[inline]
+            fn ne(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+        }
+
+        impl<'a> PartialEq<$lhs> for $rhs {
+            #[inline]
+            fn eq(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+            #[inline]
+            fn ne(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+        }
+
+    }
+}
+
+impl_chars_eq! { String, str }
+impl_chars_eq! { String, &'a str }

@@ -4,14 +4,15 @@ use redox::*;
 
 pub fn main() {
     let url = match args().get(1) {
-        Option::Some(arg) => arg.clone(),
-        Option::None => "none://",
+        Some(arg) => arg.clone(),
+        None => "none://",
     };
 
-    let mut resource = File::open(&url);
 
     let mut vec: Vec<u8> = Vec::new();
-    resource.read_to_end(&mut vec);
+    if let Some(mut file) = File::open(&url) {
+        file.read_to_end(&mut vec);
+    }
 
     let bmp = BMPFile::from_data(&vec);
 
@@ -19,12 +20,12 @@ pub fn main() {
                                  (rand() % 300 + 50) as isize,
                                  max(320, bmp.width()),
                                  bmp.height(),
-                                 &("Viewer (".to_string() + &url + ")"));
+                                 &("Viewer (".to_string() + &url + ")")).unwrap();
     window.set([0, 0, 0, 255]);
     window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
     window.sync();
 
-    while let Option::Some(event) = window.poll() {
+    while let Some(event) = window.poll() {
         match event.to_option() {
             EventOption::Key(key_event) => {
                 if key_event.pressed && key_event.scancode == K_ESC {
