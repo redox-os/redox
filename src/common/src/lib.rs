@@ -1,5 +1,3 @@
-#![feature(asm)]
-
 /// Context
 pub mod context;
 /// Debug
