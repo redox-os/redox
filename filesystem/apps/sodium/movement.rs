@@ -1,6 +1,6 @@
 use super::*;
 
-impl<I: Iterator<Item = char>> Editor<I> {
+impl Editor {
     /// Go to next char
     pub fn next(&mut self) {
         let die_borrowck_die = self.text.clone();

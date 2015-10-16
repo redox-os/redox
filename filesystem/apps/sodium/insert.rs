@@ -12,7 +12,7 @@ pub struct InsertOptions {
     mode: InsertMode,
 }
 
-impl<I: Iterator<Item = char>> Editor<I> {
+impl Editor {
     /// Insert text
     pub fn insert(&mut self, c: char) {
         

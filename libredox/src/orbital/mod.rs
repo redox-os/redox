@@ -177,11 +177,21 @@ impl Window {
         self.file.write(&self.data);
         return self.file.sync();
     }
+
+    pub fn event_iter<'a>(&'a mut self) -> EventIter<'a> {
+        EventIter {
+            window: self,
+        }
+    }
 }
 
-impl Iterator for Window {
+pub struct EventIter<'a> {
+    window: &'a mut Window,
+}
+
+impl<'a> Iterator for EventIter<'a> {
     type Item = Event;
     fn next(&mut self) -> Option<Event> {
-        self.poll()
+        self.window.poll()
     }
 }
