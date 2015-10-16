@@ -32,7 +32,7 @@ pub fn main() {
 
     let mut editor = Editor::new();
 
-    let mut inp = window.event_iter().filter_map(|x| {
+    let mut inp = window.event_iter().map(|x| {
         x.to_option()
     }).inst_iter();
 
