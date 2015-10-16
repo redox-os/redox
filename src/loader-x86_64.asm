@@ -256,8 +256,9 @@ long_mode:
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], rax
 
-    mov rdi, 0xC000
-    mov rsi, kernel_file
+    mov rdi, kernel_file
+    mov rsi, rdi
+    add rsi, 0xB000
     mov rcx, (kernel_file.font - kernel_file)
     cld
     rep movsb
