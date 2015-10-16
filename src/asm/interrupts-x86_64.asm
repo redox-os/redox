@@ -32,44 +32,17 @@ interrupts:
 %endrep
 .handle:
 	xchg bx, bx
-	mov [0x100010], rsp
-	push qword [0x100000]
-    push rax
-    push rcx
     push rdx
+    push rcx
     push rbx
-    push qword [0x100010]
-    push rbp
-    push rsi
-    push rdi
-	;push r8
-	;push r9
-	;push r10
-	;push r11
-	;push r12
-	;push r13
-	;push r14
-	;push r15
+    push rax
+	push qword [0x100000]
     call qword [.handler]
-	;pop r15
-	;pop r14
-	;pop r13
-	;pop r12
-	;pop r11
-	;pop r10
-	;pop r9
-	;pop r8
     ;Put return value in stack for pop
-    mov [rsp + 56], rax
-    pop rdi
-    pop rsi
-    pop rbp
-    add rsp, 8
-    pop rbx
-    pop rdx
-    pop rcx
-    pop rax
-    add rsp, 8
+    add rsp, 16 ;Skip interrupt and RAX is returned by handler
+	pop rbx
+	pop rcx
+	pop rdx
     iretq
 
 .handler: dq 0
