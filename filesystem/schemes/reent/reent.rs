@@ -8,7 +8,7 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Resource>> {
+    pub fn dup(&self) -> Option<Box<Self>> {
         match self.file.dup() {
             Some(file) => Some(box Resource {
                 file: file
