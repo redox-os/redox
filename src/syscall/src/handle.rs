@@ -26,7 +26,7 @@ pub unsafe fn do_sys_debug(byte: u8) {
     let reenable = scheduler::start_no_ints();
 
     if ::debug_display as usize > 0 {
-        let display = &*(*::debug_display);
+        let display = &*::debug_display;
         display.rect(::debug_point, Size::new(8, 16), Color::new(0, 0, 0));
         if byte == 10 {
             ::debug_point.x = 0;

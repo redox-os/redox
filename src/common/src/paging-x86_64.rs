@@ -41,7 +41,7 @@ impl Page {
         }
 
         for dp_i in 0..PAGE_TABLE_SIZE {
-            if dp_i == 0 {
+            if dp_i < 4 {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64,
                         (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
             }else{
@@ -59,6 +59,7 @@ impl Page {
             }
         }
 
+        asm!("xchg bx, bx" : : : "memory" : "intel", "volatile");
         asm!("mov cr3, $0
             mov $0, cr0
             or $0, $1

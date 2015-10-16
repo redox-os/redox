@@ -29,7 +29,10 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-    xchg bx, bx
+    push esp
+    push ebp
+    push esi
+    push edi
     push edx
     push ecx
     push ebx
@@ -40,6 +43,10 @@ interrupts:
     pop ebx
     pop ecx
     pop edx
+    pop edi
+    pop esi
+    pop ebp
+    add esp, 4 ;Skip esp
     iretd
 
 .handler: dd 0
