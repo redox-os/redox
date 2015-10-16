@@ -38,7 +38,7 @@ impl Editor {
         }
     }
 
-    fn save(&mut self) {
+    fn save(&mut self, window: &Window) {
         match self.file {
             Some(ref mut file) => {
                 file.seek(SeekFrom::Start(0));
@@ -46,7 +46,19 @@ impl Editor {
                 file.sync();
             }
             None => {
-                //TODO: Ask for file to save to
+                let mut save_window = {
+                    const width: usize = 400;
+                    const height: usize = 200;
+                    Window::new((window.x() + (window.width()/2 - width/2) as isize),
+                                (window.y() + (window.height()/2 - height/2) as isize),
+                                width,
+                                height,
+                                "Save As").unwrap()
+                };
+                if let Some(event) = save_window.poll() {
+                    //TODO: Create a Save/Cancel button for file saving
+                    // and prompt the user for asking to save
+                }
             }
         }
     }
@@ -135,7 +147,7 @@ impl Editor {
                                      (rand() % 300 + 50) as isize,
                                      576,
                                      400,
-                                      &("Editor (".to_string() + url + ")")).unwrap();
+                                     &("Editor (".to_string() + url + ")")).unwrap();
 
         self.url = url.to_string();
         self.file = File::open(&self.url);
@@ -159,7 +171,7 @@ impl Editor {
                                               &self.string[self.offset + 1 .. self.string.len() - 1];
                             },
                             K_F5 => self.reload(),
-                            K_F6 => self.save(),
+                            K_F6 => self.save(&window),
                             K_HOME => self.offset = 0,
                             K_UP => {
                                 let mut new_offset = 0;
