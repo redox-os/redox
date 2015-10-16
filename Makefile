@@ -1,26 +1,22 @@
 #Modify fo different target support
+ARCH=i386
+#ARCH=x86_64
 
-## x86_64 ##
-#TARGET=x86_64-unknown-redox
-#ELF=elf_x86_64
-
-## i686 ##
-TARGET=i686-unknown-redox
-ELF=elf_i386
+BUILD=build/$(ARCH)
 
 RUSTC=rustc
-RUSTCFLAGS=--target=$(TARGET).json \
+RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
-	-L build
+	-L $(BUILD)
 AS=nasm
 AWK=awk
 BASENAME=basename
 CUT=cut
 FIND=find
 LD=ld
-LDARGS=-m $(ELF)
+LDARGS=-m elf_$(ARCH)
 MAKE=make
 MKDIR=mkdir
 OBJDUMP=objdump
@@ -42,7 +38,7 @@ VBM_CLEANUP=\
 
 ifeq ($(OS),Windows_NT)
 	SHELL=windows\sh
-	LD=windows/i386-elf-ld
+	LD=windows/$(ARCH)-elf-ld
 	AS=windows/nasm
 	AWK=windows/awk
 	BASENAME=windows/basename
@@ -69,9 +65,9 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
-		LD=i386-elf-ld
-		OBJDUMP=i386-elf-objdump
-        RUSTCFLAGS += -C ar=i386-elf-ar -C linker=i386-elf-linker
+		LD=$(ARCH)-elf-ld
+		OBJDUMP=$(ARCH)-elf-objdump
+        RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-linker
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 		VB_AUDIO="coreaudio"
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
@@ -93,7 +89,7 @@ help:
 	@echo
 	@echo "    make all"
 	@echo "        Build raw image of filesystem used by Redox."
-	@echo "        It create build/harddrive.bin which can be used to build"
+	@echo "        It create $(BUILD)/harddrive.bin which can be used to build"
 	@echo "        images for Your virtual machine."
 	@echo
 	@echo "    make virtualbox"
@@ -122,10 +118,10 @@ help:
 	@echo " For more information check out 'github.com/redox-os/redox'"
 	@echo " or 'redox-os.org'"
 
-all: build/harddrive.bin
+all: $(BUILD)/harddrive.bin
 
-docs: src/kernel.rs build/libcore.rlib build/liballoc.rlib
-	rustdoc --target=$(TARGET).json -L. $<
+docs: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
 
@@ -134,7 +130,7 @@ schemes: schemes/console schemes/example schemes/reent schemes/udp
 tests: tests/success tests/failure
 
 clean:
-	$(RM) -rf build filesystem/apps/*/*.bin filesystem/apps/*/*.list
+	$(RM) -rf $(BUILD) filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
 
 apps/%:
 	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
@@ -147,66 +143,66 @@ FORCE:
 tests/%: FORCE
 	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
-build/libcore.rlib: rust/libcore/lib.rs
-	$(MKDIR) -p build
+$(BUILD)/libcore.rlib: rust/libcore/lib.rs
+	$(MKDIR) -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/liballoc.rlib: rust/liballoc/lib.rs build/libcore.rlib
+$(BUILD)/liballoc.rlib: rust/liballoc/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/liballoc_system.rlib: rust/liballoc_system/lib.rs build/libcore.rlib
+$(BUILD)/liballoc_system.rlib: rust/liballoc_system/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/librustc_unicode.rlib: rust/librustc_unicode/lib.rs build/libcore.rlib
+$(BUILD)/librustc_unicode.rlib: rust/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/libcollections.rlib: rust/libcollections/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib
+$(BUILD)/libcollections.rlib: rust/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/librand.rlib: rust/librand/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/librustc_unicode.rlib build/libcollections.rlib
+$(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-build/liblibc.rlib: rust/liblibc/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
+$(BUILD)/liblibc.rlib: rust/liblibc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
 
 #TODO: Rust libstd
-#build/libstd.rlib: rust/libstd/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib build/liblibc.rlib
+#$(BUILD)/libstd.rlib: rust/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/liblibc.rlib
 #	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
 
 #Custom libstd
-build/libstd.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
+$(BUILD)/libstd.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name std --cfg std -o $@ $<
 
-build/libredox.rlib: libredox/src/lib.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libcollections.rlib build/librand.rlib
+$(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
-build/kernel.rlib: src/kernel.rs build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib
+$(BUILD)/kernel.rlib: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-filesystem/kernel.bin: build/kernel.rlib src/kernel.ld
+filesystem/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
 
 filesystem/kernel.list: filesystem/kernel.bin
 	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
-	$(MKDIR) -p build
-	$(AS) -f elf -o build/`$(BASENAME) $*.o` $<
-	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.o
+	$(MKDIR) -p $(BUILD)
+	$(AS) -f elf -o $(BUILD)/`$(BASENAME) $*.o` $<
+	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.o
 
-filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld build/libcore.rlib build/liballoc.rlib build/liballoc_system.rlib build/libredox.rlib
-	$(SED) "s|APPLICATION_PATH|../$<|" src/program.rs > build/`$(BASENAME) $*`.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`$(BASENAME) $*`.rlib build/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T src/program.ld build/`$(BASENAME) $*`.rlib
+filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/liballoc_system.rlib $(BUILD)/libredox.rlib
+	$(SED) "s|APPLICATION_PATH|../../$<|" src/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
+	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
 
-filesystem/apps/test/test.bin: filesystem/apps/test/test.rs src/program.ld build/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/test.rlib $<
-	$(LD) $(LDARGS) -o $@ -T src/program.ld build/test.rlib build/libstd.rlib
+filesystem/apps/test/test.bin: filesystem/apps/test/test.rs src/program.ld $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/test.rlib $<
+	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/test.rlib $(BUILD)/libstd.rlib
 
-filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld build/libredox.rlib
-	$(SED) "s|SCHEME_PATH|../$<|" src/scheme.rs > build/`$(BASENAME) $*`.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o build/`$(BASENAME) $*`.rlib build/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T src/scheme.ld build/`$(BASENAME) $*`.rlib build/libredox.rlib
+filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld $(BUILD)/libredox.rlib
+	$(SED) "s|SCHEME_PATH|../../$<|" src/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
+	$(LD) $(LDARGS) -o $@ -T src/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -d $< > $@
@@ -224,13 +220,16 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-build/filesystem.gen: apps schemes
+$(BUILD)/filesystem.gen: apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-build/harddrive.bin: src/loader.asm filesystem/kernel.bin build/filesystem.gen
-	$(AS) -f bin -o $@ -ibuild/ -isrc/ -ifilesystem/ $<
+$(BUILD)/harddrive.bin: src/loader-$(ARCH).asm filesystem/kernel.bin $(BUILD)/filesystem.gen
+	$(AS) -f bin -o $@ -i$(BUILD)/ -isrc/ -ifilesystem/ $<
 
-virtualbox: build/harddrive.bin
+$(BUILD)/harddrive.list: src/loader-$(ARCH).asm filesystem/kernel.bin $(BUILD)/filesystem.gen
+	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -i$(BUILD)/ -isrc/ -ifilesystem/ $<
+
+virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
@@ -243,41 +242,41 @@ virtualbox: build/harddrive.bin
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 build/network.pcap
+	$(VBM) modifyvm Redox --nictracefile1 $(BUILD)/network.pcap
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file build/serial.log
+	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb on
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
-	$(VBM) convertfromraw $< build/harddrive.vdi
+	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
 	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium build/harddrive.vdi
+	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
-qemu: build/harddrive.bin
-	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
+qemu: $(BUILD)/harddrive.bin
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
-qemu_bare: build/harddrive.bin
-	-qemu-system-i386 -net none -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
+qemu_bare: $(BUILD)/harddrive.bin
+	-qemu-system-$(ARCH) -net none -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
-qemu_no_kvm: build/harddrive.bin
-	-qemu-system-i386 -net nic,model=rtl8139 -net user -net dump,file=build/network.pcap \
+qemu_no_kvm: $(BUILD)/harddrive.bin
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
 			-serial mon:stdio -m 1024 -d guest_errors -hda $<
 
-qemu_tap: build/harddrive.bin
+qemu_tap: $(BUILD)/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-i386 -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=build/network.pcap \
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
@@ -285,10 +284,10 @@ qemu_tap: build/harddrive.bin
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
-qemu_tap_8254x: build/harddrive.bin
+qemu_tap_8254x: $(BUILD)/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"
 	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-i386 -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=build/network.pcap \
+	-qemu-system-$(ARCH) -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 \
@@ -296,7 +295,7 @@ qemu_tap_8254x: build/harddrive.bin
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
 
-virtualbox_tap: build/harddrive.bin
+virtualbox_tap: $(BUILD)/harddrive.bin
 	echo "Delete VM"
 	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
 	echo "Delete Disk"
@@ -315,15 +314,15 @@ virtualbox_tap: build/harddrive.bin
 	$(VBM) modifyvm Redox --nictracefile1 network.pcap
 	$(VBM) modifyvm Redox --bridgeadapter1 tap_redox
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file build/serial.log
+	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb on
 	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
 	$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
-	$(VBM) convertfromraw $< build/harddrive.vdi
+	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
 	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium build/harddrive.vdi
+	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
 	-$(VB) --startvm Redox --dbg
 	echo "Delete Bridge"

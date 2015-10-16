@@ -1,6 +1,20 @@
 use core::ptr;
 
-use common::memory;
+/*
+PAGE_DIRECTORY:
+    1024 dwords pointing to page tables
+PAGE_TABLES:
+    1024 * 1024 dwords pointing to pages
+PAGE_END:
+*/
+
+pub const PAGE_TABLE_SIZE: usize = 1024;
+pub const PAGE_ENTRY_SIZE: usize = 4;
+pub const PAGE_SIZE: usize = 4096;
+
+pub const PAGE_DIRECTORY: usize = 0x300000;
+pub const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
+pub const PAGE_END: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE;
 
 /// A memory page
 pub struct Page {
@@ -11,12 +25,12 @@ pub struct Page {
 impl Page {
     /// Initialize the memory page
     pub unsafe fn init() {
-        for table_i in 0..memory::PAGE_TABLE_SIZE {
-            ptr::write((memory::PAGE_DIRECTORY + table_i * 4) as *mut u32,
-                       (memory::PAGE_TABLES + table_i * memory::PAGE_TABLE_SIZE * 4) as u32 | 1);
+        for table_i in 0..PAGE_TABLE_SIZE {
+            ptr::write((PAGE_DIRECTORY + table_i * PAGE_ENTRY_SIZE) as *mut u32,
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u32 | 1);
 
-            for entry_i in 0..memory::PAGE_TABLE_SIZE {
-                Page::new((table_i * memory::PAGE_TABLE_SIZE + entry_i) * memory::PAGE_SIZE)
+            for entry_i in 0..PAGE_TABLE_SIZE {
+                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE)
                     .map_identity();
             }
         }
@@ -26,7 +40,7 @@ impl Page {
             or $0, $1
             mov cr0, $0"
             :
-            : "r"(memory::PAGE_DIRECTORY), "r"(0x80000000 as usize)
+            : "r"(PAGE_DIRECTORY), "r"(0x80000000 as usize)
             : "memory"
             : "intel", "volatile");
     }
@@ -38,11 +52,11 @@ impl Page {
 
     /// Get the entry address
     fn entry_address(&self) -> usize {
-        let page = self.virtual_address / memory::PAGE_SIZE;
-        let table = page / memory::PAGE_TABLE_SIZE;
-        let entry = page % memory::PAGE_TABLE_SIZE;
+        let page = self.virtual_address / PAGE_SIZE;
+        let table = page / PAGE_TABLE_SIZE;
+        let entry = page % PAGE_TABLE_SIZE;
 
-        memory::PAGE_TABLES + (table * memory::PAGE_TABLE_SIZE + entry) * 4
+        PAGE_TABLES + (table * PAGE_TABLE_SIZE + entry) * PAGE_ENTRY_SIZE
     }
 
     /// Flush the memory page

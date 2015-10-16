@@ -8,23 +8,11 @@ use core::ptr;
 
 use common::scheduler;
 
-pub const PAGE_DIRECTORY: usize = 0x300000;
-pub const PAGE_TABLE_SIZE: usize = 1024;
-pub const PAGE_TABLES: usize = PAGE_DIRECTORY + PAGE_TABLE_SIZE * 4;
-pub const PAGE_SIZE: usize = 4 * 1024;
+use common::paging::PAGE_END;
 
-pub const CLUSTER_ADDRESS: usize = PAGE_TABLES + PAGE_TABLE_SIZE * PAGE_TABLE_SIZE * 4 ;
+pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
-pub const CLUSTER_SIZE: usize = 4 * 1024; // Of 4 K chunks
-
-/// A memory map entry
-#[repr(packed)]
-struct MemoryMapEntry {
-    base: u64,
-    len: u64,
-    class: u32,
-    acpi: u32,
-}
+pub const CLUSTER_SIZE: usize = 4096; // Of 4 K chunks
 
 /// A wrapper around raw pointers
 pub struct Memory<T> {
@@ -127,6 +115,15 @@ impl<T> IndexMut<usize> for Memory<T> {
     fn index_mut<'a>(&'a mut self, _index: usize) -> &'a mut T {
         unsafe { &mut *self.ptr.offset(_index as isize) }
     }
+}
+
+/// A memory map entry
+#[repr(packed)]
+struct MemoryMapEntry {
+    base: u64,
+    len: u64,
+    class: u32,
+    acpi: u32,
 }
 
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
