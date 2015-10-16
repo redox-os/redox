@@ -273,6 +273,8 @@ unsafe fn init(font_data: usize) {
 
     debug_init();
 
+    debug::d("Test\n");
+
     Page::init();
     memory::cluster_init();
     //Unmap first page to catch null pointer errors (after reading memory map)
@@ -425,25 +427,36 @@ fn dr(reg: &str, value: usize) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
-//Take regs for kernel calls and exceptions
-pub unsafe extern "cdecl" fn kernel(edi: usize, esi: usize, ebp: usize, esp: usize, ebx: usize, edx: usize, ecx: usize, mut eax: usize, interrupt: usize, eip: usize, eflags: usize, error: usize) -> usize {
+#[cfg(target_arch = "x86")]
+/// Take regs for kernel calls and exceptions
+pub unsafe extern "cdecl" fn kernel(interrupt: u32, mut ax: u32, bx: u32, cx: u32, dx: u32, ip: u32, flags: u32, error: u32) -> usize {
+    kernel_inner(interrupt as usize, ax as usize, bx as usize, cx as usize, dx as usize, ip as usize, flags as usize, error as usize)
+}
+
+#[cold]
+#[inline(never)]
+#[no_mangle]
+#[cfg(target_arch = "x86_64")]
+/// Take regs for kernel calls and exceptions
+pub unsafe extern "cdecl" fn kernel(interrupt: u64, mut ax: u64, bx: u64, cx: u64, dx: u64, ip: u64, flags: u64, error: u64) -> usize {
+    kernel_inner(interrupt as usize, ax as usize, bx as usize, cx as usize, dx as usize, ip as usize, flags as usize, error as usize)
+}
+
+#[inline(always)]
+pub unsafe fn kernel_inner(interrupt: usize, mut ax: usize, bx: usize, cx: usize, dx: usize, ip: usize, flags: usize, error: usize) -> usize {
     macro_rules! exception {
-        ($name:expr) => ({            
+        ($name:expr) => ({
             debug::d($name);
             debug::dl();
 
             dr("CONTEXT", context_i);
-            dr("EFLAGS", eflags);
-            dr("EIP", eip);
+            dr("FLAGS", flags);
+            dr("IP", ip);
             dr("INT", interrupt);
-            dr("EAX", eax);
-            dr("ECX", ecx);
-            dr("EDX", edx);
-            dr("EBX", ebx);
-            dr("ESP", esp);
-            dr("EBP", ebp);
-            dr("ESI", esi);
-            dr("EDI", edi);
+            dr("AX", ax);
+            dr("BX", bx);
+            dr("CX", cx);
+            dr("DX", dx);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
@@ -475,18 +488,14 @@ pub unsafe extern "cdecl" fn kernel(edi: usize, esi: usize, ebp: usize, esp: usi
             debug::dl();
 
             dr("CONTEXT", context_i);
-            dr("EFLAGS", error);
-            dr("EIP", eflags);
-            dr("ERROR", eip);
+            dr("FLAGS", error);
+            dr("IP", flags);
+            dr("ERROR", ip);
             dr("INT", interrupt);
-            dr("EAX", eax);
-            dr("ECX", ecx);
-            dr("EDX", edx);
-            dr("EBX", ebx);
-            dr("ESP", esp);
-            dr("EBP", ebp);
-            dr("ESI", esi);
-            dr("EDI", edi);
+            dr("AX", ax);
+            dr("BX", bx);
+            dr("CX", cx);
+            dr("DX", dx);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
@@ -543,9 +552,9 @@ pub unsafe extern "cdecl" fn kernel(edi: usize, esi: usize, ebp: usize, esp: usi
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => eax = syscall_handle(eax, ebx, ecx, edx),
+        0x80 => ax = syscall_handle(ax, bx, cx, dx),
         0xFF => {
-            init(eax as usize);
+            init(ax);
             idle_loop();
         }
         0x0 => exception!("Divide by zero exception"),
@@ -571,5 +580,5 @@ pub unsafe extern "cdecl" fn kernel(edi: usize, esi: usize, ebp: usize, esp: usi
         _ => exception!("Unknown Interrupt"),
     }
 
-    eax
+    ax
 }

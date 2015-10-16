@@ -29,13 +29,17 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
+    xchg bx, bx
+    push edx
+    push ecx
+    push ebx
+    push eax
     push dword [0x100000]
-    pushad
     call [.handler]
-    ;Put return value in stack for popad
-    mov [esp + 32], eax
-    popad
-    add esp, 4
+    add esp, 8 ;Skip interrupt and eax
+    pop ebx
+    pop ecx
+    pop edx
     iretd
 
 .handler: dd 0

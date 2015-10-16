@@ -257,15 +257,12 @@ long_mode:
     mov [interrupts.handler], rax
 
     mov rdi, 0xC000
-    mov rsi, rdi
-    add rsi, 0xB000
-    mov rcx, 464*1024
+    mov rsi, kernel_file
+    mov rcx, (kernel_file.font - kernel_file)
     cld
     rep movsb
 
     mov rax, kernel_file.font
-
-    xchg bx, bx
     int 255
 .lp:
     sti
