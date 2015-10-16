@@ -9,11 +9,11 @@ use redox::Vec;
 pub struct Scheme;
 
 impl Scheme {
-    fn scheme(&self) -> Box<Self> {
+    pub fn scheme(&self) -> Box<Self> {
         box Scheme
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &str) -> Option<Box<Resource>> {
         Some(box Resource::new(File::open("random://"), String::from_num(rand()).to_utf8()))
     }
 }
