@@ -3,13 +3,13 @@ use collections::VecDeque;
 use redox::*;
 
 
-#[derive(Clone)]
+#[derive(Copy, Clone)]
 /// An instruction
-pub struct Inst(u16, char);
+pub struct Inst(pub u16, pub char);
 
 #[derive(Clone)]
 /// The state of the editor
-pub struct Editor<I: Iterator<Item = char>> {
+pub struct Editor<I> {
     /// The current cursor
     pub current_cursor: u8,
     /// The cursors

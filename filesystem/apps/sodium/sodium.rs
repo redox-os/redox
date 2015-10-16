@@ -36,6 +36,20 @@ pub fn main() {
         window.filter_map(|x| {
             match x.to_option() {
                 EventOption::Key(k) if k.pressed => {
+
+
+                    Some(k.character)
+                }
+                _ => None,
+            }
+        })
+    });
+
+
+}
+
+pub fn redraw() {
+    /*
                     // Redraw window
                     window.set([255, 255, 255, 255]);
 
@@ -47,14 +61,5 @@ pub fn main() {
                             }
                         }
                     }
-
-
-                    Some(k.character)
-                }
-                _ => None,
-            }
-        })
-    });
-
-
+    */
 }
