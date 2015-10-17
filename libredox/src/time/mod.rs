@@ -1,3 +1,5 @@
+//! A module for time
+
 use core::cmp::*;
 use core::ops::*;
 

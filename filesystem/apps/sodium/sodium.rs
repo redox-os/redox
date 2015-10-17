@@ -34,7 +34,7 @@ pub fn main() {
 
     let mut inp = window.event_iter().map(|x| {
         x.to_option()
-    }).inst_iter();
+    }).inst_iter(&editor.cursor().mode);
 
     for i in inp {
         editor.exec(i, &mut inp);
