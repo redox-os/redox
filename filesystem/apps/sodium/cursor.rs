@@ -14,7 +14,20 @@ pub struct Cursor {
     pub history: Vec<Inst>,
 }
 
+impl Cursor {
+    /// New default cursor
+    pub fn new() -> Cursor {
+        Cursor {
+            x: 0,
+            y: 0,
+            mode: Mode::Command(CommandMode::Normal),
+            history: Vec::new(),
+        }
+    }
+}
+
 impl Editor {
+
     /// Get the char under the cursor
     pub fn current(&self) -> char {
         let curs = self.cursor();
