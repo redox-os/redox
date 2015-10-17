@@ -6,6 +6,9 @@
 mod editor;
 pub use self::editor::*;
 
+mod parse;
+pub use self::parse::*;
+
 mod mode;
 pub use self::mode::*;
 
@@ -34,11 +37,9 @@ pub fn main() {
 
     let mut inp = window.event_iter().map(|x| {
         x.to_option()
-    }).inst_iter(&editor.cursor().mode);
+    }).inst_iter(&mut editor);
 
-    for i in inp {
-        editor.exec(i, &mut inp);
-    }
+    inp.editor.exec(&mut inp);
     window.set([255, 255, 255, 255]);
 
 
