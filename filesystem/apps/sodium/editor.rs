@@ -31,11 +31,11 @@ impl Editor {
     /// Create new default state editor
     pub fn new() -> Editor {
     
-        let mut window = Window::new((rand() % 400 + 50) as isize,
-                                     (rand() % 300 + 50) as isize,
-                                     576,
-                                     400,
-                                     &"Sodium").unwrap();
+        let window = Window::new((rand() % 400 + 50) as isize,
+                                 (rand() % 300 + 50) as isize,
+                                 576,
+                                 400,
+                                 &"Sodium").unwrap();
 
         let mut editor = Editor {
             current_cursor: 0,

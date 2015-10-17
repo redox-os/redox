@@ -1,6 +1,5 @@
 use super::*;
 use redox::*;
-use core::marker::Sized;
 
 /// Get the next instruction
 // TODO: Should this be an iterator instead?
