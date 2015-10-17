@@ -6,7 +6,6 @@ use redox::*;
 pub fn next_inst(editor: &mut Editor) -> Inst {
     let mut n = 0;
 
-    let mut last = '\0';
     loop {
         if let EventOption::Key(k) = editor.window.poll().unwrap_or(Event::new()).to_option() {
             if k.pressed {
@@ -29,7 +28,7 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
                             '9'           => n * 10 + 9,
                             _             => {
 
-                                return Inst(if n == 0 { 1 } else { n }, last);
+                                return Inst(if n == 0 { 1 } else { n }, c);
                             }
                         }
                     }

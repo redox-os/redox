@@ -1,4 +1,4 @@
-use super::*;
+ use super::*;
 use collections::VecDeque;
 use redox::*;
 
@@ -37,6 +37,7 @@ impl Editor {
                                  400,
                                  &"Sodium").unwrap();
 
+
         let mut editor = Editor {
             current_cursor: 0,
             cursors: Vec::new(),
@@ -47,6 +48,7 @@ impl Editor {
         };
 
         editor.cursors.push(Cursor::new());
+        editor.text.push_back(VecDeque::new());
 
 
         loop {
