@@ -46,6 +46,8 @@ impl Editor {
             window: *window,
         };
 
+        editor.cursors.push(Cursor::new());
+
 
         loop {
             let inp = next_inst(&mut editor);
