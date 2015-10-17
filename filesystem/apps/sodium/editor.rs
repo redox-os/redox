@@ -46,11 +46,12 @@ impl Editor {
             window: *window,
         };
 
-        let mut inp = next_inst(&mut editor);
 
-        editor.window.set([255, 255, 255, 255]);
-
-        loop {}
+        loop {
+            let inp = next_inst(&mut editor);
+            editor.exec(inp);
+            editor.redraw();
+        }
 
         editor
 
