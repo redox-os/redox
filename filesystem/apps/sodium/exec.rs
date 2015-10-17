@@ -15,11 +15,12 @@ impl Editor {
                         }));
 
                 },
-                'h' => self.left(),
-                'j' => self.down(),
-                'k' => self.up(),
-                'l' => self.right(),
+                'h' => self.left(n as usize),
+                'j' => self.down(n as usize),
+                'k' => self.up(n as usize),
+                'l' => self.right(n as usize),
                 'x' => self.delete(),
+                ' ' => self.next(),
                 _ => {},
             },
             Primitive(Insert(_)) => {

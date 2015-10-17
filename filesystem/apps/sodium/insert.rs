@@ -30,9 +30,6 @@ impl Editor {
                 self.previous();
                 self.delete();
             },
-            ' ' => {
-                self.next();
-            },
             ch => {
                 self.text[y].insert(x, ch);
                 self.next();
