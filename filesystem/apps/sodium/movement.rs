@@ -53,7 +53,7 @@ impl Editor {
         let curs = self.cursor_mut();
 
         if n <= x {
-            curs.x -= n;
+            curs.x = x - n;
         } else {
             curs.x = 0;
         }
