@@ -7,8 +7,10 @@ impl Editor {
             if self.y() >= self.text.len() {
                 self.text.push_back(VecDeque::new())
             }
-            self.cursor_mut().x = 0;
-            self.cursor_mut().y += 1;
+            if self.y() < self.text.len() - 1 {
+                self.cursor_mut().x = 0;
+                self.cursor_mut().y += 1;
+            }
 
         } else {
             self.cursor_mut().x += 1;
