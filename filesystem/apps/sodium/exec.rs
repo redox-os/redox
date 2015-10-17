@@ -15,6 +15,11 @@ impl Editor {
                         }));
 
                 },
+                'h' => self.left(),
+                'j' => self.down(),
+                'k' => self.up(),
+                'l' => self.right(),
+                'x' => self.delete(),
                 _ => {},
             },
             Primitive(Insert(_)) => {

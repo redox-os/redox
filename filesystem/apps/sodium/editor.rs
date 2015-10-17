@@ -1,5 +1,4 @@
- use super::*;
-use collections::VecDeque;
+use super::*;
 use redox::*;
 
 

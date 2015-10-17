@@ -1,6 +1,5 @@
 use redox::*;
 use super::*;
-use collections::VecDeque;
 
 #[derive(Clone, PartialEq, Copy)]
 pub enum InsertMode {
@@ -17,16 +16,26 @@ pub struct InsertOptions {
 impl Editor {
     /// Insert text
     pub fn insert(&mut self, c: char) {
-        let cur = self.cursor().clone();
+        let x = self.x();
+        let y = self.y();
         match c {
             '\n' => {
-                self.text.insert(cur.y, VecDeque::new());
+                self.text.insert(y + 1, VecDeque::new());
+                self.next();
             },
-            '\u{001B}' => {
+            '\u{001B}' => { // Escape key
                 self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
             },
+            '\u{0008}' => {
+                self.previous();
+                self.delete();
+            },
+            ' ' => {
+                self.next();
+            },
             ch => {
-                self.text[cur.y].insert(cur.x, ch);
+                self.text[y].insert(x, ch);
+                self.next();
             }
         }
     }

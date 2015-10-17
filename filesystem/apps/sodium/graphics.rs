@@ -4,17 +4,20 @@ use redox::*;
 impl Editor {
     /// Redraw the window
     pub fn redraw(&mut self) {
+        let x = self.x();
+        let y = self.y();
         // Redraw window
         self.window.set([0, 0, 0, 255]);
 
+        self.window.rect(8 * (x - self.scroll_y) as isize,
+                         16 * (y - self.scroll_x) as isize,
+                         8,
+                         16,
+                         [255, 255, 255, 255]);
+
         for (y, row) in self.text.iter().enumerate() {
             for (x, c) in row.iter().enumerate() {
-                if self.cursor().x == x && self.cursor().y == y {
-                    self.window.rect(8 * (x - self.scroll_y) as isize,
-                                     16 * (y - self.scroll_x) as isize,
-                                     8,
-                                     16,
-                                     [255, 255, 255, 255]);
+                if self.x() == x && self.y() == y {
                     self.window.char(8 * (x - self.scroll_y) as isize,
                                      16 * (y - self.scroll_x) as isize,
                                      *c,
