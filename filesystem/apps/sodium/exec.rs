@@ -28,6 +28,15 @@ impl Editor {
                 },
                 '$' => self.cursor_mut().x = self.text[self.y()].len(),
                 '0' => self.cursor_mut().x = 0,
+                'r' => {
+                    if let EventOption::Key(k) = self.window.poll()
+                                                 .unwrap_or(Event::new())
+                                                 .to_option() {
+                        let x = self.x();
+                        let y = self.y();
+                        self.text[y][x] = k.character;
+                    }
+                },
                 ' ' => self.next(),
                 _ => {},
             },
