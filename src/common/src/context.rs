@@ -216,8 +216,8 @@ impl Context {
         ret.push(0); //ECX
         ret.push(0); //EDX
         ret.push(0); //EBX
-        ret.push(esp); //ESP (ignored)
-        ret.push(ebp); //EBP
+        ret.push(0); //ESP (ignored)
+        ret.push(0); //EBP
         ret.push(0); //ESI
         ret.push(0); //EDI
 
@@ -250,15 +250,12 @@ impl Context {
 
         ret.push(1 << 9); //Flags
 
-        let esp = ret.stack_ptr;
-
         ret.push(0); //RAX
+        ret.push(0); //RBX
         ret.push(0); //RCX
         ret.push(0); //RDX
-        ret.push(0); //RBX
-        ret.push(ebp); //RBP
-        ret.push(0); //RSI
         ret.push(0); //RDI
+        ret.push(0); //RSI
         ret.push(0); //R8
         ret.push(0); //R9
         ret.push(0); //R10
@@ -267,6 +264,7 @@ impl Context {
         ret.push(0); //R13
         ret.push(0); //R14
         ret.push(0); //R15
+        ret.push(0); //RBP
 
         ret
     }
@@ -361,12 +359,11 @@ impl Context {
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfq
             push rax
+            push rbx
             push rcx
             push rdx
-            push rbx
-            push rbp
-            push rsi
             push rdi
+            push rsi
             push r8
             push r9
             push r10
@@ -375,29 +372,41 @@ impl Context {
             push r13
             push r14
             push r15
-            mov [rsi], rsp"
+            push rbp"
             :
-            : "{rsi}"(&mut self.stack_ptr)
+            :
             : "memory"
             : "intel", "volatile");
 
-        asm!("fxsave [rsi]"
+        asm!("mov [rax], rsp"
             :
-            : "{rsi}"(self.fx)
+            : "{rax}"(&mut self.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("fxsave [rax]"
+            :
+            : "{rax}"(self.fx)
             : "memory"
             : "intel", "volatile");
         self.fx_enabled = true;
 
         //TODO: Clear registers
         if other.fx_enabled {
-            asm!("fxrstor [rsi]"
+            asm!("fxrstor [rax]"
                 :
-                : "{rsi}"(other.fx)
+                : "{rax}"(other.fx)
                 : "memory"
                 : "intel", "volatile");
         }
 
-        asm!("mov rsp, [rsi]
+        asm!("mov rsp, [rax]"
+            :
+            : "{rax}"(&mut self.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("pop rbp
             pop r15
             pop r14
             pop r13
@@ -406,12 +415,11 @@ impl Context {
             pop r10
             pop r9
             pop r8
-            pop rdi
             pop rsi
-            pop rbp
-            pop rbx
+            pop rdi
             pop rdx
             pop rcx
+            pop rbx
             pop rax
             popfq"
             :
