@@ -2,9 +2,10 @@
 
 use super::*;
 use redox::*;
+use core::marker::Sized;
 
 pub struct InstructionIterator<'a, I: 'a> {
-    pub editor: &'a Editor,
+    pub mode: &'a Mode,
     pub iter: &'a mut I,
 }
 
@@ -19,7 +20,7 @@ impl<'a, I: Iterator<Item = EventOption>> Iterator for InstructionIterator<'a, I
             match e {
                 EventOption::Key(k) if k.pressed => {
                     let c = k.character;
-                    match self.editor.cursors[self.editor.current_cursor as usize].mode {
+                    match *self.mode {
                         Mode::Primitive(_) => {
                             Inst(0, c);
                         },
@@ -43,7 +44,8 @@ impl<'a, I: Iterator<Item = EventOption>> Iterator for InstructionIterator<'a, I
 
                         }
                     }
-                }
+                },
+                _ => {},
             }
         }
 
@@ -51,14 +53,16 @@ impl<'a, I: Iterator<Item = EventOption>> Iterator for InstructionIterator<'a, I
     }
 }
 
-trait ToInstructionIterator {
-    fn inst_iter<'a>(&'a mut self, editor: &'a Editor) -> InstructionIterator<'a, Self>;
+pub trait ToInstructionIterator
+          where Self: Sized {
+    fn inst_iter<'a>(&'a mut self, mode: &'a Mode) -> InstructionIterator<'a, Self>;
 }
 
-impl ToInstructionIterator for Iterator<Item = EventOption> {
-    fn inst_iter<'a>(&'a mut self, editor: &'a Editor) -> InstructionIterator<'a, Self> {
+impl<I> ToInstructionIterator for I
+        where I: Iterator<Item = EventOption> + Sized {
+    fn inst_iter<'a>(&'a mut self, mode: &'a Mode) -> InstructionIterator<'a, Self> {
         InstructionIterator {
-            editor: editor,
+            mode: mode,
             iter: self,
         }
     }

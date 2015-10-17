@@ -26,6 +26,7 @@ pub struct Window {
     h: usize,
     /// The title of the window
     t: String,
+    /// The input scheme
     file: File,
     /// Font file
     font: Vec<u8>,
@@ -178,6 +179,7 @@ impl Window {
         return self.file.sync();
     }
 
+    /// Return a iterator over events
     pub fn event_iter<'a>(&'a mut self) -> EventIter<'a> {
         EventIter {
             window: self,
@@ -185,6 +187,7 @@ impl Window {
     }
 }
 
+/// Event iterator
 pub struct EventIter<'a> {
     window: &'a mut Window,
 }
