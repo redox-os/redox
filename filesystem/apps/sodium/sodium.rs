@@ -24,11 +24,11 @@ pub use self::exec::*;
 use redox::*;
 
 pub fn main() {
-    let mut window = Window::new((rand() % 400 + 50) as isize, 
-								 (rand() % 300 + 50) as isize, 
-								 576, 
-								 400, 
-								 &"Sodium").unwrap(); 
+    let mut window = Window::new((rand() % 400 + 50) as isize,
+                                 (rand() % 300 + 50) as isize,
+                                 576,
+                                 400,
+                                 &"Sodium").unwrap();
 
     let mut editor = Editor::new();
 
