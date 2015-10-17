@@ -19,7 +19,15 @@ impl Editor {
                 'j' => self.down(n as usize),
                 'k' => self.up(n as usize),
                 'l' => self.right(n as usize),
+                'J' => self.down(15),
+                'K' => self.up(15),
                 'x' => self.delete(),
+                'X' => {
+                    self.previous();
+                    self.delete();
+                },
+                '$' => self.cursor_mut().x = self.text[self.y()].len(),
+                '0' => self.cursor_mut().x = 0,
                 ' ' => self.next(),
                 _ => {},
             },
