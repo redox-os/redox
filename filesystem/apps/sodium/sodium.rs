@@ -24,23 +24,11 @@ pub use self::insert::*;
 mod exec;
 pub use self::exec::*;
 
-use redox::*;
 
 pub fn main() {
-    let mut window = Window::new((rand() % 400 + 50) as isize,
-                                 (rand() % 300 + 50) as isize,
-                                 576,
-                                 400,
-                                 &"Sodium").unwrap();
 
-    let mut editor = Editor::new();
-
-    let mut inp = window.event_iter().map(|x| {
-        x.to_option()
-    }).inst_iter(&mut editor);
-
-    inp.exec();
-    window.set([255, 255, 255, 255]);
+    //inp.exec();
+    //window.set([255, 255, 255, 255]);
 
 
 }
