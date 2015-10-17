@@ -7,6 +7,12 @@ use common::debug::*;
 use common::memory;
 use common::string::*;
 
+#[cfg(target_arch = "x86")]
+pub const ELF_OFFSET: usize = 0x1000;
+
+#[cfg(target_arch = "x86_64")]
+pub const ELF_OFFSET: usize = 0x200000;
+
 /// An ELF header
 #[repr(packed)]
 pub struct ELFHeader {
@@ -107,8 +113,7 @@ impl ELF {
             if file_data > 0 && *(file_data as *const u8) == 0x7F &&
                *((file_data + 1) as *const u8) == 'E' as u8 &&
                *((file_data + 2) as *const u8) == 'L' as u8 &&
-               *((file_data + 3) as *const u8) == 'F' as u8 &&
-               *((file_data + 4) as *const u8) == 1 {
+               *((file_data + 3) as *const u8) == 'F' as u8 {
                 let size = memory::alloc_size(file_data);
                 data = memory::alloc(size);
                 ptr::copy(file_data as *const u8, data as *mut u8, size);
