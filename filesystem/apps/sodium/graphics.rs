@@ -1,4 +1,3 @@
-use redox::*;
 use super::*;
 
 impl Editor {

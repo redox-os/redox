@@ -1,4 +1,6 @@
+
 use super::*;
+use collections::VecDeque;
 
 #[derive(Clone, PartialEq, Copy)]
 pub enum InsertMode {
@@ -9,12 +11,20 @@ pub enum InsertMode {
 
 #[derive(Clone, PartialEq, Copy)]
 pub struct InsertOptions {
-    mode: InsertMode,
+    pub mode: InsertMode,
 }
 
 impl Editor {
     /// Insert text
     pub fn insert(&mut self, c: char) {
-        
+        let cur = self.cursor().clone();
+        match c {
+            '\n' => {
+                self.text.insert(cur.y, VecDeque::new());
+            },
+            ch => {
+                self.text[cur.y].insert(cur.x, ch);
+            }
+        }
     }
 }
