@@ -39,7 +39,7 @@ pub fn main() {
         x.to_option()
     }).inst_iter(&mut editor);
 
-    inp.editor.exec(&mut inp);
+    inp.exec();
     window.set([255, 255, 255, 255]);
 
 

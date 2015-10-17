@@ -1,8 +1,9 @@
 use super::*;
+use redox::*;
 
-impl Editor {
+impl<'a, I: Iterator<Item = EventOption>> InstructionIterator<'a, I> {
     /// Execute a instruction
-    pub fn exec<'a, I>(&mut self, inp: &mut InstructionIterator<'a, I>) {
+    pub fn exec(&mut self) {
         
     }
 
