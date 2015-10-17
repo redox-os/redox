@@ -123,7 +123,7 @@ all: $(BUILD)/harddrive.bin
 docs: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
 
-apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment
+apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs
 
 schemes: schemes/console schemes/example schemes/reent schemes/udp
 
@@ -188,11 +188,6 @@ $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -d $< > $@ #-C
 
-filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
-	$(MKDIR) -p $(BUILD)
-	$(AS) -f elf -o $(BUILD)/`$(BASENAME) $*.o` $<
-	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.o
-
 filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../../$<|" src/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
@@ -223,7 +218,7 @@ filesystem/apps/zfs/zfs.img:
 	-sudo zpool destroy redox_zfs
 	sudo losetup -d /dev/loop0
 
-$(BUILD)/filesystem.gen: #apps schemes
+$(BUILD)/filesystem.gen: apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
 $(BUILD)/harddrive.bin: src/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen

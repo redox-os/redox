@@ -1,6 +1,5 @@
 use core::fmt;
 use core::fmt::Write;
-use core::ptr;
 use core::result;
 
 use syscall::*;
@@ -77,15 +76,21 @@ pub extern fn __rust_usable_size(size: usize, align: usize) -> usize {
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn memcmp(a: *mut u8, b: *const u8, len: usize) -> isize {
-    for i in 0..len {
-        let c_a = ptr::read(a.offset(i as isize));
-        let c_b = ptr::read(b.offset(i as isize));
-        if c_a != c_b {
-            return c_a as isize - c_b as isize;
-        }
-    }
-    return 0;
+#[cfg(target_arch = "x86")]
+pub unsafe extern "C" fn memcmp(a: *const i8, b: *const i8, len: usize) -> i32 {
+    let ret;
+    asm!("cld
+        repne cmpsb
+        xor eax, eax
+        mov al, [edi]
+        xor ecx, ecx
+        mov cl, [esi]
+        sub eax, ecx"
+        : "={eax}"(ret)
+        : "{edi}"(a), "{esi}"(b), "{ecx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+    ret
 }
 
 #[no_mangle]
@@ -128,6 +133,24 @@ pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
         : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
         : "cc", "memory"
         : "intel", "volatile");
+}
+
+#[no_mangle]
+#[cfg(target_arch = "x86_64")]
+pub unsafe extern "C" fn memcmp(a: *const i8, b: *const i8, len: usize) -> i32 {
+    let ret;
+    asm!("cld
+        repne cmpsb
+        xor rax, rax
+        mov al, [rdi]
+        xor rcx, rcx
+        mov cl, [rsi]
+        sub rax, rcx"
+        : "={rax}"(ret)
+        : "{rdi}"(a), "{rsi}"(b), "{rcx}"(len)
+        : "cc", "memory"
+        : "intel", "volatile");
+    ret
 }
 
 #[no_mangle]
@@ -205,58 +228,3 @@ pub extern "C" fn __udivdi3(a: u64, b: u64) -> u64 {
     }
     quot
 }
-
-/*
-pub fn unsupported() {
-    unsafe { asm!("int 3" : : : : "intel", "volatile") }
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub extern fn fmod(x: f64, y: f64) -> f64 {
-    unsupported();
-    return 0.0;
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub extern fn fmodf(x: f32, y: f32) -> f32 {
-    unsupported();
-    return 0.0;
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub extern fn __powisf2(a: f32, x: i32) -> f32 {
-    unsupported();
-    return 0.0;
-}
-
-#[allow(unused_variables)]
-#[no_mangle]
-pub extern fn __powidf2(a: f64, x: i32) -> f64 {
-    unsupported();
-    return 0.0;
-}
-
-#[no_mangle]
-pub extern fn __mulodi4(a: i32, b: i32, overflow: *mut i32) -> i32 {
-    let result = (a as i64) * (b as i64);
-    if result > 2 << 32 {
-        unsafe {
-            ptr::write(overflow, 1);
-        }
-    }
-    return result as i32;
-}
-
-#[no_mangle]
-pub extern fn __moddi3(a: i32, b: i32) -> i32 {
-    return a%b;
-}
-
-#[no_mangle]
-pub extern fn __divdi3(a: i32, b: i32) -> i32 {
-    return a/b;
-}
-*/
