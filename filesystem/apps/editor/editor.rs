@@ -286,7 +286,7 @@ impl Editor {
 
             if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows {
-                    window.char(8 * col, 16 * row, '_', [128, 128, 128, 255]);
+                        window.rect(8 * col, 16 * row, 8, 16, [128, 128, 128, 128]);
                 } else {
                     if col < 0 { //Too far to the left
                         self.scroll_x += col;
