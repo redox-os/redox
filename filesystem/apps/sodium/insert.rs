@@ -1,5 +1,6 @@
 use redox::*;
 use super::*;
+use core::iter::FromIterator;
 
 #[derive(Clone, PartialEq, Copy)]
 pub enum InsertMode {
@@ -20,7 +21,15 @@ impl Editor {
         let y = self.y();
         match c {
             '\n' => {
-                self.text.insert(y + 1, VecDeque::new());
+                let ln = self.text[y].clone();
+                let (slice, _) = ln.as_slices();
+
+                let first_part = (&slice[..x]).clone();
+                let second_part = (&slice[x..]).clone();
+
+                self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
+                self.text.insert(y + 1, VecDeque::from_iter(second_part.iter().map(|x| *x)));
+
                 self.next();
             },
             '\u{001B}' => { // Escape key
