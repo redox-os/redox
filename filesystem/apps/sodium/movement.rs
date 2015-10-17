@@ -29,41 +29,56 @@ impl Editor {
     }
 
     /// Go right
-    pub fn right(&mut self) {
-        let x = self.x();
+    pub fn right(&mut self, n: usize) {
+        let x = self.x() + n;
         let y = self.y();
+
         let text = self.text.clone();
         let curs = self.cursor_mut();
-        if x < text[y].len() {
-            curs.x += 1;
+
+        curs.x += n;
+
+        if x > text[y].len() {
+            curs.x = text[y].len();
         }
     }
     /// Go left
-    pub fn left(&mut self) {
+    pub fn left(&mut self, n: usize) {
         let x = self.x();
         let y = self.y();
+
         let text = self.text.clone();
         let curs = self.cursor_mut();
-        if x > 0 {
-            curs.x -= 1;
+
+        if n <= x {
+            curs.x -= n;
+        } else {
+            curs.x = 0;
         }
+
     }
     /// Go up
-    pub fn up(&mut self) {
+    pub fn up(&mut self, n: usize) {
         let y = self.y();
         let curs = self.cursor_mut();
-        if y > 0 {
-            curs.y -= 1;
+        if n <= y {
+            curs.y -= n;
+        } else {
+            curs.y = 0;
         }
     }
     /// Go down
-    pub fn down(&mut self) {
+    pub fn down(&mut self, n: usize) {
         let x = self.x();
-        let y = self.y();
+        let y = self.y() + n;
+
         let text = self.text.clone();
         let curs = self.cursor_mut();
-        if y + 1 < text.len() {
-            curs.y += 1;
+
+        curs.y += n;
+
+        if y >= text.len() {
+            curs.y = text.len() - 1;
         }
     }
 }
