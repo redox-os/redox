@@ -1,5 +1,5 @@
 {
-        "llvm-target": "i686-unknown-linux-gnu",
+        "llvm-target": "i686-unknown-redox",
         "target-endian": "little",
         "target-pointer-width": "32",
         "features": "-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
@@ -10,7 +10,6 @@
         "pre-link-args": ["-m32"],
         "relocation_model": "static",
         "code_model": "kernel",
-        "executables": true,
         "disable_redzone": true,
         "dynamic_linking": false,
         "no-compiler-rt": true,

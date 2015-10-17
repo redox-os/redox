@@ -182,6 +182,7 @@ impl Context {
         }
     }
 
+    #[cfg(target_arch = "x86")]
     pub unsafe fn new(call: usize, args: &Vec<usize>) -> Self {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
@@ -219,6 +220,53 @@ impl Context {
         ret.push(ebp); //EBP
         ret.push(0); //ESI
         ret.push(0); //EDI
+
+        ret
+    }
+
+    #[cfg(target_arch = "x86_64")]
+    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Self {
+        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+
+        let mut ret = Context {
+            stack: stack,
+            stack_ptr: stack + CONTEXT_STACK_SIZE,
+            fx: stack + CONTEXT_STACK_SIZE,
+            fx_enabled: false,
+            memory: Vec::new(),
+            cwd: String::new(),
+            files: Vec::new(),
+            interrupted: false,
+            exited: false,
+        };
+
+        let ebp = ret.stack_ptr;
+
+        for arg in args.iter() {
+            ret.push(*arg);
+        }
+
+        ret.push(call); //We will ret into this function call
+
+        ret.push(1 << 9); //Flags
+
+        let esp = ret.stack_ptr;
+
+        ret.push(0); //RAX
+        ret.push(0); //RCX
+        ret.push(0); //RDX
+        ret.push(0); //RBX
+        ret.push(ebp); //RBP
+        ret.push(0); //RSI
+        ret.push(0); //RDI
+        ret.push(0); //R8
+        ret.push(0); //R9
+        ret.push(0); //R10
+        ret.push(0); //R11
+        ret.push(0); //R12
+        ret.push(0); //R13
+        ret.push(0); //R14
+        ret.push(0); //R15
 
         ret
     }
@@ -306,7 +354,7 @@ impl Context {
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly one extra push/pop of ESI
+    //It should no extra pushes or pops
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86_64")]
