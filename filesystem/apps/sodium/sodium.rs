@@ -28,7 +28,6 @@ pub use self::exec::*;
 pub fn main() {
 
     //inp.exec();
-    //window.set([255, 255, 255, 255]);
 
 
 }
