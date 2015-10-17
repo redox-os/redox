@@ -27,7 +27,6 @@ impl Cursor {
 }
 
 impl Editor {
-
     /// Get the char under the cursor
     pub fn current(&self) -> char {
         let curs = self.cursor();
