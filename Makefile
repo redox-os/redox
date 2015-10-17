@@ -6,7 +6,7 @@ BUILD=build/$(ARCH)
 
 RUSTC=rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
-	-C no-stack-check -C opt-level=2 \
+	-C no-stack-check -C opt-level=1 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
 	-L $(BUILD)
@@ -147,7 +147,10 @@ $(BUILD)/libcore.rlib: rust/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liballoc.rlib: rust/liballoc/lib.rs $(BUILD)/libcore.rlib
+$(BUILD)/liballoc_system.rlib: rust/liballoc_system/lib.rs $(BUILD)/libcore.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/liballoc.rlib: rust/liballoc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/librustc_unicode.rlib: rust/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
@@ -176,11 +179,14 @@ $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/libal
 $(BUILD)/kernel.rlib: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
+$(BUILD)/kernel.ir: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
+
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
-	$(OBJDUMP) -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -d $< > $@ #-C
 
 filesystem/apps/%.bin: filesystem/apps/%.asm src/program.ld
 	$(MKDIR) -p $(BUILD)

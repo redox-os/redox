@@ -72,6 +72,7 @@
        issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
        test(no_crate_inject))]
 #![no_std]
+#![cfg_attr(not(stage0), needs_allocator)]
 
 #![feature(allocator)]
 #![feature(box_syntax)]
@@ -93,17 +94,30 @@
 #![feature(unboxed_closures)]
 #![feature(unique)]
 #![feature(unsafe_no_drop_flag, filling_drop)]
+// SNAP 1af31d4
+#![allow(unused_features)]
+// SNAP 1af31d4
+#![allow(unused_attributes)]
+#![feature(dropck_parametricity)]
 #![feature(unsize)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-#![feature(needs_allocator)]
+//#![cfg_attr(stage0, feature(alloc_system))]
+#![cfg_attr(not(stage0), feature(needs_allocator))]
 
 #![cfg_attr(test, feature(test, rustc_private, box_heap))]
 
+#[cfg(stage0)]
+extern crate alloc_system;
+
 // Allow testing this library
 
-#[cfg(test)] #[macro_use] extern crate std;
-#[cfg(test)] #[macro_use] extern crate log;
+#[cfg(test)]
+#[macro_use]
+extern crate std;
+#[cfg(test)]
+#[macro_use]
+extern crate log;
 
 // Heaps provided for low-level allocation strategies
 
@@ -118,7 +132,9 @@ pub mod heap;
 #[cfg(not(test))]
 pub mod boxed;
 #[cfg(test)]
-mod boxed { pub use std::boxed::{Box, HEAP}; }
+mod boxed {
+    pub use std::boxed::{Box, HEAP};
+}
 #[cfg(test)]
 mod boxed_test;
 pub mod arc;
