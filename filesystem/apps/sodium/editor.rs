@@ -20,6 +20,8 @@ pub struct Editor {
     pub scroll_x: usize,
     /// The y coordinate of the scroll
     pub scroll_y: usize,
+    /// The window
+    pub window: Window,
 }
 
 
@@ -29,13 +31,26 @@ impl Editor {
 
     /// Create new default state editor
     pub fn new() -> Editor {
-        Editor {
+    
+        let mut window = Window::new((rand() % 400 + 50) as isize,
+                                     (rand() % 300 + 50) as isize,
+                                     576,
+                                     400,
+                                     &"Sodium").unwrap();
+
+        let mut editor = Editor {
             current_cursor: 0,
             cursors: Vec::new(),
             text: VecDeque::new(),
             scroll_x: 0,
             scroll_y: 0,
-        }
+            window: *window,
+        };
+
+        let mut inp = next_inst(&mut editor);
+
+        editor
+
     }
 }
 

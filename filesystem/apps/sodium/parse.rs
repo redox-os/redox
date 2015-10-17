@@ -2,24 +2,19 @@ use super::*;
 use redox::*;
 use core::marker::Sized;
 
-pub struct InstructionIterator<'a, I: 'a> {
-    pub editor: &'a mut Editor,
-    pub iter: &'a mut I,
-}
+/// Get the next instruction
+// TODO: Should this be an iterator instead?
+pub fn next_inst(editor: &mut Editor) -> Inst {
+    let mut n = 0;
 
-impl<'a, I: Iterator<Item = EventOption>> Iterator for InstructionIterator<'a, I> {
-    type Item = Inst;
-
-    fn next(&mut self) -> Option<Inst> {
-        let mut n = 0;
-
-        let mut last = '\0';
-        while let Some(EventOption::Key(k)) = self.iter.next() {
+    let mut last = '\0';
+    loop {
+        if let EventOption::Key(k) = editor.window.poll().unwrap_or(Event::new()).to_option() {
             if k.pressed {
                 let c = k.character;
-                match self.editor.cursor().mode {
+                match editor.cursor().mode {
                     Mode::Primitive(_) => {
-                        Inst(0, c);
+                        return Inst(0, c);
                     },
                     Mode::Command(_) => {
                         n = match c {
@@ -34,29 +29,15 @@ impl<'a, I: Iterator<Item = EventOption>> Iterator for InstructionIterator<'a, I
                             '8'           => n * 10 + 8,
                             '9'           => n * 10 + 9,
                             _             => {
-                                last = c;
-                                break;
+
+                                return Inst(if n == 0 { 1 } else { n }, last);
                             }
                         }
                     }
                 }
             }
         }
-        Some(Inst(if n == 0 { 1 } else { n }, last))
     }
-}
 
-pub trait ToInstructionIterator
-          where Self: Sized {
-    fn inst_iter<'a>(&'a mut self, editor: &'a mut Editor) -> InstructionIterator<'a, Self>;
-}
-
-impl<I> ToInstructionIterator for I
-        where I: Iterator<Item = EventOption> + Sized {
-    fn inst_iter<'a>(&'a mut self, editor: &'a mut Editor) -> InstructionIterator<'a, Self> {
-        InstructionIterator {
-            editor: editor,
-            iter: self,
-        }
-    }
+    unreachable!()
 }
