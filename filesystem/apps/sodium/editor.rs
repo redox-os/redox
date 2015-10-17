@@ -7,7 +7,6 @@ use redox::*;
 /// An instruction
 pub struct Inst(pub u16, pub char);
 
-#[derive(Clone)]
 /// The state of the editor
 pub struct Editor {
     /// The current cursor
@@ -48,6 +47,10 @@ impl Editor {
         };
 
         let mut inp = next_inst(&mut editor);
+
+        editor.window.set([255, 255, 255, 255]);
+
+        loop {}
 
         editor
 
