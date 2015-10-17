@@ -206,8 +206,6 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
-        ret.push(0); //ESI is a param used in the switch function
-
         ret.push(1 << 9); //Flags
 
         let esp = ret.stack_ptr;
@@ -313,46 +311,56 @@ impl Context {
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly one extra push/pop of ESI
+    //It should have no extra pushes or pops
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfd
-            pushad
-            mov [esi], esp"
+            pushad"
             :
-            : "{esi}"(&mut self.stack_ptr)
+            :
             : "memory"
             : "intel", "volatile");
 
-        asm!("fxsave [esi]"
+        asm!("mov [eax], esp"
             :
-            : "{esi}"(self.fx)
+            : "{eax}"(&mut self.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("fxsave [eax]"
+            :
+            : "{eax}"(self.fx)
             : "memory"
             : "intel", "volatile");
         self.fx_enabled = true;
 
         //TODO: Clear registers
         if other.fx_enabled {
-            asm!("fxrstor [esi]"
+            asm!("fxrstor [eax]"
                 :
-                : "{esi}"(other.fx)
+                : "{eax}"(other.fx)
                 : "memory"
                 : "intel", "volatile");
         }
 
-        asm!("mov esp, [esi]
-            popad
+        asm!("mov esp, [eax]"
+            :
+            : "{eax}"(&mut other.stack_ptr)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("popad
             popfd"
             :
-            : "{esi}"(&mut other.stack_ptr)
+            :
             : "memory"
             : "intel", "volatile");
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should no extra pushes or pops
+    //It should have no extra pushes or pops
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86_64")]
