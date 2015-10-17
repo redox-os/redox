@@ -22,6 +22,9 @@ impl Editor {
             '\n' => {
                 self.text.insert(cur.y, VecDeque::new());
             },
+            '\u{001B}' => {
+                self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+            },
             ch => {
                 self.text[cur.y].insert(cur.x, ch);
             }
