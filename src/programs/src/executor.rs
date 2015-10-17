@@ -22,9 +22,9 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             let executable = ELF::from_data(vec.as_ptr() as usize);
 
             if executable.data > 0 {
-                virtual_size = memory::alloc_size(executable.data) - 4096;
+                virtual_size = memory::alloc_size(executable.data) - ELF_OFFSET;
                 physical_address = memory::alloc(virtual_size);
-                ptr::copy((executable.data + 4096) as *const u8,
+                ptr::copy((executable.data + ELF_OFFSET) as *const u8,
                           physical_address as *mut u8,
                           virtual_size);
                 entry = executable.entry();

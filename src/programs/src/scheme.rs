@@ -284,9 +284,9 @@ impl SchemeItem {
             unsafe {
                 let executable = ELF::from_data(vec.as_ptr() as usize);
                 if executable.data > 0 {
-                    scheme_item.memory.virtual_size = memory::alloc_size(executable.data) - 4096;
+                    scheme_item.memory.virtual_size = memory::alloc_size(executable.data) - ELF_OFFSET;
                     scheme_item.memory.physical_address = memory::alloc(scheme_item.memory.virtual_size);
-                    ptr::copy((executable.data + 4096) as *const u8,
+                    ptr::copy((executable.data + ELF_OFFSET) as *const u8,
                               scheme_item.memory.physical_address as *mut u8,
                               scheme_item.memory.virtual_size);
 
