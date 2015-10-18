@@ -385,6 +385,8 @@ impl Application {
                     }
                 }
 
+                println!("Unknown command: '{}'", cmd);
+
                 let mut help = "Commands:".to_string();
                 for command in self.commands.iter() {
                     help = help + " " + &command.name;

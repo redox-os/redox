@@ -2,7 +2,7 @@ use time::Duration;
 
 use syscall::common::*;
 
-#[path="../../src/syscall/src/common.rs"]
+#[path="../../kernel/syscall/common.rs"]
 pub mod common;
 
 #[cold]

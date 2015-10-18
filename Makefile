@@ -1,12 +1,12 @@
 #Modify fo different target support
-#ARCH=i386
-ARCH=x86_64
+ARCH=i386
+#ARCH=x86_64
 
 BUILD=build/$(ARCH)
 
 RUSTC=rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
-	-C no-stack-check -C opt-level=1 \
+	-C no-stack-check -C opt-level=3 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
 	-L $(BUILD)
@@ -120,7 +120,7 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-docs: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+docs: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
 
 apps: apps/editor apps/file_manager apps/ox apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
@@ -176,31 +176,31 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballo
 $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
-$(BUILD)/kernel.rlib: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+$(BUILD)/kernel.rlib: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-$(BUILD)/kernel.ir: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+$(BUILD)/kernel.ir: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
 
-$(BUILD)/kernel.bin: $(BUILD)/kernel.rlib src/kernel.ld
-	$(LD) $(LDARGS) -o $@ -T src/kernel.ld $<
+$(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
+	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -d $< > $@ #-C
 
-filesystem/apps/%.bin: filesystem/apps/%.rs src/program.rs src/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
-	$(SED) "s|APPLICATION_PATH|../../$<|" src/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
+filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
+	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
+	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
 
-filesystem/apps/test/test.bin: filesystem/apps/test/test.rs src/program.ld $(BUILD)/libstd.rlib
+filesystem/apps/test/test.bin: filesystem/apps/test/test.rs kernel/program.ld $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/test.rlib $<
-	$(LD) $(LDARGS) -o $@ -T src/program.ld $(BUILD)/test.rlib $(BUILD)/libstd.rlib
+	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/test.rlib $(BUILD)/libstd.rlib
 
-filesystem/schemes/%.bin: filesystem/schemes/%.rs src/scheme.rs src/scheme.ld $(BUILD)/libredox.rlib
-	$(SED) "s|SCHEME_PATH|../../$<|" src/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
+filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib
+	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T src/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
+	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -d $< > $@
@@ -221,11 +221,11 @@ filesystem/apps/zfs/zfs.img:
 $(BUILD)/filesystem.gen: apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-$(BUILD)/harddrive.bin: src/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
-	$(AS) -f bin -o $@ -i$(BUILD)/ -isrc/ -ifilesystem/ $<
+$(BUILD)/harddrive.bin: kernel/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
+	$(AS) -f bin -o $@ -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
-$(BUILD)/harddrive.list: src/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
-	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -i$(BUILD)/ -isrc/ -ifilesystem/ $<
+$(BUILD)/harddrive.list: kernel/loader-$(ARCH).asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
+	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin
 	echo "Delete VM"
