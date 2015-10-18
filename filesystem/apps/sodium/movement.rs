@@ -3,6 +3,7 @@ use super::*;
 impl Editor {
     /// Go to next char
     pub fn next(&mut self) {
+        // TODO: Add numerals
         if self.x() == self.text[self.y()].len() {
             if self.y() >= self.text.len() {
                 self.text.push_back(VecDeque::new())

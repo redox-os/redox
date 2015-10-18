@@ -11,7 +11,7 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
     loop {
         if let EventOption::Key(k) = editor.window.poll().unwrap_or(Event::new()).to_option() {
             let c = k.character;
-            if shifted && c == '\u{000E}' {
+            if shifted && c == '\u{000F}' {
                 editor.cursor_mut().mode = Mode::Command(CommandMode::Normal);
             } else {
                 if k.pressed {
