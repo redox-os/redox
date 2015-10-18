@@ -35,9 +35,11 @@ impl Editor {
             '\u{001B}' => { // Escape key
                 self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
             },
-            '\u{0008}' => {
-                self.previous();
-                self.delete();
+            '\u{0008}' => { // Backspace
+                if self.x() != 0 || self.y() != 0 {
+                    self.previous();
+                    self.delete();
+                }
             },
             ch => {
                 self.text[y].insert(x, ch);
