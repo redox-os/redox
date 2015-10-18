@@ -1,3 +1,5 @@
+//! IO
+
 use core::usize;
 use fmt;
 use str;
