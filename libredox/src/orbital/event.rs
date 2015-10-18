@@ -1,6 +1,7 @@
 use core::char;
 
 /// An optional event
+#[derive(Copy, Clone)]
 pub enum EventOption {
     /// A mouse event
     Mouse(MouseEvent),
