@@ -4,7 +4,7 @@ use redox::*;
 
 #[derive(Copy, Clone)]
 /// An instruction
-pub struct Inst(pub u16, pub char);
+pub struct Inst(pub u16, pub Key);
 
 /// The state of the editor
 pub struct Editor {
@@ -20,6 +20,8 @@ pub struct Editor {
     pub scroll_y: usize,
     /// The window
     pub window: Window,
+    /// The key state
+    pub key_state: KeyState,
 }
 
 
@@ -44,6 +46,7 @@ impl Editor {
             scroll_x: 0,
             scroll_y: 0,
             window: *window,
+            key_state: KeyState::new(),
         };
 
         editor.cursors.push(Cursor::new());
