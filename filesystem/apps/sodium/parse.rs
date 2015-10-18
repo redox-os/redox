@@ -18,12 +18,14 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
                     '\0' => {
                         return Inst(0, match k.scancode {
                             K_ALT => Key::Alt,
+                            K_CTRL => Key::Ctrl,
                             K_BKSP => Key::Backspace,
                             K_LEFT => Key::Left,
                             K_RIGHT => Key::Right,
                             K_UP => Key::Up,
                             K_DOWN => Key::Down,
                             K_TAB => Key::Tab,
+                            K_ESC => Key::Escape,
                             K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift,
                             s => Key::Unknown(s),
                         })
