@@ -16,11 +16,11 @@ pub struct InsertOptions {
 
 impl Editor {
     /// Insert text
-    pub fn insert(&mut self, c: char) {
+    pub fn insert(&mut self, c: Key) {
         let x = self.x();
         let y = self.y();
         match c {
-            '\n' => {
+            Key::Char('\n') => {
                 let ln = self.text[y].clone();
                 let (slice, _) = ln.as_slices();
 
@@ -32,19 +32,20 @@ impl Editor {
 
                 self.next();
             },
-            '\u{001B}' => { // Escape key
+            Key::Escape => { // Escape key
                 self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
             },
-            '\u{0008}' => { // Backspace
+            Key::Backspace => { // Backspace
                 if self.x() != 0 || self.y() != 0 {
                     self.previous();
                     self.delete();
                 }
             },
-            ch => {
+            Key::Char(ch) => {
                 self.text[y].insert(x, ch);
                 self.next();
             }
+            _ => {},
         }
     }
 }

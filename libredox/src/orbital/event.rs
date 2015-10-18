@@ -137,9 +137,9 @@ pub const K_F11: u8 = 0x57;
 /// F12 key
 pub const K_F12: u8 = 0x58;
 /// Left shift
-////pub const K_LEFT_SHIFT: u8 = 0x2A;
-///// Right shift
-//pub const K_RIGHT_SHIFT: u8 = 0x36;
+pub const K_LEFT_SHIFT: u8 = 0x2A;
+/// Right shift
+pub const K_RIGHT_SHIFT: u8 = 0x36;
 
 /// A key event (such as a pressed key)
 #[derive(Copy, Clone)]

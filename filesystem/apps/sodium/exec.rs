@@ -3,32 +3,33 @@ use redox::*;
 
 impl Editor {
     pub fn exec(&mut self, Inst(n, cmd): Inst) {
+        use super::Key::*;
         use super::Mode::*;
         use super::PrimitiveMode::*;
         use super::CommandMode::*;
         match self.cursor().mode {
             Command(Normal) => match cmd {
-                'i' => {
+                Char('i') => {
                     self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
                         InsertOptions {
                             mode: InsertMode::Insert,
                         }));
 
                 },
-                'h' => self.left(n as usize),
-                'j' => self.down(n as usize),
-                'k' => self.up(n as usize),
-                'l' => self.right(n as usize),
-                'J' => self.down(15),
-                'K' => self.up(15),
-                'x' => self.delete(),
-                'X' => {
+                Char('h') => self.left(n as usize),
+                Char('j') => self.down(n as usize),
+                Char('k') => self.up(n as usize),
+                Char('l') => self.right(n as usize),
+                Char('J') => self.down(15),
+                Char('K') => self.up(15),
+                Char('x') => self.delete(),
+                Char('X') => {
                     self.previous();
                     self.delete();
                 },
-                '$' => self.cursor_mut().x = self.text[self.y()].len(),
-                '0' => self.cursor_mut().x = 0,
-                'r' => {
+                Char('$') => self.cursor_mut().x = self.text[self.y()].len(),
+                Char('0') => self.cursor_mut().x = 0,
+                Char('r') => {
                     loop {
                         if let EventOption::Key(k) = self.window.poll()
                                                      .unwrap_or(Event::new())
@@ -42,7 +43,7 @@ impl Editor {
                         }
                     }
                 },
-                ' ' => self.next(),
+                Char(' ') => self.next(),
                 _ => {},
             },
             Primitive(Insert(_)) => {

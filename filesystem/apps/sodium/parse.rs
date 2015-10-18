@@ -14,14 +14,24 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
             if shifted && c == '\u{000F}' {
                 editor.cursor_mut().mode = Mode::Command(CommandMode::Normal);
             } else {
-                if k.pressed {
-                    if c == '\u{000E}' {
-                        shifted = true;
-                    } else {
-                        shifted = false;
+                match c {
+                    '\0' => {
+                        return Inst(0, match k.scancode {
+                            K_ALT => Key::Alt,
+                            K_BKSP => Key::Backspace,
+                            K_LEFT => Key::Left,
+                            K_RIGHT => Key::Right,
+                            K_UP => Key::Up,
+                            K_DOWN => Key::Down,
+                            K_TAB => Key::Tab,
+                            K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift,
+                            s => Key::Unknown(s),
+                        })
+                    }
+                    _ => if k.pressed {
                         match editor.cursor().mode {
                             Mode::Primitive(_) => {
-                                return Inst(0, c);
+                                return Inst(0, Key::Char(c));
                             },
                             Mode::Command(_) => {
                                 n = match c {
@@ -37,12 +47,13 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
                                     '9'           => n * 10 + 9,
                                     _             => {
 
-                                        return Inst(if n == 0 { 1 } else { n }, c);
+                                        return Inst(if n == 0 { 1 } else { n }, Key::Char(c));
                                     }
                                 }
                             }
                         }
-                    }
+                    },
+
                 }
             }
         }
