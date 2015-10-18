@@ -9,6 +9,7 @@
 #![feature(no_std)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
+#![feature(deque_extras)]
 #![no_std]
 
 #[macro_use]

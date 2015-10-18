@@ -1,3 +1,5 @@
+//! A module dealing with network connections
+
 use string::*;
 use to_num::*;
 use vec::Vec;
