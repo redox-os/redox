@@ -6,7 +6,7 @@ BUILD=build/$(ARCH)
 
 RUSTC=rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
-	-C no-stack-check -C opt-level=3 \
+	-C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
 	-L $(BUILD)

@@ -379,7 +379,6 @@ impl Application {
 
                 //Commands
                 for command in self.commands.iter() {
-                    write!(stdout(), "'{}' == '{}'", command.name, cmd);
                     if &command.name == cmd {
                         (*command.main)(&args);
                         return;
