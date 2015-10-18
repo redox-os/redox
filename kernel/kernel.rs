@@ -18,6 +18,8 @@
 
 extern crate alloc;
 
+use alloc::boxed::Box;
+
 use core::{mem, ptr};
 
 use common::context::*;
@@ -62,33 +64,15 @@ use schemes::window::*;
 
 use syscall::handle::*;
 
-#[path="audio/src/lib.rs"]
 mod audio;
-
-#[path="common/src/lib.rs"]
 mod common;
-
-#[path="drivers/src/lib.rs"]
 mod drivers;
-
 pub mod externs;
-
-#[path="graphics/src/lib.rs"]
 mod graphics;
-
-#[path="network/src/lib.rs"]
 mod network;
-
-#[path="programs/src/lib.rs"]
 mod programs;
-
-#[path="schemes/src/lib.rs"]
 mod schemes;
-
-#[path="syscall/src/lib.rs"]
 mod syscall;
-
-#[path="usb/src/lib.rs"]
 mod usb;
 
 static mut debug_display: *mut Display = 0 as *mut Display;
@@ -262,7 +246,7 @@ unsafe fn init(font_data: usize) {
     clock_monotonic.secs = 0;
     clock_monotonic.nanos = 0;
 
-    contexts_ptr = 0 as *mut Vec<Context>;
+    contexts_ptr = 0 as *mut Vec<Box<Context>>;
     context_i = 0;
     context_enabled = false;
 
@@ -279,13 +263,11 @@ unsafe fn init(font_data: usize) {
 
     ptr::write(display::FONTS, font_data);
 
-    debug_display = memory::alloc_type();
-    ptr::write(debug_display, Display::root());
+    debug_display = Box::into_raw(Display::root());
 
     debug_draw = true;
 
-    debug_command = memory::alloc_type();
-    ptr::write(debug_command, String::new());
+    debug_command = Box::into_raw(box String::new());
 
     debug::d("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
@@ -294,15 +276,12 @@ unsafe fn init(font_data: usize) {
 
     clock_realtime = RTC::new().time();
 
-    contexts_ptr = memory::alloc_type();
-    ptr::write(contexts_ptr, Vec::new());
+    contexts_ptr = Box::into_raw(box Vec::new());
     (*contexts_ptr).push(Context::root());
 
-    session_ptr = memory::alloc_type();
-    ptr::write(session_ptr, Session::new());
+    session_ptr = Box::into_raw(Session::new());
 
-    events_ptr = memory::alloc_type();
-    ptr::write(events_ptr, Queue::new());
+    events_ptr = Box::into_raw(box Queue::new());
 
     let session = &mut *session_ptr;
 

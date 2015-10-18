@@ -13,13 +13,13 @@ impl PIO8 {
     /// Read
     pub unsafe fn read(&self) -> u8 {
         let value: u8;
-        asm!("in $0, $1" : "={al}"(value) : "{dx}"(self.port) : : "intel", "volatile");
+        asm!("in $0, $1" : "={al}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
         return value;
     }
 
     /// Write
     pub unsafe fn write(&mut self, value: u8) {
-        asm!("out $1, $0" : : "{al}"(value), "{dx}"(self.port) : : "intel", "volatile");
+        asm!("out $1, $0" : : "{al}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
     }
 }
 
@@ -48,13 +48,13 @@ impl PIO16 {
     /// Read
     pub unsafe fn read(&self) -> u16 {
         let value: u16;
-        asm!("in $0, $1" : "={ax}"(value) : "{dx}"(self.port) : : "intel", "volatile");
+        asm!("in $0, $1" : "={ax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
         return value;
     }
 
     /// Write
     pub unsafe fn write(&mut self, value: u16) {
-        asm!("out $1, $0" : : "{ax}"(value), "{dx}"(self.port) : : "intel", "volatile");
+        asm!("out $1, $0" : : "{ax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
     }
 }
 
@@ -83,13 +83,13 @@ impl PIO32 {
     /// Read
     pub unsafe fn read(&self) -> u32 {
         let value: u32;
-        asm!("in $0, $1" : "={eax}"(value) : "{dx}"(self.port) : : "intel", "volatile");
+        asm!("in $0, $1" : "={eax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
         return value;
     }
 
     /// Write
     pub unsafe fn write(&mut self, value: u32) {
-        asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : : "intel", "volatile");
+        asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
     }
 }
 
