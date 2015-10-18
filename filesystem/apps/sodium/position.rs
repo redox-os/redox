@@ -12,6 +12,7 @@ impl Editor {
             x
         }
     }
+
     /// Get y coordinate
     pub fn y(&self) -> usize {
         self.cursor().y
