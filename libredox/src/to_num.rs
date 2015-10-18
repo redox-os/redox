@@ -1,3 +1,5 @@
+//! Types convertable to integers
+
 use string::*;
 
 /// Parse the string to a integer using a given radix
