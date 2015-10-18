@@ -7,6 +7,13 @@ impl Editor {
         use super::Mode::*;
         use super::PrimitiveMode::*;
         use super::CommandMode::*;
+        match cmd {
+            Ctrl => self.key_state.ctrl = true,
+            Alt => self.key_state.alt = true,
+            Shift => self.key_state.shift = true,
+            _ => {},
+        }
+
         match self.cursor().mode {
             Command(Normal) => match cmd {
                 Char('i') => {
@@ -43,29 +50,15 @@ impl Editor {
                         }
                     }
                 },
+                Char(' ') if self.key_state.shift => {
+                    self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+                },
                 Char(' ') => self.next(),
                 _ => {},
             },
             Primitive(Insert(_)) => {
                 self.insert(cmd);
             },
-        }
-        // TODO: Record modifier keys
-        match cmd {
-            Ctrl => self.key_state.ctrl = true,
-            Alt => self.key_state.alt = true,
-            Shift => {
-                self.key_state.shift = true;
-                if !self.key_state.escaping {
-                    self.key_state.escaping = true;
-                } else {
-                    self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
-                }
-            },
-            _ => {},
-        }
-        if self.key_state.escaping && Shift != cmd {
-            self.key_state.escaping = false;
         }
     }
 }

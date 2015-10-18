@@ -6,8 +6,6 @@ pub struct KeyState {
     pub ctrl: bool,
     /// Alt pressed
     pub alt: bool,
-    /// Is normal mode escaping started?
-    pub escaping: bool,
 }
 
 impl KeyState {
@@ -16,7 +14,6 @@ impl KeyState {
             shift: false,
             ctrl: false,
             alt: false,
-            escaping: false,
         }
     }
 }
