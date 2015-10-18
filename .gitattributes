@@ -1,2 +1,2 @@
 # Make sure all Rust-Sourcefiles have Linux-style lineendings
-*.rs text eol=lf
+_REDOX text eol=lf
