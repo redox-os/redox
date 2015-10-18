@@ -2,10 +2,11 @@
 
 use core::ops::Drop;
 use core::ptr;
+use core::str;
+use core::slice;
 
 use common::debug::*;
 use common::memory;
-use common::string::*;
 
 #[cfg(target_arch = "x86")]
 pub const ELF_OFFSET: usize = 0x1000;
@@ -208,18 +209,26 @@ impl ELF {
             for i in 0..header.sh_len {
                 let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ELFSection);
 
-                let name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
+                let section_name_ptr = (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
+                let mut section_name_len = 0;
+                for j in 0..4096 {
+                    section_name_len = j;
+                    if ptr::read(section_name_ptr.offset(j)) == 0 {
+                        break;
+                    }
+                }
+                let section_name = str::from_utf8_unchecked(slice::from_raw_parts(section_name_ptr, section_name_len as usize));
 
-                if name == ".symtab" {
+                if section_name == ".symtab" {
                     sym_section = section;
-                } else if name == ".strtab" {
+                } else if section_name == ".strtab" {
                     str_section = section;
                 }
 
                 d("    Section ");
                 dd(i as usize);
                 d(": ");
-                name.d();
+                d(section_name);
                 dl();
 
                 d("    Type: ");
@@ -270,34 +279,35 @@ impl ELF {
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
 
-                        let name = String::from_c_str((self.data + str_section.off as usize + symbol.name as usize) as *const u8);
+                        let symbol_name_ptr = (self.data + str_section.off as usize + symbol.name as usize) as *const u8;
+                        let mut symbol_name_len = 0;
+                        for j in 0..4096 {
+                            symbol_name_len = j;
+                            if ptr::read(symbol_name_ptr.offset(j)) == 0 {
+                                break;
+                            }
+                        }
+                        let symbol_name = str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr, symbol_name_len as usize));
 
                         d("    Symbol ");
                         dd(i as usize);
                         d(": ");
-                        name.d();
-                        dl();
+                        d(symbol_name);
 
-                        d("    Value: ");
+                        d(" Value: ");
                         dh(symbol.value as usize);
-                        dl();
 
-                        d("    Size: ");
+                        d(" Size: ");
                         dd(symbol.size as usize);
-                        dl();
 
-                        d("    Info: ");
+                        d(" Info: ");
                         dbh(symbol.info);
-                        dl();
 
-                        d("    Other: ");
+                        d(" Other: ");
                         dbh(symbol.other);
-                        dl();
 
-                        d("    Section: ");
+                        d(" Section: ");
                         dd(symbol.sh_index as usize);
-                        dl();
-
                         dl();
                     }
                 } else {
@@ -339,7 +349,15 @@ impl ELF {
             for i in 0..header.sh_len {
                 let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ELFSection);
 
-                let section_name = String::from_c_str((self.data + sh_str_section.off as usize + section.name as usize) as *const u8);
+                let section_name_ptr = (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
+                let mut section_name_len = 0;
+                for j in 0..4096 {
+                    section_name_len = j;
+                    if ptr::read(section_name_ptr.offset(j)) == 0 {
+                        break;
+                    }
+                }
+                let section_name = str::from_utf8_unchecked(slice::from_raw_parts(section_name_ptr, section_name_len as usize));
 
                 if section_name == ".symtab" {
                     sym_section = section;
@@ -354,14 +372,28 @@ impl ELF {
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
 
-                        if name == String::from_c_str((self.data + str_section.off as usize + symbol.name as usize) as *const u8) {
+                        let symbol_name_ptr = (self.data + str_section.off as usize + symbol.name as usize) as *const u8;
+                        let mut symbol_name_len = 0;
+                        for j in 0..4096 {
+                            symbol_name_len = j;
+                            if ptr::read(symbol_name_ptr.offset(j)) == 0 {
+                                break;
+                            }
+                        }
+                        let symbol_name = str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr, symbol_name_len as usize));
+
+                        if name == symbol_name {
                             return symbol.value as usize;
                         }
                     }
+                }else{
+                    d("No sym_section ent len\n");
                 }
+            }else{
+                d("No sym_section or str_section\n");
             }
-
-            dl();
+        }else{
+            d("No data\n");
         }
 
         0

@@ -4,6 +4,7 @@ use core::ptr;
 use core::usize;
 
 use common::context::*;
+use common::debug::*;
 use common::resource::{Resource, ResourceSeek};
 use common::elf::*;
 use common::memory;
@@ -257,6 +258,9 @@ pub struct SchemeItem {
 
 impl SchemeItem {
     pub fn from_url(scheme: &String, url: &URL) -> Box<SchemeItem> {
+        url.d();
+        dl();
+
         let mut scheme_item = box SchemeItem {
             scheme: scheme.clone(),
             handle: 0,
@@ -300,6 +304,8 @@ impl SchemeItem {
                     scheme_item._lseek = executable.symbol("_lseek");
                     scheme_item._fsync = executable.symbol("_fsync");
                     scheme_item._close = executable.symbol("_close");
+                }else{
+                    d("failed to load\n");
                 }
             }
         }
@@ -311,7 +317,14 @@ impl SchemeItem {
                 let fn_ptr: *const usize = &scheme_item._start;
                 scheme_item.handle = (*(fn_ptr as *const extern "C" fn() -> usize))();
                 context.exit();
+                d("started: ");
+                dh(scheme_item.handle);
+                dl();
             }
+        }else{
+            d("failed to start: ");
+            dh(scheme_item._start);
+            dl();
         }
 
         scheme_item
