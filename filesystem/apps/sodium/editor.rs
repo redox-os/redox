@@ -1,7 +1,6 @@
 use super::*;
 use redox::*;
 
-
 #[derive(Copy, Clone)]
 /// An instruction
 pub struct Inst(pub u16, pub char);
@@ -22,20 +21,15 @@ pub struct Editor {
     pub window: Window,
 }
 
-
 impl Editor {
-
-
-
     /// Create new default state editor
     pub fn new() -> Editor {
-    
+
         let window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,
                                  576,
                                  400,
                                  &"Sodium").unwrap();
-
 
         let mut editor = Editor {
             current_cursor: 0,
@@ -49,7 +43,6 @@ impl Editor {
         editor.cursors.push(Cursor::new());
         editor.text.push_back(VecDeque::new());
 
-
         loop {
             let inp = next_inst(&mut editor);
             editor.exec(inp);
@@ -57,7 +50,6 @@ impl Editor {
         }
 
         editor
-
     }
 }
 

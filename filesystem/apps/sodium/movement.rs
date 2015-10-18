@@ -12,7 +12,6 @@ impl Editor {
                 self.cursor_mut().x = 0;
                 self.cursor_mut().y += 1;
             }
-
         } else {
             self.cursor_mut().x += 1;
         }
@@ -28,7 +27,6 @@ impl Editor {
         } else {
             self.cursor_mut().x -= 1;
         }
-
     }
 
     /// Go right
@@ -45,6 +43,7 @@ impl Editor {
             curs.x = text[y].len();
         }
     }
+
     /// Go left
     pub fn left(&mut self, n: usize) {
         let x = self.x();
@@ -60,6 +59,7 @@ impl Editor {
         }
 
     }
+
     /// Go up
     pub fn up(&mut self, n: usize) {
         let y = self.y();
@@ -70,6 +70,7 @@ impl Editor {
             curs.y = 0;
         }
     }
+
     /// Go down
     pub fn down(&mut self, n: usize) {
         let x = self.x();
