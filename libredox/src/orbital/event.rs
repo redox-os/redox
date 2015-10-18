@@ -136,6 +136,10 @@ pub const K_DEL: u8 = 0x53;
 pub const K_F11: u8 = 0x57;
 /// F12 key
 pub const K_F12: u8 = 0x58;
+/// Left shift
+pub const K_LEFT_SHIFT: u8 = 0x2A;
+/// Right shift
+pub const K_RIGHT_SHIFT: u8 = 0x36;
 
 /// A key event (such as a pressed key)
 #[derive(Copy, Clone)]
@@ -161,17 +165,10 @@ impl KeyEvent {
 
     /// Convert from an `Event`
     pub fn from_event(event: Event) -> KeyEvent {
-        match char::from_u32(event.a as u32) {
-            Some(character) => KeyEvent {
-                character: character,
-                scancode: event.b as u8,
-                pressed: event.c > 0,
-            },
-            None => KeyEvent {
-                character: '\0',
-                scancode: event.b as u8,
-                pressed: event.c > 0,
-            },
+        KeyEvent {
+            character: char::from_u32(event.a as u32).unwrap_or('\0'),
+            scancode: event.b as u8,
+            pressed: event.c > 0,
         }
     }
 }

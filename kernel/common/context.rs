@@ -17,6 +17,8 @@ pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
 /// Switch context
+///
+/// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
 pub unsafe fn context_switch(interrupted: bool) {
     let reenable = scheduler::start_no_ints();
 
@@ -67,6 +69,9 @@ pub unsafe fn context_switch(interrupted: bool) {
     scheduler::end_no_ints(reenable);
 }
 
+/// Fork context
+///
+/// Unsafe due to interrupt disabling, C memory handling, and raw pointers
 pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
     let reenable = scheduler::start_no_ints();
 
@@ -122,7 +127,10 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
 }
 
 //TODO: To clean up memory leak, current must be destroyed!
-pub unsafe extern "cdecl" fn context_exit() {
+/// Exit context
+///
+/// Unsafe due to interrupt disabling and raw pointers
+pub unsafe fn context_exit() {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
@@ -138,6 +146,10 @@ pub unsafe extern "cdecl" fn context_exit() {
     context_switch(false);
 }
 
+// Currently unused?
+/// Reads a Boxed function and executes it
+///
+/// Unsafe due to raw memory handling and FnBox
 pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     memory::unalloc(box_fn_ptr);

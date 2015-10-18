@@ -13,6 +13,12 @@ pub use self::editor::*;
 mod parse;
 pub use self::parse::*;
 
+mod keystate;
+pub use self::keystate::*;
+
+mod key;
+pub use self::key::*;
+
 mod position;
 pub use self::position::*;
 
@@ -37,11 +43,7 @@ pub use self::delete::*;
 mod exec;
 pub use self::exec::*;
 
-
 pub fn main() {
-
     let mut editor = Editor::new();
-
-
 }
 
