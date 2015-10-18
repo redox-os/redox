@@ -22,10 +22,10 @@ impl Editor {
         if self.x() == 0 {
             if self.y() > 0 {
                 self.cursor_mut().y -= 1;
-                self.cursor_mut().x = self.text[self.y() - 1].len();
+                self.cursor_mut().x = self.text[self.y()].len();
             }
         } else {
-            self.cursor_mut().y -= 1;
+            self.cursor_mut().x -= 1;
         }
 
     }
