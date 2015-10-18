@@ -3,6 +3,7 @@ use super::*;
 impl Editor {
     /// Go to next char
     pub fn next(&mut self) {
+        // TODO: Add numerals
         if self.x() == self.text[self.y()].len() {
             if self.y() >= self.text.len() {
                 self.text.push_back(VecDeque::new())
@@ -11,7 +12,6 @@ impl Editor {
                 self.cursor_mut().x = 0;
                 self.cursor_mut().y += 1;
             }
-
         } else {
             self.cursor_mut().x += 1;
         }
@@ -22,12 +22,11 @@ impl Editor {
         if self.x() == 0 {
             if self.y() > 0 {
                 self.cursor_mut().y -= 1;
-                self.cursor_mut().x = self.text[self.y() - 1].len();
+                self.cursor_mut().x = self.text[self.y()].len();
             }
         } else {
-            self.cursor_mut().y -= 1;
+            self.cursor_mut().x -= 1;
         }
-
     }
 
     /// Go right
@@ -44,6 +43,7 @@ impl Editor {
             curs.x = text[y].len();
         }
     }
+
     /// Go left
     pub fn left(&mut self, n: usize) {
         let x = self.x();
@@ -59,6 +59,7 @@ impl Editor {
         }
 
     }
+
     /// Go up
     pub fn up(&mut self, n: usize) {
         let y = self.y();
@@ -69,6 +70,7 @@ impl Editor {
             curs.y = 0;
         }
     }
+
     /// Go down
     pub fn down(&mut self, n: usize) {
         let x = self.x();
