@@ -9,11 +9,7 @@ use common::string::*;
 
 use programs::session::SessionItem;
 
-pub struct DisplayScheme {
-	// this is definitely not what needs to be done
-	// at least not here
-	pub allocated: bool,
-}
+pub struct DisplayScheme;
 
 // Should there only be one display per session?
 pub struct DisplayResource {
@@ -75,20 +71,16 @@ impl SessionItem for DisplayScheme {
 	}
 
 	fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
-		// only valid url should be display://
-		// at least for now, maybe it would be useful to
-		// connect to another display to read it (screen sharing)
-		// maybe write to it too, for the express purpose of harassing somebody
-		// MUAHAHAHA
-		if !self.allocated {
-			self.allocated = true;
-			unsafe {
-				return Some(box DisplayResource {
-					display: Display::root(),
-					seek: 0,
-				});
-			}
-		} 
-		return None;
+		// TODO: ponder these things:
+		// - should display:// be the only only valid url
+		//      for this scheme?
+		// - maybe "read" should support displays at some other location
+		//      like built in screen sharing capability or something
+		unsafe {
+			return Some(box DisplayResource {
+			            display: Display::root(),
+			           seek: 0,
+			      });
+		}
 	}
 }
