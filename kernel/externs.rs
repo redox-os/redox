@@ -1,5 +1,6 @@
 use core::fmt;
 use core::result;
+use core::ptr;
 
 use common::debug::*;
 use common::memory::*;
@@ -78,21 +79,15 @@ pub extern fn __rust_usable_size(size: usize, align: usize) -> usize {
 }
 
 #[no_mangle]
-#[cfg(target_arch = "x86")]
-pub unsafe extern "C" fn memcmp(a: *const i8, b: *const i8, len: usize) -> i32 {
-    let ret;
-    asm!("cld
-        repne cmpsb
-        xor eax, eax
-        mov al, [edi]
-        xor ecx, ecx
-        mov cl, [esi]
-        sub eax, ecx"
-        : "={eax}"(ret)
-        : "{edi}"(a), "{esi}"(b), "{ecx}"(len)
-        : "cc", "memory"
-        : "intel", "volatile");
-    ret
+pub unsafe extern "C" fn memcmp(a: *mut i8, b: *const i8, len: usize) -> i32 {
+    for i in 0..len {
+        let c_a = ptr::read(a.offset(i as isize));
+        let c_b = ptr::read(b.offset(i as isize));
+        if c_a != c_b {
+            return c_a as i32 - c_b as i32;
+        }
+    }
+    return 0;
 }
 
 #[no_mangle]
@@ -135,24 +130,6 @@ pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
         : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
         : "cc", "memory"
         : "intel", "volatile");
-}
-
-#[no_mangle]
-#[cfg(target_arch = "x86_64")]
-pub unsafe extern "C" fn memcmp(a: *const i8, b: *const i8, len: usize) -> i32 {
-    let ret;
-    asm!("cld
-        repne cmpsb
-        xor rax, rax
-        mov al, [rdi]
-        xor rcx, rcx
-        mov cl, [rsi]
-        sub rax, rcx"
-        : "={rax}"(ret)
-        : "{rdi}"(a), "{rsi}"(b), "{rcx}"(len)
-        : "cc", "memory"
-        : "intel", "volatile");
-    ret
 }
 
 #[no_mangle]
