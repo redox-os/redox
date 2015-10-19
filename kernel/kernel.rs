@@ -328,7 +328,6 @@ unsafe fn init(font_data: usize) {
     //Start interrupts
     scheduler::end_no_ints(true);
 
-/*
     //Load cursor before getting out of debug mode
     debug::d("Loading cursor\n");
     if let Some(mut resource) = URL::from_str("file:///ui/cursor.bmp").open() {
@@ -343,6 +342,7 @@ unsafe fn init(font_data: usize) {
         scheduler::end_no_ints(reenable);
     }
 
+/*
     debug::d("Loading schemes\n");
     if let Some(mut resource) = URL::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
@@ -361,6 +361,7 @@ unsafe fn init(font_data: usize) {
             }
         }
     }
+*/
 
     debug::d("Loading apps\n");
     if let Some(mut resource) = URL::from_str("file:///apps/").open() {
@@ -382,7 +383,11 @@ unsafe fn init(font_data: usize) {
     debug::d("Loading background\n");
     if let Some(mut resource) = URL::from_str("file:///ui/background.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
+        if let Some(size) = resource.read_to_end(&mut vec) {
+            debug::d("Read background\n");
+        }else{
+            debug::d("Failed to read background\n");
+        }
 
         let background = BMPFile::from_data(&vec);
 
@@ -390,8 +395,9 @@ unsafe fn init(font_data: usize) {
         session.background = background;
         session.redraw = true;
         scheduler::end_no_ints(reenable);
+    }else{
+        debug::d("Failed to open background\n");
     }
-    */
 
     debug::d("Enabling context switching\n");
     debug_draw = false;

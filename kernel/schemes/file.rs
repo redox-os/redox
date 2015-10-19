@@ -35,26 +35,16 @@ pub struct NodeData {
 /// A file node
 pub struct Node {
     pub address: u64,
-    pub name: String,
+    pub name: [u8; 256],
     pub extents: [Extent; 16],
 }
 
 impl Node {
     /// Create a new file node from an address and some data
     pub fn new(address: u64, data: &NodeData) -> Self {
-        let mut utf8: Vec<u8> = Vec::new();
-        for i in 0..data.name.len() {
-            let c = data.name[i];
-            if c == 0 {
-                break;
-            } else {
-                utf8.push(c);
-            }
-        }
-
         Node {
             address: address,
-            name: String::from_utf8(&utf8),
+            name: data.name,
             extents: data.extents,
         }
     }
@@ -62,9 +52,10 @@ impl Node {
 
 impl Clone for Node {
     fn clone(&self) -> Self {
+        let name: [u8; 256] = self.name;
         Node {
             address: self.address,
-            name: self.name.clone(),
+            name: name,
             extents: self.extents,
         }
     }
@@ -89,7 +80,8 @@ impl FileSystem {
                 let header = header_ptr.read(0);
                 drop(header_ptr);
 
-                if header.signature[0] == 'R' as u8 && header.signature[1] == 'E' as u8 &&
+                if header.signature[0] == 'R' as u8 &&
+                   header.signature[1] == 'E' as u8 &&
                    header.signature[2] == 'D' as u8 &&
                    header.signature[3] == 'O' as u8 &&
                    header.signature[4] == 'X' as u8 &&
@@ -181,12 +173,13 @@ impl FileSystem {
     /// Get node with a given filename
     pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
-            if node.name == *filename {
+            let node_name = String::from_c_slice(&node.name);
+            if node_name == *filename {
                 return Some(node.clone());
             }
         }
 
-        return None;
+        None
     }
 
     /// List nodes in a given directory
@@ -194,8 +187,9 @@ impl FileSystem {
         let mut ret = Vec::<String>::new();
 
         for node in self.nodes.iter() {
-            if node.name.starts_with(directory.clone()) {
-                ret.push(node.name.substr(directory.len(), node.name.len() - directory.len()));
+            let node_name = String::from_c_slice(&node.name);
+            if node_name.starts_with(directory.clone()) {
+                ret.push(node_name.substr(directory.len(), node_name.len() - directory.len()));
             }
         }
 
@@ -224,7 +218,7 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> URL {
-        return URL::from_string(&("file:///".to_string() + &self.node.name));
+        return URL::from_string(&("file:///".to_string() + &String::from_c_slice(&self.node.name)));
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
