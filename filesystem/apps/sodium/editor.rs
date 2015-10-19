@@ -43,15 +43,18 @@ impl Editor {
             scroll_y: 0,
             window: *window,
             key_state: KeyState::new(),
+            status_bar: StatusBar::new(),
         };
 
         editor.cursors.push(Cursor::new());
         editor.text.push_back(VecDeque::new());
 
+        editor.redraw();
         loop {
             let inp = next_inst(&mut editor);
             editor.exec(inp);
             editor.redraw();
+            editor.status_bar.mode = editor.cursor().mode.to_string();
         }
 
         editor
