@@ -61,6 +61,7 @@ use schemes::random::*;
 use schemes::tcp::*;
 use schemes::time::*;
 use schemes::window::*;
+use schemes::display::*;
 
 use syscall::handle::*;
 
@@ -305,6 +306,7 @@ unsafe fn init(font_data: usize) {
     });
     session.items.push(box ICMPScheme);
     session.items.push(box TCPScheme);
+    session.items.push(box DisplayScheme);
     session.items.push(box WindowScheme);
 
     Context::spawn(box move || {
