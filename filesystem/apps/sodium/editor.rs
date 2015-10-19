@@ -21,6 +21,8 @@ pub struct Editor {
     pub window: Window,
     /// The key state
     pub key_state: KeyState,
+    /// The status bar
+    pub status_bar: StatusBar,
 }
 
 impl Editor {
