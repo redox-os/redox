@@ -123,7 +123,7 @@ all: $(BUILD)/harddrive.bin
 docs: src/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
 
-apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/sodium
+apps: apps/editor apps/file_manager apps/ox apps/player apps/terminal apps/test apps/viewer apps/zfs apps/bad_code apps/bad_data apps/bad_segment apps/sodium apps/bohr
 
 schemes: schemes/console schemes/example schemes/reent schemes/udp
 
