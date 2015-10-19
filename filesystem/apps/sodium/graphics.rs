@@ -31,13 +31,36 @@ impl Editor {
                 }
             }
         }
+        let h = self.window.height();
+        let w = self.window.width();
+        self.window.rect(0, h as isize - 18, w, 18, [74, 74, 74, 255]);
+
+        for (n, c) in (if self.status_bar.mode.len() > w / (8 * 4) {
+            self.status_bar.mode.chars().take(w / (8 * 4) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
+        } else {
+            self.status_bar.mode.chars().collect()
+        }).into_iter().enumerate() {
+            self.window.char(n as isize * 8, h as isize - 16 - 1, c, [255, 255, 255, 255]);
+        }
+
         self.window.sync();
     }
 }
 
-struct StatusBar {
-    mode: String,
-    file: String,
-    cmd: String,
-    msg: String,
+pub struct StatusBar {
+    pub mode: String,
+    pub file: String,
+    pub cmd: String,
+    pub msg: String,
+}
+
+impl StatusBar {
+    pub fn new() -> Self {
+        StatusBar {
+            mode: String::new(),
+            file: String::new(),
+            cmd: String::new(),
+            msg: String::new(),
+        }
+    }
 }
