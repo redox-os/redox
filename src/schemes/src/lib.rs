@@ -22,3 +22,5 @@ pub mod tcp;
 pub mod time;
 /// Window scheme
 pub mod window;
+/// Display Scheme
+pub mod display;
