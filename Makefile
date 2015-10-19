@@ -1,12 +1,12 @@
 #Modify fo different target support
-ARCH=i386
-#ARCH=x86_64
+#ARCH=i386
+ARCH=x86_64
 
 BUILD=build/$(ARCH)
 
 RUSTC=rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
-	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=1 \
+	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead-code -A deprecated \
 	-L $(BUILD)
@@ -186,7 +186,7 @@ $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
-	$(OBJDUMP) -C -M intel -d $< > $@ #-C
+	$(OBJDUMP) -C -M intel -d $< > $@
 
 filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/`$(BASENAME) $*`.gen

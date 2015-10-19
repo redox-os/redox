@@ -445,7 +445,7 @@ pub unsafe extern "cdecl" fn kernel(
 
             do_sys_exit(-1);
             loop {
-                asm!("sti");
+                asm!("cli");
                 asm!("hlt");
             }
         })
@@ -488,7 +488,7 @@ pub unsafe extern "cdecl" fn kernel(
 
             do_sys_exit(-1);
             loop {
-                asm!("sti");
+                asm!("cli");
                 asm!("hlt");
             }
         })
@@ -610,7 +610,7 @@ pub unsafe extern "cdecl" fn kernel(
 
             do_sys_exit(-1);
             loop {
-                asm!("sti");
+                asm!("cli");
                 asm!("hlt");
             }
         })
@@ -661,7 +661,7 @@ pub unsafe extern "cdecl" fn kernel(
 
             do_sys_exit(-1);
             loop {
-                asm!("sti");
+                asm!("cli");
                 asm!("hlt");
             }
         })

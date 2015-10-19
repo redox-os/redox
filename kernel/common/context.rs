@@ -220,8 +220,6 @@ impl Context {
 
         ret.push(1 << 9); //Flags
 
-        let esp = ret.stack_ptr;
-
         ret.push(0); //EAX
         ret.push(0); //ECX
         ret.push(0); //EDX
@@ -323,19 +321,14 @@ impl Context {
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have no extra pushes or pops
+    //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfd
-            pushad"
-            :
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!("mov [eax], esp"
+            pushad
+            mov [eax], esp"
             :
             : "{eax}"(&mut self.stack_ptr)
             : "memory"
@@ -346,9 +339,9 @@ impl Context {
             : "{eax}"(self.fx)
             : "memory"
             : "intel", "volatile");
+
         self.fx_enabled = true;
 
-        //TODO: Clear registers
         if other.fx_enabled {
             asm!("fxrstor [eax]"
                 :
@@ -357,16 +350,11 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!("mov esp, [eax]"
-            :
-            : "{eax}"(&mut other.stack_ptr)
-            : "memory"
-            : "intel", "volatile");
-
-        asm!("popad
+        asm!("mov esp, [eax]
+            popad
             popfd"
             :
-            :
+            : "{eax}"(&mut other.stack_ptr)
             : "memory"
             : "intel", "volatile");
     }
