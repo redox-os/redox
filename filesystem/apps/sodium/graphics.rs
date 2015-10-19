@@ -34,3 +34,10 @@ impl Editor {
         self.window.sync();
     }
 }
+
+struct StatusBar {
+    mode: String,
+    file: String,
+    cmd: String,
+    msg: String,
+}
