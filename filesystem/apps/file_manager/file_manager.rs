@@ -1,7 +1,7 @@
 use redox::{self, env, BMPFile};
 use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::file::File;
-use redox::io::Read;
+use redox::io::{Read, Seek, SeekFrom};
 use redox::orbital::Window;
 use redox::time::{self, Duration};
 use redox::vec::Vec;
@@ -17,6 +17,7 @@ pub struct FileManager {
     text_icon: BMPFile,
     file_icon: BMPFile,
     files: Vec<String>,
+    file_sizes: Vec<String>,
     selected: isize,
     last_mouse_event: MouseEvent,
     click_time: Duration,
@@ -42,6 +43,7 @@ impl FileManager {
             text_icon: load_icon("text-x-generic"),
             file_icon: load_icon("unknown"),
             files: Vec::new(),
+            file_sizes: Vec::new(),
             selected: -1,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -59,49 +61,58 @@ impl FileManager {
 
         let mut i = 0;
         let mut row = 0;
-        for string in self.files.iter() {
+        let column1 = {
+            let mut tmp = 0;
+            for string in self.files.iter() {
+                if tmp < string.len() {
+                    tmp = string.len();
+                }
+            }
+            tmp + 1
+        };
+        for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
             if i == self.selected {
                 let width = window.width();
                 window.rect(0, 32 * row as isize, width, 32, [224, 224, 224, 255]);
             }
 
-            if string.ends_with('/') {
+            if file_name.ends_with('/') {
                 window.image(0,
                              32 * row as isize,
                              self.folder_icon.width(),
                              self.folder_icon.height(),
                              self.folder_icon.as_slice());
-            } else if string.ends_with(".wav") {
+            } else if file_name.ends_with(".wav") {
                 window.image(0,
                              32 * row as isize,
                              self.audio_icon.width(),
                              self.audio_icon.height(),
                              self.audio_icon.as_slice());
-            } else if string.ends_with(".bin") {
+            } else if file_name.ends_with(".bin") {
                 window.image(0,
                              32 * row as isize,
                              self.bin_icon.width(),
                              self.bin_icon.height(),
                              self.bin_icon.as_slice());
-            } else if string.ends_with(".bmp") {
+            } else if file_name.ends_with(".bmp") {
                 window.image(0,
                              32 * row as isize,
                              self.image_icon.width(),
                              self.image_icon.height(),
                              self.image_icon.as_slice());
-            } else if string.ends_with(".rs") || string.ends_with(".asm") || string.ends_with(".list") {
+            } else if file_name.ends_with(".rs") || file_name.ends_with(".asm") || file_name.ends_with(".list") {
                 window.image(0,
                              32 * row as isize,
                              self.source_icon.width(),
                              self.source_icon.height(),
                              self.source_icon.as_slice());
-            } else if string.ends_with(".sh") || string.ends_with(".lua") {
+            } else if file_name.ends_with(".sh") || file_name.ends_with(".lua") {
                 window.image(0,
                              32 * row as isize,
                              self.script_icon.width(),
                              self.script_icon.height(),
                              self.script_icon.as_slice());
-            } else if string.ends_with(".md") || string.ends_with(".txt") {
+            } else if file_name.ends_with(".md") || file_name.ends_with(".txt") {
                 window.image(0,
                              32 * row as isize,
                              self.text_icon.width(),
@@ -116,7 +127,7 @@ impl FileManager {
             }
 
             let mut col = 0;
-            for c in string.chars() {
+            for c in file_name.chars() {
                 if c == '\n' {
                     col = 0;
                     row += 1;
@@ -136,6 +147,30 @@ impl FileManager {
                     row += 1;
                 }
             }
+
+            col = column1;
+
+            for c in file_size.chars() {
+                if c == '\n' {
+                    col = 0;
+                    row += 1;
+                } else if c == '\t' {
+                    col += 8 - col % 8;
+                } else {
+                    if col < window.width() / 8 && row < window.height() / 32 {
+                        window.char(8 * col as isize + 40,
+                                    32 * row as isize + 8,
+                                    c,
+                                    [0, 0, 0, 255]);
+                        col += 1;
+                    }
+                }
+                if col >= window.width() / 8 {
+                    col = 0;
+                    row += 1;
+                }
+            }
+
             row += 1;
             i += 1;
         }
@@ -151,10 +186,48 @@ impl FileManager {
             file.read_to_string(&mut list);
 
             for entry in list.split('\n') {
-                if width < 40 + (entry.len() + 1) * 8 {
-                    width = 40 + (entry.len() + 1) * 8;
-                }
                 self.files.push(entry.to_string());
+                self.file_sizes.push(
+                    match File::open(&(path.to_string() + entry)) {
+                        Some(mut file) => {
+                            // When the entry is a folder
+                            if entry.ends_with('/') {
+                                let mut string = String::new();
+                                file.read_to_string(&mut string);
+
+                                let count = string.split('\n').count();
+                                if count == 1 {
+                                    "1 entry".to_string()
+                                } else {
+                                    format!("{} entries", count)
+                                }
+                            } else {
+                                match file.seek(SeekFrom::End(0)) {
+                                    Some(size) => {
+                                        if size >= 1_000 {
+                                            format!("{:.1} KB", (size as f64)/1_000.0)
+                                        } else if size >= 1_000_000 {
+                                            format!("{:.1} MB", (size as f64)/1_000_000.0)
+                                        } else if size >= 1_000_000_000 {
+                                            format!("{:.1} GB", (size as f64)/1_000_000_000.0)
+                                        } else {
+                                            format!("{:.1} bytes", size)
+                                        }
+                                    }
+                                    None => "Failed to seek".to_string()
+                                }
+                            }
+                        },
+                        None => "Failed to open".to_string(),
+                    }
+                );
+                // Unwrapping the last file size will not panic since it has
+                // been at least pushed once in the vector
+                let current_width = (40 + (entry.len() + 1) * 8) +
+                                    (8 + (self.file_sizes.last().unwrap().len() + 1) * 8);
+                if width < current_width {
+                    width = current_width;
+                }
             }
 
             if height < self.files.len() * 32 {
