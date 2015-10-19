@@ -13,7 +13,7 @@ pub fn main() {
 				}
 			}
 			file.sync();
-			let z = time::Duration::new(8,0);
+			let z = time::Duration::new(10,0);
 			z.sleep();
 		},
 		None => { 
