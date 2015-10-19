@@ -3,6 +3,7 @@ use super::*;
 use core::iter::FromIterator;
 
 #[derive(Clone, PartialEq, Copy)]
+/// The type of the insert mode
 pub enum InsertMode {
     Append,
     Insert,
@@ -10,7 +11,9 @@ pub enum InsertMode {
 }
 
 #[derive(Clone, PartialEq, Copy)]
+/// The insert options
 pub struct InsertOptions {
+    /// The mode type
     pub mode: InsertMode,
 }
 

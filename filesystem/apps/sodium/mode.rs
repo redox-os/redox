@@ -1,7 +1,7 @@
 use super::*;
 
-/// A mode
 #[derive(Clone, PartialEq, Copy)]
+/// A mode
 pub enum Mode {
     /// A primitive mode (no repeat, no delimiters, no preprocessing)
     Primitive(PrimitiveMode),
