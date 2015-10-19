@@ -23,105 +23,32 @@ pub unsafe extern "C" fn memcmp(a: *mut i8, b: *const i8, len: usize) -> i32 {
 }
 
 #[no_mangle]
-#[cfg(target_arch = "x86")]
 pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, len: usize) {
     if src < dst {
-        asm!("pushfd
-            std
-            rep movsb
-            popfd"
-            :
-            : "{edi}"(dst.offset(len as isize - 1)), "{esi}"(src.offset(len as isize - 1)), "{ecx}"(len)
-            : "{edi}", "{esi}", "{ecx}", "memory"
-            : "intel", "volatile");
+        for i_reverse in 0..len as isize {
+            let i = len as isize - i_reverse - 1;
+            ptr::write(dst.offset(i), ptr::read(src.offset(i)));
+        }
     } else {
-        asm!("pushfd
-            cld
-            rep movsb
-            popfd"
-            :
-            : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
-            : "{edi}", "{esi}", "{ecx}", "memory"
-            : "intel", "volatile");
+        for i in 0..len as isize {
+            ptr::write(dst.offset(i), ptr::read(src.offset(i)));
+        }
     }
 }
 
 #[no_mangle]
-#[cfg(target_arch = "x86")]
 pub unsafe extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
-    asm!("pushfd
-        cld
-        rep movsb
-        popfd"
-        :
-        : "{edi}"(dst), "{esi}"(src), "{ecx}"(len)
-        : "{edi}", "{esi}", "{ecx}", "memory"
-        : "intel", "volatile");
-}
-
-#[no_mangle]
-#[cfg(target_arch = "x86")]
-pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
-    asm!("pushfd
-        cld
-        rep stosb
-        popfd"
-        :
-        : "{eax}"(c), "{edi}"(dst), "{ecx}"(len)
-        : "{edi}", "{ecx}", "memory"
-        : "intel", "volatile");
-}
-
-#[no_mangle]
-#[cfg(target_arch = "x86_64")]
-pub unsafe extern "C" fn memmove(dst: *mut u8, src: *const u8, len: usize) {
-    if src < dst {
-        asm!("pushfq
-            std
-            rep movsb
-            popfq"
-            :
-            : "{rdi}"(dst.offset(len as isize - 1)), "{rsi}"(src.offset(len as isize - 1)), "{rcx}"(len)
-            : "{rdi}", "{rsi}", "{rcx}", "memory"
-            : "intel", "volatile");
-    } else {
-        asm!("pushfq
-            cld
-            rep movsb
-            popfq"
-            :
-            : "{rdi}"(dst), "{rsi}"(src), "{rcx}"(len)
-            : "{rdi}", "{rsi}", "{rcx}", "memory"
-            : "intel", "volatile");
+    for i in 0..len as isize {
+        ptr::write(dst.offset(i), ptr::read(src.offset(i)));
     }
 }
 
 #[no_mangle]
-#[cfg(target_arch = "x86_64")]
-pub unsafe extern "C" fn memcpy(dst: *mut u8, src: *const u8, len: usize) {
-    asm!("pushfq
-        cld
-        rep movsb
-        popfq"
-        :
-        : "{rdi}"(dst), "{rsi}"(src), "{rcx}"(len)
-        : "{rdi}", "{rsi}", "{rcx}", "memory"
-        : "intel", "volatile");
-}
-
-#[no_mangle]
-#[cfg(target_arch = "x86_64")]
 pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
-    asm!("pushfq
-        cld
-        rep stosb
-        popfq"
-        :
-        : "{rax}"(c), "{rdi}"(dst), "{rcx}"(len)
-        : "{rdi}", "{rcx}", "memory"
-        : "intel", "volatile");
+    for i in 0..len as isize {
+        ptr::write(dst.offset(i), c as u8);
+    }
 }
-
 
 #[no_mangle]
 #[cfg(target_arch = "x86")]
