@@ -328,6 +328,7 @@ unsafe fn init(font_data: usize) {
     //Start interrupts
     scheduler::end_no_ints(true);
 
+/*
     //Load cursor before getting out of debug mode
     debug::d("Loading cursor\n");
     if let Some(mut resource) = URL::from_str("file:///ui/cursor.bmp").open() {
@@ -390,6 +391,7 @@ unsafe fn init(font_data: usize) {
         session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
+    */
 
     debug::d("Enabling context switching\n");
     debug_draw = false;
@@ -564,7 +566,7 @@ pub unsafe extern "cdecl" fn kernel(
 #[cfg(target_arch = "x86_64")]
 /// Take regs for kernel calls and exceptions
 pub unsafe extern "cdecl" fn kernel(
-                        s1: usize, s2: usize, s3: usize, s4: usize, s5: usize, s6: usize,
+                        s1: usize, s2: usize, s3: usize, s4: usize, s5: usize, s6: usize, //TODO Remove thse scratch values by modifying interrupts-x86_64.asm
                         interrupt: usize, mut ax: usize, bx: usize, cx: usize, dx: usize, di: usize, si: usize,
                         r8: usize, r9: usize, r10: usize, r11: usize, r12: usize, r13: usize, r14: usize, r15: usize,
                         bp: usize, sp: usize, ip: usize, flags: usize, error: usize) -> usize {

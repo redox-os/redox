@@ -210,8 +210,6 @@ impl Context {
             exited: false,
         };
 
-        let ebp = ret.stack_ptr;
-
         for arg in args.iter() {
             ret.push(*arg);
         }
@@ -248,11 +246,21 @@ impl Context {
             exited: false,
         };
 
-        let ebp = ret.stack_ptr;
+        let mut args_mut = args.clone();
 
-        for arg in args.iter() {
-            ret.push(*arg);
+        while args_mut.len() >= 7 {
+            if let Some(value) = args_mut.pop() {
+                ret.push(value);
+            }
         }
+
+        //First six args are in regs
+        let r9 = if args_mut.len() >= 6 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        let r8 = if args_mut.len() >= 5 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        let rcx = if args_mut.len() >= 4 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        let rdx = if args_mut.len() >= 3 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        let rsi = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        let rdi = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
 
         ret.push(call); //We will ret into this function call
 
@@ -260,12 +268,12 @@ impl Context {
 
         ret.push(0); //RAX
         ret.push(0); //RBX
-        ret.push(0); //RCX
-        ret.push(0); //RDX
-        ret.push(0); //RDI
-        ret.push(0); //RSI
-        ret.push(0); //R8
-        ret.push(0); //R9
+        ret.push(rcx); //RCX
+        ret.push(rdx); //RDX
+        ret.push(rdi); //RDI
+        ret.push(rsi); //RSI
+        ret.push(r8); //R8
+        ret.push(r9); //R9
         ret.push(0); //R10
         ret.push(0); //R11
         ret.push(0); //R12
@@ -421,7 +429,7 @@ impl Context {
             pop rax
             popfq"
             :
-            : "{rsi}"(&mut other.stack_ptr)
+            : "{rax}"(&mut other.stack_ptr)
             : "memory"
             : "intel", "volatile");
     }
