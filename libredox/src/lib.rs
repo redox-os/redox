@@ -192,8 +192,13 @@
     #[cfg(std)]
     pub mod start;
 
+    pub mod alloc_system;
+
     /// A module for necessary C and assembly constructs
+    #[path="../../kernel/externs.rs"]
     pub mod externs;
+
+    pub mod panic;
 
     /// A module for system calls
     pub mod syscall;

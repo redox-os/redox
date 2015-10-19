@@ -380,13 +380,8 @@ impl Context {
             push r13
             push r14
             push r15
-            push rbp"
-            :
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!("mov [rax], rsp"
+            push rbp
+            mov [rax], rsp"
             :
             : "{rax}"(&mut self.stack_ptr)
             : "memory"
@@ -408,13 +403,8 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!("mov rsp, [rax]"
-            :
-            : "{rax}"(&mut self.stack_ptr)
-            : "memory"
-            : "intel", "volatile");
-
-        asm!("pop rbp
+        asm!("mov rsp, [rax]
+            pop rbp
             pop r15
             pop r14
             pop r13

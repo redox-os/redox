@@ -64,12 +64,14 @@ use schemes::window::*;
 
 use syscall::handle::*;
 
+pub mod alloc_system;
 mod audio;
 mod common;
 mod drivers;
 pub mod externs;
 mod graphics;
 mod network;
+pub mod panic;
 mod programs;
 mod schemes;
 mod syscall;
