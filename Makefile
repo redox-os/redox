@@ -1,6 +1,6 @@
 #Modify fo different target support
-#ARCH=i386
-ARCH=x86_64
+ARCH=i386
+#ARCH=x86_64
 
 BUILD=build/$(ARCH)
 
@@ -123,7 +123,7 @@ all: $(BUILD)/harddrive.bin
 docs: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
 
-apps: apps/editor apps/file_manager apps/ox apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
+apps: apps/bohr apps/editor apps/file_manager apps/ox apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
 
 schemes: schemes/console schemes/example schemes/reent schemes/udp
 
