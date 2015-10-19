@@ -2,7 +2,7 @@
         "llvm-target": "i686-unknown-redox",
         "target-endian": "little",
         "target-pointer-width": "32",
-        "features": "-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
+        "features": "-mmx,-sse,-sse2,-sse3,-ssse3,-sse4.1,-sse4.2,-3dnow,-3dnowa,-avx,-avx2",
         "os": "redox",
         "env": "",
         "vendor": "unknown",

@@ -35,7 +35,7 @@ pub struct NodeData {
 /// A file node
 pub struct Node {
     pub address: u64,
-    pub name: [u8; 256],
+    pub name: String,
     pub extents: [Extent; 16],
 }
 
@@ -44,7 +44,7 @@ impl Node {
     pub fn new(address: u64, data: &NodeData) -> Self {
         Node {
             address: address,
-            name: data.name,
+            name: String::from_c_slice(&data.name),
             extents: data.extents,
         }
     }
@@ -52,10 +52,9 @@ impl Node {
 
 impl Clone for Node {
     fn clone(&self) -> Self {
-        let name: [u8; 256] = self.name;
         Node {
             address: self.address,
-            name: name,
+            name: self.name.clone(),
             extents: self.extents,
         }
     }
@@ -173,8 +172,7 @@ impl FileSystem {
     /// Get node with a given filename
     pub fn node(&self, filename: &String) -> Option<Node> {
         for node in self.nodes.iter() {
-            let node_name = String::from_c_slice(&node.name);
-            if node_name == *filename {
+            if node.name == *filename {
                 return Some(node.clone());
             }
         }
@@ -187,9 +185,8 @@ impl FileSystem {
         let mut ret = Vec::<String>::new();
 
         for node in self.nodes.iter() {
-            let node_name = String::from_c_slice(&node.name);
-            if node_name.starts_with(directory.clone()) {
-                ret.push(node_name.substr(directory.len(), node_name.len() - directory.len()));
+            if node.name.starts_with(directory.clone()) {
+                ret.push(node.name.substr(directory.len(), node.name.len() - directory.len()));
             }
         }
 
@@ -218,7 +215,7 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> URL {
-        return URL::from_string(&("file:///".to_string() + &String::from_c_slice(&self.node.name)));
+        return URL::from_string(&("file:///".to_string() + &self.node.name));
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

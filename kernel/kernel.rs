@@ -344,7 +344,6 @@ unsafe fn init(font_data: usize) {
         scheduler::end_no_ints(reenable);
     }
 
-/*
     debug::d("Loading schemes\n");
     if let Some(mut resource) = URL::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
@@ -363,7 +362,6 @@ unsafe fn init(font_data: usize) {
             }
         }
     }
-*/
 
     debug::d("Loading apps\n");
     if let Some(mut resource) = URL::from_str("file:///apps/").open() {
