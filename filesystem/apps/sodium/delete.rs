@@ -1,6 +1,7 @@
 use super::*;
 
 impl Editor {
+    /// Delete char
     pub fn delete(&mut self) {
         let y = self.y();
         let x = self.x();

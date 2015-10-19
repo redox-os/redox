@@ -2,6 +2,7 @@ use super::*;
 use redox::*;
 
 impl Editor {
+    /// Execute a instruction
     pub fn exec(&mut self, Inst(n, cmd): Inst) {
         use super::Key::*;
         use super::Mode::*;

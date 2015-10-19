@@ -29,8 +29,8 @@ impl Editor {
 
         let window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,
-                                 576,
-                                 400,
+                                 700,
+                                 500,
                                  &"Sodium").unwrap();
 
         let mut editor = Editor {
