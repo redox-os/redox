@@ -1,0 +1,3 @@
+- [ ] Add .to_motion() function (function producing motion from commands)
+- [ ] Add status bar
+- [ ] Add highlighting
