@@ -120,7 +120,7 @@ make virtualbox
 - The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
 - Open the Rust nightly shell in the redox repository
 ```bash
-windows\make all
+make all
 ```
 
 ## Running on Windows
@@ -128,5 +128,5 @@ windows\make all
 - Make sure to install to C:\Program Files\Oracle\VirtualBox or edit the Makefile VBM path
 - Run VirtualBox
 ```bash
-windows\make virtualbox
+make virtualbox
 ```
