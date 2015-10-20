@@ -1,5 +1,5 @@
 use super::from_bytes::FromBytes;
-use super::Uberblock;
+use super::uberblock::Uberblock;
 
 #[repr(packed)]
 pub struct VdevLabel {
