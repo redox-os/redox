@@ -1,9 +1,3 @@
-
-// TODO:
-//      - Simplify using instruction iterators
-//      - Make movement mode
-//      - Record modifiers
-
 pub use collections::VecDeque;
 
 
