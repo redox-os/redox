@@ -311,6 +311,14 @@ impl String {
         }
     }
 
+    /// Get a iterator of lines from the string
+    pub fn lines(&self) -> Lines {
+        Lines {
+            string: &self,
+            split: self.split("\n".to_string())
+        }
+    }
+
     /// Convert the string to UTF-8
     pub fn to_utf8(&self) -> Vec<u8> {
         let mut vec: Vec<u8> = Vec::new();
