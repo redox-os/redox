@@ -10,6 +10,7 @@ use redox::str;
 use redox::{String, ToString};
 use redox::to_num::*;
 use redox::Vec;
+use redox::URL;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -90,31 +91,38 @@ impl Resource {
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        /*
+        if self.data.len() > 0 {
+            let mut bytes: Vec<u8> = Vec::new();
+            mem::swap(&mut self.data, &mut bytes);
 
-            if self.data.len() > 0 {
-                let mut bytes: Vec<u8> = Vec::new();
-                mem::swap(&mut self.data, &mut bytes);
-                vec.push_all(&bytes);
-                return Some(bytes.len());
+            //TODO: Allow splitting
+            let mut i = 0;
+            while i < buf.len() && i < bytes.len() {
+                 buf[i] = bytes[i];
             }
+            return Some(i);
+        }
 
-            loop {
-                let mut bytes: Vec<u8> = Vec::new();
-                match self.ip.read_to_end(&mut bytes) {
-                    Some(_) => {
-                        if let Some(datagram) = UDP::from_bytes(bytes) {
-                            if datagram.header.dst.get() == self.host_port &&
-                               datagram.header.src.get() == self.peer_port {
-                                vec.push_all(&datagram.data);
-                                return Some(datagram.data.len());
+        loop {
+            let mut bytes: Vec<u8> = Vec::new();
+            match self.ip.read_to_end(&mut bytes) {
+                Some(_) => {
+                    if let Some(datagram) = UDP::from_bytes(bytes) {
+                        if datagram.header.dst.get() == self.host_port &&
+                           datagram.header.src.get() == self.peer_port {
+                            //TODO: Allow splitting
+                            let mut i = 0;
+                            while i < buf.len() && i < datagram.data.len() {
+                                buf[i] = datagram.data[i];
                             }
+                            return Some(i);
                         }
                     }
-                    None => return None,
                 }
+                None => break,
             }
-            */
+        }
+
         None
     }
 
@@ -171,18 +179,12 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, url: &str) -> Option<Box<Resource>> {
-        //Split scheme from the rest of the URL
-        let (scheme, mut not_scheme) = url.split_at(url.find(':').unwrap_or(url.len()));
-
-        //Remove the starting two slashes
-        if not_scheme.starts_with("//") {
-            not_scheme = &not_scheme[2..not_scheme.len() - 2];
-        }
+    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+        let url = URL::from_str(&url_str);
 
         //Check host and port vs path
-        if not_scheme.starts_with("/") {
-            let host_port = not_scheme[1..not_scheme.len() - 1].to_string().to_num();
+        if url.path().len() > 0 {
+            let host_port = url.port().to_num();
             if host_port > 0 && host_port < 65536 {
                 if let Some(mut ip) = File::open("ip:///11") {
                     let mut bytes: Vec<u8> = Vec::new();
@@ -191,24 +193,12 @@ impl Scheme {
                             if datagram.header.dst.get() as usize == host_port {
                                 let mut url_bytes = [0; 4096];
                                 if let Some(count) = ip.path(&mut url_bytes) {
-                                    let url = unsafe { str::from_utf8_unchecked(&url_bytes[0..count]) };
-
-                                    //Split scheme from the rest of the URL
-                                    let (scheme, mut not_scheme) = url.split_at(url.find(':').unwrap_or(url.len()));
-
-                                    //Remove the starting two slashes
-                                    if not_scheme.starts_with("//") {
-                                        not_scheme = &not_scheme[2..not_scheme.len() - 2];
-                                    }
-
-                                    let (host, port) = not_scheme.split_at(not_scheme.find(':').unwrap_or(not_scheme.len()));
-
-                                    let peer_addr = IPv4Addr::from_string(&host.to_string());
+                                    let url = URL::from_str(& unsafe { str::from_utf8_unchecked(&url_bytes[0..count]) });
 
                                     return Some(box Resource {
                                         ip: ip,
                                         data: datagram.data,
-                                        peer_addr: peer_addr,
+                                        peer_addr: IPv4Addr::from_string(&url.host()),
                                         peer_port: datagram.header.src.get(),
                                         host_port: host_port as u16,
                                     });
@@ -219,17 +209,15 @@ impl Scheme {
                 }
             }
         } else {
-            let (host, port) = not_scheme.split_at(not_scheme.find(':').unwrap_or(not_scheme.len()));
-
-            let peer_port = port.to_string().to_num();
+            let peer_port = url.port().to_num();
             if peer_port > 0 && peer_port < 65536 {
                 let host_port = (rand() % 32768 + 32768) as u16;
 
-                if let Some(ip) = File::open(&format!("ip://{}/11", host)) {
+                if let Some(ip) = File::open(&format!("ip://{}/11", url.host())) {
                     return Some(box Resource {
                         ip: ip,
                         data: Vec::new(),
-                        peer_addr: IPv4Addr::from_string(&host.to_string()),
+                        peer_addr: IPv4Addr::from_string(&url.host()),
                         peer_port: peer_port as u16,
                         host_port: host_port,
                     });

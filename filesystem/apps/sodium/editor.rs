@@ -21,6 +21,8 @@ pub struct Editor {
     pub window: Window,
     /// The key state
     pub key_state: KeyState,
+    /// The status bar
+    pub status_bar: StatusBar,
 }
 
 impl Editor {
@@ -29,8 +31,8 @@ impl Editor {
 
         let window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,
-                                 576,
-                                 400,
+                                 700,
+                                 500,
                                  &"Sodium").unwrap();
 
         let mut editor = Editor {
@@ -41,15 +43,18 @@ impl Editor {
             scroll_y: 0,
             window: *window,
             key_state: KeyState::new(),
+            status_bar: StatusBar::new(),
         };
 
         editor.cursors.push(Cursor::new());
         editor.text.push_back(VecDeque::new());
 
+        editor.redraw();
         loop {
             let inp = next_inst(&mut editor);
             editor.exec(inp);
             editor.redraw();
+            editor.status_bar.mode = editor.cursor().mode.to_string();
         }
 
         editor
