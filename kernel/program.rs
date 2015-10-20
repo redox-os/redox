@@ -6,9 +6,11 @@
 #![feature(collections)]
 #![feature(convert)]
 #![feature(core_slice_ext)]
+#![feature(naked_attributes)]
 #![feature(no_std)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
+#![feature(unwind_attributes)]
 #![feature(deque_extras)]
 #![no_std]
 
@@ -31,7 +33,7 @@ use redox::*;
 use redox::syscall::sys_exit;
 
 #[inline(never)]
-unsafe fn _start_stack(stack: *const u32) {
+unsafe fn _start_stack(stack: *const usize) {
     let argc = ptr::read(stack);
     let mut args: Vec<&'static str> = Vec::new();
     for i in 0..argc as isize {
@@ -59,9 +61,11 @@ unsafe fn _start_stack(stack: *const u32) {
 
 #[cold]
 #[inline(never)]
+#[naked]
 #[no_mangle]
-pub unsafe extern "C" fn _start() {
-    let stack: *const u32;
+#[cfg(target_arch = "x86")]
+pub unsafe extern fn _start() {
+    let stack: *const usize;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);
 }

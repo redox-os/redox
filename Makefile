@@ -4,7 +4,7 @@ ARCH=i386
 
 BUILD=build/$(ARCH)
 
-RUSTC=rustc
+RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \

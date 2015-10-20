@@ -38,20 +38,11 @@ unsafe fn _start_stack(stack: *const usize) {
 
 #[cold]
 #[inline(never)]
+#[naked]
 #[no_mangle]
 #[cfg(target_arch = "x86")]
-pub unsafe extern "C" fn _start() {
+pub unsafe extern fn _start() {
     let stack: *const usize;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
-    _start_stack(stack);
-}
-
-#[cold]
-#[inline(never)]
-#[no_mangle]
-#[cfg(target_arch = "x86_64")]
-pub unsafe extern "C" fn _start() {
-    let stack: *const usize;
-    asm!("" : "={rsp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);
 }
