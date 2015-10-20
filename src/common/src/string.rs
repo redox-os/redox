@@ -78,6 +78,28 @@ impl <'a> Iterator for Split<'a> {
     }
 }
 
+/// A set of lines
+pub struct Lines<'a> {
+    /// The string being split into lines
+    string: &'a String,
+    /// The underlying split
+    split: Split<'a>
+}
+
+impl <'a> Iterator for Lines<'a> {
+    type Item = String;
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.split.next() {
+            Some(string) => if string.ends_with("\r".to_string()) {
+                Some(string.substr(0, string.len() - 1))
+            } else {
+                Some(string)
+            },
+            None => None
+        }
+    }
+}
+
 /// A heap allocated, owned string.
 pub struct String {
     /// The vector of the chars
