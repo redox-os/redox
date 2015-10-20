@@ -46,7 +46,7 @@ impl Package {
             info = String::from_utf8(&vec);
         }
 
-        for line in info.split("\n".to_string()) {
+        for line in info.lines() {
             if line.starts_with("name=".to_string()) {
                 package.name = line.substr(5, line.len() - 5);
             } else if line.starts_with("binary=".to_string()) {
