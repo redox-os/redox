@@ -93,7 +93,7 @@ const MAX_REFCOUNT: usize = (isize::MAX) as usize;
 ///
 /// # Examples
 ///
-/// In this example, a large vector of floats is shared between several threads.
+/// In this example, a large vector is shared between several threads.
 /// With simple pipes, without `Arc`, a copy would have to be made for each
 /// thread.
 ///
@@ -214,7 +214,9 @@ impl<T> Arc<T> {
     #[stable(feature = "arc_unique", since = "1.4.0")]
     pub fn try_unwrap(this: Self) -> Result<T, Self> {
         // See `drop` for why all these atomics are like this
-        if this.inner().strong.compare_and_swap(1, 0, Release) != 1 { return Err(this) }
+        if this.inner().strong.compare_and_swap(1, 0, Release) != 1 {
+            return Err(this)
+        }
 
         atomic::fence(Acquire);
 
@@ -251,7 +253,9 @@ impl<T: ?Sized> Arc<T> {
             let cur = this.inner().weak.load(Relaxed);
 
             // check if the weak counter is currently "locked"; if so, spin.
-            if cur == usize::MAX { continue }
+            if cur == usize::MAX {
+                continue
+            }
 
             // NOTE: this code currently ignores the possibility of overflow
             // into usize::MAX; in general both Rc and Arc need to be adjusted
@@ -348,7 +352,9 @@ impl<T: ?Sized> Clone for Arc<T> {
         // We abort because such a program is incredibly degenerate, and we
         // don't care to support it.
         if old_size > MAX_REFCOUNT {
-            unsafe { abort(); }
+            unsafe {
+                abort();
+            }
         }
 
         Arc { _ptr: self._ptr }
@@ -542,6 +548,7 @@ impl<T: ?Sized> Drop for Arc<T> {
     ///
     /// } // implicit drop
     /// ```
+    #[unsafe_destructor_blind_to_params]
     #[inline]
     fn drop(&mut self) {
         // This structure has #[unsafe_no_drop_flag], so this drop glue may run
@@ -556,7 +563,9 @@ impl<T: ?Sized> Drop for Arc<T> {
         // Because `fetch_sub` is already atomic, we do not need to synchronize
         // with other threads unless we are going to delete the object. This
         // same logic applies to the below `fetch_sub` to the `weak` count.
-        if self.inner().strong.fetch_sub(1, Release) != 1 { return }
+        if self.inner().strong.fetch_sub(1, Release) != 1 {
+            return
+        }
 
         // This fence is needed to prevent reordering of use of the data and
         // deletion of the data.  Because it is marked `Release`, the decreasing
@@ -578,7 +587,7 @@ impl<T: ?Sized> Drop for Arc<T> {
         atomic::fence(Acquire);
 
         unsafe {
-            self.drop_slow()
+            self.drop_slow();
         }
     }
 }
@@ -613,11 +622,15 @@ impl<T: ?Sized> Weak<T> {
             // "stale" read of 0 is fine), and any other value is
             // confirmed via the CAS below.
             let n = inner.strong.load(Relaxed);
-            if n == 0 { return None }
+            if n == 0 {
+                return None
+            }
 
             // Relaxed is valid for the same reason it is on Arc's Clone impl
             let old = inner.strong.compare_and_swap(n, n + 1, Relaxed);
-            if old == n { return Some(Arc { _ptr: self._ptr }) }
+            if old == n {
+                return Some(Arc { _ptr: self._ptr })
+            }
         }
     }
 
@@ -653,7 +666,9 @@ impl<T: ?Sized> Clone for Weak<T> {
 
         // See comments in Arc::clone() for why we do this (for mem::forget).
         if old_size > MAX_REFCOUNT {
-            unsafe { abort(); }
+            unsafe {
+                abort();
+            }
         }
 
         return Weak { _ptr: self._ptr }
@@ -705,9 +720,7 @@ impl<T: ?Sized> Drop for Weak<T> {
         // ref, which can only happen after the lock is released.
         if self.inner().weak.fetch_sub(1, Release) == 1 {
             atomic::fence(Acquire);
-            unsafe { deallocate(ptr as *mut u8,
-                                size_of_val(&*ptr),
-                                align_of_val(&*ptr)) }
+            unsafe { deallocate(ptr as *mut u8, size_of_val(&*ptr), align_of_val(&*ptr)) }
         }
     }
 }
@@ -727,7 +740,9 @@ impl<T: ?Sized + PartialEq> PartialEq for Arc<T> {
     ///
     /// five == Arc::new(5);
     /// ```
-    fn eq(&self, other: &Arc<T>) -> bool { *(*self) == *(*other) }
+    fn eq(&self, other: &Arc<T>) -> bool {
+        *(*self) == *(*other)
+    }
 
     /// Inequality for two `Arc<T>`s.
     ///
@@ -742,7 +757,9 @@ impl<T: ?Sized + PartialEq> PartialEq for Arc<T> {
     ///
     /// five != Arc::new(5);
     /// ```
-    fn ne(&self, other: &Arc<T>) -> bool { *(*self) != *(*other) }
+    fn ne(&self, other: &Arc<T>) -> bool {
+        *(*self) != *(*other)
+    }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized + PartialOrd> PartialOrd for Arc<T> {
@@ -776,7 +793,9 @@ impl<T: ?Sized + PartialOrd> PartialOrd for Arc<T> {
     ///
     /// five < Arc::new(5);
     /// ```
-    fn lt(&self, other: &Arc<T>) -> bool { *(*self) < *(*other) }
+    fn lt(&self, other: &Arc<T>) -> bool {
+        *(*self) < *(*other)
+    }
 
     /// 'Less-than or equal to' comparison for two `Arc<T>`s.
     ///
@@ -791,7 +810,9 @@ impl<T: ?Sized + PartialOrd> PartialOrd for Arc<T> {
     ///
     /// five <= Arc::new(5);
     /// ```
-    fn le(&self, other: &Arc<T>) -> bool { *(*self) <= *(*other) }
+    fn le(&self, other: &Arc<T>) -> bool {
+        *(*self) <= *(*other)
+    }
 
     /// Greater-than comparison for two `Arc<T>`s.
     ///
@@ -806,7 +827,9 @@ impl<T: ?Sized + PartialOrd> PartialOrd for Arc<T> {
     ///
     /// five > Arc::new(5);
     /// ```
-    fn gt(&self, other: &Arc<T>) -> bool { *(*self) > *(*other) }
+    fn gt(&self, other: &Arc<T>) -> bool {
+        *(*self) > *(*other)
+    }
 
     /// 'Greater-than or equal to' comparison for two `Arc<T>`s.
     ///
@@ -821,11 +844,15 @@ impl<T: ?Sized + PartialOrd> PartialOrd for Arc<T> {
     ///
     /// five >= Arc::new(5);
     /// ```
-    fn ge(&self, other: &Arc<T>) -> bool { *(*self) >= *(*other) }
+    fn ge(&self, other: &Arc<T>) -> bool {
+        *(*self) >= *(*other)
+    }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized + Ord> Ord for Arc<T> {
-    fn cmp(&self, other: &Arc<T>) -> Ordering { (**self).cmp(&**other) }
+    fn cmp(&self, other: &Arc<T>) -> Ordering {
+        (**self).cmp(&**other)
+    }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized + Eq> Eq for Arc<T> {}
@@ -854,7 +881,9 @@ impl<T> fmt::Pointer for Arc<T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Default> Default for Arc<T> {
     #[stable(feature = "rust1", since = "1.0.0")]
-    fn default() -> Arc<T> { Arc::new(Default::default()) }
+    fn default() -> Arc<T> {
+        Arc::new(Default::default())
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -1015,7 +1044,7 @@ mod tests {
     #[test]
     fn weak_self_cyclic() {
         struct Cycle {
-            x: Mutex<Option<Weak<Cycle>>>
+            x: Mutex<Option<Weak<Cycle>>>,
         }
 
         let a = Arc::new(Cycle { x: Mutex::new(None) });
@@ -1095,7 +1124,9 @@ mod tests {
 
     // Make sure deriving works with Arc<T>
     #[derive(Eq, Ord, PartialEq, PartialOrd, Clone, Debug, Default)]
-    struct Foo { inner: Arc<i32> }
+    struct Foo {
+        inner: Arc<i32>,
+    }
 
     #[test]
     fn test_unsized() {
@@ -1108,5 +1139,14 @@ mod tests {
 }
 
 impl<T: ?Sized> borrow::Borrow<T> for Arc<T> {
-    fn borrow(&self) -> &T { &**self }
+    fn borrow(&self) -> &T {
+        &**self
+    }
+}
+
+#[stable(since = "1.5.0", feature = "smart_ptr_as_ref")]
+impl<T: ?Sized> AsRef<T> for Arc<T> {
+    fn as_ref(&self) -> &T {
+        &**self
+    }
 }

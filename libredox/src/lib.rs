@@ -7,6 +7,7 @@
 
 #![crate_type="rlib"]
 #![feature(alloc)]
+#![feature(allocator)]
 #![feature(allow_internal_unstable)]
 #![feature(asm)]
 #![feature(box_syntax)]
@@ -92,7 +93,6 @@
     // TODO mod rtdeps;
 
     /* The Prelude. */
-
     pub mod prelude;
 
 
@@ -186,14 +186,20 @@
     pub use graphics::bmp::*;
     pub use orbital::*;
     pub use orbital::event::*;
+    pub use url::*;
     pub use to_num::*;
 
     /// A module for starting
     #[cfg(std)]
     pub mod start;
 
+    pub mod alloc_system;
+
     /// A module for necessary C and assembly constructs
+    #[path="../../kernel/externs.rs"]
     pub mod externs;
+
+    pub mod panic;
 
     /// A module for system calls
     pub mod syscall;
@@ -213,6 +219,8 @@
     }
     /// A module for window support
     pub mod orbital;
+
+    pub mod url;
 
     pub mod to_num;
 /* } Additional Stuff */
