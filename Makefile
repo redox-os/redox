@@ -193,10 +193,6 @@ filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld 
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
 
-filesystem/apps/test/test.bin: filesystem/apps/test/test.rs kernel/program.ld $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/test.rlib $<
-	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/test.rlib $(BUILD)/libstd.rlib
-
 filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen

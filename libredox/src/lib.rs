@@ -190,10 +190,6 @@
     pub use url::*;
     pub use to_num::*;
 
-    /// A module for starting
-    #[cfg(std)]
-    pub mod start;
-
     pub mod alloc_system;
 
     /// A module for necessary C and assembly constructs

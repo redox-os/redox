@@ -6,12 +6,13 @@
 #![feature(collections)]
 #![feature(convert)]
 #![feature(core_slice_ext)]
+#![feature(deque_extras)]
 #![feature(naked_attributes)]
 #![feature(no_std)]
+#![feature(slice_concat_ext)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
 #![feature(unwind_attributes)]
-#![feature(deque_extras)]
 #![no_std]
 
 #[macro_use]
@@ -64,7 +65,7 @@ unsafe fn _start_stack(stack: *const usize) {
 #[naked]
 #[no_mangle]
 #[cfg(target_arch = "x86")]
-pub unsafe extern fn _start() {
+pub unsafe fn _start() {
     let stack: *const usize;
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);
