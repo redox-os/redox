@@ -379,11 +379,13 @@ impl Application {
 
                 //Commands
                 for command in self.commands.iter() {
-                    if command.name == *cmd {
+                    if &command.name == cmd {
                         (*command.main)(&args);
                         return;
                     }
                 }
+
+                println!("Unknown command: '{}'", cmd);
 
                 let mut help = "Commands:".to_string();
                 for command in self.commands.iter() {
