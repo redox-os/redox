@@ -186,6 +186,7 @@
     pub use graphics::bmp::*;
     pub use orbital::*;
     pub use orbital::event::*;
+    pub use url::*;
     pub use to_num::*;
 
     /// A module for starting
@@ -218,6 +219,8 @@
     }
     /// A module for window support
     pub mod orbital;
+
+    pub mod url;
 
     pub mod to_num;
 /* } Additional Stuff */

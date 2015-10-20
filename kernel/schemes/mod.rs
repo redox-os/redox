@@ -16,8 +16,6 @@ pub mod ip;
 pub mod memory;
 /// Pseudo random generation scheme
 pub mod random;
-/// TCP scheme
-pub mod tcp;
 /// Time scheme
 pub mod time;
 /// Window scheme

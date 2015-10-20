@@ -1,20 +1,76 @@
 use alloc::boxed::Box;
 
 use core::mem;
+use core::slice;
+use core::str;
 
-use common::{debug, random};
-use common::resource::{Resource, ResourceSeek, URL};
-use common::string::{String, ToString};
-use common::vec::Vec;
+use redox::fs::file::File;
+use redox::io::{Read, Write, SeekFrom};
+use redox::net::*;
+use redox::rand;
+use redox::string::{String, ToString};
+use redox::to_num::*;
+use redox::vec::Vec;
+use redox::URL;
 
-use network::common::*;
-use network::tcp::*;
+#[derive(Copy, Clone)]
+#[repr(packed)]
+pub struct TCPHeader {
+    pub src: n16,
+    pub dst: n16,
+    pub sequence: n32,
+    pub ack_num: n32,
+    pub flags: n16,
+    pub window_size: n16,
+    pub checksum: Checksum,
+    pub urgent_pointer: n16,
+}
 
-use programs::session::SessionItem;
+pub struct TCP {
+    pub header: TCPHeader,
+    pub options: Vec<u8>,
+    pub data: Vec<u8>,
+}
+
+pub const TCP_FIN: u16 = 1;
+pub const TCP_SYN: u16 = 1 << 1;
+pub const TCP_RST: u16 = 1 << 2;
+pub const TCP_PSH: u16 = 1 << 3;
+pub const TCP_ACK: u16 = 1 << 4;
+
+impl FromBytes for TCP {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+        if bytes.len() >= mem::size_of::<TCPHeader>() {
+            unsafe {
+                let header = *(bytes.as_ptr() as *const TCPHeader);
+                let header_len = ((header.flags.get() & 0xF000) >> 10) as usize;
+
+                return Some(TCP {
+                    header: header,
+                    options: bytes[mem::size_of::<TCPHeader>()..header_len].to_vec(),
+                    data: bytes[header_len..bytes.len()].to_vec(),
+                });
+            }
+        }
+        None
+    }
+}
+
+impl ToBytes for TCP {
+    fn to_bytes(&self) -> Vec<u8> {
+        unsafe {
+            let header_ptr: *const TCPHeader = &self.header;
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<TCPHeader>()));
+            ret.push_all(&self.options);
+            ret.push_all(&self.data);
+            ret
+        }
+    }
+}
 
 /// A TCP resource
-pub struct TCPResource {
-    ip: Box<Resource>,
+pub struct Resource {
+    ip: File,
     peer_addr: IPv4Addr,
     peer_port: u16,
     host_port: u16,
@@ -22,10 +78,10 @@ pub struct TCPResource {
     acknowledge: u32,
 }
 
-impl Resource for TCPResource {
-    fn dup(&self) -> Option<Box<Resource>> {
+impl Resource {
+    pub fn dup(&self) -> Option<Box<Resource>> {
         match self.ip.dup() {
-            Some(ip) => Some(box TCPResource {
+            Some(ip) => Some(box Resource {
                 ip: ip,
                 peer_addr: self.peer_addr,
                 peer_port: self.peer_port,
@@ -37,18 +93,20 @@ impl Resource for TCPResource {
         }
     }
 
-    fn url(&self) -> URL {
-        return URL::from_string(&("tcp://".to_string() + self.peer_addr.to_string() + ':' +
-                                  self.peer_port as usize +
-                                  '/' + self.host_port as usize));
+    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
+        let str = format!("tcp://{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port as usize);
+        let bytes = str.as_bytes();
+
+        let mut i = 0;
+        while i < buf.len() && i < str.len() {
+            buf[i] = bytes[i];
+            i += 1;
+        }
+
+        Some(i)
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        debug::d("TODO: Implement read for tcp://\n");
-        return None;
-    }
-
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.ip.read_to_end(&mut bytes) {
@@ -95,8 +153,13 @@ impl Resource for TCPResource {
 
                             self.ip.write(&tcp.to_bytes().as_slice());
 
-                            vec.push_all(&segment.data);
-                            return Some(segment.data.len());
+                            //TODO: Support broken packets (one packet in two buffers)
+                            let mut i = 0;
+                            while i < buf.len() && i < segment.data.len() {
+                                buf[i] = segment.data[i];
+                                i += 1;
+                            }
+                            return Some(i);
                         }
                     }
                 }
@@ -105,8 +168,8 @@ impl Resource for TCPResource {
         }
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        let tcp_data = unsafe { Vec::from_raw_buf(buf.as_ptr(), buf.len()) };
+    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        let tcp_data = Vec::from(buf);
 
         let mut tcp = TCP {
             header: TCPHeader {
@@ -168,16 +231,14 @@ impl Resource for TCPResource {
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
         return None;
     }
 
-    fn sync(&mut self) -> bool {
+    pub fn sync(&mut self) -> bool {
         return self.ip.sync();
     }
-}
 
-impl TCPResource {
     /// Etablish client
     pub fn client_establish(&mut self) -> bool {
         // Send SYN
@@ -342,7 +403,7 @@ impl TCPResource {
     }
 }
 
-impl Drop for TCPResource {
+impl Drop for Resource {
     fn drop(&mut self) {
         //Send FIN-ACK
         let mut tcp = TCP {
@@ -385,26 +446,28 @@ impl Drop for TCPResource {
 }
 
 /// A TCP scheme
-pub struct TCPScheme;
+pub struct Scheme;
 
-impl SessionItem for TCPScheme {
-    fn scheme(&self) -> String {
-        return "tcp".to_string();
+impl Scheme {
+    pub fn new() -> Box<Scheme> {
+        box Scheme
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+        let url = URL::from_str(&url_str);
+
         if url.host().len() > 0 && url.port().len() > 0 {
             let peer_addr = IPv4Addr::from_string(&url.host());
             let peer_port = url.port().to_num() as u16;
-            let host_port = (random::rand() % 32768 + 32768) as u16;
+            let host_port = (rand() % 32768 + 32768) as u16;
 
-            if let Some(ip) = URL::from_string(&("ip://".to_string() + peer_addr.to_string() + "/6")).open() {
-                let mut ret = box TCPResource {
+            if let Some(ip) = File::open(&("ip://".to_string() + &peer_addr.to_string() + "/6")) {
+                let mut ret = box Resource {
                     ip: ip,
                     peer_addr: peer_addr,
                     peer_port: peer_port,
                     host_port: host_port,
-                    sequence: random::rand() as u32,
+                    sequence: rand() as u32,
                     acknowledge: 0,
                 };
 
@@ -415,27 +478,30 @@ impl SessionItem for TCPScheme {
         } else if url.path().len() > 0 {
             let host_port = url.path().to_num() as u16;
 
-            while let Some(mut ip) = URL::from_str("ip:///6").open() {
+            while let Some(mut ip) = File::open("ip:///6") {
                 let mut bytes: Vec<u8> = Vec::new();
                 match ip.read_to_end(&mut bytes) {
                     Some(_) => {
                         if let Some(segment) = TCP::from_bytes(bytes) {
-                            if segment.header.dst.get() == host_port &&
-                               (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                               TCP_SYN {
-                                let peer_addr = IPv4Addr::from_string(&ip.url().host());
+                            if segment.header.dst.get() == host_port && (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_SYN {
+                                let mut url_bytes: [u8; 4096] = [0; 4096];
+                                if let Some(count) = ip.path(&mut url_bytes) {
+                                    let url = URL::from_str(& unsafe { str::from_utf8_unchecked(&url_bytes[0..count]) });
 
-                                let mut ret = box TCPResource {
-                                    ip: ip,
-                                    peer_addr: peer_addr,
-                                    peer_port: segment.header.src.get(),
-                                    host_port: host_port,
-                                    sequence: random::rand() as u32,
-                                    acknowledge: segment.header.sequence.get(),
-                                };
+                                    let peer_addr = IPv4Addr::from_string(&url.host());
 
-                                if ret.server_establish(segment) {
-                                    return Some(ret);
+                                    let mut ret = box Resource {
+                                        ip: ip,
+                                        peer_addr: peer_addr,
+                                        peer_port: segment.header.src.get(),
+                                        host_port: host_port,
+                                        sequence: rand() as u32,
+                                        acknowledge: segment.header.sequence.get(),
+                                    };
+
+                                    if ret.server_establish(segment) {
+                                        return Some(ret);
+                                    }
                                 }
                             }
                         }
@@ -443,8 +509,6 @@ impl SessionItem for TCPScheme {
                     None => break,
                 }
             }
-        } else {
-            debug::d("TCP: No remote endpoint or local port provided\n");
         }
 
         None
