@@ -1,9 +1,11 @@
 #[derive(Copy, Clone, PartialEq)]
+/// A key
 pub enum Key {
     Char(char),
-    Alt,
-    Shift,
-    Ctrl,
+    Alt(bool),
+    Shift(bool),
+    Ctrl(bool),
+    // TODO: Space modifier?
     Backspace,
     Escape,
     Left,
