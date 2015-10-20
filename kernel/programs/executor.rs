@@ -1,6 +1,5 @@
 use core::ptr;
 
-use common::debug::*;
 use common::context::*;
 use common::elf::*;
 use common::memory;
@@ -10,14 +9,6 @@ use common::string::String;
 use common::vec::Vec;
 
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
-    url.d();
-    d(" in ");
-    wd.d();
-    for arg in args.iter() {
-        d(" ");
-        arg.d();
-    }
-    dl();
     unsafe {
         let mut physical_address = 0;
         let virtual_address = 0x80000000;
