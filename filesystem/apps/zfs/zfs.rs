@@ -4,6 +4,7 @@ use redox::*;
 use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
 use self::from_bytes::FromBytes;
+use self::vdev::VdevLabel;
 
 pub mod dsl_dataset;
 pub mod dsl_dir;
@@ -11,18 +12,9 @@ pub mod from_bytes;
 pub mod lzjb;
 pub mod nvpair;
 pub mod nvstream;
+pub mod vdev;
 pub mod xdr;
 pub mod zap;
-
-#[repr(packed)]
-pub struct VdevLabel {
-    pub blank: [u8; 8 * 1024],
-    pub boot_header: [u8; 8 * 1024],
-    pub nv_pairs: [u8; 112 * 1024],
-    pub uberblocks: [Uberblock; 128],
-}
-
-impl FromBytes for VdevLabel { }
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
