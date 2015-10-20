@@ -58,7 +58,6 @@ use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
-use schemes::tcp::*;
 use schemes::time::*;
 use schemes::window::*;
 use schemes::display::*;
@@ -305,7 +304,6 @@ unsafe fn init(font_data: usize) {
         arp: Vec::new()
     });
     session.items.push(box ICMPScheme);
-    session.items.push(box TCPScheme);
     session.items.push(box DisplayScheme);
     session.items.push(box WindowScheme);
 

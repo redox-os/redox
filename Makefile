@@ -125,7 +125,7 @@ docs: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 
 apps: apps/bohr apps/editor apps/file_manager apps/ox apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
 
-schemes: schemes/console schemes/example schemes/reent schemes/udp
+schemes: schemes/console schemes/example schemes/reent schemes/tcp schemes/udp
 
 tests: tests/success tests/failure
 
