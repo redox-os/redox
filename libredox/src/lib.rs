@@ -19,6 +19,7 @@
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
+#![feature(naked_attributes)]
 #![feature(rand)]
 #![feature(raw)]
 #![feature(reflect_marker)]
