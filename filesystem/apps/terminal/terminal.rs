@@ -194,6 +194,16 @@ impl Command {
             },
         });
 
+        let mut command_list = String::new();
+        command_list = commands.iter().fold(command_list, |l , c| l + " " + &c.name);
+
+        commands.push(Command {
+            name: "help".to_string(),
+            main: box move |args: &Vec<String>| {
+                println!("Commands:{}", command_list);
+            },
+         });
+
         commands
     }
 }
@@ -387,11 +397,6 @@ impl Application {
 
                 println!("Unknown command: '{}'", cmd);
 
-                let mut help = "Commands:".to_string();
-                for command in self.commands.iter() {
-                    help = help + " " + &command.name;
-                }
-                println!("{}", help);
             }
             None => (),
         }
