@@ -215,15 +215,11 @@ pub struct ZilHeader {
     log: BlockPtr,
 }
 
-pub struct ZFS {
+pub struct ZfsHelper {
     disk: File,
 }
 
-impl ZFS {
-    pub fn new(disk: File) -> Self {
-        ZFS { disk: disk }
-    }
-
+impl ZfsHelper {
     //TODO: Error handling
     pub fn read(&mut self, start: usize, length: usize) -> Vec<u8> {
         let mut ret: Vec<u8> = vec![0; length*512];
@@ -269,215 +265,6 @@ impl ZFS {
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
-    pub fn read_file(&mut self, uberblock: &Uberblock, path: &str) -> Option<String> {
-        let red = [127, 127, 255, 255];
-        let mos_dva = uberblock.rootbp.dvas[0];
-        let mos: ObjectSetPhys = self.read_type(&uberblock.rootbp).unwrap();
-        let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
-        let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
-        let mos_block_ptr3 = mos.meta_dnode.get_blockptr(2);
-
-        let dnode1: DNodePhys = self.read_type_array(&mos_block_ptr1, 1).unwrap();
-
-        let root_ds: zap::MZapWrapper = self.read_type(dnode1.get_blockptr(0)).unwrap();
-
-        let root_ds_dnode: DNodePhys =
-            self.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize).unwrap();
-
-        let dsl_dir = DslDirPhys::from_bytes(root_ds_dnode.get_bonus()).unwrap();
-        let head_ds_dnode: DNodePhys =
-            self.read_type_array(&mos_block_ptr1, dsl_dir.head_dataset_obj as usize).unwrap();
-
-        let root_dataset = DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()).unwrap();
-
-        let fs_objset: ObjectSetPhys = self.read_type(&root_dataset.bp).unwrap();
-
-        let mut indirect: BlockPtr = self.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
-        while indirect.level() > 0 {
-            indirect = self.read_type_array(&indirect, 0).unwrap();
-        }
-
-        let mut master_node_index = None;
-        for i in 0..indirect.lsize() as usize {
-            let mut fs_dnode: DNodePhys = self.read_type_array(&indirect, i).unwrap();
-            if fs_dnode.object_type == 0x15 {
-                master_node_index = Some(i);
-                break;
-            }
-        }
-
-        match master_node_index {
-            Some(i) => {
-                let mut master_node: DNodePhys = self.read_type_array(&indirect, i).unwrap();
-                let master_node_zap: zap::MZapWrapper = self.read_type(master_node.get_blockptr(0)).unwrap();
-                let mut root = None;
-                for chunk in &master_node_zap.chunks {
-                    if chunk.name().unwrap() == "ROOT" {
-                        root = Some(chunk.value);
-                    }
-                }
-                match root {
-                    Some(root) => {
-                        let mut cur_node: DNodePhys = self.read_type_array(&indirect,
-                                                                            root as usize).unwrap();
-                        let path = path.trim_matches('/');
-                        for folder in path.split('/') {
-                            let dir_contents: zap::MZapWrapper = self.read_type(cur_node.get_blockptr(0)).unwrap();
-                            let mut next_dir = None;
-                            for chunk in &dir_contents.chunks {
-                                if chunk.name().unwrap().len() == 0 {
-                                    break;
-                                }
-                                if chunk.name().unwrap() == folder {
-                                    next_dir = Some(chunk.value);
-                                    break;
-                                }
-                            }
-                            match next_dir {
-                                Some(next_dir) => {
-                                    cur_node = self.read_type_array(&indirect,
-                                                                    next_dir as usize).unwrap();
-                                    if cur_node.object_type == 0x13 {
-                                        break;
-                                    }
-                                },
-                                None => {
-                                    println_color!(red, "ERROR: path doesn't exist: {}", path);
-                                    return None;
-                                },
-                            }
-                        }
-                        let file_contents = self.read_block(cur_node.get_blockptr(0)).unwrap();
-                        let file_contents: Vec<u8> = file_contents.into_iter().take_while(|c| *c != 0).collect();
-                        return String::from_utf8(file_contents).ok();
-                    },
-                    None => {
-                        println_color!(red, "ERROR: Failed to find ROOT entry in master node");
-                        return None;
-                    },
-                }
-            },
-            None => {
-                println_color!(red, "ERROR: couldn't find master node");
-                return None;
-            },
-        }
-
-        None
-    }
-
-    pub fn ls(&mut self, uberblock: &Uberblock, path: &str) -> Option<Vec<String>> {
-        let red = [127, 127, 255, 255];
-        let mos_dva = uberblock.rootbp.dvas[0];
-        let mos: ObjectSetPhys = self.read_type(&uberblock.rootbp).unwrap();
-        let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
-        let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
-        let mos_block_ptr3 = mos.meta_dnode.get_blockptr(2);
-
-        let dnode1: DNodePhys = self.read_type_array(&mos_block_ptr1, 1).unwrap();
-
-        let root_ds: zap::MZapWrapper = self.read_type(dnode1.get_blockptr(0)).unwrap();
-
-        let root_ds_dnode: DNodePhys =
-            self.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize).unwrap();
-
-        let dsl_dir = DslDirPhys::from_bytes(root_ds_dnode.get_bonus()).unwrap();
-        let head_ds_dnode: DNodePhys =
-            self.read_type_array(&mos_block_ptr1, dsl_dir.head_dataset_obj as usize).unwrap();
-
-        let root_dataset = DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()).unwrap();
-
-        let fs_objset: ObjectSetPhys = self.read_type(&root_dataset.bp).unwrap();
-
-        let mut indirect: BlockPtr = self.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
-        while indirect.level() > 0 {
-            indirect = self.read_type_array(&indirect, 0).unwrap();
-        }
-
-        let mut master_node_index = None;
-        for i in 0..indirect.lsize() as usize {
-            let mut fs_dnode: DNodePhys = self.read_type_array(&indirect, i).unwrap();
-            if fs_dnode.object_type == 0x15 {
-                master_node_index = Some(i);
-                break;
-            }
-        }
-
-        match master_node_index {
-            Some(i) => {
-                let mut master_node: DNodePhys = self.read_type_array(&indirect, i).unwrap();
-                let master_node_zap: zap::MZapWrapper = self.read_type(master_node.get_blockptr(0)).unwrap();
-                let mut root = None;
-                for chunk in &master_node_zap.chunks {
-                    if chunk.name().unwrap() == "ROOT" {
-                        root = Some(chunk.value);
-                    }
-                }
-                match root {
-                    Some(root) => {
-                        let mut cur_node: DNodePhys = self.read_type_array(&indirect,
-                                                                            root as usize).unwrap();
-                        let path = path.trim_matches('/');
-                        let path_end_index = path.rfind('/').map(|i| i+1).unwrap_or(0);
-                        let path_end = &path[path_end_index..];
-                        for folder in path.split('/') {
-                            let dir_contents: zap::MZapWrapper = self.read_type(cur_node.get_blockptr(0)).unwrap();
-                            let ls: Vec<String> =
-                                dir_contents.chunks
-                                            .iter()
-                                            .map(|x| x.name().unwrap().to_string())
-                                            .take_while(|x| x.len() > 0)
-                                            .collect();
-                            if path == "" {
-                                return Some(ls);
-                            }
-                            let mut next_dir = None;
-                            for chunk in &dir_contents.chunks {
-                                if chunk.name().unwrap().len() == 0 {
-                                    break;
-                                }
-                                if chunk.name().unwrap() == folder {
-                                    next_dir = Some(chunk.value);
-                                    break;
-                                }
-                            }
-                            match next_dir {
-                                Some(next_dir) => {
-                                    cur_node = self.read_type_array(&indirect,
-                                                                    next_dir as usize).unwrap();
-                                },
-                                None => {
-                                    println_color!(red, "ERROR: path doesn't exist: {}", path);
-                                    return None;
-                                },
-                            }
-                            if folder == path_end {
-                                let dir_contents: zap::MZapWrapper = self.read_type(cur_node.get_blockptr(0)).unwrap();
-                                let ls: Vec<String> =
-                                    dir_contents.chunks
-                                                .iter()
-                                                .map(|x| x.name().unwrap().to_string())
-                                                .take_while(|x| x.len() > 0)
-                                                .collect();
-                                return Some(ls);
-                            }
-                        }
-                    },
-                    None => {
-                        println_color!(red, "ERROR: Failed to find ROOT entry in master node");
-                        return None;
-                    },
-                }
-            },
-            None => {
-                println_color!(red, "ERROR: couldn't find master node");
-                return None;
-            },
-        }
-
-        None
-    }
-
     pub fn uber(&mut self) -> Option<Uberblock> {
         let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
@@ -501,6 +288,167 @@ impl ZFS {
             }
         }
         return newest_uberblock;
+    }
+}
+
+pub struct ZFS {
+    pub helper: ZfsHelper,
+    pub uberblock: Uberblock, // The active uberblock
+    fs_objset: ObjectSetPhys,
+    master_node: DNodePhys,
+    root: u64,
+}
+
+impl ZFS {
+    pub fn new(disk: File) -> Option<Self> {
+        let mut zfs_helper = ZfsHelper { disk: disk };
+
+        let uberblock = zfs_helper.uber().unwrap();
+
+        let mos_dva = uberblock.rootbp.dvas[0];
+        let mos: ObjectSetPhys = zfs_helper.read_type(&uberblock.rootbp).unwrap();
+        let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
+        let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
+        let mos_block_ptr3 = mos.meta_dnode.get_blockptr(2);
+
+        // 2nd dnode in MOS points at the root dataset zap
+        let dnode1: DNodePhys = zfs_helper.read_type_array(&mos_block_ptr1, 1).unwrap();
+
+        let root_ds: zap::MZapWrapper = zfs_helper.read_type(dnode1.get_blockptr(0)).unwrap();
+
+        let root_ds_dnode: DNodePhys =
+            zfs_helper.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize).unwrap();
+
+        let dsl_dir = DslDirPhys::from_bytes(root_ds_dnode.get_bonus()).unwrap();
+        let head_ds_dnode: DNodePhys =
+            zfs_helper.read_type_array(&mos_block_ptr1, dsl_dir.head_dataset_obj as usize).unwrap();
+
+        let root_dataset = DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()).unwrap();
+
+        let fs_objset: ObjectSetPhys = zfs_helper.read_type(&root_dataset.bp).unwrap();
+
+        let mut indirect: BlockPtr = zfs_helper.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
+        while indirect.level() > 0 {
+            indirect = zfs_helper.read_type_array(&indirect, 0).unwrap();
+        }
+
+        // Master node is always the second object in the object set
+        let mut master_node: DNodePhys = zfs_helper.read_type_array(&indirect, 1).unwrap();
+        let master_node_zap: zap::MZapWrapper = zfs_helper.read_type(master_node.get_blockptr(0)).unwrap();
+        let mut root = None;
+        for chunk in &master_node_zap.chunks {
+            if chunk.name().unwrap() == "ROOT" {
+                root = Some(chunk.value);
+            }
+        }
+
+        Some(ZFS {
+            helper: zfs_helper,
+            uberblock: uberblock,
+            fs_objset: fs_objset,
+            master_node: master_node,
+            root: root.unwrap(),
+        })
+    }
+
+    pub fn read_file(&mut self, path: &str) -> Option<String> {
+        let red = [127, 127, 255, 255];
+        // This is the sweet spot: We've found the root directory, so we can now traverse
+        // the directory tree.
+        let mut indirect: BlockPtr = self.helper.read_type_array(self.fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
+        while indirect.level() > 0 {
+            indirect = self.helper.read_type_array(&indirect, 0).unwrap();
+        }
+        let mut cur_node: DNodePhys = self.helper.read_type_array(&indirect,
+                                                                  self.root as usize).unwrap();
+ 
+        let path = path.trim_matches('/');
+        for folder in path.split('/') {
+            let dir_contents: zap::MZapWrapper = self.helper.read_type(cur_node.get_blockptr(0)).unwrap();
+            let mut next_dir = None;
+            for chunk in &dir_contents.chunks {
+                if chunk.name().unwrap().len() == 0 {
+                    break;
+                }
+                if chunk.name().unwrap() == folder {
+                    next_dir = Some(chunk.value);
+                    break;
+                }
+            }
+            match next_dir {
+                Some(next_dir) => {
+                    cur_node = self.helper.read_type_array(&indirect,
+                                                           next_dir as usize).unwrap();
+                    if cur_node.object_type == 0x13 {
+                        break;
+                    }
+                },
+                None => {
+                    println_color!(red, "ERROR: path doesn't exist: {}", path);
+                    return None;
+                },
+            }
+        }
+        let file_contents = self.helper.read_block(cur_node.get_blockptr(0)).unwrap();
+        let file_contents: Vec<u8> = file_contents.into_iter().take_while(|c| *c != 0).collect();
+        String::from_utf8(file_contents).ok()
+    }
+
+    pub fn ls(&mut self, path: &str) -> Option<Vec<String>> {
+        let red = [127, 127, 255, 255];
+        let mut indirect: BlockPtr = self.helper.read_type_array(self.fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
+        while indirect.level() > 0 {
+            indirect = self.helper.read_type_array(&indirect, 0).unwrap();
+        }
+        let mut cur_node: DNodePhys = self.helper.read_type_array(&indirect,
+                                                                  self.root as usize).unwrap();
+        let path = path.trim_matches('/');
+        let path_end_index = path.rfind('/').map(|i| i+1).unwrap_or(0);
+        let path_end = &path[path_end_index..];
+        for folder in path.split('/') {
+            let dir_contents: zap::MZapWrapper = self.helper.read_type(cur_node.get_blockptr(0)).unwrap();
+            let ls: Vec<String> =
+                dir_contents.chunks
+                            .iter()
+                            .map(|x| x.name().unwrap().to_string())
+                            .take_while(|x| x.len() > 0)
+                            .collect();
+            if path == "" {
+                return Some(ls);
+            }
+            let mut next_dir = None;
+            for chunk in &dir_contents.chunks {
+                if chunk.name().unwrap().len() == 0 {
+                    break;
+                }
+                if chunk.name().unwrap() == folder {
+                    next_dir = Some(chunk.value);
+                    break;
+                }
+            }
+            match next_dir {
+                Some(next_dir) => {
+                    cur_node = self.helper.read_type_array(&indirect,
+                                                    next_dir as usize).unwrap();
+                },
+                None => {
+                    println_color!(red, "ERROR: path doesn't exist: {}", path);
+                    return None;
+                },
+            }
+            if folder == path_end {
+                let dir_contents: zap::MZapWrapper = self.helper.read_type(cur_node.get_blockptr(0)).unwrap();
+                let ls: Vec<String> =
+                    dir_contents.chunks
+                                .iter()
+                                .map(|x| x.name().unwrap().to_string())
+                                .take_while(|x| x.len() > 0)
+                                .collect();
+                return Some(ls);
+            }
+        }
+
+        None
     }
 }
 
@@ -529,22 +477,18 @@ pub fn main() {
             match zfs_option {
                 Some(ref mut zfs) => {
                     if command == "uber" {
+                        let ref uberblock = zfs.uberblock;
                         //128 KB of ubers after 128 KB of other stuff
-                        match zfs.uber() {
-                            Some(uberblock) => {
-                                println_color!(green, "Newest Uberblock {:X}", uberblock.magic);
-                                println!("Version {}", uberblock.version);
-                                println!("TXG {}", uberblock.txg);
-                                println!("GUID {:X}", uberblock.guid_sum);
-                                println!("Timestamp {}", uberblock.timestamp);
-                                println!("ROOTBP[0] {:?}", uberblock.rootbp.dvas[0]);
-                                println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
-                                println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
-                            }
-                            None => println_color!(red, "No valid uberblock found!"),
-                        }
+                        println_color!(green, "Newest Uberblock {:X}", zfs.uberblock.magic);
+                        println!("Version {}", uberblock.version);
+                        println!("TXG {}", uberblock.txg);
+                        println!("GUID {:X}", uberblock.guid_sum);
+                        println!("Timestamp {}", uberblock.timestamp);
+                        println!("ROOTBP[0] {:?}", uberblock.rootbp.dvas[0]);
+                        println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
+                        println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
                     } else if command == "vdev_label" {
-                        match VdevLabel::from_bytes(&zfs.read(0, 256 * 2)) {
+                        match VdevLabel::from_bytes(&zfs.helper.read(0, 256 * 2)) {
                             Some(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr);
@@ -555,14 +499,12 @@ pub fn main() {
                     } else if command == "file" {
                         match args.get(1) {
                             Some(arg) => {
-                                if let Some(uberblock) = zfs.uber() {
-                                    let file = zfs.read_file(&uberblock, arg.as_str());
-                                    match file {
-                                        Some(file) => {
-                                            println!("File contents: {}", file);
-                                        },
-                                        None => println_color!(red, "Failed to read file"),
-                                    }
+                                let file = zfs.read_file(arg.as_str());
+                                match file {
+                                    Some(file) => {
+                                        println!("File contents: {}", file);
+                                    },
+                                    None => println_color!(red, "Failed to read file"),
                                 }
                             }
                             None => println_color!(red, "Usage: file <path>"),
@@ -570,56 +512,50 @@ pub fn main() {
                     } else if command == "ls" {
                         match args.get(1) {
                             Some(arg) => {
-                                if let Some(uberblock) = zfs.uber() {
-                                    let ls = zfs.ls(&uberblock, arg.as_str());
-                                    match ls {
-                                        Some(ls) => {
-                                            for item in &ls {
-                                                print!("{}\t", item);
-                                            }
-                                        },
-                                        None => println_color!(red, "Failed to read directory"),
-                                    }
+                                let ls = zfs.ls(arg.as_str());
+                                match ls {
+                                    Some(ls) => {
+                                        for item in &ls {
+                                            print!("{}\t", item);
+                                        }
+                                    },
+                                    None => println_color!(red, "Failed to read directory"),
                                 }
                             }
                             None => println_color!(red, "Usage: ls <path>"),
                         }
                     } else if command == "mos" {
-                        match zfs.uber() {
-                            Some(uberblock) => {
-                                let mos_dva = uberblock.rootbp.dvas[0];
-                                println_color!(green, "DVA: {:?}", mos_dva);
-                                println_color!(green, "type: {:X}", uberblock.rootbp.object_type());
-                                println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
-                                println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
-                                println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
-                                let obj_set: Option<ObjectSetPhys> = zfs.read_type(&uberblock.rootbp);
-                                if let Some(ref obj_set) = obj_set {
-                                    println_color!(green, "Got meta object set");
-                                    println_color!(green, "os_type: {:X}", obj_set.os_type);
-                                    println_color!(green, "meta dnode: {:?}\n", obj_set.meta_dnode);
+                        let ref uberblock = zfs.uberblock;
+                        let mos_dva = uberblock.rootbp.dvas[0];
+                        println_color!(green, "DVA: {:?}", mos_dva);
+                        println_color!(green, "type: {:X}", uberblock.rootbp.object_type());
+                        println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
+                        println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
+                        println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
+                        let obj_set: Option<ObjectSetPhys> = zfs.helper.read_type(&uberblock.rootbp);
+                        if let Some(ref obj_set) = obj_set {
+                            println_color!(green, "Got meta object set");
+                            println_color!(green, "os_type: {:X}", obj_set.os_type);
+                            println_color!(green, "meta dnode: {:?}\n", obj_set.meta_dnode);
 
-                                    println_color!(green, "Reading MOS...");
-                                    let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
-                                    let mos_array_dva = mos_block_ptr.dvas[0];
+                            println_color!(green, "Reading MOS...");
+                            let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
+                            let mos_array_dva = mos_block_ptr.dvas[0];
 
-                                    println_color!(green, "DVA: {:?}", mos_array_dva);
-                                    println_color!(green, "type: {:X}", mos_block_ptr.object_type());
-                                    println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
-                                    println_color!(green, "compression: {:X}", mos_block_ptr.compression());
-                                    println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
-                                    let dnode: Option<DNodePhys> = zfs.read_type_array(&mos_block_ptr, 1);
-                                    println_color!(green, "Got MOS dnode array");
-                                    println_color!(green, "dnode: {:?}", dnode);
+                            println_color!(green, "DVA: {:?}", mos_array_dva);
+                            println_color!(green, "type: {:X}", mos_block_ptr.object_type());
+                            println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
+                            println_color!(green, "compression: {:X}", mos_block_ptr.compression());
+                            println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
+                            let dnode: Option<DNodePhys> = zfs.helper.read_type_array(&mos_block_ptr, 1);
+                            println_color!(green, "Got MOS dnode array");
+                            println_color!(green, "dnode: {:?}", dnode);
 
-                                    if let Some(ref dnode) = dnode {
-                                        println_color!(green, "Reading object directory zap object...");
-                                        let zap_obj: Option<zap::MZapWrapper> = zfs.read_type(dnode.get_blockptr(0));
-                                        println!("{:?}", zap_obj);
-                                    }
-                                }
-                            },
-                            None => println_color!(red, "No valid uberblock found!"),
+                            if let Some(ref dnode) = dnode {
+                                println_color!(green, "Reading object directory zap object...");
+                                let zap_obj: Option<zap::MZapWrapper> = zfs.helper.read_type(dnode.get_blockptr(0));
+                                println!("{:?}", zap_obj);
+                            }
                         }
                     } else if command == "dump" {
                         match args.get(1) {
@@ -627,7 +563,7 @@ pub fn main() {
                                 let sector = arg.to_num();
                                 println_color!(green, "Dump sector: {}", sector);
 
-                                let data = zfs.read(sector, 1);
+                                let data = zfs.helper.read(sector, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);
@@ -656,7 +592,7 @@ pub fn main() {
                                 match File::open(arg) {
                                     Some(file) => {
                                         println_color!(green, "Open: {}", arg);
-                                        zfs_option = Some(ZFS::new(file));
+                                        zfs_option = ZFS::new(file);
                                     },
                                     None => println_color!(red, "File not found!"),
                                 }
