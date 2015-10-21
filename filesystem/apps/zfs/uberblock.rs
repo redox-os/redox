@@ -2,7 +2,7 @@ use redox::mem;
 use redox::ptr;
 
 use super::from_bytes::FromBytes;
-use super::BlockPtr;
+use super::block_ptr::BlockPtr;
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
