@@ -1,4 +1,4 @@
-use super::BlockPtr;
+use super::block_ptr::BlockPtr;
 use super::from_bytes::FromBytes;
 
 #[repr(packed)]
