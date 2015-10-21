@@ -80,8 +80,6 @@ impl <'a> Iterator for Split<'a> {
 
 /// A set of lines
 pub struct Lines<'a> {
-    /// The string being split into lines
-    string: &'a String,
     /// The underlying split
     split: Split<'a>
 }
@@ -314,7 +312,6 @@ impl String {
     /// Get a iterator of lines from the string
     pub fn lines(&self) -> Lines {
         Lines {
-            string: &self,
             split: self.split("\n".to_string())
         }
     }
