@@ -16,16 +16,16 @@ enum Metric<T> {
 
 trait ToMetric<T> { fn to_metric(self) -> Metric<T>; }
 
-impl ToMetric<usize> for usize {
-    fn to_metric(self) -> Metric<usize> {
+impl ToMetric<f64> for usize {
+    fn to_metric(self) -> Metric<f64> {
         if self >= 1_000_000_000 {
-            Metric::Giga(self)
+            Metric::Giga((self as f64)/1_000_000_000.0)
         } else if self >= 1_000_000 {
-            Metric::Mega(self)
+            Metric::Mega((self as f64)/1_000_000.0)
         } else if self >= 1_000 {
-            Metric::Kilo(self)
+            Metric::Kilo((self as f64)/1_000.0)
         } else {
-            Metric::LessThanKilo(self)
+            Metric::LessThanKilo(self as f64)
         }
     }
 }
@@ -228,10 +228,10 @@ impl FileManager {
                                 match file.seek(SeekFrom::End(0)) {
                                     Some(file_size) => {
                                         match file_size.to_metric() {
-                                            Metric::LessThanKilo(size) => format!("{} bytes", size),
-                                            Metric::Kilo(size) => format!("{:.1} KB", (size as f64)/1_000.0),
-                                            Metric::Mega(size) => format!("{:.1} MB", (size as f64)/1_000_000.0),
-                                            Metric::Giga(size) => format!("{:.1} GB", (size as f64)/1_000_000_000.0),
+                                            Metric::LessThanKilo(size) => format!("{:.0} bytes", size),
+                                            Metric::Kilo(size) => format!("{:.1} KB", size),
+                                            Metric::Mega(size) => format!("{:.1} MB", size),
+                                            Metric::Giga(size) => format!("{:.1} GB", size),
                                         }
                                     }
                                     None => "Failed to seek".to_string()
