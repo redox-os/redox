@@ -162,24 +162,32 @@ impl ZFS {
         })
     }
 
-    pub fn read_file(&mut self, path: &str) -> Option<String> {
+    pub fn read_file(&mut self, path: &str) -> Option<Vec<u8>> {
         let red = [127, 127, 255, 255];
 
+        // Given the fs_objset and the object id of the root directory, we can traverse the
+        // directory tree.
+        // TODO: Cache object id of paths
+        // TODO: Calculate path through objset blockptr tree to use
         let mut indirect: BlockPtr = self.reader.read_type_array(self.fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
         while indirect.level() > 0 {
             indirect = self.reader.read_type_array(&indirect, 0).unwrap();
         }
+        // Set the cur_node to the root node, located at an L0 indirect block
         let mut cur_node: DNodePhys = self.reader.read_type_array(&indirect,
                                                                   self.root as usize).unwrap();
- 
-        let path = path.trim_matches('/');
+        let path = path.trim_matches('/'); // Robust against different url styles
         for folder in path.split('/') {
+            // Directory dnodes point at zap objects. File/directory names are mapped to their
+            // fs_objset object ids.
             let dir_contents: zap::MZapWrapper = self.reader.read_type(cur_node.get_blockptr(0)).unwrap();
             let mut next_dir = None;
             for chunk in &dir_contents.chunks {
+                // Stop once we get to a null entry
                 if chunk.name().unwrap().len() == 0 {
                     break;
                 }
+                // Check for the folder we are looking for
                 if chunk.name().unwrap() == folder {
                     next_dir = Some(chunk.value);
                     break;
@@ -187,25 +195,31 @@ impl ZFS {
             }
             match next_dir {
                 Some(next_dir) => {
+                    // Found the folder we were looking for
                     cur_node = self.reader.read_type_array(&indirect,
                                                            next_dir as usize).unwrap();
                     if cur_node.object_type == 0x13 {
+                        // This object is a file, we're done
                         break;
                     }
                 },
                 None => {
+                    // Couldn't find the file/directory
                     println_color!(red, "ERROR: path doesn't exist: {}", path);
                     return None;
                 },
             }
         }
         let file_contents = self.reader.read_block(cur_node.get_blockptr(0)).unwrap();
+        // TODO: Read file size from ZPL rather than look for terminating 0
         let file_contents: Vec<u8> = file_contents.into_iter().take_while(|c| *c != 0).collect();
-        String::from_utf8(file_contents).ok()
+        Some(file_contents)
     }
 
     pub fn ls(&mut self, path: &str) -> Option<Vec<String>> {
         let red = [127, 127, 255, 255];
+
+        // TODO: Calculate path through objset blockptr tree to use
         let mut indirect: BlockPtr = self.reader.read_type_array(self.fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
         while indirect.level() > 0 {
             indirect = self.reader.read_type_array(&indirect, 0).unwrap();
@@ -312,7 +326,7 @@ pub fn main() {
                                 let file = zfs.read_file(arg.as_str());
                                 match file {
                                     Some(file) => {
-                                        println!("File contents: {}", file);
+                                        println!("File contents: {}", str::from_utf8(file.as_slice()).unwrap());
                                     },
                                     None => println_color!(red, "Failed to read file"),
                                 }
