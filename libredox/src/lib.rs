@@ -19,6 +19,7 @@
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
+#![feature(naked_attributes)]
 #![feature(rand)]
 #![feature(raw)]
 #![feature(reflect_marker)]
@@ -188,10 +189,6 @@
     pub use orbital::event::*;
     pub use url::*;
     pub use to_num::*;
-
-    /// A module for starting
-    #[cfg(std)]
-    pub mod start;
 
     pub mod alloc_system;
 

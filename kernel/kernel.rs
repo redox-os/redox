@@ -10,6 +10,7 @@
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
+#![feature(naked_attributes)]
 #![feature(no_std)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
