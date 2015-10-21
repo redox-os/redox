@@ -23,13 +23,7 @@ pub mod uberblock;
 pub mod vdev;
 pub mod xdr;
 pub mod zap;
-
-#[repr(packed)]
-pub struct ZilHeader {
-    claim_txg: u64,
-    replay_seq: u64,
-    log: BlockPtr,
-}
+pub mod zil_header;
 
 pub struct ZfsReader {
     disk: File,
@@ -151,6 +145,7 @@ impl ZFS {
         // Master node is always the second object in the object set
         let mut master_node: DNodePhys = zfs_reader.read_type_array(&indirect, 1).unwrap();
         let master_node_zap: zap::MZapWrapper = zfs_reader.read_type(master_node.get_blockptr(0)).unwrap();
+        // Find the ROOT zap entry
         let mut root = None;
         for chunk in &master_node_zap.chunks {
             if chunk.name().unwrap() == "ROOT" {
@@ -169,8 +164,7 @@ impl ZFS {
 
     pub fn read_file(&mut self, path: &str) -> Option<String> {
         let red = [127, 127, 255, 255];
-        // This is the sweet spot: We've found the root directory, so we can now traverse
-        // the directory tree.
+
         let mut indirect: BlockPtr = self.reader.read_type_array(self.fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
         while indirect.level() > 0 {
             indirect = self.reader.read_type_array(&indirect, 0).unwrap();

@@ -3,7 +3,7 @@ use redox::mem;
 
 use super::block_ptr::BlockPtr;
 use super::from_bytes::FromBytes;
-use super::ZilHeader;
+use super::zil_header::ZilHeader;
 
 #[repr(packed)]
 pub struct DNodePhys {
