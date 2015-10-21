@@ -14,18 +14,18 @@ enum Metric<T> {
     Giga(T),
 }
 
-trait ToMetric<T> { fn to_metric(self) -> Metric<T>; }
+trait ToMetric<T> { fn to_metric(&self) -> Metric<T>; }
 
 impl ToMetric<f64> for usize {
-    fn to_metric(self) -> Metric<f64> {
-        if self >= 1_000_000_000 {
-            Metric::Giga((self as f64)/1_000_000_000.0)
-        } else if self >= 1_000_000 {
-            Metric::Mega((self as f64)/1_000_000.0)
-        } else if self >= 1_000 {
-            Metric::Kilo((self as f64)/1_000.0)
+    fn to_metric(&self) -> Metric<f64> {
+        if *self >= 1_000_000_000 {
+            Metric::Giga((*self as f64)/1_000_000_000.0)
+        } else if *self >= 1_000_000 {
+            Metric::Mega((*self as f64)/1_000_000.0)
+        } else if *self >= 1_000 {
+            Metric::Kilo((*self as f64)/1_000.0)
         } else {
-            Metric::LessThanKilo(self as f64)
+            Metric::LessThanKilo(*self as f64)
         }
     }
 }
