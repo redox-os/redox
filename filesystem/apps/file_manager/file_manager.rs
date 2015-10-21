@@ -7,6 +7,29 @@ use redox::time::{self, Duration};
 use redox::vec::Vec;
 use redox::string::{String, ToString};
 
+enum Metric<T> {
+    LessThanKilo(T),
+    Kilo(T),
+    Mega(T),
+    Giga(T),
+}
+
+trait ToMetric<T> { fn to_metric(self) -> Metric<T>; }
+
+impl ToMetric<usize> for usize {
+    fn to_metric(self) -> Metric<usize> {
+        if self >= 1_000_000_000 {
+            Metric::Giga(self)
+        } else if self >= 1_000_000 {
+            Metric::Mega(self)
+        } else if self >= 1_000 {
+            Metric::Kilo(self)
+        } else {
+            Metric::LessThanKilo(self)
+        }
+    }
+}
+
 pub struct FileManager {
     folder_icon: BMPFile,
     audio_icon: BMPFile,
@@ -203,15 +226,12 @@ impl FileManager {
                                 }
                             } else {
                                 match file.seek(SeekFrom::End(0)) {
-                                    Some(size) => {
-                                        if size >= 1_000_000_000 {
-                                            format!("{:.1} GB", (size as f64)/1_000_000_000.0)
-                                        } else if size >= 1_000_000 {
-                                            format!("{:.1} MB", (size as f64)/1_000_000.0)
-                                        } else if size >= 1_000 {
-                                            format!("{:.1} KB", (size as f64)/1_000.0)
-                                        } else {
-                                            format!("{:.1} bytes", size)
+                                    Some(file_size) => {
+                                        match file_size.to_metric() {
+                                            Metric::LessThanKilo(size) => format!("{} bytes", size),
+                                            Metric::Kilo(size) => format!("{:.1} KB", (size as f64)/1_000.0),
+                                            Metric::Mega(size) => format!("{:.1} MB", (size as f64)/1_000_000.0),
+                                            Metric::Giga(size) => format!("{:.1} GB", (size as f64)/1_000_000_000.0),
                                         }
                                     }
                                     None => "Failed to seek".to_string()
