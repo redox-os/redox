@@ -3,12 +3,14 @@ use redox::*;
 
 use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
+use self::dvaddr::DVAddr;
 use self::from_bytes::FromBytes;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
 pub mod dsl_dataset;
 pub mod dsl_dir;
+pub mod dvaddr;
 pub mod from_bytes;
 pub mod lzjb;
 pub mod nvpair;
@@ -17,44 +19,6 @@ pub mod uberblock;
 pub mod vdev;
 pub mod xdr;
 pub mod zap;
-
-#[derive(Copy, Clone)]
-#[repr(packed)]
-pub struct DVAddr {
-    pub vdev: u64,
-    pub offset: u64,
-}
-
-impl DVAddr {
-    /// Sector address is the offset plus two vdev labels and one boot block (4 MB, or 8192 sectors)
-    pub fn sector(&self) -> u64 {
-        self.offset() + 0x2000
-    }
-
-    pub fn gang(&self) -> bool {
-        if self.offset&0x8000000000000000 == 1 {
-            true
-        } else {
-            false
-        }
-    }
-
-    pub fn offset(&self) -> u64 {
-        self.offset & 0x7FFFFFFFFFFFFFFF
-    }
-
-    pub fn asize(&self) -> u64 {
-        (self.vdev & 0xFFFFFF) + 1
-    }
-}
-
-impl fmt::Debug for DVAddr {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "DVAddr {{ offset: {:X}, gang: {}, asize: {:X} }}\n",
-                    self.offset(), self.gang(), self.asize()));
-        Ok(())
-    }
-}
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
