@@ -33,8 +33,9 @@ use redox::*;
 
 use redox::syscall::sys_exit;
 
+#[no_mangle]
 #[inline(never)]
-unsafe fn _start_stack(stack: *const usize) {
+pub unsafe extern fn _start_stack(stack: *const usize) {
     let argc = ptr::read(stack);
     let mut args: Vec<&'static str> = Vec::new();
     for i in 0..argc as isize {
@@ -60,6 +61,7 @@ unsafe fn _start_stack(stack: *const usize) {
     sys_exit(0);
 }
 
+/*
 #[cold]
 #[inline(never)]
 #[naked]
@@ -70,3 +72,4 @@ pub unsafe fn _start() {
     asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
     _start_stack(stack);
 }
+*/
