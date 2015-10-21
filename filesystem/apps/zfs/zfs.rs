@@ -101,6 +101,12 @@ impl ZfsReader {
     }
 }
 
+#[derive(Copy, Clone, PartialEq)]
+pub enum ZfsTraverse {
+    ThisDir,
+    Done,
+}
+
 pub struct ZFS {
     pub reader: ZfsReader,
     pub uberblock: Uberblock, // The active uberblock
@@ -162,9 +168,9 @@ impl ZFS {
         })
     }
 
-    pub fn read_file(&mut self, path: &str) -> Option<Vec<u8>> {
-        let red = [127, 127, 255, 255];
-
+    pub fn traverse<F, T>(&mut self, mut f: F) -> Option<T>
+        where F: FnMut(&mut ZFS, &str, usize, &mut DNodePhys, &BlockPtr, &mut Option<T>) -> Option<ZfsTraverse>,
+    {
         // Given the fs_objset and the object id of the root directory, we can traverse the
         // directory tree.
         // TODO: Cache object id of paths
@@ -174,105 +180,135 @@ impl ZFS {
             indirect = self.reader.read_type_array(&indirect, 0).unwrap();
         }
         // Set the cur_node to the root node, located at an L0 indirect block
+        let root = self.root as usize;
         let mut cur_node: DNodePhys = self.reader.read_type_array(&indirect,
                                                                   self.root as usize).unwrap();
-        let path = path.trim_matches('/'); // Robust against different url styles
-        for folder in path.split('/') {
+        let mut result = None;
+        if f(self, "", root, &mut cur_node, &indirect, &mut result) == Some(ZfsTraverse::Done) {
+            return result;
+        }
+        'traverse: loop {
             // Directory dnodes point at zap objects. File/directory names are mapped to their
             // fs_objset object ids.
             let dir_contents: zap::MZapWrapper = self.reader.read_type(cur_node.get_blockptr(0)).unwrap();
             let mut next_dir = None;
             for chunk in &dir_contents.chunks {
-                // Stop once we get to a null entry
-                if chunk.name().unwrap().len() == 0 {
-                    break;
-                }
-                // Check for the folder we are looking for
-                if chunk.name().unwrap() == folder {
-                    next_dir = Some(chunk.value);
-                    break;
+                match chunk.name() {
+                    Some(chunk_name) => {
+                        // Stop once we get to a null entry
+                        if chunk_name.len() == 0 {
+                            break;
+                        }
+                        
+                        let traverse = f(self, chunk_name, chunk.value as usize,
+                                         &mut cur_node, &indirect, &mut result);
+                        if let Some(traverse) = traverse {
+                            match traverse {
+                                ZfsTraverse::ThisDir => {
+                                    // Found the folder we were looking for
+                                    next_dir = Some(chunk.value);
+                                    break;
+                                },
+                                ZfsTraverse::Done => {
+                                    break 'traverse;
+                                },
+                            }
+                        }
+                    },
+                    None => {
+                        // Invalid directory name
+                        return None;
+                    },
                 }
             }
-            match next_dir {
-                Some(next_dir) => {
-                    // Found the folder we were looking for
-                    cur_node = self.reader.read_type_array(&indirect,
-                                                           next_dir as usize).unwrap();
-                    if cur_node.object_type == 0x13 {
-                        // This object is a file, we're done
-                        break;
-                    }
-                },
-                None => {
-                    // Couldn't find the file/directory
-                    println_color!(red, "ERROR: path doesn't exist: {}", path);
-                    return None;
-                },
+            if next_dir.is_none() {
+                break;
             }
         }
-        let file_contents = self.reader.read_block(cur_node.get_blockptr(0)).unwrap();
-        // TODO: Read file size from ZPL rather than look for terminating 0
-        let file_contents: Vec<u8> = file_contents.into_iter().take_while(|c| *c != 0).collect();
-        Some(file_contents)
+        result
+    }
+
+    pub fn read_file(&mut self, path: &str) -> Option<Vec<u8>> {
+        let path = path.trim_matches('/'); // Robust against different url styles
+        let path_end_index = path.rfind('/').map(|i| i+1).unwrap_or(0);
+        let path_end = &path[path_end_index..];
+        let mut folder_iter = path.split('/');
+        let mut folder = folder_iter.next();
+
+        let file_contents =
+            self.traverse(|zfs, name, node_id, node, indirect, result| {
+                let mut this_dir = false;
+                if let Some(folder) = folder {
+                    if name == folder {
+                        *node = zfs.reader.read_type_array(indirect,
+                                                           node_id as usize).unwrap();
+                        if name == path_end {
+                            if node.object_type != 0x13 {
+                                // Not a file
+                                return Some(ZfsTraverse::Done);
+                            }
+                            // Found the file
+                            let file_contents = zfs.reader.read_block(node.get_blockptr(0)).unwrap();
+                            // TODO: Read file size from ZPL rather than look for terminating 0
+                            let file_contents: Vec<u8> = file_contents.into_iter().take_while(|c| *c != 0).collect();
+                            *result = Some(file_contents);
+                            return Some(ZfsTraverse::Done);
+                        }
+                        this_dir = true;
+                    }
+                }
+                if this_dir {
+                    if node.object_type != 0x14 {
+                        // Not a folder
+                        return Some(ZfsTraverse::Done);
+                    }
+                    folder = folder_iter.next();
+                    return Some(ZfsTraverse::ThisDir);
+                }
+                None
+            });
+
+        file_contents
     }
 
     pub fn ls(&mut self, path: &str) -> Option<Vec<String>> {
-        let red = [127, 127, 255, 255];
-
-        // TODO: Calculate path through objset blockptr tree to use
-        let mut indirect: BlockPtr = self.reader.read_type_array(self.fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
-        while indirect.level() > 0 {
-            indirect = self.reader.read_type_array(&indirect, 0).unwrap();
-        }
-        let mut cur_node: DNodePhys = self.reader.read_type_array(&indirect,
-                                                                  self.root as usize).unwrap();
-        let path = path.trim_matches('/');
+        let path = path.trim_matches('/'); // Robust against different url styles
         let path_end_index = path.rfind('/').map(|i| i+1).unwrap_or(0);
         let path_end = &path[path_end_index..];
-        for folder in path.split('/') {
-            let dir_contents: zap::MZapWrapper = self.reader.read_type(cur_node.get_blockptr(0)).unwrap();
-            let ls: Vec<String> =
-                dir_contents.chunks
-                            .iter()
-                            .map(|x| x.name().unwrap().to_string())
-                            .take_while(|x| x.len() > 0)
-                            .collect();
-            if path == "" {
-                return Some(ls);
-            }
-            let mut next_dir = None;
-            for chunk in &dir_contents.chunks {
-                if chunk.name().unwrap().len() == 0 {
-                    break;
-                }
-                if chunk.name().unwrap() == folder {
-                    next_dir = Some(chunk.value);
-                    break;
-                }
-            }
-            match next_dir {
-                Some(next_dir) => {
-                    cur_node = self.reader.read_type_array(&indirect,
-                                                    next_dir as usize).unwrap();
-                },
-                None => {
-                    println_color!(red, "ERROR: path doesn't exist: {}", path);
-                    return None;
-                },
-            }
-            if folder == path_end {
-                let dir_contents: zap::MZapWrapper = self.reader.read_type(cur_node.get_blockptr(0)).unwrap();
-                let ls: Vec<String> =
-                    dir_contents.chunks
-                                .iter()
-                                .map(|x| x.name().unwrap().to_string())
-                                .take_while(|x| x.len() > 0)
-                                .collect();
-                return Some(ls);
-            }
-        }
+        let mut folder_iter = path.split('/');
+        let mut folder = folder_iter.next();
 
-        None
+        let file_contents =
+            self.traverse(|zfs, name, node_id, node, indirect, result| {
+                let mut this_dir = false;
+                if let Some(folder) = folder {
+                    if name == folder {
+                        if folder == path_end {
+                            *node = zfs.reader.read_type_array(indirect,
+                                                               node_id as usize).unwrap();
+                            let dir_contents: zap::MZapWrapper = zfs.reader
+                                                                    .read_type(node.get_blockptr(0))
+                                                                    .unwrap();
+                            let ls: Vec<String> =
+                                dir_contents.chunks
+                                            .iter()
+                                            .map(|x| x.name().unwrap().to_string())
+                                            .take_while(|x| x.len() > 0)
+                                            .collect();
+                            *result = Some(ls);
+                            return Some(ZfsTraverse::Done);
+                        }
+                        this_dir = true;
+                    }
+                }
+                if this_dir {
+                    folder = folder_iter.next();
+                    return Some(ZfsTraverse::ThisDir);
+                }
+                None
+            });
+
+        file_contents
     }
 }
 
