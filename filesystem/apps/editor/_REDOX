@@ -6,5 +6,5 @@ accept=*.asm
 accept=*.rs
 accept=*.txt
 accept=*.list
-author=Jeremy Soller and Ticki
+author=Jeremy Soller
 description=Editor for Redox
