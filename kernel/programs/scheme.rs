@@ -5,16 +5,16 @@ use core::usize;
 
 use common::context::*;
 use common::debug::*;
-use common::resource::{Resource, ResourceSeek};
+use schemes::{Resource, ResourceSeek};
 use common::elf::*;
 use common::memory;
 use common::paging::Page;
-use common::resource::URL;
+use schemes::URL;
 use common::scheduler::{start_no_ints, end_no_ints};
 use common::string::*;
 use common::vec::Vec;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 pub struct SchemeContext {
     interrupts: bool,
@@ -335,7 +335,7 @@ impl SchemeItem {
     }
 }
 
-impl SessionItem for SchemeItem {
+impl KScheme for SchemeItem {
     fn scheme(&self) -> String {
         return self.scheme.clone();
     }

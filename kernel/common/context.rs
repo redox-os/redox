@@ -5,7 +5,7 @@ use core::ptr;
 
 use common::memory;
 use common::paging::*;
-use common::resource::*;
+use schemes::{Resource};
 use common::scheduler;
 use common::string::*;
 use common::vec::*;

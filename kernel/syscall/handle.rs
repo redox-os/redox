@@ -7,7 +7,6 @@ use core::usize;
 use common::context::*;
 use common::debug::*;
 use common::memory::*;
-use common::resource::*;
 use common::scheduler;
 use common::string::*;
 use common::time::*;
@@ -19,6 +18,8 @@ use programs::executor::execute;
 
 use graphics::color::*;
 use graphics::size::*;
+
+use schemes::*;
 
 use syscall::common::*;
 

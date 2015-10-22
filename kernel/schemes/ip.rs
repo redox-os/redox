@@ -7,11 +7,11 @@ use network::common::*;
 use network::ipv4::*;
 
 use common::{debug, random};
-use common::resource::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 /// A IP (internet protocole) resource
 pub struct IPResource {
@@ -125,7 +125,7 @@ pub struct IPScheme {
     pub arp: Vec<ARPEntry>,
 }
 
-impl SessionItem for IPScheme {
+impl KScheme for IPScheme {
     fn scheme(&self) -> String {
         return "ip".to_string();
     }

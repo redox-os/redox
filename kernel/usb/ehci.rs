@@ -4,7 +4,7 @@ use common::debug;
 
 use drivers::pciconfig::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 #[repr(packed)]
 struct SETUP {
@@ -39,7 +39,7 @@ pub struct EHCI {
     pub irq: u8,
 }
 
-impl SessionItem for EHCI {
+impl KScheme for EHCI {
     #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {

@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use graphics::bmp::*;
 
 use common::debug;
-use common::resource::URL;
+use schemes::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
