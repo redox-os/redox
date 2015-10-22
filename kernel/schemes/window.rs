@@ -7,14 +7,13 @@ use core::ptr;
 use common::context::context_switch;
 use common::event::*;
 use common::string::*;
-use common::resource::*;
 
 use graphics::display::*;
 use graphics::point::*;
 use graphics::size::*;
 use graphics::window::*;
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 /// A window scheme
 pub struct WindowScheme;
@@ -96,7 +95,7 @@ impl Resource for WindowResource {
     }
 }
 
-impl SessionItem for WindowScheme {
+impl KScheme for WindowScheme {
     fn scheme(&self) -> String {
         return "window".to_string();
     }
