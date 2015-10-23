@@ -1,27 +1,12 @@
-#![feature(asm)]
+use redox::Box;
+use redox::console::*;
+use redox::{io, rand, Color};
+use redox::ptr;
+use redox::slice::SliceConcatExt;
+use redox::string::*;
+use redox::syscall::sys_fork;
+use redox::Vec;
 
-use std::Box;
-use std::{io, rand};
-use std::ptr;
-use std::syscall::sys_fork;
-
-macro_rules! readln {
-    () => {
-        {
-            let mut line = String::new();
-            match io::stdin().read_line(&mut line) {
-                Ok(_) => Some(line.trim().to_string()),
-                Err(_) => None
-            }
-        }
-    };
-}
-
-fn console_title(title: &str) {
-
-}
-
-#[no_mangle]
 pub fn main() {
     console_title("Test");
 

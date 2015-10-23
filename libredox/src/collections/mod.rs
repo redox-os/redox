@@ -372,7 +372,7 @@ pub use core_collections::{linked_list, vec_deque};
 pub use self::hash_map::HashMap;
 pub use self::hash_set::HashSet;
 
-mod hash;
+pub mod hash;
 
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod hash_map {

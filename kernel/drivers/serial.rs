@@ -4,7 +4,7 @@ use common::event;
 
 use drivers::pio::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 /// Serial
 pub struct Serial {
@@ -28,7 +28,7 @@ impl Serial {
     }
 }
 
-impl SessionItem for Serial {
+impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             while unsafe { self.status.read() } & 1 == 0 {

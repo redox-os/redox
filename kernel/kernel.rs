@@ -10,6 +10,7 @@
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
+#![feature(naked_attributes)]
 #![feature(no_std)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
@@ -28,7 +29,7 @@ use common::event::{self, Event, EventOption};
 use common::memory;
 use common::paging::*;
 use common::queue::Queue;
-use common::resource::URL;
+use schemes::URL;
 use common::scheduler;
 use common::string::{String, ToString};
 use common::time::Duration;
@@ -54,7 +55,6 @@ use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
-use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
@@ -65,17 +65,17 @@ use schemes::display::*;
 use syscall::handle::*;
 
 pub mod alloc_system;
-mod audio;
-mod common;
-mod drivers;
+pub mod audio;
+pub mod common;
+pub mod drivers;
 pub mod externs;
-mod graphics;
-mod network;
+pub mod graphics;
+pub mod network;
 pub mod panic;
-mod programs;
-mod schemes;
-mod syscall;
-mod usb;
+pub mod programs;
+pub mod schemes;
+pub mod syscall;
+pub mod usb;
 
 static mut debug_display: *mut Display = 0 as *mut Display;
 static mut debug_point: Point = Point { x: 0, y: 0 };
@@ -200,14 +200,6 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        context_switch(false);
-    }
-}
-
-unsafe fn redraw_loop() -> ! {
-    let session = &mut *session_ptr;
-
-    loop {
         if debug_draw {
             let display = &*debug_display;
             if debug_redraw {
@@ -303,7 +295,6 @@ unsafe fn init(font_data: usize) {
     session.items.push(box IPScheme {
         arp: Vec::new()
     });
-    session.items.push(box ICMPScheme);
     session.items.push(box DisplayScheme);
     session.items.push(box WindowScheme);
 
@@ -314,13 +305,7 @@ unsafe fn init(font_data: usize) {
         event_loop();
     });
     Context::spawn(box move || {
-        redraw_loop();
-    });
-    Context::spawn(box move || {
         ARPScheme::reply_loop();
-    });
-    Context::spawn(box move || {
-        ICMPScheme::reply_loop();
     });
 
     debug::d("Reenabling interrupts\n");
@@ -349,10 +334,7 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()) {
-                let scheme_item = SchemeItem::from_url(
-                    &folder.substr(0, folder.len() - 1),
-                    &URL::from_string(&("file:///schemes/".to_string() + &folder + &folder.substr(0, folder.len() - 1) + ".bin"))
-                );
+                let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);

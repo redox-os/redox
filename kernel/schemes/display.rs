@@ -4,10 +4,9 @@ use graphics::display::*;
 
 use core::cmp::{min, max};
 
-use common::resource::*;
 use common::string::*;
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 pub struct DisplayScheme;
 
@@ -33,7 +32,7 @@ impl Resource for DisplayResource {
 		None
 	}
 
-	
+
 	fn write(&mut self, buf: &[u8]) -> Option<usize> {
 		let display = &mut self.display;
 
@@ -65,7 +64,7 @@ impl Resource for DisplayResource {
 	}
 }
 
-impl SessionItem for DisplayScheme {
+impl KScheme for DisplayScheme {
 	fn scheme(&self) -> String {
 		return "display".to_string();
 	}

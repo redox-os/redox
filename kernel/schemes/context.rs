@@ -1,15 +1,15 @@
 use alloc::boxed::Box;
 
 use common::context::*;
-use common::resource::{Resource, URL, VecResource};
+use schemes::{Resource, URL, VecResource};
 use common::scheduler;
 use common::string::{String, ToString};
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 pub struct ContextScheme;
 
-impl SessionItem for ContextScheme {
+impl KScheme for ContextScheme {
     fn scheme(&self) -> String {
         "context".to_string()
     }

@@ -2,6 +2,8 @@
 
 **Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at http://www.redox-os.org
 
+Docs can be found [here](http://ticki.github.io/redocs/redox/).
+
 ## What it looks like
 
 ![Redox](img/screenshots/Desktop.png)

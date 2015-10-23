@@ -4,7 +4,7 @@ use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 /// PS2
 pub struct PS2 {
@@ -222,7 +222,7 @@ impl PS2 {
     }
 }
 
-impl SessionItem for PS2 {
+impl KScheme for PS2 {
     fn on_irq(&mut self, irq: u8) {
         if irq == 0x1 || irq == 0xC {
             self.on_poll();

@@ -3,7 +3,7 @@ use core::ptr;
 use common::context::*;
 use common::elf::*;
 use common::memory;
-use common::resource::URL;
+use schemes::URL;
 use common::scheduler;
 use common::string::String;
 use common::vec::Vec;
