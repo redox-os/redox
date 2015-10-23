@@ -13,18 +13,8 @@ impl Resource {
         })
     }
 
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
-        let mut i = 0;
-        for b in self.path.bytes() {
-            if i < buf.len() {
-                buf[i] = b;
-                i += 1;
-            } else {
-                break;
-            }
-        }
-
-        Some(i)
+    pub fn path(&self) -> Option<String> {
+        Some(self.path.clone())
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

@@ -20,8 +20,6 @@ pub mod paging;
 pub mod queue;
 /// A module for pseudorandom generator
 pub mod random;
-/// Kernel resource handling
-pub mod resource;
 /// A module for scheduling
 pub mod scheduler;
 /// A module for owned strings

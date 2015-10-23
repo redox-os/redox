@@ -6,11 +6,11 @@ use network::common::*;
 use network::ethernet::*;
 
 use common::debug;
-use common::resource::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -104,7 +104,7 @@ impl Resource for EthernetResource {
 
 pub struct EthernetScheme;
 
-impl SessionItem for EthernetScheme {
+impl KScheme for EthernetScheme {
     fn scheme(&self) -> String {
         return "ethernet".to_string();
     }

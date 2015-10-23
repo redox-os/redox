@@ -10,11 +10,11 @@ use drivers::pciconfig::PCIConfig;
 use common::context::context_switch;
 use common::debug;
 use common::memory::Memory;
-use common::resource::{Resource, ResourceSeek, URL, VecResource};
+use schemes::{Resource, ResourceSeek, URL, VecResource};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 /// The header of the fs
 #[repr(packed)]
@@ -412,7 +412,7 @@ impl FileScheme {
     }
 }
 
-impl SessionItem for FileScheme {
+impl KScheme for FileScheme {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.fs.disk.irq {
             self.on_poll();

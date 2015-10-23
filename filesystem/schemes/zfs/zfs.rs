@@ -1,5 +1,6 @@
 //To use this, please install zfs-fuse
 use redox::*;
+use redox::cmp::{min, max};
 
 use self::dnode::{DNodePhys, ObjectSetPhys};
 use self::block_ptr::BlockPtr;
@@ -319,161 +320,120 @@ impl ZFS {
     }
 }
 
-//TODO: Find a way to remove all the to_string's
-pub fn main() {
-    console_title("ZFS");
+pub struct Resource {
+    path: String,
+    vec: Vec<u8>,
+    seek: usize,
+}
 
-    let red = [255, 127, 127, 255];
-    let green = [127, 255, 127, 255];
-    let blue = [127, 127, 255, 255];
+impl Resource {
+    pub fn dup(&self) -> Option<Box<Self>> {
+        Some(box Resource {
+            path: self.path.clone(),
+            vec: self.vec.clone(),
+            seek: self.seek
+        })
+    }
 
-    println!("Type open zfs.img to open the image file");
+    pub fn path(&self) -> Option<String> {
+        Some(self.path.clone())
+    }
 
-    let mut zfs_option: Option<ZFS> = None;
-
-    while let Some(line) = readln!() {
-        let mut args: Vec<String> = Vec::new();
-        for arg in line.split(' ') {
-            args.push(arg.to_string());
+    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        let mut i = 0;
+        while i < buf.len() && self.seek < self.vec.len() {
+            buf[i] = self.vec[self.seek];
+            self.seek += 1;
+            i += 1;
         }
+        Some(i)
+    }
 
-        if let Some(command) = args.get(0) {
-            println!("# {}", line);
+    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        let mut i = 0;
+        while i < buf.len() && self.seek < self.vec.len() {
+            self.vec[self.seek] = buf[i];
+            self.seek += 1;
+            i += 1;
+        }
+        while i < buf.len() {
+            self.vec.push(buf[i]);
+            self.seek += 1;
+            i += 1;
+        }
+        Some(i)
+    }
 
-            let mut close = false;
-            match zfs_option {
-                Some(ref mut zfs) => {
-                    if command == "uber" {
-                        let ref uberblock = zfs.uberblock;
-                        //128 KB of ubers after 128 KB of other stuff
-                        println_color!(green, "Newest Uberblock {:X}", zfs.uberblock.magic);
-                        println!("Version {}", uberblock.version);
-                        println!("TXG {}", uberblock.txg);
-                        println!("GUID {:X}", uberblock.guid_sum);
-                        println!("Timestamp {}", uberblock.timestamp);
-                        println!("ROOTBP[0] {:?}", uberblock.rootbp.dvas[0]);
-                        println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
-                        println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
-                    } else if command == "vdev_label" {
-                        match VdevLabel::from_bytes(&zfs.reader.read(0, 256 * 2)) {
-                            Some(ref mut vdev_label) => {
-                                let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
-                                let nv_list = nvstream::decode_nv_list(&mut xdr);
-                                println_color!(green, "Got nv_list:\n{:?}", nv_list);
-                            },
-                            None => { println_color!(red, "Couldn't read vdev_label"); },
-                        }
-                    } else if command == "file" {
-                        match args.get(1) {
-                            Some(arg) => {
-                                let file = zfs.read_file(arg.as_str());
-                                match file {
-                                    Some(file) => {
-                                        println!("File contents: {}", str::from_utf8(file.as_slice()).unwrap());
-                                    },
-                                    None => println_color!(red, "Failed to read file"),
-                                }
-                            }
-                            None => println_color!(red, "Usage: file <path>"),
-                        }
-                    } else if command == "ls" {
-                        match args.get(1) {
-                            Some(arg) => {
-                                let ls = zfs.ls(arg.as_str());
-                                match ls {
-                                    Some(ls) => {
-                                        for item in &ls {
-                                            print!("{}\t", item);
-                                        }
-                                    },
-                                    None => println_color!(red, "Failed to read directory"),
-                                }
-                            }
-                            None => println_color!(red, "Usage: ls <path>"),
-                        }
-                    } else if command == "mos" {
-                        let ref uberblock = zfs.uberblock;
-                        let mos_dva = uberblock.rootbp.dvas[0];
-                        println_color!(green, "DVA: {:?}", mos_dva);
-                        println_color!(green, "type: {:X}", uberblock.rootbp.object_type());
-                        println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
-                        println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
-                        println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
-                        let obj_set: Option<ObjectSetPhys> = zfs.reader.read_type(&uberblock.rootbp);
-                        if let Some(ref obj_set) = obj_set {
-                            println_color!(green, "Got meta object set");
-                            println_color!(green, "os_type: {:X}", obj_set.os_type);
-                            println_color!(green, "meta dnode: {:?}\n", obj_set.meta_dnode);
+    pub fn seek(&mut self, seek: SeekFrom) -> Option<usize> {
+        match seek {
+            SeekFrom::Start(offset) => self.seek = min(self.vec.len(), offset),
+            SeekFrom::Current(offset) =>
+                self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
+            SeekFrom::End(offset) =>
+                self.seek =
+                    max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
+        }
+        Some(self.seek)
+    }
 
-                            println_color!(green, "Reading MOS...");
-                            let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
-                            let mos_array_dva = mos_block_ptr.dvas[0];
+    pub fn sync(&mut self) -> bool {
+        write!(io::stdout(), "Sync {}\n", self.path);
+        false
+    }
+}
 
-                            println_color!(green, "DVA: {:?}", mos_array_dva);
-                            println_color!(green, "type: {:X}", mos_block_ptr.object_type());
-                            println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
-                            println_color!(green, "compression: {:X}", mos_block_ptr.compression());
-                            println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
-                            let dnode: Option<DNodePhys> = zfs.reader.read_type_array(&mos_block_ptr, 1);
-                            println_color!(green, "Got MOS dnode array");
-                            println_color!(green, "dnode: {:?}", dnode);
+pub struct Scheme {
+    zfs: Option<ZFS>
+}
 
-                            if let Some(ref dnode) = dnode {
-                                println_color!(green, "Reading object directory zap object...");
-                                let zap_obj: Option<zap::MZapWrapper> = zfs.reader.read_type(dnode.get_blockptr(0));
-                                println!("{:?}", zap_obj);
-                            }
-                        }
-                    } else if command == "dump" {
-                        match args.get(1) {
-                            Some(arg) => {
-                                let sector = arg.to_num();
-                                println_color!(green, "Dump sector: {}", sector);
+impl Scheme {
+    pub fn new() -> Box<Scheme> {
+        box Scheme {
+            zfs: None
+        }
+    }
 
-                                let data = zfs.reader.read(sector, 1);
-                                for i in 0..data.len() {
-                                    if i % 32 == 0 {
-                                        print!("\n{:X}:", i);
-                                    }
-                                    if let Some(byte) = data.get(i) {
-                                        print!(" {:X}", *byte);
-                                    } else {
-                                        println!(" !");
-                                    }
-                                }
-                                print!("\n");
-                            }
-                            None => println_color!(red, "No sector specified!"),
-                        }
-                    } else if command == "close" {
-                        println_color!(red, "Closing");
-                        close = true;
-                    } else {
-                        println_color!(blue, "Commands: uber vdev_label mos file ls dump close");
-                    }
-                }
-                None => {
-                    if command == "open" {
-                        match args.get(1) {
-                            Some(arg) => {
-                                match File::open(arg) {
-                                    Some(file) => {
-                                        println_color!(green, "Open: {}", arg);
-                                        zfs_option = ZFS::new(file);
-                                    },
-                                    None => println_color!(red, "File not found!"),
-                                }
-                            }
-                            None => println_color!(red, "No file specified!"),
-                        }
-                    } else {
-                        println_color!(blue, "Commands: open");
-                    }
-                }
-            }
-            if close {
-                zfs_option = None;
+    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+        if self.zfs.is_none() {
+            if let Some(file) = File::open("file:///apps/zfs/zfs.img") {
+                write!(io::stdout(), "ZFS Mount {:?}\n", file.path());
+                self.zfs = ZFS::new(file);
             }
         }
+
+        if let Some(ref mut zfs) = self.zfs {
+            let url = URL::from_str(&url_str);
+
+            let path = url.path();
+            if path.ends_with("/") {
+                if let Some(list) = zfs.ls(&path) {
+                    let mut data: Vec<u8> = Vec::new();
+                    for entry in list {
+                        if data.len() > 0 {
+                            data.push(10);
+                        }
+                        data.push_all(entry.as_bytes());
+                    }
+
+                    return Some(box Resource{
+                        path: path,
+                        vec: data,
+                        seek: 0
+                    });
+                }
+            }else{
+                write!(io::stdout(), "ZFS Read File {}\n", path);
+                if let Some(data) = zfs.read_file(&path) {
+                    write!(io::stdout(), "ZFS Read File Data {}\n", data.len());
+                    return Some(box Resource{
+                        path: path,
+                        vec: data,
+                        seek: 0
+                    });
+                }
+            }
+        }
+
+        None
     }
 }
