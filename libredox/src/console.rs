@@ -50,7 +50,7 @@ pub fn console_title(title: &str) {
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ({
-        console_window().print(&format!($($arg)*), Color::rgba(224, 224, 224, 255));
+        console_window().print(&format!($($arg)*), $crate::Color::rgba(224, 224, 224, 255));
         console_window().sync();
     });
 }

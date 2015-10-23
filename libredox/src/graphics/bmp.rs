@@ -1,6 +1,6 @@
 use string::*;
 use vec::Vec;
-use graphics::color::*;
+use graphics::color::Color;
 // TODO: Follow naming convention
 /// A bitmap
 pub struct BMPFile {
