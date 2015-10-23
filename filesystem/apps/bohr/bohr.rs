@@ -1,12 +1,12 @@
 use redox::*;
-
 pub fn main() {
 	match File::open("display://") {
 		Some(ref mut file) => {
-			let i:[u8;4] = [0, 128, 128, 128];
+			let i = Color::rgba(0, 128, 128, 128);
 			let mut x = 0;
 			loop {
-				file.write(&i);
+				let data: &[u8] = unsafe { mem::transmute::<&[u32], &[u8]>(&[i.data]) };
+				file.write(data);
 				x += 1;
 				if x > 4096 {
 					break;

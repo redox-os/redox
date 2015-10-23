@@ -1,5 +1,6 @@
 use redox::Box;
 use redox::cell::UnsafeCell;
+use redox::Color;
 use redox::console::ConsoleWindow;
 use redox::rc::Rc;
 use redox::str;
@@ -71,7 +72,7 @@ impl Resource {
     }
 
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) }, [224, 224, 224, 255]);
+        self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) }, Color::rgba(224, 224, 224, 255));
         self.sync();
 
         Some(buf.len())

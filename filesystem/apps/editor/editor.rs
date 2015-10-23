@@ -4,6 +4,7 @@ use redox::*;
 
 mod cmd;
 
+
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Mode {
     Insert,
@@ -236,7 +237,8 @@ impl Editor {
         let mut redraw = false;
 
         {
-            window.set([255, 255, 255, 255]);
+			let GRAY = Color::rgba(128, 128, 128, 128);			
+            window.set(Color::WHITE);
 
             let scroll_x = self.scroll_x;
             let scroll_y = self.scroll_y;
@@ -252,7 +254,7 @@ impl Editor {
             for c in self.string.chars() {
                 if offset == self.offset {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.rect(8 * col, 16 * row, 8, 16, [128, 128, 128, 128]);
+                        window.rect(8 * col, 16 * row, 8, 16, GRAY);
                     } else {
                         if col < 0 { //Too far to the left
                             self.scroll_x += col;
@@ -276,7 +278,7 @@ impl Editor {
                     col += 8 - col % 8;
                 } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.char(8 * col, 16 * row, c, [0, 0, 0, 255]);
+                        window.char(8 * col, 16 * row, c, Color::BLACK);
                     }
                     col += 1;
                 }
@@ -286,7 +288,7 @@ impl Editor {
 
             if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.rect(8 * col, 16 * row, 8, 16, [128, 128, 128, 128]);
+                        window.rect(8 * col, 16 * row, 8, 16, GRAY);
                 } else {
                     if col < 0 { //Too far to the left
                         self.scroll_x += col;
