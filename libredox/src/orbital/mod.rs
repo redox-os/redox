@@ -97,13 +97,6 @@ impl Window {
         }
     }
 
-    pub fn pixel8(&mut self, x: isize, y: isize, color: [u8; 4]) {
-        if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
-            let offset = y as usize * self.w + x as usize; 
-			self.data[offset] = Color::rgba(color[0], color[1], color[2], color[3]).data;
-        }
-	}
-
     /// Draw a character, using the loaded font
     pub fn char(&mut self, x: isize, y: isize, c: char, color: Color) {
         let mut offset = (c as usize) * 16;
@@ -179,7 +172,6 @@ impl Window {
         self.file.seek(SeekFrom::Start(0));
 		let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
         self.file.write(to_write);
-        //self.file.write(cast::transmute(&self.data));
         return self.file.sync();
     }
 

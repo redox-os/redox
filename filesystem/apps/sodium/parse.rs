@@ -16,14 +16,17 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
                     return Inst(0, match k.scancode {
                         K_ALT => Key::Alt(k.pressed),
                         K_CTRL => Key::Ctrl(k.pressed),
-                        K_BKSP => Key::Backspace,
-                        K_LEFT => Key::Left,
-                        K_RIGHT => Key::Right,
-                        K_UP => Key::Up,
-                        K_DOWN => Key::Down,
-                        K_TAB => Key::Tab,
-                        K_ESC => Key::Escape,
                         K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift(k.pressed),
+                        s if k.pressed => match s {
+                            K_BKSP => Key::Backspace,
+                            K_LEFT => Key::Left,
+                            K_RIGHT => Key::Right,
+                            K_UP => Key::Up,
+                            K_DOWN => Key::Down,
+                            K_TAB => Key::Tab,
+                            K_ESC => Key::Escape,
+                            _ => Key::Unknown(s),
+                        },
                         s => Key::Unknown(s),
                     })
                 }

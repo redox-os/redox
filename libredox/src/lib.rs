@@ -212,6 +212,11 @@
     #[cfg(not(std))]
     #[macro_use]
     pub mod console;
+    /// Graphics support
+    mod graphics {
+        pub mod bmp;
+        pub mod color;
+    }
     /// A module for window support
     pub mod orbital;
 
