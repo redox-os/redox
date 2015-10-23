@@ -57,7 +57,7 @@ pub struct StatusBar {
 impl StatusBar {
     pub fn new() -> Self {
         StatusBar {
-            mode: String::new(),
+            mode: "Normal".to_string(),
             file: String::new(),
             cmd: String::new(),
             msg: String::new(),
