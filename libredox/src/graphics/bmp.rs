@@ -1,6 +1,6 @@
 use string::*;
 use vec::Vec;
-
+use graphics::color::*;
 // TODO: Follow naming convention
 /// A bitmap
 pub struct BMPFile {
@@ -9,7 +9,8 @@ pub struct BMPFile {
     /// The bitmap height
     h: usize,
     /// The data of the bitmap
-    data: Vec<[u8; 4]>,
+    //data: Vec<[u8; 4]>,
+    data: Vec<Color>,
 }
 
 impl BMPFile {
@@ -103,9 +104,11 @@ impl BMPFile {
                     let blue = ((pixel_data & blue_mask) >> blue_shift) as u8;
                     let alpha = ((pixel_data & alpha_mask) >> alpha_shift) as u8;
                     if bytes == 3 {
-                        ret.data.push([red, green, blue, 255]);
+                        //ret.data.push([red, green, blue, 255]);
+						ret.data.push(Color::rgb(red,green,blue));
                     } else if bytes == 4 {
-                        ret.data.push([red, green, blue, alpha]);
+                        //ret.data.push([red, green, blue, alpha]);
+						ret.data.push(Color::rgba(red,green,blue,alpha));
                     }
                 }
             }
@@ -117,7 +120,7 @@ impl BMPFile {
     }
 
     /// Convert to slice for drawing
-    pub fn as_slice(&self) -> &[[u8; 4]] {
+    pub fn as_slice(&self) -> &[Color] {
         &self.data
     }
 

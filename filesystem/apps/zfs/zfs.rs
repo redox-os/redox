@@ -270,7 +270,7 @@ impl ZFS {
     }
 
     pub fn read_file(&mut self, uberblock: &Uberblock, path: &str) -> Option<String> {
-        let red = [127, 127, 255, 255];
+        let red = Color::rgba(255, 127, 127, 255);
         let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = self.read_type(&uberblock.rootbp).unwrap();
         let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
@@ -367,7 +367,7 @@ impl ZFS {
     }
 
     pub fn ls(&mut self, uberblock: &Uberblock, path: &str) -> Option<Vec<String>> {
-        let red = [127, 127, 255, 255];
+        let red = Color::rgba(255, 127, 127, 255);
         let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = self.read_type(&uberblock.rootbp).unwrap();
         let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
@@ -508,9 +508,9 @@ impl ZFS {
 pub fn main() {
     console_title("ZFS");
 
-    let red = [255, 127, 127, 255];
-    let green = [127, 255, 127, 255];
-    let blue = [127, 127, 255, 255];
+    let red = Color::rgba(255, 127, 127, 255);
+    let green = Color::rgba(127, 255, 127, 255);
+    let blue = Color::rgba(127, 127, 255, 255);
 
     println!("Type open zfs.img to open the image file");
 

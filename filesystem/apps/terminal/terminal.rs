@@ -7,6 +7,7 @@ use redox::io::*;
 use redox::console::*;
 use redox::env::*;
 use redox::to_num::*;
+use redox::{Color};
 
 /* Magic Macros { */
 static mut application: *mut Application = 0 as *mut Application;

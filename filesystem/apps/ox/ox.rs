@@ -3,9 +3,9 @@ use redox::*;
 pub fn main() {
     console_title("Ox");
 
-    let red = [255, 127, 127, 255];
-    let green = [127, 255, 127, 255];
-    let blue = [127, 127, 255, 255];
+    let red = Color::rgba(255, 127, 127, 255);
+    let green = Color::rgba(127, 255, 127, 255);
+    let blue = Color::rgba(127, 127, 255, 255);
 
     println!("Type help for a command list");
     while let Some(line) = readln!() {
