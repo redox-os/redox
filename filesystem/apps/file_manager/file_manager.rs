@@ -127,19 +127,36 @@ impl FileManager {
         }
     }
 
+    fn get_description(&self, file_name: &str) -> String {
+        if let Some(pos) = file_name.find('.') {
+            match self.file_types.get(&file_name[(pos + 1)..]) {
+                Some(file_type) => file_type.description.clone(),
+                None => self.file_types[""].description.clone(),
+            }
+        }
+        else { self.file_types["/"].description.clone() }
+    }
+
     fn draw_content(&mut self, window: &mut Window) {
         window.set([255, 255, 255, 255]);
 
         let mut i = 0;
         let mut row = 0;
-        let column1 = {
-            let mut tmp = 0;
+        let (column1, column2) = {
+            let mut tmp1 = 0;
             for string in self.files.iter() {
-                if tmp < string.len() {
-                    tmp = string.len();
+                if tmp1 < string.len() {
+                    tmp1 = string.len();
                 }
             }
-            tmp + 1
+
+            let mut tmp2 = 0;
+            for file_size in self.file_sizes.iter() {
+                if tmp2 < file_size.len() {
+                    tmp2 = file_size.len();
+                }
+            }
+            (tmp1 + 1, tmp1 + 1 + tmp2 + 1)
         };
         for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
             if i == self.selected {
@@ -174,6 +191,29 @@ impl FileManager {
             col = column1;
 
             for c in file_size.chars() {
+                if c == '\n' {
+                    col = 0;
+                    row += 1;
+                } else if c == '\t' {
+                    col += 8 - col % 8;
+                } else {
+                    if col < window.width() / 8 && row < window.height() / 32 {
+                        window.char(8 * col as isize + 40,
+                                    32 * row as isize + 8,
+                                    c,
+                                    [0, 0, 0, 255]);
+                        col += 1;
+                    }
+                }
+                if col >= window.width() / 8 {
+                    col = 0;
+                    row += 1;
+                }
+            }
+
+            col = column2;
+
+            for c in self.get_description(file_name).chars() {
                 if c == '\n' {
                     col = 0;
                     row += 1;
@@ -246,10 +286,11 @@ impl FileManager {
                 );
                 // Unwrapping the last file size will not panic since it has
                 // been at least pushed once in the vector
-                let current_width = (40 + (entry.len() + 1) * 8) +
-                                    (8 + (self.file_sizes.last().unwrap().len() + 1) * 8);
-                if width < current_width {
-                    width = current_width;
+                let tmp_width = (40 + (entry.len() + 1) * 8) +
+                                (8 + (self.file_sizes.last().unwrap().len() + 1) * 8) +
+                                (8 + (self.get_description(entry).len() + 1) * 8);
+                if width < tmp_width {
+                    width = tmp_width;
                 }
             }
 
