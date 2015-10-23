@@ -1,6 +1,6 @@
 use redox::Box;
 use redox::console::*;
-use redox::{io, rand, Color};
+use redox::{io, rand};
 use redox::ptr;
 use redox::slice::SliceConcatExt;
 use redox::string::*;
