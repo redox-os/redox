@@ -2,10 +2,10 @@ use redox::Box;
 use redox::cell::UnsafeCell;
 use redox::Color;
 use redox::console::ConsoleWindow;
+use redox::io::SeekFrom;
 use redox::rc::Rc;
 use redox::str;
 use redox::string::*;
-use redox::io::SeekFrom;
 
 pub struct Resource {
     console_window: Rc<UnsafeCell<Box<ConsoleWindow>>>,
