@@ -1,11 +1,11 @@
 use alloc::boxed::Box;
 
 use common::context::context_switch;
-use common::resource::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 use syscall::handle;
 
@@ -73,7 +73,7 @@ impl Resource for DebugResource {
 
 pub struct DebugScheme;
 
-impl SessionItem for DebugScheme {
+impl KScheme for DebugScheme {
     fn scheme(&self) -> String {
         return "debug".to_string();
     }

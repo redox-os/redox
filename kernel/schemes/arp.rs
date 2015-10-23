@@ -1,16 +1,16 @@
 use common::context::context_switch;
-use common::resource::URL;
+use schemes::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
 use network::arp::*;
 use network::common::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 pub struct ARPScheme;
 
-impl SessionItem for ARPScheme {
+impl KScheme for ARPScheme {
     fn scheme(&self) -> String {
         "arp".to_string()
     }

@@ -4,17 +4,14 @@ use core::ptr;
 use core::usize;
 
 use common::context::*;
-use common::debug::*;
-use common::resource::{Resource, ResourceSeek};
 use common::elf::*;
 use common::memory;
 use common::paging::Page;
-use common::resource::URL;
 use common::scheduler::{start_no_ints, end_no_ints};
 use common::string::*;
 use common::vec::Vec;
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 pub struct SchemeContext {
     interrupts: bool,
@@ -241,7 +238,9 @@ impl Drop for SchemeResource {
 }
 
 pub struct SchemeItem {
+    url: URL,
     scheme: String,
+    binary: URL,
     handle: usize,
     memory: ContextMemory,
     _start: usize,
@@ -257,12 +256,11 @@ pub struct SchemeItem {
 }
 
 impl SchemeItem {
-    pub fn from_url(scheme: &String, url: &URL) -> Box<SchemeItem> {
-        url.d();
-        dl();
-
+    pub fn from_url(url: &URL) -> Box<SchemeItem> {
         let mut scheme_item = box SchemeItem {
-            scheme: scheme.clone(),
+            url: url.clone(),
+            scheme: String::new(),
+            binary: URL::new(),
             handle: 0,
             memory: ContextMemory {
                 physical_address: 0,
@@ -281,7 +279,15 @@ impl SchemeItem {
             _close: 0,
         };
 
-        if let Some(mut resource) = url.open() {
+        let path_parts = url.path_parts();
+        if path_parts.len() > 0 {
+            if let Some(part) = path_parts.get(path_parts.len() - 1) {
+                scheme_item.scheme = part.clone();
+                scheme_item.binary = URL::from_string(&(url.to_string() + part + ".bin"));
+            }
+        }
+
+        if let Some(mut resource) = scheme_item.binary.open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
@@ -304,8 +310,6 @@ impl SchemeItem {
                     scheme_item._lseek = executable.symbol("_lseek");
                     scheme_item._fsync = executable.symbol("_fsync");
                     scheme_item._close = executable.symbol("_close");
-                }else{
-                    d("failed to load\n");
                 }
             }
         }
@@ -317,14 +321,7 @@ impl SchemeItem {
                 let fn_ptr: *const usize = &scheme_item._start;
                 scheme_item.handle = (*(fn_ptr as *const extern "C" fn() -> usize))();
                 context.exit();
-                d("started: ");
-                dh(scheme_item.handle);
-                dl();
             }
-        }else{
-            d("failed to start: ");
-            dh(scheme_item._start);
-            dl();
         }
 
         scheme_item
@@ -335,7 +332,7 @@ impl SchemeItem {
     }
 }
 
-impl SessionItem for SchemeItem {
+impl KScheme for SchemeItem {
     fn scheme(&self) -> String {
         return self.scheme.clone();
     }

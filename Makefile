@@ -121,11 +121,11 @@ help:
 all: $(BUILD)/harddrive.bin
 
 docs: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
-	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
+	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
 
-apps: apps/bohr apps/editor apps/file_manager apps/ox apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
+apps: apps/editor apps/file_manager apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
 
-schemes: schemes/console schemes/example schemes/reent schemes/tcp schemes/udp
+schemes: schemes/console schemes/example schemes/reent schemes/tcp schemes/udp schemes/zfs
 
 tests: tests/success tests/failure
 
@@ -209,6 +209,7 @@ filesystem/apps/zfs/zfs.img:
 	sudo losetup /dev/loop0 $@
 	-sudo zpool create redox_zfs /dev/loop0
 	-sudo mkdir /redox_zfs/home/
+	-sudo mkdir /redox_zfs/home/test/
 	-sudo cp LICENSE.md README.md /redox_zfs/home/
 	-sudo sync
 	-sleep 1

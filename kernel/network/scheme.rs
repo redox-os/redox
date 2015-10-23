@@ -5,7 +5,7 @@ use core::ops::DerefMut;
 use common::context::context_switch;
 use common::debug::*;
 use common::queue::*;
-use common::resource::*;
+use schemes::*;
 use common::scheduler;
 use common::vec::*;
 
