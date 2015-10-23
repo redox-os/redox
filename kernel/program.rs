@@ -7,6 +7,7 @@
 #![feature(convert)]
 #![feature(core_slice_ext)]
 #![feature(deque_extras)]
+#![feature(iter_arith)]
 #![feature(naked_attributes)]
 #![feature(no_std)]
 #![feature(slice_concat_ext)]
