@@ -334,10 +334,7 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8(&vec).split("\n".to_string()) {
             if folder.ends_with("/".to_string()) {
-                let scheme_item = SchemeItem::from_url(
-                    &folder.substr(0, folder.len() - 1),
-                    &URL::from_string(&("file:///schemes/".to_string() + &folder + &folder.substr(0, folder.len() - 1) + ".bin"))
-                );
+                let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
