@@ -1,6 +1,6 @@
 use collections::BTreeMap;
 
-use redox::{self, env, BMPFile};
+use redox::{self, cmp, env, BMPFile};
 use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::file::File;
 use redox::io::{Read, Seek, SeekFrom};
@@ -23,16 +23,6 @@ impl FileType {
 
 pub struct FileManager {
     file_types: BTreeMap<String, FileType>,
-    /*
-    folder_icon: BMPFile,
-    audio_icon: BMPFile,
-    bin_icon: BMPFile,
-    image_icon: BMPFile,
-    source_icon: BMPFile,
-    script_icon: BMPFile,
-    text_icon: BMPFile,
-    file_icon: BMPFile,
-    */
     files: Vec<String>,
     file_sizes: Vec<String>,
     selected: isize,
@@ -62,25 +52,27 @@ impl FileManager {
                 file_types.insert("bmp".to_string(),
                                   FileType::new("Bitmap Image", "image-x-generic"));
                 file_types.insert("rs".to_string(),
-                                  FileType::new("Rust source code", "image-x-makefile"));
+                                  FileType::new("Rust source code", "text-x-makefile"));
                 file_types.insert("crate".to_string(),
                                   FileType::new("Rust crate", "image-x-makefile"));
                 file_types.insert("asm".to_string(),
-                                  FileType::new("Assembly source", "image-x-makefile"));
+                                  FileType::new("Assembly source", "text-x-makefile"));
                 file_types.insert("list".to_string(),
-                                  FileType::new("Disassembly source", "image-x-makefile"));
+                                  FileType::new("Disassembly source", "text-x-makefile"));
                 file_types.insert("c".to_string(),
-                                  FileType::new("C source code", "image-x-makefile"));
+                                  FileType::new("C source code", "text-x-makefile"));
                 file_types.insert("cpp".to_string(),
-                                  FileType::new("C++ source code", "image-x-makefile"));
+                                  FileType::new("C++ source code", "text-x-makefile"));
                 file_types.insert("sh".to_string(),
-                                  FileType::new("Shell script", "image-x-script"));
+                                  FileType::new("Shell script", "text-x-script"));
                 file_types.insert("lua".to_string(),
-                                  FileType::new("Lua script", "image-x-script"));
+                                  FileType::new("Lua script", "text-x-script"));
                 file_types.insert("txt".to_string(),
                                   FileType::new("plain text document", "text-x-generic"));
                 file_types.insert("md".to_string(),
                                   FileType::new("Markdown", "text-x-generic"));
+                file_types.insert("REDOX".to_string(),
+                                  FileType::new("Redox package", "text-x-generic"));
                 file_types.insert(String::new(),
                                   FileType::new("Unknown file", "unknown"));
                 file_types
@@ -100,8 +92,15 @@ impl FileManager {
     }
 
     fn load_icon_with(&self, file_name: &str, row: isize, window: &mut Window) {
-        if let Some(pos) = file_name.find('.') {
-            match self.file_types.get(&file_name[(pos + 1)..]) {
+        if file_name.ends_with('/') {
+            window.image(0,
+                         32 * row as isize,
+                         self.file_types["/"].icon.width(),
+                         self.file_types["/"].icon.height(),
+                         self.file_types["/"].icon.as_slice());
+        } else {
+            let pos = file_name.rfind('.').unwrap_or(0) + 1;
+            match self.file_types.get(&file_name[pos..]) {
                 Some(file_type) => {
                     window.image(0,
                                  32 * row,
@@ -118,23 +117,18 @@ impl FileManager {
                 }
             }
         }
-        else if file_name.ends_with("/") {
-            window.image(0,
-                         32 * row as isize,
-                         self.file_types["/"].icon.width(),
-                         self.file_types["/"].icon.height(),
-                         self.file_types["/"].icon.as_slice());
-        }
     }
 
     fn get_description(&self, file_name: &str) -> String {
-        if let Some(pos) = file_name.find('.') {
-            match self.file_types.get(&file_name[(pos + 1)..]) {
+        if file_name.ends_with('/') {
+            self.file_types["/"].description.clone()
+        } else {
+            let pos = file_name.rfind('.').unwrap_or(0) + 1;
+            match self.file_types.get(&file_name[pos..]) {
                 Some(file_type) => file_type.description.clone(),
                 None => self.file_types[""].description.clone(),
             }
         }
-        else { self.file_types["/"].description.clone() }
     }
 
     fn draw_content(&mut self, window: &mut Window) {
@@ -242,7 +236,7 @@ impl FileManager {
     }
 
     fn main(&mut self, path: &str) {
-        let mut width = 160;
+        let mut width = [48, 48, 48];
         let mut height = 0;
         if let Some(mut file) = File::open(path) {
             let mut list = String::new();
@@ -286,12 +280,9 @@ impl FileManager {
                 );
                 // Unwrapping the last file size will not panic since it has
                 // been at least pushed once in the vector
-                let tmp_width = (40 + (entry.len() + 1) * 8) +
-                                (8 + (self.file_sizes.last().unwrap().len() + 1) * 8) +
-                                (8 + (self.get_description(entry).len() + 1) * 8);
-                if width < tmp_width {
-                    width = tmp_width;
-                }
+                width[0] = cmp::max(width[0], 48 + (entry.len()) * 8);
+                width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
+                width[2] = cmp::max(width[2], 8 + (self.get_description(entry).len()) * 8);
             }
 
             if height < self.files.len() * 32 {
@@ -301,7 +292,7 @@ impl FileManager {
 
         let mut window = Window::new((redox::rand() % 400 + 50) as isize,
                                      (redox::rand() % 300 + 50) as isize,
-                                     width,
+                                     width.iter().sum(),
                                      height,
                                      &path).unwrap();
 
