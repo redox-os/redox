@@ -17,8 +17,8 @@ impl Resource {
         }
     }
 
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
-        self.file.path(buf)
+    pub fn path(&self) -> Option<String> {
+        self.file.path()
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

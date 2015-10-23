@@ -1,25 +1,47 @@
-use core::mem;
+#[derive(Copy, Clone)]
+#[repr(packed)]
+pub struct ICMPHeader {
+    pub _type: u8,
+    pub code: u8,
+    pub checksum: Checksum,
+    pub data: [u8; 4],
+}
 
-use network::common::*;
-use network::icmp::*;
+pub struct ICMP {
+    pub header: ICMPHeader,
+    pub data: Vec<u8>,
+}
 
-use common::context::context_switch;
-use common::resource::URL;
-use common::string::{String, ToString};
-use common::vec::Vec;
-
-use programs::session::SessionItem;
-
-pub struct ICMPScheme;
-
-impl SessionItem for ICMPScheme {
-    fn scheme(&self) -> String {
-        "icmp".to_string()
+impl FromBytes for ICMP {
+    fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
+        if bytes.len() >= size_of::<ICMPHeader>() {
+            unsafe {
+                return Some(ICMP {
+                    header: *(bytes.as_ptr() as *const ICMPHeader),
+                    data: bytes.sub(size_of::<ICMPHeader>(),
+                                    bytes.len() - size_of::<ICMPHeader>()),
+                });
+            }
+        }
+        None
     }
 }
 
-impl ICMPScheme {
-    pub fn reply_loop() {
+impl ToBytes for ICMP {
+    fn to_bytes(&self) -> Vec<u8> {
+        unsafe {
+            let header_ptr: *const ICMPHeader = &self.header;
+            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ICMPHeader>());
+            ret.push_all(&self.data);
+            ret
+        }
+    }
+}
+
+pub struct Scheme;
+
+impl Scheme {
+    pub fn run(&mut self){
         while let Some(mut ip) = URL::from_str("ip:///1").open() {
             let mut bytes: Vec<u8> = Vec::new();
             match ip.read_to_end(&mut bytes) {

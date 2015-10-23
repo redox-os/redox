@@ -28,20 +28,8 @@ impl Resource {
         })
     }
 
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
-        let path = "console:".to_string() + &self.inner().window.title();
-
-        let mut i = 0;
-        for b in path.bytes() {
-            if i < buf.len() {
-                buf[i] = b;
-                i += 1;
-            } else {
-                break;
-            }
-        }
-
-        Some(i)
+    pub fn path(&self) -> Option<String> {
+        Some("console:".to_string() + &self.inner().window.title())
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

@@ -1,4 +1,6 @@
-use redox::{self, env, BMPFile, Color};
+use collections::BTreeMap;
+
+use redox::{self, cmp, env, BMPFile, Color};
 use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::file::File;
 use redox::io::{Read, Seek, SeekFrom};
@@ -7,15 +9,20 @@ use redox::time::{self, Duration};
 use redox::vec::Vec;
 use redox::string::{String, ToString};
 
+pub struct FileType {
+    description: String,
+    icon: BMPFile,
+}
+
+impl FileType {
+    pub fn new(desc: &str, icon: &str) -> FileType {
+        FileType { description: desc.to_string(), icon: load_icon(icon) }
+    }
+
+}
+
 pub struct FileManager {
-    folder_icon: BMPFile,
-    audio_icon: BMPFile,
-    bin_icon: BMPFile,
-    image_icon: BMPFile,
-    source_icon: BMPFile,
-    script_icon: BMPFile,
-    text_icon: BMPFile,
-    file_icon: BMPFile,
+    file_types: BTreeMap<String, FileType>,
     files: Vec<String>,
     file_sizes: Vec<String>,
     selected: isize,
@@ -34,14 +41,42 @@ fn load_icon(path: &str) -> BMPFile {
 impl FileManager {
     pub fn new() -> Self {
         FileManager {
-            folder_icon: load_icon("inode-directory"),
-            audio_icon: load_icon("audio-x-wav"),
-            bin_icon: load_icon("application-x-executable"),
-            image_icon: load_icon("image-x-generic"),
-            source_icon: load_icon("text-x-makefile"),
-            script_icon: load_icon("text-x-script"),
-            text_icon: load_icon("text-x-generic"),
-            file_icon: load_icon("unknown"),
+            file_types: {
+                let mut file_types = BTreeMap::<String, FileType>::new();
+                file_types.insert("/".to_string(),
+                                  FileType::new("Folder", "inode-directory"));
+                file_types.insert("wav".to_string(),
+                                  FileType::new("WAV audio", "audio-x-wav"));
+                file_types.insert("bin".to_string(),
+                                  FileType::new("Executable", "application-x-executable"));
+                file_types.insert("bmp".to_string(),
+                                  FileType::new("Bitmap Image", "image-x-generic"));
+                file_types.insert("rs".to_string(),
+                                  FileType::new("Rust source code", "text-x-makefile"));
+                file_types.insert("crate".to_string(),
+                                  FileType::new("Rust crate", "image-x-makefile"));
+                file_types.insert("asm".to_string(),
+                                  FileType::new("Assembly source", "text-x-makefile"));
+                file_types.insert("list".to_string(),
+                                  FileType::new("Disassembly source", "text-x-makefile"));
+                file_types.insert("c".to_string(),
+                                  FileType::new("C source code", "text-x-makefile"));
+                file_types.insert("cpp".to_string(),
+                                  FileType::new("C++ source code", "text-x-makefile"));
+                file_types.insert("sh".to_string(),
+                                  FileType::new("Shell script", "text-x-script"));
+                file_types.insert("lua".to_string(),
+                                  FileType::new("Lua script", "text-x-script"));
+                file_types.insert("txt".to_string(),
+                                  FileType::new("plain text document", "text-x-generic"));
+                file_types.insert("md".to_string(),
+                                  FileType::new("Markdown", "text-x-generic"));
+                file_types.insert("REDOX".to_string(),
+                                  FileType::new("Redox package", "text-x-generic"));
+                file_types.insert(String::new(),
+                                  FileType::new("Unknown file", "unknown"));
+                file_types
+            },
             files: Vec::new(),
             file_sizes: Vec::new(),
             selected: -1,
@@ -56,19 +91,66 @@ impl FileManager {
         }
     }
 
+    fn load_icon_with(&self, file_name: &str, row: isize, window: &mut Window) {
+        if file_name.ends_with('/') {
+            window.image(0,
+                         32 * row as isize,
+                         self.file_types["/"].icon.width(),
+                         self.file_types["/"].icon.height(),
+                         self.file_types["/"].icon.as_slice());
+        } else {
+            let pos = file_name.rfind('.').unwrap_or(0) + 1;
+            match self.file_types.get(&file_name[pos..]) {
+                Some(file_type) => {
+                    window.image(0,
+                                 32 * row,
+                                 file_type.icon.width(),
+                                 file_type.icon.height(),
+                                 file_type.icon.as_slice());
+                }
+                None => {
+                    window.image(0,
+                                 32 * row,
+                                 self.file_types[""].icon.width(),
+                                 self.file_types[""].icon.height(),
+                                 self.file_types[""].icon.as_slice());
+                }
+            }
+        }
+    }
+
+    fn get_description(&self, file_name: &str) -> String {
+        if file_name.ends_with('/') {
+            self.file_types["/"].description.clone()
+        } else {
+            let pos = file_name.rfind('.').unwrap_or(0) + 1;
+            match self.file_types.get(&file_name[pos..]) {
+                Some(file_type) => file_type.description.clone(),
+                None => self.file_types[""].description.clone(),
+            }
+        }
+    }
+
     fn draw_content(&mut self, window: &mut Window) {
         window.set(Color::WHITE);
 
         let mut i = 0;
         let mut row = 0;
-        let column1 = {
-            let mut tmp = 0;
+        let (column1, column2) = {
+            let mut tmp1 = 0;
             for string in self.files.iter() {
-                if tmp < string.len() {
-                    tmp = string.len();
+                if tmp1 < string.len() {
+                    tmp1 = string.len();
                 }
             }
-            tmp + 1
+
+            let mut tmp2 = 0;
+            for file_size in self.file_sizes.iter() {
+                if tmp2 < file_size.len() {
+                    tmp2 = file_size.len();
+                }
+            }
+            (tmp1 + 1, tmp1 + 1 + tmp2 + 1)
         };
         for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
             if i == self.selected {
@@ -76,55 +158,7 @@ impl FileManager {
                 window.rect(0, 32 * row as isize, width, 32, Color::rgba(224, 224, 224, 255));
             }
 
-            if file_name.ends_with('/') {
-                window.image(0,
-                             32 * row as isize,
-                             self.folder_icon.width(),
-                             self.folder_icon.height(),
-                             self.folder_icon.as_slice());
-            } else if file_name.ends_with(".wav") {
-                window.image(0,
-                             32 * row as isize,
-                             self.audio_icon.width(),
-                             self.audio_icon.height(),
-                             self.audio_icon.as_slice());
-            } else if file_name.ends_with(".bin") {
-                window.image(0,
-                             32 * row as isize,
-                             self.bin_icon.width(),
-                             self.bin_icon.height(),
-                             self.bin_icon.as_slice());
-            } else if file_name.ends_with(".bmp") {
-                window.image(0,
-                             32 * row as isize,
-                             self.image_icon.width(),
-                             self.image_icon.height(),
-                             self.image_icon.as_slice());
-            } else if file_name.ends_with(".rs") || file_name.ends_with(".asm") || file_name.ends_with(".list") {
-                window.image(0,
-                             32 * row as isize,
-                             self.source_icon.width(),
-                             self.source_icon.height(),
-                             self.source_icon.as_slice());
-            } else if file_name.ends_with(".sh") || file_name.ends_with(".lua") {
-                window.image(0,
-                             32 * row as isize,
-                             self.script_icon.width(),
-                             self.script_icon.height(),
-                             self.script_icon.as_slice());
-            } else if file_name.ends_with(".md") || file_name.ends_with(".txt") {
-                window.image(0,
-                             32 * row as isize,
-                             self.text_icon.width(),
-                             self.text_icon.height(),
-                             self.text_icon.as_slice());
-            } else {
-                window.image(0,
-                             32 * row as isize,
-                             self.file_icon.width(),
-                             self.file_icon.height(),
-                             self.file_icon.as_slice());
-            }
+            self.load_icon_with(&file_name, row as isize, window);
 
             let mut col = 0;
             for c in file_name.chars() {
@@ -171,6 +205,29 @@ impl FileManager {
                 }
             }
 
+            col = column2;
+
+            for c in self.get_description(file_name).chars() {
+                if c == '\n' {
+                    col = 0;
+                    row += 1;
+                } else if c == '\t' {
+                    col += 8 - col % 8;
+                } else {
+                    if col < window.width() / 8 && row < window.height() / 32 {
+                        window.char(8 * col as isize + 40,
+                                    32 * row as isize + 8,
+                                    c,
+                                    Color::BLACK);
+                        col += 1;
+                    }
+                }
+                if col >= window.width() / 8 {
+                    col = 0;
+                    row += 1;
+                }
+            }
+
             row += 1;
             i += 1;
         }
@@ -179,7 +236,7 @@ impl FileManager {
     }
 
     fn main(&mut self, path: &str) {
-        let mut width = 160;
+        let mut width = [48, 48, 48];
         let mut height = 0;
         if let Some(mut file) = File::open(path) {
             let mut list = String::new();
@@ -223,11 +280,9 @@ impl FileManager {
                 );
                 // Unwrapping the last file size will not panic since it has
                 // been at least pushed once in the vector
-                let current_width = (40 + (entry.len() + 1) * 8) +
-                                    (8 + (self.file_sizes.last().unwrap().len() + 1) * 8);
-                if width < current_width {
-                    width = current_width;
-                }
+                width[0] = cmp::max(width[0], 48 + (entry.len()) * 8);
+                width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
+                width[2] = cmp::max(width[2], 8 + (self.get_description(entry).len()) * 8);
             }
 
             if height < self.files.len() * 32 {
@@ -237,7 +292,7 @@ impl FileManager {
 
         let mut window = Window::new((redox::rand() % 400 + 50) as isize,
                                      (redox::rand() % 300 + 50) as isize,
-                                     width,
+                                     width.iter().sum(),
                                      height,
                                      &path).unwrap();
 

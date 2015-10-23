@@ -4,14 +4,14 @@ use core::{cmp, ptr, mem};
 
 use common::debug;
 use common::memory;
-use common::resource::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::time::{self, Duration};
 
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 #[repr(packed)]
 struct BD {
@@ -180,7 +180,7 @@ pub struct AC97 {
     pub irq: u8,
 }
 
-impl SessionItem for AC97 {
+impl KScheme for AC97 {
     fn scheme(&self) -> String {
         "audio".to_string()
     }

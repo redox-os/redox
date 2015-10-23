@@ -5,7 +5,7 @@ use core::ptr;
 
 use common::memory;
 use common::paging::*;
-use common::resource::*;
+use schemes::{Resource};
 use common::scheduler;
 use common::string::*;
 use common::vec::*;
@@ -332,6 +332,7 @@ impl Context {
     //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
+    //#[naked]
     #[cfg(target_arch = "x86")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfd
@@ -371,6 +372,7 @@ impl Context {
     //It should have no extra pushes or pops
     #[cold]
     #[inline(never)]
+    //#[naked]
     #[cfg(target_arch = "x86_64")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfq

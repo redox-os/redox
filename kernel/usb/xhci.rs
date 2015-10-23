@@ -2,7 +2,7 @@ use drivers::pciconfig::*;
 
 use common::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 #[repr(packed)]
 struct STE {
@@ -42,7 +42,7 @@ pub struct XHCI {
     pub irq: u8,
 }
 
-impl SessionItem for XHCI {
+impl KScheme for XHCI {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             debug::d("XHCI handle\n");

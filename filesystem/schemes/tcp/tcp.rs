@@ -2,7 +2,6 @@ use alloc::boxed::Box;
 
 use core::mem;
 use core::slice;
-use core::str;
 
 use redox::fs::file::File;
 use redox::io::{Read, Write, SeekFrom};
@@ -93,17 +92,8 @@ impl Resource {
         }
     }
 
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
-        let str = format!("tcp://{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port as usize);
-        let bytes = str.as_bytes();
-
-        let mut i = 0;
-        while i < buf.len() && i < str.len() {
-            buf[i] = bytes[i];
-            i += 1;
-        }
-
-        Some(i)
+    pub fn path(&self) -> Option<String> {
+        Some(format!("tcp://{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port as usize))
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -484,9 +474,8 @@ impl Scheme {
                     Some(_) => {
                         if let Some(segment) = TCP::from_bytes(bytes) {
                             if segment.header.dst.get() == host_port && (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_SYN {
-                                let mut url_bytes: [u8; 4096] = [0; 4096];
-                                if let Some(count) = ip.path(&mut url_bytes) {
-                                    let url = URL::from_str(& unsafe { str::from_utf8_unchecked(&url_bytes[0..count]) });
+                                if let Some(path) = ip.path() {
+                                    let url = URL::from_string(&path);
 
                                     let peer_addr = IPv4Addr::from_string(&url.host());
 

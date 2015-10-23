@@ -13,14 +13,14 @@ use common::time::{self, Duration};
 use drivers::pciconfig::*;
 use drivers::pio::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 pub struct UHCI {
     pub base: usize,
     pub irq: u8,
 }
 
-impl SessionItem for UHCI {
+impl KScheme for UHCI {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("UHCI IRQ\n");
