@@ -3,8 +3,8 @@ use alloc::boxed::Box;
 use core::{ptr, slice, usize};
 
 use common::context::*;
-use common::debug::*;
-use common::memory::*;
+use common::debug;
+use common::memory;
 use common::scheduler;
 use common::string::{String, ToString};
 use common::time::Duration;
@@ -14,10 +14,10 @@ use drivers::pio::*;
 
 use programs::executor::execute;
 
-use graphics::color::*;
-use graphics::size::*;
+use graphics::color::Color;
+use graphics::size::Size;
 
-use schemes::*;
+use schemes::{Resource, ResourceSeek, URL};
 
 use syscall::common::*;
 
@@ -441,29 +441,29 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
                     //Get current break
                 } else if addr >= entry.virtual_address {
                     let request_size = addr - entry.virtual_address;
-                    let new_address = realloc(entry.physical_address, request_size);
+                    let new_address = memory::realloc(entry.physical_address, request_size);
                     if new_address > 0 {
                         ret = addr;
 
-                        let new_size = alloc_size(new_address);
+                        let new_size = memory::alloc_size(new_address);
                         entry.physical_address = new_address;
                         entry.virtual_size = new_size;
                     } else {
-                        d("BRK: Realloc Failed\n");
+                        debug::d("BRK: Realloc Failed\n");
                     }
                 } else {
-                    d("BRK: Address not in correct space\n");
+                    debug::d("BRK: Address not in correct space\n");
                 }
             } else {
-                d("BRK: Memory not found\n");
+                debug::d("BRK: Memory not found\n");
             }
 
             current.map();
         } else {
-            d("BRK: Context not found\n");
+            debug::d("BRK: Context not found\n");
         }
     } else {
-        d("BRK: Contexts disabled\n");
+        debug::d("BRK: Contexts disabled\n");
     }
 
     scheduler::end_no_ints(reenable);
@@ -472,19 +472,19 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 }
 
 pub unsafe fn do_sys_alloc(size: usize) -> usize {
-    alloc(size)
+    memory::alloc(size)
 }
 
 pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
-    realloc(ptr, size)
+    memory::realloc(ptr, size)
 }
 
 pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
-    realloc_inplace(ptr, size)
+    memory::realloc_inplace(ptr, size)
 }
 
 pub unsafe fn do_sys_unalloc(ptr: usize) {
-    unalloc(ptr)
+    memory::unalloc(ptr)
 }
 
 pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize) -> usize {
@@ -525,15 +525,15 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
             scheduler::end_no_ints(reenable);
         }
         _ => {
-            d("Unknown Syscall: ");
-            dd(eax as usize);
-            d(", ");
-            dh(ebx as usize);
-            d(", ");
-            dh(ecx as usize);
-            d(", ");
-            dh(edx as usize);
-            dl();
+            debug::d("Unknown Syscall: ");
+            debug::dd(eax as usize);
+            debug::d(", ");
+            debug::dh(ebx as usize);
+            debug::d(", ");
+            debug::dh(ecx as usize);
+            debug::d(", ");
+            debug::dh(edx as usize);
+            debug::dl();
         }
     }
 

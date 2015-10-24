@@ -8,7 +8,7 @@ use schemes::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::time::{self, Duration};
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 use drivers::pio::*;
 
 use schemes::KScheme;
