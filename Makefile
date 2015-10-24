@@ -8,7 +8,7 @@ RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead-code -A deprecated \
+	-A dead_code -A deprecated \
 	-L $(BUILD)
 AS=nasm
 AWK=awk
