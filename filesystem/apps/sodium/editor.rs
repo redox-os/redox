@@ -3,7 +3,7 @@ use redox::*;
 
 #[derive(Copy, Clone)]
 /// An instruction
-pub struct Inst(pub u16, pub Key);
+pub struct Inst(pub usize, pub Key);
 
 /// The state of the editor
 pub struct Editor {

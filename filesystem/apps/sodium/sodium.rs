@@ -25,6 +25,9 @@ pub use self::mode::*;
 mod movement;
 pub use self::movement::*;
 
+mod motion;
+pub use self::motion::*;
+
 mod cursor;
 pub use self::cursor::*;
 
