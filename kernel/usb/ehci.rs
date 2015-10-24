@@ -2,7 +2,7 @@ use core::ptr::{read, write};
 
 use common::debug;
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
 use schemes::KScheme;
 

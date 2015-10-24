@@ -1,12 +1,12 @@
 use core::slice;
 
-use common::string::*;
-use common::vec::*;
+use common::string::String;
+use common::vec::Vec;
 
-use graphics::color::*;
-use graphics::display::*;
-use graphics::point::*;
-use graphics::size::*;
+use super::color::Color;
+use super::display::Display;
+use super::point::Point;
+use super::size::Size;
 
 // TODO: Follow naming convention
 /// A bitmap

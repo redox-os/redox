@@ -1,15 +1,8 @@
-use core::clone::Clone;
-use core::cmp::PartialEq;
-use core::iter::Iterator;
 use core::ops::{Add, Index};
-use core::option::Option;
 use core::ptr;
-use core::slice::SliceExt;
-use core::str::StrExt;
 
-use common::debug::*;
-use common::memory::*;
-use common::vec::*;
+use common::{debug, memory};
+use common::vec::Vec;
 
 /// A trait for types that can be converted to `String`
 pub trait ToString {
@@ -332,21 +325,21 @@ impl String {
                 vec.push(0b10000000 | ((u >> 6) as u8 & 0b00111111));
                 vec.push(0b10000000 | (u as u8 & 0b00111111));
             } else {
-                d("Unhandled to_utf8 code ");
-                dh(u);
-                dl();
+                debug::d("Unhandled to_utf8 code ");
+                debug::dh(u);
+                debug::dl();
                 unsafe {
-                    dh(self.vec.as_ptr() as usize);
+                    debug::dh(self.vec.as_ptr() as usize);
                 }
-                d(" ");
-                dd(self.vec.len());
-                d(" to ");
+                debug::d(" ");
+                debug::dd(self.vec.len());
+                debug::d(" to ");
                 unsafe {
-                    dh(vec.as_ptr() as usize);
+                    debug::dh(vec.as_ptr() as usize);
                 }
-                d(" ");
-                dd(vec.len());
-                dl();
+                debug::d(" ");
+                debug::dd(vec.len());
+                debug::dl();
                 break;
             }
         }
@@ -358,7 +351,7 @@ impl String {
     pub unsafe fn to_c_str(&self) -> *const u8 {
         let length = self.len() + 1;
 
-        let data = alloc(length) as *mut u8;
+        let data = memory::alloc(length) as *mut u8;
 
         for i in 0..self.len() {
             ptr::write(data.offset(i as isize), self[i] as u8);
@@ -420,7 +413,7 @@ impl String {
     /// Debug
     pub fn d(&self) {
         for c in self.chars() {
-            dc(c);
+            debug::dc(c);
         }
     }
 }

@@ -20,18 +20,14 @@ extern crate collections;
 #[macro_use]
 extern crate redox;
 
-use scheme::Resource;
-use scheme::Scheme;
+use scheme::{Resource, Scheme};
 
 #[path="SCHEME_PATH"]
 mod scheme;
 
 use redox::Box;
 use redox::io::{Read, Write, Seek, SeekFrom};
-use redox::ptr;
-use redox::slice;
-use redox::str;
-use redox::usize;
+use redox::{ptr, slice, str, usize};
 
 #[cold]
 #[inline(never)]

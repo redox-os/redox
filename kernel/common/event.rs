@@ -1,5 +1,4 @@
-use core::char;
-use core::cmp::{min, max};
+use core::{char, cmp};
 
 use common::scheduler;
 
@@ -56,12 +55,12 @@ impl Event {
             let reenable = scheduler::start_no_ints();
 
             if event.code == 'm' {
-                event.a = max(0,
-                              min((*::session_ptr).display.width as isize - 1,
-                                  (*::session_ptr).mouse_point.x + event.a));
-                event.b = max(0,
-                              min((*::session_ptr).display.height as isize - 1,
-                                  (*::session_ptr).mouse_point.y + event.b));
+                event.a = cmp::max(0,
+                                   cmp::min((*::session_ptr).display.width as isize - 1,
+                                            (*::session_ptr).mouse_point.x + event.a));
+                event.b = cmp::max(0,
+                                   cmp::min((*::session_ptr).display.height as isize - 1,
+                                            (*::session_ptr).mouse_point.y + event.b));
                 (*::session_ptr).mouse_point.x = event.a;
                 (*::session_ptr).mouse_point.y = event.b;
                 (*::session_ptr).redraw = true;

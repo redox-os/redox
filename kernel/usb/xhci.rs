@@ -1,6 +1,6 @@
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
-use common::*;
+use common::debug;
 
 use schemes::KScheme;
 

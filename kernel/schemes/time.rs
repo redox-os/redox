@@ -1,11 +1,9 @@
 use alloc::boxed::Box;
 
-use schemes::{Resource, URL, VecResource};
 use common::string::{String, ToString};
-
 use common::scheduler;
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 /// A time scheme
 pub struct TimeScheme;

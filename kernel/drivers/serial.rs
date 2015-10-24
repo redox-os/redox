@@ -1,4 +1,4 @@
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
 use common::event;
 

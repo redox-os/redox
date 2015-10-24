@@ -1,5 +1,4 @@
-use core::ops::Add;
-use core::ops::Sub;
+use core::ops::{Add, Sub};
 
 /// A point
 #[derive(Copy, Clone)]

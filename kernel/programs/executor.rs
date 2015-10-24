@@ -1,12 +1,13 @@
 use core::ptr;
 
-use common::context::*;
-use common::elf::*;
+use common::context::{self, Context, ContextFile, ContextMemory};
+use common::elf::{self, ELF};
 use common::memory;
-use schemes::URL;
 use common::scheduler;
 use common::string::String;
 use common::vec::Vec;
+
+use schemes::URL;
 
 pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
     unsafe {
@@ -22,9 +23,9 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             let executable = ELF::from_data(vec.as_ptr() as usize);
 
             if executable.data > 0 {
-                virtual_size = memory::alloc_size(executable.data) - ELF_OFFSET;
+                virtual_size = memory::alloc_size(executable.data) - elf::ELF_OFFSET;
                 physical_address = memory::alloc(virtual_size);
-                ptr::copy((executable.data + ELF_OFFSET) as *const u8,
+                ptr::copy((executable.data + elf::ELF_OFFSET) as *const u8,
                           physical_address as *mut u8,
                           virtual_size);
                 entry = executable.entry();
@@ -79,8 +80,8 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             }
 
             let reenable = scheduler::start_no_ints();
-            if contexts_ptr as usize > 0 {
-                (*contexts_ptr).push(context);
+            if context::contexts_ptr as usize > 0 {
+                (*context::contexts_ptr).push(context);
             }
             scheduler::end_no_ints(reenable);
         } else if physical_address > 0 {

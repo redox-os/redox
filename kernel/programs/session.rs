@@ -10,7 +10,7 @@ use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use graphics::bmp::*;
+use graphics::bmp::BMPFile;
 use graphics::color::Color;
 use graphics::display::Display;
 use graphics::point::Point;

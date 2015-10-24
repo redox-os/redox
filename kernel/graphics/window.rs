@@ -1,18 +1,16 @@
-extern crate alloc;
-
-use self::alloc::boxed::*;
+use alloc::boxed::Box;
 
 use core::ops::DerefMut;
 
-use common::event::*;
-use common::queue::*;
+use common::event::{Event, KeyEvent, MouseEvent};
+use common::queue::Queue;
 use common::scheduler;
-use common::string::*;
+use common::string::String;
 
-use super::color::*;
-use super::display::*;
-use super::point::*;
-use super::size::*;
+use super::color::Color;
+use super::display::Display;
+use super::point::Point;
+use super::size::Size;
 
 /// A window
 pub struct Window {

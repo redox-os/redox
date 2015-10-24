@@ -1,5 +1,5 @@
-use core::cmp::*;
-use core::ops::*;
+use core::cmp::Ordering;
+use core::ops::{Add, Sub};
 
 use common::context::context_switch;
 use common::scheduler;

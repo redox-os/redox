@@ -1,14 +1,13 @@
 use alloc::boxed::Box;
 
-use core::ptr;
-use core::usize;
+use core::{ptr, usize};
 
-use common::context::*;
-use common::elf::*;
+use common::context::ContextMemory;
+use common::elf::{self, ELF};
 use common::memory;
 use common::paging::Page;
 use common::scheduler::{start_no_ints, end_no_ints};
-use common::string::*;
+use common::string::String;
 use common::vec::Vec;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
@@ -294,9 +293,9 @@ impl SchemeItem {
             unsafe {
                 let executable = ELF::from_data(vec.as_ptr() as usize);
                 if executable.data > 0 {
-                    scheme_item.memory.virtual_size = memory::alloc_size(executable.data) - ELF_OFFSET;
+                    scheme_item.memory.virtual_size = memory::alloc_size(executable.data) - elf::ELF_OFFSET;
                     scheme_item.memory.physical_address = memory::alloc(scheme_item.memory.virtual_size);
-                    ptr::copy((executable.data + ELF_OFFSET) as *const u8,
+                    ptr::copy((executable.data + elf::ELF_OFFSET) as *const u8,
                               scheme_item.memory.physical_address as *mut u8,
                               scheme_item.memory.virtual_size);
 
