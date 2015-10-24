@@ -1,6 +1,6 @@
 use collections::BTreeMap;
 
-use redox::{self, cmp, env, BMPFile};
+use redox::{self, cmp, env, BMPFile, Color};
 use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::file::File;
 use redox::io::{Read, Seek, SeekFrom};
@@ -132,7 +132,7 @@ impl FileManager {
     }
 
     fn draw_content(&mut self, window: &mut Window) {
-        window.set([255, 255, 255, 255]);
+        window.set(Color::WHITE);
 
         let mut i = 0;
         let mut row = 0;
@@ -155,7 +155,7 @@ impl FileManager {
         for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
             if i == self.selected {
                 let width = window.width();
-                window.rect(0, 32 * row as isize, width, 32, [224, 224, 224, 255]);
+                window.rect(0, 32 * row as isize, width, 32, Color::rgba(224, 224, 224, 255));
             }
 
             self.load_icon_with(&file_name, row as isize, window);
@@ -172,7 +172,7 @@ impl FileManager {
                         window.char(8 * col as isize + 40,
                                     32 * row as isize + 8,
                                     c,
-                                    [0, 0, 0, 255]);
+                                    Color::BLACK);
                         col += 1;
                     }
                 }
@@ -195,7 +195,7 @@ impl FileManager {
                         window.char(8 * col as isize + 40,
                                     32 * row as isize + 8,
                                     c,
-                                    [0, 0, 0, 255]);
+                                    Color::BLACK);
                         col += 1;
                     }
                 }
@@ -218,7 +218,7 @@ impl FileManager {
                         window.char(8 * col as isize + 40,
                                     32 * row as isize + 8,
                                     c,
-                                    [0, 0, 0, 255]);
+                                    Color::BLACK);
                         col += 1;
                     }
                 }

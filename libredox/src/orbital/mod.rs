@@ -8,7 +8,7 @@ use string::*;
 use vec::Vec;
 
 use event::*;
-
+use graphics::color::Color;
 use fs::file::*;
 use io::*;
 
@@ -31,7 +31,7 @@ pub struct Window {
     /// Font file
     font: Vec<u8>,
     /// Window data
-    data: Vec<u8>,
+    data: Vec<u32>,
 }
 
 impl Window {
@@ -90,19 +90,15 @@ impl Window {
     }
 
     /// Draw a pixel
-    pub fn pixel(&mut self, x: isize, y: isize, color: [u8; 4]) {
+    pub fn pixel(&mut self, x: isize, y: isize, color: Color) {
         if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
-            let offset = (y as usize * self.w + x as usize) * 4;
-            //TODO: Alpha
-            self.data[offset + 0] = color[0];
-            self.data[offset + 1] = color[1];
-            self.data[offset + 2] = color[2];
-            self.data[offset + 3] = color[3];
+            let offset = (y as usize * self.w + x as usize); 
+			self.data[offset] = color.data;
         }
     }
 
     /// Draw a character, using the loaded font
-    pub fn char(&mut self, x: isize, y: isize, c: char, color: [u8; 4]) {
+    pub fn char(&mut self, x: isize, y: isize, c: char, color: Color) {
         let mut offset = (c as usize) * 16;
         for row in 0..16 {
             let row_data;
@@ -118,7 +114,6 @@ impl Window {
                     self.pixel(x + col as isize, y + row as isize, color);
                 }
             }
-
             offset += 1;
         }
     }
@@ -128,7 +123,7 @@ impl Window {
     /// Set entire window to a color
     // TODO: Improve speed
     #[allow(unused_variables)]
-    pub fn set(&mut self, color: [u8; 4]) {
+    pub fn set(&mut self, color: Color) {
         let w = self.w;
         let h = self.h;
         self.rect(0, 0, w, h, color);
@@ -137,7 +132,7 @@ impl Window {
     /// Draw rectangle
     // TODO: Improve speed
     #[allow(unused_variables)]
-    pub fn rect(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, color: [u8; 4]) {
+    pub fn rect(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, color: Color) {
         for y in start_y..start_y + h as isize {
             for x in start_x..start_x + w as isize {
                 self.pixel(x, y, color);
@@ -147,7 +142,7 @@ impl Window {
 
     /// Display an image
     //TODO: Improve speed
-    pub fn image(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, data: &[[u8; 4]]) {
+    pub fn image(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, data: &[Color]) {
         let mut i = 0;
         for y in start_y..start_y + h as isize {
             for x in start_x..start_x + w as isize {
@@ -175,7 +170,8 @@ impl Window {
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.seek(SeekFrom::Start(0));
-        self.file.write(&self.data);
+		let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
+        self.file.write(to_write);
         return self.file.sync();
     }
 

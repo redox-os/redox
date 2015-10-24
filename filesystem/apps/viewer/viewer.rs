@@ -21,7 +21,7 @@ pub fn main() {
                                  max(320, bmp.width()),
                                  bmp.height(),
                                  &("Viewer (".to_string() + &url + ")")).unwrap();
-    window.set([0, 0, 0, 255]);
+    window.set(Color::BLACK);
     window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
     window.sync();
 

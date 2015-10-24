@@ -10,6 +10,7 @@
 #![feature(allocator)]
 #![feature(allow_internal_unstable)]
 #![feature(asm)]
+#![feature(associated_consts)]
 #![feature(box_syntax)]
 #![feature(collections)]
 #![feature(core)]
@@ -185,6 +186,7 @@
     #[cfg(not(std))]
     pub use console::*;
     pub use graphics::bmp::*;
+    pub use graphics::color::*;
     pub use orbital::*;
     pub use orbital::event::*;
     pub use url::*;
@@ -213,6 +215,7 @@
     /// Graphics support
     mod graphics {
         pub mod bmp;
+        pub mod color;
     }
     /// A module for window support
     pub mod orbital;

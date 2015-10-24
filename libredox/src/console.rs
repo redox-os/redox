@@ -6,6 +6,7 @@ use vec::Vec;
 use event::*;
 
 use orbital::*;
+use graphics::color::Color;
 
 use rand_old::*;
 
@@ -49,7 +50,7 @@ pub fn console_title(title: &str) {
 #[macro_export]
 macro_rules! print {
     ($($arg:tt)*) => ({
-        console_window().print(&format!($($arg)*), [224, 224, 224, 255]);
+        console_window().print(&format!($($arg)*), $crate::Color::rgba(224, 224, 224, 255));
         console_window().sync();
     });
 }
@@ -92,7 +93,7 @@ pub struct ConsoleChar {
     /// The char
     character: char,
     /// The color
-    color: [u8; 4],
+    color: Color,
 }
 
 /// A console window
@@ -143,7 +144,7 @@ impl ConsoleWindow {
     }
 
     /// Print to the window
-    pub fn print(&mut self, string: &str, color: [u8; 4]) {
+    pub fn print(&mut self, string: &str, color: Color) {
         for c in string.chars() {
             self.output.push(ConsoleChar {
                 character: c,
@@ -223,7 +224,7 @@ impl ConsoleWindow {
         let rows = self.window.height() as isize / 16;
 
         {
-            self.window.set([0, 0, 0, 255]);
+            self.window.set(Color::BLACK);
 
             for c in self.output.iter() {
                 if self.wrap && col >= cols {
@@ -250,7 +251,7 @@ impl ConsoleWindow {
             }
 
             if col >= 0 && col < cols && row >= 0 && row < rows {
-                self.window.char(8 * col, 16 * row, '#', [255, 255, 255, 255]);
+                self.window.char(8 * col, 16 * row, '#', Color::WHITE);
                 col += 2;
             }
 
@@ -262,7 +263,7 @@ impl ConsoleWindow {
                 }
 
                 if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows {
-                    self.window.char(8 * col, 16 * row, '_', [255, 255, 255, 255]);
+                    self.window.char(8 * col, 16 * row, '_', Color::WHITE);
                 }
 
                 if c == '\n' {
@@ -272,7 +273,7 @@ impl ConsoleWindow {
                     col += 8 - col % 8;
                 } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        self.window.char(8 * col, 16 * row, c, [255, 255, 255, 255]);
+                        self.window.char(8 * col, 16 * row, c, Color::WHITE);
                     }
                     col += 1;
                 }
@@ -286,7 +287,7 @@ impl ConsoleWindow {
             }
 
             if self.offset == i && col >= 0 && col < cols && row >= 0 && row < rows {
-                self.window.char(8 * col, 16 * row, '_', [255, 255, 255, 255]);
+                self.window.char(8 * col, 16 * row, '_', Color::WHITE);
             }
         }
 
