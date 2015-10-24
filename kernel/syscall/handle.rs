@@ -1,16 +1,14 @@
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
-use core::ptr;
-use core::slice;
-use core::usize;
+use core::{ptr, slice, usize};
 
 use common::context::*;
 use common::debug::*;
 use common::memory::*;
 use common::scheduler;
-use common::string::*;
-use common::time::*;
-use common::vec::*;
+use common::string::{String, ToString};
+use common::time::Duration;
+use common::vec::Vec;
 
 use drivers::pio::*;
 

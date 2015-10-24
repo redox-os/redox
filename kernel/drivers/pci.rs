@@ -1,22 +1,22 @@
-use audio::ac97::*;
-use audio::intelhda::*;
+use audio::ac97::AC97;
+use audio::intelhda::IntelHDA;
 
-use common::debug::*;
-use common::queue::*;
-use common::vec::*;
+use common::debug;
+use common::queue::Queue;
+use common::vec::Vec;
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
-use network::intel8254x::*;
-use network::rtl8139::*;
+use network::intel8254x::Intel8254x;
+use network::rtl8139::RTL8139;
 
 use programs::session::Session;
 
-use schemes::file::*;
+use schemes::file::FileScheme;
 
-use usb::ehci::*;
-use usb::uhci::*;
-use usb::xhci::*;
+use usb::ehci::EHCI;
+use usb::uhci::UHCI;
+use usb::xhci::XHCI;
 
 /// PCI device
 pub unsafe fn pci_device(session: &mut Session,
@@ -56,13 +56,13 @@ pub unsafe fn pci_device(session: &mut Session,
         } else if interface_id == 0x10 {
             let base = pci.read(0x10) as usize;
 
-            d("OHCI Controller on ");
-            dh(base & 0xFFFFFFF0);
-            dl();
+            debug::d("OHCI Controller on ");
+            debug::dh(base & 0xFFFFFFF0);
+            debug::dl();
         } else if interface_id == 0x00 {
             session.items.push(UHCI::new(pci));
         } else {
-            d("Unknown USB interface version\n");
+            debug::d("Unknown USB interface version\n");
         }
     } else {
         match vendor_code {
@@ -118,37 +118,37 @@ pub unsafe fn pci_init(session: &mut Session) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
-                    d(" * PCI ");
-                    dd(bus);
-                    d(", ");
-                    dd(slot);
-                    d(", ");
-                    dd(func);
-                    d(": ID ");
-                    dh(id as usize);
-                    d(" CL ");
-                    dh(class_id as usize);
+                    debug::d(" * PCI ");
+                    debug::dd(bus);
+                    debug::d(", ");
+                    debug::dd(slot);
+                    debug::d(", ");
+                    debug::dd(func);
+                    debug::d(": ID ");
+                    debug::dh(id as usize);
+                    debug::d(" CL ");
+                    debug::dh(class_id as usize);
 
                     for i in 0..6 {
                         let bar = pci.read(i * 4 + 0x10);
                         if bar > 0 {
-                            d(" BAR");
-                            dd(i as usize);
-                            d(": ");
-                            dh(bar as usize);
+                            debug::d(" BAR");
+                            debug::dd(i as usize);
+                            debug::d(": ");
+                            debug::dh(bar as usize);
 
                             pci.write(i * 4 + 0x10, 0xFFFFFFFF);
                             let size = (0xFFFFFFFF - (pci.read(i * 4 + 0x10) & 0xFFFFFFF0)) + 1;
                             pci.write(i * 4 + 0x10, bar);
 
                             if size > 0 {
-                                d(" ");
-                                dd(size as usize);
+                                debug::d(" ");
+                                debug::dd(size as usize);
                             }
                         }
                     }
 
-                    dl();
+                    debug::dl();
 
                     pci_device(session,
                                pci,

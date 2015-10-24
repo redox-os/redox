@@ -1,14 +1,14 @@
-use alloc::boxed::*;
+use alloc::boxed::{Box, FnBox};
 
-use core::mem;
-use core::ptr;
+use core::{mem, ptr};
 
 use common::memory;
-use common::paging::*;
-use schemes::{Resource};
+use common::paging::Page;
 use common::scheduler;
-use common::string::*;
-use common::vec::*;
+use common::string::String;
+use common::vec::Vec;
+
+use schemes::Resource;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 

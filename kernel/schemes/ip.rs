@@ -7,11 +7,10 @@ use network::common::*;
 use network::ipv4::*;
 
 use common::{debug, random};
-use schemes::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 /// A IP (internet protocole) resource
 pub struct IPResource {

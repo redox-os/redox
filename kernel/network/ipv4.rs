@@ -1,8 +1,7 @@
-use core::mem::size_of;
-use core::option::Option;
+use core::mem;
 
-use common::debug::*;
-use common::vec::*;
+use common::debug;
+use common::vec::Vec;
 
 use network::common::*;
 
@@ -29,15 +28,15 @@ pub struct IPv4 {
 
 impl FromBytes for IPv4 {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
-        if bytes.len() >= size_of::<IPv4Header>() {
+        if bytes.len() >= mem::size_of::<IPv4Header>() {
             unsafe {
                 let header = *(bytes.as_ptr() as *const IPv4Header);
                 let header_len = ((header.ver_hlen & 0xF) << 2) as usize;
 
                 return Some(IPv4 {
                     header: header,
-                    options: bytes.sub(size_of::<IPv4Header>(),
-                                       header_len - size_of::<IPv4Header>()),
+                    options: bytes.sub(mem::size_of::<IPv4Header>(),
+                                       header_len - mem::size_of::<IPv4Header>()),
                     data: bytes.sub(header_len, bytes.len() - header_len),
                 });
             }
@@ -50,7 +49,7 @@ impl ToBytes for IPv4 {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const IPv4Header = &self.header;
-            let mut ret = Vec::<u8>::from_raw_buf(header_ptr as *const u8, size_of::<IPv4Header>());
+            let mut ret = Vec::<u8>::from_raw_buf(header_ptr as *const u8, mem::size_of::<IPv4Header>());
             ret.push_all(&self.options);
             ret.push_all(&self.data);
             ret
@@ -60,15 +59,15 @@ impl ToBytes for IPv4 {
 
 impl IPv4 {
     pub fn d(&self) {
-        d("IPv4 ");
-        dbh(self.header.proto);
-        d(" from ");
+        debug::d("IPv4 ");
+        debug::dbh(self.header.proto);
+        debug::d(" from ");
         self.header.src.d();
-        d(" to ");
+        debug::d(" to ");
         self.header.dst.d();
-        d(" options ");
-        dd(self.options.len());
-        d(" data ");
-        dd(self.data.len());
+        debug::d(" options ");
+        debug::dd(self.options.len());
+        debug::d(" data ");
+        debug::dd(self.data.len());
     }
 }

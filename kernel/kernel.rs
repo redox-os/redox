@@ -27,7 +27,7 @@ use common::context::*;
 use common::debug;
 use common::event::{self, Event, EventOption};
 use common::memory;
-use common::paging::*;
+use common::paging::Page;
 use common::queue::Queue;
 use schemes::URL;
 use common::scheduler;
@@ -43,7 +43,7 @@ use drivers::serial::*;
 
 pub use externs::*;
 
-use graphics::bmp::*;
+use graphics::bmp::BMPFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
