@@ -2,12 +2,13 @@ use super::*;
 
 impl Editor {
     pub fn to_motion(&self, Inst(n, cmd): Inst) -> (usize, usize) {
+        use super::Key::*;
         match cmd {
-            'h' => self.left_pos(n),
-            'l' => self.right_pos(n),
-            'j' => self.down_pos(n),
-            'k' => self.up_pos(n),
-            _ => (0, 0),
+            Char('h') => self.left_pos(n),
+            Char('l') => self.right_pos(n),
+            Char('j') => self.down_pos(n),
+            Char('k') => self.up_pos(n),
+            _ => (self.x(), self.y()),
         }
     }
 }
