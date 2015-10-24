@@ -1,4 +1,4 @@
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
 use common::debug;
 

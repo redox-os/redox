@@ -10,7 +10,7 @@ use common::memory::{self, Memory};
 use common::scheduler;
 use common::time::{self, Duration};
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 use drivers::pio::*;
 
 use schemes::KScheme;
