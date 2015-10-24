@@ -2,7 +2,7 @@ use super::*;
 
 impl Editor {
     /// Get pos of next char
-    pub fn next_pos(&mut self) -> (usize, usize) {
+    pub fn next_pos(&self) -> (usize, usize) {
         // TODO: Add numerals
         if self.x() == self.text[self.y()].len() {
             if self.y() < self.text.len() - 1 {
@@ -16,7 +16,7 @@ impl Editor {
     }
 
     /// Get pos of previous char
-    pub fn previous_pos(&mut self) -> (usize, usize) {
+    pub fn previous_pos(&self) -> (usize, usize) {
         if self.x() == 0 {
             if self.y() > 0 {
                 (self.text[self.y()].len(), self.y() - 1)
