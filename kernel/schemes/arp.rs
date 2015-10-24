@@ -1,12 +1,11 @@
 use common::context::context_switch;
-use schemes::URL;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
 use network::arp::*;
 use network::common::*;
 
-use schemes::KScheme;
+use schemes::{KScheme, URL};
 
 pub struct ARPScheme;
 

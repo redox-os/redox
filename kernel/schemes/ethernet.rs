@@ -1,16 +1,15 @@
 use alloc::boxed::Box;
 
-use core::mem::swap;
+use core::mem;
 
 use network::common::*;
 use network::ethernet::*;
 
 use common::debug;
-use schemes::{Resource, ResourceSeek, URL};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -50,7 +49,7 @@ impl Resource for EthernetResource {
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         if self.data.len() > 0 {
             let mut bytes: Vec<u8> = Vec::new();
-            swap(&mut self.data, &mut bytes);
+            mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
             return Some(bytes.len());
         }

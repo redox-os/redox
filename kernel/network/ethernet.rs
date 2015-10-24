@@ -1,8 +1,7 @@
-use core::mem::size_of;
-use core::option::Option;
+use core::mem;
 
-use common::debug::*;
-use common::vec::*;
+use common::debug;
+use common::vec::Vec;
 
 use network::common::*;
 
@@ -21,12 +20,12 @@ pub struct EthernetII {
 
 impl FromBytes for EthernetII {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
-        if bytes.len() >= size_of::<EthernetIIHeader>() {
+        if bytes.len() >= mem::size_of::<EthernetIIHeader>() {
             unsafe {
                 return Some(EthernetII {
                     header: *(bytes.as_ptr() as *const EthernetIIHeader),
-                    data: bytes.sub(size_of::<EthernetIIHeader>(),
-                                    bytes.len() - size_of::<EthernetIIHeader>()),
+                    data: bytes.sub(mem::size_of::<EthernetIIHeader>(),
+                                    bytes.len() - mem::size_of::<EthernetIIHeader>()),
                 });
             }
         }
@@ -39,7 +38,7 @@ impl ToBytes for EthernetII {
         unsafe {
             let header_ptr: *const EthernetIIHeader = &self.header;
             let mut ret = Vec::from_raw_buf(header_ptr as *const u8,
-                                            size_of::<EthernetIIHeader>());
+                                            mem::size_of::<EthernetIIHeader>());
             ret.push_all(&self.data);
             ret
         }
@@ -48,13 +47,13 @@ impl ToBytes for EthernetII {
 
 impl EthernetII {
     pub fn d(&self) {
-        d("Ethernet II ");
-        dh(self.header.ethertype.get() as usize);
-        d(" from ");
+        debug::d("Ethernet II ");
+        debug::dh(self.header.ethertype.get() as usize);
+        debug::d(" from ");
         self.header.src.d();
-        d(" to ");
+        debug::d(" to ");
         self.header.dst.d();
-        d(" data ");
-        dd(self.data.len());
+        debug::d(" data ");
+        debug::dd(self.data.len());
     }
 }

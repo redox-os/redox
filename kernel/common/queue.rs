@@ -1,6 +1,4 @@
-use core::clone::Clone;
-
-use common::vec::*;
+use common::vec::Vec;
 
 /// A FIFO Queue
 pub struct Queue<T> {

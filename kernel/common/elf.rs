@@ -1,12 +1,8 @@
 //! ELF executables
 
-use core::ops::Drop;
-use core::ptr;
-use core::str;
-use core::slice;
+use core::{ptr, str, slice};
 
-use common::debug::*;
-use common::memory;
+use common::{debug, memory};
 
 #[cfg(target_arch = "x86")]
 pub const ELF_OFFSET: usize = 0x1000;
@@ -119,7 +115,7 @@ impl ELF {
                 data = memory::alloc(size);
                 ptr::copy(file_data as *const u8, data as *mut u8, size);
             } else {
-                d("Invalid ELF Format\n");
+                debug::d("Invalid ELF Format\n");
                 data = 0;
             }
         }
@@ -130,72 +126,72 @@ impl ELF {
     /// Debug
     pub unsafe fn d(&self) {
         if self.data > 0 {
-            d("Debug ELF\n");
+            debug::d("Debug ELF\n");
             let header = &*(self.data as *const ELFHeader);
 
-            d("Magic: ");
+            debug::d("Magic: ");
             for i in 0..4 {
-                dbh(header.magic[i]);
+                debug::dbh(header.magic[i]);
             }
-            dl();
+            debug::dl();
 
-            d("Class: ");
-            dbh(header.class);
-            dl();
+            debug::d("Class: ");
+            debug::dbh(header.class);
+            debug::dl();
 
-            d("Endian: ");
-            dbh(header.endian);
-            dl();
+            debug::d("Endian: ");
+            debug::dbh(header.endian);
+            debug::dl();
 
-            d("Version: ");
-            dbh(header.ver);
-            dl();
+            debug::d("Version: ");
+            debug::dbh(header.ver);
+            debug::dl();
 
-            d("ABI: ");
+            debug::d("ABI: ");
             for i in 0..2 {
-                dbh(header.abi[i]);
+                debug::dbh(header.abi[i]);
             }
-            dl();
+            debug::dl();
 
-            d("Type: ");
-            dh(header._type as usize);
-            dl();
+            debug::d("Type: ");
+            debug::dh(header._type as usize);
+            debug::dl();
 
-            d("Machine: ");
-            dh(header.machine as usize);
-            dl();
+            debug::d("Machine: ");
+            debug::dh(header.machine as usize);
+            debug::dl();
 
-            d("Version 2: ");
-            dh(header.ver_2 as usize);
-            dl();
+            debug::d("Version 2: ");
+            debug::dh(header.ver_2 as usize);
+            debug::dl();
 
-            d("Entry: ");
-            dh(header.entry as usize);
-            dl();
+            debug::d("Entry: ");
+            debug::dh(header.entry as usize);
+            debug::dl();
 
-            d("Program Header Table: ");
-            dh(header.ph_off as usize);
-            d(" ent_len: ");
-            dd(header.ph_ent_len as usize);
-            d(" len: ");
-            dd(header.ph_len as usize);
-            dl();
+            debug::d("Program Header Table: ");
+            debug::dh(header.ph_off as usize);
+            debug::d(" ent_len: ");
+            debug::dd(header.ph_ent_len as usize);
+            debug::d(" len: ");
+            debug::dd(header.ph_len as usize);
+            debug::dl();
 
-            d("Section Header Table: ");
-            dh(header.sh_off as usize);
-            d(" ent_len: ");
-            dd(header.sh_ent_len as usize);
-            d(" len: ");
-            dd(header.sh_len as usize);
-            dl();
+            debug::d("Section Header Table: ");
+            debug::dh(header.sh_off as usize);
+            debug::d(" ent_len: ");
+            debug::dd(header.sh_ent_len as usize);
+            debug::d(" len: ");
+            debug::dd(header.sh_len as usize);
+            debug::dl();
 
-            d("Flags: ");
-            dh(header.flags as usize);
-            dl();
+            debug::d("Flags: ");
+            debug::dh(header.flags as usize);
+            debug::dl();
 
-            d("Section Header Strings: ");
-            dd(header.sh_str_index as usize);
-            dl();
+            debug::d("Section Header Strings: ");
+            debug::dd(header.sh_str_index as usize);
+            debug::dl();
 
             let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ELFSection);
 
@@ -203,8 +199,8 @@ impl ELF {
 
             let mut str_section = &*((self.data + header.sh_off as usize) as *const ELFSection);
 
-            d("Section Headers:");
-            dl();
+            debug::d("Section Headers:");
+            debug::dl();
 
             for i in 0..header.sh_len {
                 let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ELFSection);
@@ -225,57 +221,57 @@ impl ELF {
                     str_section = section;
                 }
 
-                d("    Section ");
-                dd(i as usize);
-                d(": ");
-                d(section_name);
-                dl();
+                debug::d("    Section ");
+                debug::dd(i as usize);
+                debug::d(": ");
+                debug::d(section_name);
+                debug::dl();
 
-                d("    Type: ");
-                dh(section._type as usize);
-                dl();
+                debug::d("    Type: ");
+                debug::dh(section._type as usize);
+                debug::dl();
 
-                d("    Flags: ");
-                dh(section.flags as usize);
-                dl();
+                debug::d("    Flags: ");
+                debug::dh(section.flags as usize);
+                debug::dl();
 
-                d("    Addr: ");
-                dh(section.addr as usize);
-                dl();
+                debug::d("    Addr: ");
+                debug::dh(section.addr as usize);
+                debug::dl();
 
-                d("    Offset: ");
-                dh(section.off as usize);
-                dl();
+                debug::d("    Offset: ");
+                debug::dh(section.off as usize);
+                debug::dl();
 
-                d("    Length: ");
-                dd(section.len as usize);
-                dl();
+                debug::d("    Length: ");
+                debug::dd(section.len as usize);
+                debug::dl();
 
-                d("    Link: ");
-                dd(section.link as usize);
-                dl();
+                debug::d("    Link: ");
+                debug::dd(section.link as usize);
+                debug::dl();
 
-                d("    Info: ");
-                dd(section.info as usize);
-                dl();
+                debug::d("    Info: ");
+                debug::dd(section.info as usize);
+                debug::dl();
 
-                d("    Address Align: ");
-                dd(section.addr_align as usize);
-                dl();
+                debug::d("    Address Align: ");
+                debug::dd(section.addr_align as usize);
+                debug::dl();
 
-                d("    Entry Length: ");
-                dd(section.ent_len as usize);
-                dl();
+                debug::d("    Entry Length: ");
+                debug::dd(section.ent_len as usize);
+                debug::dl();
 
-                dl();
+                debug::dl();
             }
 
             if sym_section.off > 0 && str_section.off > 0 {
                 if sym_section.ent_len > 0 {
                     let len = sym_section.len / sym_section.ent_len;
-                    d("Symbols: ");
-                    dd(len as usize);
-                    dl();
+                    debug::d("Symbols: ");
+                    debug::dd(len as usize);
+                    debug::dl();
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
 
@@ -289,37 +285,37 @@ impl ELF {
                         }
                         let symbol_name = str::from_utf8_unchecked(slice::from_raw_parts(symbol_name_ptr, symbol_name_len as usize));
 
-                        d("    Symbol ");
-                        dd(i as usize);
-                        d(": ");
-                        d(symbol_name);
+                        debug::d("    Symbol ");
+                        debug::dd(i as usize);
+                        debug::d(": ");
+                        debug::d(symbol_name);
 
-                        d(" Value: ");
-                        dh(symbol.value as usize);
+                        debug::d(" Value: ");
+                        debug::dh(symbol.value as usize);
 
-                        d(" Size: ");
-                        dd(symbol.size as usize);
+                        debug::d(" Size: ");
+                        debug::dd(symbol.size as usize);
 
-                        d(" Info: ");
-                        dbh(symbol.info);
+                        debug::d(" Info: ");
+                        debug::dbh(symbol.info);
 
-                        d(" Other: ");
-                        dbh(symbol.other);
+                        debug::d(" Other: ");
+                        debug::dbh(symbol.other);
 
-                        d(" Section: ");
-                        dd(symbol.sh_index as usize);
-                        dl();
+                        debug::d(" Section: ");
+                        debug::dd(symbol.sh_index as usize);
+                        debug::dl();
                     }
                 } else {
-                    d("Symbol length is 0\n");
+                    debug::d("Symbol length is 0\n");
                 }
             } else {
-                d("No symbol section or string section");
+                debug::d("No symbol section or string section");
             }
 
-            dl();
+            debug::dl();
         } else {
-            d("Empty ELF File\n");
+            debug::d("Empty ELF File\n");
         }
     }
 
@@ -387,13 +383,13 @@ impl ELF {
                         }
                     }
                 }else{
-                    d("No sym_section ent len\n");
+                    debug::d("No sym_section ent len\n");
                 }
             }else{
-                d("No sym_section or str_section\n");
+                debug::d("No sym_section or str_section\n");
             }
         }else{
-            d("No data\n");
+            debug::d("No data\n");
         }
 
         0

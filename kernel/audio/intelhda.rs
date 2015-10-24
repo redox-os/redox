@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use core::{ptr, mem};
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
 use common::debug;
 use common::memory;

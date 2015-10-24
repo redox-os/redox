@@ -2,20 +2,18 @@ use alloc::boxed::Box;
 
 use core::ptr;
 
-use common::debug;
-use common::memory;
+use common::{debug, memory};
 use common::queue::Queue;
-use schemes::{Resource, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
 use network::common::*;
 use network::scheme::*;
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, URL};
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;

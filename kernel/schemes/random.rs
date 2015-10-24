@@ -1,10 +1,9 @@
 use alloc::boxed::Box;
 
 use common::random;
-use schemes::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 /// A pseudorandomness scheme
 pub struct RandomScheme;

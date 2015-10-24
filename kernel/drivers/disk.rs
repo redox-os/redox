@@ -3,7 +3,7 @@ use alloc::arc::Arc;
 use core::ptr;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use common::debug::*;
+use common::debug;
 use common::queue::Queue;
 use common::memory::Memory;
 use common::scheduler;
@@ -289,7 +289,7 @@ impl Disk {
     /// Identify
     pub unsafe fn identify(&self) -> bool {
         if self.ide_read(ATA_REG_STATUS) == 0xFF {
-            d(" Floating Bus");
+            debug::d(" Floating Bus");
 
             return false;
         }
@@ -312,8 +312,8 @@ impl Disk {
         self.ide_write(ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
 
         let status = self.ide_read(ATA_REG_STATUS);
-        d(" Status: ");
-        dbh(status);
+        debug::d(" Status: ");
+        debug::dbh(status);
 
         if status == 0 {
             return false;
@@ -321,8 +321,8 @@ impl Disk {
 
         let err = self.ide_poll(true);
         if err > 0 {
-            d(" Error: ");
-            dbh(err);
+            debug::d(" Error: ");
+            debug::dbh(err);
 
             return false;
         }
@@ -333,12 +333,12 @@ impl Disk {
             destination.write(word, data.read());
         }
 
-        d(" Size: ");
+        debug::d(" Size: ");
         let sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
                       ((destination.read(102) as u64) << 32) |
                       ((destination.read(103) as u64) << 48);
-        dd((sectors / 2048) as usize);
-        d(" MB");
+        debug::dd((sectors / 2048) as usize);
+        debug::d(" MB");
 
         true
     }
@@ -510,15 +510,15 @@ impl Disk {
                             prdt.reg.write(prdt.mem.ptr as u32);
                             prdt_set = true;
                         } else {
-                            d("IDE Request too large: ");
-                            dd(size as usize);
-                            d(" remaining\n");
+                            debug::d("IDE Request too large: ");
+                            debug::dd(size as usize);
+                            debug::d(" remaining\n");
                         }
                     } else {
-                        d("IDE Request size is 0\n");
+                        debug::d("IDE Request size is 0\n");
                     }
                 } else {
-                    d("PRDT not allocated\n");
+                    debug::d("PRDT not allocated\n");
                 }
 
                 if prdt_set {
@@ -579,7 +579,7 @@ impl Disk {
                     }
                 }
             } else {
-                d("IDE Request mem is 0\n");
+                debug::d("IDE Request mem is 0\n");
             }
         }
 
