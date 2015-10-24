@@ -1,10 +1,9 @@
 use alloc::boxed::Box;
 
 use common::memory;
-use schemes::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 /// A memory scheme
 pub struct MemoryScheme;

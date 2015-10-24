@@ -4,17 +4,16 @@ use alloc::boxed::Box;
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use drivers::disk::*;
+use drivers::disk::{Disk, Extent, Request};
 use drivers::pciconfig::PCIConfig;
 
 use common::context::context_switch;
 use common::debug;
 use common::memory::Memory;
-use schemes::{Resource, ResourceSeek, URL, VecResource};
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, ResourceSeek, URL, VecResource};
 
 /// The header of the fs
 #[repr(packed)]

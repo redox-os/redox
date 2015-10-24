@@ -1,5 +1,5 @@
 use common::scheduler::*;
-use common::time::*;
+use common::time::Duration;
 
 use drivers::pio::*;
 

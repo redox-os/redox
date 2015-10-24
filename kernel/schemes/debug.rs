@@ -1,11 +1,10 @@
 use alloc::boxed::Box;
 
 use common::context::context_switch;
-use schemes::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 
-use schemes::KScheme;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 use syscall::handle;
 

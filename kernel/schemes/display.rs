@@ -1,10 +1,10 @@
 use alloc::boxed::Box;
 
-use graphics::display::*;
+use core::cmp;
 
-use core::cmp::{min, max};
+use common::string::{String, ToString};
 
-use common::string::*;
+use graphics::display::Display;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -36,7 +36,7 @@ impl Resource for DisplayResource {
 	fn write(&mut self, buf: &[u8]) -> Option<usize> {
 		let display = &mut self.display;
 
-		let size = min(display.size - self.seek, buf.len());
+		let size = cmp::min(display.size - self.seek, buf.len());
 		unsafe {
 			Display::copy_run(buf.as_ptr() as usize,
 			                  display.offscreen + self.seek,
@@ -50,9 +50,9 @@ impl Resource for DisplayResource {
 		let end = self.display.size;
 
 		self.seek = match pos {
-			ResourceSeek::Start(offset) => min(end, max(0, offset)),
-			ResourceSeek::Current(offset) => min(end, max(0, self.seek as isize + offset) as usize),
-			ResourceSeek::End(offset) => min(end, max(0, end as isize + offset) as usize),
+			ResourceSeek::Start(offset) => cmp::min(end, cmp::max(0, offset)),
+			ResourceSeek::Current(offset) => cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
+			ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
 		};
 
 		return Some(self.seek);
