@@ -1,32 +1,42 @@
 use super::*;
 
 impl Editor {
-    /// Go to next char
-    pub fn next(&mut self) {
+    /// Get pos of next char
+    pub fn next_pos(&self) -> (usize, usize) {
         // TODO: Add numerals
         if self.x() == self.text[self.y()].len() {
-            if self.y() >= self.text.len() {
-                self.text.push_back(VecDeque::new())
-            }
             if self.y() < self.text.len() - 1 {
-                self.cursor_mut().x = 0;
-                self.cursor_mut().y += 1;
+                (0, self.y() + 1)
+            } else {
+                (self.x(), self.y())
             }
         } else {
-            self.cursor_mut().x += 1;
+            (self.x() + 1, self.y())
         }
     }
 
-    /// Go to previous char
-    pub fn previous(&mut self) {
+    /// Get pos of previous char
+    pub fn previous_pos(&self) -> (usize, usize) {
         if self.x() == 0 {
             if self.y() > 0 {
-                self.cursor_mut().y -= 1;
-                self.cursor_mut().x = self.text[self.y()].len();
+                (self.text[self.y()].len(), self.y() - 1)
+            } else {
+                (self.x(), self.y())
             }
         } else {
-            self.cursor_mut().x -= 1;
+            (self.x() - 1, self.y())
         }
+    }
+
+    pub fn next(&mut self) {
+        let (x, y) = self.next_pos();
+        self.cursor_mut().x = x;
+        self.cursor_mut().y = y;
+    }
+    pub fn previous(&mut self) {
+        let (x, y) = self.previous_pos();
+        self.cursor_mut().x = x;
+        self.cursor_mut().y = y;
     }
 
     /// Go right
