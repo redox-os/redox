@@ -39,35 +39,35 @@ impl Editor {
         self.cursor_mut().y = y;
     }
 
-    /// Go right
-    pub fn right(&mut self, n: usize) {
+    /// Get right pos
+    pub fn right_pos(&self, n: usize) -> (usize, usize) {
         let x = self.x() + n;
         let y = self.y();
 
-        let text = self.text.clone();
-        let curs = self.cursor_mut();
-
-        curs.x += n;
-
-        if x > text[y].len() {
-            curs.x = text[y].len();
+        if x > self.text[y].len() {
+            (self.text[y].len(), y)
+        } else {
+            (x, y)
         }
     }
+    pub fn right(&mut self, n: usize) {
+        self.cursor_mut().x = self.right_pos(n).0;
+    }
 
-    /// Go left
-    pub fn left(&mut self, n: usize) {
+    /// Get left pos
+    pub fn left_pos(&self, n: usize) -> (usize, usize) {
         let x = self.x();
         let y = self.y();
 
-        let text = self.text.clone();
-        let curs = self.cursor_mut();
-
         if n <= x {
-            curs.x = x - n;
+            (x - n, self.y())
         } else {
-            curs.x = 0;
+            (0, self.y())
         }
 
+    }
+    pub fn left(&mut self, n: usize) {
+        self.cursor_mut().x = self.left_pos(n).0;
     }
 
     /// Go up
