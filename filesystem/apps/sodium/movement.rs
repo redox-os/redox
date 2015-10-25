@@ -33,6 +33,7 @@ impl Editor {
         self.cursor_mut().x = x;
         self.cursor_mut().y = y;
     }
+
     pub fn previous(&mut self) {
         let (x, y) = self.previous_pos();
         self.cursor_mut().x = x;
@@ -49,6 +50,7 @@ impl Editor {
             (x, self.y())
         }
     }
+
     pub fn right(&mut self, n: usize) {
         self.cursor_mut().x = self.right_pos(n).0;
     }
@@ -60,8 +62,8 @@ impl Editor {
         } else {
             (0, self.y())
         }
-
     }
+
     pub fn left(&mut self, n: usize) {
         self.cursor_mut().x = self.left_pos(n).0;
     }
@@ -74,6 +76,7 @@ impl Editor {
             (self.cursor().x, 0)
         }
     }
+
     pub fn up(&mut self, n: usize) {
         let (x, y) = self.up_pos(n);
         self.cursor_mut().x = x;
@@ -96,5 +99,4 @@ impl Editor {
         self.cursor_mut().x = x;
         self.cursor_mut().y = y;
     }
-
 }
