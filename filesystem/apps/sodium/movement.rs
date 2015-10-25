@@ -39,60 +39,62 @@ impl Editor {
         self.cursor_mut().y = y;
     }
 
-    /// Go right
-    pub fn right(&mut self, n: usize) {
+    /// Get right pos
+    pub fn right_pos(&self, n: usize) -> (usize, usize) {
         let x = self.x() + n;
-        let y = self.y();
 
-        let text = self.text.clone();
-        let curs = self.cursor_mut();
-
-        curs.x += n;
-
-        if x > text[y].len() {
-            curs.x = text[y].len();
+        if x > self.text[self.y()].len() {
+            (self.text[self.y()].len(), self.y())
+        } else {
+            (x, self.y())
         }
     }
+    pub fn right(&mut self, n: usize) {
+        self.cursor_mut().x = self.right_pos(n).0;
+    }
 
-    /// Go left
+    /// Get left pos
+    pub fn left_pos(&self, n: usize) -> (usize, usize) {
+        if n <= self.x() {
+            (self.x() - n, self.y())
+        } else {
+            (0, self.y())
+        }
+
+    }
     pub fn left(&mut self, n: usize) {
-        let x = self.x();
-        let y = self.y();
-
-        let text = self.text.clone();
-        let curs = self.cursor_mut();
-
-        if n <= x {
-            curs.x = x - n;
-        } else {
-            curs.x = 0;
-        }
-
+        self.cursor_mut().x = self.left_pos(n).0;
     }
 
-    /// Go up
+    /// Get up pos
+    pub fn up_pos(&self, n: usize) -> (usize, usize) {
+        if n <= self.y() {
+            (self.cursor().x, self.y() - n)
+        } else {
+            (self.cursor().x, 0)
+        }
+    }
     pub fn up(&mut self, n: usize) {
-        let y = self.y();
-        let curs = self.cursor_mut();
-        if n <= y {
-            curs.y -= n;
-        } else {
-            curs.y = 0;
-        }
+        let (x, y) = self.up_pos(n);
+        self.cursor_mut().x = x;
+        self.cursor_mut().y = y;
     }
 
-    /// Go down
-    pub fn down(&mut self, n: usize) {
-        let x = self.x();
+    /// Get down pos
+    pub fn down_pos(&self, n: usize) -> (usize, usize) {
         let y = self.y() + n;
 
-        let text = self.text.clone();
-        let curs = self.cursor_mut();
-
-        curs.y += n;
-
-        if y >= text.len() {
-            curs.y = text.len() - 1;
+        if y >= self.text.len() {
+            (self.cursor().x, self.text.len() - 1)
+        } else {
+            (self.cursor().x, y)
         }
     }
+
+    pub fn down(&mut self, n: usize) {
+        let (x, y) = self.down_pos(n);
+        self.cursor_mut().x = x;
+        self.cursor_mut().y = y;
+    }
+
 }
