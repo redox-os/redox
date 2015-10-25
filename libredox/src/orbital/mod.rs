@@ -93,7 +93,7 @@ impl Window {
     pub fn pixel(&mut self, x: isize, y: isize, color: Color) {
         if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
             let offset = y as usize * self.w + x as usize;
-			self.data[offset] = color.data;
+            self.data[offset] = color.data;
         }
     }
 
@@ -118,7 +118,7 @@ impl Window {
         }
     }
 
-    //TODO move, resize, setTitle
+    //TODO move, resize, set_title
 
     /// Set entire window to a color
     // TODO: Improve speed
@@ -170,7 +170,7 @@ impl Window {
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.seek(SeekFrom::Start(0));
-		let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
+        let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
         self.file.write(to_write);
         return self.file.sync();
     }
