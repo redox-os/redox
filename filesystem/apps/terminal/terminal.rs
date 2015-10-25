@@ -185,8 +185,7 @@ impl Command {
             },
         });
 
-        let mut command_list = String::new();
-        command_list = commands.iter().fold(command_list, |l , c| l + " " + &c.name);
+        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + &c.name);
 
         commands.push(Command {
             name: "help".to_string(),
@@ -382,7 +381,7 @@ impl Application {
 
     /// Run the application
     pub fn main(&mut self) {
-        console_title(&"Terminal".to_string());
+        console_title("Terminal");
 
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
