@@ -47,12 +47,12 @@ impl Editor {
             }
             None => {
                 let mut save_window = {
-                    const width: usize = 400;
-                    const height: usize = 200;
-                    ConsoleWindow::new((window.x() + (window.width()/2 - width/2) as isize),
-                                (window.y() + (window.height()/2 - height/2) as isize),
-                                width,
-                                height,
+                    const WIDTH: usize = 400;
+                    const HEIGHT: usize = 200;
+                    ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
+                                (window.y() + (window.height()/2 - HEIGHT/2) as isize),
+                                WIDTH,
+                                HEIGHT,
                                 "Save As")
                 };
                 if let Some(line) = save_window.read() {

@@ -68,7 +68,7 @@ pub struct FileSystem {
 
 impl FileSystem {
     /// Create a file system from a disk
-    pub fn from_disk(mut disk: Disk) -> Option<Self> {
+    pub fn from_disk(disk: Disk) -> Option<Self> {
         unsafe {
             if disk.identify() {
                 debug::d(" Disk Found");
@@ -93,7 +93,7 @@ impl FileSystem {
                     let mut nodes = Vec::new();
                     for extent in &header.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            if let Some(mut data) = Memory::<NodeData>::new(extent.length as usize /
+                            if let Some(data) = Memory::<NodeData>::new(extent.length as usize /
                                                            mem::size_of::<NodeData>()) {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
