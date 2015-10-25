@@ -1,4 +1,3 @@
-use redox::*;
 use super::*;
 use core::iter::FromIterator;
 

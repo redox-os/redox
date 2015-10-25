@@ -1,6 +1,6 @@
 use redox::Box;
 use redox::console::*;
-use redox::{io, rand};
+use redox::rand;
 use redox::ptr;
 use redox::slice::SliceConcatExt;
 use redox::string::*;
@@ -37,7 +37,7 @@ pub fn main() {
                     unsafe { ptr::write(a_ptr, rand() as u8); }
                 }
                 command if command == console_commands[3] => {
-                    let mut a_box = Box::new(rand() as u8);
+                    let a_box = Box::new(rand() as u8);
                     unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
                 }
                 command if command == console_commands[4] => {

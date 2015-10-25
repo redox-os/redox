@@ -1,12 +1,11 @@
 use redox::Box;
 use redox::fs::file::File;
-use redox::io::{Read, Write, Seek, SeekFrom};
+use redox::io::{Read, Write, SeekFrom};
 use redox::mem;
 use redox::net::*;
 use redox::ptr;
 use redox::rand;
 use redox::slice;
-use redox::str;
 use redox::{String, ToString};
 use redox::to_num::*;
 use redox::Vec;
@@ -84,7 +83,7 @@ impl Resource {
             mem::swap(&mut self.data, &mut bytes);
 
             //TODO: Allow splitting
-            let mut i = 0;
+            let i = 0;
             while i < buf.len() && i < bytes.len() {
                  buf[i] = bytes[i];
             }
@@ -99,7 +98,7 @@ impl Resource {
                         if datagram.header.dst.get() == self.host_port &&
                            datagram.header.src.get() == self.peer_port {
                             //TODO: Allow splitting
-                            let mut i = 0;
+                            let i = 0;
                             while i < buf.len() && i < datagram.data.len() {
                                 buf[i] = datagram.data[i];
                             }
@@ -179,7 +178,7 @@ impl Scheme {
                     if ip.read_to_end(&mut bytes).is_some() {
                         if let Some(datagram) = UDP::from_bytes(bytes) {
                             if datagram.header.dst.get() as usize == host_port {
-                                let mut url_bytes = [0; 4096];
+                                let url_bytes = [0; 4096];
                                 if let Some(path) = ip.path() {
                                     let url = URL::from_string(&path);
 
