@@ -5,7 +5,7 @@ use redox::*;
 // TODO: Should this be an iterator instead?
 pub fn next_inst(editor: &mut Editor) -> Inst {
     let mut n = 0;
-    let mut shifted = false;
+    let shifted = false;
 
     // TODO: Make the switch to normal mode shift more well-coded.
     loop {

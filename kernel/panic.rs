@@ -20,7 +20,7 @@ pub extern fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> 
     debug::d(":");
     debug::dd(line as usize);
     debug::d(": ");
-    fmt::write(&mut DebugStream, args);
+    let _ = fmt::write(&mut DebugStream, args);
     debug::dl();
 
     unsafe {

@@ -32,7 +32,7 @@ impl FromBytes for MZapWrapper {
         if data.len() >= mem::size_of::<MZapPhys>() {
             let mzap_phys = unsafe { ptr::read(data.as_ptr() as *const MZapPhys) };
             let mut mzap_entries = Vec::new();
-            for i in (0..(data.len()-mem::size_of::<MZapPhys>())/mem::size_of::<MZapEntPhys>()) {
+            for i in 0..(data.len()-mem::size_of::<MZapPhys>()/mem::size_of::<MZapEntPhys>()) {
                 let entry_pos = mem::size_of::<MZapPhys>() + i*mem::size_of::<MZapEntPhys>();
                 let mzap_ent = unsafe { ptr::read(data[entry_pos..].as_ptr() as *const MZapEntPhys) };
                 mzap_entries.push(mzap_ent);
