@@ -270,6 +270,10 @@ impl Session {
                                           package.icon.size,
                                           Color::alpha(128, 128, 128, 128));
 
+                       self.display.rect(Point::new(x, y - 16),
+                                         Size::new(package.name.len() * 8, 16),
+                                         Color::alpha(0, 0, 0, 128));
+
                         let mut c_x = x;
                         for c in package.name.chars() {
                             self.display
