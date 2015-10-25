@@ -104,9 +104,9 @@ impl BMPFile {
                     let blue = ((pixel_data & blue_mask) >> blue_shift) as u8;
                     let alpha = ((pixel_data & alpha_mask) >> alpha_shift) as u8;
                     if bytes == 3 {
-						ret.data.push(Color::rgb(red,green,blue));
+                        ret.data.push(Color::rgb(red,green,blue));
                     } else if bytes == 4 {
-						ret.data.push(Color::rgba(red,green,blue,alpha));
+                        ret.data.push(Color::rgba(red,green,blue,alpha));
                     }
                 }
             }
