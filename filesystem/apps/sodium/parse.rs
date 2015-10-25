@@ -54,7 +54,6 @@ pub fn next_inst(editor: &mut Editor) -> Inst {
                             }
                         }
                     }
-
                 },
             }
         }
