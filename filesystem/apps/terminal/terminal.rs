@@ -7,6 +7,7 @@ use redox::io::*;
 use redox::console::*;
 use redox::env::*;
 use redox::to_num::*;
+use redox::syscall;
 
 /* Magic Macros { */
 static mut application: *mut Application = 0 as *mut Application;
@@ -185,7 +186,7 @@ impl Command {
             },
         });
 
-        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + &c.name);
+        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + &c.name) + " exit";
 
         commands.push(Command {
             name: "help".to_string(),
@@ -392,7 +393,9 @@ impl Application {
 
         while let Some(command) = readln!() {
             println!("# {}", command);
-            if command.len() > 0 {
+            if command == "exit" {
+                break;
+            } else if command.len() > 0 {
                 self.on_command(&command);
             }
         }
