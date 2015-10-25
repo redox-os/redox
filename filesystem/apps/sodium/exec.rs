@@ -54,6 +54,13 @@ impl Editor {
                             }
                         }
                     },
+                    Char('g') => {
+                        let inst = next_inst(self);
+                        let new = self.to_motion(inst);
+                        self.cursor_mut().x = new.0;
+                        self.cursor_mut().y = new.1;
+
+                    },
                     Char(' ') => self.next(),
                     _ => {},
                 },
