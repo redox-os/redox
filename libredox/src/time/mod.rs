@@ -3,8 +3,7 @@
 use core::cmp::*;
 use core::ops::*;
 
-use syscall::sys_time;
-use syscall::sys_yield;
+use syscall::{TV, sys_gettimeofday, sys_yield};
 
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;
@@ -35,29 +34,23 @@ impl Duration {
         }
     }
 
-    /// Get the current duration
-    pub fn monotonic() -> Self {
-        let mut ret = Duration::new(0, 0);
-        unsafe {
-            sys_time(&mut ret, false);
-        }
-        ret
-    }
-
     /// Get the realtime
     pub fn realtime() -> Self {
-        let mut ret = Duration::new(0, 0);
-        unsafe {
-            sys_time(&mut ret, true);
-        }
-        ret
+        let mut tv = TV {
+            tv_sec: 0,
+            tv_usec: 0,
+        };
+
+        unsafe { sys_gettimeofday(&mut tv) };
+
+        Duration::new(tv.tv_sec, tv.tv_usec * 1000)
     }
 
     /// Sleep the duration
     pub fn sleep(&self) {
-        let start_time = Duration::monotonic();
+        let start_time = Duration::realtime();
         loop {
-            let elapsed = Duration::monotonic() - start_time;
+            let elapsed = Duration::realtime() - start_time;
             if elapsed > *self {
                 break;
             } else {
