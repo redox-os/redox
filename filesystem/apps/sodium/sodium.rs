@@ -43,4 +43,3 @@ pub use self::exec::*;
 pub fn main() {
     let editor = Editor::new();
 }
-
