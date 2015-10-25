@@ -47,12 +47,12 @@ impl Editor {
             }
             None => {
                 let mut save_window = {
-                    const width: usize = 400;
-                    const height: usize = 200;
-                    ConsoleWindow::new((window.x() + (window.width()/2 - width/2) as isize),
-                                (window.y() + (window.height()/2 - height/2) as isize),
-                                width,
-                                height,
+                    const WIDTH: usize = 400;
+                    const HEIGHT: usize = 200;
+                    ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
+                                (window.y() + (window.height()/2 - HEIGHT/2) as isize),
+                                WIDTH,
+                                HEIGHT,
                                 "Save As")
                 };
                 if let Some(line) = save_window.read() {
@@ -67,7 +67,7 @@ impl Editor {
         let mut redraw = false;
 
         {
-			let GRAY = Color::rgba(128, 128, 128, 128);			
+			let gray = Color::rgba(128, 128, 128, 128);			
             window.set(Color::WHITE);
 
             let scroll_x = self.scroll_x;
@@ -84,7 +84,7 @@ impl Editor {
             for c in self.string.chars() {
                 if offset == self.offset {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.rect(8 * col, 16 * row, 8, 16, GRAY);
+                        window.rect(8 * col, 16 * row, 8, 16, gray);
                     } else {
                         if col < 0 { //Too far to the left
                             self.scroll_x += col;
@@ -118,7 +118,7 @@ impl Editor {
 
             if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows {
-                    window.rect(8 * col, 16 * row, 8, 16, GRAY);
+                    window.rect(8 * col, 16 * row, 8, 16, gray);
                 } else {
                     if col < 0 { //Too far to the left
                         self.scroll_x += col;

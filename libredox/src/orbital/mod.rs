@@ -92,7 +92,7 @@ impl Window {
     /// Draw a pixel
     pub fn pixel(&mut self, x: isize, y: isize, color: Color) {
         if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
-            let offset = (y as usize * self.w + x as usize); 
+            let offset = y as usize * self.w + x as usize;
 			self.data[offset] = color.data;
         }
     }

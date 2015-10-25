@@ -3,11 +3,9 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
-use core::cmp;
-
-use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
+use common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use common::scheduler;
-use common::string::{String, ToString};
+use common::string::String;
 use common::vec::Vec;
 
 use graphics::bmp::BMPFile;
