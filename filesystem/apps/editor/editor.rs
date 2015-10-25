@@ -67,7 +67,7 @@ impl Editor {
         let mut redraw = false;
 
         {
-			let GRAY = Color::rgba(128, 128, 128, 128);			
+			let gray = Color::rgba(128, 128, 128, 128);			
             window.set(Color::WHITE);
 
             let scroll_x = self.scroll_x;
@@ -84,7 +84,7 @@ impl Editor {
             for c in self.string.chars() {
                 if offset == self.offset {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.rect(8 * col, 16 * row, 8, 16, GRAY);
+                        window.rect(8 * col, 16 * row, 8, 16, gray);
                     } else {
                         if col < 0 { //Too far to the left
                             self.scroll_x += col;
@@ -118,7 +118,7 @@ impl Editor {
 
             if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows {
-                    window.rect(8 * col, 16 * row, 8, 16, GRAY);
+                    window.rect(8 * col, 16 * row, 8, 16, gray);
                 } else {
                     if col < 0 { //Too far to the left
                         self.scroll_x += col;
