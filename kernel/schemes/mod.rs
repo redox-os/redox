@@ -337,11 +337,6 @@ impl URL {
             part_i += 1;
         }
 
-        //Hack for folders
-        if part_i > 3 && self.string.ends_with('/') {
-            path = path + "/";
-        }
-
         return path;
     }
 

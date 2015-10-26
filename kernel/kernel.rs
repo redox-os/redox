@@ -364,7 +364,9 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8_unchecked(vec).split('\n') {
+        for folder in String::from_utf8_unchecked(vec).lines() {
+            debug::d(&folder);
+            debug::dl();
             if folder.ends_with('/') {
                 let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
 
@@ -380,7 +382,9 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8_unchecked(vec).split('\n') {
+        for folder in String::from_utf8_unchecked(vec).lines() {
+            debug::d(&folder);
+            debug::dl();
             if folder.ends_with('/') {
                 let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
 
