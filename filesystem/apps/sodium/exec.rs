@@ -54,8 +54,14 @@ impl Editor {
                             }
                         }
                     },
+                    Char('R') => {
+                        self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
+                            InsertOptions {
+                                mode: InsertMode::Replace,
+                            }));
+                    },
                     Char('d') => {
-                    }
+                    },
                     Char('g') => {
                         let inst = self.next_inst();
                         let new = self.to_motion(inst);
@@ -66,8 +72,8 @@ impl Editor {
                     Char(' ') => self.goto_next(),
                     _ => {},
                 },
-                Primitive(Insert(_)) => {
-                    self.insert(cmd);
+                Primitive(Insert(opt)) => {
+                    self.insert(cmd, opt);
                 },
             }
         }

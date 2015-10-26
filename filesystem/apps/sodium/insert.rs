@@ -22,35 +22,57 @@ pub struct InsertOptions {
 
 impl Editor {
     /// Insert text
-    pub fn insert(&mut self, c: Key) {
-        let x = self.x();
-        let y = self.y();
-        match c {
-            Key::Char('\n') => {
-                let ln = self.text[y].clone();
-                let (slice, _) = ln.as_slices();
+    pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
+        let mut x = self.x();
+        let mut y = self.y();
+        match mode {
+            InsertMode::Insert => match k {
+                Key::Char('\n') => {
+                    let ln = self.text[y].clone();
+                    let (slice, _) = ln.as_slices();
 
-                let first_part = (&slice[..x]).clone();
-                let second_part = (&slice[x..]).clone();
+                    let first_part = (&slice[..x]).clone();
+                    let second_part = (&slice[x..]).clone();
 
-                self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
-                self.text.insert(y + 1, VecDeque::from_iter(second_part.iter().map(|x| *x)));
+                    self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
+                    self.text.insert(y + 1, VecDeque::from_iter(second_part.iter().map(|x| *x)));
 
-                self.goto_next();
-            },
-            Key::Escape => { // Escape key
-                self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
-            },
-            Key::Backspace => { // Backspace
-                if self.x() != 0 || self.y() != 0 {
-                    self.goto_previous();
-                    self.delete();
+                    self.goto_next();
+                },
+                Key::Escape => { // Escape key
+                    self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+                },
+                Key::Backspace => { // Backspace
+                    if self.x() != 0 || self.y() != 0 {
+                        self.goto_previous();
+                        self.delete();
+                    }
+                },
+                Key::Char(c) => {
+                    self.text[y].insert(x, c);
+                    self.goto_next();
                 }
+                _ => {},
             },
-            Key::Char(ch) => {
-                self.text[y].insert(x, ch);
-                self.goto_next();
-            }
+            InsertMode::Replace => match k {
+                Key::Char(c) => {
+                    if x == self.text[y].len() {
+                        self.goto_next();
+                        x = self.x();
+                        y = self.y();
+                    }
+
+                    if self.text.len() != y {
+                        if self.text[y].len() == x {
+                            self.goto_next();
+                        } else {
+                            self.text[y][x] = c;
+                        }
+                    }
+                    self.goto_next();
+                },
+                _ => {},
+            },
             _ => {},
         }
     }
