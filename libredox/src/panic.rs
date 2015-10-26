@@ -1,5 +1,4 @@
-use core::fmt;
-use core::fmt::Write;
+use core::fmt::{self, Write};
 use core::result;
 
 use syscall::*;

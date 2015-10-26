@@ -1,6 +1,6 @@
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
-use string::*;
+use string::{String, ToString};
 use vec::Vec;
 
 use event::*;

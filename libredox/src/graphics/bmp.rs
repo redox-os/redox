@@ -1,6 +1,8 @@
-use string::*;
+use super::color::Color;
+
+use string::{String, ToString};
 use vec::Vec;
-use graphics::color::Color;
+
 // TODO: Follow naming convention
 /// A bitmap
 pub struct BMPFile {

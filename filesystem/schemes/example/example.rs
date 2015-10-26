@@ -1,5 +1,5 @@
 use redox::Box;
-use redox::string::*;
+use redox::string::{String, ToString};
 use redox::io::{self, SeekFrom, Write};
 
 pub struct Resource {
