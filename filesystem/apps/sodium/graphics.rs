@@ -40,7 +40,7 @@ impl Editor {
         } else {
             self.status_bar.mode.chars().collect()
         }).into_iter().enumerate() {
-            self.window.char(n as isize * 8, h as isize - 16 - 1, c, [255, 255, 255, 255]);
+            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, [255, 255, 255, 255]);
         }
 
         self.window.sync();
