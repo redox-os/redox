@@ -53,7 +53,7 @@ impl Package {
             } else if line.starts_with("binary=") {
                 package.binary = URL::from_string(&(url.to_string() + &line[7 ..]));
             } else if line.starts_with("icon=") {
-                if let Some(mut resource) = URL::from_str(&line[5 ..]).open() {
+                if let Some(mut resource) = URL::from_string(&line[5 ..].to_string()).open() {
                     let mut vec: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut vec);
                     package.icon = BMPFile::from_data(&vec);
