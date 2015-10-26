@@ -2,7 +2,7 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use common::debug::*;
+use common::debug;
 
 use syscall::call::sys_yield;
 
@@ -68,7 +68,7 @@ impl<'mutex, T: ?Sized> DerefMut for MutexGuard<'mutex, T> {
 impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     fn drop(&mut self) {
         if !self.lock.compare_and_swap(true, false, Ordering::SeqCst) {
-            d("Mutex was already unlocked!\n");
+            debug::d("Mutex was already unlocked!\n");
         }
     }
 }

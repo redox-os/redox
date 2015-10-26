@@ -1,6 +1,6 @@
 //! Enviroment data
 
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
 use vec::Vec;
 

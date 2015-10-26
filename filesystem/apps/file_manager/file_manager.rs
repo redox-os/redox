@@ -136,21 +136,24 @@ impl FileManager {
 
         let mut i = 0;
         let mut row = 0;
-        let (column1, column2) = {
-            let mut tmp1 = 0;
+        let column = {
+            let mut tmp = [0, 0];
             for string in self.files.iter() {
-                if tmp1 < string.len() {
-                    tmp1 = string.len();
+                if tmp[0] < string.len() {
+                    tmp[0] = string.len();
                 }
             }
 
-            let mut tmp2 = 0;
+            tmp[0] += 1;
+
             for file_size in self.file_sizes.iter() {
-                if tmp2 < file_size.len() {
-                    tmp2 = file_size.len();
+                if tmp[1] < file_size.len() {
+                    tmp[1] = file_size.len();
                 }
             }
-            (tmp1 + 1, tmp1 + 1 + tmp2 + 1)
+
+            tmp[1] += tmp[0] + 1;
+            tmp
         };
         for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
             if i == self.selected {
@@ -182,7 +185,7 @@ impl FileManager {
                 }
             }
 
-            col = column1;
+            col = column[0];
 
             for c in file_size.chars() {
                 if c == '\n' {
@@ -205,7 +208,7 @@ impl FileManager {
                 }
             }
 
-            col = column2;
+            col = column[1];
 
             for c in self.get_description(file_name).chars() {
                 if c == '\n' {
@@ -385,11 +388,8 @@ impl FileManager {
                             && self.last_mouse_event.x == mouse_event.x
                             && self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
-                                match self.files.get(self.selected as usize) {
-                                    Some(file) => {
-                                        File::exec(&(path.to_string() + &file));
-                                    },
-                                    None => (),
+                                if let Some(file) = self.files.get(self.selected as usize) {
+                                    File::exec(&(path.to_string() + &file));
                                 }
                             }
                             self.click_time = Duration::new(0, 0);
