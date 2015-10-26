@@ -63,44 +63,67 @@ use schemes::display::*;
 
 use syscall::handle::*;
 
+/// Allocation
 pub mod alloc_system;
+/// Audio
 pub mod audio;
+/// Common std-like functionality
 pub mod common;
+/// Various drivers
 pub mod drivers;
+/// Externs
 pub mod externs;
+/// Various graphical methods
 pub mod graphics;
+/// Network
 pub mod network;
+/// Panic
 pub mod panic;
+/// Programs
 pub mod programs;
+/// Schemes
 pub mod schemes;
+/// System calls
 pub mod syscall;
+/// USB input/output
 pub mod usb;
 
+/// Default display for debugging
 static mut debug_display: *mut Display = 0 as *mut Display;
+/// Default point for debugging
 static mut debug_point: Point = Point { x: 0, y: 0 };
+/// Draw debug
 static mut debug_draw: bool = false;
+/// Redraw debug
 static mut debug_redraw: bool = false;
+/// Debug command
 static mut debug_command: *mut String = 0 as *mut String;
 
+/// Clock realtime (default)
 static mut clock_realtime: Duration = Duration {
     secs: 0,
     nanos: 0
 };
 
+/// Monotonic clock
 static mut clock_monotonic: Duration = Duration {
     secs: 0,
     nanos: 0
 };
 
+/// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
     nanos: 2250286
 };
 
+/// Session pointer
 static mut session_ptr: *mut Session = 0 as *mut Session;
 
+/// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
+/// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
     loop {
         asm!("cli");
@@ -129,6 +152,7 @@ unsafe fn idle_loop() -> ! {
     }
 }
 
+/// Event poll loop
 unsafe fn poll_loop() -> ! {
     let session = &mut *session_ptr;
 
@@ -139,6 +163,7 @@ unsafe fn poll_loop() -> ! {
     }
 }
 
+/// Event loop
 unsafe fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
@@ -225,6 +250,7 @@ pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x01);
 }
 
+/// Initialize kernel
 unsafe fn init(font_data: usize) {
     scheduler::start_no_ints();
 

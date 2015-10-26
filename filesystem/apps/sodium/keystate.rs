@@ -9,6 +9,7 @@ pub struct KeyState {
 }
 
 impl KeyState {
+    /// Create new default keystate
     pub fn new() -> KeyState {
         KeyState {
             shift: false,
