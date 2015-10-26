@@ -7,7 +7,6 @@ use common::debug;
 use common::memory;
 use common::scheduler;
 use common::string::{String, ToString};
-use common::time::Duration;
 use common::vec::Vec;
 
 use drivers::pio::*;
