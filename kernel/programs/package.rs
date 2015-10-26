@@ -35,7 +35,7 @@ impl Package {
 
         let path_parts = url.path_parts();
         if path_parts.len() > 0 {
-            if let Some(part) = path_parts.get(path_parts.len() - 1) {
+            if let Some(part) = path_parts.get(path_parts.len() - 2) {
                 package.id = part.clone();
                 package.binary = URL::from_string(&(url.to_string() + part + ".bin"));
             }
