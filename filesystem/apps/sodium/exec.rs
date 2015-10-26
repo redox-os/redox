@@ -27,15 +27,15 @@ impl Editor {
                             }));
 
                     },
-                    Char('h') => self.left(n as usize),
-                    Char('j') => self.down(n as usize),
-                    Char('k') => self.up(n as usize),
-                    Char('l') => self.right(n as usize),
-                    Char('J') => self.down(15),
-                    Char('K') => self.up(15),
+                    Char('h') => self.goto_left(n as usize),
+                    Char('j') => self.goto_down(n as usize),
+                    Char('k') => self.goto_up(n as usize),
+                    Char('l') => self.goto_right(n as usize),
+                    Char('J') => self.goto_down(15),
+                    Char('K') => self.goto_up(15),
                     Char('x') => self.delete(),
                     Char('X') => {
-                        self.previous();
+                        self.goto_previous();
                         self.delete();
                     },
                     Char('$') => self.cursor_mut().x = self.text[self.y()].len(),
@@ -61,7 +61,7 @@ impl Editor {
                         self.cursor_mut().y = new.1;
 
                     },
-                    Char(' ') => self.next(),
+                    Char(' ') => self.goto_next(),
                     _ => {},
                 },
                 Primitive(Insert(_)) => {

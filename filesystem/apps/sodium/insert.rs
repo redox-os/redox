@@ -33,20 +33,20 @@ impl Editor {
                 self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
                 self.text.insert(y + 1, VecDeque::from_iter(second_part.iter().map(|x| *x)));
 
-                self.next();
+                self.goto_next();
             },
             Key::Escape => { // Escape key
                 self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
             },
             Key::Backspace => { // Backspace
                 if self.x() != 0 || self.y() != 0 {
-                    self.previous();
+                    self.goto_previous();
                     self.delete();
                 }
             },
             Key::Char(ch) => {
                 self.text[y].insert(x, ch);
-                self.next();
+                self.goto_next();
             }
             _ => {},
         }
