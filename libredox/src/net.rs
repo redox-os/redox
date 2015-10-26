@@ -1,7 +1,7 @@
 //! A module dealing with network connections
 
-use string::*;
-use to_num::*;
+use string::{String, ToString};
+use to_num::ToNum;
 use vec::Vec;
 
 pub trait FromBytes {

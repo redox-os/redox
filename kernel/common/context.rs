@@ -1,14 +1,14 @@
-use alloc::boxed::*;
+use alloc::boxed::{Box, FnBox};
 
-use core::mem;
-use core::ptr;
+use core::{mem, ptr};
 
 use common::memory;
-use common::paging::*;
-use common::resource::*;
+use common::paging::Page;
 use common::scheduler;
-use common::string::*;
-use common::vec::*;
+use common::string::String;
+use common::vec::Vec;
+
+use schemes::Resource;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
@@ -332,6 +332,7 @@ impl Context {
     //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
+    //#[naked]
     #[cfg(target_arch = "x86")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfd
@@ -371,6 +372,7 @@ impl Context {
     //It should have no extra pushes or pops
     #[cold]
     #[inline(never)]
+    //#[naked]
     #[cfg(target_arch = "x86_64")]
     pub unsafe fn switch(&mut self, other: &mut Self) {
         asm!("pushfq

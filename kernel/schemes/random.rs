@@ -1,15 +1,14 @@
 use alloc::boxed::Box;
 
 use common::random;
-use common::resource::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 /// A pseudorandomness scheme
 pub struct RandomScheme;
 
-impl SessionItem for RandomScheme {
+impl KScheme for RandomScheme {
     fn scheme(&self) -> String {
         return "random".to_string();
     }

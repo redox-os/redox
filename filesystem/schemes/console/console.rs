@@ -1,10 +1,11 @@
 use redox::Box;
 use redox::cell::UnsafeCell;
+use redox::Color;
 use redox::console::ConsoleWindow;
+use redox::io::SeekFrom;
 use redox::rc::Rc;
 use redox::str;
-use redox::string::*;
-use redox::io::SeekFrom;
+use redox::string::{String, ToString};
 
 pub struct Resource {
     console_window: Rc<UnsafeCell<Box<ConsoleWindow>>>,
@@ -27,20 +28,8 @@ impl Resource {
         })
     }
 
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
-        let path = "console:".to_string() + &self.inner().window.title();
-
-        let mut i = 0;
-        for b in path.bytes() {
-            if i < buf.len() {
-                buf[i] = b;
-                i += 1;
-            } else {
-                break;
-            }
-        }
-
-        Some(i)
+    pub fn path(&self) -> Option<String> {
+        Some("console:".to_string() + &self.inner().window.title())
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -71,7 +60,7 @@ impl Resource {
     }
 
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) }, [224, 224, 224, 255]);
+        self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) }, Color::rgba(224, 224, 224, 255));
         self.sync();
 
         Some(buf.len())

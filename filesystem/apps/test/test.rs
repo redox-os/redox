@@ -1,27 +1,12 @@
-#![feature(asm)]
+use redox::Box;
+use redox::console::*;
+use redox::rand;
+use redox::ptr;
+use redox::slice::SliceConcatExt;
+use redox::string::*;
+use redox::syscall::sys_fork;
+use redox::Vec;
 
-use std::Box;
-use std::{io, rand};
-use std::ptr;
-use std::syscall::sys_fork;
-
-macro_rules! readln {
-    () => {
-        {
-            let mut line = String::new();
-            match io::stdin().read_line(&mut line) {
-                Ok(_) => Some(line.trim().to_string()),
-                Err(_) => None
-            }
-        }
-    };
-}
-
-fn console_title(title: &str) {
-
-}
-
-#[no_mangle]
 pub fn main() {
     console_title("Test");
 
@@ -52,7 +37,7 @@ pub fn main() {
                     unsafe { ptr::write(a_ptr, rand() as u8); }
                 }
                 command if command == console_commands[3] => {
-                    let mut a_box = Box::new(rand() as u8);
+                    let a_box = Box::new(rand() as u8);
                     unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
                 }
                 command if command == console_commands[4] => {

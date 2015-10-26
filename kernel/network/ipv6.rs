@@ -1,10 +1,6 @@
 // TODO
 
-use core::mem::size_of;
-use core::option::Option;
-
-use common::debug::*;
-use common::vec::*;
+use common::debug;
 
 use network::common::*;
 
@@ -20,11 +16,11 @@ pub struct IPv6 {
 
 impl IPv6 {
     pub fn d(&self) {
-        d("IPv6 ");
-        dh(self.next_header as usize);
-        d(" from ");
+        debug::d("IPv6 ");
+        debug::dh(self.next_header as usize);
+        debug::d(" from ");
         self.src.d();
-        d(" to ");
+        debug::d(" to ");
         self.dst.d();
     }
 }

@@ -75,7 +75,6 @@ impl Editor {
         } else {
             (0, self.y())
         }
-
     }
     /// Goto the left char
     #[inline]
@@ -130,5 +129,4 @@ impl Editor {
         let p = self.ln_end_pos();
         self.goto(p);
     }
-
 }

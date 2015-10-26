@@ -1,6 +1,6 @@
 use redox::Box;
 use redox::fs::file::File;
-use redox::string::*;
+use redox::string::{String, ToString};
 use redox::io::{Read, Write, Seek, SeekFrom};
 
 pub struct Resource {
@@ -17,8 +17,8 @@ impl Resource {
         }
     }
 
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
-        self.file.path(buf)
+    pub fn path(&self) -> Option<String> {
+        self.file.path()
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

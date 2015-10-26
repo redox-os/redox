@@ -11,47 +11,69 @@
 #undef errno
 extern int errno;
 
+#define SYS_BRK 45
+#define SYS_CHDIR 12
+#define SYS_CLOSE 6
+#define SYS_DUP 41
+#define SYS_EXECVE 11
 #define SYS_EXIT 1
 #define SYS_FORK 2
-#define SYS_READ 3
-#define SYS_WRITE 4
-#define SYS_OPEN 5
-#define SYS_CLOSE 6
-#define SYS_LSEEK 19
+#define SYS_FPATH 3001
 #define SYS_FSTAT 28
-#define SYS_BRK 45
+#define SYS_FSYNC 118
 #define SYS_GETTIMEOFDAY 78
+#define SYS_LINK 9
+#define SYS_LSEEK 19
+#define SYS_OPEN 5
+#define SYS_READ 3
+#define SYS_UNLINK 10
+#define SYS_WRITE 4
 #define SYS_YIELD 158
 
-uint syscall(uint eax, uint ebx, uint ecx, uint edx) {
+uint syscall(uint a, uint b, uint c, uint d) {
     asm volatile("int $0x80"
-        : "=a"(eax)
-        : "a"(eax), "b"(ebx), "c"(ecx), "d"(edx)
+        : "=a"(a)
+        : "a"(a), "b"(b), "c"(c), "d"(d)
         : "memory");
 
-    return eax;
+    return a;
 }
 
 void _exit(int code){
     syscall(SYS_EXIT, (uint)code, 0, 0);
 }
 
+int chdir(const char *path){
+    return (int)syscall(SYS_CHDIR, (uint)path, 0, 0);
+}
+
 int close(int file){
     return (int)syscall(SYS_CLOSE, (uint)file, 0, 0);
 }
 
+int dup(int file){
+    return (int)syscall(SYS_DUP, (unit)file, 0, 0);
+}
+
 int execve(char *name, char **argv, char **env) {
-    errno = ENOMEM;
-    return -1;
+    return (int)syscall(SYS_EXECVE, (uint)name, (uint)argv, (uint)env);
 }
 
 int fork(void) {
     return (int)syscall(SYS_FORK, 0, 0, 0);
 }
 
+int fpath(int file, char *ptr, int len) {
+    return (int)syscall(SYS_FPATH, (uint)ptr, (uint)len, 0);
+}
+
 int fstat(int file, struct stat *st) {
     st->st_mode = S_IFCHR;
     return 0;
+}
+
+int fsync(int file) {
+    return (int)syscall(SYS_FSYNC, (usize)fd, 0, 0);
 }
 
 int getpid() {
@@ -71,16 +93,15 @@ int kill(int pid, int sig) {
     return -1;
 }
 
-int link(char *old, char *new) {
-    errno = EMLINK;
-    return -1;
+int link(const char *old, const char *new) {
+    return (int)syscall(SYS_LINK, (uint)old, (uint)new, 0);
 }
 
 int lseek(int file, int ptr, int dir) {
     return (int)syscall(SYS_LSEEK, (uint)file, (uint)ptr, (uint)dir);
 }
 
-int open(const char * file, int flags, ...) {
+int open(const char *file, int flags, ...) {
     return (int)syscall(SYS_OPEN, (uint)file, (uint)flags, 0);
 }
 
@@ -107,8 +128,7 @@ clock_t times(struct tms *buf) {
 }
 
 int unlink(char *name) {
-    errno = ENOENT;
-    return -1;
+    return (int)syscall(SYS_UNLINK, (usize)name, 0, 0);
 }
 
 int wait(int *status) {

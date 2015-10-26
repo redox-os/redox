@@ -1,20 +1,17 @@
 use alloc::boxed::Box;
 
-use core::cmp::{min, max};
-use core::mem::size_of;
-use core::ptr;
+use core::{cmp, mem, ptr};
 
 use common::context::context_switch;
-use common::event::*;
-use common::string::*;
-use common::resource::*;
+use common::event::Event;
+use common::string::{String, ToString};
 
-use graphics::display::*;
-use graphics::point::*;
-use graphics::size::*;
-use graphics::window::*;
+use graphics::display::Display;
+use graphics::point::Point;
+use graphics::size::Size;
+use graphics::window::Window;
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, ResourceSeek, URL};
 
 /// A window scheme
 pub struct WindowScheme;
@@ -48,11 +45,11 @@ impl Resource for WindowResource {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         //Read events from window
         let mut i = 0;
-        while buf.len() - i >= size_of::<Event>() {
+        while buf.len() - i >= mem::size_of::<Event>() {
             match self.window.poll() {
                 Some(event) => {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
-                    i += size_of::<Event>();
+                    i += mem::size_of::<Event>();
                 }
                 None => unsafe { context_switch(false) },
             }
@@ -65,7 +62,7 @@ impl Resource for WindowResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let content = &mut self.window.content;
 
-        let size = min(content.size - self.seek, buf.len());
+        let size = cmp::min(content.size - self.seek, buf.len());
         unsafe {
             Display::copy_run(buf.as_ptr() as usize,
                               content.offscreen + self.seek,
@@ -81,9 +78,9 @@ impl Resource for WindowResource {
         let end = self.window.content.size;
 
         self.seek = match pos {
-            ResourceSeek::Start(offset) => min(end, max(0, offset)),
-            ResourceSeek::Current(offset) => min(end, max(0, self.seek as isize + offset) as usize),
-            ResourceSeek::End(offset) => min(end, max(0, end as isize + offset) as usize),
+            ResourceSeek::Start(offset) => cmp::min(end, cmp::max(0, offset)),
+            ResourceSeek::Current(offset) => cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
+            ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
         };
 
         return Some(self.seek);
@@ -96,7 +93,7 @@ impl Resource for WindowResource {
     }
 }
 
-impl SessionItem for WindowScheme {
+impl KScheme for WindowScheme {
     fn scheme(&self) -> String {
         return "window".to_string();
     }

@@ -1,13 +1,14 @@
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
 use core::ops::DerefMut;
 
 use common::context::context_switch;
-use common::debug::*;
-use common::queue::*;
-use common::resource::*;
+use common::debug;
+use common::queue::Queue;
 use common::scheduler;
-use common::vec::*;
+use common::vec::Vec;
+
+use schemes::{Resource, ResourceSeek, URL};
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -64,7 +65,7 @@ impl Resource for NetworkResource {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        d("TODO: Implement read for RTL8139\n");
+        debug::d("TODO: Implement read for RTL8139\n");
         None
     }
 

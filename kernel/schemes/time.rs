@@ -1,16 +1,14 @@
 use alloc::boxed::Box;
 
-use common::resource::{Resource, URL, VecResource};
 use common::string::{String, ToString};
-
 use common::scheduler;
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 /// A time scheme
 pub struct TimeScheme;
 
-impl SessionItem for TimeScheme {
+impl KScheme for TimeScheme {
     fn scheme(&self) -> String {
         "time".to_string()
     }

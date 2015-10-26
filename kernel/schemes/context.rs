@@ -1,15 +1,14 @@
 use alloc::boxed::Box;
 
-use common::context::*;
-use common::resource::{Resource, URL, VecResource};
+use common::context;
 use common::scheduler;
 use common::string::{String, ToString};
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 pub struct ContextScheme;
 
-impl SessionItem for ContextScheme {
+impl KScheme for ContextScheme {
     fn scheme(&self) -> String {
         "context".to_string()
     }
@@ -19,8 +18,8 @@ impl SessionItem for ContextScheme {
         let len;
         unsafe {
             let reenable = scheduler::start_no_ints();
-            i = context_i;
-            len = (*contexts_ptr).len();
+            i = context::context_i;
+            len = (*context::contexts_ptr).len();
             scheduler::end_no_ints(reenable);
         }
 

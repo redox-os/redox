@@ -2,16 +2,16 @@ use alloc::boxed::Box;
 
 use core::{ptr, mem};
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 
 use common::debug;
 use common::memory;
-use common::resource::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::time::{self, Duration};
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 #[repr(packed)]
 struct Stream {
@@ -214,7 +214,7 @@ pub struct IntelHDA {
     pub irq: u8,
 }
 
-impl SessionItem for IntelHDA {
+impl KScheme for IntelHDA {
     fn scheme(&self) -> String {
         "hda".to_string()
     }

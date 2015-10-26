@@ -1,8 +1,8 @@
 use core::usize;
 
 use io::{Read, Write, Seek, SeekFrom};
-
-use string::ToString;
+use string::{String, ToString};
+use vec::Vec;
 
 use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_read, sys_write, sys_lseek, sys_fsync};
 
@@ -48,13 +48,14 @@ impl File {
     }
 
     /// Get the canonical path of the file
-    pub fn path(&self, buf: &mut [u8]) -> Option<usize> {
+    pub fn path(&self) -> Option<String> {
         unsafe {
+            let mut buf: [u8; 4096] = [0; 4096];
             let count = sys_fpath(self.fd, buf.as_mut_ptr(), buf.len());
             if count == usize::MAX {
                 None
             } else {
-                Some(count)
+                Some(String::from_utf8_unchecked(Vec::from(&buf[0..count])))
             }
         }
     }

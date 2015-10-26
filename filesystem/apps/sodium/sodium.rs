@@ -41,6 +41,5 @@ mod exec;
 pub use self::exec::*;
 
 pub fn main() {
-    let mut editor = Editor::new();
+    let editor = Editor::new();
 }
-

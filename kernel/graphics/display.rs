@@ -1,19 +1,13 @@
 use alloc::boxed::Box;
 
-use core::cmp::min;
-use core::cmp::max;
-use core::mem::size_of;
-use core::mem::swap;
-use core::mem::transmute;
-use core::ops::Drop;
+use core::{cmp, mem};
 use core::simd::*;
 
-use common::memory::*;
-use common::scheduler;
+use common::{memory, scheduler};
 
-use graphics::color::*;
-use graphics::point::*;
-use graphics::size::*;
+use super::color::Color;
+use super::point::Point;
+use super::size::Size;
 
 /// The info of the VBE mode
 #[derive(Copy, Clone)]
@@ -73,7 +67,7 @@ impl Display {
         let mode_info = &*VBEMODEINFO;
 
         let ret = box Display {
-            offscreen: alloc(mode_info.bytesperscanline as usize *
+            offscreen: memory::alloc(mode_info.bytesperscanline as usize *
                                  mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
@@ -96,8 +90,8 @@ impl Display {
             let memory_size = bytesperrow * height;
 
             let ret = box Display {
-                offscreen: alloc(memory_size),
-                onscreen: alloc(memory_size),
+                offscreen: memory::alloc(memory_size),
+                onscreen: memory::alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width: width,
@@ -116,23 +110,23 @@ impl Display {
     pub unsafe fn set_run(data: u32, dst: usize, len: usize) {
         let mut i = 0;
         //Only use 16 byte transfer if possible
-        if len - (dst + i) % 16 >= size_of::<u32x4>() {
+        if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
             //Align 16
-            while (dst + i) % 16 != 0 && len - i >= size_of::<u32>() {
+            while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
                 *((dst + i) as *mut u32) = data;
-                i += size_of::<u32>();
+                i += mem::size_of::<u32>();
             }
             //While 16 byte transfers
             let simd: u32x4 = u32x4(data, data, data, data);
-            while len - i >= size_of::<u32x4>() {
+            while len - i >= mem::size_of::<u32x4>() {
                 *((dst + i) as *mut u32x4) = simd;
-                i += size_of::<u32x4>();
+                i += mem::size_of::<u32x4>();
             }
         }
         //Everything after last 16 byte transfer
-        while len - i >= size_of::<u32>() {
+        while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = data;
-            i += size_of::<u32>();
+            i += mem::size_of::<u32>();
         }
     }
 
@@ -141,20 +135,20 @@ impl Display {
         //Only use 16 byte transfer if possible
         if (src + i) % 16 == (dst + i) % 16 {
             //Align 16
-            while (dst + i) % 16 != 0 && len - i >= size_of::<u32>() {
+            while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
                 *((dst + i) as *mut u32) = *((src + i) as *const u32);
-                i += size_of::<u32>();
+                i += mem::size_of::<u32>();
             }
             //While 16 byte transfers
-            while len - i >= size_of::<u32x4>() {
+            while len - i >= mem::size_of::<u32x4>() {
                 *((dst + i) as *mut u32x4) = *((src + i) as *const u32x4);
-                i += size_of::<u32x4>();
+                i += mem::size_of::<u32x4>();
             }
         }
         //Everything after last 16 byte transfer
-        while len - i >= size_of::<u32>() {
+        while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = *((src + i) as *const u32);
-            i += size_of::<u32>();
+            i += mem::size_of::<u32>();
         }
     }
 
@@ -185,8 +179,8 @@ impl Display {
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
-                let self_mut: *mut Self = transmute(self);
-                swap(&mut (*self_mut).offscreen,
+                let self_mut: *mut Self = mem::transmute(self);
+                mem::swap(&mut (*self_mut).offscreen,
                      &mut (*self_mut).onscreen);
             }
             scheduler::end_no_ints(reenable);
@@ -199,12 +193,12 @@ impl Display {
         let alpha = (color.data & 0xFF000000) >> 24;
 
         if alpha > 0 {
-            let start_y = max(0, min(self.height as isize - 1, point.y)) as usize;
+            let start_y = cmp::max(0, cmp::min(self.height as isize - 1, point.y)) as usize;
             let end_y =
-                max(0, min(self.height as isize - 1, point.y + size.height as isize)) as usize;
+                cmp::max(0, cmp::min(self.height as isize - 1, point.y + size.height as isize)) as usize;
 
-            let start_x = max(0, min(self.width as isize - 1, point.x)) as usize * 4;
-            let len = max(0, min(self.width as isize - 1, point.x + size.width as isize)) as usize *
+            let start_x = cmp::max(0, cmp::min(self.width as isize - 1, point.x)) as usize * 4;
+            let len = cmp::max(0, cmp::min(self.width as isize - 1, point.x + size.width as isize)) as usize *
                       4 - start_x;
 
             if alpha >= 255 {
@@ -347,11 +341,11 @@ impl Display {
 
     /// Draw an image
     pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
-        let start_y = max(0, point.y) as usize;
-        let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
+        let start_y = cmp::max(0, point.y) as usize;
+        let end_y = cmp::min(self.height as isize, point.y + size.height as isize) as usize;
 
-        let start_x = max(0, point.x) as usize;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 -
+        let start_x = cmp::max(0, point.x) as usize;
+        let len = cmp::min(self.width as isize, point.x + size.width as isize) as usize * 4 -
                   start_x * 4;
         let offscreen_offset = self.offscreen + start_x * 4;
 
@@ -369,11 +363,11 @@ impl Display {
 
     /// Draw a image with opacity
     pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size) {
-        let start_y = max(0, point.y) as usize;
-        let end_y = min(self.height as isize, point.y + size.height as isize) as usize;
+        let start_y = cmp::max(0, point.y) as usize;
+        let end_y = cmp::min(self.height as isize, point.y + size.height as isize) as usize;
 
-        let start_x = max(0, point.x) as usize;
-        let len = min(self.width as isize, point.x + size.width as isize) as usize * 4 -
+        let start_x = cmp::max(0, point.x) as usize;
+        let len = cmp::min(self.width as isize, point.x + size.width as isize) as usize * 4 -
                   start_x * 4;
         let offscreen_offset = self.offscreen + start_x * 4;
 
@@ -391,20 +385,20 @@ impl Display {
     //TODO: SIMD to optimize
     pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize) {
         let mut i = 0;
-        while len - i >= size_of::<u32>() {
+        while len - i >= mem::size_of::<u32>() {
             let orig = *((dst + i) as *const u32);
             let r = (((orig >> 16) & 0xFF) * n_alpha) >> 8;
             let g = (((orig >> 8) & 0xFF) * n_alpha) >> 8;
             let b = ((orig & 0xFF) * n_alpha) >> 8;
             *((dst + i) as *mut u32) = ((r << 16) | (g << 8) | b) + premul;
-            i += size_of::<u32>();
+            i += mem::size_of::<u32>();
         }
     }
 
     //TODO: SIMD to optimize
     pub unsafe fn copy_run_alpha(src: usize, dst: usize, len: usize) {
         let mut i = 0;
-        while len - i >= size_of::<u32>() {
+        while len - i >= mem::size_of::<u32>() {
             let new = *((src + i) as *const u32);
             let alpha = (new >> 24) & 0xFF;
             if alpha > 0 {
@@ -425,7 +419,7 @@ impl Display {
                                                ((n_r << 16) | (n_g << 8) | n_b);
                 }
             }
-            i += size_of::<u32>();
+            i += mem::size_of::<u32>();
         }
     }
 
@@ -453,11 +447,11 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                unalloc(self.offscreen);
+                memory::unalloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                unalloc(self.onscreen);
+                memory::unalloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

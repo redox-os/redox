@@ -2,21 +2,20 @@ use alloc::boxed::Box;
 
 use core::ptr;
 
-use common::debug;
-use common::memory;
+use common::{debug, memory};
 use common::queue::Queue;
-use common::resource::{Resource, URL};
+use schemes::{Resource, URL};
 use common::scheduler;
 use common::string::{String, ToString};
 use common::vec::Vec;
 
-use drivers::pciconfig::*;
+use drivers::pciconfig::PCIConfig;
 use drivers::pio::*;
 
 use network::common::*;
 use network::scheme::*;
 
-use programs::session::SessionItem;
+use schemes::KScheme;
 
 #[repr(packed)]
 struct TXD {
@@ -199,7 +198,7 @@ impl RTL8139 {
     }
 }
 
-impl SessionItem for RTL8139 {
+impl KScheme for RTL8139 {
     fn scheme(&self) -> String {
         "network".to_string()
     }

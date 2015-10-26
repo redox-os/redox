@@ -1,4 +1,6 @@
-use string::*;
+use super::color::Color;
+
+use string::{String, ToString};
 use vec::Vec;
 
 // TODO: Follow naming convention
@@ -9,7 +11,8 @@ pub struct BMPFile {
     /// The bitmap height
     h: usize,
     /// The data of the bitmap
-    data: Vec<[u8; 4]>,
+    //data: Vec<[u8; 4]>,
+    data: Vec<Color>,
 }
 
 impl BMPFile {
@@ -60,20 +63,20 @@ impl BMPFile {
             let bytes = (depth + 7) / 8;
             let row_bytes = (depth * width + 31) / 32 * 4;
 
-            let mut red_mask = 0xFF;
+            let mut blue_mask = 0xFF;
             let mut green_mask = 0xFF00;
-            let mut blue_mask = 0xFF0000;
+            let mut red_mask = 0xFF0000;
             let mut alpha_mask = 0xFF000000;
             if getd(0x1E) == 3 {
-                blue_mask = getd(0x36);
+                red_mask = getd(0x36);
                 green_mask = getd(0x3A);
-                red_mask = getd(0x3E);
+                blue_mask = getd(0x3E);
                 alpha_mask = getd(0x42);
             }
 
-            let mut red_shift = 0;
-            while red_mask > 0 && red_shift < 32 && (red_mask >> red_shift) & 1 == 0 {
-                red_shift += 1;
+            let mut blue_shift = 0;
+            while blue_mask > 0 && blue_shift < 32 && (blue_mask >> blue_shift) & 1 == 0 {
+                blue_shift += 1;
             }
 
             let mut green_shift = 0;
@@ -81,9 +84,9 @@ impl BMPFile {
                 green_shift += 1;
             }
 
-            let mut blue_shift = 0;
-            while blue_mask > 0 && blue_shift < 32 && (blue_mask >> blue_shift) & 1 == 0 {
-                blue_shift += 1;
+            let mut red_shift = 0;
+            while red_mask > 0 && red_shift < 32 && (red_mask >> red_shift) & 1 == 0 {
+                red_shift += 1;
             }
 
             let mut alpha_shift = 0;
@@ -103,9 +106,9 @@ impl BMPFile {
                     let blue = ((pixel_data & blue_mask) >> blue_shift) as u8;
                     let alpha = ((pixel_data & alpha_mask) >> alpha_shift) as u8;
                     if bytes == 3 {
-                        ret.data.push([red, green, blue, 255]);
+                        ret.data.push(Color::rgb(red,green,blue));
                     } else if bytes == 4 {
-                        ret.data.push([red, green, blue, alpha]);
+                        ret.data.push(Color::rgba(red,green,blue,alpha));
                     }
                 }
             }
@@ -117,7 +120,7 @@ impl BMPFile {
     }
 
     /// Convert to slice for drawing
-    pub fn as_slice(&self) -> &[[u8; 4]] {
+    pub fn as_slice(&self) -> &[Color] {
         &self.data
     }
 
