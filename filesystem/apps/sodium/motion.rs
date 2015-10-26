@@ -1,6 +1,7 @@
 use super::*;
 
 impl Editor {
+    /// Convert an instruction to a motion (new coordinate)
     pub fn to_motion(&self, Inst(n, cmd): Inst) -> (usize, usize) {
         use super::Key::*;
         match cmd {

@@ -47,14 +47,20 @@ impl Editor {
     }
 }
 
+/// The statubar (showing various info about the current state of the editor)
 pub struct StatusBar {
+    /// The current mode
     pub mode: String,
+    /// The cureent char
     pub file: String,
+    /// The current command
     pub cmd: String,
+    /// A message (such as an error or other info to the user)
     pub msg: String,
 }
 
 impl StatusBar {
+    /// Create new status bar
     pub fn new() -> Self {
         StatusBar {
             mode: "Normal".to_string(),

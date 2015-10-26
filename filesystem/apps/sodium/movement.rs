@@ -1,7 +1,7 @@
 use super::*;
 
 impl Editor {
-    /// Get pos of next char
+    /// Get the position of the next char
     pub fn next_pos(&self) -> (usize, usize) {
         // TODO: Add numerals
         if self.x() == self.text[self.y()].len() {
@@ -15,7 +15,7 @@ impl Editor {
         }
     }
 
-    /// Get pos of previous char
+    /// Get the position of previous char
     pub fn previous_pos(&self) -> (usize, usize) {
         if self.x() == 0 {
             if self.y() > 0 {
@@ -28,18 +28,20 @@ impl Editor {
         }
     }
 
+    /// Goto the next char
     pub fn goto_next(&mut self) {
         let (x, y) = self.next_pos();
         self.cursor_mut().x = x;
         self.cursor_mut().y = y;
     }
+    /// Goto the previous char
     pub fn goto_previous(&mut self) {
         let (x, y) = self.previous_pos();
         self.cursor_mut().x = x;
         self.cursor_mut().y = y;
     }
 
-    /// Get right pos
+    /// Get the position of the right char
     pub fn right_pos(&self, n: usize) -> (usize, usize) {
         let x = self.x() + n;
 
@@ -49,11 +51,12 @@ impl Editor {
             (x, self.y())
         }
     }
+    /// Goto the right char
     pub fn goto_right(&mut self, n: usize) {
         self.cursor_mut().x = self.right_pos(n).0;
     }
 
-    /// Get left pos
+    /// Get the position of the left char
     pub fn left_pos(&self, n: usize) -> (usize, usize) {
         if n <= self.x() {
             (self.x() - n, self.y())
@@ -62,11 +65,12 @@ impl Editor {
         }
 
     }
+    /// Goto the left char
     pub fn goto_left(&mut self, n: usize) {
         self.cursor_mut().x = self.left_pos(n).0;
     }
 
-    /// Get up pos
+    /// Get the position of the char above the cursor
     pub fn up_pos(&self, n: usize) -> (usize, usize) {
         if n <= self.y() {
             (self.cursor().x, self.y() - n)
@@ -74,13 +78,14 @@ impl Editor {
             (self.cursor().x, 0)
         }
     }
+    /// Go a char up
     pub fn goto_up(&mut self, n: usize) {
         let (x, y) = self.up_pos(n);
         self.cursor_mut().x = x;
         self.cursor_mut().y = y;
     }
 
-    /// Get down pos
+    /// Get the position under the char
     pub fn down_pos(&self, n: usize) -> (usize, usize) {
         let y = self.y() + n;
 
@@ -91,6 +96,7 @@ impl Editor {
         }
     }
 
+    /// Go down
     pub fn goto_down(&mut self, n: usize) {
         let (x, y) = self.down_pos(n);
         self.cursor_mut().x = x;

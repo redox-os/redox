@@ -5,8 +5,11 @@ use core::iter::FromIterator;
 #[derive(Clone, PartialEq, Copy)]
 /// The type of the insert mode
 pub enum InsertMode {
+    /// Append text (after the cursor)
     Append,
+    /// Insert text (before the cursor)
     Insert,
+    /// Replace text (on the cursor)
     Replace,
 }
 
