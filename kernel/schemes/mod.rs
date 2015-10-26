@@ -1,10 +1,10 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
 use core::cmp::{min, max};
 use core::mem;
-
-use common::string::*;
-use common::vec::*;
 
 /// ARP scheme
 pub mod arp;
@@ -135,11 +135,6 @@ impl URL {
         return self.string.len();
     }
 
-    // FIXME: Strange naming.
-    pub fn d(&self) {
-        self.string.d();
-    }
-
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
         unsafe {
@@ -149,9 +144,9 @@ impl URL {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> String {
-        if let Some(part) = self.string.split("/".to_string()).next() {
-            if let Some(scheme_part) = part.split(":".to_string()).next() {
-                return scheme_part;
+        if let Some(part) = self.string.split('/').next() {
+            if let Some(scheme_part) = part.split(':').next() {
+                return scheme_part.to_string();
             }
         }
         return String::new();
@@ -163,22 +158,22 @@ impl URL {
         let mut host = String::new();
 
         let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
+        for part in self.string.split('/') {
             match part_i {
                 0 => (),
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()) {
+                    for host_part in part.split('@') {
                         let mut host_subpart_i = 0;
-                        for host_subpart in host_part.split(":".to_string()) {
+                        for host_subpart in host_part.split(':') {
                             match host_part_i {
                                 0 => match host_subpart_i {
-                                    0 => username = host_subpart,
+                                    0 => username = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 1 => match host_subpart_i {
-                                    0 => host = host_subpart,
+                                    0 => host = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 _ => (),
@@ -206,22 +201,22 @@ impl URL {
         let mut port = String::new();
 
         let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
+        for part in self.string.split('/') {
             match part_i {
                 0 => (),
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()) {
+                    for host_part in part.split('@') {
                         let mut host_subpart_i = 0;
-                        for host_subpart in host_part.split(":".to_string()) {
+                        for host_subpart in host_part.split(':') {
                             match host_part_i {
                                 0 => match host_subpart_i {
-                                    1 => password = host_subpart,
+                                    1 => password = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 1 => match host_subpart_i {
-                                    1 => port = host_subpart,
+                                    1 => port = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 _ => (),
@@ -248,22 +243,22 @@ impl URL {
         let mut host = String::new();
 
         let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
+        for part in self.string.split('/') {
             match part_i {
                 0 => (),
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()) {
+                    for host_part in part.split('@') {
                         let mut host_subpart_i = 0;
-                        for host_subpart in host_part.split(":".to_string()) {
+                        for host_subpart in host_part.split(':') {
                             match host_part_i {
                                 0 => match host_subpart_i {
-                                    0 => username = host_subpart,
+                                    0 => username = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 1 => match host_subpart_i {
-                                    0 => host = host_subpart,
+                                    0 => host = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 _ => (),
@@ -290,22 +285,22 @@ impl URL {
         let mut port = String::new();
 
         let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
+        for part in self.string.split('/') {
             match part_i {
                 0 => (),
                 1 => (),
                 2 => {
                     let mut host_part_i = 0;
-                    for host_part in part.split("@".to_string()) {
+                    for host_part in part.split('@') {
                         let mut host_subpart_i = 0;
-                        for host_subpart in host_part.split(":".to_string()) {
+                        for host_subpart in host_part.split(':') {
                             match host_part_i {
                                 0 => match host_subpart_i {
-                                    1 => password = host_subpart,
+                                    1 => password = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 1 => match host_subpart_i {
-                                    1 => port = host_subpart,
+                                    1 => port = host_subpart.to_string(),
                                     _ => (),
                                 },
                                 _ => (),
@@ -331,20 +326,15 @@ impl URL {
         let mut path = String::new();
 
         let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
+        for part in self.string.split('/') {
             match part_i {
                 0 => (),
                 1 => (),
                 2 => (),
-                3 => path = part,
+                3 => path = part.to_string(),
                 _ => path = path + "/" + part,
             }
             part_i += 1;
-        }
-
-        //Hack for folders
-        if part_i > 3 && self.string.ends_with("/".to_string()) {
-            path = path + "/";
         }
 
         return path;
@@ -355,12 +345,12 @@ impl URL {
         let mut path_parts: Vec<String> = Vec::new();
 
         let mut part_i = 0;
-        for part in self.string.split("/".to_string()) {
+        for part in self.string.split('/') {
             match part_i {
                 0 => (),
                 1 => (),
                 2 => (),
-                _ => path_parts.push(part),
+                _ => path_parts.push(part.to_string()),
             }
             part_i += 1;
         }
@@ -425,7 +415,7 @@ impl Resource for VecResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
-            self.vec.set(self.seek, buf[i]);
+            self.vec[self.seek] = buf[i];
             self.seek += 1;
             i += 1;
         }

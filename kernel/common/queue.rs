@@ -1,4 +1,4 @@
-use common::vec::Vec;
+use collections::vec::Vec;
 
 /// A FIFO Queue
 pub struct Queue<T> {
@@ -19,7 +19,11 @@ impl<T> Queue<T> {
 
     /// Pop the last element
     pub fn pop(&mut self) -> Option<T> {
-        self.vec.remove(0)
+        if self.vec.len() > 0 {
+            Some(self.vec.remove(0))
+        }else{
+            None
+        }
     }
 
     /// Get the length of the queue

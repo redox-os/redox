@@ -1,7 +1,7 @@
-use core::slice;
+use collections::string::String;
+use collections::vec::Vec;
 
-use common::string::String;
-use common::vec::Vec;
+use core::slice;
 
 use super::color::Color;
 use super::display::Display;
@@ -50,7 +50,7 @@ impl BMPFile {
         let gets = |start: usize, len: usize| -> String {
             let mut ret = String::new();
             for i in start..start + len {
-                ret = ret + get(i) as char;
+                ret.push(get(i) as char);
             }
             ret
         };

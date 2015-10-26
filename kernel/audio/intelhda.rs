@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+
 use core::{ptr, mem};
 
 use drivers::pciconfig::PCIConfig;
@@ -8,7 +10,6 @@ use common::debug;
 use common::memory;
 use schemes::{Resource, ResourceSeek, URL};
 use common::scheduler;
-use common::string::{String, ToString};
 use common::time::{self, Duration};
 
 use schemes::KScheme;

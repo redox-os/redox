@@ -1,6 +1,7 @@
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
 use common::context::context_switch;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use network::arp::*;
 use network::common::*;
@@ -33,7 +34,7 @@ impl ARPScheme {
                             response.header.src_mac = unsafe { MAC_ADDR };
                             response.header.src_ip = IP_ADDR;
 
-                            link.write(response.to_bytes().as_slice());
+                            link.write(&response.to_bytes());
                         }
                     }
                 }
