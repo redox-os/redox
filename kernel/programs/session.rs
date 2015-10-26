@@ -103,22 +103,22 @@ impl Session {
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
-        for item in self.items.iter() {
-            let reenable = scheduler::start_no_ints();
+        let reenable = scheduler::start_no_ints();
+        for mut item in self.items.iter_mut() {
             item.on_irq(irq);
-            scheduler::end_no_ints(reenable);
         }
+        scheduler::end_no_ints(reenable);
     }
 
     pub unsafe fn on_poll(&mut self) {
-        for item in self.items.iter() {
-            let reenable = scheduler::start_no_ints();
+        let reenable = scheduler::start_no_ints();
+        for mut item in self.items.iter_mut() {
             item.on_poll();
-            scheduler::end_no_ints(reenable);
         }
+        scheduler::end_no_ints(reenable);
     }
 
-    pub fn open(&self, url: &URL) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -133,9 +133,9 @@ impl Session {
                 }
             }
 
-            Some(box VecResource::new(URL::new(), list.to_utf8()))
+            Some(box VecResource::new(URL::new(), list.into_bytes()))
         } else {
-            for item in self.items.iter() {
+            for mut item in self.items.iter_mut() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
                 }
@@ -168,7 +168,7 @@ impl Session {
                     if package.icon.data.len() > 0 {
                         if mouse_event.x >= x &&
                            mouse_event.x < x + package.icon.size.width as isize {
-                            execute(&package.binary, &package.url, &Vec::new());
+                            execute(&package.binary, &package.url, Vec::new());
                         }
                         x += package.icon.size.width as isize;
                     }
@@ -225,7 +225,8 @@ impl Session {
         }
 
         if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
-            self.windows.push(self.windows.remove(catcher as usize));
+            let window_ptr = self.windows.remove(catcher as usize);
+            self.windows.push(window_ptr);
         }
 
         self.last_mouse_event = mouse_event;

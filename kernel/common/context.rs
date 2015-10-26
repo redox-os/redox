@@ -52,9 +52,9 @@ pub unsafe fn context_switch(interrupted: bool) {
         }
 
         if context_i != current_i {
-            match contexts.get(current_i) {
-                Some(ref mut current) => match contexts.get(context_i) {
-                    Some(ref mut next) => {
+            match contexts.get_mut(current_i) {
+                Some(mut current) => match contexts.get_mut(context_i) {
+                    Some(mut next) => {
                         current.interrupted = interrupted;
                         next.interrupted = false;
                         current.remap(next);
@@ -113,6 +113,7 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
                 fx_enabled: parent.fx_enabled,
                 memory: mem,
                 cwd: parent.cwd.clone(),
+                args: parent.args.clone(),
                 files: files,
                 interrupted: parent.interrupted,
                 exited: parent.exited,
@@ -134,9 +135,9 @@ pub unsafe extern "cdecl" fn context_fork(parent_i: usize){
 pub unsafe fn context_exit() {
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
+    let contexts = &mut *contexts_ptr;
     if context_enabled && context_i > 1 {
-        match contexts.get(context_i) {
+        match contexts.get_mut(context_i) {
             Some(mut current) => current.exited = true,
             None => (),
         }
@@ -175,6 +176,7 @@ pub struct Context {
     pub fx_enabled: bool,
     pub memory: Vec<ContextMemory>,
     pub cwd: String,
+    pub args: Vec<String>,
     pub files: Vec<ContextFile>,
     pub interrupted: bool,
     pub exited: bool,
@@ -189,6 +191,7 @@ impl Context {
             fx_enabled: false,
             memory: Vec::new(),
             cwd: String::new(),
+            args: Vec::new(),
             files: Vec::new(),
             interrupted: false,
             exited: false,
@@ -206,6 +209,7 @@ impl Context {
             fx_enabled: false,
             memory: Vec::new(),
             cwd: String::new(),
+            args: Vec::new(),
             files: Vec::new(),
             interrupted: false,
             exited: false,
@@ -440,11 +444,15 @@ impl Context {
 
 impl Drop for Context {
     fn drop(&mut self) {
-        while let Some(file) = self.files.remove(0) {
+        while let Some(file) = self.files.pop() {
             drop(file);
         }
 
-        while let Some(entry) = self.memory.remove(0) {
+        while let Some(arg) = self.args.pop() {
+            drop(arg);
+        }
+
+        while let Some(entry) = self.memory.pop() {
             unsafe {
                 memory::unalloc(entry.physical_address);
             }

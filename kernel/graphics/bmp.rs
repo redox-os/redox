@@ -50,7 +50,7 @@ impl BMPFile {
         let gets = |start: usize, len: usize| -> String {
             let mut ret = String::new();
             for i in start..start + len {
-                ret = ret + get(i) as char;
+                ret.push(get(i) as char);
             }
             ret
         };

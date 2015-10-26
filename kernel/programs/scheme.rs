@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::str;
 use collections::string::String;
 use collections::vec::Vec;
 
@@ -134,7 +135,7 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return URL::from_str(&str::from_utf8_unchecked(&buf));
+                return URL::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..result])) });
             }
         }
         URL::new()

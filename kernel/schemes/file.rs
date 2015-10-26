@@ -54,7 +54,7 @@ impl Node {
 
         Node {
             block: block,
-            name: String::from_utf8_unchecked(bytes),
+            name: unsafe { String::from_utf8_unchecked(bytes) },
             extents: data.extents,
         }
     }
@@ -212,7 +212,7 @@ impl FileSystem {
         let mut ret = Vec::<String>::new();
 
         for node in self.nodes.iter() {
-            if node.name.starts_with(directory.clone()) {
+            if node.name.starts_with(directory) {
                 ret.push(node.name[directory.len() ..].to_string());
             }
         }
@@ -390,7 +390,7 @@ impl Resource for FileResource {
 
                         debug::d("Renode\n");
 
-                        for mut node in (*self.scheme).fs.nodes.iter() {
+                        for mut node in (*self.scheme).fs.nodes.iter_mut() {
                             if node.block == self.node.block {
                                 *node = self.node.clone();
                             }
@@ -497,7 +497,7 @@ impl KScheme for FileScheme {
 
             for file in self.fs.list(&path).iter() {
                 let line;
-                match file.find("/".to_string()) {
+                match file.find('/') {
                     Some(index) => {
                         let dirname = file[.. index + 1].to_string();
                         let mut found = false;
@@ -573,7 +573,7 @@ impl KScheme for FileScheme {
                                     }
                                 }
 
-                                vec.push_all(&slice::from_raw_parts(data.ptr, extent.length as usize));
+                                vec.push_all(& unsafe { slice::from_raw_parts(data.ptr, extent.length as usize) });
                             }
                         }
                     }

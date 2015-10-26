@@ -42,28 +42,27 @@ impl Package {
         }
 
         let mut info = String::new();
+
         if let Some(mut resource) = URL::from_string(&(url.to_string() + "_REDOX")).open() {
-            let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
-            info = String::from_utf8_unchecked(vec);
+            resource.read_to_end(unsafe { info.as_mut_vec() });
         }
 
-        for line in info.lines() {
-            if line.starts_with("name=".to_string()) {
+        for line in info.lines_any() {
+            if line.starts_with("name=") {
                 package.name = line[5 ..].to_string();
-            } else if line.starts_with("binary=".to_string()) {
+            } else if line.starts_with("binary=") {
                 package.binary = URL::from_string(&(url.to_string() + &line[7 ..]));
-            } else if line.starts_with("icon=".to_string()) {
+            } else if line.starts_with("icon=") {
                 if let Some(mut resource) = URL::from_str(&line[5 ..]).open() {
                     let mut vec: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut vec);
                     package.icon = BMPFile::from_data(&vec);
                 }
-            } else if line.starts_with("accept=".to_string()) {
+            } else if line.starts_with("accept=") {
                 package.accepts.push(line[7 ..].to_string());
-            } else if line.starts_with("author=".to_string()) {
+            } else if line.starts_with("author=") {
                 package.authors.push(line[7 ..].to_string());
-            } else if line.starts_with("description=".to_string()) {
+            } else if line.starts_with("description=") {
                 package.descriptions.push(line[12 ..].to_string());
             } else {
                 debug::d("Unknown package info: ");

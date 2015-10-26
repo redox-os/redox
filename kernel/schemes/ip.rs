@@ -72,7 +72,7 @@ impl Resource for IPResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        let ip_data = unsafe { Vec::from_raw_buf(buf.as_ptr(), buf.len()) };
+        let ip_data = Vec::from(buf);
 
         self.id += 1;
         let mut ip = IPv4 {
