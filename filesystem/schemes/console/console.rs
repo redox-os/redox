@@ -5,7 +5,7 @@ use redox::console::ConsoleWindow;
 use redox::io::SeekFrom;
 use redox::rc::Rc;
 use redox::str;
-use redox::string::*;
+use redox::string::{String, ToString};
 
 pub struct Resource {
     console_window: Rc<UnsafeCell<Box<ConsoleWindow>>>,

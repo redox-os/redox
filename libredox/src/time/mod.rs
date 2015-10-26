@@ -1,13 +1,13 @@
 //! A module for time
 
-use core::cmp::*;
-use core::ops::*;
+use core::cmp::{Ordering, PartialEq};
+use core::ops::{Add, Sub};
 
 use syscall::{TV, sys_gettimeofday, sys_yield};
 
-pub const NANOS_PER_MICRO: i32 = 1000;
-pub const NANOS_PER_MILLI: i32 = 1000000;
-pub const NANOS_PER_SEC: i32 = 1000000000;
+pub const NANOS_PER_MICRO: i32 = 1_000;
+pub const NANOS_PER_MILLI: i32 = 1_000_000;
+pub const NANOS_PER_SEC:   i32 = 1_000_000_000;
 
 #[derive(Copy, Clone)]
 pub struct Duration {
