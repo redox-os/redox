@@ -66,6 +66,9 @@ impl Editor {
                             }));
                     },
                     Char('d') => {
+                        let ins = self.next_inst();
+                        let motion = self.to_motion(ins);
+                        self.remove_rb(motion);
                     },
                     Char('g') => {
                         let inst = self.next_inst();
