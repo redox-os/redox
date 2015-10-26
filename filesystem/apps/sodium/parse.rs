@@ -30,8 +30,8 @@ impl Repeat {
     }
 }
 
-/// Get the next instruction
 impl Editor {
+    /// Get the next instruction
     pub fn next_inst(&mut self) -> Inst {
         let mut n = 0;
         let mut shifted = false;
