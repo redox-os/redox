@@ -1,4 +1,4 @@
-use common::vec::Vec;
+use collections::vec::Vec;
 
 /// A FIFO Queue
 pub struct Queue<T> {

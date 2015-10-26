@@ -1,11 +1,12 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+
 use core::{cmp, ptr, mem};
 
 use common::debug;
 use common::memory;
 use schemes::{Resource, ResourceSeek, URL};
-use common::string::{String, ToString};
 use common::time::{self, Duration};
 
 use drivers::pciconfig::PCIConfig;

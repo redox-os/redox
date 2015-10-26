@@ -1,10 +1,11 @@
 use alloc::boxed::Box;
 
-use graphics::bmp::BMPFile;
+use collections::string::{String, ToString};
+use collections::vec::Vec;
 
 use common::debug;
-use common::string::{String, ToString};
-use common::vec::Vec;
+
+use graphics::bmp::BMPFile;
 
 use schemes::URL;
 
@@ -44,76 +45,33 @@ impl Package {
         if let Some(mut resource) = URL::from_string(&(url.to_string() + "_REDOX")).open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
-            info = String::from_utf8(&vec);
+            info = String::from_utf8_unchecked(vec);
         }
 
         for line in info.lines() {
             if line.starts_with("name=".to_string()) {
-                package.name = line.substr(5, line.len() - 5);
+                package.name = line[5 ..].to_string();
             } else if line.starts_with("binary=".to_string()) {
-                package.binary = URL::from_string(&(url.to_string() +
-                                                    line.substr(7, line.len() - 7)));
+                package.binary = URL::from_string(&(url.to_string() + &line[7 ..]));
             } else if line.starts_with("icon=".to_string()) {
-                if let Some(mut resource) = URL::from_string(&line.substr(5, line.len() - 5)).open() {
+                if let Some(mut resource) = URL::from_str(&line[5 ..]).open() {
                     let mut vec: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut vec);
                     package.icon = BMPFile::from_data(&vec);
                 }
             } else if line.starts_with("accept=".to_string()) {
-                package.accepts.push(line.substr(7, line.len() - 7));
+                package.accepts.push(line[7 ..].to_string());
             } else if line.starts_with("author=".to_string()) {
-                package.authors.push(line.substr(7, line.len() - 7));
+                package.authors.push(line[7 ..].to_string());
             } else if line.starts_with("description=".to_string()) {
-                package.descriptions.push(line.substr(12, line.len() - 12));
+                package.descriptions.push(line[12 ..].to_string());
             } else {
                 debug::d("Unknown package info: ");
-                line.d();
+                debug::d(&line);
                 debug::dl();
             }
         }
 
         package
-    }
-
-    pub fn d(&self) {
-        debug::d("URL: ");
-        self.url.d();
-        debug::dl();
-
-        debug::d("ID: ");
-        self.id.d();
-        debug::dl();
-
-        debug::d("Name: ");
-        self.name.d();
-        debug::dl();
-
-        debug::d("Binary: ");
-        self.binary.d();
-        debug::dl();
-
-        debug::d("Icon: ");
-        debug::dd(self.icon.size.width);
-        debug::d("x");
-        debug::dd(self.icon.size.height);
-        debug::dl();
-
-        for accept in self.accepts.iter() {
-            debug::d("Accept: ");
-            accept.d();
-            debug::dl();
-        }
-
-        for author in self.authors.iter() {
-            debug::d("Author: ");
-            author.d();
-            debug::dl();
-        }
-
-        for description in self.descriptions.iter() {
-            debug::d("Description: ");
-            description.d();
-            debug::dl();
-        }
     }
 }

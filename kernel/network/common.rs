@@ -1,6 +1,5 @@
-use common::debug;
-use common::string::{String, ToString};
-use common::vec::Vec;
+use collections::string::{String, ToString};
+use collections::vec::Vec;
 
 pub trait FromBytes {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self: Sized;
@@ -74,7 +73,7 @@ impl MACAddr {
         let mut addr = MACAddr { bytes: [0, 0, 0, 0, 0, 0] };
 
         let mut i = 0;
-        for part in string.split(".".to_string()) {
+        for part in string.split('.') {
             let octet = part.to_num_radix(16) as u8;
             match i {
                 0 => addr.bytes[0] = octet,
@@ -101,10 +100,6 @@ impl MACAddr {
         }
         string
     }
-
-    pub fn d(&self) {
-        self.to_string().d();
-    }
 }
 
 pub static BROADCAST_MAC_ADDR: MACAddr = MACAddr { bytes: [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF] };
@@ -130,7 +125,7 @@ impl IPv4Addr {
         let mut addr = IPv4Addr { bytes: [0, 0, 0, 0] };
 
         let mut i = 0;
-        for part in string.split(".".to_string()) {
+        for part in string.split('.') {
             let octet = part.to_num() as u8;
             match i {
                 0 => addr.bytes[0] = octet,
@@ -157,10 +152,6 @@ impl IPv4Addr {
 
         string
     }
-
-    pub fn d(&self) {
-        self.to_string().d();
-    }
 }
 
 #[derive(Copy, Clone)]
@@ -169,13 +160,17 @@ pub struct IPv6Addr {
 }
 
 impl IPv6Addr {
-    pub fn d(&self) {
+    pub fn to_string(&self) -> String {
+        let mut string = String::new();
+
         for i in 0..16 {
             if i > 0 && i % 2 == 0 {
-                debug::d(":");
+                string = string + ":";
             }
-            debug::dbh(self.bytes[i]);
+            string = string + self.bytes[i] as usize;
         }
+
+        string
     }
 }
 

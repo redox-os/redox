@@ -176,10 +176,10 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballo
 $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+$(BUILD)/kernel.rlib: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-$(BUILD)/kernel.ir: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+$(BUILD)/kernel.ir: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld

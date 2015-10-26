@@ -1,7 +1,7 @@
-use core::slice;
+use collections::string::String;
+use collections::vec::Vec;
 
-use common::string::String;
-use common::vec::Vec;
+use core::slice;
 
 use super::color::Color;
 use super::display::Display;

@@ -1,10 +1,12 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+
 use core::{cmp, mem, ptr};
 
 use common::context::context_switch;
 use common::event::Event;
-use common::string::{String, ToString};
+use common::to_num::ToNum;
 
 use graphics::display::Display;
 use graphics::point::Point;
@@ -34,11 +36,12 @@ impl Resource for WindowResource {
 
     /// Return the url of this resource
     fn url(&self) -> URL {
-        return URL::from_string(&("window://".to_string() + "/" + self.window.point.x + "/" +
-                                  self.window.point.y + "/" +
-                                  self.window.size.width + "/" +
-                                  self.window.size.height +
-                                  "/" + &self.window.title));
+        return URL::from_string(&format!("window://{}/{}/{}/{}/{}",
+                                    self.window.point.x,
+                                    self.window.point.y,
+                                    self.window.size.width,
+                                    self.window.size.height,
+                                    self.window.title));
     }
 
     /// Read data to buffer

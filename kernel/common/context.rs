@@ -1,12 +1,13 @@
 use alloc::boxed::{Box, FnBox};
 
+use collections::string::String;
+use collections::vec::Vec;
+
 use core::{mem, ptr};
 
 use common::memory;
 use common::paging::Page;
 use common::scheduler;
-use common::string::String;
-use common::vec::Vec;
 
 use schemes::Resource;
 
@@ -52,8 +53,8 @@ pub unsafe fn context_switch(interrupted: bool) {
 
         if context_i != current_i {
             match contexts.get(current_i) {
-                Some(current) => match contexts.get(context_i) {
-                    Some(next) => {
+                Some(ref mut current) => match contexts.get(context_i) {
+                    Some(ref mut next) => {
                         current.interrupted = interrupted;
                         next.interrupted = false;
                         current.remap(next);

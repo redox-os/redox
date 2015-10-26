@@ -1,13 +1,15 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
 use core::mem;
+
+use common::debug;
+use common::to_num::ToNum;
 
 use network::common::*;
 use network::ethernet::*;
-
-use common::debug;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -37,8 +39,7 @@ impl Resource for EthernetResource {
     }
 
     fn url(&self) -> URL {
-        URL::from_string(&("ethernet://".to_string() + self.peer_addr.to_string() + '/' +
-                                  String::from_num_radix(self.ethertype as usize, 16)))
+        URL::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -75,7 +76,7 @@ impl Resource for EthernetResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        let data = unsafe { Vec::from_raw_buf(buf.as_ptr(), buf.len()) };
+        let data = Vec::from(buf);
 
         match self.network.write(EthernetII {
             header: EthernetIIHeader {

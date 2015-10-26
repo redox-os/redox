@@ -1,12 +1,13 @@
 use alloc::boxed::Box;
 
+use collections::vec::Vec;
+
 use core::ops::DerefMut;
 
 use common::context::context_switch;
 use common::debug;
 use common::queue::Queue;
 use common::scheduler;
-use common::vec::Vec;
 
 use schemes::{Resource, ResourceSeek, URL};
 
