@@ -19,6 +19,9 @@ impl Editor {
 
         if cmd == Char(' ') && self.key_state.shift {
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+        } else if self.key_state.alt {
+            let new_pos = self.to_motion(Inst(repeat, cmd));
+            self.goto(new_pos);
         } else {
             match self.cursor().mode {
                 Command(Normal) => match cmd {
