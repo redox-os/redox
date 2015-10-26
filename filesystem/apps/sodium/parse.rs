@@ -1,6 +1,35 @@
 use super::*;
 use redox::*;
 
+#[derive(Copy, Clone)]
+/// An instruction
+pub struct Inst(pub Repeat, pub Key);
+
+/// Repeatation
+#[derive(Copy, Clone)]
+pub enum Repeat {
+    /// An integer
+    Int(usize),
+    /// Not given
+    Null,
+}
+impl Repeat {
+    /// Either unwrap the Int(n) or fallback to a given value
+    #[inline]
+    pub fn or(self, fallback: usize) -> usize {
+        if let Repeat::Int(n) = self {
+            n
+        } else {
+            fallback
+        }
+    }
+    /// Fallback to one (default)
+    #[inline]
+    pub fn d(self) -> usize {
+        self.or(1)
+    }
+}
+
 /// Get the next instruction
 impl Editor {
     pub fn next_inst(&mut self) -> Inst {
@@ -13,7 +42,7 @@ impl Editor {
                 let c = k.character;
                 match c {
                     '\0' => {
-                        return Inst(0, match k.scancode {
+                        return Inst(Repeat::Null, match k.scancode {
                             K_ALT => Key::Alt(k.pressed),
                             K_CTRL => Key::Ctrl(k.pressed),
                             K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift(k.pressed),
@@ -33,7 +62,7 @@ impl Editor {
                     _ => if k.pressed {
                         match self.cursor().mode {
                             Mode::Primitive(_) => {
-                                return Inst(0, Key::Char(c));
+                                return Inst(Repeat::Null, Key::Char(c));
                             },
                             Mode::Command(_) => {
                                 n = match c {
@@ -49,7 +78,7 @@ impl Editor {
                                     '9'           => n * 10 + 9,
                                     _             => {
 
-                                        return Inst(if n == 0 { 1 } else { n }, Key::Char(c));
+                                        return Inst(if n == 0 { Repeat::Null } else { Repeat::Int(n) }, Key::Char(c));
                                     }
                                 }
                             }
