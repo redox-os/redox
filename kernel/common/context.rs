@@ -55,8 +55,8 @@ pub unsafe fn context_switch(interrupted: bool) {
             match contexts.get(current_i) {
                 Some(current) => match contexts.get(context_i) {
                     Some(next) => {
-                        let current_ptr: *mut Context = mem::transmute(current);
-                        let next_ptr: *mut Context = mem::transmute(next);
+                        let current_ptr: *mut Box<Context> = mem::transmute(current as *const Box<Context>);
+                        let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
 
                         (*current_ptr).interrupted = interrupted;
                         (*next_ptr).interrupted = false;
