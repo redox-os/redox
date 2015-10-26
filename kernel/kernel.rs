@@ -3,6 +3,7 @@
 #![feature(allocator)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(collections)]
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_slice_ext)]
@@ -14,6 +15,7 @@
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
+#![feature(vec_push_all)]
 #![no_std]
 
 #[macro_use]

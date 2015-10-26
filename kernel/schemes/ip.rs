@@ -99,7 +99,7 @@ impl Resource for IPResource {
                                   Checksum::sum(ip.options.as_ptr() as usize, ip.options.len()));
         }
 
-        match self.link.write(ip.to_bytes().as_slice()) {
+        match self.link.write(&ip.to_bytes()) {
             Some(_) => return Some(buf.len()),
             None => return None,
         }
@@ -162,7 +162,7 @@ impl KScheme for IPScheme {
                             data: Vec::new(),
                         };
 
-                        match link.write(arp.to_bytes().as_slice()) {
+                        match link.write(&arp.to_bytes()) {
                             Some(_) => loop {
                                 let mut bytes: Vec<u8> = Vec::new();
                                 match link.read_to_end(&mut bytes) {

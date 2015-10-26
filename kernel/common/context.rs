@@ -52,13 +52,16 @@ pub unsafe fn context_switch(interrupted: bool) {
         }
 
         if context_i != current_i {
-            match contexts.get_mut(current_i) {
-                Some(mut current) => match contexts.get_mut(context_i) {
-                    Some(mut next) => {
-                        current.interrupted = interrupted;
-                        next.interrupted = false;
-                        current.remap(next);
-                        current.switch(next);
+            match contexts.get(current_i) {
+                Some(current) => match contexts.get(context_i) {
+                    Some(next) => {
+                        let current_ptr: *mut Context = mem::transmute(current);
+                        let next_ptr: *mut Context = mem::transmute(next);
+
+                        (*current_ptr).interrupted = interrupted;
+                        (*next_ptr).interrupted = false;
+                        (*current_ptr).remap(&mut *next_ptr);
+                        (*current_ptr).switch(&mut *next_ptr);
                     }
                     None => (),
                 },

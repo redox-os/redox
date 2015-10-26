@@ -78,16 +78,14 @@ impl Resource for EthernetResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let data = Vec::from(buf);
 
-        match self.network.write(EthernetII {
+        match self.network.write(& EthernetII {
             header: EthernetIIHeader {
                 src: unsafe { MAC_ADDR },
                 dst: self.peer_addr,
                 ethertype: n16::new(self.ethertype),
             },
             data: data,
-        }
-                                     .to_bytes()
-                                     .as_slice()) {
+        }.to_bytes()) {
             Some(_) => return Some(buf.len()),
             None => return None,
         }
