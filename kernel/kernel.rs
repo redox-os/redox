@@ -194,7 +194,7 @@ unsafe fn event_loop() -> ! {
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
-                                            cmd.vec.pop();
+                                            cmd.pop();
                                         },
                                         _ => match key_event.character {
                                             '\0' => (),
@@ -207,7 +207,7 @@ unsafe fn event_loop() -> ! {
                                                 debug::dl();
                                             },
                                             _ => {
-                                                cmd.vec.push(key_event.character);
+                                                cmd.push(key_event.character);
                                                 debug::dc(key_event.character);
                                             },
                                         },

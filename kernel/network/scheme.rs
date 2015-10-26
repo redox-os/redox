@@ -92,7 +92,7 @@ impl Resource for NetworkResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let reenable = scheduler::start_no_ints();
-            (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
+            (*self.ptr).outbound.push(Vec::from(buf));
             scheduler::end_no_ints(reenable);
 
             (*self.nic).sync();

@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -211,7 +212,7 @@ impl Intel8254x {
                 debug::dh(rd.length as usize);
                 debug::dl();
 
-                self.inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
+                self.inbound.push(Vec::from(slice::from_raw_parts(rd.buffer as *const u8, rd.length as usize)));
 
                 rd.status = 0;
             }
@@ -339,7 +340,7 @@ impl Intel8254x {
                     mac_high as u8,
                     (mac_high >> 8) as u8],
         };
-        MAC_ADDR.d();
+        debug::d(&MAC_ADDR.to_string());
 
         /*
         MTA => 0;

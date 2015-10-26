@@ -10,7 +10,7 @@ use common::scheduler;
 
 use schemes::URL;
 
-pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
+pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
     unsafe {
         let mut physical_address = 0;
         let virtual_address = 0x80000000;
@@ -35,17 +35,18 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
 
         if physical_address > 0 && virtual_address > 0 && virtual_size > 0 &&
            entry >= virtual_address && entry < virtual_address + virtual_size {
+            args.insert(0, url.to_string());
+
             let mut context_args: Vec<usize> = Vec::new();
             context_args.push(0); // ENVP
             context_args.push(0); // ARGV NULL
-            let mut argc = 1;
+            let mut argc = 0;
             for i in 0..args.len() {
                 if let Some(arg) = args.get(args.len() - i - 1) {
-                    context_args.push(arg.to_c_str() as usize);
+                    context_args.push(arg.as_ptr() as usize);
                     argc += 1;
                 }
             }
-            context_args.push(url.string.to_c_str() as usize);
             context_args.push(argc);
 
             let mut context = Context::new(entry, &context_args);
@@ -58,6 +59,8 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             });
 
             context.cwd = wd.to_string();
+
+            context.args = args;
 
             if let Some(stdin) = URL::from_str("debug://").open() {
                 context.files.push(ContextFile {

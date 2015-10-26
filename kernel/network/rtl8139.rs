@@ -1,5 +1,6 @@
 use alloc::boxed::Box;
 
+use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -90,7 +91,7 @@ impl RTL8139 {
                     mac_high as u8,
                     (mac_high >> 8) as u8],
         };
-        MAC_ADDR.d();
+        debug::d(&MAC_ADDR.to_string());
 
         let receive_buffer = memory::alloc(10240);
         outd(base + 0x30, receive_buffer as u32);
@@ -145,7 +146,7 @@ impl RTL8139 {
             debug::dh(frame_len);
             debug::dl();
 
-            self.inbound.push(Vec::from_raw_buf(frame_addr as *const u8, frame_len - 4));
+            self.inbound.push(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);

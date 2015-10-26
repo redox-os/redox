@@ -75,12 +75,12 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
+    let contexts = &mut *contexts_ptr;
     if context_enabled && context_i > 1 {
-        if let Some(mut current) = contexts.get(context_i) {
+        if let Some(mut current) = contexts.get_mut(context_i) {
             current.unmap();
 
-            if let Some(mut entry) = current.memory.get(0) {
+            if let Some(mut entry) = current.memory.get_mut(0) {
                 ret = entry.virtual_address + entry.virtual_size;
 
                 if addr == 0 {
@@ -124,8 +124,8 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
-    if let Some(mut current) = contexts.get(context_i) {
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
         for i in 0..current.files.len() {
             let mut remove = false;
             if let Some(file) = current.files.get(i) {
@@ -162,8 +162,8 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
-    if let Some(mut current) = contexts.get(context_i) {
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
         let mut resource_option: Option<Box<Resource>> = None;
         let mut new_fd = 0;
         for file in current.files.iter() {
@@ -205,7 +205,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     if path_str.ends_with(".bin") {
         execute(&URL::from_string(&path_str),
                 &URL::new(),
-                &Vec::new());
+                Vec::new());
         ret = 0;
     } else {
         for package in (*::session_ptr).packages.iter() {
@@ -219,7 +219,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
             if accepted {
                 let mut args: Vec<String> = Vec::new();
                 args.push(path_str.clone());
-                execute(&package.binary, &package.url, &args);
+                execute(&package.binary, &package.url, args);
                 ret = 0;
                 break;
             }
@@ -304,10 +304,10 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
-    if let Some(current) = contexts.get(context_i) {
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
         for i in 0..current.files.len() {
-            if let Some(file) = current.files.get(i) {
+            if let Some(mut file) = current.files.get_mut(i) {
                 if file.fd == fd {
                     scheduler::end_no_ints(reenable);
 
@@ -354,19 +354,17 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
-    if let Some(current) = contexts.get(context_i) {
-        for file in current.files.iter() {
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
+        for mut file in current.files.iter_mut() {
             if file.fd == fd {
                 scheduler::end_no_ints(reenable);
 
                 match whence {
-                    0 => if let Some(count) =
-                                file.resource.seek(ResourceSeek::Start(offset as usize)) {
+                    0 => if let Some(count) = file.resource.seek(ResourceSeek::Start(offset as usize)) {
                         ret = count;
                     },
-                    1 => if let Some(count) = file.resource
-                                                          .seek(ResourceSeek::Current(offset)) {
+                    1 => if let Some(count) = file.resource.seek(ResourceSeek::Current(offset)) {
                         ret = count;
                     },
                     2 =>
@@ -419,8 +417,8 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
     if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
         let reenable = scheduler::start_no_ints();
 
-        let contexts = &*contexts_ptr;
-        if let Some(mut current) = contexts.get(context_i) {
+        let contexts = &mut *contexts_ptr;
+        if let Some(mut current) = contexts.get_mut(context_i) {
             fd = 0;
             for file in current.files.iter() {
                 if file.fd >= fd {
@@ -445,14 +443,13 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
-    if let Some(current) = contexts.get(context_i) {
-        for file in current.files.iter() {
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
+        for mut file in current.files.iter_mut() {
             if file.fd == fd {
                 scheduler::end_no_ints(reenable);
 
-                if let Some(count) = file.resource
-                                                 .read(slice::from_raw_parts_mut(buf, count)) {
+                if let Some(count) = file.resource.read(slice::from_raw_parts_mut(buf, count)) {
                     ret = count;
                 }
 
@@ -475,14 +472,13 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &*contexts_ptr;
-    if let Some(current) = contexts.get(context_i) {
-        for file in current.files.iter() {
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
+        for mut file in current.files.iter_mut() {
             if file.fd == fd {
                 scheduler::end_no_ints(reenable);
 
-                if let Some(count) = file.resource
-                                                 .write(slice::from_raw_parts(buf, count)) {
+                if let Some(count) = file.resource.write(slice::from_raw_parts(buf, count)) {
                     ret = count;
                 }
 
