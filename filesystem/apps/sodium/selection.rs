@@ -21,7 +21,7 @@ impl Editor {
             } else {
                 (y, self.y())
             };
-            for ln in a..b {
+            for ln in a..(b + 1) {
                 self.text.remove(ln);
             }
         }
