@@ -4,7 +4,7 @@ use core::mem;
 use core::ops::DerefMut;
 use core::slice;
 
-use string::*;
+use string::{String, ToString};
 use vec::Vec;
 
 use event::*;
