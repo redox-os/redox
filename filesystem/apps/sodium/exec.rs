@@ -38,8 +38,8 @@ impl Editor {
                         self.goto_previous();
                         self.delete();
                     },
-                    Char('$') => self.goto_ln_end(),
-                    Char('0') => self.cursor_mut().x = 0,
+                    Char('L') => self.goto_ln_end(),
+                    Char('H') => self.cursor_mut().x = 0,
                     Char('r') => {
                         loop {
                             if let EventOption::Key(k) = self.window.poll()
