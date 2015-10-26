@@ -9,7 +9,6 @@ use common::context::*;
 use common::debug;
 use common::memory;
 use common::scheduler;
-use common::time::Duration;
 
 use drivers::pio::*;
 
