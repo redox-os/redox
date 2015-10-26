@@ -11,6 +11,7 @@ pub enum Mode {
 }
 
 impl Mode {
+    /// Convert the mode to string
     pub fn to_string(self) -> String {
         use self::Mode::*;
         use self::PrimitiveMode::*;
