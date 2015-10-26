@@ -3,11 +3,13 @@ use redox::*;
 
 impl Editor {
     /// Execute a instruction
-    pub fn exec(&mut self, Inst(n, cmd): Inst) {
+    pub fn exec(&mut self, Inst(repeat, cmd): Inst) {
         use super::Key::*;
         use super::Mode::*;
         use super::PrimitiveMode::*;
         use super::CommandMode::*;
+
+        let n = repeat.d();
         match cmd {
             Ctrl(b) => self.key_state.ctrl = b,
             Alt(b) => self.key_state.alt = b,
@@ -27,10 +29,10 @@ impl Editor {
                             }));
 
                     },
-                    Char('h') => self.goto_left(n as usize),
-                    Char('j') => self.goto_down(n as usize),
-                    Char('k') => self.goto_up(n as usize),
-                    Char('l') => self.goto_right(n as usize),
+                    Char('h') => self.goto_left(n),
+                    Char('j') => self.goto_down(n),
+                    Char('k') => self.goto_up(n),
+                    Char('l') => self.goto_right(n),
                     Char('J') => self.goto_down(15),
                     Char('K') => self.goto_up(15),
                     Char('x') => self.delete(),
