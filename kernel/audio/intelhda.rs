@@ -257,14 +257,12 @@ impl IntelHDA {
         let corbwp = (self.base + 0x48) as *mut u16;
         let corbrp = (self.base + 0x4A) as *mut u16;
         let corbctl = (self.base + 0x4C) as *mut u8;
-        let corbsts = (self.base + 0x4D) as *mut u8;
         let corbsize = (self.base + 0x4E) as *mut u8;
 
         let rirb = (self.base + 0x50) as *mut u32;
         let rirbwp = (self.base + 0x58) as *mut u16;
         let rintcnt = (self.base + 0x5A) as *mut u16;
         let rirbctl = (self.base + 0x5C) as *mut u8;
-        let rirbsts = (self.base + 0x5D) as *mut u8;
         let rirbsize = (self.base + 0x5E) as *mut u8;
 
         debug::d(" GCAP ");
