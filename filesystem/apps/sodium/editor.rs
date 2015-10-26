@@ -51,7 +51,7 @@ impl Editor {
 
         editor.redraw();
         loop {
-            let inp = next_inst(&mut editor);
+            let inp = editor.next_inst();
             editor.exec(inp);
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();
