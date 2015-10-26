@@ -513,14 +513,14 @@ macro_rules! impl_chars_eq {
             #[inline]
             fn eq(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
             #[inline]
-            fn ne(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+            fn ne(&self, other: &$rhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a != b) }
         }
 
         impl<'a> PartialEq<$lhs> for $rhs {
             #[inline]
             fn eq(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
             #[inline]
-            fn ne(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a == b) }
+            fn ne(&self, other: &$lhs) -> bool { self.chars().zip(other.chars()).all(|(a,b)| a != b) }
         }
 
     }
