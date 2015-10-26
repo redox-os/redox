@@ -16,9 +16,16 @@
 #![feature(unwind_attributes)]
 #![no_std]
 
+#[macro_use]
 extern crate alloc;
 
+#[macro_use]
+extern crate collections;
+
 use alloc::boxed::Box;
+
+use collections::string::{String, ToString};
+use collections::vec::Vec;
 
 use core::{mem, ptr};
 
@@ -30,9 +37,7 @@ use common::paging::Page;
 use common::queue::Queue;
 use schemes::URL;
 use common::scheduler;
-use common::string::{String, ToString};
 use common::time::Duration;
-use common::vec::Vec;
 
 use drivers::pci::*;
 use drivers::pio::*;
@@ -195,7 +200,7 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd + '\n';
+                                                *::debug_command = cmd + "\n";
                                                 scheduler::end_no_ints(reenable);
 
                                                 cmd = String::new();
@@ -357,8 +362,8 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()) {
+        for folder in String::from_utf8_unchecked(vec).split('\n') {
+            if folder.ends_with('/') {
                 let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
 
                 let reenable = scheduler::start_no_ints();
@@ -373,8 +378,8 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()) {
+        for folder in String::from_utf8_unchecked(vec).split('\n') {
+            if folder.ends_with('/') {
                 let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
 
                 let reenable = scheduler::start_no_ints();

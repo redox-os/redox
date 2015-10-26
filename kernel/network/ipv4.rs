@@ -1,7 +1,8 @@
+use collections::vec::Vec;
+
 use core::mem;
 
 use common::debug;
-use common::vec::Vec;
 
 use network::common::*;
 

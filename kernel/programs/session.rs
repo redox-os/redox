@@ -3,10 +3,11 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
+use collections::string::String;
+use collections::vec::Vec;
+
 use common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use common::scheduler;
-use common::string::String;
-use common::vec::Vec;
 
 use graphics::bmp::BMPFile;
 use graphics::color::Color;
@@ -75,7 +76,7 @@ impl Session {
                 None => break,
             }
 
-            if remove {
+            if remove{
                 self.windows.remove(i);
             }
         }
@@ -125,7 +126,7 @@ impl Session {
                 let scheme = item.scheme();
                 if scheme.len() > 0 {
                     if list.len() > 0 {
-                        list = list + "\n" + scheme;
+                        list = list + "\n" + &scheme;
                     } else {
                         list = scheme;
                     }
@@ -224,10 +225,7 @@ impl Session {
         }
 
         if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
-            match self.windows.remove(catcher as usize) {
-                Some(window_ptr) => self.windows.push(window_ptr),
-                None => (),
-            }
+            self.windows.push(self.windows.remove(catcher as usize));
         }
 
         self.last_mouse_event = mouse_event;
@@ -301,14 +299,18 @@ impl Session {
                                   (**window_ptr).border_color);
                 x += 4;
 
-                for i in 0..chars {
-                    let c = (**window_ptr).title[i];
+                let mut i = 0;
+                for c in (**window_ptr).title.chars() {
                     if c != '\0' {
                         self.display.char(Point::new(x, self.display.height as isize - 24),
                                           c,
                                           (**window_ptr).title_color);
                     }
                     x += 8;
+                    i += 1;
+                    if i >= chars {
+                        break;
+                    }
                 }
                 x += 8;
             }

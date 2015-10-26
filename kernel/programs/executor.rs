@@ -1,11 +1,12 @@
+use collections::string::String;
+use collections::vec::Vec;
+
 use core::ptr;
 
 use common::context::{self, Context, ContextFile, ContextMemory};
 use common::elf::{self, ELF};
 use common::memory;
 use common::scheduler;
-use common::string::String;
-use common::vec::Vec;
 
 use schemes::URL;
 

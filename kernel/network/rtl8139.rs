@@ -1,13 +1,14 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
 use core::ptr;
 
 use common::{debug, memory};
 use common::queue::Queue;
 use schemes::{Resource, URL};
 use common::scheduler;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use drivers::pciconfig::PCIConfig;
 use drivers::pio::*;
