@@ -66,10 +66,11 @@ impl Command {
             main: box |args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
                     let path = arg.clone();
-                    println!("URL: {}", path);
 
                     let mut commands = String::new();
                     if let Some(mut file) = File::open(&path) {
+                        println!("URL: {:?}", file.path());
+
                         file.read_to_string(&mut commands);
                     }
 
@@ -88,9 +89,10 @@ impl Command {
                     Some(arg) => path = arg.clone(),
                     None => path = String::new(),
                 }
-                println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
                     let mut string = String::new();
                     for i in 2..args.len() {
                         if let Some(arg) = args.get(i) {
@@ -124,9 +126,10 @@ impl Command {
                     Some(arg) => path = arg.clone(),
                     None => path = String::new(),
                 }
-                println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
                     let mut string = String::new();
                     match file.read_to_string(&mut string) {
                         Some(_) => println!("{}", string),
@@ -144,9 +147,10 @@ impl Command {
                     Some(arg) => path = arg.clone(),
                     None => path = String::new(),
                 }
-                println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
                     let mut vec: Vec<u8> = Vec::new();
                     match file.read_to_end(&mut vec) {
                         Some(_) => {
