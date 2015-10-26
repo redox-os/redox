@@ -1,6 +1,12 @@
 use super::*;
 
 impl Editor {
+    /// Goto a given position
+    pub fn goto(&mut self, (x, y): (usize, usize)) {
+        self.cursor_mut().x = x;
+        self.cursor_mut().y = y;
+    }
+
     /// Get the position of the next char
     pub fn next_pos(&self) -> (usize, usize) {
         // TODO: Add numerals
@@ -30,15 +36,13 @@ impl Editor {
 
     /// Goto the next char
     pub fn goto_next(&mut self) {
-        let (x, y) = self.next_pos();
-        self.cursor_mut().x = x;
-        self.cursor_mut().y = y;
+        let p = self.next_pos();
+        self.goto(p);
     }
     /// Goto the previous char
     pub fn goto_previous(&mut self) {
-        let (x, y) = self.previous_pos();
-        self.cursor_mut().x = x;
-        self.cursor_mut().y = y;
+        let p = self.previous_pos();
+        self.goto(p);
     }
 
     /// Get the position of the right char
@@ -80,9 +84,8 @@ impl Editor {
     }
     /// Go a char up
     pub fn goto_up(&mut self, n: usize) {
-        let (x, y) = self.up_pos(n);
-        self.cursor_mut().x = x;
-        self.cursor_mut().y = y;
+        let p = self.up_pos(n);
+        self.goto(p);
     }
 
     /// Get the position under the char
@@ -98,9 +101,8 @@ impl Editor {
 
     /// Go down
     pub fn goto_down(&mut self, n: usize) {
-        let (x, y) = self.down_pos(n);
-        self.cursor_mut().x = x;
-        self.cursor_mut().y = y;
+        let p = self.down_pos(n);
+        self.goto(p);
     }
 
 }
