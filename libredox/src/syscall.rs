@@ -1,5 +1,3 @@
-use time::Duration;
-
 use syscall::common::*;
 
 #[path="../../kernel/syscall/common.rs"]
