@@ -56,10 +56,6 @@ pub fn encode_nv_list(xdr: &mut xdr::Xdr, nv_list: &NvList) -> xdr::XdrResult<()
 
     // Encode the pairs
     for &(ref name, ref value) in &nv_list.pairs {
-        // Encode encoded/decoded size
-        let encoded_size = 0;
-        let decoded_size = 0;
-
         // Encode name
         try!(xdr.encode_string(name));
 
