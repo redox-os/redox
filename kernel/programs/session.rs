@@ -3,39 +3,20 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
-use core::cmp;
-
-use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
-use common::resource::{Resource, URL, VecResource};
+use common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use common::scheduler;
-use common::string::{String, ToString};
+use common::string::String;
 use common::vec::Vec;
 
-use graphics::bmp::*;
+use graphics::bmp::BMPFile;
 use graphics::color::Color;
 use graphics::display::Display;
 use graphics::point::Point;
 use graphics::size::Size;
 use graphics::window::Window;
 
-#[allow(unused_variables)]
-pub trait SessionItem {
-    fn on_irq(&mut self, irq: u8) {
-
-    }
-
-    fn on_poll(&mut self) {
-
-    }
-
-    fn scheme(&self) -> String {
-        String::new()
-    }
-
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
-        None
-    }
-}
+use schemes::KScheme;
+use schemes::{Resource, URL, VecResource};
 
 pub struct Session {
     pub display: Box<Display>,
@@ -43,7 +24,7 @@ pub struct Session {
     pub cursor: BMPFile,
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
-    pub items: Vec<Box<SessionItem>>,
+    pub items: Vec<Box<KScheme>>,
     pub packages: Vec<Box<Package>>,
     pub windows: Vec<*mut Window>,
     pub windows_ordered: Vec<*mut Window>,
@@ -288,6 +269,10 @@ impl Session {
                         self.display.rect(Point::new(x, y),
                                           package.icon.size,
                                           Color::alpha(128, 128, 128, 128));
+
+                       self.display.rect(Point::new(x, y - 16),
+                                         Size::new(package.name.len() * 8, 16),
+                                         Color::alpha(0, 0, 0, 128));
 
                         let mut c_x = x;
                         for c in package.name.chars() {

@@ -1,8 +1,6 @@
-use core::option::Option;
-
-use common::debug::*;
-use common::string::*;
-use common::vec::*;
+use common::debug;
+use common::string::{String, ToString};
+use common::vec::Vec;
 
 pub trait FromBytes {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self: Sized;
@@ -174,9 +172,9 @@ impl IPv6Addr {
     pub fn d(&self) {
         for i in 0..16 {
             if i > 0 && i % 2 == 0 {
-                d(":");
+                debug::d(":");
             }
-            dbh(self.bytes[i]);
+            debug::dbh(self.bytes[i]);
         }
     }
 }

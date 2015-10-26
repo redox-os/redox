@@ -1,8 +1,6 @@
 // TODO: Doc the rest
 
-use core::cmp::min;
-use core::intrinsics;
-use core::mem::size_of;
+use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::ptr;
 
@@ -22,7 +20,7 @@ pub struct Memory<T> {
 impl<T> Memory<T> {
     /// Create an empty
     pub fn new(count: usize) -> Option<Self> {
-        let alloc = unsafe { alloc(count * size_of::<T>()) };
+        let alloc = unsafe { alloc(count * mem::size_of::<T>()) };
         if alloc > 0 {
             Some(Memory { ptr: alloc as *mut T })
         } else {
@@ -31,7 +29,7 @@ impl<T> Memory<T> {
     }
 
     pub fn new_align(count: usize, align: usize) -> Option<Self> {
-        let alloc = unsafe { alloc_aligned(count * size_of::<T>(), align) };
+        let alloc = unsafe { alloc_aligned(count * mem::size_of::<T>(), align) };
         if alloc > 0 {
             Some(Memory { ptr: alloc as *mut T })
         } else {
@@ -41,7 +39,7 @@ impl<T> Memory<T> {
 
     /// Renew the memory
     pub fn renew(&mut self, count: usize) -> bool {
-        let address = unsafe { realloc(self.ptr as usize, count * size_of::<T>()) };
+        let address = unsafe { realloc(self.ptr as usize, count * mem::size_of::<T>()) };
         if address > 0 {
             self.ptr = address as *mut T;
             true
@@ -57,7 +55,7 @@ impl<T> Memory<T> {
 
     /// Get the length in T elements
     pub fn length(&self) -> usize {
-        unsafe { alloc_size(self.ptr as usize) / size_of::<T>() }
+        unsafe { alloc_size(self.ptr as usize) / mem::size_of::<T>() }
     }
 
     /// Get the address
@@ -130,7 +128,7 @@ const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
 pub unsafe fn cluster(number: usize) -> usize {
     if number < CLUSTER_COUNT {
-        ptr::read((CLUSTER_ADDRESS + number * size_of::<usize>()) as *const usize)
+        ptr::read((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *const usize)
     } else {
         0
     }
@@ -138,21 +136,21 @@ pub unsafe fn cluster(number: usize) -> usize {
 
 pub unsafe fn set_cluster(number: usize, address: usize) {
     if number < CLUSTER_COUNT {
-        ptr::write((CLUSTER_ADDRESS + number * size_of::<usize>()) as *mut usize,
+        ptr::write((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *mut usize,
                    address);
     }
 }
 
 pub unsafe fn address_to_cluster(address: usize) -> usize {
-    if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() {
-        (address - CLUSTER_ADDRESS - CLUSTER_COUNT * size_of::<usize>()) / CLUSTER_SIZE
+    if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() {
+        (address - CLUSTER_ADDRESS - CLUSTER_COUNT * mem::size_of::<usize>()) / CLUSTER_SIZE
     } else {
         0
     }
 }
 
 pub unsafe fn cluster_to_address(number: usize) -> usize {
-    CLUSTER_ADDRESS + CLUSTER_COUNT * size_of::<usize>() + number * CLUSTER_SIZE
+    CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() + number * CLUSTER_SIZE
 }
 
 pub unsafe fn cluster_init() {
@@ -163,7 +161,7 @@ pub unsafe fn cluster_init() {
 
     //Next, set all valid clusters to the free value
     //TODO: Optimize this function
-    for i in 0..((0x5000 - 0x500) / size_of::<MemoryMapEntry>()) {
+    for i in 0..((0x5000 - 0x500) / mem::size_of::<MemoryMapEntry>()) {
         let entry = &*MEMORY_MAP.offset(i as isize);
         if entry.len > 0 && entry.class == 1 {
             for cluster in 0..CLUSTER_COUNT {
@@ -257,7 +255,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
 }
 
 pub unsafe fn alloc_type<T>() -> *mut T {
-    alloc(size_of::<T>()) as *mut T
+    alloc(mem::size_of::<T>()) as *mut T
 }
 
 pub unsafe fn alloc_size(ptr: usize) -> usize {
@@ -318,7 +316,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
             ret = alloc(size);
             if ptr > 0 {
                 if ret > 0 {
-                    let copy_size = min(old_size, size);
+                    let copy_size = cmp::min(old_size, size);
 
                     ::memmove(ret as *mut u8, ptr as *const u8, copy_size);
                 }

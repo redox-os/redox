@@ -20,18 +20,14 @@ extern crate collections;
 #[macro_use]
 extern crate redox;
 
-use scheme::Resource;
-use scheme::Scheme;
+use scheme::{Resource, Scheme};
 
 #[path="SCHEME_PATH"]
 mod scheme;
 
 use redox::Box;
 use redox::io::{Read, Write, Seek, SeekFrom};
-use redox::ptr;
-use redox::slice;
-use redox::str;
-use redox::usize;
+use redox::{ptr, slice, str, usize};
 
 #[cold]
 #[inline(never)]
@@ -80,8 +76,22 @@ pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
-    match (*resource).path(slice::from_raw_parts_mut(buf, len)) {
-        Some(bytes) => return bytes,
+    match (*resource).path() {
+        Some(string) => {
+            let mut buf = slice::from_raw_parts_mut(buf, len);
+
+            let mut i = 0;
+            for b in string.bytes() {
+                if i < buf.len() {
+                    buf[i] = b;
+                    i += 1;
+                } else {
+                    break;
+                }
+            }
+
+            return i;
+        },
         None => return usize::MAX
     }
 }

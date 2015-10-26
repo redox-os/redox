@@ -1,24 +1,23 @@
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
-use core::ptr;
-use core::slice;
-use core::usize;
+use core::{ptr, slice, usize};
 
 use common::context::*;
-use common::debug::*;
-use common::memory::*;
-use common::resource::*;
+use common::debug;
+use common::memory;
 use common::scheduler;
-use common::string::*;
-use common::time::*;
-use common::vec::*;
+use common::string::{String, ToString};
+use common::time::Duration;
+use common::vec::Vec;
 
 use drivers::pio::*;
 
 use programs::executor::execute;
 
-use graphics::color::*;
-use graphics::size::*;
+use graphics::color::Color;
+use graphics::size::Size;
+
+use schemes::{Resource, ResourceSeek, URL};
 
 use syscall::common::*;
 
@@ -70,167 +69,54 @@ pub unsafe fn do_sys_debug(byte: u8) {
     scheduler::end_no_ints(reenable);
 }
 
-pub unsafe fn do_sys_exit(status: isize) {
-    context_exit();
-}
-
-pub unsafe fn do_sys_fork() -> usize {
-    let mut ret = usize::MAX;
-
-    let reenable = scheduler::start_no_ints();
-
-    let parent_i = context_i;
-
-    let contexts = &mut *contexts_ptr;
-
-    let mut context_fork_args: Vec<usize> = Vec::new();
-    context_fork_args.push(parent_i);
-    context_fork_args.push(context_exit as usize);
-
-    contexts.push(Context::new(context_fork as usize, &context_fork_args));
-
-    context_switch(true);
-
-    if context_i == parent_i {
-        ret = 0;
-    }else{
-        ret = context_i;
-    }
-
-    scheduler::end_no_ints(reenable);
-
-    ret
-}
-
-pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
-    let mut ret = usize::MAX;
+pub unsafe fn do_sys_brk(addr: usize) -> usize {
+    let mut ret = 0;
 
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if let Some(current) = contexts.get(context_i) {
-        for file in current.files.iter() {
-            if file.fd == fd {
-                scheduler::end_no_ints(reenable);
-
-                if let Some(count) = file.resource
-                                                 .read(slice::from_raw_parts_mut(buf, count)) {
-                    ret = count;
-                }
-
-                scheduler::start_no_ints();
-
-                break;
-            }
-        }
-    }
-
-    scheduler::end_no_ints(reenable);
-
-    ret
-}
-
-pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
-    let mut ret = usize::MAX;
-
-    let reenable = scheduler::start_no_ints();
-
-    let contexts = &*contexts_ptr;
-    if let Some(current) = contexts.get(context_i) {
-        for file in current.files.iter() {
-            if file.fd == fd {
-                scheduler::end_no_ints(reenable);
-
-                if let Some(count) = file.resource
-                                                 .write(slice::from_raw_parts(buf, count)) {
-                    ret = count;
-                }
-
-                scheduler::start_no_ints();
-
-                break;
-            }
-        }
-    }
-
-    scheduler::end_no_ints(reenable);
-
-    ret
-}
-
-pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
-    let mut path_str = String::from_c_str(path);
-
-    //TODO: Handle more path derivatives
-
-    if path_str.find(":".to_string()).is_none() {
-        let reenable = scheduler::start_no_ints();
-
-        let contexts = &*contexts_ptr;
-        if let Some(current) = contexts.get(context_i) {
-            path_str = current.cwd.clone() + path_str;
-        }
-
-        scheduler::end_no_ints(reenable);
-    }
-
-    let mut fd = usize::MAX;
-
-    if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
-        let reenable = scheduler::start_no_ints();
-
-        let contexts = &*contexts_ptr;
+    if context_enabled && context_i > 1 {
         if let Some(mut current) = contexts.get(context_i) {
-            fd = 0;
-            for file in current.files.iter() {
-                if file.fd >= fd {
-                    fd = file.fd + 1;
+            current.unmap();
+
+            if let Some(mut entry) = current.memory.get(0) {
+                ret = entry.virtual_address + entry.virtual_size;
+
+                if addr == 0 {
+                    //Get current break
+                } else if addr >= entry.virtual_address {
+                    let request_size = addr - entry.virtual_address;
+                    let new_address = memory::realloc(entry.physical_address, request_size);
+                    if new_address > 0 {
+                        ret = addr;
+
+                        let new_size = memory::alloc_size(new_address);
+                        entry.physical_address = new_address;
+                        entry.virtual_size = new_size;
+                    } else {
+                        debug::d("BRK: Realloc Failed\n");
+                    }
+                } else {
+                    debug::d("BRK: Address not in correct space\n");
                 }
+            } else {
+                debug::d("BRK: Memory not found\n");
             }
 
-            current.files.push(ContextFile {
-                fd: fd,
-                resource: resource,
-            });
+            current.map();
+        } else {
+            debug::d("BRK: Context not found\n");
         }
-
-        scheduler::end_no_ints(reenable);
-    }
-
-    fd
-}
-
-pub unsafe fn do_sys_dup(fd: usize) -> usize {
-    let mut ret = usize::MAX;
-
-    let reenable = scheduler::start_no_ints();
-
-    let contexts = &*contexts_ptr;
-    if let Some(mut current) = contexts.get(context_i) {
-        let mut resource_option: Option<Box<Resource>> = None;
-        let mut new_fd = 0;
-        for file in current.files.iter() {
-            if file.fd == fd {
-                resource_option = file.resource.dup();
-            }
-            if file.fd >= new_fd {
-                new_fd = file.fd + 1;
-            }
-        }
-
-        if let Some(resource) = resource_option {
-            ret = new_fd;
-            current.files.push(ContextFile {
-                fd: new_fd,
-                resource: resource,
-            });
-        }
+    } else {
+        debug::d("BRK: Contexts disabled\n");
     }
 
     scheduler::end_no_ints(reenable);
 
     ret
 }
+
+//TODO: chdir
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
     let mut ret = usize::MAX;
@@ -268,6 +154,38 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_dup(fd: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &*contexts_ptr;
+    if let Some(mut current) = contexts.get(context_i) {
+        let mut resource_option: Option<Box<Resource>> = None;
+        let mut new_fd = 0;
+        for file in current.files.iter() {
+            if file.fd == fd {
+                resource_option = file.resource.dup();
+            }
+            if file.fd >= new_fd {
+                new_fd = file.fd + 1;
+            }
+        }
+
+        if let Some(resource) = resource_option {
+            ret = new_fd;
+            current.files.push(ContextFile {
+                fd: new_fd,
+                resource: resource,
+            });
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
 pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     let mut ret = usize::MAX;
 
@@ -297,6 +215,38 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
                 break;
             }
         }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_exit(status: isize) {
+    context_exit();
+}
+
+pub unsafe fn do_sys_fork() -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    let parent_i = context_i;
+
+    let contexts = &mut *contexts_ptr;
+
+    let mut context_fork_args: Vec<usize> = Vec::new();
+    context_fork_args.push(parent_i);
+    context_fork_args.push(context_exit as usize);
+
+    contexts.push(Context::new(context_fork as usize, &context_fork_args));
+
+    context_switch(true);
+
+    if context_i == parent_i {
+        ret = 0;
+    }else{
+        ret = context_i;
     }
 
     scheduler::end_no_ints(reenable);
@@ -369,6 +319,27 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     ret
 }
 
+#[repr(packed)]
+pub struct TV {
+    pub tv_sec: i64,
+    pub tv_usec: i32,
+}
+
+pub unsafe fn do_sys_gettimeofday(tv: *mut TV) -> usize {
+    let reenable = scheduler::start_no_ints();
+
+    if tv as usize > 0 {
+        (*tv).tv_sec = ::clock_realtime.secs;
+        (*tv).tv_usec = ::clock_realtime.nanos/1000;
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    0
+}
+
+//TODO: link
+
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let mut ret = usize::MAX;
 
@@ -408,63 +379,74 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_gettimeofday(tv: *mut usize, tz: *mut isize) -> usize {
-    let reenable = scheduler::start_no_ints();
+pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
+    let mut path_str = String::from_c_str(path);
 
-    if tv as usize > 0 {
-        ptr::write(tv.offset(0), ::clock_realtime.secs as usize);
-        ptr::write(tv.offset(1), (::clock_realtime.nanos/1000) as usize);
+    //TODO: Handle more path derivatives
+
+    if path_str.find(":".to_string()).is_none() {
+        let reenable = scheduler::start_no_ints();
+
+        let contexts = &*contexts_ptr;
+        if let Some(current) = contexts.get(context_i) {
+            if path_str[0] == '/' {
+                let i = current.cwd.find(":".to_string()).unwrap_or(0) + 1;
+                path_str = current.cwd.substr(0, i) + path_str;
+            }else{
+                path_str = current.cwd.clone() + path_str;
+            }
+        }
+
+        scheduler::end_no_ints(reenable);
     }
-    if tz as usize > 0 {
-        ptr::write(tz.offset(0), 0);
-        ptr::write(tz.offset(1), 0);
+
+    let mut fd = usize::MAX;
+
+    if let Some(resource) = (*::session_ptr).open(&URL::from_string(&path_str)) {
+        let reenable = scheduler::start_no_ints();
+
+        let contexts = &*contexts_ptr;
+        if let Some(mut current) = contexts.get(context_i) {
+            fd = 0;
+            for file in current.files.iter() {
+                if file.fd >= fd {
+                    fd = file.fd + 1;
+                }
+            }
+
+            current.files.push(ContextFile {
+                fd: fd,
+                resource: resource,
+            });
+        }
+
+        scheduler::end_no_ints(reenable);
     }
 
-    scheduler::end_no_ints(reenable);
-
-    0
+    fd
 }
 
-pub unsafe fn do_sys_brk(addr: usize) -> usize {
-    let mut ret = 0;
+pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     let contexts = &*contexts_ptr;
-    if context_enabled && context_i > 1 {
-        if let Some(mut current) = contexts.get(context_i) {
-            current.unmap();
+    if let Some(current) = contexts.get(context_i) {
+        for file in current.files.iter() {
+            if file.fd == fd {
+                scheduler::end_no_ints(reenable);
 
-            if let Some(mut entry) = current.memory.get(0) {
-                ret = entry.virtual_address + entry.virtual_size;
-
-                if addr == 0 {
-                    //Get current break
-                } else if addr >= entry.virtual_address {
-                    let request_size = addr - entry.virtual_address;
-                    let new_address = realloc(entry.physical_address, request_size);
-                    if new_address > 0 {
-                        ret = addr;
-
-                        let new_size = alloc_size(new_address);
-                        entry.physical_address = new_address;
-                        entry.virtual_size = new_size;
-                    } else {
-                        d("BRK: Realloc Failed\n");
-                    }
-                } else {
-                    d("BRK: Address not in correct space\n");
+                if let Some(count) = file.resource
+                                                 .read(slice::from_raw_parts_mut(buf, count)) {
+                    ret = count;
                 }
-            } else {
-                d("BRK: Memory not found\n");
-            }
 
-            current.map();
-        } else {
-            d("BRK: Context not found\n");
+                scheduler::start_no_ints();
+
+                break;
+            }
         }
-    } else {
-        d("BRK: Contexts disabled\n");
     }
 
     scheduler::end_no_ints(reenable);
@@ -472,40 +454,78 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     ret
 }
 
+//TODO: unlink
+
+pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &*contexts_ptr;
+    if let Some(current) = contexts.get(context_i) {
+        for file in current.files.iter() {
+            if file.fd == fd {
+                scheduler::end_no_ints(reenable);
+
+                if let Some(count) = file.resource
+                                                 .write(slice::from_raw_parts(buf, count)) {
+                    ret = count;
+                }
+
+                scheduler::start_no_ints();
+
+                break;
+            }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_yield() {
+    context_switch(false);
+}
+
 pub unsafe fn do_sys_alloc(size: usize) -> usize {
-    alloc(size)
+    memory::alloc(size)
 }
 
 pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
-    realloc(ptr, size)
+    memory::realloc(ptr, size)
 }
 
 pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
-    realloc_inplace(ptr, size)
+    memory::realloc_inplace(ptr, size)
 }
 
 pub unsafe fn do_sys_unalloc(ptr: usize) {
-    unalloc(ptr)
+    memory::unalloc(ptr)
 }
 
 pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize) -> usize {
     match eax {
         SYS_DEBUG => do_sys_debug(ebx as u8),
         // Linux
+        SYS_BRK => eax = do_sys_brk(ebx),
+        //TODO: chdir
+        SYS_CLOSE => eax = do_sys_close(ebx as usize),
+        SYS_DUP => eax = do_sys_dup(ebx),
+        SYS_EXECVE => eax = do_sys_execve(ebx as *const u8),
         SYS_EXIT => do_sys_exit(ebx as isize),
         SYS_FORK => eax = do_sys_fork(),
-        SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
-        SYS_WRITE => eax = do_sys_write(ebx, ecx as *mut u8, edx),
-        SYS_OPEN => eax = do_sys_open(ebx as *const u8, ecx as isize, edx as isize),
-        SYS_CLOSE => eax = do_sys_close(ebx as usize),
-        SYS_EXECVE => eax = do_sys_execve(ebx as *const u8),
         SYS_FPATH => eax = do_sys_fpath(ebx, ecx as *mut u8, edx),
+        //TODO: fstat
         SYS_FSYNC => eax = do_sys_fsync(ebx),
+        SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut TV),
+        //TODO: link
         SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
-        SYS_DUP => eax = do_sys_dup(ebx),
-        SYS_BRK => eax = do_sys_brk(ebx),
-        SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut usize, ecx as *mut isize),
-        SYS_YIELD => context_switch(false),
+        SYS_OPEN => eax = do_sys_open(ebx as *const u8, ecx as isize, edx as isize),
+        SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
+        //TODO: unlink
+        SYS_WRITE => eax = do_sys_write(ebx, ecx as *mut u8, edx),
+        SYS_YIELD => do_sys_yield(),
 
         // Rust Memory
         SYS_ALLOC => eax = do_sys_alloc(ebx),
@@ -513,28 +533,16 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         SYS_REALLOC_INPLACE => eax = do_sys_realloc_inplace(ebx, ecx),
         SYS_UNALLOC => do_sys_unalloc(ebx),
 
-        // Misc
-        SYS_TIME => {
-            let reenable = scheduler::start_no_ints();
-
-            if ecx == 0 {
-                ptr::write(ebx as *mut Duration, ::clock_monotonic);
-            } else {
-                ptr::write(ebx as *mut Duration, ::clock_realtime);
-            }
-
-            scheduler::end_no_ints(reenable);
-        }
         _ => {
-            d("Unknown Syscall: ");
-            dd(eax as usize);
-            d(", ");
-            dh(ebx as usize);
-            d(", ");
-            dh(ecx as usize);
-            d(", ");
-            dh(edx as usize);
-            dl();
+            debug::d("Unknown Syscall: ");
+            debug::dd(eax as usize);
+            debug::d(", ");
+            debug::dh(ebx as usize);
+            debug::d(", ");
+            debug::dh(ecx as usize);
+            debug::d(", ");
+            debug::dh(edx as usize);
+            debug::dl();
         }
     }
 

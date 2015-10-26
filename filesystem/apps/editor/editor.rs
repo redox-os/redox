@@ -1,14 +1,4 @@
-// TODO: Refactor using a matrix for performance
-
 use redox::*;
-
-mod cmd;
-
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub enum Mode {
-    Insert,
-    Normal,
-}
 
 pub struct Editor {
     url: String,
@@ -29,150 +19,6 @@ impl Editor {
             offset: 0,
             scroll_x: 0,
             scroll_y: 0,
-        }
-    }
-
-    fn backspace(&mut self, window: &mut Window) {
-        if self.offset > 0 {
-            window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-            self.string = self.string[0 .. self.offset - 1].to_string() +
-                &self.string[self.offset .. self.string.len()];
-            self.offset -= 1;
-        }
-    }
-
-    fn delete(&mut self, window: &mut Window) {
-        if self.offset < self.string.len() {
-            window.set_title(&format!("{}{}{}","Editor (", &self.url, ") Changed"));
-            self.string = self.string[0 .. self.offset].to_string() +
-                &self.string[self.offset + 1 .. self.string.len()];
-        }
-    }
-
-    // TODO: Add methods for multiple movements
-    fn up(&mut self) {
-        if self.cur() == '\n' || self.cur() == '\0' {
-            self.left();
-            while self.cur() != '\n' &&
-                  self.cur() != '\0' &&
-                  self.offset >= 1 {
-                self.left();
-            }
-        } else {
-            let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
-
-            while self.cur() != '\n' &&
-                  self.offset >= 1 {
-                self.left();
-            }
-            self.right();
-            let mut new_offset = 0;
-
-
-            for i in 2..self.offset {
-                match self.string.as_bytes()[self.offset - i] {
-                    0 => break,
-                    10 => {
-                        new_offset = self.offset - i + 1;
-                        break;
-                    }
-                    _ => (),
-                }
-            }
-            self.offset = new_offset;
-            for _ in 1..x {
-                if self.cur() != '\n' {
-                    self.right();
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
-    fn left(&mut self) {
-        if self.offset > 0 {
-            self.offset -= 1;
-        }
-    }
-
-    fn right(&mut self) {
-        if self.offset < self.string.len() {
-            self.offset += 1;
-        }
-    }
-
-    fn down(&mut self) {
-        let x = self.get_x(); //- if self.cur() == '\n' { 1 } else { 0 };
-        let original_c = self.cur();
-
-        while self.offset < self.string.len() &&
-              self.cur() != '\n' &&
-              self.cur() != '\0' {
-            self.right();
-        }
-        self.right();
-
-        if original_c == '\n' {
-            while self.cur() != '\n' &&
-                  self.cur() != '\0' &&
-                  self.offset < self.string.len() {
-                self.right();
-            }
-        } else {
-            for _ in 1..x {
-                if self.cur() != '\n' {
-                    self.right();
-                } else {
-                    break;
-                }
-            }
-        }
-    }
-
-    fn cur(&self) -> char {
-        self.string.chars().nth(self.offset).unwrap_or('\0')
-    }
-
-    fn insert(&mut self, c: char, window: &mut Window) {
-        let ind = if c == '\n' {
-            let mut mov = 0;
-
-            for _ in 0..self.get_x() {
-                self.left();
-                mov += 1;
-            }
-
-            let mut ind = String::new();
-            while (self.cur() == ' ' ||
-                  self.cur() == '\t') &&
-                  self.offset < self.string.len() {
-                ind.push(self.cur());
-                self.right();
-                mov -= 1;
-            }
-
-            for _ in 0..mov {
-                self.right();
-            }
-
-            ind
-        } else {
-            String::new()
-        };
-
-        window.set_title(&format!("{}{}{}","self (", &self.url, ") Changed"));
-        self.string = self.string[0 .. self.offset].to_string() +
-            &c.to_string() +
-            &self.string[self.offset .. self.string.len()];
-
-        self.right();
-
-        if c == '\n' {
-            for c in ind.chars() {
-                self.insert(c, window);
-            }
-
         }
     }
 
@@ -201,15 +47,15 @@ impl Editor {
             }
             None => {
                 let mut save_window = {
-                    const width: usize = 400;
-                    const height: usize = 200;
-                    Window::new((window.x() + (window.width()/2 - width/2) as isize),
-                                (window.y() + (window.height()/2 - height/2) as isize),
-                                width,
-                                height,
-                                "Save As").unwrap()
+                    const WIDTH: usize = 400;
+                    const HEIGHT: usize = 200;
+                    ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
+                                (window.y() + (window.height()/2 - HEIGHT/2) as isize),
+                                WIDTH,
+                                HEIGHT,
+                                "Save As")
                 };
-                if let Some(event) = save_window.poll() {
+                if let Some(line) = save_window.read() {
                     //TODO: Create a Save/Cancel button for file saving
                     // and prompt the user for asking to save
                 }
@@ -217,26 +63,12 @@ impl Editor {
         }
     }
 
-    fn get_x(&self) -> usize {
-        let mut x = 0;
-        for (n, c) in self.string.chars().enumerate() {
-            if c == '\n' {
-                x = 0;
-            } else {
-                x += 1;
-            }
-            if n >= self.offset {
-                break;
-            }
-        }
-        x
-    }
-
     fn draw_content(&mut self, window: &mut Window) {
         let mut redraw = false;
 
         {
-            window.set([255, 255, 255, 255]);
+            let gray = Color::rgba(128, 128, 128, 128);
+            window.set(Color::WHITE);
 
             let scroll_x = self.scroll_x;
             let scroll_y = self.scroll_y;
@@ -252,7 +84,7 @@ impl Editor {
             for c in self.string.chars() {
                 if offset == self.offset {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.rect(8 * col, 16 * row, 8, 16, [128, 128, 128, 128]);
+                        window.rect(8 * col, 16 * row, 8, 16, gray);
                     } else {
                         if col < 0 { //Too far to the left
                             self.scroll_x += col;
@@ -276,7 +108,7 @@ impl Editor {
                     col += 8 - col % 8;
                 } else {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.char(8 * col, 16 * row, c, [0, 0, 0, 255]);
+                        window.char(8 * col, 16 * row, c, Color::BLACK);
                     }
                     col += 1;
                 }
@@ -286,7 +118,7 @@ impl Editor {
 
             if offset == self.offset {
                 if col >= 0 && col < cols && row >= 0 && row < rows {
-                        window.rect(8 * col, 16 * row, 8, 16, [128, 128, 128, 128]);
+                    window.rect(8 * col, 16 * row, 8, 16, gray);
                 } else {
                     if col < 0 { //Too far to the left
                         self.scroll_x += col;
@@ -324,24 +156,71 @@ impl Editor {
         self.reload();
         self.draw_content(&mut window);
 
-        let mut mode = Mode::Normal;
-
-        let mut last_change = String::new();
-        let mut multiplier: Option<u32> = None;
-        let mut swap = 0;
-        let mut period = String::new();
-        let mut is_recording = false;
-        let mut clipboard = String::new();
-
-        while let Option::Some(event) = window.poll() {
-            match event.to_option() {
-                EventOption::Key(key_event) => {
-                    if key_event.pressed {
-                        cmd::exec(self, &mut mode, &mut multiplier, &mut last_change, key_event, &mut window, &mut swap, &mut period, &mut is_recording, &mut clipboard);
-                        self.draw_content(&mut window);
+        while let Some(event) = window.poll() {
+            if let EventOption::Key(key_event) = event.to_option() {
+                if key_event.pressed {
+                    match key_event.scancode {
+                        K_ESC => break,
+                        K_BKSP => if self.offset > 0 {
+                            self.string = self.string[0 .. self.offset - 1].to_string() +
+                                          &self.string[self.offset .. self.string.len()];
+                            self.offset -= 1;
+                        },
+                        K_DEL => if self.offset < self.string.len() {
+                            self.string = self.string[0 .. self.offset].to_string() +
+                                          &self.string[self.offset + 1 .. self.string.len() - 1];
+                        },
+                        K_F5 => self.reload(),
+                        K_F6 => self.save(&window),
+                        K_HOME => self.offset = 0,
+                        K_UP => {
+                            let mut new_offset = 0;
+                            for i in 2..self.offset {
+                                match self.string.as_bytes()[self.offset - i] {
+                                    0 => break,
+                                    10 => {
+                                        new_offset = self.offset - i + 1;
+                                        break;
+                                    }
+                                    _ => (),
+                                }
+                            }
+                            self.offset = new_offset;
+                        }
+                        K_LEFT => if self.offset > 0 {
+                            self.offset -= 1;
+                        },
+                        K_RIGHT => if self.offset < self.string.len() {
+                            self.offset += 1;
+                        },
+                        K_END => self.offset = self.string.len(),
+                        K_DOWN => {
+                            let mut new_offset = self.string.len();
+                            for i in self.offset..self.string.len() {
+                                match self.string.as_bytes()[i] {
+                                    0 => break,
+                                    10 => {
+                                        new_offset = i + 1;
+                                        break;
+                                    }
+                                    _ => (),
+                                }
+                            }
+                            self.offset = new_offset;
+                        }
+                        _ => match key_event.character {
+                            '\0' => (),
+                            _ => {
+                                self.string = self.string[0 .. self.offset].to_string() +
+                                              &key_event.character.to_string() +
+                                              &self.string[self.offset .. self.string.len()];
+                                self.offset += 1;
+                            }
+                        },
                     }
+
+                    self.draw_content(&mut window);
                 }
-                _ => (),
             }
         }
     }

@@ -38,16 +38,13 @@ impl Command {
                 let mut echo = String::new();
                 let mut first = true;
                 for i in 1..args.len() {
-                    match args.get(i) {
-                        Some(arg) => {
-                            if first {
-                                first = false
-                            } else {
-                                echo = echo + " ";
-                            }
-                            echo = echo + arg;
+                    if let Some(arg) = args.get(i) {
+                        if first {
+                            first = false
+                        } else {
+                            echo = echo + " ";
                         }
-                        None => (),
+                        echo = echo + arg;
                     }
                 }
                 println!("{}", echo);
@@ -57,11 +54,8 @@ impl Command {
         commands.push(Command {
             name: "open".to_string(),
             main: box |args: &Vec<String>| {
-                match args.get(1) {
-                    Some(arg) => {
-                        File::exec(arg);
-                    },
-                    None => (),
+                if let Some(arg) = args.get(1) {
+                    File::exec(arg);
                 }
             },
         });
@@ -69,21 +63,19 @@ impl Command {
         commands.push(Command {
             name: "run".to_string(),
             main: box |args: &Vec<String>| {
-                match args.get(1) {
-                    Some(arg) => {
-                        let path = arg.clone();
-                        println!("URL: {}", path);
+                if let Some(arg) = args.get(1) {
+                    let path = arg.clone();
 
-                        let mut commands = String::new();
-                        if let Some(mut file) = File::open(&path) {
-                            file.read_to_string(&mut commands);
-                        }
+                    let mut commands = String::new();
+                    if let Some(mut file) = File::open(&path) {
+                        println!("URL: {:?}", file.path());
 
-                        for command in commands.split('\n') {
-                            exec!(command);
-                        }
+                        file.read_to_string(&mut commands);
                     }
-                    None => (),
+
+                    for command in commands.split('\n') {
+                        exec!(command);
+                    }
                 }
             },
         });
@@ -96,9 +88,10 @@ impl Command {
                     Some(arg) => path = arg.clone(),
                     None => path = String::new(),
                 }
-                println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
                     let mut string = String::new();
                     for i in 2..args.len() {
                         if let Some(arg) = args.get(i) {
@@ -132,9 +125,10 @@ impl Command {
                     Some(arg) => path = arg.clone(),
                     None => path = String::new(),
                 }
-                println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
                     let mut string = String::new();
                     match file.read_to_string(&mut string) {
                         Some(_) => println!("{}", string),
@@ -152,9 +146,10 @@ impl Command {
                     Some(arg) => path = arg.clone(),
                     None => path = String::new(),
                 }
-                println!("URL: {}", path);
 
                 if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
                     let mut vec: Vec<u8> = Vec::new();
                     match file.read_to_end(&mut vec) {
                         Some(_) => {
@@ -194,8 +189,7 @@ impl Command {
             },
         });
 
-        let mut command_list = String::new();
-        command_list = commands.iter().fold(command_list, |l , c| l + " " + &c.name);
+        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + &c.name) + " exit";
 
         commands.push(Command {
             name: "help".to_string(),
@@ -270,141 +264,128 @@ impl Application {
         }
 
         //Execute commands
-        match args.get(0) {
-            Some(cmd) => {
-                if cmd == "if" {
-                    let mut value = false;
+        if let Some(cmd) = args.get(0) {
+            if cmd == "if" {
+                let mut value = false;
 
-                    match args.get(1) {
-                        Some(left) => match args.get(2) {
-                            Some(cmp) => match args.get(3) {
-                                Some(right) => {
-                                    if cmp == "==" {
-                                        value = *left == *right;
-                                    } else if cmp == "!=" {
-                                        value = *left != *right;
-                                    } else if cmp == ">" {
-                                        value = left.to_num_signed() > right.to_num_signed();
-                                    } else if cmp == ">=" {
-                                        value = left.to_num_signed() >= right.to_num_signed();
-                                    } else if cmp == "<" {
-                                        value = left.to_num_signed() < right.to_num_signed();
-                                    } else if cmp == "<=" {
-                                        value = left.to_num_signed() <= right.to_num_signed();
-                                    } else {
-                                        println!("Unknown comparison: {}", cmp);
-                                    }
-                                }
-                                None => (),
+                if let Some(left) = args.get(1) {
+                    if let Some(cmp) = args.get(2) {
+                        if let Some(right) = args.get(3) {
+                            if cmp == "==" {
+                                value = *left == *right;
+                            } else if cmp == "!=" {
+                                value = *left != *right;
+                            } else if cmp == ">" {
+                                value = left.to_num_signed() > right.to_num_signed();
+                            } else if cmp == ">=" {
+                                value = left.to_num_signed() >= right.to_num_signed();
+                            } else if cmp == "<" {
+                                value = left.to_num_signed() < right.to_num_signed();
+                            } else if cmp == "<=" {
+                                value = left.to_num_signed() <= right.to_num_signed();
+                            } else {
+                                println!("Unknown comparison: {}", cmp);
+                            }
+                        }
+                    }
+                }
+
+                self.modes.insert(0, Mode { value: value });
+                return;
+            }
+
+            if cmd == "else" {
+                let mut syntax_error = false;
+                match self.modes.get_mut(0) {
+                    Some(mode) => mode.value = !mode.value,
+                    None => syntax_error = true,
+                }
+                if syntax_error {
+                    println!("Syntax error: else found with no previous if");
+                }
+                return;
+            }
+
+            if cmd == "fi" {
+                let mut syntax_error = false;
+                if self.modes.len() > 0 {
+                    self.modes.remove(0);
+                } else {
+                    syntax_error = true;
+                }
+                if syntax_error {
+                    println!("Syntax error: fi found with no previous if");
+                }
+                return;
+            }
+
+            for mode in self.modes.iter() {
+                if !mode.value {
+                    return;
+                }
+            }
+
+            //Set variables
+            if let Some(i) = cmd.find('=') {
+                let name = cmd[0 .. i].to_string();
+                let mut value = cmd[i + 1 .. cmd.len()].to_string();
+
+                if name.len() == 0 {
+                    return;
+                }
+
+                for i in 1..args.len() {
+                    if let Some(arg) = args.get(i) {
+                        value = value + " " + &arg;
+                    }
+                }
+
+                if value.len() == 0 {
+                    let mut remove = -1;
+                    for i in 0..self.variables.len() {
+                        match self.variables.get(i) {
+                            Some(variable) => if variable.name == name {
+                                remove = i as isize;
+                                break;
                             },
-                            None => (),
-                        },
-                        None => (),
+                            None => break,
+                        }
                     }
 
-                    self.modes.insert(0, Mode { value: value });
-                    return;
-                }
-
-                if cmd == "else" {
-                    let mut syntax_error = false;
-                    match self.modes.get_mut(0) {
-                        Some(mode) => mode.value = !mode.value,
-                        None => syntax_error = true,
+                    if remove >= 0 {
+                        self.variables.remove(remove as usize);
                     }
-                    if syntax_error {
-                        println!("Syntax error: else found with no previous if");
-                    }
-                    return;
-                }
-
-                if cmd == "fi" {
-                    let mut syntax_error = false;
-                    if self.modes.len() > 0 {
-                        self.modes.remove(0);
-                    } else {
-                        syntax_error = true;
-                    }
-                    if syntax_error {
-                        println!("Syntax error: fi found with no previous if");
-                    }
-                    return;
-                }
-
-                for mode in self.modes.iter() {
-                    if !mode.value {
-                        return;
-                    }
-                }
-
-                //Set variables
-                match cmd.find('=') {
-                    Some(i) => {
-                        let name = cmd[0 .. i].to_string();
-                        let mut value = cmd[i + 1 .. cmd.len()].to_string();
-
-                        if name.len() == 0 {
+                } else {
+                    for variable in self.variables.iter_mut() {
+                        if variable.name == name {
+                            variable.value = value;
                             return;
                         }
-
-                        for i in 1..args.len() {
-                            match args.get(i) {
-                                Some(arg) => value = value + " " + &arg,
-                                None => (),
-                            }
-                        }
-
-                        if value.len() == 0 {
-                            let mut remove = -1;
-                            for i in 0..self.variables.len() {
-                                match self.variables.get(i) {
-                                    Some(variable) => if variable.name == name {
-                                        remove = i as isize;
-                                        break;
-                                    },
-                                    None => break,
-                                }
-                            }
-
-                            if remove >= 0 {
-                                self.variables.remove(remove as usize);
-                            }
-                        } else {
-                            for variable in self.variables.iter_mut() {
-                                if variable.name == name {
-                                    variable.value = value;
-                                    return;
-                                }
-                            }
-
-                            self.variables.push(Variable {
-                                name: name,
-                                value: value,
-                            });
-                        }
-                        return;
                     }
-                    None => (),
+
+                    self.variables.push(Variable {
+                        name: name,
+                        value: value,
+                    });
                 }
-
-                //Commands
-                for command in self.commands.iter() {
-                    if &command.name == cmd {
-                        (*command.main)(&args);
-                        return;
-                    }
-                }
-
-                println!("Unknown command: '{}'", cmd);
-
+                return;
             }
-            None => (),
+
+            //Commands
+            for command in self.commands.iter() {
+                if &command.name == cmd {
+                    (*command.main)(&args);
+                    return;
+                }
+            }
+
+            println!("Unknown command: '{}'", cmd);
         }
     }
 
     /// Run the application
     pub fn main(&mut self) {
-        console_title(&"Terminal".to_string());
+        console_title("Terminal");
 
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
@@ -415,7 +396,9 @@ impl Application {
 
         while let Some(command) = readln!() {
             println!("# {}", command);
-            if command.len() > 0 {
+            if command == "exit" {
+                break;
+            } else if command.len() > 0 {
                 self.on_command(&command);
             }
         }

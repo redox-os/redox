@@ -4,11 +4,11 @@ ARCH=i386
 
 BUILD=build/$(ARCH)
 
-RUSTC=rustc
+RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
-	-A dead-code -A deprecated \
+	-A dead_code -A deprecated \
 	-L $(BUILD)
 AS=nasm
 AWK=awk
@@ -121,11 +121,11 @@ help:
 all: $(BUILD)/harddrive.bin
 
 docs: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
-	rustdoc --target=$(ARCH)-unknown-redox.json -L. $<
+	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
 
-apps: apps/bohr apps/editor apps/file_manager apps/ox apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
+apps: apps/editor apps/file_manager apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
 
-schemes: schemes/console schemes/example schemes/reent schemes/tcp schemes/udp
+schemes: schemes/console schemes/example schemes/reent schemes/tcp schemes/udp schemes/zfs
 
 tests: tests/success tests/failure
 
@@ -188,14 +188,13 @@ $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -d $< > $@
 
-filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
+$(BUILD)/crt0.o: kernel/program.asm
+	$(AS) -f elf $< -o $@
+
+filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/`$(BASENAME) $*`.rlib
-
-filesystem/apps/test/test.bin: filesystem/apps/test/test.rs kernel/program.ld $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/test.rlib $<
-	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/test.rlib $(BUILD)/libstd.rlib
+	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/crt0.o $(BUILD)/`$(BASENAME) $*`.rlib
 
 filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
@@ -210,6 +209,7 @@ filesystem/apps/zfs/zfs.img:
 	sudo losetup /dev/loop0 $@
 	-sudo zpool create redox_zfs /dev/loop0
 	-sudo mkdir /redox_zfs/home/
+	-sudo mkdir /redox_zfs/home/test/
 	-sudo cp LICENSE.md README.md /redox_zfs/home/
 	-sudo sync
 	-sleep 1

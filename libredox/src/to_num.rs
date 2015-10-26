@@ -1,6 +1,6 @@
 //! Types convertable to integers
 
-use string::*;
+use string::{String, ToString};
 
 /// Parse the string to a integer using a given radix
 pub trait ToNum {

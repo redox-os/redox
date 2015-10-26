@@ -1,15 +1,14 @@
 use alloc::boxed::Box;
 
 use common::memory;
-use common::resource::{Resource, URL, VecResource};
 use common::string::{String, ToString};
 
-use programs::session::SessionItem;
+use schemes::{KScheme, Resource, URL, VecResource};
 
 /// A memory scheme
 pub struct MemoryScheme;
 
-impl SessionItem for MemoryScheme {
+impl KScheme for MemoryScheme {
     fn scheme(&self) -> String {
         "memory".to_string()
     }
