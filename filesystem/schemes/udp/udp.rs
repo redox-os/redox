@@ -178,7 +178,6 @@ impl Scheme {
                     if ip.read_to_end(&mut bytes).is_some() {
                         if let Some(datagram) = UDP::from_bytes(bytes) {
                             if datagram.header.dst.get() as usize == host_port {
-                                let url_bytes = [0; 4096];
                                 if let Some(path) = ip.path() {
                                     let url = URL::from_string(&path);
 
