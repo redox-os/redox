@@ -55,5 +55,8 @@ impl Editor {
 
         editor
     }
+    pub fn get_ln(&self, n: usize) -> &[char] {
+        self.text[n].as_slices().0
+    }
 }
 
