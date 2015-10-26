@@ -33,18 +33,35 @@ pub struct NodeData {
 
 /// A file node
 pub struct Node {
-    pub address: u64,
+    pub block: u64,
     pub name: String,
     pub extents: [Extent; 16],
 }
 
 impl Node {
     /// Create a new file node from an address and some data
-    pub fn new(address: u64, data: &NodeData) -> Self {
+    pub fn new(block: u64, data: &NodeData) -> Self {
         Node {
-            address: address,
+            block: block,
             name: String::from_c_slice(&data.name),
             extents: data.extents,
+        }
+    }
+
+    pub fn data(&self) -> NodeData {
+        let mut name: [u8; 256] = [0; 256];
+        let mut i = 0;
+        for b in self.name.to_utf8().iter() {
+            if i < name.len() {
+                name[i] = *b;
+            }else{
+                break;
+            }
+            i += 1;
+        }
+        NodeData {
+            name: name,
+            extents: self.extents
         }
     }
 }
@@ -52,7 +69,7 @@ impl Node {
 impl Clone for Node {
     fn clone(&self) -> Self {
         Node {
-            address: self.address,
+            block: self.block,
             name: self.name.clone(),
             extents: self.extents,
         }
@@ -335,7 +352,40 @@ impl Resource for FileResource {
             }
 
             if node_dirty {
-                debug::d("Node dirty, should rewrite\n");
+                debug::d("Node dirty, rewrite\n");
+
+                unsafe {
+                    if let Some(mut node_data) = Memory::<NodeData>::new(1) {
+                        node_data.write(0, self.node.data());
+
+                        let request = Request {
+                            extent: Extent {
+                                block: self.node.block,
+                                length: 1,
+                            },
+                            mem: node_data.address(),
+                            read: false,
+                            complete: Arc::new(AtomicBool::new(false)),
+                        };
+
+                        debug::d("Disk request\n");
+
+                        (*self.scheme).fs.disk.request(request.clone());
+
+                        debug::d("Wait request\n");
+                        while request.complete.load(Ordering::SeqCst) == false {
+                            context_switch(false);
+                        }
+
+                        debug::d("Renode\n");
+
+                        for mut node in (*self.scheme).fs.nodes.iter() {
+                            if node.block == self.node.block {
+                                *node = self.node.clone();
+                            }
+                        }
+                    }
+                }
             }
 
             self.dirty = false;
