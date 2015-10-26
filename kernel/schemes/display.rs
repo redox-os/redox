@@ -1,8 +1,8 @@
 use alloc::boxed::Box;
 
-use core::cmp;
+use collections::string::{String, ToString};
 
-use common::string::{String, ToString};
+use core::cmp;
 
 use graphics::display::Display;
 

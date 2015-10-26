@@ -1,5 +1,8 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
 use core::mem;
 
 use network::arp::*;
@@ -7,8 +10,7 @@ use network::common::*;
 use network::ipv4::*;
 
 use common::{debug, random};
-use common::string::{String, ToString};
-use common::vec::Vec;
+use common::to_num::ToNum;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -36,8 +38,7 @@ impl Resource for IPResource {
     }
 
     fn url(&self) -> URL {
-        return URL::from_string(&("ip://".to_string() + self.peer_addr.to_string() + '/' +
-                                  String::from_num_radix(self.proto as usize, 16)));
+        return URL::from_string(&format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto));
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -71,7 +72,7 @@ impl Resource for IPResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        let ip_data = unsafe { Vec::from_raw_buf(buf.as_ptr(), buf.len()) };
+        let ip_data = Vec::from(buf);
 
         self.id += 1;
         let mut ip = IPv4 {
@@ -98,7 +99,7 @@ impl Resource for IPResource {
                                   Checksum::sum(ip.options.as_ptr() as usize, ip.options.len()));
         }
 
-        match self.link.write(ip.to_bytes().as_slice()) {
+        match self.link.write(&ip.to_bytes()) {
             Some(_) => return Some(buf.len()),
             None => return None,
         }
@@ -145,7 +146,7 @@ impl KScheme for IPScheme {
                 }
 
                 if peer_mac.equals(BROADCAST_MAC_ADDR) {
-                    if let Some(mut link) = URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/806")).open() {
+                    if let Some(mut link) = URL::from_string(&("ethernet://".to_string() + &peer_mac.to_string() + "/806")).open() {
                         let arp = ARP {
                             header: ARPHeader {
                                 htype: n16::new(1),
@@ -161,7 +162,7 @@ impl KScheme for IPScheme {
                             data: Vec::new(),
                         };
 
-                        match link.write(arp.to_bytes().as_slice()) {
+                        match link.write(&arp.to_bytes()) {
                             Some(_) => loop {
                                 let mut bytes: Vec<u8> = Vec::new();
                                 match link.read_to_end(&mut bytes) {
@@ -185,7 +186,7 @@ impl KScheme for IPScheme {
                     }
                 }
 
-                if let Some(link) = URL::from_string(&("ethernet://".to_string() + peer_mac.to_string() + "/800")).open() {
+                if let Some(link) = URL::from_string(&("ethernet://".to_string() + &peer_mac.to_string() + "/800")).open() {
                     return Some(box IPResource {
                         link: link,
                         data: Vec::new(),

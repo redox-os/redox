@@ -1,7 +1,9 @@
+use collections::slice;
+use collections::vec::Vec;
+
 use core::mem;
 
 use common::debug;
-use common::vec::Vec;
 
 use network::common::*;
 
@@ -30,8 +32,7 @@ impl FromBytes for ARP {
             unsafe {
                 return Some(ARP {
                     header: *(bytes.as_ptr() as *const ARPHeader),
-                    data: bytes.sub(mem::size_of::<ARPHeader>(),
-                                    bytes.len() - mem::size_of::<ARPHeader>()),
+                    data: bytes[mem::size_of::<ARPHeader>() ..].to_vec()
                 });
             }
         }
@@ -43,34 +44,9 @@ impl ToBytes for ARP {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const ARPHeader = &self.header;
-            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, mem::size_of::<ARPHeader>());
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ARPHeader>()));
             ret.push_all(&self.data);
             ret
         }
-    }
-}
-
-impl ARP {
-    pub fn d(&self) {
-        debug::d("ARP hw ");
-        debug::dh(self.header.htype.get() as usize);
-        debug::d("#");
-        debug::dd(self.header.hlen as usize);
-        debug::d(" proto ");
-        debug::dh(self.header.ptype.get() as usize);
-        debug::d("#");
-        debug::dd(self.header.plen as usize);
-        debug::d(" oper ");
-        debug::dh(self.header.oper.get() as usize);
-        debug::d(" from ");
-        self.header.src_mac.d();
-        debug::d(" (");
-        self.header.src_ip.d();
-        debug::d(") to ");
-        self.header.dst_mac.d();
-        debug::d(" (");
-        self.header.dst_ip.d();
-        debug::d(") data ");
-        debug::dd(self.data.len());
     }
 }

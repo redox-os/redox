@@ -13,14 +13,3 @@ pub struct IPv6 {
     pub src: IPv6Addr,
     pub dst: IPv6Addr,
 }
-
-impl IPv6 {
-    pub fn d(&self) {
-        debug::d("IPv6 ");
-        debug::dh(self.next_header as usize);
-        debug::d(" from ");
-        self.src.d();
-        debug::d(" to ");
-        self.dst.d();
-    }
-}

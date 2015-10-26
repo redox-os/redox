@@ -1,8 +1,9 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+
 use common::context;
 use common::scheduler;
-use common::string::{String, ToString};
 
 use schemes::{KScheme, Resource, URL, VecResource};
 
@@ -23,6 +24,6 @@ impl KScheme for ContextScheme {
             scheduler::end_no_ints(reenable);
         }
 
-        Some(box VecResource::new(URL::from_str("context://"), ("Current: ".to_string() + i + "\nTotal: " + len).to_utf8()))
+        Some(box VecResource::new(URL::from_str("context://"), format!("Current: {}\nTotal: {}", i, len).into_bytes()))
     }
 }

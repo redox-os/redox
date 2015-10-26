@@ -1,7 +1,8 @@
 use alloc::boxed::Box;
 
+use collections::string::{String, ToString};
+
 use common::random;
-use common::string::{String, ToString};
 
 use schemes::{KScheme, Resource, URL, VecResource};
 
@@ -14,6 +15,6 @@ impl KScheme for RandomScheme {
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
-        Some(box VecResource::new(URL::from_str("random://"), String::from_num(random::rand()).to_utf8()))
+        Some(box VecResource::new(URL::from_str("random://"), format!("{}", random::rand()).into_bytes()))
     }
 }

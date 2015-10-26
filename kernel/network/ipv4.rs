@@ -1,7 +1,9 @@
+use collections::slice;
+use collections::vec::Vec;
+
 use core::mem;
 
 use common::debug;
-use common::vec::Vec;
 
 use network::common::*;
 
@@ -35,9 +37,8 @@ impl FromBytes for IPv4 {
 
                 return Some(IPv4 {
                     header: header,
-                    options: bytes.sub(mem::size_of::<IPv4Header>(),
-                                       header_len - mem::size_of::<IPv4Header>()),
-                    data: bytes.sub(header_len, bytes.len() - header_len),
+                    options: bytes[mem::size_of::<IPv4Header>() .. header_len].to_vec(),
+                    data: bytes[header_len ..].to_vec(),
                 });
             }
         }
@@ -49,25 +50,10 @@ impl ToBytes for IPv4 {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const IPv4Header = &self.header;
-            let mut ret = Vec::<u8>::from_raw_buf(header_ptr as *const u8, mem::size_of::<IPv4Header>());
+            let mut ret = Vec::<u8>::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<IPv4Header>()));
             ret.push_all(&self.options);
             ret.push_all(&self.data);
             ret
         }
-    }
-}
-
-impl IPv4 {
-    pub fn d(&self) {
-        debug::d("IPv4 ");
-        debug::dbh(self.header.proto);
-        debug::d(" from ");
-        self.header.src.d();
-        debug::d(" to ");
-        self.header.dst.d();
-        debug::d(" options ");
-        debug::dd(self.options.len());
-        debug::d(" data ");
-        debug::dd(self.data.len());
     }
 }
