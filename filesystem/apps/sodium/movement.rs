@@ -19,7 +19,7 @@ impl Editor {
     pub fn previous_pos(&self) -> (usize, usize) {
         if self.x() == 0 {
             if self.y() > 0 {
-                (self.text[self.y()].len(), self.y() - 1)
+                (self.text[self.y() - 1].len(), self.y() - 1)
             } else {
                 (self.x(), self.y())
             }
