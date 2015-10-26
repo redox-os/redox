@@ -40,21 +40,27 @@ impl Editor {
         } else {
             self.status_bar.mode.chars().collect()
         }).into_iter().enumerate() {
-            self.window.char(n as isize * 8, h as isize - 16 - 1, c, Color::BLACK);
+            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, Color::WHITE);
         }
 
         self.window.sync();
     }
 }
 
+/// The statubar (showing various info about the current state of the editor)
 pub struct StatusBar {
+    /// The current mode
     pub mode: String,
+    /// The cureent char
     pub file: String,
+    /// The current command
     pub cmd: String,
+    /// A message (such as an error or other info to the user)
     pub msg: String,
 }
 
 impl StatusBar {
+    /// Create new status bar
     pub fn new() -> Self {
         StatusBar {
             mode: "Normal".to_string(),

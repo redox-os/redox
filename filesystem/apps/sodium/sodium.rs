@@ -19,6 +19,9 @@ pub use self::position::*;
 mod graphics;
 pub use self::graphics::*;
 
+mod selection;
+pub use self::selection::*;
+
 mod mode;
 pub use self::mode::*;
 

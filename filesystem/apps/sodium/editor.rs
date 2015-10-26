@@ -1,10 +1,6 @@
 use super::*;
 use redox::*;
 
-#[derive(Copy, Clone)]
-/// An instruction
-pub struct Inst(pub usize, pub Key);
-
 /// The state of the editor
 pub struct Editor {
     /// The current cursor
@@ -51,13 +47,16 @@ impl Editor {
 
         editor.redraw();
         loop {
-            let inp = next_inst(&mut editor);
+            let inp = editor.next_inst();
             editor.exec(inp);
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();
         }
 
         editor
+    }
+    pub fn get_ln(&self, n: usize) -> &[char] {
+        self.text[n].as_slices().0
     }
 }
 
