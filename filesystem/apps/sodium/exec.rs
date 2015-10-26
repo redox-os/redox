@@ -38,7 +38,7 @@ impl Editor {
                         self.goto_previous();
                         self.delete();
                     },
-                    Char('$') => self.cursor_mut().x = self.text[self.y()].len(),
+                    Char('$') => self.goto_ln_end(),
                     Char('0') => self.cursor_mut().x = 0,
                     Char('r') => {
                         loop {
@@ -54,8 +54,10 @@ impl Editor {
                             }
                         }
                     },
+                    Char('d') => {
+                    }
                     Char('g') => {
-                        let inst = next_inst(self);
+                        let inst = self.next_inst();
                         let new = self.to_motion(inst);
                         self.cursor_mut().x = new.0;
                         self.cursor_mut().y = new.1;
