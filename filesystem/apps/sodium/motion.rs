@@ -9,6 +9,7 @@ impl Editor {
             Char('l') => self.right_pos(n.d()),
             Char('j') => self.down_pos(n.d()),
             Char('k') => self.up_pos(n.d()),
+            Char('g') => (0, n.or(0)),
             Char('L') => self.ln_end_pos(),
             Char('H') => (0, self.y()),
             _ => (self.x(), self.y()),

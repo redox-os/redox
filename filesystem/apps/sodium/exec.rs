@@ -72,9 +72,13 @@ impl Editor {
                     },
                     Char('g') => {
                         let inst = self.next_inst();
-                        let new = self.to_motion(inst);
-                        self.cursor_mut().x = new.0;
-                        self.cursor_mut().y = new.1;
+                        if let Inst(Repeat::Int(n), _) = inst {
+                            self.goto((0, n));
+                        } else {
+                            let new = self.to_motion(inst);
+                            self.cursor_mut().x = new.0;
+                            self.cursor_mut().y = new.1;
+                        }
 
                     },
                     Char(' ') => self.goto_next(),
