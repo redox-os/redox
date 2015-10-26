@@ -1,3 +1,4 @@
+use redox::*;
 use super::*;
 use core::iter::FromIterator;
 
@@ -75,4 +76,12 @@ impl Editor {
             _ => {},
         }
     }
+
+    /// Insert a string
+    pub fn insert_str(&mut self, txt: String, opt: InsertOptions) {
+        for c in txt.chars() {
+            self.insert(Key::Char(c), opt);
+        }
+    }
+
 }
