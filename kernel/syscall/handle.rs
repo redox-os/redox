@@ -389,16 +389,12 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
 
         let contexts = &*contexts_ptr;
         if let Some(current) = contexts.get(context_i) {
-            path_str.d();
             if path_str[0] == '/' {
                 let i = current.cwd.find(":".to_string()).unwrap_or(0) + 1;
                 path_str = current.cwd.substr(0, i) + path_str;
             }else{
                 path_str = current.cwd.clone() + path_str;
             }
-            " => ".to_string().d();
-            path_str.d();
-            "\n".to_string().d();
         }
 
         scheduler::end_no_ints(reenable);
