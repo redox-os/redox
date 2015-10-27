@@ -35,12 +35,26 @@ impl Editor {
         let w = self.window.width();
         self.window.rect(0, h as isize - 18, w, 18, Color::rgba(74, 74, 74, 255));
 
+        let mut string = false;
+
         for (n, c) in (if self.status_bar.mode.len() > w / (8 * 4) {
             self.status_bar.mode.chars().take(w / (8 * 4) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
         } else {
             self.status_bar.mode.chars().collect()
         }).into_iter().enumerate() {
-            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, Color::WHITE);
+            let color = match c {
+                _ if string => Color::BLUE,
+                '\'' | '"' => {
+                    string = true;
+                    Color::RED
+                },
+                '!' | '@' | '#' | '$' | '%' | '^' | '&' | '*' | '+' | '-' | '/' | ':' | '=' | '<' | '>' => Color::RED,
+                '.' | ',' => Color::BLUE,
+                '(' | ')' | '[' | ']' | '{' | '}' => Color::GREEN,
+                _ => Color::WHITE,
+            };
+
+            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, color);
         }
 
         self.window.sync();
