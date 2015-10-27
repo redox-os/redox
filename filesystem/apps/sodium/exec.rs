@@ -19,6 +19,8 @@ impl Editor {
 
         if cmd == Char(' ') && self.key_state.shift {
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+        } else if self.key_state.alt && cmd == Key::Char(' ') {
+            self.next_cursor();
         } else if self.key_state.alt {
             let new_pos = self.to_motion(Inst(para, cmd));
             self.goto(new_pos);
@@ -96,6 +98,11 @@ impl Editor {
                             self.cursor_mut().y = new.1;
                         }
 
+                    },
+                    Char('b') => {
+                        // Branch cursor
+                        let cursor = self.cursor().clone();
+                        self.cursors.push(cursor);
                     },
 //                    ????
 //                    Char('K') => {
