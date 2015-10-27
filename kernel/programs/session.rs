@@ -3,7 +3,7 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
-use collections::string::String;
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::event::{Event, EventOption, KeyEvent, MouseEvent};
@@ -126,9 +126,9 @@ impl Session {
                 let scheme = item.scheme();
                 if scheme.len() > 0 {
                     if list.len() > 0 {
-                        list = list + "\n" + &scheme;
+                        list = list + "\n" + scheme;
                     } else {
-                        list = scheme;
+                        list = scheme.to_string();
                     }
                 }
             }

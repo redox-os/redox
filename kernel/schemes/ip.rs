@@ -126,8 +126,8 @@ pub struct IPScheme {
 }
 
 impl KScheme for IPScheme {
-    fn scheme(&self) -> String {
-        return "ip".to_string();
+    fn scheme(&self) -> &str {
+        "ip"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

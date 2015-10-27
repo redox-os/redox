@@ -103,8 +103,8 @@ impl Resource for EthernetResource {
 pub struct EthernetScheme;
 
 impl KScheme for EthernetScheme {
-    fn scheme(&self) -> String {
-        return "ethernet".to_string();
+    fn scheme(&self) -> &str {
+        "ethernet"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

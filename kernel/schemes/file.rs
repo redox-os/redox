@@ -485,8 +485,8 @@ impl KScheme for FileScheme {
         }
     }
 
-    fn scheme(&self) -> String {
-        return "file".to_string();
+    fn scheme(&self) -> &str {
+        "file"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
