@@ -55,8 +55,23 @@ impl Editor {
 
         editor
     }
+
+    /// Get a slice of the current line
     pub fn get_ln(&self, n: usize) -> &[char] {
         self.text[n].as_slices().0
+    }
+
+    /// Get the leading whitespaces
+    pub fn get_indent(&self, n: usize) -> VecDeque<char> {
+        let mut ind = VecDeque::new();
+        let ln = self.get_ln(n);
+        for &c in ln {
+            match c {
+                '\t' | ' ' => ind.push_back(c),
+                _ => break,
+            }
+        }
+        ind
     }
 }
 

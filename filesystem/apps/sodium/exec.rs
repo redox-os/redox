@@ -32,6 +32,18 @@ impl Editor {
                             }));
 
                     },
+                    Char('o') => {
+                        // TODO: Autoindent (keep the same indentation level)
+                        let y = self.y();
+                        let ind = self.get_indent(y);
+                        let last = ind.len();
+                        self.text.insert(y + 1, ind);
+                        self.goto((last, y + 1));
+                        self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
+                            InsertOptions {
+                                mode: InsertMode::Insert,
+                            }));
+                    }
                     Char('h') => self.goto_left(n),
                     Char('j') => self.goto_down(n),
                     Char('k') => self.goto_up(n),
