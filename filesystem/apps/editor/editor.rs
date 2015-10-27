@@ -56,6 +56,7 @@ impl Editor {
                                 "Save As")
                 };
                 if let Some(line) = save_window.read() {
+                    save_window.print(&line, Color::WHITE);
                     //TODO: Create a Save/Cancel button for file saving
                     // and prompt the user for asking to save
                 }
