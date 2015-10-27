@@ -36,7 +36,11 @@ impl Editor {
 
                     self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
 
-                    let ind = self.get_indent(y);
+                    let ind = if self.options.autoindent {
+                        self.get_indent(y)
+                    } else {
+                        VecDeque::new()
+                    };
                     let begin = ind.len();
 
                     self.text.insert(y + 1, VecDeque::from_iter(
