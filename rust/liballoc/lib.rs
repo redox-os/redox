@@ -90,6 +90,7 @@
 #![feature(placement_in_syntax)]
 #![feature(placement_new_protocol)]
 #![feature(raw)]
+#![feature(shared)]
 #![feature(staged_api)]
 #![feature(unboxed_closures)]
 #![feature(unique)]
@@ -102,7 +103,7 @@
 #![feature(unsize)]
 #![feature(core_slice_ext)]
 #![feature(core_str_ext)]
-//#![cfg_attr(stage0, feature(alloc_system))]
+#![cfg_attr(stage0, feature(alloc_system))]
 #![cfg_attr(not(stage0), feature(needs_allocator))]
 
 #![cfg_attr(test, feature(test, rustc_private, box_heap))]
