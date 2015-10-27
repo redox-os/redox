@@ -65,12 +65,7 @@ static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects);
 
 static int ORBITAL_Available(void)
 {
-	const char *envr = SDL_getenv("SDL_VIDEODRIVER");
-	if ((envr) && (SDL_strcmp(envr, ORBITALVID_DRIVER_NAME) == 0)) {
-		return(1);
-	}
-
-	return(0);
+	return(1);
 }
 
 static void ORBITAL_DeleteDevice(SDL_VideoDevice *device)

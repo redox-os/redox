@@ -4,6 +4,7 @@ use collections::vec::Vec;
 use core::ptr;
 
 use common::context::{self, Context, ContextFile, ContextMemory};
+use common::debug;
 use common::elf::{self, ELF};
 use common::memory;
 use common::scheduler;
@@ -11,6 +12,12 @@ use common::scheduler;
 use schemes::URL;
 
 pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
+    debug::d("Execute ");
+    debug::d(&url.to_string());
+    debug::d(" in ");
+    debug::d(&wd.to_string());
+    debug::dl();
+
     unsafe {
         let mut physical_address = 0;
         let virtual_address = 0x80000000;
@@ -30,7 +37,11 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
                           physical_address as *mut u8,
                           virtual_size);
                 entry = executable.entry();
+            }else{
+                debug::d("Invalid ELF\n");
             }
+        }else{
+            debug::d("Failed to open\n");
         }
 
         if physical_address > 0 && virtual_address > 0 && virtual_size > 0 &&
@@ -88,8 +99,12 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
                 (*context::contexts_ptr).push(context);
             }
             scheduler::end_no_ints(reenable);
-        } else if physical_address > 0 {
-            memory::unalloc(physical_address);
+        } else {
+            debug::d("Invalid entry\n");
+
+            if physical_address > 0 {
+                memory::unalloc(physical_address);
+            }
         }
     }
 }
