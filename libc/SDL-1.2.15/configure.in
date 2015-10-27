@@ -1646,6 +1646,19 @@ AC_HELP_STRING([--enable-video-dummy], [use dummy video driver [[default=yes]]])
     fi
 }
 
+dnl rcg04172001 Set up the Orbital video driver.
+CheckOrbitalVideo()
+{
+    AC_ARG_ENABLE(video-orbital,
+AC_HELP_STRING([--enable-video-orbital], [use orbital video driver [[default=yes]]]),
+                  , enable_video_orbital=yes)
+    if test x$enable_video_orbital = xyes; then
+        AC_DEFINE(SDL_VIDEO_DRIVER_ORBITAL)
+        SOURCES="$SOURCES $srcdir/src/video/orbital/*.c"
+        have_video=yes
+    fi
+}
+
 dnl Check to see if OpenGL support is desired
 AC_ARG_ENABLE(video-opengl,
 AC_HELP_STRING([--enable-video-opengl], [include OpenGL context creation [[default=yes]]]),
@@ -2348,6 +2361,7 @@ case "$host" in
         esac
         CheckVisibilityHidden
         CheckDummyVideo
+        CheckOrbitalVideo
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
