@@ -66,8 +66,8 @@ impl Editor {
                     Char('j') => self.goto_down(n),
                     Char('k') => self.goto_up(n),
                     Char('l') => self.goto_right(n),
-                    Char('J') => self.goto_down(15),
-                    Char('K') => self.goto_up(15),
+                    Char('J') => self.goto_down(15 * n),
+                    Char('K') => self.goto_up(15 * n),
                     Char('x') => self.delete(),
                     Char('X') => {
                         self.goto_previous();
