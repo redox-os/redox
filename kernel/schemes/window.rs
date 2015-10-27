@@ -54,7 +54,7 @@ impl Resource for WindowResource {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += mem::size_of::<Event>();
                 }
-                None => unsafe { context_switch(false) },
+                None => break,
             }
         }
 
