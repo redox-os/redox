@@ -182,8 +182,8 @@ pub struct AC97 {
 }
 
 impl KScheme for AC97 {
-    fn scheme(&self) -> String {
-        "audio".to_string()
+    fn scheme(&self) -> &str {
+        "audio"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

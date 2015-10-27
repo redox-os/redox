@@ -112,8 +112,8 @@ pub struct Intel8254x {
 }
 
 impl KScheme for Intel8254x {
-    fn scheme(&self) -> String {
-        "network".to_string()
+    fn scheme(&self) -> &str {
+        "network"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

@@ -10,8 +10,8 @@ use schemes::{KScheme, Resource, URL, VecResource};
 pub struct MemoryScheme;
 
 impl KScheme for MemoryScheme {
-    fn scheme(&self) -> String {
-        "memory".to_string()
+    fn scheme(&self) -> &str {
+        "memory"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

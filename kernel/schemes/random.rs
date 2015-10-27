@@ -10,8 +10,8 @@ use schemes::{KScheme, Resource, URL, VecResource};
 pub struct RandomScheme;
 
 impl KScheme for RandomScheme {
-    fn scheme(&self) -> String {
-        return "random".to_string();
+    fn scheme(&self) -> &str {
+        "random"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

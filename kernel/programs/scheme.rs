@@ -334,8 +334,8 @@ impl SchemeItem {
 }
 
 impl KScheme for SchemeItem {
-    fn scheme(&self) -> String {
-        return self.scheme.clone();
+    fn scheme(&self) -> &str {
+        return &self.scheme;
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
