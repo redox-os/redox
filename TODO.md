@@ -2,15 +2,6 @@ Hey there! Here's a bunch of stuff that needs done:
 
 ## TODO
 
-- [ ] Cargoify 'em all.
-      On the progress: All the crates are now cargoified and are using the cargo
-      file structure, however they do not compile using cargo. So the task is
-      not complete. What is needed is linking the crates.
-
-- [ ] Expand the common module with new methods. Look at std for inspiration.
-
-- [ ] Make Ox install stuff.
-
 - [ ] Add a DNS system.
 
 - [ ] ZFS (WIP)
