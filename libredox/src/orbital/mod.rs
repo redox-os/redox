@@ -9,7 +9,7 @@ use vec::Vec;
 
 use event::*;
 use graphics::color::Color;
-use fs::file::*;
+use fs::File;
 use io::*;
 
 pub mod event;

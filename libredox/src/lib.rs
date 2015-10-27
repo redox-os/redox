@@ -175,7 +175,7 @@
 /* Additional Stuff { */
     pub use boxed::Box;
     pub use env::*;
-    pub use fs::file::*;
+    pub use fs::*;
     pub use io::*;
     pub use rand_old::*;
     pub use string::*;

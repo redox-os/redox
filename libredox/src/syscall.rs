@@ -71,6 +71,10 @@ pub unsafe fn sys_fsync(fd: usize) -> usize {
     syscall(SYS_FSYNC, fd, 0, 0)
 }
 
+pub unsafe fn sys_ftruncate(fd: usize, len: usize) -> usize {
+    syscall(SYS_FTRUNCATE, fd, len, 0)
+}
+
 #[repr(packed)]
 pub struct TV {
     pub tv_sec: i64,

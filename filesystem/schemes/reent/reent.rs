@@ -1,5 +1,5 @@
 use redox::Box;
-use redox::fs::file::File;
+use redox::fs::File;
 use redox::string::{String, ToString};
 use redox::io::{Read, Write, Seek, SeekFrom};
 

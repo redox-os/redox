@@ -2,7 +2,7 @@ use collections::BTreeMap;
 
 use redox::{self, cmp, env, BMPFile, Color};
 use redox::event::{self, EventOption, MouseEvent};
-use redox::fs::file::File;
+use redox::fs::File;
 use redox::io::{Read, Seek, SeekFrom};
 use redox::orbital::Window;
 use redox::time::{self, Duration};
