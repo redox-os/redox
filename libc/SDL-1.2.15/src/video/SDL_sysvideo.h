@@ -53,7 +53,7 @@ struct SDL_VideoDevice {
 	/* * * */
 	/* Initialization/Query functions */
 
-	/* Initialize the native video subsystem, filling 'vformat' with the 
+	/* Initialize the native video subsystem, filling 'vformat' with the
 	   "best" display pixel format, returning 0 or -1 if there's an error.
 	 */
 	int (*VideoInit)(_THIS, SDL_PixelFormat *vformat);
@@ -119,7 +119,7 @@ struct SDL_VideoDevice {
 
 	/* The pixel format used when SDL_CreateRGBSurface creates SDL_HWSURFACEs with alpha */
 	SDL_PixelFormat* displayformatalphapixel;
-	
+
 	/* Allocates a surface in video memory */
 	int (*AllocHWSurface)(_THIS, SDL_Surface *surface);
 
@@ -195,7 +195,7 @@ struct SDL_VideoDevice {
 	GLuint texture;
 #endif
 	int is_32bit;
- 
+
 	/* * * */
 	/* Window manager functions */
 
@@ -409,6 +409,9 @@ extern VideoBootStrap AALIB_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_CACA
 extern VideoBootStrap CACA_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_ORBITAL
+extern VideoBootStrap ORBITAL_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
 extern VideoBootStrap DUMMY_bootstrap;

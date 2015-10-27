@@ -1646,7 +1646,7 @@ AC_HELP_STRING([--enable-video-dummy], [use dummy video driver [[default=yes]]])
     fi
 }
 
-dnl rcg04172001 Set up the Orbital video driver.
+dnl Set up the Orbital video driver.
 CheckOrbitalVideo()
 {
     AC_ARG_ENABLE(video-orbital,
