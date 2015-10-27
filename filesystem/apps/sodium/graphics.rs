@@ -20,6 +20,7 @@ impl Editor {
 
         for (y, row) in self.text.iter().enumerate() {
             for (x, &c) in row.iter().enumerate() {
+                // TODO: Move outta here
                 let color = match c {
                     '\'' | '"' => {
                         string = !string;
@@ -56,7 +57,7 @@ impl Editor {
             self.status_bar.mode.chars().collect()
         }).into_iter().enumerate() {
 
-            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, Color::RED);
+            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, Color::WHITE);
         }
 
         self.window.sync();
