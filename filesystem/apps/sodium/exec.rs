@@ -3,13 +3,13 @@ use redox::*;
 
 impl Editor {
     /// Execute a instruction
-    pub fn exec(&mut self, Inst(repeat, cmd): Inst) {
+    pub fn exec(&mut self, Inst(para, cmd): Inst) {
         use super::Key::*;
         use super::Mode::*;
         use super::PrimitiveMode::*;
         use super::CommandMode::*;
 
-        let n = repeat.d();
+        let n = para.d();
         match cmd {
             Ctrl(b) => self.key_state.ctrl = b,
             Alt(b) => self.key_state.alt = b,
@@ -20,7 +20,7 @@ impl Editor {
         if cmd == Char(' ') && self.key_state.shift {
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
         } else if self.key_state.alt {
-            let new_pos = self.to_motion(Inst(repeat, cmd));
+            let new_pos = self.to_motion(Inst(para, cmd));
             self.goto(new_pos);
         } else {
             match self.cursor().mode {
@@ -32,6 +32,18 @@ impl Editor {
                             }));
 
                     },
+                    Char('o') => {
+                        // TODO: Autoindent (keep the same indentation level)
+                        let y = self.y();
+                        let ind = self.get_indent(y);
+                        let last = ind.len();
+                        self.text.insert(y + 1, ind);
+                        self.goto((last, y + 1));
+                        self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
+                            InsertOptions {
+                                mode: InsertMode::Insert,
+                            }));
+                    }
                     Char('h') => self.goto_left(n),
                     Char('j') => self.goto_down(n),
                     Char('k') => self.goto_up(n),
@@ -70,13 +82,28 @@ impl Editor {
                         let motion = self.to_motion(ins);
                         self.remove_rb(motion);
                     },
+                    Char('G') => {
+                        let last = self.text.len() - 1;
+                        self.goto((0, last));
+                    },
                     Char('g') => {
-                        let inst = self.next_inst();
-                        let new = self.to_motion(inst);
-                        self.cursor_mut().x = new.0;
-                        self.cursor_mut().y = new.1;
+                        if let Parameter::Int(n) = para {
+                            self.goto((0, n - 1));
+                        } else {
+                            let inst = self.next_inst();
+                            let new = self.to_motion(inst);
+                            self.cursor_mut().x = new.0;
+                            self.cursor_mut().y = new.1;
+                        }
 
                     },
+//                    ????
+//                    Char('K') => {
+//                        self.goto((0, 0));
+//                    },
+//                    Char('J') => {
+//                        self.goto((0, self.text.len() - 1));
+//                    },
                     Char(' ') => self.goto_next(),
                     _ => {},
                 },
