@@ -1,3 +1,5 @@
-- [ ] Add .to_motion() function (function producing motion from commands)
-- [ ] Add status bar
-- [ ] Add highlighting
+- [ ] Add `B` command
+- [ ] Fix `d<motion>`
+- [ ] Complete guide
+- [ ] Add command prompt
+- [ ] Add configuration options

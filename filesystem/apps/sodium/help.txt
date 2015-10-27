@@ -1,1 +1,72 @@
-Sodium
+Sodium: A modern editor for the Redox OS
+========================================
+
+Sodium is a editor inspired by a various
+console based, keyboard-centric editor.
+The keybindings are loosly based on Vim.
+
+This is a small guide for using Sodium.
+
+Sodium consists of three different types
+of command sets.
+
+1) Global commands. These are possible to
+   use anywhere, in any mode.
+2) Mode-specific commands. These are
+   specific to a given mode.
+3) Namespaces. Commands that can be
+   invoked as input (after) certain
+   commands.
+
+The modes are of two types:
+- Command mode: In command mode a command
+  can be preceeded by a numeral. This
+  numeral is called a parameter, and can
+  mean various things for the command.
+- Primitive mode: In this type of mode
+  the keys are given directly to the
+  handler without any form of parsing.
+
+Global commands
+---------------
+
+- [alt][space]: Go to the next cursor.
+- [alt]<motion>: Move a given motion.
+- [shift][space]: Go back to normal mode.
+
+Modes
+-----
+
+# Normal
+
+This is the default mode. Normal mode
+provides various commands. Normal mode
+is intended for doing commands which
+are often invoked and commands used to
+change modes.
+
+The following commands are valid in
+normal mode:
+
+- h
+- j
+- k
+- l
+- J
+- K
+- H
+- L
+- g
+- G
+- b
+- B
+- i
+- r
+- R
+- x
+- X
+- d
+- o
+-
+
+
