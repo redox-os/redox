@@ -53,8 +53,8 @@ pub unsafe fn do_sys_debug(byte: u8) {
                      Size::new(8, 16),
                      Color::new(255, 255, 255));
         ::debug_redraw = true;
-        //If interrupts disabled, probably booting up
-        if !reenable && ::debug_draw && ::debug_redraw {
+        //If contexts disabled, probably booting up
+        if ! context_enabled && ::debug_draw && ::debug_redraw {
             ::debug_redraw = false;
             display.flip();
         }
