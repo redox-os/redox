@@ -39,6 +39,10 @@
 #include "SDL_orbitalevents_c.h"
 #include "SDL_orbitalmouse_c.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/fcntl.h>
+
 #define ORBITALVID_DRIVER_NAME "orbital"
 
 /* Initialization/Query functions */
@@ -133,14 +137,12 @@ VideoBootStrap ORBITAL_bootstrap = {
 
 int ORBITAL_VideoInit(_THIS, SDL_PixelFormat *vformat)
 {
-	/*
 	fprintf(stderr, "WARNING: You are using the SDL orbital video driver!\n");
-	*/
 
-	/* Determine the screen depth (use default 8-bit depth) */
+	/* Determine the screen depth (use default 32-bit depth) */
 	/* we change this during the SDL_SetVideoMode implementation... */
-	vformat->BitsPerPixel = 8;
-	vformat->BytesPerPixel = 1;
+	vformat->BitsPerPixel = 32;
+	vformat->BytesPerPixel = 4;
 
 	/* We're done! */
 	return(0);
@@ -154,17 +156,24 @@ SDL_Rect **ORBITAL_ListModes(_THIS, SDL_PixelFormat *format, Uint32 flags)
 SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current,
 				int width, int height, int bpp, Uint32 flags)
 {
+	if ( this->hidden->fd ) {
+		close( this->hidden->fd );
+	}
+
 	if ( this->hidden->buffer ) {
 		SDL_free( this->hidden->buffer );
 	}
 
+	char path[4096];
+	snprintf(path, 4096, "window:///0/0/%d/%d/SDL", width, height);
+	this->hidden->fd = open(path, O_RDONLY);
 	this->hidden->buffer = SDL_malloc(width * height * (bpp / 8));
 	if ( ! this->hidden->buffer ) {
 		SDL_SetError("Couldn't allocate buffer for requested mode");
 		return(NULL);
 	}
 
-/* 	printf("Setting mode %dx%d\n", width, height); */
+ 	printf("Setting mode %dx%d@%d\n", width, height, bpp);
 
 	SDL_memset(this->hidden->buffer, 0, width * height * (bpp / 8));
 
@@ -210,7 +219,8 @@ static void ORBITAL_UnlockHWSurface(_THIS, SDL_Surface *surface)
 
 static void ORBITAL_UpdateRects(_THIS, int numrects, SDL_Rect *rects)
 {
-	/* do nothing. */
+	lseek(this->hidden->fd, 0, 0);
+	write(this->hidden->fd, this->hidden->buffer, this->hidden->w * this->hidden->h * 4);
 }
 
 int ORBITAL_SetColors(_THIS, int firstcolor, int ncolors, SDL_Color *colors)
