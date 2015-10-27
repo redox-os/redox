@@ -104,6 +104,11 @@ impl Editor {
                         let cursor = self.cursor().clone();
                         self.cursors.push(cursor);
                     },
+                    Char('B') => {
+                        // Delete cursor
+                        self.cursors.remove(self.current_cursor as usize);
+                        self.next_cursor();
+                    },
 //                    ????
 //                    Char('K') => {
 //                        self.goto((0, 0));
