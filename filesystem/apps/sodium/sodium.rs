@@ -13,6 +13,9 @@ pub use self::keystate::*;
 mod key;
 pub use self::key::*;
 
+mod prompt;
+pub use self::prompt::*;
+
 mod position;
 pub use self::position::*;
 
