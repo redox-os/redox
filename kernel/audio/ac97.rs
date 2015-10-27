@@ -5,7 +5,6 @@ use core::{cmp, ptr, mem};
 use common::debug;
 use common::memory;
 use schemes::{Resource, ResourceSeek, URL};
-use common::string::{String, ToString};
 use common::time::{self, Duration};
 
 use drivers::pciconfig::PCIConfig;
@@ -55,9 +54,6 @@ impl Resource for AC97Resource {
             let mut po_bdbar = PIO32::new(bus_master + 0x10);
             let po_civ = PIO8::new(bus_master + 0x14);
             let mut po_lvi = PIO8::new(bus_master + 0x15);
-            let po_sr = PIO16::new(bus_master + 0x16);
-            let po_picb = PIO16::new(bus_master + 0x18);
-            let po_piv = PIO8::new(bus_master + 0x1A);
             let mut po_cr = PIO8::new(bus_master + 0x1B);
 
             loop {
@@ -181,8 +177,8 @@ pub struct AC97 {
 }
 
 impl KScheme for AC97 {
-    fn scheme(&self) -> String {
-        "audio".to_string()
+    fn scheme(&self) -> &str {
+        "audio"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

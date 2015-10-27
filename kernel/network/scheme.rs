@@ -1,12 +1,13 @@
 use alloc::boxed::Box;
 
+use collections::vec::Vec;
+
 use core::ops::DerefMut;
 
 use common::context::context_switch;
 use common::debug;
 use common::queue::Queue;
 use common::scheduler;
-use common::vec::Vec;
 
 use schemes::{Resource, ResourceSeek, URL};
 
@@ -91,7 +92,7 @@ impl Resource for NetworkResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let reenable = scheduler::start_no_ints();
-            (*self.ptr).outbound.push(Vec::from_raw_buf(buf.as_ptr(), buf.len()));
+            (*self.ptr).outbound.push(Vec::from(buf));
             scheduler::end_no_ints(reenable);
 
             (*self.nic).sync();

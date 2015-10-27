@@ -1,6 +1,6 @@
+use collections::vec::Vec;
+
 use common::context::context_switch;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use network::arp::*;
 use network::common::*;
@@ -10,8 +10,8 @@ use schemes::{KScheme, URL};
 pub struct ARPScheme;
 
 impl KScheme for ARPScheme {
-    fn scheme(&self) -> String {
-        "arp".to_string()
+    fn scheme(&self) -> &str {
+        "arp"
     }
 }
 
@@ -33,7 +33,7 @@ impl ARPScheme {
                             response.header.src_mac = unsafe { MAC_ADDR };
                             response.header.src_ip = IP_ADDR;
 
-                            link.write(response.to_bytes().as_slice());
+                            link.write(&response.to_bytes());
                         }
                     }
                 }

@@ -1,5 +1,8 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
+use collections::vec::Vec;
+
 use core::{ptr, usize};
 
 use common::context::ContextMemory;
@@ -7,8 +10,6 @@ use common::elf::{self, ELF};
 use common::memory;
 use common::paging::Page;
 use common::scheduler::{start_no_ints, end_no_ints};
-use common::string::String;
-use common::vec::Vec;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -133,7 +134,7 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return URL::from_string(&String::from_c_slice(&buf));
+                return URL::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..result])) });
             }
         }
         URL::new()
@@ -332,22 +333,20 @@ impl SchemeItem {
 }
 
 impl KScheme for SchemeItem {
-    fn scheme(&self) -> String {
-        return self.scheme.clone();
+    fn scheme(&self) -> &str {
+        return &self.scheme;
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if self.valid(self._open) {
             let fd;
             unsafe {
-                let c_str = url.to_string().to_c_str();
+                let c_str = url.to_string() + "\0";
 
                 let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._open;
-                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, context.translate(c_str));
+                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, context.translate(c_str.as_ptr()));
                 context.exit();
-
-                memory::unalloc(c_str as usize);
             }
             if fd != usize::MAX {
                 //TODO: Count number of handles, don't allow drop until 0

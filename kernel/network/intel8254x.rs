@@ -1,12 +1,13 @@
 use alloc::boxed::Box;
 
+use collections::slice;
+use collections::vec::Vec;
+
 use core::ptr;
 
 use common::{debug, memory};
 use common::queue::Queue;
 use common::scheduler;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use drivers::pciconfig::PCIConfig;
 
@@ -110,8 +111,8 @@ pub struct Intel8254x {
 }
 
 impl KScheme for Intel8254x {
-    fn scheme(&self) -> String {
-        "network".to_string()
+    fn scheme(&self) -> &str {
+        "network"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
@@ -210,7 +211,7 @@ impl Intel8254x {
                 debug::dh(rd.length as usize);
                 debug::dl();
 
-                self.inbound.push(Vec::from_raw_buf(rd.buffer as *const u8, rd.length as usize));
+                self.inbound.push(Vec::from(slice::from_raw_parts(rd.buffer as *const u8, rd.length as usize)));
 
                 rd.status = 0;
             }
@@ -338,7 +339,7 @@ impl Intel8254x {
                     mac_high as u8,
                     (mac_high >> 8) as u8],
         };
-        MAC_ADDR.d();
+        debug::d(&MAC_ADDR.to_string());
 
         /*
         MTA => 0;
