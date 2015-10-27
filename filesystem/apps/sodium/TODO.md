@@ -1,5 +1,2 @@
-- [ ] Add `B` command
 - [ ] Fix `d<motion>`
-- [ ] Complete guide
-- [ ] Add command prompt
-- [ ] Add configuration options
+- [ ] Add 't' command
