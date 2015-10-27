@@ -19,6 +19,7 @@ impl Mode {
         match self {
             Command(Normal) => "Normal",
             Primitive(Insert(_)) => "Insert",
+            Primitive(Prompt) => "Prompt",
         }.to_string()
     }
 }
@@ -36,4 +37,6 @@ pub enum CommandMode {
 pub enum PrimitiveMode {
     /// Insert mode
     Insert(InsertOptions),
+    /// Prompt
+    Prompt,
 }
