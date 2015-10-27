@@ -16,7 +16,7 @@ impl Editor {
             }
         } else {
             // Full line mode
-            let (a, b) = if self.y() <= y {
+            let (a, b) = if self.y() < y {
                 (self.y(), y)
             } else {
                 (y, self.y())

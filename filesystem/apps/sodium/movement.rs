@@ -53,13 +53,7 @@ impl Editor {
     /// Get the position of the right char
     #[inline]
     pub fn right_pos(&self, n: usize) -> (usize, usize) {
-        let x = self.x() + n;
-
-        if x > self.text[self.y()].len() {
-            (self.text[self.y()].len(), self.y())
-        } else {
-            (x, self.y())
-        }
+        (self.x() + n, self.y())
     }
     /// Goto the right char
     #[inline]
@@ -101,13 +95,7 @@ impl Editor {
     /// Get the position under the char
     #[inline]
     pub fn down_pos(&self, n: usize) -> (usize, usize) {
-        let y = self.y() + n;
-
-        if y >= self.text.len() {
-            (self.cursor().x, self.text.len() - 1)
-        } else {
-            (self.cursor().x, y)
-        }
+        (self.cursor().x, self.y() + n)
     }
 
     /// Go down
