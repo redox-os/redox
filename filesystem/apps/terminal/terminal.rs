@@ -74,32 +74,33 @@ impl Command {
         commands.push(Command {
             name: "send".to_string(),
             main: box |args: &Vec<String>| {
-                let path;
-                match args.get(1) {
-                    Some(arg) => path = arg.clone(),
-                    None => path = String::new(),
+                if args.len() < 3 {
+                    println!("Error: incorrect arguments");
+                    println!("Usage: send [url] [data]");
+                    return;
                 }
+
+                let path = {
+                    match args.get(1) {
+                        Some(arg) => arg.clone(),
+                        None => String::new(),
+                    }
+                };
 
                 if let Some(mut file) = File::open(&path) {
                     println!("URL: {:?}", file.path());
 
-                    let mut string = String::new();
-                    for i in 2..args.len() {
-                        if let Some(arg) = args.get(i) {
-                            if i >= 3 {
-                                string.push_str(" ");
-                            }
-                            string.push_str(arg);
-                        }
-                    }
-                    string.push_str("\r\n\r\n");
+                    let string: String = args.iter()
+                        .skip(2)
+                        .fold(String::new(), |s, arg| s + " " + arg)
+                        + "\r\n\r\n";
 
-                    match file.write(&string.as_bytes()) {
+                    match file.write(string.trim_left().as_bytes()) {
                         Some(size) => println!("Wrote {} bytes", size),
                         None => println!("Failed to write"),
                     }
 
-                    string = String::new();
+                    let mut string = String::new();
                     match file.read_to_string(&mut string) {
                         Some(_) => println!("{}", string),
                         None => println!("Failed to read"),
