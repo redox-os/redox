@@ -1,7 +1,5 @@
 // TODO
 
-use common::debug;
-
 use network::common::*;
 
 #[derive(Copy, Clone)]

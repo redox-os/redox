@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use collections::string::{String, ToString};
+use collections::string::ToString;
 
 use core::cmp;
 

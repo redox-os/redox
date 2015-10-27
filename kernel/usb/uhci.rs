@@ -499,13 +499,11 @@ impl UHCI {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        let desc_int =
-                            ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        //let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
                         //desc_int.d();
                     }
                     DESC_END => {
-                        let desc_end =
-                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
                         //desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;

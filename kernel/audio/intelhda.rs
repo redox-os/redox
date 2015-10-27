@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::{String, ToString};
-
 use core::{ptr, mem};
 
 use drivers::pciconfig::PCIConfig;

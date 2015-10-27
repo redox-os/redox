@@ -1,4 +1,3 @@
-use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::context::context_switch;

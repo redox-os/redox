@@ -126,6 +126,11 @@ impl FileSystem {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
                                 while sectors - sector >= 65536 {
+                                    disk.read(extent.block + sector as u64,
+                                              0,
+                                              data.address() + sector * 512);
+
+                                    /*
                                     let request = Request {
                                         extent: Extent {
                                             block: extent.block + sector as u64,
@@ -136,11 +141,6 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    disk.read(extent.block + sector as u64,
-                                              0,
-                                              data.address() + sector * 512);
-
-                                    /*
                                     disk.request(request.clone());
 
                                     while request.complete.load(Ordering::SeqCst) == false {
@@ -151,6 +151,10 @@ impl FileSystem {
                                     sector += 65535;
                                 }
                                 if sector < sectors {
+                                    disk.read(extent.block + sector as u64,
+                                              (sectors - sector) as u16,
+                                              data.address() + sector * 512);
+                                    /*
                                     let request = Request {
                                         extent: Extent {
                                             block: extent.block + sector as u64,
@@ -161,16 +165,12 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                        disk.read(extent.block + sector as u64,
-                                                  (sectors - sector) as u16,
-                                                  data.address() + sector * 512);
-                                        /*
-                                        disk.request(request.clone());
+                                    disk.request(request.clone());
 
-                                        while request.complete.load(Ordering::SeqCst) == false {
-                                            disk.on_poll();
-                                        }
-                                        */
+                                    while request.complete.load(Ordering::SeqCst) == false {
+                                        disk.on_poll();
+                                    }
+                                    */
                                 }
 
                                 for i in 0..extent.length as usize / mem::size_of::<NodeData>() {
