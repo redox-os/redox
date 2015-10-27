@@ -111,11 +111,12 @@ impl Command {
         commands.push(Command {
             name: "url".to_string(),
             main: box |args: &Vec<String>| {
-                let path;
-                match args.get(1) {
-                    Some(arg) => path = arg.clone(),
-                    None => path = String::new(),
-                }
+                let path = {
+                    match args.get(1) {
+                        Some(arg) => arg.clone(),
+                        None => String::new(),
+                    }
+                };
 
                 if let Some(mut file) = File::open(&path) {
                     println!("URL: {:?}", file.path());
@@ -132,11 +133,12 @@ impl Command {
         commands.push(Command {
             name: "url_hex".to_string(),
             main: box |args: &Vec<String>| {
-                let path;
-                match args.get(1) {
-                    Some(arg) => path = arg.clone(),
-                    None => path = String::new(),
-                }
+                let path = {
+                    match args.get(1) {
+                        Some(arg) => arg.clone(),
+                        None => String::new(),
+                    }
+                };
 
                 if let Some(mut file) = File::open(&path) {
                     println!("URL: {:?}", file.path());
