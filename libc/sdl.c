@@ -1,32 +1,40 @@
 #include "SDL.h"
 #include <stdio.h>
+#include <time.h>
 
 int main(int argc, char* argv[]) {
+    SDL_Init(SDL_INIT_VIDEO);
 
-    SDL_Surface *surface;                    // Declare a pointer
+    SDL_Surface * surface = SDL_SetVideoMode(640, 480, 32, 0);
 
-    SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
-
-    // Create an application window with the following settings:
-    surface = SDL_SetVideoMode(
-        640,                               // width, in pixels
-        480,                               // height, in pixels
-        32,
-        0                  // flags - see below
-    );
-
-    // Check that the window was successfully created
     if (surface == NULL) {
-        // In the case that the window could not be made...
-        printf("Could not create window: %s\n", SDL_GetError());
+        printf("Could not create surface: %s\n", SDL_GetError());
         return 1;
     }
 
-    // The window is open: could enter program loop here (see SDL_PollEvent())
+    time_t start = time(NULL);
 
-    SDL_Delay(3000);  // Pause execution for 3000 milliseconds, for example
+    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 255, 255, 255));
+    SDL_Flip(surface);
 
-    // Clean up
+    while(time(NULL) - start < 1){}
+
+    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 255, 0, 0));
+    SDL_Flip(surface);
+
+    while(time(NULL) - start < 2){}
+
+    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 255, 0));
+    SDL_Flip(surface);
+
+    while(time(NULL) - start < 3){}
+
+    SDL_FillRect(surface, NULL, SDL_MapRGB(surface->format, 0, 0, 255));
+    SDL_Flip(surface);
+
+    while(time(NULL) - start < 4){}
+
     SDL_Quit();
+
     return 0;
 }
