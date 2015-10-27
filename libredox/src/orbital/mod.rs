@@ -12,6 +12,8 @@ use graphics::color::Color;
 use fs::File;
 use io::*;
 
+use syscall::sys_yield;
+
 pub mod event;
 
 /// A window
@@ -159,11 +161,14 @@ impl Window {
     pub fn poll(&mut self) -> Option<Event> {
         let mut event = box Event::new();
         let event_ptr: *mut Event = event.deref_mut();
-        match self.file.read(&mut unsafe {
-            slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
-        }) {
-            Some(_) => return Some(*event),
-            None => return None,
+        loop {
+            match self.file.read(&mut unsafe {
+                slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
+            }) {
+                Some(0) => unsafe { sys_yield() },
+                Some(_) => return Some(*event),
+                None => return None,
+            }
         }
     }
 
