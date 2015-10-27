@@ -54,11 +54,10 @@ impl Command {
         commands.push(Command {
             name: "run".to_string(),
             main: box |args: &Vec<String>| {
-                if let Some(arg) = args.get(1) {
-                    let path = arg.clone();
+                if let Some(path) = args.get(1) {
 
                     let mut commands = String::new();
-                    if let Some(mut file) = File::open(&path) {
+                    if let Some(mut file) = File::open(path) {
                         println!("URL: {:?}", file.path());
 
                         file.read_to_string(&mut commands);
