@@ -35,9 +35,14 @@ impl Editor {
                     let second_part = (&slice[x..]).clone();
 
                     self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
-                    self.text.insert(y + 1, VecDeque::from_iter(second_part.iter().map(|x| *x)));
 
-                    self.goto_next();
+                    let ind = self.get_indent(y);
+                    let begin = ind.len();
+
+                    self.text.insert(y + 1, VecDeque::from_iter(
+                            ind.into_iter().chain(second_part.iter().map(|x| *x))));
+
+                    self.goto((begin, y + 1));
                 },
                 Key::Escape => { // Escape key
                     self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
