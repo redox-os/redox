@@ -72,7 +72,7 @@ impl Editor {
                     },
                     Char('g') => {
                         let inst = self.next_inst();
-                        if let Inst(Repeat::Int(n), _) = inst {
+                        if let Inst(Parameter::Int(n), _) = inst {
                             self.goto((0, n));
                         } else {
                             let new = self.to_motion(inst);

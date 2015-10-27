@@ -3,21 +3,21 @@ use redox::*;
 
 #[derive(Copy, Clone)]
 /// An instruction
-pub struct Inst(pub Repeat, pub Key);
+pub struct Inst(pub Parameter, pub Key);
 
-/// Repeatation
+/// A numeral parameter
 #[derive(Copy, Clone)]
-pub enum Repeat {
+pub enum Parameter {
     /// An integer
     Int(usize),
     /// Not given
     Null,
 }
-impl Repeat {
+impl Parameter {
     /// Either unwrap the Int(n) or fallback to a given value
     #[inline]
     pub fn or(self, fallback: usize) -> usize {
-        if let Repeat::Int(n) = self {
+        if let Parameter::Int(n) = self {
             n
         } else {
             fallback
@@ -34,15 +34,14 @@ impl Editor {
     /// Get the next instruction
     pub fn next_inst(&mut self) -> Inst {
         let mut n = 0;
-        let mut shifted = false;
+        let mut unset = true;
 
-        // TODO: Make the switch to normal mode shift more well-coded.
         loop {
             if let EventOption::Key(k) = self.window.poll().unwrap_or(Event::new()).to_option() {
                 let c = k.character;
                 match c {
                     '\0' => {
-                        return Inst(Repeat::Null, match k.scancode {
+                        return Inst(Parameter::Null, match k.scancode {
                             K_ALT => Key::Alt(k.pressed),
                             K_CTRL => Key::Ctrl(k.pressed),
                             K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift(k.pressed),
@@ -62,23 +61,53 @@ impl Editor {
                     _ => if k.pressed {
                         match self.cursor().mode {
                             Mode::Primitive(_) => {
-                                return Inst(Repeat::Null, Key::Char(c));
+                                return Inst(Parameter::Null, Key::Char(c));
                             },
                             Mode::Command(_) => {
                                 n = match c {
-                                    '0' if n != 0 => n * 10,
-                                    '1'           => n * 10 + 1,
-                                    '2'           => n * 10 + 2,
-                                    '3'           => n * 10 + 3,
-                                    '4'           => n * 10 + 4,
-                                    '5'           => n * 10 + 5,
-                                    '6'           => n * 10 + 6,
-                                    '7'           => n * 10 + 7,
-                                    '8'           => n * 10 + 8,
-                                    '9'           => n * 10 + 9,
-                                    _             => {
+                                    '0' => {
+                                        unset = false;
+                                        n * 10
+                                    },
+                                    '1' => {
+                                        unset = false;
+                                        n * 10 + 1
+                                    },
+                                    '2' => {
+                                        unset = false;
+                                        n * 10 + 2
+                                    },
+                                    '3' => {
+                                        unset = false;
+                                        n * 10 + 3
+                                    },
+                                    '4' => {
+                                        unset = false;
+                                        n * 10 + 4
+                                    },
+                                    '5' => {
+                                        unset = false;
+                                        n * 10 + 5
+                                    },
+                                    '6' => {
+                                        unset = false;
+                                        n * 10 + 6
+                                    },
+                                    '7' => {
+                                        unset = false;
+                                        n * 10 + 7
+                                    },
+                                    '8' => {
+                                        unset = false;
+                                        n * 10 + 8
+                                    },
+                                    '9' => {
+                                        unset = false;
+                                        n * 10 + 9
+                                    },
+                                    _   => {
 
-                                        return Inst(if n == 0 { Repeat::Null } else { Repeat::Int(n) }, Key::Char(c));
+                                        return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, Key::Char(c));
                                     }
                                 }
                             }
