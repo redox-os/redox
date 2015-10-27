@@ -8,7 +8,7 @@ impl Editor {
         let x = self.x();
         let y = self.y();
         // Redraw window
-        self.window.set(Color::BLACK);
+        self.window.set(Color::rgb(25, 25, 25));
 
         self.window.rect(8 * (x - self.scroll_y) as isize,
                          16 * (y - self.scroll_x) as isize,
