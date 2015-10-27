@@ -201,8 +201,8 @@ impl RTL8139 {
 }
 
 impl KScheme for RTL8139 {
-    fn scheme(&self) -> String {
-        "network".to_string()
+    fn scheme(&self) -> &str {
+        "network"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

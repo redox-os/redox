@@ -97,8 +97,8 @@ impl Resource for WindowResource {
 }
 
 impl KScheme for WindowScheme {
-    fn scheme(&self) -> String {
-        return "window".to_string();
+    fn scheme(&self) -> &str {
+        "window"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

@@ -10,8 +10,8 @@ use schemes::{KScheme, Resource, URL, VecResource};
 pub struct ContextScheme;
 
 impl KScheme for ContextScheme {
-    fn scheme(&self) -> String {
-        "context".to_string()
+    fn scheme(&self) -> &str {
+        "context"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

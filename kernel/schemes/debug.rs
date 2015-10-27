@@ -71,8 +71,8 @@ impl Resource for DebugResource {
 pub struct DebugScheme;
 
 impl KScheme for DebugScheme {
-    fn scheme(&self) -> String {
-        return "debug".to_string();
+    fn scheme(&self) -> &str {
+        "debug"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
