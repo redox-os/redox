@@ -1,12 +1,10 @@
-use alloc::boxed::Box;
-
-use core::mem;
-use core::slice;
-
+use redox::boxed::Box;
 use redox::fs::File;
 use redox::io::{Read, Write, SeekFrom};
+use redox::mem;
 use redox::net::*;
 use redox::rand;
+use redox::slice;
 use redox::string::{String, ToString};
 use redox::to_num::*;
 use redox::vec::Vec;
@@ -141,7 +139,7 @@ impl Resource {
                                 );
                             }
 
-                            self.ip.write(&tcp.to_bytes().as_slice());
+                            self.ip.write(&tcp.to_bytes());
 
                             //TODO: Support broken packets (one packet in two buffers)
                             let mut i = 0;
@@ -195,7 +193,7 @@ impl Resource {
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
 
-        match self.ip.write(&tcp.to_bytes().as_slice()) {
+        match self.ip.write(&tcp.to_bytes()) {
             Some(size) => loop { // Wait for ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
@@ -266,7 +264,7 @@ impl Resource {
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
 
-        match self.ip.write(&tcp.to_bytes().as_slice()) {
+        match self.ip.write(&tcp.to_bytes()) {
             Some(_) => loop { // Wait for SYN-ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
@@ -311,7 +309,7 @@ impl Resource {
                                         );
                                     }
 
-                                    self.ip.write(&tcp.to_bytes().as_slice());
+                                    self.ip.write(&tcp.to_bytes());
 
                                     return true;
                                 } else {
@@ -366,7 +364,7 @@ impl Resource {
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
 
-        match self.ip.write(&tcp.to_bytes().as_slice()) {
+        match self.ip.write(&tcp.to_bytes()) {
             Some(_) => loop { // Wait for ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
@@ -431,7 +429,7 @@ impl Drop for Resource {
                                   Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len()));
         }
 
-        self.ip.write(&tcp.to_bytes().as_slice());
+        self.ip.write(&tcp.to_bytes());
     }
 }
 
