@@ -1,6 +1,5 @@
-use collections::BTreeMap;
-
 use redox::{self, cmp, env, BMPFile, Color};
+use redox::collections::BTreeMap;
 use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::File;
 use redox::io::{Read, Seek, SeekFrom};
