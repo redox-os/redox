@@ -35,19 +35,10 @@ impl Command {
         commands.push(Command {
             name: "echo".to_string(),
             main: box |args: &Vec<String>| {
-                let mut echo = String::new();
-                let mut first = true;
-                for i in 1..args.len() {
-                    if let Some(arg) = args.get(i) {
-                        if first {
-                            first = false
-                        } else {
-                            echo = echo + " ";
-                        }
-                        echo = echo + arg;
-                    }
-                }
-                println!("{}", echo);
+                let echo = args.iter()
+                    .skip(1)
+                    .fold(String::new(), |string, arg| string + " " + arg);
+                println!("{}", echo.trim());
             },
         });
 
