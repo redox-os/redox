@@ -175,7 +175,7 @@ $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
-	$(OBJDUMP) -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 $(BUILD)/crt0.o: kernel/program.asm
 	$(AS) -f elf $< -o $@
@@ -191,7 +191,7 @@ filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme
 	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
 
 filesystem/%.list: filesystem/%.bin
-	$(OBJDUMP) -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 filesystem/apps/zfs/zfs.img:
 	dd if=/dev/zero of=$@ bs=64M count=1
