@@ -21,18 +21,24 @@ impl Editor {
         for (y, row) in self.text.iter().enumerate() {
             for (x, &c) in row.iter().enumerate() {
                 // TODO: Move outta here
-                let color = match c {
-                    '\'' | '"' => {
-                        string = !string;
-                        (226, 225, 167) //(167, 222, 156)
-                    },
-                    _ if string => (226, 225, 167), //(167, 222, 156)
-                    '!' | '@' | '#' | '$' | '%' | '^' | '&' | '|' | '*' | '+' | '-' | '/' | ':' | '=' | '<' | '>' => (198, 83, 83), //(228, 190, 175), //(194, 106, 71),
-                    '.' | ',' => (241, 213, 226),
-                    '(' | ')' | '[' | ']' | '{' | '}' => (164, 212, 125), //(195, 139, 75),
-                    '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (209, 209, 177),
-                    _ => (255, 255, 255),
+                let color = if self.options.highlight {
+                    match c {
+                        '\'' | '"' => {
+                            string = !string;
+                            (226, 225, 167) //(167, 222, 156)
+                        },
+                        _ if string => (226, 225, 167), //(167, 222, 156)
+                        '!' | '@' | '#' | '$' | '%' | '^' | '&' | '|' | '*' | '+' | '-' | '/' | ':' | '=' | '<' | '>' => (198, 83, 83), //(228, 190, 175), //(194, 106, 71),
+                        '.' | ',' => (241, 213, 226),
+                        '(' | ')' | '[' | ']' | '{' | '}' => (164, 212, 125), //(195, 139, 75),
+                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (209, 209, 177),
+                        _ => (255, 255, 255),
+                    }
+                } else {
+                    (255, 255, 255)
                 };
+
+                let c = if c == '\t' { ' ' } else { c };
 
                 if self.x() == x && self.y() == y {
                     self.window.char(8 * (x - self.scroll_y) as isize,
@@ -49,7 +55,15 @@ impl Editor {
         }
         let h = self.window.height();
         let w = self.window.width();
-        self.window.rect(0, h as isize - 18, w, 18, Color::rgba(74, 74, 74, 255));
+        let mode = self.cursor().mode;
+
+        self.window.rect(0, h as isize - 18 - {
+            if mode == Mode::Primitive(PrimitiveMode::Prompt) {
+                18
+            } else {
+                0
+            }
+        }, w, 18, Color::rgba(74, 74, 74, 255));
 
         for (n, c) in (if self.status_bar.mode.len() > w / (8 * 4) {
             self.status_bar.mode.chars().take(w / (8 * 4) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
@@ -57,7 +71,17 @@ impl Editor {
             self.status_bar.mode.chars().collect()
         }).into_iter().enumerate() {
 
-            self.window.char(n as isize * 8, h as isize - 16 - 1, if c == '\t' { ' ' } else { c }, Color::WHITE);
+            self.window.char(n as isize * 8, h as isize - 16 - 1 - {
+                if mode == Mode::Primitive(PrimitiveMode::Prompt) {
+                    16 + 1
+                } else {
+                    0
+                }
+            }, c, Color::WHITE);
+        }
+
+        for (n, c) in self.prompt.chars().enumerate() {
+            self.window.char(n as isize * 8, h as isize - 16 - 1, c, Color::WHITE);
         }
 
         self.window.sync();

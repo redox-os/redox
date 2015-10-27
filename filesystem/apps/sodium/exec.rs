@@ -18,12 +18,24 @@ impl Editor {
         }
 
         if cmd == Char(' ') && self.key_state.shift {
+
+            let mode = self.cursor().mode;
+
+            match mode {
+                Primitive(Prompt) => self.prompt = String::new(),
+                _ => {},
+            }
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+
         } else if self.key_state.alt && cmd == Key::Char(' ') {
+
             self.next_cursor();
+
         } else if self.key_state.alt {
+
             let new_pos = self.to_motion(Inst(para, cmd));
             self.goto(new_pos);
+
         } else {
             match self.cursor().mode {
                 Command(Normal) => match cmd {
@@ -37,7 +49,11 @@ impl Editor {
                     Char('o') => {
                         // TODO: Autoindent (keep the same indentation level)
                         let y = self.y();
-                        let ind = self.get_indent(y);
+                        let ind = if self.options.autoindent {
+                            self.get_indent(y)
+                        } else {
+                            VecDeque::new()
+                        };
                         let last = ind.len();
                         self.text.insert(y + 1, ind);
                         self.goto((last, y + 1));
@@ -50,8 +66,8 @@ impl Editor {
                     Char('j') => self.goto_down(n),
                     Char('k') => self.goto_up(n),
                     Char('l') => self.goto_right(n),
-                    Char('J') => self.goto_down(15),
-                    Char('K') => self.goto_up(15),
+                    Char('J') => self.goto_down(15 * n),
+                    Char('K') => self.goto_up(15 * n),
                     Char('x') => self.delete(),
                     Char('X') => {
                         self.goto_previous();
@@ -109,6 +125,9 @@ impl Editor {
                         self.cursors.remove(self.current_cursor as usize);
                         self.next_cursor();
                     },
+                    Char(';') => {
+                        self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Prompt);
+                    },
 //                    ????
 //                    Char('K') => {
 //                        self.goto((0, 0));
@@ -121,6 +140,19 @@ impl Editor {
                 },
                 Primitive(Insert(opt)) => {
                     self.insert(cmd, opt);
+                },
+                Primitive(Prompt) => {
+                    match cmd {
+                        Char('\n') => {
+                            self.cursor_mut().mode = Command(Normal);
+                            let cmd = self.prompt.clone();
+
+                            self.invoke(cmd);
+                            self.prompt = String::new();
+                        },
+                        Char(c) => self.prompt.push(c),
+                        _ => {},
+                    }
                 },
             }
         }
