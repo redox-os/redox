@@ -6,15 +6,11 @@ impl Editor {
     #[inline]
     pub fn x(&self) -> usize {
         let x = self.cursor().x;
-        let y = self.cursor().y;
-        if y > self.text.len() {
-            0
+        let y = self.y();
+        if x >= self.text[y].len() {
+            self.text[y].len()
         } else {
-            if x >= self.text[y].len() {
-                self.text[y].len()
-            } else {
-                x
-            }
+            x
         }
     }
 
@@ -22,7 +18,7 @@ impl Editor {
     #[inline]
     pub fn y(&self) -> usize {
         let y = self.cursor().y;
-        if y >= self.text.len() {
+        if y > self.text.len() - 1 {
             self.text.len() - 1
         } else {
             y
