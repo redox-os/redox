@@ -1,0 +1,20 @@
+.TH "SDL_ShowCursor" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_ShowCursor \- Toggle whether or not the cursor is shown on the screen\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_ShowCursor\fP\fR(\fBint toggle\fR);
+.SH "DESCRIPTION"
+.PP
+Toggle whether or not the cursor is shown on the screen\&. Passing \fBSDL_ENABLE\fP displays the cursor and passing \fBSDL_DISABLE\fP hides it\&. The current state of the mouse cursor can be queried by passing \fBSDL_QUERY\fP, either \fBSDL_DISABLE\fP or \fBSDL_ENABLE\fP will be returned\&.
+.PP
+The cursor starts off displayed, but can be turned off\&.
+.SH "RETURN VALUE"
+.PP
+Returns the current state of the cursor\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_CreateCursor\fP\fR, \fI\fBSDL_SetCursor\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

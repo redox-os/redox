@@ -1,0 +1,29 @@
+.TH "SDL_Quit" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_Quit \- Shut down SDL
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBvoid \fBSDL_Quit\fP\fR(\fBvoid\fR);
+.SH "DESCRIPTION"
+.PP
+\fBSDL_Quit\fP shuts down all SDL subsystems and frees the resources allocated to them\&. This should always be called before you exit\&. For the sake of simplicity you can set \fBSDL_Quit\fP as your \fBatexit\fP call, like: 
+.PP
+.nf
+\f(CWSDL_Init(SDL_INIT_VIDEO|SDL_INIT_AUDIO);
+atexit(SDL_Quit);
+\&.
+\&.\fR
+.fi
+.PP
+.PP
+.RS
+\fBNote:  
+.PP
+While using \fBatexit\fP maybe be fine for small programs, more advanced users should shut down SDL in their own cleanup code\&. Plus, using \fBatexit\fP in a library is a sure way to crash dynamically loaded code
+.RE
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_QuitSubsystem\fP\fR, \fI\fBSDL_Init\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

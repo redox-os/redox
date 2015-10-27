@@ -1,0 +1,267 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_SetTimer</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Time"
+HREF="time.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_RemoveTimer"
+HREF="sdlremovetimer.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlremovetimer.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+>&nbsp;</TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLSETTIMER"
+></A
+>SDL_SetTimer</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN8557"
+></A
+><H2
+>Name</H2
+>SDL_SetTimer&nbsp;--&nbsp;Set a callback to run after the specified number of milliseconds has
+elapsed.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN8560"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN8561"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>int <B
+CLASS="FSFUNC"
+>SDL_SetTimer</B
+></CODE
+>(Uint32 interval, SDL_TimerCallback callback);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="SDLTIMERCALLBACK"
+></A
+><H2
+>Callback</H2
+><P
+>/* Function prototype for the timer callback function */
+typedef Uint32 (*SDL_TimerCallback)(Uint32 interval);</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN8570"
+></A
+><H2
+>Description</H2
+><P
+>Set a callback to run after the specified number of milliseconds has
+elapsed. The callback function is passed the current timer interval
+and returns the next timer interval.  If the returned value is the
+same as the one passed in, the periodic alarm continues, otherwise a
+new alarm is scheduled.</P
+><P
+>To cancel a currently running timer, call
+<TT
+CLASS="FUNCTION"
+>SDL_SetTimer(0, NULL);</TT
+></P
+><P
+>The timer callback function may run in a different thread than your
+main constant, and so shouldn't call any functions from within itself.</P
+><P
+>The maximum resolution of this timer is 10 ms, which means that if
+you request a 16 ms timer, your callback will run approximately 20 ms
+later on an unloaded system.  If you wanted to set a flag signaling
+a frame update at 30 frames per second (every 33 ms), you might set a
+timer for 30 ms (see example below).</P
+><P
+>If you use this function, you need to pass <TT
+CLASS="LITERAL"
+>SDL_INIT_TIMER</TT
+>
+to <TT
+CLASS="FUNCTION"
+>SDL_Init()</TT
+>.</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>This function is kept for compatibility but has been superseded
+by the new timer functions
+<A
+HREF="sdladdtimer.html"
+>SDL_AddTimer</A
+> and
+<A
+HREF="sdlremovetimer.html"
+>SDL_RemoveTimer</A
+> which support
+multiple timers.</P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN8584"
+></A
+><H2
+>Examples</H2
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>SDL_SetTimer((33/10)*10, my_callback);</PRE
+></P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN8588"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdladdtimer.html"
+><TT
+CLASS="FUNCTION"
+>SDL_AddTimer</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlremovetimer.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_RemoveTimer</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="time.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>&nbsp;</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

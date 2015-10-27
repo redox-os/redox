@@ -1,0 +1,15 @@
+.TH "SDL_PauseAudio" "3" "Tue 11 Sep 2001, 22:58" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_PauseAudio \- Pauses and unpauses the audio callback processing
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBvoid \fBSDL_PauseAudio\fP\fR(\fBint pause_on\fR);
+.SH "DESCRIPTION"
+.PP
+This function pauses and unpauses the audio callback processing\&. It should be called with \fBpause_on\fR=0 after opening the audio device to start playing sound\&. This is so you can safely initialize data for your callback function after opening the audio device\&. Silence will be written to the audio device during the pause\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_GetAudioStatus\fP\fR, \fI\fBSDL_OpenAudio\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:58

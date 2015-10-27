@@ -1,0 +1,25 @@
+
+Wish list for the 1.3 development branch:
+http://bugzilla.libsdl.org/
+
+ * Add mousewheel events (new unified event architecture?)
+ * DirectInput joystick support needs to be implemented
+ * Be able to enumerate and select available audio and video drivers
+ * Fullscreen video mode support for Mac OS X
+ * Explicit vertical retrace wait (maybe separate from SDL_Flip?)
+ * Shaped windows, windows without borders
+ * Multiple windows, multiple display support
+ * SDL_INIT_EVENTTHREAD on Windows and MacOS?
+ * Add a timestamp to events
+ * Add audio input API
+ * Add hardware accelerated scaled blit
+ * Add hardware accelerated alpha blits
+ * Redesign blitting architecture to allow blit plugins
+
+In the jump from 1.2 to 1.3, we should change the SDL_Rect members to
+int and evaluate all the rest of the datatypes.  This is the only place
+we should do it though, since the 1.2 series should not break binary
+compatibility in this way.
+
+Requests:
+ * PCM and CDROM volume control (deprecated, but possible)

@@ -1,0 +1,19 @@
+.TH "SDL_UpdateRect" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_UpdateRect \- Makes sure the given area is updated on the given screen\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBvoid \fBSDL_UpdateRect\fP\fR(\fBSDL_Surface *screen, Sint32 x, Sint32 y, Sint32 w, Sint32 h\fR);
+.SH "DESCRIPTION"
+.PP
+Makes sure the given area is updated on the given screen\&. The rectangle must be confined within the screen boundaries (no clipping is done)\&.
+.PP
+If \&'\fBx\fR\&', \&'\fBy\fR\&', \&'\fBw\fR\&' and \&'\fBh\fR\&' are all 0, \fBSDL_UpdateRect\fP will update the entire screen\&.
+.PP
+This function should not be called while \&'\fBscreen\fR\&' is \fIlocked\fR\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_UpdateRects\fP\fR, \fI\fBSDL_Rect\fR\fR, \fI\fBSDL_Surface\fR\fR, \fI\fBSDL_LockSurface\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

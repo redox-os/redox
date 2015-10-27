@@ -1,0 +1,56 @@
+.TH "SDL_JoyHatEvent" "3" "Tue 11 Sep 2001, 22:59" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoyHatEvent \- Joystick hat position change event structure
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  Uint8 type;
+  Uint8 which;
+  Uint8 hat;
+  Uint8 value;
+} SDL_JoyHatEvent;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBtype\fR
+\fBSDL_JOY\fP
+.TP 20
+\fBwhich\fR
+Joystick device index
+.TP 20
+\fBhat\fR
+Joystick hat index
+.TP 20
+\fBvalue\fR
+Hat position
+.SH "DESCRIPTION"
+.PP
+\fBSDL_JoyHatEvent\fR is a member of the \fI\fBSDL_Event\fR\fR union and is used when an event of type \fBSDL_JOYHATMOTION\fP is reported\&.
+.PP
+A \fBSDL_JOYHATMOTION\fP event occurs when ever a user moves a hat on the joystick\&. The field \fBwhich\fR is the index of the joystick that reported the event and \fBhat\fR is the index of the hat (for a more detailed exlaination see the \fIJoystick section\fR)\&. \fBvalue\fR is the current position of the hat\&. It is a logically OR\&'d combination of the following values (whose meanings should be pretty obvious:) :
+.IP "" 10
+\fBSDL_HAT_CENTERED\fP
+.IP "" 10
+\fBSDL_HAT_UP\fP
+.IP "" 10
+\fBSDL_HAT_RIGHT\fP
+.IP "" 10
+\fBSDL_HAT_DOWN\fP
+.IP "" 10
+\fBSDL_HAT_LEFT\fP
+.PP
+The following defines are also provided:
+.IP "" 10
+\fBSDL_HAT_RIGHTUP\fP
+.IP "" 10
+\fBSDL_HAT_RIGHTDOWN\fP
+.IP "" 10
+\fBSDL_HAT_LEFTUP\fP
+.IP "" 10
+\fBSDL_HAT_LEFTDOWN\fP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Event\fR\fR, \fIJoystick Functions\fR, \fI\fBSDL_JoystickEventState\fP\fR, \fI\fBSDL_JoystickGetHat\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:59

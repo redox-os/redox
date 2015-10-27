@@ -1,0 +1,22 @@
+.TH "SDL_SetGammaRamp" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_SetGammaRamp \- Sets the color gamma lookup tables for the display
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_SetGammaRamp\fP\fR(\fBUint16 *redtable, Uint16 *greentable, Uint16 *bluetable\fR);
+.SH "DESCRIPTION"
+.PP
+Sets the gamma lookup tables for the display for each color component\&. Each table is an array of 256 Uint16 values, representing a mapping between the input and output for that channel\&. The input is the index into the array, and the output is the 16-bit gamma value at that index, scaled to the output color precision\&. You may pass NULL to any of the channels to leave them unchanged\&.
+.PP
+This function adjusts the gamma based on lookup tables, you can also have the gamma calculated based on a "gamma function" parameter with \fISDL_SetGamma\fR\&.
+.PP
+Not all display hardware is able to change gamma\&.
+.SH "RETURN VALUE"
+.PP
+Returns -1 on error (or if gamma adjustment is not supported)\&.
+.SH "SEE ALSO"
+.PP
+\fISDL_SetGamma\fR \fISDL_GetGammaRamp\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

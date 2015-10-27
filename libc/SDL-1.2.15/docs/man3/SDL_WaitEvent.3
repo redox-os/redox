@@ -1,0 +1,17 @@
+.TH "SDL_WaitEvent" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_WaitEvent \- Waits indefinitely for the next available event\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_WaitEvent\fP\fR(\fBSDL_Event *event\fR);
+.SH "DESCRIPTION"
+.PP
+Waits indefinitely for the next available event, returning \fB1\fR, or \fB0\fR if there was an error while waiting for events\&. 
+.PP
+If \fBevent\fR is not \fBNULL\fP, the next event is removed from the queue and stored in that area\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Event\fR\fR, \fI\fBSDL_PollEvent\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

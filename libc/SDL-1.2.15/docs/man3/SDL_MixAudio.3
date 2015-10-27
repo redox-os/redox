@@ -1,0 +1,21 @@
+.TH "SDL_MixAudio" "3" "Tue 11 Sep 2001, 22:58" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_MixAudio \- Mix audio data
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBvoid \fBSDL_MixAudio\fP\fR(\fBUint8 *dst, Uint8 *src, Uint32 len, int volume\fR);
+.SH "DESCRIPTION"
+.PP
+This function takes two audio buffers of \fBlen\fR bytes each of the playing audio format and mixes them, performing addition, volume adjustment, and overflow clipping\&. The \fBvolume\fR ranges from 0 to \fBSDL_MIX_MAXVOLUME\fP and should be set to the maximum value for full audio volume\&. Note this does not change hardware volume\&. This is provided for convenience -- you can mix your own audio data\&.
+.PP
+.RS
+\fBNote:  
+.PP
+Do not use this function for mixing together more than two streams of sample data\&. The output from repeated application of this function may be distorted by clipping, because there is no accumulator with greater range than the input (not to mention this being an inefficient way of doing it)\&. Use mixing functions from SDL_mixer, OpenAL, or write your own mixer instead\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_OpenAudio\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:58

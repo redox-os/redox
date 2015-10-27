@@ -1,0 +1,224 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_WM_GrabInput</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Window Management"
+HREF="wm.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_WM_ToggleFullScreen"
+HREF="sdlwmtogglefullscreen.html"><LINK
+REL="NEXT"
+TITLE="Events"
+HREF="event.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlwmtogglefullscreen.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="event.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLWMGRABINPUT"
+></A
+>SDL_WM_GrabInput</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN3663"
+></A
+><H2
+>Name</H2
+>SDL_WM_GrabInput&nbsp;--&nbsp;Grabs mouse and keyboard input.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN3666"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN3667"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>SDL_GrabMode <B
+CLASS="FSFUNC"
+>SDL_WM_GrabInput</B
+></CODE
+>(SDL_GrabMode mode);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3673"
+></A
+><H2
+>Description</H2
+><P
+>Grabbing means that the mouse is confined to the application window,
+and nearly all keyboard input is passed directly to the application,
+and not interpreted by a window manager, if any.</P
+><P
+>When <TT
+CLASS="PARAMETER"
+><I
+>mode</I
+></TT
+> is <TT
+CLASS="LITERAL"
+>SDL_GRAB_QUERY</TT
+> the grab mode is not changed, but the current grab mode is returned.</P
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef enum {
+  SDL_GRAB_QUERY,
+  SDL_GRAB_OFF,
+  SDL_GRAB_ON
+} SDL_GrabMode;</PRE
+>
+                    </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3681"
+></A
+><H2
+>Return Value</H2
+><P
+>The current/new <SPAN
+CLASS="STRUCTNAME"
+>SDL_GrabMode</SPAN
+>.</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlwmtogglefullscreen.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="event.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_WM_ToggleFullScreen</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="wm.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Events</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

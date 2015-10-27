@@ -1,0 +1,38 @@
+.TH "SDL_ActiveEvent" "3" "Tue 11 Sep 2001, 22:59" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_ActiveEvent \- Application visibility event structure
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  Uint8 type;
+  Uint8 gain;
+  Uint8 state;
+} SDL_ActiveEvent;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBtype\fR
+\fBSDL_ACTIVEEVENT\&.\fP
+.TP 20
+\fBgain\fR
+0 if the event is a loss or 1 if it is a gain\&.
+.TP 20
+\fBstate\fR
+\fBSDL_APPMOUSEFOCUS\fP if mouse focus was gained or lost, \fBSDL_APPINPUTFOCUS\fP if input focus was gained or lost, or \fBSDL_APPACTIVE\fP if the application was iconified (\fBgain\fR=0) or restored(\fBgain\fR=1)\&.
+.SH "DESCRIPTION"
+.PP
+\fBSDL_ActiveEvent\fR is a member of the \fI\fBSDL_Event\fR\fR union and is used when an event of type \fBSDL_ACTIVEEVENT\fP is reported\&.
+.PP
+When the mouse leaves or enters the window area a \fBSDL_APPMOUSEFOCUS\fP type activation event occurs, if the mouse entered the window then \fBgain\fR will be 1, otherwise \fBgain\fR will be 0\&. A \fBSDL_APPINPUTFOCUS\fP type activation event occurs when the application loses or gains keyboard focus\&. This usually occurs when another application is made active\&. Finally, a \fBSDL_APPACTIVE\fP type event occurs when the application is either minimised/iconified (\fBgain\fR=0) or restored\&.
+.PP
+.RS
+\fBNote:  
+.PP
+This event does not occur when an application window is first created\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Event\fR\fR, \fI\fBSDL_GetAppState\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:59

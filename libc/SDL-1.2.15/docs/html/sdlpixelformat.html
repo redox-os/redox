@@ -1,0 +1,528 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_PixelFormat</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_Palette"
+HREF="sdlpalette.html"><LINK
+REL="NEXT"
+TITLE="SDL_Surface"
+HREF="sdlsurface.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlpalette.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlsurface.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLPIXELFORMAT"
+></A
+>SDL_PixelFormat</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN3178"
+></A
+><H2
+>Name</H2
+>SDL_PixelFormat&nbsp;--&nbsp;Stores surface format information</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3181"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct SDL_PixelFormat {
+  SDL_Palette *palette;
+  Uint8  BitsPerPixel;
+  Uint8  BytesPerPixel;
+  Uint8  Rloss, Gloss, Bloss, Aloss;
+  Uint8  Rshift, Gshift, Bshift, Ashift;
+  Uint32 Rmask, Gmask, Bmask, Amask;
+  Uint32 colorkey;
+  Uint8  alpha;
+} SDL_PixelFormat;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3184"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN3186"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>palette</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pointer to the <A
+HREF="sdlpalette.html"
+>palette</A
+>, or <TT
+CLASS="LITERAL"
+>NULL</TT
+> if the <TT
+CLASS="STRUCTFIELD"
+><I
+>BitsPerPixel</I
+></TT
+>&#62;8</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>BitsPerPixel</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>The number of bits used to represent each pixel in a surface. Usually 8, 16, 24 or 32.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>BytesPerPixel</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>The number of bytes used to represent each pixel in a surface. Usually one to four.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>[RGBA]mask</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Binary mask used to retrieve individual color values</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>[RGBA]loss</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Precision loss of each color component (2<SUP
+>[RGBA]loss</SUP
+>)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>[RGBA]shift</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Binary left shift of each color component in the pixel value</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>colorkey</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pixel value of transparent pixels</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>alpha</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Overall surface alpha value</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3225"
+></A
+><H2
+>Description</H2
+><P
+>A <SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+> describes the format of the pixel data stored at the <TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+> field of a <A
+HREF="sdlsurface.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+></A
+>. Every surface stores a <SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+> in the <TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+> field.</P
+><P
+>If you wish to do pixel level modifications on a surface, then understanding how SDL stores its color information is essential.</P
+><P
+>8-bit pixel formats are the easiest to understand. Since its an 8-bit format, we have 8 <TT
+CLASS="STRUCTFIELD"
+><I
+>BitsPerPixel</I
+></TT
+> and 1 <TT
+CLASS="STRUCTFIELD"
+><I
+>BytesPerPixel</I
+></TT
+>. Since <TT
+CLASS="STRUCTFIELD"
+><I
+>BytesPerPixel</I
+></TT
+> is 1, all pixels are represented by a Uint8 which contains an index into <TT
+CLASS="STRUCTFIELD"
+><I
+>palette</I
+></TT
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>colors</I
+></TT
+>. So, to determine the color of a pixel in a 8-bit surface: we read the color index from <SPAN
+CLASS="STRUCTNAME"
+>surface</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+> and we use that index to read the <A
+HREF="sdlcolor.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Color</SPAN
+></A
+> structure from <SPAN
+CLASS="STRUCTNAME"
+>surface</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>palette</I
+></TT
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>colors</I
+></TT
+>. Like so:
+<PRE
+CLASS="PROGRAMLISTING"
+>SDL_Surface *surface;
+SDL_PixelFormat *fmt;
+SDL_Color *color;
+Uint8 index;
+
+.
+.
+
+/* Create surface */
+.
+.
+fmt=surface-&#62;format;
+
+/* Check the bitdepth of the surface */
+if(fmt-&#62;BitsPerPixel!=8){
+  fprintf(stderr, "Not an 8-bit surface.\n");
+  return(-1);
+}
+
+/* Lock the surface */
+SDL_LockSurface(surface);
+
+/* Get the topleft pixel */
+index=*(Uint8 *)surface-&#62;pixels;
+color=fmt-&#62;palette-&#62;colors[index];
+
+/* Unlock the surface */
+SDL_UnlockSurface(surface);
+printf("Pixel Color-&#62; Red: %d, Green: %d, Blue: %d. Index: %d\n",
+          color-&#62;r, color-&#62;g, color-&#62;b, index);
+.
+.</PRE
+></P
+><P
+>Pixel formats above 8-bit are an entirely different experience. They are
+considered to be "TrueColor" formats and the color information is stored in the
+pixels themselves, not in a palette. The mask, shift and loss fields tell us
+how the color information is encoded. The mask fields allow us to isolate each
+color component, the shift fields tell us the number of bits to the right of
+each component in the pixel value and the loss fields tell us the number of
+bits lost from each component when packing 8-bit color component in a pixel.
+<PRE
+CLASS="PROGRAMLISTING"
+>/* Extracting color components from a 32-bit color value */
+SDL_PixelFormat *fmt;
+SDL_Surface *surface;
+Uint32 temp, pixel;
+Uint8 red, green, blue, alpha;
+.
+.
+.
+fmt=surface-&#62;format;
+SDL_LockSurface(surface);
+pixel=*((Uint32*)surface-&#62;pixels);
+SDL_UnlockSurface(surface);
+
+/* Get Red component */
+temp=pixel&#38;fmt-&#62;Rmask; /* Isolate red component */
+temp=temp&#62;&#62;fmt-&#62;Rshift;/* Shift it down to 8-bit */
+temp=temp&#60;&#60;fmt-&#62;Rloss; /* Expand to a full 8-bit number */
+red=(Uint8)temp;
+
+/* Get Green component */
+temp=pixel&#38;fmt-&#62;Gmask; /* Isolate green component */
+temp=temp&#62;&#62;fmt-&#62;Gshift;/* Shift it down to 8-bit */
+temp=temp&#60;&#60;fmt-&#62;Gloss; /* Expand to a full 8-bit number */
+green=(Uint8)temp;
+
+/* Get Blue component */
+temp=pixel&#38;fmt-&#62;Bmask; /* Isolate blue component */
+temp=temp&#62;&#62;fmt-&#62;Bshift;/* Shift it down to 8-bit */
+temp=temp&#60;&#60;fmt-&#62;Bloss; /* Expand to a full 8-bit number */
+blue=(Uint8)temp;
+
+/* Get Alpha component */
+temp=pixel&#38;fmt-&#62;Amask; /* Isolate alpha component */
+temp=temp&#62;&#62;fmt-&#62;Ashift;/* Shift it down to 8-bit */
+temp=temp&#60;&#60;fmt-&#62;Aloss; /* Expand to a full 8-bit number */
+alpha=(Uint8)temp;
+
+printf("Pixel Color -&#62; R: %d,  G: %d,  B: %d,  A: %d\n", red, green, blue, alpha);
+.
+.
+.</PRE
+></P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3252"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlsurface.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+></A
+>,
+<A
+HREF="sdlmaprgb.html"
+><TT
+CLASS="FUNCTION"
+>SDL_MapRGB</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlpalette.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlsurface.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_Palette</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_Surface</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

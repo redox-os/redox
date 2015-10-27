@@ -1,0 +1,22 @@
+The SDL port to the Nintendo DS
+
+This port uses the devKitPro toolchain, available from:
+http://www.devkitpro.org
+
+Precompiled tools for cross-compiling on Linux are available from:
+http://www.libsdl.org/extras/nds/devkitPro-20070503-linux.tar.gz
+
+todo:
+add ds console specific features/optimizations
+mouse/keyboard support
+dual screen support
+
+build with:
+cp include/SDL_config_nds.h include/SDL_config.h
+make -f Makefile.ds
+
+included is an arm9/arm7 template to allow for sound streaming support.
+
+Enjoy, fix the source and share :)
+Troy Davis(GPF)
+http://gpf.dcemu.co.uk/

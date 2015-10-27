@@ -1,0 +1,44 @@
+.TH "SDL_VideoModeOK" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_VideoModeOK \- Check to see if a particular video mode is supported\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_VideoModeOK\fP\fR(\fBint width, int height, int bpp, Uint32 flags\fR);
+.SH "DESCRIPTION"
+.PP
+\fBSDL_VideoModeOK\fP returns \fB0\fR if the requested mode is not supported under any bit depth, or returns the bits-per-pixel of the closest available mode with the given width, height and requested \fIsurface\fR flags (see \fI\fBSDL_SetVideoMode\fP\fR)\&.
+.PP
+The bits-per-pixel value returned is only a suggested mode\&. You can usually request and bpp you want when \fIsetting\fR the video mode and SDL will emulate that color depth with a shadow video surface\&.
+.PP
+The arguments to \fBSDL_VideoModeOK\fP are the same ones you would pass to \fISDL_SetVideoMode\fR
+.SH "EXAMPLE"
+.PP
+.nf
+\f(CWSDL_Surface *screen;
+Uint32 bpp;
+\&.
+\&.
+\&.
+printf("Checking mode 640x480@16bpp\&.
+");
+bpp=SDL_VideoModeOK(640, 480, 16, SDL_HWSURFACE);
+
+if(!bpp){
+  printf("Mode not available\&.
+");
+  exit(-1);
+}
+
+printf("SDL Recommends 640x480@%dbpp\&.
+", bpp);
+screen=SDL_SetVideoMode(640, 480, bpp, SDL_HWSURFACE);
+\&.
+\&.\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_SetVideoMode\fP\fR, \fI\fBSDL_GetVideoInfo\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

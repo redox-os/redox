@@ -1,0 +1,355 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_keysym</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SDL Event Structures."
+HREF="eventstructures.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_QuitEvent"
+HREF="sdlquitevent.html"><LINK
+REL="NEXT"
+TITLE="SDLKey"
+HREF="sdlkey.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlquitevent.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlkey.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLKEYSYM"
+></A
+>SDL_keysym</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN4659"
+></A
+><H2
+>Name</H2
+>SDL_keysym&nbsp;--&nbsp;Keysym structure</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN4662"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct{
+  Uint8 scancode;
+  SDLKey sym;
+  SDLMod mod;
+  Uint16 unicode;
+} SDL_keysym;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN4665"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN4667"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>scancode</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Hardware specific scancode</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>sym</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>SDL virtual keysym</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>mod</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Current key modifiers</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>unicode</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Translated character</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN4686"
+></A
+><H2
+>Description</H2
+><P
+>The <SPAN
+CLASS="STRUCTNAME"
+>SDL_keysym</SPAN
+> structure is used by reporting key presses and releases since it is a part of the <A
+HREF="sdlkeyboardevent.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_KeyboardEvent</SPAN
+></A
+>.</P
+><P
+>The <TT
+CLASS="STRUCTFIELD"
+><I
+>scancode</I
+></TT
+> field should generally be left alone, it is the hardware dependent scancode returned by the keyboard. The <TT
+CLASS="STRUCTFIELD"
+><I
+>sym</I
+></TT
+> field is extremely useful. It is the SDL-defined value of the key (see <A
+HREF="sdlkey.html"
+>SDL Key Syms</A
+>. This field is very useful when you are checking for certain key presses, like so:
+<PRE
+CLASS="PROGRAMLISTING"
+>.
+.
+while(SDL_PollEvent(&#38;event)){
+  switch(event.type){
+    case SDL_KEYDOWN:
+      if(event.key.keysym.sym==SDLK_LEFT)
+        move_left();
+      break;
+    .
+    .
+    .
+  }
+}
+.
+.</PRE
+>
+<TT
+CLASS="STRUCTFIELD"
+><I
+>mod</I
+></TT
+> stores the current state of the keyboard modifiers as explained in <A
+HREF="sdlgetmodstate.html"
+><TT
+CLASS="FUNCTION"
+>SDL_GetModState</TT
+></A
+>. The <TT
+CLASS="STRUCTFIELD"
+><I
+>unicode</I
+></TT
+> is only used when UNICODE translation is enabled with <A
+HREF="sdlenableunicode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_EnableUNICODE</TT
+></A
+>. If <TT
+CLASS="STRUCTFIELD"
+><I
+>unicode</I
+></TT
+> is non-zero then this a the UNICODE character corresponding to the keypress. If the high 9 bits of the character are 0, then this maps to the equivalent ASCII character:
+<PRE
+CLASS="PROGRAMLISTING"
+>char ch;
+if ( (keysym.unicode &#38; 0xFF80) == 0 ) {
+  ch = keysym.unicode &#38; 0x7F;
+}
+else {
+  printf("An International Character.\n");
+}</PRE
+>
+UNICODE translation does have a slight overhead so don't enable it unless its needed.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN4705"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlkey.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDLKey</SPAN
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlquitevent.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlkey.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_QuitEvent</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="eventstructures.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDLKey</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

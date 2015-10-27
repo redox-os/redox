@@ -1,0 +1,16 @@
+.TH "SDL_CondWaitTimeout" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_CondWaitTimeout \- Wait on a condition variable, with timeout
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+#include "SDL_thread\&.h"
+.sp
+\fBint \fBSDL_CondWaitTimeout\fP\fR(\fBSDL_cond *cond, SDL_mutex *mutex, Uint32 ms\fR);
+.SH "DESCRIPTION"
+.PP
+Wait on the condition variable \fBcond\fR for, at most, \fBms\fR milliseconds\&. \fBmut\fR is unlocked so it must be locked when the function is called\&. Returns \fBSDL_MUTEX_TIMEDOUT\fP if the condition is not signalled in the allotted time, \fB0\fR if it was signalled or \fB-1\fR on an error\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_CondWait\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

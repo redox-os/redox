@@ -1,0 +1,41 @@
+.TH "SDL_InitSubSystem" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_InitSubSystem \- Initialize subsystems
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_InitSubSystem\fP\fR(\fBUint32 flags\fR);
+.SH "DESCRIPTION"
+.PP
+After SDL has been initialized with \fI\fBSDL_Init\fP\fR you may initialize uninitialized subsystems with \fBSDL_InitSubSystem\fP\&. The \fBflags\fR parameter is the same as that used in \fI\fBSDL_Init\fP\fR\&.
+.SH "EXAMPLES"
+.PP
+.nf
+\f(CW/* Seperating Joystick and Video initialization\&. */
+SDL_Init(SDL_INIT_VIDEO);
+\&.
+\&.
+SDL_SetVideoMode(640, 480, 16, SDL_DOUBLEBUF|SDL_FULLSCREEN);
+\&.
+/* Do Some Video stuff */
+\&.
+\&.
+/* Initialize the joystick subsystem */
+SDL_InitSubSystem(SDL_INIT_JOYSTICK);
+
+/* Do some stuff with video and joystick */
+\&.
+\&.
+\&.
+/* Shut them both down */
+SDL_Quit();\fR
+.fi
+.PP
+.SH "RETURN VALUE"
+.PP
+Returns \fB-1\fR on an error or \fB0\fR on success\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Init\fP\fR, \fI\fBSDL_Quit\fP\fR, \fI\fBSDL_QuitSubSystem\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

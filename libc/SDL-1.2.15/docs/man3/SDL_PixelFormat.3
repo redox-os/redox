@@ -1,0 +1,140 @@
+.TH "SDL_PixelFormat" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_PixelFormat \- Stores surface format information
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct SDL_PixelFormat {
+  SDL_Palette *palette;
+  Uint8  BitsPerPixel;
+  Uint8  BytesPerPixel;
+  Uint8  Rloss, Gloss, Bloss, Aloss;
+  Uint8  Rshift, Gshift, Bshift, Ashift;
+  Uint32 Rmask, Gmask, Bmask, Amask;
+  Uint32 colorkey;
+  Uint8  alpha;
+} SDL_PixelFormat;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBpalette\fR
+Pointer to the \fIpalette\fR, or \fBNULL\fP if the \fBBitsPerPixel\fR>8
+.TP 20
+\fBBitsPerPixel\fR
+The number of bits used to represent each pixel in a surface\&. Usually 8, 16, 24 or 32\&.
+.TP 20
+\fBBytesPerPixel\fR
+The number of bytes used to represent each pixel in a surface\&. Usually one to four\&.
+.TP 20
+\fB[RGBA]mask\fR
+Binary mask used to retrieve individual color values
+.TP 20
+\fB[RGBA]loss\fR
+Precision loss of each color component (2^[RGBA]loss)
+.TP 20
+\fB[RGBA]shift\fR
+Binary left shift of each color component in the pixel value
+.TP 20
+\fBcolorkey\fR
+Pixel value of transparent pixels
+.TP 20
+\fBalpha\fR
+Overall surface alpha value
+.SH "DESCRIPTION"
+.PP
+A \fBSDL_PixelFormat\fR describes the format of the pixel data stored at the \fBpixels\fR field of a \fI\fBSDL_Surface\fR\fR\&. Every surface stores a \fBSDL_PixelFormat\fR in the \fBformat\fR field\&.
+.PP
+If you wish to do pixel level modifications on a surface, then understanding how SDL stores its color information is essential\&.
+.PP
+8-bit pixel formats are the easiest to understand\&. Since its an 8-bit format, we have 8 \fBBitsPerPixel\fR and 1 \fBBytesPerPixel\fR\&. Since \fBBytesPerPixel\fR is 1, all pixels are represented by a Uint8 which contains an index into \fBpalette\fR->\fBcolors\fR\&. So, to determine the color of a pixel in a 8-bit surface: we read the color index from \fBsurface\fR->\fBpixels\fR and we use that index to read the \fI\fBSDL_Color\fR\fR structure from \fBsurface\fR->\fBformat\fR->\fBpalette\fR->\fBcolors\fR\&. Like so: 
+.PP
+.nf
+\f(CWSDL_Surface *surface;
+SDL_PixelFormat *fmt;
+SDL_Color *color;
+Uint8 index;
+
+\&.
+\&.
+
+/* Create surface */
+\&.
+\&.
+fmt=surface->format;
+
+/* Check the bitdepth of the surface */
+if(fmt->BitsPerPixel!=8){
+  fprintf(stderr, "Not an 8-bit surface\&.
+");
+  return(-1);
+}
+
+/* Lock the surface */
+SDL_LockSurface(surface);
+
+/* Get the topleft pixel */
+index=*(Uint8 *)surface->pixels;
+color=fmt->palette->colors[index];
+
+/* Unlock the surface */
+SDL_UnlockSurface(surface);
+printf("Pixel Color-> Red: %d, Green: %d, Blue: %d\&. Index: %d
+",
+          color->r, color->g, color->b, index);
+\&.
+\&.\fR
+.fi
+.PP
+.PP
+Pixel formats above 8-bit are an entirely different experience\&. They are considered to be "TrueColor" formats and the color information is stored in the pixels themselves, not in a palette\&. The mask, shift and loss fields tell us how the color information is encoded\&. The mask fields allow us to isolate each color component, the shift fields tell us the number of bits to the right of each component in the pixel value and the loss fields tell us the number of bits lost from each component when packing 8-bit color component in a pixel\&. 
+.PP
+.nf
+\f(CW/* Extracting color components from a 32-bit color value */
+SDL_PixelFormat *fmt;
+SDL_Surface *surface;
+Uint32 temp, pixel;
+Uint8 red, green, blue, alpha;
+\&.
+\&.
+\&.
+fmt=surface->format;
+SDL_LockSurface(surface);
+pixel=*((Uint32*)surface->pixels);
+SDL_UnlockSurface(surface);
+
+/* Get Red component */
+temp=pixel&fmt->Rmask; /* Isolate red component */
+temp=temp>>fmt->Rshift;/* Shift it down to 8-bit */
+temp=temp<<fmt->Rloss; /* Expand to a full 8-bit number */
+red=(Uint8)temp;
+
+/* Get Green component */
+temp=pixel&fmt->Gmask; /* Isolate green component */
+temp=temp>>fmt->Gshift;/* Shift it down to 8-bit */
+temp=temp<<fmt->Gloss; /* Expand to a full 8-bit number */
+green=(Uint8)temp;
+
+/* Get Blue component */
+temp=pixel&fmt->Bmask; /* Isolate blue component */
+temp=temp>>fmt->Bshift;/* Shift it down to 8-bit */
+temp=temp<<fmt->Bloss; /* Expand to a full 8-bit number */
+blue=(Uint8)temp;
+
+/* Get Alpha component */
+temp=pixel&fmt->Amask; /* Isolate alpha component */
+temp=temp>>fmt->Ashift;/* Shift it down to 8-bit */
+temp=temp<<fmt->Aloss; /* Expand to a full 8-bit number */
+alpha=(Uint8)temp;
+
+printf("Pixel Color -> R: %d,  G: %d,  B: %d,  A: %d
+", red, green, blue, alpha);
+\&.
+\&.
+\&.\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Surface\fR\fR, \fI\fBSDL_MapRGB\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

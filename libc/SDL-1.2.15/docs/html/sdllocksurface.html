@@ -1,0 +1,306 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_LockSurface</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_FreeSurface"
+HREF="sdlfreesurface.html"><LINK
+REL="NEXT"
+TITLE="SDL_UnlockSurface"
+HREF="sdlunlocksurface.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlfreesurface.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlunlocksurface.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLLOCKSURFACE"
+></A
+>SDL_LockSurface</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN1919"
+></A
+><H2
+>Name</H2
+>SDL_LockSurface&nbsp;--&nbsp;Lock a surface for directly access.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN1922"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN1923"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>int <B
+CLASS="FSFUNC"
+>SDL_LockSurface</B
+></CODE
+>(SDL_Surface *surface);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1929"
+></A
+><H2
+>Description</H2
+><P
+><TT
+CLASS="FUNCTION"
+>SDL_LockSurface</TT
+> sets up a surface for directly 
+accessing the pixels.  Between calls to <TT
+CLASS="FUNCTION"
+>SDL_LockSurface</TT
+>
+and <TT
+CLASS="FUNCTION"
+>SDL_UnlockSurface</TT
+>, you can write to and read from 
+<TT
+CLASS="PARAMETER"
+><I
+>surface-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+></I
+></TT
+>, using the pixel format stored in
+<TT
+CLASS="PARAMETER"
+><I
+>surface-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+></I
+></TT
+>.  Once you are done accessing the
+surface, you should use <TT
+CLASS="FUNCTION"
+>SDL_UnlockSurface</TT
+> to release it.</P
+><P
+>Not all surfaces require locking.  
+If <TT
+CLASS="LITERAL"
+>SDL_MUSTLOCK</TT
+>(<TT
+CLASS="PARAMETER"
+><I
+>surface</I
+></TT
+>)
+evaluates to <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+>, then you can read and write to the 
+surface at any time, and the pixel format of the surface will not change. </P
+><P
+>No operating system or library calls should be made between lock/unlock
+pairs, as critical system locks may be held during this time.</P
+><P
+>It should be noted, that since SDL 1.1.8 surface locks are recursive. This means that you can lock a surface multiple times, but each lock must have a match unlock.
+<PRE
+CLASS="PROGRAMLISTING"
+>    .
+    .
+    SDL_LockSurface( surface );
+    .
+    /* Surface is locked */
+    /* Direct pixel access on surface here */
+    .
+    SDL_LockSurface( surface );
+    .
+    /* More direct pixel access on surface */
+    .
+    SDL_UnlockSurface( surface );
+    /* Surface is still locked */
+    /* Note: Is versions &#60; 1.1.8, the surface would have been */
+    /* no longer locked at this stage                         */
+    .
+    SDL_UnlockSurface( surface );
+    /* Surface is now unlocked */
+    .
+    .</PRE
+></P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1947"
+></A
+><H2
+>Return Value</H2
+><P
+><TT
+CLASS="FUNCTION"
+>SDL_LockSurface</TT
+> returns <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+>, 
+or <SPAN
+CLASS="RETURNVALUE"
+>-1</SPAN
+> if the surface couldn't be locked.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1953"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlunlocksurface.html"
+><TT
+CLASS="FUNCTION"
+>SDL_UnlockSurface</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlfreesurface.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlunlocksurface.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_FreeSurface</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_UnlockSurface</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

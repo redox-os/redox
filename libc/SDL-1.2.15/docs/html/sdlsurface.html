@@ -1,0 +1,597 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_Surface</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_PixelFormat"
+HREF="sdlpixelformat.html"><LINK
+REL="NEXT"
+TITLE="SDL_VideoInfo"
+HREF="sdlvideoinfo.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlpixelformat.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlvideoinfo.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLSURFACE"
+></A
+>SDL_Surface</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN3263"
+></A
+><H2
+>Name</H2
+>SDL_Surface&nbsp;--&nbsp;Graphical Surface Structure</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3266"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct SDL_Surface {
+        Uint32 flags;                           /* Read-only */
+        SDL_PixelFormat *format;                /* Read-only */
+        int w, h;                               /* Read-only */
+        Uint16 pitch;                           /* Read-only */
+        void *pixels;                           /* Read-write */
+
+        /* clipping information */
+        SDL_Rect clip_rect;                     /* Read-only */
+
+        /* Reference count -- used when freeing surface */
+        int refcount;                           /* Read-mostly */
+
+	/* This structure also contains private fields not shown here */
+} SDL_Surface;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3269"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN3271"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>flags</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface flags</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pixel <A
+HREF="sdlpixelformat.html"
+>format</A
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>w, h</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Width and height of the surface</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>pitch</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Length of a surface scanline in bytes</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pointer to the actual pixel data</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>clip_rect</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>surface clip <A
+HREF="sdlrect.html"
+>rectangle</A
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3300"
+></A
+><H2
+>Description</H2
+><P
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+>'s represent areas of "graphical"
+memory, memory that can be drawn to. The video framebuffer is returned
+as a <SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+> by
+<A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+>
+and <A
+HREF="sdlgetvideosurface.html"
+><TT
+CLASS="FUNCTION"
+>SDL_GetVideoSurface</TT
+></A
+>.
+Most of the fields should be pretty obvious.
+<TT
+CLASS="STRUCTFIELD"
+><I
+>w</I
+></TT
+> and <TT
+CLASS="STRUCTFIELD"
+><I
+>h</I
+></TT
+> are the
+width and height of the surface in pixels.
+<TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+> is a pointer to the actual pixel data,
+the surface should be <A
+HREF="sdllocksurface.html"
+>locked</A
+>
+before accessing this field. The <TT
+CLASS="STRUCTFIELD"
+><I
+>clip_rect</I
+></TT
+> field
+is the clipping rectangle as set by
+<A
+HREF="sdlsetcliprect.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetClipRect</TT
+></A
+>.</P
+><P
+>The following are supported in the
+<TT
+CLASS="STRUCTFIELD"
+><I
+>flags</I
+></TT
+> field.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN3318"
+></A
+><P
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_SWSURFACE</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface is stored in system memory</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_HWSURFACE</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface is stored in video memory</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_ASYNCBLIT</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface uses asynchronous blits if possible</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_ANYFORMAT</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Allows any pixel-format (Display surface)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_HWPALETTE</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface has exclusive palette</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_DOUBLEBUF</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface is double buffered (Display surface)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_FULLSCREEN</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface is full screen (Display Surface)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_OPENGL</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface has an OpenGL context (Display Surface)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_OPENGLBLIT</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface supports OpenGL blitting (Display Surface)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_RESIZABLE</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface is resizable (Display Surface)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_HWACCEL</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface blit uses hardware acceleration</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_SRCCOLORKEY</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface use colorkey blitting</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_RLEACCEL</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Colorkey blitting is accelerated with RLE</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_SRCALPHA</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface blit uses alpha blending</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_PREALLOC</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Surface uses preallocated memory</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3381"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlpixelformat.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlpixelformat.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlvideoinfo.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_PixelFormat</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_VideoInfo</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

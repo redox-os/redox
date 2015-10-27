@@ -1,0 +1,36 @@
+.TH "SDL_JoystickGetHat" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoystickGetHat \- Get the current state of a joystick hat
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBUint8 \fBSDL_JoystickGetHat\fP\fR(\fBSDL_Joystick *joystick, int hat\fR);
+.SH "DESCRIPTION"
+.PP
+SDL_JoystickGetHat returns the current state of the given \fBhat\fR on the given \fBjoystick\fR\&.
+.SH "RETURN VALUE"
+.PP
+The current state is returned as a Uint8 which is defined as an OR\&'d combination of one or more of the following
+.IP "" 10
+\fBSDL_HAT_CENTERED\fP
+.IP "" 10
+\fBSDL_HAT_UP\fP
+.IP "" 10
+\fBSDL_HAT_RIGHT\fP
+.IP "" 10
+\fBSDL_HAT_DOWN\fP
+.IP "" 10
+\fBSDL_HAT_LEFT\fP
+.IP "" 10
+\fBSDL_HAT_RIGHTUP\fP
+.IP "" 10
+\fBSDL_HAT_RIGHTDOWN\fP
+.IP "" 10
+\fBSDL_HAT_LEFTUP\fP
+.IP "" 10
+\fBSDL_HAT_LEFTDOWN\fP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_JoystickNumHats\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

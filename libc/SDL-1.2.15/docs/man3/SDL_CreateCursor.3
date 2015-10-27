@@ -1,0 +1,120 @@
+.TH "SDL_CreateCursor" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_CreateCursor \- Creates a new mouse cursor\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBSDL_Cursor *\fBSDL_CreateCursor\fP\fR(\fBUint8 *data, Uint8 *mask, int w, int h, int hot_x, int hot_y\fR);
+.SH "DESCRIPTION"
+.PP
+Create a cursor using the specified \fBdata\fR and \fBmask\fR (in MSB format)\&. The cursor width must be a multiple of 8 bits\&.
+.PP
+The cursor is created in black and white according to the following: 
+.TP 20
+\fBData / Mask\fR
+\fBResulting pixel on screen\fR
+.TP 20
+0 / 1
+White
+.TP 20
+1 / 1
+Black
+.TP 20
+0 / 0
+Transparent
+.TP 20
+1 / 0
+Inverted color if possible, black if not\&.
+.PP
+Cursors created with this function must be freed with \fISDL_FreeCursor\fR\&.
+.SH "EXAMPLE"
+.PP
+.nf
+\f(CW/* Stolen from the mailing list */
+/* Creates a new mouse cursor from an XPM */
+
+
+/* XPM */
+static const char *arrow[] = {
+  /* width height num_colors chars_per_pixel */
+  "    32    32        3            1",
+  /* colors */
+  "X c #000000",
+  "\&. c #ffffff",
+  "  c None",
+  /* pixels */
+  "X                               ",
+  "XX                              ",
+  "X\&.X                             ",
+  "X\&.\&.X                            ",
+  "X\&.\&.\&.X                           ",
+  "X\&.\&.\&.\&.X                          ",
+  "X\&.\&.\&.\&.\&.X                         ",
+  "X\&.\&.\&.\&.\&.\&.X                        ",
+  "X\&.\&.\&.\&.\&.\&.\&.X                       ",
+  "X\&.\&.\&.\&.\&.\&.\&.\&.X                      ",
+  "X\&.\&.\&.\&.\&.XXXXX                     ",
+  "X\&.\&.X\&.\&.X                         ",
+  "X\&.X X\&.\&.X                        ",
+  "XX  X\&.\&.X                        ",
+  "X    X\&.\&.X                       ",
+  "     X\&.\&.X                       ",
+  "      X\&.\&.X                      ",
+  "      X\&.\&.X                      ",
+  "       XX                       ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "                                ",
+  "0,0"
+};
+
+static SDL_Cursor *init_system_cursor(const char *image[])
+{
+  int i, row, col;
+  Uint8 data[4*32];
+  Uint8 mask[4*32];
+  int hot_x, hot_y;
+
+  i = -1;
+  for ( row=0; row<32; ++row ) {
+    for ( col=0; col<32; ++col ) {
+      if ( col % 8 ) {
+        data[i] <<= 1;
+        mask[i] <<= 1;
+      } else {
+        ++i;
+        data[i] = mask[i] = 0;
+      }
+      switch (image[4+row][col]) {
+        case \&'X\&':
+          data[i] |= 0x01;
+          k[i] |= 0x01;
+          break;
+        case \&'\&.\&':
+          mask[i] |= 0x01;
+          break;
+        case \&' \&':
+          break;
+      }
+    }
+  }
+  sscanf(image[4+row], "%d,%d", &hot_x, &hot_y);
+  return SDL_CreateCursor(data, mask, 32, 32, hot_x, hot_y);
+}\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_FreeCursor\fP\fR, \fI\fBSDL_SetCursor\fP\fR, \fI\fBSDL_ShowCursor\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

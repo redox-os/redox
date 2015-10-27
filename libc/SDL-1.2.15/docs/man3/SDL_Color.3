@@ -1,0 +1,34 @@
+.TH "SDL_Color" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_Color \- Format independent color description
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  Uint8 r;
+  Uint8 g;
+  Uint8 b;
+  Uint8 unused;
+} SDL_Color;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBr\fR
+Red intensity
+.TP 20
+\fBg\fR
+Green intensity
+.TP 20
+\fBb\fR
+Blue intensity
+.TP 20
+\fBunused\fR
+Unused
+.SH "DESCRIPTION"
+.PP
+\fBSDL_Color\fR describes a color in a format independent way\&. You can convert a \fBSDL_Color\fR to a pixel value for a certain pixel format using \fI\fBSDL_MapRGB\fP\fR\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_PixelFormat\fR\fR, \fI\fBSDL_SetColors\fP\fR, \fI\fBSDL_Palette\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

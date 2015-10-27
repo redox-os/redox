@@ -1,0 +1,284 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_WasInit</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="General"
+HREF="general.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_Quit"
+HREF="sdlquit.html"><LINK
+REL="NEXT"
+TITLE="SDL_GetError"
+HREF="sdlgeterror.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlquit.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlgeterror.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLWASINIT"
+></A
+>SDL_WasInit</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN617"
+></A
+><H2
+>Name</H2
+>SDL_WasInit&nbsp;--&nbsp;Check which subsystems are initialized</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN620"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN621"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>Uint32 <B
+CLASS="FSFUNC"
+>SDL_WasInit</B
+></CODE
+>(Uint32 flags);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN627"
+></A
+><H2
+>Description</H2
+><P
+><TT
+CLASS="FUNCTION"
+>SDL_WasInit</TT
+> allows you to see which SDL subsytems have been <A
+HREF="sdlinit.html"
+>initialized</A
+>. <TT
+CLASS="PARAMETER"
+><I
+>flags</I
+></TT
+> is a bitwise OR'd combination of the subsystems you wish to check (see <A
+HREF="sdlinit.html"
+><TT
+CLASS="FUNCTION"
+>SDL_Init</TT
+></A
+> for a list of subsystem flags).</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN635"
+></A
+><H2
+>Return Value</H2
+><P
+><TT
+CLASS="FUNCTION"
+>SDL_WasInit</TT
+> returns a bitwised OR'd combination of the initialized subsystems.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN639"
+></A
+><H2
+>Examples</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>&#13;/* Here are several ways you can use SDL_WasInit() */
+
+/* Get init data on all the subsystems */
+Uint32 subsystem_init;
+
+subsystem_init=SDL_WasInit(SDL_INIT_EVERYTHING);
+
+if(subsystem_init&#38;SDL_INIT_VIDEO)
+  printf("Video is initialized.\n");
+else
+  printf("Video is not initialized.\n");
+
+
+
+/* Just check for one specfic subsystem */
+
+if(SDL_WasInit(SDL_INIT_VIDEO)!=0)
+  printf("Video is initialized.\n");
+else
+  printf("Video is not initialized.\n");
+
+
+
+
+/* Check for two subsystems */
+
+Uint32 subsystem_mask=SDL_INIT_VIDEO|SDL_INIT_AUDIO;
+
+if(SDL_WasInit(subsystem_mask)==subsystem_mask)
+  printf("Video and Audio initialized.\n");
+else
+  printf("Video and Audio not initialized.\n");&#13;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN642"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlinit.html"
+><TT
+CLASS="FUNCTION"
+>SDL_Init</TT
+></A
+>,
+<A
+HREF="sdlinitsubsystem.html"
+><TT
+CLASS="FUNCTION"
+>SDL_Subsystem</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlquit.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlgeterror.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_Quit</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="general.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_GetError</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,22 @@
+.TH "SDL_SetGamma" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_SetGamma \- Sets the color gamma function for the display
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_SetGamma\fP\fR(\fBfloat redgamma, float greengamma, float bluegamma\fR);
+.SH "DESCRIPTION"
+.PP
+Sets the "gamma function" for the display of each color component\&. Gamma controls the brightness/contrast of colors displayed on the screen\&. A gamma value of 1\&.0 is identity (i\&.e\&., no adjustment is made)\&.
+.PP
+This function adjusts the gamma based on the "gamma function" parameter, you can directly specify lookup tables for gamma adjustment with \fISDL_SetGammaRamp\fR\&.
+.PP
+Not all display hardware is able to change gamma\&.
+.SH "RETURN VALUE"
+.PP
+Returns -1 on error (or if gamma adjustment is not supported)\&.
+.SH "SEE ALSO"
+.PP
+\fISDL_GetGammaRamp\fR \fISDL_SetGammaRamp\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

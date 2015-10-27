@@ -1,0 +1,48 @@
+.TH "SDL_GL_GetProcAddress" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_GL_GetProcAddress \- Get the address of a GL function
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBvoid *\fBSDL_GL_GetProcAddress\fP\fR(\fBconst char* proc\fR);
+.SH "DESCRIPTION"
+.PP
+Returns the address of the GL function \fBproc\fR, or \fBNULL\fR if the function is not found\&. If the GL library is loaded at runtime, with \fI\fBSDL_GL_LoadLibrary\fP\fR, then \fIall\fP GL functions must be retrieved this way\&. Usually this is used to retrieve function pointers to OpenGL extensions\&.
+.SH "EXAMPLE"
+.PP
+.nf
+\f(CWtypedef void (*GL_ActiveTextureARB_Func)(unsigned int);
+GL_ActiveTextureARB_Func glActiveTextureARB_ptr = 0;
+int has_multitexture=1;
+\&.
+\&.
+\&.
+/* Get function pointer */
+glActiveTextureARB_ptr=(GL_ActiveTextureARB_Func) SDL_GL_GetProcAddress("glActiveTextureARB");
+
+/* Check for a valid function ptr */
+if(!glActiveTextureARB_ptr){
+  fprintf(stderr, "Multitexture Extensions not present\&.
+");
+  has_multitexture=0;
+}
+\&.
+\&.
+\&.
+\&.
+if(has_multitexture){
+  glActiveTextureARB_ptr(GL_TEXTURE0_ARB);
+  \&.
+  \&.
+}
+else{
+  \&.
+  \&.
+}\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_GL_LoadLibrary\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

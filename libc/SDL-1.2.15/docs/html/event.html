@@ -1,0 +1,216 @@
+<HTML
+><HEAD
+><TITLE
+>Events</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SDL Reference"
+HREF="reference.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_WM_GrabInput"
+HREF="sdlwmgrabinput.html"><LINK
+REL="NEXT"
+TITLE="SDL Event Structures."
+HREF="eventstructures.html"><META
+NAME="KEYWORD"
+CONTENT="events"><META
+NAME="KEYWORD"
+CONTENT="function"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlwmgrabinput.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="eventstructures.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="EVENT"
+></A
+>Chapter 8. Events</H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="event.html#AEN3691"
+>Introduction</A
+></DT
+><DT
+><A
+HREF="eventstructures.html"
+>SDL Event Structures.</A
+></DT
+><DT
+><A
+HREF="eventfunctions.html"
+>Event Functions.</A
+></DT
+></DL
+></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="AEN3691"
+></A
+>Introduction</H1
+><P
+>Event handling allows your application to receive input from the user. Event handling is initalised (along with video) with a call to:
+<PRE
+CLASS="PROGRAMLISTING"
+>SDL_Init(SDL_INIT_VIDEO);</PRE
+>
+Internally, SDL stores all the events waiting to be handled in an event queue. Using functions like <A
+HREF="sdlpollevent.html"
+><TT
+CLASS="FUNCTION"
+>SDL_PollEvent</TT
+></A
+> and <A
+HREF="sdlpeepevents.html"
+><TT
+CLASS="FUNCTION"
+>SDL_PeepEvents</TT
+></A
+> you can observe and handle waiting input events.</P
+><P
+>The key to event handling in SDL is the <A
+HREF="sdlevent.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+></A
+> union. The event queue itself is composed of a series of <SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+> unions, one for each waiting event. <SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+> unions are read from the queue with the <TT
+CLASS="FUNCTION"
+>SDL_PollEvent</TT
+> function and it is then up to the application to process the information stored with them.</P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlwmgrabinput.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="eventstructures.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_WM_GrabInput</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="reference.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL Event Structures.</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

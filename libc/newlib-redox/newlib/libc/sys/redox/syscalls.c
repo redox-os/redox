@@ -52,10 +52,10 @@ int close(int file){
 }
 
 int dup(int file){
-    return (int)syscall(SYS_DUP, (unit)file, 0, 0);
+    return (int)syscall(SYS_DUP, (uint)file, 0, 0);
 }
 
-int execve(char *name, char **argv, char **env) {
+int execve(const char *name, const char **argv, const char **env) {
     return (int)syscall(SYS_EXECVE, (uint)name, (uint)argv, (uint)env);
 }
 
@@ -73,7 +73,7 @@ int fstat(int file, struct stat *st) {
 }
 
 int fsync(int file) {
-    return (int)syscall(SYS_FSYNC, (usize)fd, 0, 0);
+    return (int)syscall(SYS_FSYNC, (uint)file, 0, 0);
 }
 
 int getpid() {
@@ -127,8 +127,8 @@ clock_t times(struct tms *buf) {
     return -1;
 }
 
-int unlink(char *name) {
-    return (int)syscall(SYS_UNLINK, (usize)name, 0, 0);
+int unlink(const char *name) {
+    return (int)syscall(SYS_UNLINK, (uint)name, 0, 0);
 }
 
 int wait(int *status) {
@@ -136,6 +136,6 @@ int wait(int *status) {
     return -1;
 }
 
-int write(int file, char *ptr, int len) {
+int write(int file, const char *ptr, int len) {
     return (int)syscall(SYS_WRITE, (uint)file, (uint)ptr, (uint)len);
 }

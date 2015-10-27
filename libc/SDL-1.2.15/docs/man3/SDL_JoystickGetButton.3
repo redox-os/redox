@@ -1,0 +1,18 @@
+.TH "SDL_JoystickGetButton" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoystickGetButton \- Get the current state of a given button on a given joystick
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBUint8 \fBSDL_JoystickGetButton\fP\fR(\fBSDL_Joystick *joystick, int button\fR);
+.SH "DESCRIPTION"
+.PP
+SDL_JoystickGetButton returns the current state of the given \fBbutton\fR on the given \fBjoystick\fR\&.
+.SH "RETURN VALUE"
+.PP
+\fB1\fR if the button is pressed\&. Otherwise, \fB0\fR\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_JoystickNumButtons\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00
