@@ -1,6 +1,7 @@
-use common::debug;
-use common::string::{String, ToString};
-use common::vec::Vec;
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
+use common::to_num::ToNum;
 
 pub trait FromBytes {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> where Self: Sized;
@@ -74,8 +75,8 @@ impl MACAddr {
         let mut addr = MACAddr { bytes: [0, 0, 0, 0, 0, 0] };
 
         let mut i = 0;
-        for part in string.split(".".to_string()) {
-            let octet = part.to_num_radix(16) as u8;
+        for part in string.split('.') {
+            let octet = part.to_string().to_num_radix(16) as u8;
             match i {
                 0 => addr.bytes[0] = octet,
                 1 => addr.bytes[1] = octet,
@@ -95,15 +96,11 @@ impl MACAddr {
         let mut string = String::new();
         for i in 0..6 {
             if i > 0 {
-                string = string + '.';
+                string = string + ".";
             }
-            string = string + String::from_num_radix(self.bytes[i] as usize, 16);
+            string = string + &format!("{:X}", self.bytes[i]);
         }
         string
-    }
-
-    pub fn d(&self) {
-        self.to_string().d();
     }
 }
 
@@ -130,8 +127,8 @@ impl IPv4Addr {
         let mut addr = IPv4Addr { bytes: [0, 0, 0, 0] };
 
         let mut i = 0;
-        for part in string.split(".".to_string()) {
-            let octet = part.to_num() as u8;
+        for part in string.split('.') {
+            let octet = part.to_string().to_num() as u8;
             match i {
                 0 => addr.bytes[0] = octet,
                 1 => addr.bytes[1] = octet,
@@ -150,16 +147,12 @@ impl IPv4Addr {
 
         for i in 0..4 {
             if i > 0 {
-                string = string + '.';
+                string = string + ".";
             }
-            string = string + self.bytes[i] as usize;
+            string = string + &format!("{}", self.bytes[i]);
         }
 
         string
-    }
-
-    pub fn d(&self) {
-        self.to_string().d();
     }
 }
 
@@ -169,13 +162,17 @@ pub struct IPv6Addr {
 }
 
 impl IPv6Addr {
-    pub fn d(&self) {
+    pub fn to_string(&self) -> String {
+        let mut string = String::new();
+
         for i in 0..16 {
             if i > 0 && i % 2 == 0 {
-                debug::d(":");
+                string = string + ".";
             }
-            debug::dbh(self.bytes[i]);
+            string = string + &format!("{}", self.bytes[i]);
         }
+
+        string
     }
 }
 

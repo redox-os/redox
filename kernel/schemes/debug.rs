@@ -2,7 +2,6 @@ use alloc::boxed::Box;
 
 use common::context::context_switch;
 use common::scheduler;
-use common::string::{String, ToString};
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -38,11 +37,8 @@ impl Resource for DebugResource {
 
             //TODO: Unicode
             let mut i = 0;
-            while i < buf.len() {
-                match (*::debug_command).vec.remove(0) {
-                    Some(c) => buf[i] = c as u8,
-                    None => break,
-                }
+            while i < buf.len() && (*::debug_command).as_mut_vec().len() > 0 {
+                buf[i] = (*::debug_command).as_mut_vec().remove(0);
                 i += 1;
             }
 
@@ -73,8 +69,8 @@ impl Resource for DebugResource {
 pub struct DebugScheme;
 
 impl KScheme for DebugScheme {
-    fn scheme(&self) -> String {
-        return "debug".to_string();
+    fn scheme(&self) -> &str {
+        "debug"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

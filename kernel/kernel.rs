@@ -3,9 +3,9 @@
 #![feature(allocator)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(collections)]
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
-#![feature(core_slice_ext)]
 #![feature(core_str_ext)]
 #![feature(fnbox)]
 #![feature(fundamental)]
@@ -14,11 +14,19 @@
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
+#![feature(vec_push_all)]
 #![no_std]
 
+#[macro_use]
 extern crate alloc;
 
+#[macro_use]
+extern crate collections;
+
 use alloc::boxed::Box;
+
+use collections::string::{String, ToString};
+use collections::vec::Vec;
 
 use core::{mem, ptr};
 
@@ -30,9 +38,7 @@ use common::paging::Page;
 use common::queue::Queue;
 use schemes::URL;
 use common::scheduler;
-use common::string::{String, ToString};
 use common::time::Duration;
-use common::vec::Vec;
 
 use drivers::pci::*;
 use drivers::pio::*;
@@ -189,20 +195,20 @@ unsafe fn event_loop() -> ! {
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
-                                            cmd.vec.pop();
+                                            cmd.pop();
                                         },
                                         _ => match key_event.character {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd + '\n';
+                                                *::debug_command = cmd + "\n";
                                                 scheduler::end_no_ints(reenable);
 
                                                 cmd = String::new();
                                                 debug::dl();
                                             },
                                             _ => {
-                                                cmd.vec.push(key_event.character);
+                                                cmd.push(key_event.character);
                                                 debug::dc(key_event.character);
                                             },
                                         },
@@ -357,8 +363,8 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()) {
+        for folder in String::from_utf8_unchecked(vec).lines() {
+            if folder.ends_with('/') {
                 let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
 
                 let reenable = scheduler::start_no_ints();
@@ -373,8 +379,8 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()) {
+        for folder in String::from_utf8_unchecked(vec).lines() {
+            if folder.ends_with('/') {
                 let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
 
                 let reenable = scheduler::start_no_ints();
@@ -388,7 +394,7 @@ unsafe fn init(font_data: usize) {
     debug::d("Loading background\n");
     if let Some(mut resource) = URL::from_str("file:///ui/background.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
-        if let Some(size) = resource.read_to_end(&mut vec) {
+        if resource.read_to_end(&mut vec).is_some() {
             debug::d("Read background\n");
         }else{
             debug::d("Failed to read background\n");
