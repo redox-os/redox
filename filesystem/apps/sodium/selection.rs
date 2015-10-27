@@ -11,8 +11,8 @@ impl Editor {
             } else {
                 (x, self.x())
             };
-            for i in a..b {
-                self.text[y].remove(i);
+            for _ in a..b {
+                self.text[y].remove(a);
             }
         } else {
             // Full line mode
@@ -21,8 +21,10 @@ impl Editor {
             } else {
                 (y, self.y())
             };
-            for ln in a..(b + 1) {
-                self.text.remove(ln);
+            for _ in a..(b + 1) {
+                if self.text.len() > 1 {
+                    self.text.remove(a);
+                }
             }
         }
     }
