@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use collections::slice;
-use collections::string::{String, ToString};
+use collections::string::ToString;
 use collections::vec::Vec;
 
 use core::ptr;

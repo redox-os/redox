@@ -6,7 +6,6 @@
 #![feature(collections)]
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
-#![feature(core_slice_ext)]
 #![feature(core_str_ext)]
 #![feature(fnbox)]
 #![feature(fundamental)]

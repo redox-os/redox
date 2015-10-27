@@ -1,4 +1,4 @@
-use string::{String, ToString};
+use string::String;
 use vec::Vec;
 
 /// A WAV file

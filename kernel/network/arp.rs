@@ -3,8 +3,6 @@ use collections::vec::Vec;
 
 use core::mem;
 
-use common::debug;
-
 use network::common::*;
 
 #[derive(Copy, Clone)]

@@ -235,8 +235,6 @@ pub unsafe fn do_sys_exit(status: isize) {
 }
 
 pub unsafe fn do_sys_fork() -> usize {
-    let mut ret = usize::MAX;
-
     let reenable = scheduler::start_no_ints();
 
     let parent_i = context_i;
@@ -251,6 +249,7 @@ pub unsafe fn do_sys_fork() -> usize {
 
     context_switch(true);
 
+    let ret;
     if context_i == parent_i {
         ret = 0;
     }else{

@@ -1,6 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::str;
 use collections::string::String;
 use collections::vec::Vec;
 

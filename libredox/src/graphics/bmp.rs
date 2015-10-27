@@ -1,6 +1,6 @@
 use super::color::Color;
 
-use string::{String, ToString};
+use string::String;
 use vec::Vec;
 
 // TODO: Follow naming convention
