@@ -121,11 +121,8 @@ impl ZFS {
 
         let uberblock = zfs_reader.uber().unwrap();
 
-        let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = zfs_reader.read_type(&uberblock.rootbp).unwrap();
         let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
-        let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
-        let mos_block_ptr3 = mos.meta_dnode.get_blockptr(2);
 
         // 2nd dnode in MOS points at the root dataset zap
         let dnode1: DNodePhys = zfs_reader.read_type_array(&mos_block_ptr1, 1).unwrap();
