@@ -10,8 +10,8 @@ use schemes::{KScheme, Resource, URL, VecResource};
 pub struct TimeScheme;
 
 impl KScheme for TimeScheme {
-    fn scheme(&self) -> String {
-        "time".to_string()
+    fn scheme(&self) -> &str {
+        "time"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

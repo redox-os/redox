@@ -65,8 +65,8 @@ impl Resource for DisplayResource {
 }
 
 impl KScheme for DisplayScheme {
-    fn scheme(&self) -> String {
-        return "display".to_string();
+    fn scheme(&self) -> &str {
+        "display"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

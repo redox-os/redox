@@ -39,8 +39,8 @@ pub trait KScheme {
 
     }
 
-    fn scheme(&self) -> String {
-        String::new()
+    fn scheme(&self) -> &str {
+        ""
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

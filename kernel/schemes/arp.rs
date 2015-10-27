@@ -11,8 +11,8 @@ use schemes::{KScheme, URL};
 pub struct ARPScheme;
 
 impl KScheme for ARPScheme {
-    fn scheme(&self) -> String {
-        "arp".to_string()
+    fn scheme(&self) -> &str {
+        "arp"
     }
 }
 

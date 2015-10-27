@@ -216,8 +216,8 @@ pub struct IntelHDA {
 }
 
 impl KScheme for IntelHDA {
-    fn scheme(&self) -> String {
-        "hda".to_string()
+    fn scheme(&self) -> &str {
+        "hda"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
