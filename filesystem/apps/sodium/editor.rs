@@ -21,6 +21,8 @@ pub struct Editor {
     pub status_bar: StatusBar,
     /// The prompt
     pub prompt: String,
+    /// The settings
+    pub options: Options,
 }
 
 impl Editor {
@@ -43,6 +45,7 @@ impl Editor {
             key_state: KeyState::new(),
             status_bar: StatusBar::new(),
             prompt: String::new(),
+            options: Options::new(),
         };
 
         editor.cursors.push(Cursor::new());

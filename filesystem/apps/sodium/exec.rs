@@ -49,7 +49,11 @@ impl Editor {
                     Char('o') => {
                         // TODO: Autoindent (keep the same indentation level)
                         let y = self.y();
-                        let ind = self.get_indent(y);
+                        let ind = if self.options.autoindent {
+                            self.get_indent(y)
+                        } else {
+                            VecDeque::new()
+                        };
                         let last = ind.len();
                         self.text.insert(y + 1, ind);
                         self.goto((last, y + 1));
