@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use core::mem;
 use core::slice;
 
-use redox::fs::file::File;
+use redox::fs::File;
 use redox::io::{Read, Write, SeekFrom};
 use redox::net::*;
 use redox::rand;

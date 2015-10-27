@@ -2,7 +2,7 @@ use redox::ops::DerefMut;
 use redox::string::*;
 use redox::vec::Vec;
 use redox::boxed::Box;
-use redox::fs::file::*;
+use redox::fs::*;
 use redox::io::*;
 use redox::console::*;
 use redox::env::*;
