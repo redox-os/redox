@@ -26,7 +26,6 @@ impl<'a> XdrOps for MemOps<'a> {
             Err(XdrError)
         } else {
             let d: &i64 = unsafe { mem::transmute(&self.buffer[self.pos]) };
-            let val_d = i64::from_be(*d);
             self.pos += 8;
             Ok(i64::from_be(*d))
         }

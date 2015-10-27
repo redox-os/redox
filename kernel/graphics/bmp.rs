@@ -56,9 +56,7 @@ impl BMPFile {
         };
 
         if gets(0, 2) == "BM" {
-            let file_size = getd(2);
             let offset = getd(0xA);
-            let header_size = getd(0xE);
             let width = getd(0x12);
             let height = getd(0x16);
             let depth = getw(0x1C) as u32;
