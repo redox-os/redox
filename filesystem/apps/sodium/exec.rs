@@ -76,18 +76,9 @@ impl Editor {
                     Char('L') => self.goto_ln_end(),
                     Char('H') => self.cursor_mut().x = 0,
                     Char('r') => {
-                        loop {
-                            if let EventOption::Key(k) = self.window.poll()
-                                                         .unwrap_or(Event::new())
-                                                         .to_option() {
-                                if k.pressed {
-                                    let x = self.x();
-                                    let y = self.y();
-                                    self.text[y][x] = k.character;
-                                    break;
-                                }
-                            }
-                        }
+                        let x = self.x();
+                        let y = self.y();
+                        self.text[y][x] = self.next_char();
                     },
                     Char('R') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
