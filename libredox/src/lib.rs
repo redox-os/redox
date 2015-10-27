@@ -13,6 +13,7 @@
 #![feature(associated_consts)]
 #![feature(box_syntax)]
 #![feature(collections)]
+#![feature(collections_bound)]
 #![feature(core)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
@@ -132,7 +133,7 @@
     // TODO #[macro_use]
     // TODO pub mod thread;
 
-    // TODO pub mod collections;
+    pub mod collections;
     // TODO pub mod dynamic_lib;
     pub mod env;
     // TODO pub mod ffi;
