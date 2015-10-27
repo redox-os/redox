@@ -31,6 +31,19 @@ impl Parameter {
 }
 
 impl Editor {
+    /// Get the next char
+    pub fn next_char(&mut self) -> char {
+        loop {
+            if let EventOption::Key(k) = self.window.poll()
+                                         .unwrap_or(Event::new())
+                                         .to_option() {
+                if k.pressed {
+                    return k.character;
+                }
+            }
+        }
+    }
+
     /// Get the next instruction
     pub fn next_inst(&mut self) -> Inst {
         let mut n = 0;
