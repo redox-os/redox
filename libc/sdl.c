@@ -1,4 +1,6 @@
-#include "SDL.h"
+#include <SDL/SDL.h>
+#include <SDL/SDL_image.h>
+#include <SDL/SDL_ttf.h>
 #include <stdio.h>
 #include <time.h>
 
@@ -28,6 +30,8 @@ int log_events(){
 
 int main(int argc, char* argv[]) {
     SDL_Init(SDL_INIT_VIDEO);
+    IMG_Init(IMG_INIT_PNG);
+    TTF_Init();
 
     SDL_Surface * surface = SDL_SetVideoMode(640, 480, 32, 0);
 
@@ -71,6 +75,8 @@ int main(int argc, char* argv[]) {
 
     while(log_events()){}
 
+    TTF_Quit();
+    IMG_Quit();
     SDL_Quit();
 
     return 0;
