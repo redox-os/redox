@@ -67,7 +67,7 @@ impl Node {
         for b in self.name.as_bytes().iter() {
             if i < name.len() {
                 name[i] = *b;
-            }else{
+            } else {
                 break;
             }
             i += 1;

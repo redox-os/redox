@@ -398,7 +398,7 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         if resource.read_to_end(&mut vec).is_some() {
             debug::d("Read background\n");
-        }else{
+        } else {
             debug::d("Failed to read background at: ");
             debug::d(URL::from_str("file:///ui/background.bmp").reference());
             debug::d("\n");

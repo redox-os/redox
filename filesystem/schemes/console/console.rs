@@ -47,7 +47,7 @@ impl Resource {
                         if i < buf.len() {
                             buf[i] = b;
                             i += 1;
-                        }else{
+                        } else {
                             break;
                         }
                     }
