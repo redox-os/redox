@@ -57,7 +57,7 @@ impl Resource for WindowResource {
             }
         }
 
-        return Some(i);
+        Some(i)
     }
 
     /// Write to resource
@@ -91,7 +91,7 @@ impl Resource for WindowResource {
     /// Sync the resource, should flip
     fn sync(&mut self) -> bool {
         self.window.redraw();
-        return true;
+        true
     }
 }
 

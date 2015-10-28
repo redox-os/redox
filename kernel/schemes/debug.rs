@@ -57,12 +57,8 @@ impl Resource for DebugResource {
         return Some(buf.len());
     }
 
-    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return true;
+        true
     }
 }
 
