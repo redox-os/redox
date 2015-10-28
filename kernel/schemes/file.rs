@@ -533,7 +533,7 @@ impl KScheme for FileScheme {
                     //TODO: Handle more extents
                     for extent in &node.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            if let Some(mut data) = Memory::<u8>::new(extent.length as usize) {
+                            if let Some(data) = Memory::<u8>::new(extent.length as usize) {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
                                 while sectors - sector >= 65536 {

@@ -11,8 +11,11 @@ use schemes::{KScheme, Resource, ResourceSeek, URL};
 pub struct DisplayScheme;
 
 // Should there only be one display per session?
+/// A display resource
 pub struct DisplayResource {
+    /// The display
     pub display: Box<Display>,
+    /// Seek
     pub seek: usize,
 }
 
@@ -28,7 +31,7 @@ impl Resource for DisplayResource {
     }
 
     // not sure what to return here
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         None
     }
 
@@ -69,7 +72,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         // TODO: ponder these things:
         // - should display:// be the only only valid url
         //      for this scheme?

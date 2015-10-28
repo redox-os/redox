@@ -4,7 +4,6 @@ use collections::string::String;
 
 use core::{cmp, mem, ptr};
 
-use common::context::context_switch;
 use common::event::Event;
 use common::to_num::ToNum;
 

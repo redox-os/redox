@@ -233,7 +233,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_exit(status: isize) {
+pub unsafe fn do_sys_exit(_: isize) {
     context_exit();
 }
 
@@ -387,7 +387,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
+pub unsafe fn do_sys_open(path: *const u8) -> usize {
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
         len += 1;
@@ -405,7 +405,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
             if path_str.starts_with('/') {
                 let i = current.cwd.find(':').unwrap_or(0) + 1;
                 path_str = current.cwd[.. i].to_string() + &path_str;
-            }else{
+            } else {
                 path_str = current.cwd.clone() + &path_str;
             }
         }
@@ -532,7 +532,7 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut TV),
         //TODO: link
         SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
-        SYS_OPEN => eax = do_sys_open(ebx as *const u8, ecx as isize, edx as isize),
+        SYS_OPEN => eax = do_sys_open(ebx as *const u8), //ecx as isize, edx as isize),
         SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
         //TODO: unlink
         SYS_WRITE => eax = do_sys_write(ebx, ecx as *mut u8, edx),

@@ -101,7 +101,7 @@ impl Resource for NetworkResource {
         Some(buf.len())
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
         None
     }
 

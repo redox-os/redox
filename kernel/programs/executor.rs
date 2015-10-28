@@ -1,11 +1,9 @@
 use collections::string::String;
 use collections::vec::Vec;
 
-use core::ptr;
-
 use common::context::{self, Context, ContextFile, ContextMemory};
 use common::debug;
-use common::elf::{self, ELF, ELFSegment};
+use common::elf::ELF;
 use common::memory;
 use common::scheduler;
 
