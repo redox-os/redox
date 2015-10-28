@@ -48,7 +48,7 @@ impl Resource for IPResource {
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        if self.data.len() > 0 {
+        if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);

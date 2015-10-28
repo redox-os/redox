@@ -297,7 +297,7 @@ impl ZFS {
                                                     x.name().unwrap().to_string()
                                                 }
                                             })
-                                            .take_while(|x| x.len() > 0)
+                                            .take_while(|x| !x.is_empty())
                                             .collect();
                             *result = Some(ls);
                             return Some(ZfsTraverse::Done);
@@ -405,7 +405,7 @@ impl Scheme {
                 if let Some(list) = zfs.ls(&path) {
                     let mut data: Vec<u8> = Vec::new();
                     for entry in list {
-                        if data.len() > 0 {
+                        if !data.is_empty() {
                             data.push(10);
                         }
                         data.push_all(entry.as_bytes());

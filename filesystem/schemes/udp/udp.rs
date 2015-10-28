@@ -78,7 +78,7 @@ impl Resource {
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        if self.data.len() > 0 {
+        if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
 
@@ -170,7 +170,7 @@ impl Scheme {
         let url = URL::from_str(&url_str);
 
         //Check host and port vs path
-        if url.path().len() > 0 {
+        if !url.path().is_empty() {
             let host_port = url.port().to_num();
             if host_port > 0 && host_port < 65536 {
                 if let Some(mut ip) = File::open("ip:///11") {
