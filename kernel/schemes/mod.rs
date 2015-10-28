@@ -93,9 +93,7 @@ pub trait Resource {
                 Some(0) => return Some(read),
                 None => return None,
                 Some(count) => {
-                    for i in 0..count {
-                        vec.push(bytes[i]);
-                    }
+                    vec.push_all(&bytes[0..count]);
                     read += count;
                 }
             }
@@ -143,35 +141,12 @@ impl URL {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        let mut l = 0;
-
-        for c in self.string.chars() {
-
-            if c == ':' {
-                break;
-            }
-
-            l += 1;
-
-        }
-
-        &self.string[..l]
+        &self.string[..self.string.find(':').unwrap_or(self.string.len())]
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        let mut l = 1;
-
-        for c in self.string.chars() {
-            l += 1;
-
-            if c == ':' {
-                break;
-            }
-
-        }
-
-        &self.string[l..]
+        &self.string[(1 + self.string.find(':').unwrap_or(self.string.len()))..]
     }
 
 }
