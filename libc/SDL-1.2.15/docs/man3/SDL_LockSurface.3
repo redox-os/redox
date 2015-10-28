@@ -1,0 +1,48 @@
+.TH "SDL_LockSurface" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_LockSurface \- Lock a surface for directly access\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_LockSurface\fP\fR(\fBSDL_Surface *surface\fR);
+.SH "DESCRIPTION"
+.PP
+\fBSDL_LockSurface\fP sets up a surface for directly accessing the pixels\&. Between calls to \fBSDL_LockSurface\fP and \fBSDL_UnlockSurface\fP, you can write to and read from \fBsurface->\fBpixels\fR\fR, using the pixel format stored in \fBsurface->\fBformat\fR\fR\&. Once you are done accessing the surface, you should use \fBSDL_UnlockSurface\fP to release it\&.
+.PP
+Not all surfaces require locking\&. If \fBSDL_MUSTLOCK\fP(\fBsurface\fR) evaluates to \fB0\fR, then you can read and write to the surface at any time, and the pixel format of the surface will not change\&. 
+.PP
+No operating system or library calls should be made between lock/unlock pairs, as critical system locks may be held during this time\&.
+.PP
+It should be noted, that since SDL 1\&.1\&.8 surface locks are recursive\&. This means that you can lock a surface multiple times, but each lock must have a match unlock\&. 
+.PP
+.nf
+\f(CW    \&.
+    \&.
+    SDL_LockSurface( surface );
+    \&.
+    /* Surface is locked */
+    /* Direct pixel access on surface here */
+    \&.
+    SDL_LockSurface( surface );
+    \&.
+    /* More direct pixel access on surface */
+    \&.
+    SDL_UnlockSurface( surface );
+    /* Surface is still locked */
+    /* Note: Is versions < 1\&.1\&.8, the surface would have been */
+    /* no longer locked at this stage                         */
+    \&.
+    SDL_UnlockSurface( surface );
+    /* Surface is now unlocked */
+    \&.
+    \&.\fR
+.fi
+.PP
+.SH "RETURN VALUE"
+.PP
+\fBSDL_LockSurface\fP returns \fB0\fR, or \fB-1\fR if the surface couldn\&'t be locked\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_UnlockSurface\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

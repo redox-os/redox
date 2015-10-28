@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
+
 use core::{cmp, mem, ptr};
 
 use graphics::display::Display;
@@ -30,11 +32,12 @@ impl Resource for WindowResource {
 
     /// Return the url of this resource
     fn url(&self) -> URL {
-        return URL::from_string(&("window://".to_string() + "/" + self.window.point.x + "/" +
-                                  self.window.point.y + "/" +
-                                  self.window.size.width + "/" +
-                                  self.window.size.height +
-                                  "/" + &self.window.title));
+        return URL::from_string(&format!("window://{}/{}/{}/{}/{}",
+                                    self.window.point.x,
+                                    self.window.point.y,
+                                    self.window.size.width,
+                                    self.window.size.height,
+                                    self.window.title));
     }
 
     /// Read data to buffer
@@ -46,8 +49,8 @@ impl Resource for WindowResource {
                 Some(event) => {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += mem::size_of::<Event>();
-                }
-                None => break, 
+                },
+                None => break,
             }
         }
 
@@ -90,8 +93,8 @@ impl Resource for WindowResource {
 }
 
 impl Scheme for WindowScheme {
-    fn scheme(&self) -> String {
-        return "window".to_string();
+    fn scheme(&self) -> &str {
+        return "window";
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

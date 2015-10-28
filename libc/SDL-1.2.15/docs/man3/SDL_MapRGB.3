@@ -1,0 +1,22 @@
+.TH "SDL_MapRGB" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_MapRGB \- Map a RGB color value to a pixel format\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBUint32 \fBSDL_MapRGB\fP\fR(\fBSDL_PixelFormat *fmt, Uint8 r, Uint8 g, Uint8 b\fR);
+.SH "DESCRIPTION"
+.PP
+Maps the RGB color value to the specified pixel format and returns the pixel value as a 32-bit int\&.
+.PP
+If the format has a palette (8-bit) the index of the closest matching color in the palette will be returned\&.
+.PP
+If the specified pixel format has an alpha component it will be returned as all 1 bits (fully opaque)\&.
+.SH "RETURN VALUE"
+.PP
+A pixel value best approximating the given RGB color value for a given pixel format\&. If the pixel format bpp (color depth) is less than 32-bpp then the unused upper bits of the return value can safely be ignored (e\&.g\&., with a 16-bpp format the return value can be assigned to a \fBUint16\fP, and similarly a \fBUint8\fP for an 8-bpp format)\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_GetRGB\fP\fR, \fI\fBSDL_GetRGBA\fP\fR, \fI\fBSDL_MapRGBA\fP\fR, \fI\fBSDL_PixelFormat\fR\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

@@ -1,8 +1,8 @@
 use alloc::boxed::Box;
 
-use core::cmp;
+use collections::string::ToString;
 
-use common::string::{String, ToString};
+use core::cmp;
 
 use graphics::display::Display;
 
@@ -72,8 +72,8 @@ impl Resource for DisplayResource {
 }
 
 impl KScheme for DisplayScheme {
-    fn scheme(&self) -> String {
-        return "display".to_string();
+    fn scheme(&self) -> &str {
+        "display"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {

@@ -1,11 +1,12 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
+
 use core::ops::DerefMut;
 
 use common::event::{Event, KeyEvent, MouseEvent};
 use common::queue::Queue;
 use common::scheduler;
-use common::string::String;
 
 use super::color::Color;
 use super::display::Display;

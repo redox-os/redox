@@ -25,13 +25,10 @@ pub fn main() {
     }
 
     while let Some(event) = window.poll() {
-        match event.to_option() {
-            EventOption::Key(key_event) => {
-                if key_event.pressed && key_event.scancode == K_ESC {
-                    break;
-                }
+        if let EventOption::Key(key_event) = event.to_option() {
+            if key_event.pressed && key_event.scancode == K_ESC {
+                break;
             }
-            _ => (),
         }
     }
 }

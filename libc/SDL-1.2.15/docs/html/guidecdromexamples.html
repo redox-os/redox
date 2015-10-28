@@ -1,0 +1,275 @@
+<HTML
+><HEAD
+><TITLE
+>CDROM Examples</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Examples"
+HREF="guideexamples.html"><LINK
+REL="PREVIOUS"
+TITLE="Audio Examples"
+HREF="guideaudioexamples.html"><LINK
+REL="NEXT"
+TITLE="Time Examples"
+HREF="guidetimeexamples.html"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="guideaudioexamples.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Examples</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="guidetimeexamples.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="GUIDECDROMEXAMPLES"
+></A
+>CDROM Examples</H1
+><P
+></P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN393"
+></A
+>Listing CD-ROM drives</H2
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>    #include "SDL.h"
+
+    /* Initialize SDL first */
+    if ( SDL_Init(SDL_INIT_CDROM) &#60; 0 ) {
+        fprintf(stderr, "Couldn't initialize SDL: %s\n",SDL_GetError());
+        exit(1);
+    }
+    atexit(SDL_Quit);
+
+    /* Find out how many CD-ROM drives are connected to the system */
+    printf("Drives available: %d\n", SDL_CDNumDrives());
+    for ( i=0; i&#60;SDL_CDNumDrives(); ++i ) {
+        printf("Drive %d:  \"%s\"\n", i, SDL_CDName(i));
+    }</PRE
+></P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN397"
+></A
+>Opening the default drive</H2
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>    SDL_CD *cdrom;
+    CDstatus status;
+    char *status_str;
+
+    cdrom = SDL_CDOpen(0);
+    if ( cdrom == NULL ) {
+        fprintf(stderr, "Couldn't open default CD-ROM drive: %s\n",
+                        SDL_GetError());
+        exit(2);
+    }
+
+    status = SDL_CDStatus(cdrom);
+    switch (status) {
+        case CD_TRAYEMPTY:
+            status_str = "tray empty";
+            break;
+        case CD_STOPPED:
+            status_str = "stopped";
+            break;
+        case CD_PLAYING:
+            status_str = "playing";
+            break;
+        case CD_PAUSED:
+            status_str = "paused";
+            break;
+        case CD_ERROR:
+            status_str = "error state";
+            break;
+    }
+    printf("Drive status: %s\n", status_str);
+    if ( status &#62;= CD_PLAYING ) {
+        int m, s, f;
+        FRAMES_TO_MSF(cdrom-&#62;cur_frame, &#38;m, &#38;s, &#38;f);
+        printf("Currently playing track %d, %d:%2.2d\n",
+        cdrom-&#62;track[cdrom-&#62;cur_track].id, m, s);
+    }</PRE
+></P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN401"
+></A
+>Listing the tracks on a CD</H2
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>    SDL_CD *cdrom;          /* Assuming this has already been set.. */
+    int i;
+    int m, s, f;
+
+    SDL_CDStatus(cdrom);
+    printf("Drive tracks: %d\n", cdrom-&#62;numtracks);
+    for ( i=0; i&#60;cdrom-&#62;numtracks; ++i ) {
+        FRAMES_TO_MSF(cdrom-&#62;track[i].length, &#38;m, &#38;s, &#38;f);
+        if ( f &#62; 0 )
+            ++s;
+        printf("\tTrack (index %d) %d: %d:%2.2d\n", i,
+        cdrom-&#62;track[i].id, m, s);
+    }</PRE
+></P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN405"
+></A
+>Play an entire CD</H2
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>    SDL_CD *cdrom;          /* Assuming this has already been set.. */
+
+    // Play entire CD:
+    if ( CD_INDRIVE(SDL_CDStatus(cdrom)) )
+        SDL_CDPlayTracks(cdrom, 0, 0, 0, 0);
+
+        // Play last track:
+        if ( CD_INDRIVE(SDL_CDStatus(cdrom)) ) {
+            SDL_CDPlayTracks(cdrom, cdrom-&#62;numtracks-1, 0, 0, 0);
+        }
+
+        // Play first and second track and 10 seconds of third track:
+        if ( CD_INDRIVE(SDL_CDStatus(cdrom)) )
+            SDL_CDPlayTracks(cdrom, 0, 0, 2, CD_FPS * 10);</PRE
+></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="guideaudioexamples.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="guidetimeexamples.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Audio Examples</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="guideexamples.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Time Examples</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

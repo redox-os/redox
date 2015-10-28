@@ -1,0 +1,40 @@
+.TH "SDL_GL_SetAttribute" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_GL_SetAttribute \- Set a special SDL/OpenGL attribute
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_GL_SetAttribute\fP\fR(\fBSDL_GLattr attr, int value\fR);
+.SH "DESCRIPTION"
+.PP
+Sets the OpenGL \fIattribute\fR \fBattr\fR to \fBvalue\fR\&. The attributes you set don\&'t take effect until after a call to \fI\fBSDL_SetVideoMode\fP\fR\&. You should use \fI\fBSDL_GL_GetAttribute\fP\fR to check the values after a \fBSDL_SetVideoMode\fP call\&.
+.SH "RETURN VALUE"
+.PP
+Returns \fB0\fR on success, or \fB-1\fR on error\&.
+.SH "EXAMPLE"
+.PP
+.nf
+\f(CWSDL_GL_SetAttribute( SDL_GL_RED_SIZE, 5 );
+SDL_GL_SetAttribute( SDL_GL_GREEN_SIZE, 5 );
+SDL_GL_SetAttribute( SDL_GL_BLUE_SIZE, 5 );
+SDL_GL_SetAttribute( SDL_GL_DEPTH_SIZE, 16 );
+SDL_GL_SetAttribute( SDL_GL_DOUBLEBUFFER, 1 );
+if ( (screen=SDL_SetVideoMode( 640, 480, 16, SDL_OPENGL )) == NULL ) {
+  fprintf(stderr, "Couldn\&'t set GL mode: %s
+", SDL_GetError());
+  SDL_Quit();
+  return;
+}\fR
+.fi
+.PP
+.PP
+.RS
+\fBNote:  
+.PP
+The \fBSDL_DOUBLEBUF\fP flag is not required to enable double buffering when setting an OpenGL video mode\&. Double buffering is enabled or disabled using the SDL_GL_DOUBLEBUFFER attribute\&.
+.RE
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_GL_GetAttribute\fP\fR, \fIGL Attributes\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

@@ -1,6 +1,6 @@
-use alloc::boxed::*;
+use alloc::boxed::Box;
 
-use string::*;
+use string::{String, ToString};
 use vec::Vec;
 
 use event::*;
@@ -17,10 +17,10 @@ pub fn console_window() -> &'static mut ConsoleWindow {
     unsafe {
         if window as usize == 0 {
             window = Box::into_raw(ConsoleWindow::new((rand() % 400 + 50) as isize,
-                                          (rand() % 300 + 50) as isize,
-                                          640,
-                                          480,
-                                          "Console"));
+                                   (rand() % 300 + 50) as isize,
+                                   640,
+                                   480,
+                                   "Console"));
             (*window).sync();
         }
         &mut *window
@@ -102,8 +102,10 @@ pub struct ConsoleWindow {
     pub window: Box<Window>,
     /// The char buffer
     pub output: Vec<ConsoleChar>,
-    /// The current input command
-    pub command: String,
+    /// Previous commands
+    pub history: Vec<String>,
+    /// History index
+    pub history_i: usize,
     /// Offset
     pub offset: usize,
     /// Scroll distance x
@@ -120,7 +122,8 @@ impl ConsoleWindow {
         box ConsoleWindow {
             window: Window::new(x, y, w, h, title).unwrap(),
             output: Vec::new(),
-            command: String::new(),
+            history: vec!["".to_string()],
+            history_i: 0,
             offset: 0,
             scroll_x: 0,
             scroll_y: 0,
@@ -156,57 +159,64 @@ impl ConsoleWindow {
     /// Read input
     pub fn read(&mut self) -> Option<String> {
         while let Some(event) = self.poll() {
-            match event.to_option() {
-                EventOption::Key(key_event) => {
-                    if key_event.pressed {
-                        match key_event.scancode {
-                            K_BKSP => if self.offset > 0 {
-                                self.command = self.command[0 .. self.offset - 1].to_string() +
-                                               &self.command[self.offset .. self.command.len()];
-                                self.offset -= 1;
-                            },
-                            K_DEL => if self.offset < self.command.len() {
-                                self.command =
-                                    self.command[0 .. self.offset].to_string() +
-                                    &self.command[self.offset + 1 .. self.command.len() - 1];
-                            },
-                            K_HOME => self.offset = 0,
-                            K_UP => {
-                                //self.command = self.last_command.clone();
-                                //self.offset = self.command.len();
+            if let EventOption::Key(key_event) = event.to_option() {
+                if key_event.pressed {
+                    match key_event.scancode {
+                        K_BKSP => if self.offset > 0 {
+                            self.history[self.history_i] = self.history[self.history_i][0 .. self.offset - 1].to_string() +
+                                           &self.history[self.history_i][self.offset ..];
+                            self.offset -= 1;
+                        },
+                        K_DEL => if self.offset < self.history[self.history_i].len() {
+                            self.history[self.history_i] =
+                                self.history[self.history_i][0 .. self.offset].to_string() +
+                                &self.history[self.history_i][self.offset + 1 .. self.history[self.history_i].len() - 1];
+                        },
+                        K_HOME => self.offset = 0,
+                        K_UP => {
+                            if self.history_i + 1 < self.history.len() {
+                                self.history_i += 1;
                             }
-                            K_LEFT => if self.offset > 0 {
-                                self.offset -= 1;
-                            },
-                            K_RIGHT => if self.offset < self.command.len() {
-                                self.offset += 1;
-                            },
-                            K_END => self.offset = self.command.len(),
-                            K_DOWN => {
-                                //self.command.clear()
-                                //self.offset = self.command.len();
-                            }
-                            _ => match key_event.character {
-                                '\x00' => (),
-                                '\n' => {
-                                    let command = self.command.clone();
-                                    self.command.clear();
-                                    self.offset = 0;
-                                    return Some(command);
-                                }
-                                '\x1B' => break,
-                                _ => {
-                                    self.command = self.command[0 .. self.offset].to_string() +
-                                                   &key_event.character.to_string() +
-                                                   &self.command[self.offset .. self.command.len()];
-                                    self.offset += 1;
-                                }
-                            },
+                            self.offset = self.history[self.history_i].len();
                         }
+                        K_LEFT => if self.offset > 0 {
+                            self.offset -= 1;
+                        },
+                        K_RIGHT => if self.offset < self.history[self.history_i].len() {
+                            self.offset += 1;
+                        },
+                        K_END => self.offset = self.history[self.history_i].len(),
+                        K_DOWN => {
+                            if self.history_i > 0 {
+                                self.history_i -= 1;
+                            }
+                            self.offset = self.history[self.history_i].len();
+                        }
+                        _ => match key_event.character {
+                            '\x00' => (),
+                            '\n' => {
+                                let command = self.history[self.history_i].clone();
+                                self.offset = 0;
+                                self.history_i = 0;
+                                if self.history[0].len() > 0 {
+                                    self.history.insert(0, "".to_string());
+                                }
+                                while self.history.len() > 1000 {
+                                    self.history.pop();
+                                }
+                                return Some(command);
+                            }
+                            '\x1B' => break,
+                            _ => {
+                                self.history[self.history_i] = self.history[self.history_i][0 .. self.offset].to_string() +
+                                               &key_event.character.to_string() +
+                                               &self.history[self.history_i][self.offset ..];
+                                self.offset += 1;
+                            }
+                        },
                     }
-                    self.sync();
                 }
-                _ => (),
+                self.sync();
             }
         }
 
@@ -256,7 +266,7 @@ impl ConsoleWindow {
             }
 
             let mut i = 0;
-            for c in self.command.chars() {
+            for c in self.history[self.history_i].chars() {
                 if self.wrap && col >= cols {
                     col = -scroll_x;
                     row += 1;

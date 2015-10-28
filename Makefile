@@ -162,31 +162,20 @@ $(BUILD)/libcollections.rlib: rust/libcollections/lib.rs $(BUILD)/libcore.rlib $
 $(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liblibc.rlib: rust/liblibc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
-
-#TODO: Rust libstd
-#$(BUILD)/libstd.rlib: rust/libstd/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib $(BUILD)/liblibc.rlib
-#	$(RUSTC) $(RUSTCFLAGS) --cfg unix -o $@ $<
-
-#Custom libstd
-$(BUILD)/libstd.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name std --cfg std -o $@ $<
-
 $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+$(BUILD)/kernel.rlib: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-$(BUILD)/kernel.ir: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+$(BUILD)/kernel.ir: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
-	$(OBJDUMP) -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 $(BUILD)/crt0.o: kernel/program.asm
 	$(AS) -f elf $< -o $@
@@ -202,7 +191,7 @@ filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme
 	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
 
 filesystem/%.list: filesystem/%.bin
-	$(OBJDUMP) -C -M intel -d $< > $@
+	$(OBJDUMP) -C -M intel -D $< > $@
 
 filesystem/apps/zfs/zfs.img:
 	dd if=/dev/zero of=$@ bs=64M count=1

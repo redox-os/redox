@@ -1,0 +1,37 @@
+.TH "SDL_JoystickGetBall" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoystickGetBall \- Get relative trackball motion
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_JoystickGetBall\fP\fR(\fBSDL_Joystick *joystick, int ball, int *dx, int *dy\fR);
+.SH "DESCRIPTION"
+.PP
+Get the \fBball\fR axis change\&.
+.PP
+Trackballs can only return relative motion since the last call to \fBSDL_JoystickGetBall\fP, these motion deltas a placed into \fBdx\fR and \fBdy\fR\&.
+.SH "RETURN VALUE"
+.PP
+Returns \fB0\fR on success or \fB-1\fR on failure
+.SH "EXAMPLES"
+.PP
+.PP
+.nf
+\f(CWint delta_x, delta_y;
+SDL_Joystick *joy;
+\&.
+\&.
+\&.
+SDL_JoystickUpdate();
+if(SDL_JoystickGetBall(joy, 0, &delta_x, &delta_y)==-1)
+  printf("TrackBall Read Error!
+");
+printf("Trackball Delta- X:%d, Y:%d
+", delta_x, delta_y);\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_JoystickNumBalls\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

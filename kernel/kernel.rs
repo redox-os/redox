@@ -3,23 +3,30 @@
 #![feature(allocator)]
 #![feature(asm)]
 #![feature(box_syntax)]
+#![feature(collections)]
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
-#![feature(core_slice_ext)]
 #![feature(core_str_ext)]
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
-#![feature(naked_attributes)]
 #![feature(no_std)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
+#![feature(vec_push_all)]
 #![no_std]
 
+#[macro_use]
 extern crate alloc;
 
+#[macro_use]
+extern crate collections;
+
 use alloc::boxed::Box;
+
+use collections::string::{String, ToString};
+use collections::vec::Vec;
 
 use core::{mem, ptr};
 
@@ -31,9 +38,7 @@ use common::paging::Page;
 use common::queue::Queue;
 use schemes::URL;
 use common::scheduler;
-use common::string::{String, ToString};
 use common::time::Duration;
-use common::vec::Vec;
 
 use drivers::pci::*;
 use drivers::pio::*;
@@ -64,44 +69,67 @@ use schemes::display::*;
 
 use syscall::handle::*;
 
+/// Allocation
 pub mod alloc_system;
+/// Audio
 pub mod audio;
+/// Common std-like functionality
 pub mod common;
+/// Various drivers
 pub mod drivers;
+/// Externs
 pub mod externs;
+/// Various graphical methods
 pub mod graphics;
+/// Network
 pub mod network;
+/// Panic
 pub mod panic;
+/// Programs
 pub mod programs;
+/// Schemes
 pub mod schemes;
+/// System calls
 pub mod syscall;
+/// USB input/output
 pub mod usb;
 
+/// Default display for debugging
 static mut debug_display: *mut Display = 0 as *mut Display;
+/// Default point for debugging
 static mut debug_point: Point = Point { x: 0, y: 0 };
+/// Draw debug
 static mut debug_draw: bool = false;
+/// Redraw debug
 static mut debug_redraw: bool = false;
+/// Debug command
 static mut debug_command: *mut String = 0 as *mut String;
 
+/// Clock realtime (default)
 static mut clock_realtime: Duration = Duration {
     secs: 0,
     nanos: 0
 };
 
+/// Monotonic clock
 static mut clock_monotonic: Duration = Duration {
     secs: 0,
     nanos: 0
 };
 
+/// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
     nanos: 2250286
 };
 
+/// Session pointer
 static mut session_ptr: *mut Session = 0 as *mut Session;
 
+/// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
+/// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
     loop {
         asm!("cli");
@@ -130,6 +158,7 @@ unsafe fn idle_loop() -> ! {
     }
 }
 
+/// Event poll loop
 unsafe fn poll_loop() -> ! {
     let session = &mut *session_ptr;
 
@@ -140,6 +169,7 @@ unsafe fn poll_loop() -> ! {
     }
 }
 
+/// Event loop
 unsafe fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
@@ -167,20 +197,19 @@ unsafe fn event_loop() -> ! {
                                         },
                                         event::K_BKSP => if cmd.len() > 0 {
                                             debug::db(8);
-                                            cmd.vec.pop();
+                                            cmd.pop();
                                         },
                                         _ => match key_event.character {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd + '\n';
-                                                 scheduler::end_no_ints(reenable);
-
+                                                *::debug_command = cmd + "\n";
+                                                scheduler::end_no_ints(reenable);
                                                 cmd = String::new();
                                                 debug::dl();
                                             },
                                             _ => {
-                                                cmd.vec.push(key_event.character);
+                                                cmd.push(key_event.character);
                                                 debug::dc(key_event.character);
                                             },
                                         },
@@ -232,6 +261,7 @@ pub unsafe fn debug_init() {
     PIO8::new(0x3F8 + 1).write(0x01);
 }
 
+/// Initialize kernel
 unsafe fn init(font_data: usize) {
     scheduler::start_no_ints();
 
@@ -323,8 +353,8 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8(&vec).split("\n".to_string()) {
-            if folder.ends_with("/".to_string()) {
+        for folder in String::from_utf8_unchecked(vec).lines() {
+            if folder.ends_with('/') {
                 let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
 
                 let reenable = scheduler::start_no_ints();

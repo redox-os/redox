@@ -1,7 +1,7 @@
 use core::clone::Clone;
-use core::mem::swap;
+use core::mem;
 
-use string::*;
+use string::{String, ToString};
 use vec::Vec;
 
 //URL Parsing:
@@ -86,7 +86,7 @@ impl URL {
                         host_part_i += 1;
                     }
                     if host_part_i == 1 {
-                        swap(&mut host, &mut username);
+                        mem::swap(&mut host, &mut username);
                     }
                 }
                 _ => break,
@@ -129,7 +129,7 @@ impl URL {
                         host_part_i += 1;
                     }
                     if host_part_i == 1 {
-                        swap(&mut port, &mut password);
+                        mem::swap(&mut port, &mut password);
                     }
                 }
                 _ => break,
@@ -171,7 +171,7 @@ impl URL {
                         host_part_i += 1;
                     }
                     if host_part_i == 1 {
-                        swap(&mut host, &mut username);
+                        mem::swap(&mut host, &mut username);
                     }
                 }
                 _ => break,
@@ -213,7 +213,7 @@ impl URL {
                         host_part_i += 1;
                     }
                     if host_part_i == 1 {
-                        swap(&mut port, &mut password);
+                        mem::swap(&mut port, &mut password);
                     }
                 }
                 _ => break,

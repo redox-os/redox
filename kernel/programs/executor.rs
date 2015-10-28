@@ -1,18 +1,26 @@
+use collections::string::String;
+use collections::vec::Vec;
+
 use core::ptr;
 
 use common::context::{self, Context, ContextFile, ContextMemory};
-use common::elf::{self, ELF};
+use common::debug;
+use common::elf::{self, ELF, ELFSegment};
 use common::memory;
 use common::scheduler;
-use common::string::String;
-use common::vec::Vec;
 
 use schemes::URL;
 
-pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
+pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
+    debug::d("Execute ");
+    debug::d(&url.to_string());
+    debug::d(" in ");
+    debug::d(&wd.to_string());
+    debug::dl();
+
     unsafe {
         let mut physical_address = 0;
-        let virtual_address = 0x80000000;
+        let mut virtual_address = 0;
         let mut virtual_size = 0;
         let mut entry = 0;
 
@@ -21,30 +29,40 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             resource.read_to_end(&mut vec);
 
             let executable = ELF::from_data(vec.as_ptr() as usize);
-
-            if executable.data > 0 {
-                virtual_size = memory::alloc_size(executable.data) - elf::ELF_OFFSET;
+            if let Some(segment) = executable.load_segment() {
+                virtual_address = segment.vaddr as usize;
+                virtual_size = segment.mem_len as usize;
                 physical_address = memory::alloc(virtual_size);
-                ptr::copy((executable.data + elf::ELF_OFFSET) as *const u8,
-                          physical_address as *mut u8,
-                          virtual_size);
+
+                if physical_address > 0 {
+                    //Copy progbits
+                    ::memcpy(physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
+                    //Zero bss
+                    ::memset((physical_address + segment.file_len as usize) as *mut u8, 0, segment.mem_len as usize - segment.file_len as usize);
+                }
+
                 entry = executable.entry();
+            }else{
+                debug::d("Invalid ELF\n");
             }
+        }else{
+            debug::d("Failed to open\n");
         }
 
         if physical_address > 0 && virtual_address > 0 && virtual_size > 0 &&
            entry >= virtual_address && entry < virtual_address + virtual_size {
+            args.insert(0, url.to_string());
+
             let mut context_args: Vec<usize> = Vec::new();
             context_args.push(0); // ENVP
             context_args.push(0); // ARGV NULL
-            let mut argc = 1;
+            let mut argc = 0;
             for i in 0..args.len() {
                 if let Some(arg) = args.get(args.len() - i - 1) {
-                    context_args.push(arg.to_c_str() as usize);
+                    context_args.push(arg.as_ptr() as usize);
                     argc += 1;
                 }
             }
-            context_args.push(url.string.to_c_str() as usize);
             context_args.push(argc);
 
             let mut context = Context::new(entry, &context_args);
@@ -57,6 +75,8 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
             });
 
             context.cwd = wd.to_string();
+
+            context.args = args;
 
             if let Some(stdin) = URL::from_str("debug://").open() {
                 context.files.push(ContextFile {
@@ -84,8 +104,12 @@ pub fn execute(url: &URL, wd: &URL, args: &Vec<String>) {
                 (*context::contexts_ptr).push(context);
             }
             scheduler::end_no_ints(reenable);
-        } else if physical_address > 0 {
-            memory::unalloc(physical_address);
+        } else {
+            debug::d("Invalid entry\n");
+
+            if physical_address > 0 {
+                memory::unalloc(physical_address);
+            }
         }
     }
 }

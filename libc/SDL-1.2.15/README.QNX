@@ -1,0 +1,155 @@
+README.QNX by Mike Gorchak <mike@malva.ua>, <lestat@i.com.ua>
+Last changed at 24 Apr 2004.
+
+======================================================================
+Table of Contents:
+
+1. OpenGL.
+2. Wheel and multi-button mouses.
+3. CDROM handling issues.
+4. Hardware video overlays.
+5. Shared library building.
+6. Some building issues.
+7. Environment variables.
+
+======================================================================
+1. OpenGL:
+
+    OpenGL works well and is stable, but fullscreen mode has not  been
+heavily tested yet.
+    If you have QNX RtP version 6.1.0 or above you must  download  the
+Photon3D runtime from http://developers.qnx.com or install it from the
+public repository or from the public CD, available with QNX. OS versi-
+ons below 6.1.0 are not supported.
+    When creating an OpenGL context, software renderer mode is artifi-
+cially selected (QSSL made acceleration  only  for  Voodoo  boards  in
+fullscreen mode, sorry but I don't have this board  to  test  OpenGL -
+maybe it works or maybe not :)). If you  want  acceleration - you  can
+remove one line in the source code: find the  file SDL_ph_image.c  and
+remove the following
+
+    OGLAttrib[OGLargc++]=PHOGL_ATTRIB_FORCE_SW;
+     
+line in the ph_SetupOpenGLContext() function or change the argument to
+PHOGL_ATTRIB_FORCE_HW or PHOGL_ATTRIB_FAVOR_HW.
+
+======================================================================
+2. Wheel and multi-button mouses:
+
+    Photon emits  keyboard  events (key up and  down)  when the  mouse
+wheel is moved. The key_scan field appears valid, and it contains zero.
+That is a basic method of detecting  mouse  wheel events under Photon.
+It looks like a hack, but it  works for me :) on various PC configura-
+tions.
+
+I've tested it on:
+
+1. Genius Optical NetScroll/+ PS/2 (1 wheel)
+2. A4Tech Optical GreatEye WheelMouse PS/2,  model: WOP-35.  (2 wheels
+   + 2 additional buttons). The wheel for vertical scrolling  works as
+   usual, but the second wheel for horizontal scrolling emits  two se-
+   quential events up or down, so it can provide faster scrolling than
+   the first wheel. Additional buttons don't emit  any  events, but it
+   looks like they're handled by photon in an unusual way - like click
+   to front, but works not with any window, looks like a fun bug-o-fe-
+   ature :).
+
+======================================================================
+3. CDROM handling issues:
+
+    Access to CDROM can only be  provided  with  'root'  privileges. I
+can't do anything about that, /dev/cd0 has brw------- permissions  and
+root:root rights.
+
+======================================================================
+4. Hardware video overlays:
+
+    Overlays can flicker  during  window  movement,  resizing, etc. It
+happens because the photon driver updates the real window contents be-
+hind the overlay, then draws the temporary chroma key color  over  the
+window contents. It can be done without using the chroma key but  that
+causes the overlay to always be on top. So  flickering  during  window
+movement is preferred instead.
+    Double buffering code is temporarily disabled in the photon driver
+code, because on my GF2-MX it can accidentally cause a buffer  switch,
+which causes the old frame to show. S3 Savage4 has the  same  problem,
+but ATI Rage 128 doesn't. I think it can be fixed later. Current  code
+works very well, so maybe double buffering is not needed right now.
+    Something strange happens when you try to move the window with the
+overlay beyond the left border  of the screen. The  overlay  tries  to
+stay at position x=0, but when attempting to move it  a  bit  more  it
+jumps to position x=-60 (on GF2-MX, on ATI Rage128 this  value  a  bit
+smaller). It's really strange, looks  like  the  overlay  doesn't like
+negative coordinates.
+
+=======================================================================
+5. Shared library building:
+
+    A shared library can be built, but before running  the  autogen.sh
+script you must manually delete the libtool.m4 stuff from the acinclu-
+de.m4 file (it comes after the ESD detection code up to the end of the
+file), because the libtool stuff in the acinclude.m4 file was very old
+in SDL distribution before the version 1.2.7 and doesn't knew anything
+about QNX. SDL 1.2.7 distribution contains the  new libtool.m4 script,
+but anyway  it  is  broken :), Just  remove  it, then  run "libtoolize
+--force --copy",  delete the file aclocal.m4 if it is exists and after
+that run the  autogen.sh script. SDL 1.2.8 contains  fixed libtool.m4,
+ltmain.sh and config.sub files, so you  can  just  run  the autogen.sh
+script.
+
+======================================================================
+6. Some building issues:
+
+    Feel free to not use the --disable-shared configure option if you'
+ve read the above comment about 'Shared  library  building'. Otherwise
+this  option  is  strongly  recommended, as  without it the sdl-config
+script will be broken.
+
+    Run the configure script without x11 support, e.g.:
+
+    a) for OpenGL support:
+    ./configure --prefix=/usr           \
+                --disable-video-x11     \
+                --disable-shared
+
+    b) without OpenGL support:
+    ./configure --prefix=/usr           \
+                --disable-video-x11     \
+                --disable-shared        \
+                --disable-video-opengl
+
+    And of course dont forget to specify --disable-debug, which  is on
+by default, to disable debug and enable the expensive optimizations.
+
+    In the test directory also run the ./configure script without
+x11 support, e.g.:
+
+    ./configure  --with-sdl-prefix=/usr            \
+                 --with-sdl-exec-prefix=/usr       \
+                 --prefix=/usr --without-x
+
+======================================================================
+7. Environment variables:
+
+    Please note that the photon driver  is  sensible to the  following
+environmental variables:
+
+ * SDL_PHOTON_FULLSCREEN_REFRESH - this environment variable  controls
+the refresh  rate  in  all  fullscreen  modes. Be  carefull !!! Photon
+drivers usually do not checking the maximum  refresh rate, which video
+adapter or monitor supports.
+
+ * SDL_VIDEO_WINDOW_POS - can be  set in the "X,Y" format.  If X and Y
+coordinates are bigger than the current desktop resolution, then  win-
+dow positioning across  virtual  consoles is activated. If X and Y are
+smaller than the desktop resolution  then  window  positioning  in the
+current console is activated. The word "center" can be used instead of
+coordinates, it  produces  the  same  behavior  as  SDL_VIDEO_CENTERED
+environmental variable.
+
+ * SDL_VIDEO_CENTERED - if this environmental variable exists then the
+window centering is perfomed in the current virtual console.
+
+Notes: The SDL_VIDEO_CENTERED enviromental  variable  has greater pri-
+ority than the SDL_VIDEO_WINDOW_POS in case if both variables are sup-
+plied to the application.

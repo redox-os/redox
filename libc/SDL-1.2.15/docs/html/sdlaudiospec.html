@@ -1,0 +1,589 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_AudioSpec</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Audio"
+HREF="audio.html"><LINK
+REL="PREVIOUS"
+TITLE="Audio"
+HREF="audio.html"><LINK
+REL="NEXT"
+TITLE="SDL_OpenAudio"
+HREF="sdlopenaudio.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="audio.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlopenaudio.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLAUDIOSPEC"
+></A
+>SDL_AudioSpec</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN6507"
+></A
+><H2
+>Name</H2
+>SDL_AudioSpec&nbsp;--&nbsp;Audio Specification Structure</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN6510"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct{
+  int freq;
+  Uint16 format;
+  Uint8 channels;
+  Uint8 silence;
+  Uint16 samples;
+  Uint32 size;
+  void (*callback)(void *userdata, Uint8 *stream, int len);
+  void *userdata;
+} SDL_AudioSpec;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN6513"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN6515"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>freq</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Audio frequency in samples per second</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Audio data format</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>channels</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Number of channels: 1 mono, 2 stereo</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>silence</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Audio buffer silence value (calculated)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>samples</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Audio buffer size in samples</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>size</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Audio buffer size in bytes (calculated)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>callback(..)</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Callback function for filling the audio buffer</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>userdata</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Pointer the user data which is passed to the callback function</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN6550"
+></A
+><H2
+>Description</H2
+><P
+>The <SPAN
+CLASS="STRUCTNAME"
+>SDL_AudioSpec</SPAN
+> structure is used to describe the format of some audio data. This structure is used by <A
+HREF="sdlopenaudio.html"
+><TT
+CLASS="FUNCTION"
+>SDL_OpenAudio</TT
+></A
+> and <A
+HREF="sdlloadwav.html"
+><TT
+CLASS="FUNCTION"
+>SDL_LoadWAV</TT
+></A
+>. While all fields are used by <TT
+CLASS="FUNCTION"
+>SDL_OpenAudio</TT
+> only <TT
+CLASS="STRUCTFIELD"
+><I
+>freq</I
+></TT
+>, <TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+>, <TT
+CLASS="STRUCTFIELD"
+><I
+>samples</I
+></TT
+> and <TT
+CLASS="STRUCTFIELD"
+><I
+>channels</I
+></TT
+> are used by <TT
+CLASS="FUNCTION"
+>SDL_LoadWAV</TT
+>. We will detail these common members here.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN6564"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>freq</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>The number of samples sent to the sound device every second. Common values are 11025, 22050 and 44100. The higher the better.</P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><P
+>Specifies the size and type of each sample element
+<P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_U8</TT
+></DT
+><DD
+><P
+>Unsigned 8-bit samples</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_S8</TT
+></DT
+><DD
+><P
+>Signed 8-bit samples</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_U16</TT
+> or <TT
+CLASS="LITERAL"
+>AUDIO_U16LSB</TT
+></DT
+><DD
+><P
+>Unsigned 16-bit little-endian samples</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_S16</TT
+> or <TT
+CLASS="LITERAL"
+>AUDIO_S16LSB</TT
+></DT
+><DD
+><P
+>Signed 16-bit little-endian samples</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_U16MSB</TT
+></DT
+><DD
+><P
+>Unsigned 16-bit big-endian samples</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_S16MSB</TT
+></DT
+><DD
+><P
+>Signed 16-bit big-endian samples</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_U16SYS</TT
+></DT
+><DD
+><P
+>Either <TT
+CLASS="LITERAL"
+>AUDIO_U16LSB</TT
+> or <TT
+CLASS="LITERAL"
+>AUDIO_U16MSB</TT
+> depending on you systems endianness</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>AUDIO_S16SYS</TT
+></DT
+><DD
+><P
+>Either <TT
+CLASS="LITERAL"
+>AUDIO_S16LSB</TT
+> or <TT
+CLASS="LITERAL"
+>AUDIO_S16MSB</TT
+> depending on you systems endianness</P
+></DD
+></DL
+></DIV
+></P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>channels</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>The number of seperate sound channels. 1 is mono (single channel), 2 is stereo (dual channel).</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>samples</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>When used with <A
+HREF="sdlopenaudio.html"
+><TT
+CLASS="FUNCTION"
+>SDL_OpenAudio</TT
+></A
+> this refers to the size of the audio buffer in samples. A sample a chunk of audio data of the size specified in <TT
+CLASS="PARAMETER"
+><I
+>format</I
+></TT
+> mulitplied by the number of channels. When the <SPAN
+CLASS="STRUCTNAME"
+>SDL_AudioSpec</SPAN
+> is used with <A
+HREF="sdlloadwav.html"
+><TT
+CLASS="FUNCTION"
+>SDL_LoadWAV</TT
+></A
+> <TT
+CLASS="STRUCTFIELD"
+><I
+>samples</I
+></TT
+> is set to 4096.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN6639"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlopenaudio.html"
+><TT
+CLASS="FUNCTION"
+>SDL_OpenAudio</TT
+></A
+>,
+<A
+HREF="sdlloadwav.html"
+><TT
+CLASS="FUNCTION"
+>SDL_LoadWAV</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="audio.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlopenaudio.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Audio</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="audio.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_OpenAudio</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

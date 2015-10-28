@@ -1,8 +1,7 @@
 //! IO
 
 use core::usize;
-use fmt;
-use str;
+use {fmt, str};
 use string::String;
 use vec::{IntoIter, Vec};
 use syscall::{sys_read, sys_write};

@@ -3,12 +3,11 @@ use super::executor::*;
 
 use alloc::boxed::Box;
 
-use core::cmp;
+use collections::string::{String, ToString};
+use collections::vec::Vec;
 
-use common::event::{self, Event, EventOption, KeyEvent, MouseEvent};
+use common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use common::scheduler;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use graphics::point::Point;
 use graphics::size::Size;
@@ -31,22 +30,22 @@ impl Session {
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {
-        for item in self.items.iter() {
-            let reenable = scheduler::start_no_ints();
+        let reenable = scheduler::start_no_ints();
+        for mut item in self.items.iter_mut() {
             item.on_irq(irq);
-            scheduler::end_no_ints(reenable);
         }
+        scheduler::end_no_ints(reenable);
     }
 
     pub unsafe fn on_poll(&mut self) {
-        for item in self.items.iter() {
-            let reenable = scheduler::start_no_ints();
+        let reenable = scheduler::start_no_ints();
+        for mut item in self.items.iter_mut() {
             item.on_poll();
-            scheduler::end_no_ints(reenable);
         }
+        scheduler::end_no_ints(reenable);
     }
 
-    pub fn open(&self, url: &URL) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -56,14 +55,14 @@ impl Session {
                     if list.len() > 0 {
                         list = list + "\n" + scheme;
                     } else {
-                        list = scheme;
+                        list = scheme.to_string();
                     }
                 }
             }
 
-            Some(box VecResource::new(URL::new(), list.to_utf8()))
+            Some(box VecResource::new(URL::new(), list.into_bytes()))
         } else {
-            for item in self.items.iter() {
+            for mut item in self.items.iter_mut() {
                 if item.scheme() == url.scheme() {
                     return item.open(url);
                 }

@@ -1,6 +1,10 @@
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 
+use collections::slice;
+use collections::string::{String, ToString};
+use collections::vec::Vec;
+
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
@@ -10,8 +14,6 @@ use drivers::pciconfig::PCIConfig;
 use common::context::context_switch;
 use common::debug;
 use common::memory::Memory;
-use common::string::{String, ToString};
-use common::vec::Vec;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL, VecResource};
 
@@ -33,18 +35,44 @@ pub struct NodeData {
 
 /// A file node
 pub struct Node {
-    pub address: u64,
+    pub block: u64,
     pub name: String,
     pub extents: [Extent; 16],
 }
 
 impl Node {
     /// Create a new file node from an address and some data
-    pub fn new(address: u64, data: &NodeData) -> Self {
+    pub fn new(block: u64, data: &NodeData) -> Self {
+        let mut bytes = Vec::new();
+        for b in data.name.iter() {
+            if *b > 0 {
+                bytes.push(*b);
+            }else{
+                break;
+            }
+        }
+
         Node {
-            address: address,
-            name: String::from_c_slice(&data.name),
+            block: block,
+            name: unsafe { String::from_utf8_unchecked(bytes) },
             extents: data.extents,
+        }
+    }
+
+    pub fn data(&self) -> NodeData {
+        let mut name: [u8; 256] = [0; 256];
+        let mut i = 0;
+        for b in self.name.as_bytes().iter() {
+            if i < name.len() {
+                name[i] = *b;
+            }else{
+                break;
+            }
+            i += 1;
+        }
+        NodeData {
+            name: name,
+            extents: self.extents
         }
     }
 }
@@ -52,7 +80,7 @@ impl Node {
 impl Clone for Node {
     fn clone(&self) -> Self {
         Node {
-            address: self.address,
+            block: self.block,
             name: self.name.clone(),
             extents: self.extents,
         }
@@ -68,7 +96,7 @@ pub struct FileSystem {
 
 impl FileSystem {
     /// Create a file system from a disk
-    pub fn from_disk(mut disk: Disk) -> Option<Self> {
+    pub fn from_disk(disk: Disk) -> Option<Self> {
         unsafe {
             if disk.identify() {
                 debug::d(" Disk Found");
@@ -93,11 +121,16 @@ impl FileSystem {
                     let mut nodes = Vec::new();
                     for extent in &header.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            if let Some(mut data) = Memory::<NodeData>::new(extent.length as usize /
+                            if let Some(data) = Memory::<NodeData>::new(extent.length as usize /
                                                            mem::size_of::<NodeData>()) {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
                                 while sectors - sector >= 65536 {
+                                    disk.read(extent.block + sector as u64,
+                                              0,
+                                              data.address() + sector * 512);
+
+                                    /*
                                     let request = Request {
                                         extent: Extent {
                                             block: extent.block + sector as u64,
@@ -108,11 +141,6 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                    disk.read(extent.block + sector as u64,
-                                              0,
-                                              data.address() + sector * 512);
-
-                                    /*
                                     disk.request(request.clone());
 
                                     while request.complete.load(Ordering::SeqCst) == false {
@@ -123,6 +151,10 @@ impl FileSystem {
                                     sector += 65535;
                                 }
                                 if sector < sectors {
+                                    disk.read(extent.block + sector as u64,
+                                              (sectors - sector) as u16,
+                                              data.address() + sector * 512);
+                                    /*
                                     let request = Request {
                                         extent: Extent {
                                             block: extent.block + sector as u64,
@@ -133,16 +165,12 @@ impl FileSystem {
                                         complete: Arc::new(AtomicBool::new(false)),
                                     };
 
-                                        disk.read(extent.block + sector as u64,
-                                                  (sectors - sector) as u16,
-                                                  data.address() + sector * 512);
-                                        /*
-                                        disk.request(request.clone());
+                                    disk.request(request.clone());
 
-                                        while request.complete.load(Ordering::SeqCst) == false {
-                                            disk.on_poll();
-                                        }
-                                        */
+                                    while request.complete.load(Ordering::SeqCst) == false {
+                                        disk.on_poll();
+                                    }
+                                    */
                                 }
 
                                 for i in 0..extent.length as usize / mem::size_of::<NodeData>() {
@@ -184,8 +212,8 @@ impl FileSystem {
         let mut ret = Vec::<String>::new();
 
         for node in self.nodes.iter() {
-            if node.name.starts_with(directory.clone()) {
-                ret.push(node.name.substr(directory.len(), node.name.len() - directory.len()));
+            if node.name.starts_with(directory) {
+                ret.push(node.name[directory.len() ..].to_string());
             }
         }
 
@@ -233,7 +261,7 @@ impl Resource for FileResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
-            self.vec.set(self.seek, buf[i]);
+            self.vec[self.seek] = buf[i];
             self.seek += 1;
             i += 1;
         }
@@ -335,7 +363,40 @@ impl Resource for FileResource {
             }
 
             if node_dirty {
-                debug::d("Node dirty, should rewrite\n");
+                debug::d("Node dirty, rewrite\n");
+
+                unsafe {
+                    if let Some(mut node_data) = Memory::<NodeData>::new(1) {
+                        node_data.write(0, self.node.data());
+
+                        let request = Request {
+                            extent: Extent {
+                                block: self.node.block,
+                                length: 1,
+                            },
+                            mem: node_data.address(),
+                            read: false,
+                            complete: Arc::new(AtomicBool::new(false)),
+                        };
+
+                        debug::d("Disk request\n");
+
+                        (*self.scheme).fs.disk.request(request.clone());
+
+                        debug::d("Wait request\n");
+                        while request.complete.load(Ordering::SeqCst) == false {
+                            context_switch(false);
+                        }
+
+                        debug::d("Renode\n");
+
+                        for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                            if node.block == self.node.block {
+                                *node = self.node.clone();
+                            }
+                        }
+                    }
+                }
             }
 
             self.dirty = false;
@@ -424,21 +485,21 @@ impl KScheme for FileScheme {
         }
     }
 
-    fn scheme(&self) -> String {
-        return "file".to_string();
+    fn scheme(&self) -> &str {
+        "file"
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         let path = url.path();
-        if path.len() == 0 || path.ends_with("/".to_string()) {
+        if path.len() == 0 || path.ends_with('/') {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
             for file in self.fs.list(&path).iter() {
                 let line;
-                match file.find("/".to_string()) {
+                match file.find('/') {
                     Some(index) => {
-                        let dirname = file.substr(0, index + 1);
+                        let dirname = file[.. index + 1].to_string();
                         let mut found = false;
                         for dir in dirs.iter() {
                             if dirname == *dir {
@@ -457,14 +518,14 @@ impl KScheme for FileScheme {
                 }
                 if line.len() > 0 {
                     if list.len() > 0 {
-                        list = list + '\n' + line;
+                        list = list + "\n" + &line;
                     } else {
                         list = line;
                     }
                 }
             }
 
-            return Some(box VecResource::new(url.clone(), list.to_utf8()));
+            return Some(box VecResource::new(url.clone(), list.into_bytes()));
         } else {
             match self.fs.node(&path) {
                 Some(node) => {
@@ -512,10 +573,7 @@ impl KScheme for FileScheme {
                                     }
                                 }
 
-                                vec.push_all(&Vec {
-                                    data: unsafe { data.into_raw() },
-                                    length: extent.length as usize,
-                                });
+                                vec.push_all(& unsafe { slice::from_raw_parts(data.ptr, extent.length as usize) });
                             }
                         }
                     }

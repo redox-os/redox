@@ -1,0 +1,39 @@
+.TH "SDL_SetTimer" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_SetTimer \- Set a callback to run after the specified number of milliseconds has elapsed\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_SetTimer\fP\fR(\fBUint32 interval, SDL_TimerCallback callback\fR);
+.SH "CALLBACK"
+.PP
+/* Function prototype for the timer callback function */ typedef Uint32 (*SDL_TimerCallback)(Uint32 interval);
+.SH "DESCRIPTION"
+.PP
+Set a callback to run after the specified number of milliseconds has elapsed\&. The callback function is passed the current timer interval and returns the next timer interval\&. If the returned value is the same as the one passed in, the periodic alarm continues, otherwise a new alarm is scheduled\&.
+.PP
+To cancel a currently running timer, call \fBSDL_SetTimer(0, NULL);\fP
+.PP
+The timer callback function may run in a different thread than your main constant, and so shouldn\&'t call any functions from within itself\&.
+.PP
+The maximum resolution of this timer is 10 ms, which means that if you request a 16 ms timer, your callback will run approximately 20 ms later on an unloaded system\&. If you wanted to set a flag signaling a frame update at 30 frames per second (every 33 ms), you might set a timer for 30 ms (see example below)\&.
+.PP
+If you use this function, you need to pass \fBSDL_INIT_TIMER\fP to \fBSDL_Init()\fP\&.
+.PP
+.RS
+\fBNote:  
+.PP
+This function is kept for compatibility but has been superseded by the new timer functions \fISDL_AddTimer\fR and \fISDL_RemoveTimer\fR which support multiple timers\&.
+.RE
+.SH "EXAMPLES"
+.PP
+.PP
+.nf
+\f(CWSDL_SetTimer((33/10)*10, my_callback);\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_AddTimer\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

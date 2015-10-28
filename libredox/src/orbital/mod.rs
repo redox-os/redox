@@ -4,13 +4,15 @@ use core::mem;
 use core::ops::DerefMut;
 use core::slice;
 
-use string::*;
+use string::{String, ToString};
 use vec::Vec;
 
 use event::*;
 use graphics::color::Color;
-use fs::file::*;
+use fs::File;
 use io::*;
+
+use syscall::sys_yield;
 
 pub mod event;
 
@@ -92,8 +94,8 @@ impl Window {
     /// Draw a pixel
     pub fn pixel(&mut self, x: isize, y: isize, color: Color) {
         if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
-            let offset = (y as usize * self.w + x as usize); 
-			self.data[offset] = color.data;
+            let offset = y as usize * self.w + x as usize;
+            self.data[offset] = color.data;
         }
     }
 
@@ -118,7 +120,7 @@ impl Window {
         }
     }
 
-    //TODO move, resize, setTitle
+    //TODO move, resize, set_title
 
     /// Set entire window to a color
     // TODO: Improve speed
@@ -159,18 +161,21 @@ impl Window {
     pub fn poll(&mut self) -> Option<Event> {
         let mut event = box Event::new();
         let event_ptr: *mut Event = event.deref_mut();
-        match self.file.read(&mut unsafe {
-            slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
-        }) {
-            Some(_) => return Some(*event),
-            None => return None,
+        loop {
+            match self.file.read(&mut unsafe {
+                slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
+            }) {
+                Some(0) => unsafe { sys_yield() },
+                Some(_) => return Some(*event),
+                None => return None,
+            }
         }
     }
 
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.seek(SeekFrom::Start(0));
-		let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
+        let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
         self.file.write(to_write);
         return self.file.sync();
     }

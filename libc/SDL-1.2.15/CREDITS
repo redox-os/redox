@@ -1,0 +1,94 @@
+
+Simple DirectMedia Layer CREDITS
+Thanks to everyone who made this possible, including:
+
+* Cliff Matthews, for giving me a reason to start this project. :)
+ -- Executor rocks!  *grin*
+
+* Scott Call, for making a home for SDL on the 'Net... Thanks! :)
+
+* The Linux Fund, C Magazine, Educational Technology Resources Inc.,
+  Gareth Noyce, Jesse Pavel, Keith Kitchin, Jeremy Horvath, Thomas Nicholson,
+  Hans-Peter Gygax, the Eternal Lands Development Team, Lars Brubaker,
+  and Phoenix Kokido for financial contributions
+
+* Gaëtan de Menten for writing the PHP and SQL behind the SDL website
+
+* Tim Jones for the new look of the SDL website
+
+* Marco Kraus for setting up SDL merchandise
+
+* Martin Donlon for his work on the SDL Documentation Project
+
+* Ryan Gordon for helping everybody out and keeping the dream alive. :)
+
+* IBM R&D Lab for their PS3 SPE video acceleration code
+
+* Mattias Engdegård, for help with the Solaris port and lots of other help
+
+* Max Watson, Matt Slot, and Kyle for help with the MacOS Classic port
+
+* Stan Shebs, for the initial Mac OS X port
+
+* Eric Wing, Max Horn, and Darrell Walisser for unflagging work on the Mac OS X port
+
+* Patrick Trainor, Jim Boucher, and Mike Gorchak for the QNX Neutrino port
+
+* Carsten Griwodz for the AIX port
+
+* Gabriele Greco, for the Amiga port
+
+* Patrice Mandin, for the Atari port
+
+* Hannu Viitala for the EPOC port
+
+* Marcus Mertama for the S60 port.
+
+* Peter Valchev for nagging me about the OpenBSD port until I got it right. :)
+
+* Kent B Mein, for a place to do the IRIX port
+
+* Ash, for a place to do the OSF/1 Alpha port
+
+* David Sowsy, for help with the BeOS port
+
+* Eugenia Loli, for endless work on porting SDL games to BeOS
+
+* Jon Taylor for the GGI front-end
+
+* Paulus Esterhazy, for the Visual C++ testing and libraries
+
+* Brenda Tantzen, for Metrowerks CodeWarrior on MacOS
+
+* Chris Nentwich, for the Hermes assembly blitters
+
+* Michael Vance and Jim Kutter for the X11 OpenGL support
+
+* Stephane Peter, for the AAlib front-end and multi-threaded timer idea.
+
+* Jon Atkins for SDL_image, SDL_mixer and SDL_net documentation
+
+* Peter Wiklund, for the 1998 winning SDL logo,
+  and Arto Hamara, Steven Wong, and Kent Mein for other logo entries.
+
+* Arne Claus, for the 2004 winning SDL logo,
+  and Shandy Brown, Jac, Alex Lyman, Mikkel Gjoel, #Guy, Jonas Hartmann,
+  Daniel Liljeberg,  Ronald Sowa, DocD, Pekka Jaervinen, Patrick Avella,
+  Erkki Kontilla, Levon Gavalian, Hal Emerich, David Wiktorsson,
+  S. Schury and F. Hufsky, Ciska de Ruyver, Shredweat, Tyler Montbriand,
+  Martin Andersson, Merlyn Wysard, Fernando Ibanez, David Miller,
+  Andre Bommele, lovesby.com, Francisco Camenforte Torres, and David Igreja
+  for other logo entries.
+
+* Bob Pendleton and David Olofson for being long time contributors to
+  the SDL mailing list.
+
+* Everybody at Loki Software, Inc. for their great contributions!
+
+ And a big hand to everyone else who gave me appreciation, advice,
+ and suggestions, especially the good folks on the SDL mailing list.
+
+THANKS! :)
+
+  -- Sam Lantinga			<slouken@libsdl.org>
+

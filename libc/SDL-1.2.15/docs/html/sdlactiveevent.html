@@ -1,0 +1,335 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_ActiveEvent</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SDL Event Structures."
+HREF="eventstructures.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_Event"
+HREF="sdlevent.html"><LINK
+REL="NEXT"
+TITLE="SDL_KeyboardEvent"
+HREF="sdlkeyboardevent.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlevent.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlkeyboardevent.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLACTIVEEVENT"
+></A
+>SDL_ActiveEvent</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN3955"
+></A
+><H2
+>Name</H2
+>SDL_ActiveEvent&nbsp;--&nbsp;Application visibility event structure</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3958"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct{
+  Uint8 type;
+  Uint8 gain;
+  Uint8 state;
+} SDL_ActiveEvent;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3961"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN3963"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>type</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_ACTIVEEVENT.</TT
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>gain</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>0 if the event is a loss or 1 if it is a gain.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>state</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_APPMOUSEFOCUS</TT
+> if mouse focus was gained or lost, <TT
+CLASS="LITERAL"
+>SDL_APPINPUTFOCUS</TT
+> if input focus was gained or lost, or <TT
+CLASS="LITERAL"
+>SDL_APPACTIVE</TT
+> if the application was iconified (<TT
+CLASS="STRUCTFIELD"
+><I
+>gain</I
+></TT
+>=0) or restored(<TT
+CLASS="STRUCTFIELD"
+><I
+>gain</I
+></TT
+>=1).</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3984"
+></A
+><H2
+>Description</H2
+><P
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_ActiveEvent</SPAN
+> is a member of the <A
+HREF="sdlevent.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+></A
+> union and is used when an event of type <TT
+CLASS="LITERAL"
+>SDL_ACTIVEEVENT</TT
+> is reported.</P
+><P
+>When the mouse leaves or enters the window area a <TT
+CLASS="LITERAL"
+>SDL_APPMOUSEFOCUS</TT
+> type activation event occurs, if the mouse entered the window then <TT
+CLASS="STRUCTFIELD"
+><I
+>gain</I
+></TT
+> will be 1, otherwise <TT
+CLASS="STRUCTFIELD"
+><I
+>gain</I
+></TT
+> will be 0. A <TT
+CLASS="LITERAL"
+>SDL_APPINPUTFOCUS</TT
+> type activation event occurs when the application loses or gains keyboard focus. This usually occurs when another application is made active. Finally, a <TT
+CLASS="LITERAL"
+>SDL_APPACTIVE</TT
+> type event occurs when the application is either minimised/iconified (<TT
+CLASS="STRUCTFIELD"
+><I
+>gain</I
+></TT
+>=0) or restored.</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>This event does not occur when an application window is first created.</P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN4000"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlevent.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+></A
+>,
+<A
+HREF="sdlgetappstate.html"
+><TT
+CLASS="FUNCTION"
+>SDL_GetAppState</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlevent.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlkeyboardevent.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_Event</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="eventstructures.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_KeyboardEvent</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

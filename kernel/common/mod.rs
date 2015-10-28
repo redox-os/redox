@@ -22,9 +22,7 @@ pub mod queue;
 pub mod random;
 /// A module for scheduling
 pub mod scheduler;
-/// A module for owned strings
-pub mod string;
 /// A module for time
 pub mod time;
-/// A module for heap allocated, growable vectors
-pub mod vec;
+/// String to number
+pub mod to_num;

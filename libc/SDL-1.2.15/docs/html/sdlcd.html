@@ -1,0 +1,359 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_CD</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="CD-ROM"
+HREF="cdrom.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_CDClose"
+HREF="sdlcdclose.html"><LINK
+REL="NEXT"
+TITLE="SDL_CDtrack"
+HREF="sdlcdtrack.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlcdclose.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlcdtrack.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLCD"
+></A
+>SDL_CD</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN7566"
+></A
+><H2
+>Name</H2
+>SDL_CD&nbsp;--&nbsp;CDROM Drive Information</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7569"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct{
+  int id;
+  CDstatus status;
+  int numtracks;
+  int cur_track;
+  int cur_frame;
+  SDL_CDtrack track[SDL_MAX_TRACKS+1];
+} SDL_CD;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7572"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN7574"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>id</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Private drive identifier</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>status</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Drive <A
+HREF="sdlcdstatus.html"
+>status</A
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>numtracks</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Number of tracks on the CD</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>cur_track</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Current track</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>cur_frame</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Current frame offset within the track</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>track</I
+></TT
+>[SDL_MAX_TRACKS+1]</TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Array of track descriptions. (see <A
+HREF="sdlcdtrack.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_CDtrack</SPAN
+></A
+>)</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7604"
+></A
+><H2
+>Description</H2
+><P
+>An <SPAN
+CLASS="STRUCTNAME"
+>SDL_CD</SPAN
+> structure is returned by <A
+HREF="sdlcdopen.html"
+><TT
+CLASS="FUNCTION"
+>SDL_CDOpen</TT
+></A
+>. It represents an opened CDROM device and stores information on the layout of the tracks on the disc.</P
+><P
+>A frame is the base data unit of a CD. <TT
+CLASS="LITERAL"
+>CD_FPS</TT
+> frames is equal to 1 second of music. SDL provides two macros for converting between time and frames: <TT
+CLASS="LITERAL"
+>FRAMES_TO_MSF(f, M,S,F)</TT
+> and <TT
+CLASS="LITERAL"
+>MSF_TO_FRAMES</TT
+>.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7614"
+></A
+><H2
+>Examples</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>int min, sec, frame;
+int frame_offset;
+
+FRAMES_TO_MSF(cdrom-&#62;cur_frame, &#38;min, &#38;sec, &#38;frame);
+printf("Current Position: %d minutes, %d seconds, %d frames\n", min, sec, frame);
+
+frame_offset=MSF_TO_FRAMES(min, sec, frame);</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7617"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlcdopen.html"
+><TT
+CLASS="FUNCTION"
+>SDL_CDOpen</TT
+></A
+>,
+<A
+HREF="sdlcdtrack.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_CDtrack</SPAN
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlcdclose.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlcdtrack.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_CDClose</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="cdrom.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_CDtrack</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

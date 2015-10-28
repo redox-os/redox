@@ -1,0 +1,15 @@
+.TH "SDL_FreeSurface" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_FreeSurface \- Frees (deletes) a SDL_Surface
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBvoid \fBSDL_FreeSurface\fP\fR(\fBSDL_Surface *surface\fR);
+.SH "DESCRIPTION"
+.PP
+Frees the resources used by a previously created \fBSDL_Surface\fR\&. If the surface was created using \fISDL_CreateRGBSurfaceFrom\fR then the pixel data is not freed\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_CreateRGBSurface\fP\fR \fI\fBSDL_CreateRGBSurfaceFrom\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

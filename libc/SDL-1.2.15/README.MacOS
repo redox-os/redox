@@ -1,0 +1,63 @@
+
+==============================================================================
+Using the Simple DirectMedia Layer with MacOS 7,8,9 on PPC
+==============================================================================
+
+These instructions are for people using the Apple MPW environment:
+http://developer.apple.com/tools/mpw-tools/
+
+CodeWarrior projects are available in the CWprojects directory.
+
+==============================================================================
+I.  Building the Simple DirectMedia Layer libraries:
+    (This step isn't necessary if you have the SDL binary distribution)
+
+  First, unpack the MPWmake.sea.hqx archive and move SDL.make into the
+  SDL directory.
+
+  Start MPW
+
+  Set the current directory within MPW to the SDL toplevel directory.
+
+  Build "SDL"  (Type Command-B and enter "SDL" in the dialog)
+
+  If everything compiles successfully, you now have the PPC libraries
+  "SDL" and "SDLmain.o" in the 'lib' subdirectory.
+
+==============================================================================
+II. Building the Simple DirectMedia Layer test programs:
+
+  First, unpack the MPWmake.sea.hqx archive, move the new rsrc directory to
+  the main SDL directory, and move the makefiles in the new test subdirectory
+  to the SDL 'test' subdirectory.
+
+  Start MPW
+
+  Set the current directory within MPW to the SDL 'test' subdirectory.
+
+  Build the programs that have an associated MPW makefile (file ending
+  with .make), including "testwin", "testalpha", and "graywin".
+
+  Copy the SDL library file into the test directory, and run!
+
+==============================================================================
+III. Building the Simple DirectMedia Layer demo programs:
+
+  Copy one of the test program Makefiles to the demo directory
+  and modify it to match the sources in the demo.
+
+==============================================================================
+IV.  Enjoy! :)
+
+  If you have a project you'd like me to know about, or want to ask questions,
+  go ahead and join the SDL developer's mailing list by sending e-mail to:
+
+	sdl-request@libsdl.org
+
+  and put "subscribe" into the subject of the message. Or alternatively you
+  can use the web interface:
+
+	http://www.libsdl.org/mailman/listinfo/sdl
+  
+==============================================================================
+

@@ -1,6 +1,5 @@
-use cmp::min;
-use ops::Add;
-use ops::Sub;
+use cmp;
+use ops::{Add, Sub};
 
 /// A size
 #[derive(Copy, Clone)]
@@ -35,8 +34,8 @@ impl Sub for Size {
 
     fn sub(self, other: Size) -> Self::Output {
         Size {
-            width: self.width - min(self.width, other.width),
-            height: self.height - min(self.height, other.height),
+            width: self.width - cmp::min(self.width, other.width),
+            height: self.height - cmp::min(self.height, other.height),
         }
     }
 }

@@ -1,0 +1,32 @@
+.TH "SDL_JoystickGetAxis" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoystickGetAxis \- Get the current state of an axis
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBSint16 \fBSDL_JoystickGetAxis\fP\fR(\fBSDL_Joystick *joystick, int axis\fR);
+.SH "DESCRIPTION"
+.PP
+\fBSDL_JoystickGetAxis\fP returns the current state of the given \fBaxis\fR on the given \fBjoystick\fR\&.
+.PP
+On most modern joysticks the X axis is usually represented by \fBaxis\fR 0 and the Y axis by \fBaxis\fR 1\&. The value returned by \fBSDL_JoystickGetAxis\fP is a signed integer (-32768 to 32768) representing the current position of the \fBaxis\fR, it maybe necessary to impose certain tolerances on these values to account for jitter\&. It is worth noting that some joysticks use axes 2 and 3 for extra buttons\&.
+.SH "RETURN VALUE"
+.PP
+Returns a 16-bit signed integer representing the current position of the \fBaxis\fR\&.
+.SH "EXAMPLES"
+.PP
+.PP
+.nf
+\f(CWSint16 x_move, y_move;
+SDL_Joystick *joy1;
+\&.
+\&.
+x_move=SDL_JoystickGetAxis(joy1, 0);
+y_move=SDL_JoystickGetAxis(joy1, 1);\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_JoystickNumAxes\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

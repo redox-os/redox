@@ -1,7 +1,5 @@
 use redox::fmt;
 
-use super::from_bytes::FromBytes;
-
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct DVAddr {

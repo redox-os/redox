@@ -1,0 +1,225 @@
+<HTML
+><HEAD
+><TITLE
+>General</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SDL Reference"
+HREF="reference.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL Reference"
+HREF="reference.html"><LINK
+REL="NEXT"
+TITLE="SDL_Init"
+HREF="sdlinit.html"><META
+NAME="KEYWORD"
+CONTENT="general"><META
+NAME="KEYWORD"
+CONTENT="function"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="reference.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlinit.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="GENERAL"
+></A
+>Chapter 5. General</H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="sdlinit.html"
+>SDL_Init</A
+>&nbsp;--&nbsp;Initializes SDL</DT
+><DT
+><A
+HREF="sdlinitsubsystem.html"
+>SDL_InitSubSystem</A
+>&nbsp;--&nbsp;Initialize subsystems</DT
+><DT
+><A
+HREF="sdlquitsubsystem.html"
+>SDL_QuitSubSystem</A
+>&nbsp;--&nbsp;Shut down a subsystem</DT
+><DT
+><A
+HREF="sdlquit.html"
+>SDL_Quit</A
+>&nbsp;--&nbsp;Shut down SDL</DT
+><DT
+><A
+HREF="sdlwasinit.html"
+>SDL_WasInit</A
+>&nbsp;--&nbsp;Check which subsystems are initialized</DT
+><DT
+><A
+HREF="sdlgeterror.html"
+>SDL_GetError</A
+>&nbsp;--&nbsp;Get SDL error string</DT
+><DT
+><A
+HREF="sdlenvvars.html"
+>SDL_envvars</A
+>&nbsp;--&nbsp;SDL environment variables</DT
+></DL
+></DIV
+><P
+>Before SDL can be used in a program it must be initialized with <A
+HREF="sdlinit.html"
+><TT
+CLASS="FUNCTION"
+>SDL_Init</TT
+></A
+>. <TT
+CLASS="FUNCTION"
+>SDL_Init</TT
+> initializes all the subsystems that the user requests (video, audio, joystick, timers and/or cdrom). Once SDL is initialized with <TT
+CLASS="FUNCTION"
+>SDL_Init</TT
+> subsystems can be shut down and initialized as needed using <A
+HREF="sdlinitsubsystem.html"
+><TT
+CLASS="FUNCTION"
+>SDL_InitSubSystem</TT
+></A
+> and <A
+HREF="sdlquitsubsystem.html"
+><TT
+CLASS="FUNCTION"
+>SDL_QuitSubSystem</TT
+></A
+>.</P
+><P
+>SDL must also be shut down before the program exits to make sure it cleans up correctly. Calling <A
+HREF="sdlquit.html"
+><TT
+CLASS="FUNCTION"
+>SDL_Quit</TT
+></A
+> shuts down all subsystems and frees any resources allocated to SDL.</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="reference.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlinit.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL Reference</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="reference.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_Init</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

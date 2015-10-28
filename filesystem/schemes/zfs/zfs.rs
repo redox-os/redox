@@ -9,7 +9,6 @@ use self::dsl_dir::DslDirPhys;
 use self::dvaddr::DVAddr;
 use self::from_bytes::FromBytes;
 use self::uberblock::Uberblock;
-use self::vdev::VdevLabel;
 
 pub mod block_ptr;
 pub mod dnode;
@@ -122,11 +121,8 @@ impl ZFS {
 
         let uberblock = zfs_reader.uber().unwrap();
 
-        let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = zfs_reader.read_type(&uberblock.rootbp).unwrap();
         let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
-        let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
-        let mos_block_ptr3 = mos.meta_dnode.get_blockptr(2);
 
         // 2nd dnode in MOS points at the root dataset zap
         let dnode1: DNodePhys = zfs_reader.read_type_array(&mos_block_ptr1, 1).unwrap();
@@ -150,7 +146,7 @@ impl ZFS {
         }
 
         // Master node is always the second object in the object set
-        let mut master_node: DNodePhys = zfs_reader.read_type_array(&indirect, 1).unwrap();
+        let master_node: DNodePhys = zfs_reader.read_type_array(&indirect, 1).unwrap();
         let master_node_zap: zap::MZapWrapper = zfs_reader.read_type(master_node.get_blockptr(0)).unwrap();
         // Find the ROOT zap entry
         let mut root = None;

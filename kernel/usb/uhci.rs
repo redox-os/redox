@@ -308,9 +308,6 @@ impl UHCI {
 
     unsafe fn set_address(&self, frame_list: *mut u32, address: u8) {
         let base = self.base as u16;
-        let usbcmd = PIO16::new(base);
-        let usbsts = PIO16::new(base + 2);
-        let usbintr = PIO16::new(base + 4);
         let frnum = PIO16::new(base + 6);
 
         let mut in_td = Memory::<TD>::new(1).unwrap();
@@ -383,7 +380,6 @@ impl UHCI {
                          descriptor_ptr: u32,
                          descriptor_len: u32) {
         let base = self.base as u16;
-        let usbcmd = PIO16::new(base);
         let frnum = PIO16::new(base + 6);
 
         let mut out_td = Memory::<TD>::new(1).unwrap();
@@ -503,20 +499,17 @@ impl UHCI {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        let desc_int =
-                            ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        //let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
                         //desc_int.d();
                     }
                     DESC_END => {
-                        let desc_end =
-                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
                         //desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
 
                         let base = self.base as u16;
-                        let usbcmd = base;
                         let frnum = base + 0x6;
 
                         Context::spawn(box move || {
@@ -592,7 +585,7 @@ impl UHCI {
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        //desc_hid.d();
+                        desc_hid.d();
                     }
                     _ => {
                         debug::d("Unknown Descriptor Length ");
@@ -623,7 +616,6 @@ impl UHCI {
         let usbintr = base + 0x4;
         let frnum = base + 0x6;
         let flbaseadd = base + 0x8;
-        let sofmod = base + 0xC;
         let portsc1 = base + 0x10;
         let portsc2 = base + 0x12;
 

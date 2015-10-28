@@ -58,7 +58,7 @@ pub mod diy_float;
 #[unstable(feature = "zero_one",
            reason = "unsure of placement, wants to use associated constants",
            issue = "27739")]
-pub trait Zero {
+pub trait Zero: Sized {
     /// The "zero" (usually, additive identity) for this type.
     fn zero() -> Self;
 }
@@ -70,7 +70,7 @@ pub trait Zero {
 #[unstable(feature = "zero_one",
            reason = "unsure of placement, wants to use associated constants",
            issue = "27739")]
-pub trait One {
+pub trait One: Sized {
     /// The "one" (usually, multiplicative identity) for this type.
     fn one() -> Self;
 }
@@ -404,12 +404,12 @@ macro_rules! int_impl {
         /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
-        pub fn checked_div(self, v: Self) -> Option<Self> {
-            match v {
-                0   => None,
+        pub fn checked_div(self, other: Self) -> Option<Self> {
+            match other {
+                0    => None,
                -1 if self == Self::min_value()
-                    => None,
-                v   => Some(self / v),
+                     => None,
+               other => Some(self / other),
             }
         }
 
@@ -973,10 +973,10 @@ macro_rules! uint_impl {
         /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
-        pub fn checked_div(self, v: Self) -> Option<Self> {
-            match v {
+        pub fn checked_div(self, other: Self) -> Option<Self> {
+            match other {
                 0 => None,
-                v => Some(self / v),
+                other => Some(self / other),
             }
         }
 

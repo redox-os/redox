@@ -1,0 +1,15 @@
+.TH "SDL_GetVideoInfo" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_GetVideoInfo \- returns a pointer to information about the video hardware
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBSDL_VideoInfo *\fBSDL_GetVideoInfo\fP\fR(\fBvoid\fR);
+.SH "DESCRIPTION"
+.PP
+This function returns a read-only pointer to \fIinformation\fR about the video hardware\&. If this is called before \fISDL_SetVideoMode\fR, the \fBvfmt\fR member of the returned structure will contain the pixel format of the "best" video mode\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_SetVideoMode\fP\fR, \fI\fBSDL_VideoInfo\fR\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

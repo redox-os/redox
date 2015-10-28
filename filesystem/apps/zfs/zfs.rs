@@ -149,7 +149,7 @@ impl ZFS {
         }
 
         // Master node is always the second object in the object set
-        let mut master_node: DNodePhys = zfs_reader.read_type_array(&indirect, 1).unwrap();
+        let master_node: DNodePhys = zfs_reader.read_type_array(&indirect, 1).unwrap();
         let master_node_zap: zap::MZapWrapper = zfs_reader.read_type(master_node.get_blockptr(0)).unwrap();
         // Find the ROOT zap entry
         let mut root = None;
@@ -366,10 +366,10 @@ pub fn main() {
                     } else if command == "file" {
                         match args.get(1) {
                             Some(arg) => {
-                                let file = zfs.read_file(arg.as_str());
+                                let file = zfs.read_file(arg);
                                 match file {
                                     Some(file) => {
-                                        println!("File contents: {}", str::from_utf8(file.as_slice()).unwrap());
+                                        println!("File contents: {}", str::from_utf8(&file).unwrap());
                                     },
                                     None => println_color!(red, "Failed to read file"),
                                 }
@@ -379,7 +379,7 @@ pub fn main() {
                     } else if command == "ls" {
                         match args.get(1) {
                             Some(arg) => {
-                                let ls = zfs.ls(arg.as_str());
+                                let ls = zfs.ls(arg);
                                 match ls {
                                     Some(ls) => {
                                         for item in &ls {

@@ -1,0 +1,407 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_ConvertAudio</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Audio"
+HREF="audio.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_BuildAudioCVT"
+HREF="sdlbuildaudiocvt.html"><LINK
+REL="NEXT"
+TITLE="SDL_MixAudio"
+HREF="sdlmixaudio.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlbuildaudiocvt.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlmixaudio.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLCONVERTAUDIO"
+></A
+>SDL_ConvertAudio</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN7048"
+></A
+><H2
+>Name</H2
+>SDL_ConvertAudio&nbsp;--&nbsp;Convert audio data to a desired audio format.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN7051"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN7052"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>int <B
+CLASS="FSFUNC"
+>SDL_ConvertAudio</B
+></CODE
+>(SDL_AudioCVT *cvt);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7058"
+></A
+><H2
+>Description</H2
+><P
+><TT
+CLASS="FUNCTION"
+>SDL_ConvertAudio</TT
+> takes one parameter, <TT
+CLASS="PARAMETER"
+><I
+>cvt</I
+></TT
+>, which was previously initilized. Initilizing a <A
+HREF="sdlaudiocvt.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_AudioCVT</SPAN
+></A
+> is a two step process. First of all, the structure must be passed to <A
+HREF="sdlbuildaudiocvt.html"
+><TT
+CLASS="FUNCTION"
+>SDL_BuildAudioCVT</TT
+></A
+> along with source and destination format parameters. Secondly, the <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>buf</I
+></TT
+> and <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>len</I
+></TT
+> fields must be setup. <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>buf</I
+></TT
+> should point to the audio data and <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>len</I
+></TT
+> should be set to the length of the audio data in bytes. Remember, the length of the buffer pointed to by <TT
+CLASS="STRUCTFIELD"
+><I
+>buf</I
+></TT
+> show be <TT
+CLASS="STRUCTFIELD"
+><I
+>len</I
+></TT
+>*<TT
+CLASS="STRUCTFIELD"
+><I
+>len_mult</I
+></TT
+> bytes in length.</P
+><P
+>Once the <SPAN
+CLASS="STRUCTNAME"
+>SDL_AudioCVT</SPAN
+>structure is initilized then we can pass it to <TT
+CLASS="FUNCTION"
+>SDL_ConvertAudio</TT
+>, which will convert the audio data pointer to by <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>buf</I
+></TT
+>. If <TT
+CLASS="FUNCTION"
+>SDL_ConvertAudio</TT
+> returned <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+> then the conversion was completed successfully, otherwise <SPAN
+CLASS="RETURNVALUE"
+>-1</SPAN
+> is returned.</P
+><P
+>If the conversion completed successfully then the converted audio data can be read from <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>buf</I
+></TT
+>. The amount of valid, converted, audio data in the buffer is equal to <SPAN
+CLASS="STRUCTNAME"
+>cvt</SPAN
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>len</I
+></TT
+>*<TT
+CLASS="STRUCTFIELD"
+><I
+>cvt</I
+></TT
+>-&#62;<SPAN
+CLASS="STRUCTNAME"
+>len_ratio</SPAN
+>.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7093"
+></A
+><H2
+>Examples</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>/* Converting some WAV data to hardware format */
+void my_audio_callback(void *userdata, Uint8 *stream, int len);
+
+SDL_AudioSpec *desired, *obtained;
+SDL_AudioSpec wav_spec;
+SDL_AudioCVT  wav_cvt;
+Uint32 wav_len;
+Uint8 *wav_buf;
+int ret;
+
+/* Allocated audio specs */
+desired = malloc(sizeof(SDL_AudioSpec));
+obtained = malloc(sizeof(SDL_AudioSpec));
+
+/* Set desired format */
+desired-&#62;freq=22050;
+desired-&#62;format=AUDIO_S16LSB;
+desired-&#62;samples=8192;
+desired-&#62;callback=my_audio_callback;
+desired-&#62;userdata=NULL;
+
+/* Open the audio device */
+if ( SDL_OpenAudio(desired, obtained) &#60; 0 ){
+  fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+  exit(-1);
+}
+        
+free(desired);
+
+/* Load the test.wav */
+if( SDL_LoadWAV("test.wav", &#38;wav_spec, &#38;wav_buf, &#38;wav_len) == NULL ){
+  fprintf(stderr, "Could not open test.wav: %s\n", SDL_GetError());
+  SDL_CloseAudio();
+  free(obtained);
+  exit(-1);
+}
+                                            
+/* Build AudioCVT */
+ret = SDL_BuildAudioCVT(&#38;wav_cvt,
+                        wav_spec.format, wav_spec.channels, wav_spec.freq,
+                        obtained-&#62;format, obtained-&#62;channels, obtained-&#62;freq);
+
+/* Check that the convert was built */
+if(ret==-1){
+  fprintf(stderr, "Couldn't build converter!\n");
+  SDL_CloseAudio();
+  free(obtained);
+  SDL_FreeWAV(wav_buf);
+}
+
+/* Setup for conversion */
+wav_cvt.buf = malloc(wav_len * wav_cvt.len_mult);
+wav_cvt.len = wav_len;
+memcpy(wav_cvt.buf, wav_buf, wav_len);
+
+/* We can delete to original WAV data now */
+SDL_FreeWAV(wav_buf);
+
+/* And now we're ready to convert */
+SDL_ConvertAudio(&#38;wav_cvt);
+
+/* do whatever */
+.
+.
+.
+.
+&#13;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7096"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlbuildaudiocvt.html"
+><TT
+CLASS="FUNCTION"
+>SDL_BuildAudioCVT</TT
+></A
+>,
+<A
+HREF="sdlaudiocvt.html"
+><TT
+CLASS="FUNCTION"
+>SDL_AudioCVT</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlbuildaudiocvt.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlmixaudio.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_BuildAudioCVT</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="audio.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_MixAudio</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

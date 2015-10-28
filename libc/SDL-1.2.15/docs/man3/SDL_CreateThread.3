@@ -1,0 +1,16 @@
+.TH "SDL_CreateThread" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_CreateThread \- Creates a new thread of execution that shares its parent\&'s properties\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+#include "SDL_thread\&.h"
+.sp
+\fBSDL_Thread *\fBSDL_CreateThread\fP\fR(\fBint (*fn)(void *), void *data\fR);
+.SH "DESCRIPTION"
+.PP
+\fBSDL_CreateThread\fP creates a new thread of execution that shares all of its parent\&'s global memory, signal handlers, file descriptors, etc, and runs the function \fBfn\fR passed the void pointer \fBdata\fR The thread quits when this function returns\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_KillThread\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

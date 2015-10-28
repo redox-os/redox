@@ -1,0 +1,26 @@
+.TH "SDL_Palette" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_Palette \- Color palette for 8-bit pixel formats
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  int ncolors;
+  SDL_Color *colors;
+} SDL_Palette;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBncolors\fR
+Number of colors used in this palette
+.TP 20
+\fBcolors\fR
+Pointer to \fI\fBSDL_Color\fR\fR structures that make up the palette\&.
+.SH "DESCRIPTION"
+.PP
+Each pixel in an 8-bit surface is an index into the \fBcolors\fR field of the \fBSDL_Palette\fR structure store in \fI\fBSDL_PixelFormat\fR\fR\&. A \fBSDL_Palette\fR should never need to be created manually\&. It is automatically created when SDL allocates a \fBSDL_PixelFormat\fR for a surface\&. The colors values of a \fI\fBSDL_Surface\fR\fRs palette can be set with the \fI\fBSDL_SetColors\fP\fR\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Color\fR\fR, \fI\fBSDL_Surface\fR\fR, \fI\fBSDL_SetColors\fP\fR \fI\fBSDL_SetPalette\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

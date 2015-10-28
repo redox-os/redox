@@ -1,0 +1,24 @@
+.TH "SDL_GetAppState" "3" "Tue 11 Sep 2001, 22:59" "SDL" "SDL API Reference" 
+.SH "NAME"
+\fBSDL_GetAppState\fP \- Get the state of the application
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBUint8 \fBSDL_GetAppState\fP\fR(\fBvoid\fR);
+.SH "DESCRIPTION"
+.PP
+This function returns the current state of the application\&. The value returned is a bitwise combination of:
+.TP 20
+\fBSDL_APPMOUSEFOCUS\fP
+The application has mouse focus\&.
+.TP 20
+\fBSDL_APPINPUTFOCUS\fP
+The application has keyboard focus
+.TP 20
+\fBSDL_APPACTIVE\fP
+The application is visible
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_ActiveEvent\fR\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:59

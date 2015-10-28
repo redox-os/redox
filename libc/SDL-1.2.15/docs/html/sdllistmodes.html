@@ -1,0 +1,310 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_ListModes</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_VideoDriverName"
+HREF="sdlvideodrivername.html"><LINK
+REL="NEXT"
+TITLE="SDL_VideoModeOK"
+HREF="sdlvideomodeok.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlvideodrivername.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlvideomodeok.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLLISTMODES"
+></A
+>SDL_ListModes</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN1159"
+></A
+><H2
+>Name</H2
+>SDL_ListModes&nbsp;--&nbsp;Returns a pointer to an array of available screen dimensions for 
+the given format and video flags</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN1162"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN1163"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>SDL_Rect **<B
+CLASS="FSFUNC"
+>SDL_ListModes</B
+></CODE
+>(SDL_PixelFormat *format, Uint32 flags);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1169"
+></A
+><H2
+>Description</H2
+><P
+>Return a pointer to an array of available screen dimensions for the given
+format and video flags, sorted largest to smallest.  Returns
+<TT
+CLASS="LITERAL"
+>NULL</TT
+> if there are no dimensions available for a particular
+format, or <SPAN
+CLASS="RETURNVALUE"
+>-1</SPAN
+> if any dimension is okay for
+the given format.</P
+><P
+>If <TT
+CLASS="PARAMETER"
+><I
+>format</I
+></TT
+> is <TT
+CLASS="LITERAL"
+>NULL</TT
+>, the mode list
+will be for the format returned by <A
+HREF="sdlgetvideoinfo.html"
+>SDL_GetVideoInfo()</A
+>-&#62;<TT
+CLASS="STRUCTFIELD"
+><I
+>vfmt</I
+></TT
+>. The <TT
+CLASS="PARAMETER"
+><I
+>flag</I
+></TT
+> parameter is an OR'd combination of <A
+HREF="sdlsurface.html"
+>surface</A
+> flags. The flags are the same as those used <A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+> and they play a strong role in deciding what modes are valid. For instance, if you pass <TT
+CLASS="LITERAL"
+>SDL_HWSURFACE</TT
+> as a flag only modes that support hardware video surfaces will be returned.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1184"
+></A
+><H2
+>Example</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>SDL_Rect **modes;
+int i;
+.
+.
+.
+
+/* Get available fullscreen/hardware modes */
+modes=SDL_ListModes(NULL, SDL_FULLSCREEN|SDL_HWSURFACE);
+
+/* Check is there are any modes available */
+if(modes == (SDL_Rect **)0){
+  printf("No modes available!\n");
+  exit(-1);
+}
+
+/* Check if our resolution is restricted */
+if(modes == (SDL_Rect **)-1){
+  printf("All resolutions available.\n");
+}
+else{
+  /* Print valid modes */
+  printf("Available Modes\n");
+  for(i=0;modes[i];++i)
+    printf("  %d x %d\n", modes[i]-&#62;w, modes[i]-&#62;h);
+}
+.
+.</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1187"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+>,
+<A
+HREF="sdlgetvideoinfo.html"
+><TT
+CLASS="FUNCTION"
+>SDL_GetVideoInfo</TT
+></A
+>,
+<A
+HREF="sdlrect.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Rect</SPAN
+></A
+>,
+<A
+HREF="sdlpixelformat.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlvideodrivername.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlvideomodeok.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_VideoDriverName</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_VideoModeOK</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

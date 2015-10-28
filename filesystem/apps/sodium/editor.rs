@@ -1,10 +1,6 @@
 use super::*;
 use redox::*;
 
-#[derive(Copy, Clone)]
-/// An instruction
-pub struct Inst(pub u16, pub Key);
-
 /// The state of the editor
 pub struct Editor {
     /// The current cursor
@@ -23,6 +19,10 @@ pub struct Editor {
     pub key_state: KeyState,
     /// The status bar
     pub status_bar: StatusBar,
+    /// The prompt
+    pub prompt: String,
+    /// The settings
+    pub options: Options,
 }
 
 impl Editor {
@@ -44,6 +44,8 @@ impl Editor {
             window: *window,
             key_state: KeyState::new(),
             status_bar: StatusBar::new(),
+            prompt: String::new(),
+            options: Options::new(),
         };
 
         editor.cursors.push(Cursor::new());
@@ -51,13 +53,31 @@ impl Editor {
 
         editor.redraw();
         loop {
-            let inp = next_inst(&mut editor);
+            let inp = editor.next_inst();
             editor.exec(inp);
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();
         }
 
         editor
+    }
+
+    /// Get a slice of the current line
+    pub fn get_ln(&self, n: usize) -> &[char] {
+        self.text[n].as_slices().0
+    }
+
+    /// Get the leading whitespaces
+    pub fn get_indent(&self, n: usize) -> VecDeque<char> {
+        let mut ind = VecDeque::new();
+        let ln = self.get_ln(n);
+        for &c in ln {
+            match c {
+                '\t' | ' ' => ind.push_back(c),
+                _ => break,
+            }
+        }
+        ind
     }
 }
 

@@ -1,0 +1,247 @@
+<HTML
+><HEAD
+><TITLE
+>Event Examples</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Examples"
+HREF="guideexamples.html"><LINK
+REL="PREVIOUS"
+TITLE="Examples"
+HREF="guideexamples.html"><LINK
+REL="NEXT"
+TITLE="Audio Examples"
+HREF="guideaudioexamples.html"></HEAD
+><BODY
+CLASS="SECT1"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="guideexamples.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+>Chapter 4. Examples</TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="guideaudioexamples.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="SECT1"
+><H1
+CLASS="SECT1"
+><A
+NAME="GUIDEEVENTEXAMPLES"
+></A
+>Event Examples</H1
+><P
+></P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN375"
+></A
+>Filtering and Handling Events</H2
+><P
+><PRE
+CLASS="PROGRAMLISTING"
+>#include &#60;stdio.h&#62;
+#include &#60;stdlib.h&#62;
+
+#include "SDL.h"
+
+/* This function may run in a separate event thread */
+int FilterEvents(const SDL_Event *event) {
+    static int boycott = 1;
+
+    /* This quit event signals the closing of the window */
+    if ( (event-&#62;type == SDL_QUIT) &#38;&#38; boycott ) {
+        printf("Quit event filtered out -- try again.\n");
+        boycott = 0;
+        return(0);
+    }
+    if ( event-&#62;type == SDL_MOUSEMOTION ) {
+        printf("Mouse moved to (%d,%d)\n",
+                event-&#62;motion.x, event-&#62;motion.y);
+        return(0);    /* Drop it, we've handled it */
+    }
+    return(1);
+}
+
+int main(int argc, char *argv[])
+{
+    SDL_Event event;
+
+    /* Initialize the SDL library (starts the event loop) */
+    if ( SDL_Init(SDL_INIT_VIDEO) &#60; 0 ) {
+        fprintf(stderr,
+                "Couldn't initialize SDL: %s\n", SDL_GetError());
+        exit(1);
+    }
+
+    /* Clean up on exit, exit on window close and interrupt */
+    atexit(SDL_Quit);
+
+    /* Ignore key events */
+    SDL_EventState(SDL_KEYDOWN, SDL_IGNORE);
+    SDL_EventState(SDL_KEYUP, SDL_IGNORE);
+
+    /* Filter quit and mouse motion events */
+    SDL_SetEventFilter(FilterEvents);
+
+    /* The mouse isn't much use unless we have a display for reference */
+    if ( SDL_SetVideoMode(640, 480, 8, 0) == NULL ) {
+        fprintf(stderr, "Couldn't set 640x480x8 video mode: %s\n",
+                        SDL_GetError());
+        exit(1);
+    }
+
+    /* Loop waiting for ESC+Mouse_Button */
+    while ( SDL_WaitEvent(&#38;event) &#62;= 0 ) {
+        switch (event.type) {
+            case SDL_ACTIVEEVENT: {
+                if ( event.active.state &#38; SDL_APPACTIVE ) {
+                    if ( event.active.gain ) {
+                        printf("App activated\n");
+                    } else {
+                        printf("App iconified\n");
+                    }
+                }
+            }
+            break;
+                    
+            case SDL_MOUSEBUTTONDOWN: {
+                Uint8 *keys;
+
+                keys = SDL_GetKeyState(NULL);
+                if ( keys[SDLK_ESCAPE] == SDL_PRESSED ) {
+                    printf("Bye bye...\n");
+                    exit(0);
+                }
+                printf("Mouse button pressed\n");
+            }
+            break;
+
+            case SDL_QUIT: {
+                printf("Quit requested, quitting.\n");
+                exit(0);
+            }
+            break;
+        }
+    }
+    /* This should never happen */
+    printf("SDL_WaitEvent error: %s\n", SDL_GetError());
+    exit(1);
+}</PRE
+></P
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="guideexamples.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="guideaudioexamples.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>Examples</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="guideexamples.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Audio Examples</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

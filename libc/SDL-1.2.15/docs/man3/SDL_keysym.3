@@ -1,0 +1,69 @@
+.TH "SDL_keysym" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_keysym \- Keysym structure
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  Uint8 scancode;
+  SDLKey sym;
+  SDLMod mod;
+  Uint16 unicode;
+} SDL_keysym;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBscancode\fR
+Hardware specific scancode
+.TP 20
+\fBsym\fR
+SDL virtual keysym
+.TP 20
+\fBmod\fR
+Current key modifiers
+.TP 20
+\fBunicode\fR
+Translated character
+.SH "DESCRIPTION"
+.PP
+The \fBSDL_keysym\fR structure is used by reporting key presses and releases since it is a part of the \fI\fBSDL_KeyboardEvent\fR\fR\&.
+.PP
+The \fBscancode\fR field should generally be left alone, it is the hardware dependent scancode returned by the keyboard\&. The \fBsym\fR field is extremely useful\&. It is the SDL-defined value of the key (see \fISDL Key Syms\fR\&. This field is very useful when you are checking for certain key presses, like so: 
+.PP
+.nf
+\f(CW\&.
+\&.
+while(SDL_PollEvent(&event)){
+  switch(event\&.type){
+    case SDL_KEYDOWN:
+      if(event\&.key\&.keysym\&.sym==SDLK_LEFT)
+        move_left();
+      break;
+    \&.
+    \&.
+    \&.
+  }
+}
+\&.
+\&.\fR
+.fi
+.PP
+ \fBmod\fR stores the current state of the keyboard modifiers as explained in \fI\fBSDL_GetModState\fP\fR\&. The \fBunicode\fR is only used when UNICODE translation is enabled with \fI\fBSDL_EnableUNICODE\fP\fR\&. If \fBunicode\fR is non-zero then this a the UNICODE character corresponding to the keypress\&. If the high 9 bits of the character are 0, then this maps to the equivalent ASCII character: 
+.PP
+.nf
+\f(CWchar ch;
+if ( (keysym\&.unicode & 0xFF80) == 0 ) {
+  ch = keysym\&.unicode & 0x7F;
+}
+else {
+  printf("An International Character\&.
+");
+}\fR
+.fi
+.PP
+ UNICODE translation does have a slight overhead so don\&'t enable it unless its needed\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDLKey\fR\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

@@ -1,4 +1,4 @@
-pub use collections::VecDeque;
+pub use redox::collections::VecDeque;
 
 
 mod editor;
@@ -13,17 +13,29 @@ pub use self::keystate::*;
 mod key;
 pub use self::key::*;
 
+mod prompt;
+pub use self::prompt::*;
+
+mod options;
+pub use self::options::*;
+
 mod position;
 pub use self::position::*;
 
 mod graphics;
 pub use self::graphics::*;
 
+mod selection;
+pub use self::selection::*;
+
 mod mode;
 pub use self::mode::*;
 
 mod movement;
 pub use self::movement::*;
+
+mod motion;
+pub use self::motion::*;
 
 mod cursor;
 pub use self::cursor::*;
@@ -38,6 +50,5 @@ mod exec;
 pub use self::exec::*;
 
 pub fn main() {
-    let mut editor = Editor::new();
+    let editor = Editor::new();
 }
-

@@ -1,0 +1,296 @@
+<HTML
+><HEAD
+><TITLE
+>Joystick</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SDL Reference"
+HREF="reference.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_JoystickEventState"
+HREF="sdljoystickeventstate.html"><LINK
+REL="NEXT"
+TITLE="SDL_NumJoysticks"
+HREF="sdlnumjoysticks.html"><META
+NAME="KEYWORD"
+CONTENT="joystick"><META
+NAME="KEYWORD"
+CONTENT="function"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdljoystickeventstate.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlnumjoysticks.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="JOYSTICK"
+></A
+>Chapter 9. Joystick</H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="sdlnumjoysticks.html"
+>SDL_NumJoysticks</A
+>&nbsp;--&nbsp;Count available joysticks.</DT
+><DT
+><A
+HREF="sdljoystickname.html"
+>SDL_JoystickName</A
+>&nbsp;--&nbsp;Get joystick name.</DT
+><DT
+><A
+HREF="sdljoystickopen.html"
+>SDL_JoystickOpen</A
+>&nbsp;--&nbsp;Opens a joystick for use.</DT
+><DT
+><A
+HREF="sdljoystickopened.html"
+>SDL_JoystickOpened</A
+>&nbsp;--&nbsp;Determine if a joystick has been opened</DT
+><DT
+><A
+HREF="sdljoystickindex.html"
+>SDL_JoystickIndex</A
+>&nbsp;--&nbsp;Get the index of an SDL_Joystick.</DT
+><DT
+><A
+HREF="sdljoysticknumaxes.html"
+>SDL_JoystickNumAxes</A
+>&nbsp;--&nbsp;Get the number of joystick axes</DT
+><DT
+><A
+HREF="sdljoysticknumballs.html"
+>SDL_JoystickNumBalls</A
+>&nbsp;--&nbsp;Get the number of joystick trackballs</DT
+><DT
+><A
+HREF="sdljoysticknumhats.html"
+>SDL_JoystickNumHats</A
+>&nbsp;--&nbsp;Get the number of joystick hats</DT
+><DT
+><A
+HREF="sdljoysticknumbuttons.html"
+>SDL_JoystickNumButtons</A
+>&nbsp;--&nbsp;Get the number of joysitck buttons</DT
+><DT
+><A
+HREF="sdljoystickupdate.html"
+>SDL_JoystickUpdate</A
+>&nbsp;--&nbsp;Updates the state of all joysticks</DT
+><DT
+><A
+HREF="sdljoystickgetaxis.html"
+>SDL_JoystickGetAxis</A
+>&nbsp;--&nbsp;Get the current state of an axis</DT
+><DT
+><A
+HREF="sdljoystickgethat.html"
+>SDL_JoystickGetHat</A
+>&nbsp;--&nbsp;Get the current state of a joystick hat</DT
+><DT
+><A
+HREF="sdljoystickgetbutton.html"
+>SDL_JoystickGetButton</A
+>&nbsp;--&nbsp;Get the current state of a given button on a given joystick</DT
+><DT
+><A
+HREF="sdljoystickgetball.html"
+>SDL_JoystickGetBall</A
+>&nbsp;--&nbsp;Get relative trackball motion</DT
+><DT
+><A
+HREF="sdljoystickclose.html"
+>SDL_JoystickClose</A
+>&nbsp;--&nbsp;Closes a previously opened joystick</DT
+></DL
+></DIV
+><P
+>Joysticks, and other similar input devices, have a very strong role in game playing and SDL provides comprehensive support for them. Axes, Buttons, POV Hats and trackballs are all supported.</P
+><P
+>Joystick support is initialized by passed the <TT
+CLASS="LITERAL"
+>SDL_INIT_JOYSTICK</TT
+> flag to <A
+HREF="sdlinit.html"
+><TT
+CLASS="FUNCTION"
+>SDL_Init</TT
+></A
+>. Once initilized joysticks must be opened using <A
+HREF="sdljoystickopen.html"
+><TT
+CLASS="FUNCTION"
+>SDL_JoystickOpen</TT
+></A
+>.</P
+><P
+>While using the functions describe in this secton may seem like the best way to access and read from joysticks, in most cases they aren't. Ideally joysticks should be read using the <A
+HREF="event.html"
+>event</A
+> system. To enable this, you must set the joystick event processing state with <A
+HREF="sdljoystickeventstate.html"
+><TT
+CLASS="FUNCTION"
+>SDL_JoystickEventState</TT
+></A
+>. Joysticks must be <A
+HREF="sdljoystickopen.html"
+>opened</A
+> before they can be used of course.</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>If you are <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>not</I
+></SPAN
+> handling the joystick via the event queue then you must explicitly request a joystick update by calling <A
+HREF="sdljoystickupdate.html"
+><TT
+CLASS="FUNCTION"
+>SDL_JoystickUpdate</TT
+></A
+>.</P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>Force Feedback is not yet support. Sam (slouken@libsdl.org) is soliciting suggestions from people with force-feedback experience on the best wat to desgin the API.</P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdljoystickeventstate.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlnumjoysticks.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_JoystickEventState</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="reference.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_NumJoysticks</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

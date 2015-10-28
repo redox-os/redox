@@ -1,0 +1,358 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_SetColors</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_Flip"
+HREF="sdlflip.html"><LINK
+REL="NEXT"
+TITLE="SDL_SetPalette"
+HREF="sdlsetpalette.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlflip.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlsetpalette.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLSETCOLORS"
+></A
+>SDL_SetColors</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN1462"
+></A
+><H2
+>Name</H2
+>SDL_SetColors&nbsp;--&nbsp;Sets a portion of the colormap for the given 8-bit surface.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN1465"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN1466"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>int <B
+CLASS="FSFUNC"
+>SDL_SetColors</B
+></CODE
+>(SDL_Surface *surface, SDL_Color *colors, int firstcolor, int ncolors);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1472"
+></A
+><H2
+>Description</H2
+><P
+>Sets a portion of the colormap for the given 8-bit surface.</P
+><P
+>When <TT
+CLASS="PARAMETER"
+><I
+>surface</I
+></TT
+> is the surface associated with the current
+display, the display colormap will be updated with the requested colors.  If
+<TT
+CLASS="LITERAL"
+>SDL_HWPALETTE</TT
+> was set in <A
+HREF="sdlsetvideomode.html"
+>SDL_SetVideoMode</A
+> flags,
+<TT
+CLASS="FUNCTION"
+>SDL_SetColors</TT
+> will always return <SPAN
+CLASS="RETURNVALUE"
+>1</SPAN
+>,
+and the palette is guaranteed to be set the way you desire, even if the window
+colormap has to be warped or run under emulation.</P
+><P
+>The color components of a
+<A
+HREF="sdlcolor.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Color</SPAN
+></A
+>
+structure are 8-bits in size, giving you a total of 256<SUP
+>3</SUP
+>
+=16777216 colors.</P
+><P
+>Palettized (8-bit) screen surfaces with the <TT
+CLASS="LITERAL"
+>SDL_HWPALETTE</TT
+>
+flag have two palettes, a logical palette that is used for mapping blits
+to/from the surface and a physical palette (that determines how the
+hardware will map the colors to the display). <TT
+CLASS="FUNCTION"
+>SDL_SetColors</TT
+>
+modifies both palettes (if present), and is equivalent to calling
+<A
+HREF="sdlsetpalette.html"
+>SDL_SetPalette</A
+> with the
+<TT
+CLASS="PARAMETER"
+><I
+>flags</I
+></TT
+> set to
+<TT
+CLASS="LITERAL"
+>(SDL_LOGPAL | SDL_PHYSPAL)</TT
+>.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1491"
+></A
+><H2
+>Return Value</H2
+><P
+>If <TT
+CLASS="PARAMETER"
+><I
+>surface</I
+></TT
+> is not a palettized surface, this function
+does nothing, returning <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+>.  If all of the colors were set
+as passed to <TT
+CLASS="FUNCTION"
+>SDL_SetColors</TT
+>, it will return
+<SPAN
+CLASS="RETURNVALUE"
+>1</SPAN
+>.  If not all the color entries were set exactly as
+given, it will return <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+>, and you should look at the
+surface palette to determine the actual color palette.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1499"
+></A
+><H2
+>Example</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>/* Create a display surface with a grayscale palette */
+SDL_Surface *screen;
+SDL_Color colors[256];
+int i;
+.
+.
+.
+/* Fill colors with color information */
+for(i=0;i&#60;256;i++){
+  colors[i].r=i;
+  colors[i].g=i;
+  colors[i].b=i;
+}
+
+/* Create display */
+screen=SDL_SetVideoMode(640, 480, 8, SDL_HWPALETTE);
+if(!screen){
+  printf("Couldn't set video mode: %s\n", SDL_GetError());
+  exit(-1);
+}
+
+/* Set palette */
+SDL_SetColors(screen, colors, 0, 256);
+.
+.
+.
+.</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1502"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlcolor.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Color</SPAN
+></A
+>
+<A
+HREF="sdlsurface.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+></A
+>,
+<A
+HREF="sdlsetpalette.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetPalette</TT
+></A
+>,
+<A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlflip.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlsetpalette.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_Flip</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_SetPalette</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

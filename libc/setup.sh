@@ -118,4 +118,3 @@ pushd "build-${GCC}"
     make -j `nproc` install-gcc
     make -j `nproc` install-target-libgcc
 popd
-

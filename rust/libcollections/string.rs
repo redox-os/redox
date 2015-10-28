@@ -361,7 +361,7 @@ impl String {
 
     /// Creates a new `String` from a length, capacity, and pointer.
     ///
-    /// # Unsafety
+    /// # Safety
     ///
     /// This is _very_ unsafe because:
     ///
@@ -385,7 +385,7 @@ impl String {
     ///
     /// [fromutf8]: struct.String.html#method.from_utf8
     ///
-    /// # Unsafety
+    /// # Safety
     ///
     /// This function is unsafe because it does not check that the bytes passed to
     /// it are valid UTF-8. If this constraint is violated, undefined behavior
@@ -1131,9 +1131,7 @@ impl ops::DerefMut for String {
 }
 
 /// Error returned from `String::from`
-#[unstable(feature = "str_parse_error", reason = "may want to be replaced with \
-                                                  Void if it ever exists",
-           issue = "27734")]
+#[stable(feature = "str_parse_error", since = "1.5.0")]
 #[derive(Copy)]
 pub enum ParseError {}
 

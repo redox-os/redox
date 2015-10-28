@@ -1,9 +1,10 @@
 use audio::ac97::AC97;
 use audio::intelhda::IntelHDA;
 
+use collections::vec::Vec;
+
 use common::debug;
 use common::queue::Queue;
-use common::vec::Vec;
 
 use drivers::pciconfig::PCIConfig;
 

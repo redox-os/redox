@@ -1,0 +1,362 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_Overlay</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_VideoInfo"
+HREF="sdlvideoinfo.html"><LINK
+REL="NEXT"
+TITLE="Window Management"
+HREF="wm.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlvideoinfo.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="wm.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLOVERLAY"
+></A
+>SDL_Overlay</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN3464"
+></A
+><H2
+>Name</H2
+>SDL_Overlay&nbsp;--&nbsp;YUV video overlay</DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3467"
+></A
+><H2
+>Structure Definition</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>typedef struct{
+  Uint32 format;
+  int w, h;
+  int planes;
+  Uint16 *pitches;
+  Uint8 **pixels;
+  Uint32 hw_overlay:1;
+} SDL_Overlay;</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3470"
+></A
+><H2
+>Structure Data</H2
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN3472"
+></A
+><P
+></P
+><TABLE
+BORDER="0"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Overlay format (see below)</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>w, h</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Width and height of overlay</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>planes</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>Number of planes in the overlay. Usually either 1 or 3</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>pitches</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>An array of pitches, one for each plane. Pitch is the length of a row in bytes.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>An array of pointers to teh data of each plane. The overlay should be locked before these pointers are used.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="STRUCTFIELD"
+><I
+>hw_overlay</I
+></TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>This will be set to 1 if the overlay is hardware accelerated.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3499"
+></A
+><H2
+>Description</H2
+><P
+>A <SPAN
+CLASS="STRUCTNAME"
+>SDL_Overlay</SPAN
+> is similar to a <A
+HREF="sdlsurface.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+></A
+> except it stores a YUV overlay. All the fields are read only, except for <TT
+CLASS="STRUCTFIELD"
+><I
+>pixels</I
+></TT
+> which should be <A
+HREF="sdllockyuvoverlay.html"
+>locked</A
+> before use. The <TT
+CLASS="STRUCTFIELD"
+><I
+>format</I
+></TT
+> field stores the format of the overlay which is one of the following:
+<PRE
+CLASS="PROGRAMLISTING"
+>#define SDL_YV12_OVERLAY  0x32315659  /* Planar mode: Y + V + U */
+#define SDL_IYUV_OVERLAY  0x56555949  /* Planar mode: Y + U + V */
+#define SDL_YUY2_OVERLAY  0x32595559  /* Packed mode: Y0+U0+Y1+V0 */
+#define SDL_UYVY_OVERLAY  0x59565955  /* Packed mode: U0+Y0+V0+Y1 */
+#define SDL_YVYU_OVERLAY  0x55595659  /* Packed mode: Y0+V0+Y1+U0 */</PRE
+>
+More information on YUV formats can be found at <A
+HREF="http://www.webartz.com/fourcc/indexyuv.htm"
+TARGET="_top"
+>http://www.webartz.com/fourcc/indexyuv.htm</A
+>.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN3510"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlcreateyuvoverlay.html"
+><TT
+CLASS="FUNCTION"
+>SDL_CreateYUVOverlay</TT
+></A
+>,
+<A
+HREF="sdllockyuvoverlay.html"
+><TT
+CLASS="FUNCTION"
+>SDL_LockYUVOverlay</TT
+></A
+>,
+<A
+HREF="sdlunlockyuvoverlay.html"
+><TT
+CLASS="FUNCTION"
+>SDL_UnlockYUVOverlay</TT
+></A
+>,
+<A
+HREF="sdlfreeyuvoverlay.html"
+><TT
+CLASS="FUNCTION"
+>SDL_FreeYUVOverlay</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlvideoinfo.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="wm.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_VideoInfo</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>Window Management</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>
