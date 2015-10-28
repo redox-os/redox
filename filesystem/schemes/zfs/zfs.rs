@@ -293,7 +293,7 @@ impl ZFS {
                                             .map(|x| {
                                                 if x.value & 0xF000000000000000 == 0x4000000000000000 {
                                                     x.name().unwrap().to_string() + "/"
-                                                }else{
+                                                } else {
                                                     x.name().unwrap().to_string()
                                                 }
                                             })
@@ -417,7 +417,7 @@ impl Scheme {
                         seek: 0
                     });
                 }
-            }else{
+            } else {
                 write!(io::stdout(), "ZFS Read File {}\n", path);
                 if let Some(data) = zfs.read_file(&path) {
                     write!(io::stdout(), "ZFS Read File Data {}\n", data.len());
