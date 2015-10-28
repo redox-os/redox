@@ -200,8 +200,9 @@ impl FileSystem {
 
     /// Get node with a given filename
     pub fn node(&self, filename: &str) -> Option<Node> {
+        let path = parse_path(filename);
         for node in self.nodes.iter() {
-            if parse_path(&node.name) == parse_path(filename) {
+            if parse_path(&node.name) == path {
                 return Some(node.clone());
             }
         }

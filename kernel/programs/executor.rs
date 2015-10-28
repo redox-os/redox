@@ -1,11 +1,14 @@
 use collections::string::String;
 use collections::vec::Vec;
+use collections::slice::SliceConcatExt;
 
 use common::context::{self, Context, ContextFile, ContextMemory};
 use common::debug;
 use common::elf::ELF;
 use common::memory;
 use common::scheduler;
+use common::parse_path::*;
+use collections::string::ToString;
 
 use schemes::URL;
 
@@ -13,7 +16,6 @@ use schemes::URL;
 pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
     debug::d("Execute ");
     debug::d(&url.to_string());
-    debug::d(" in ");
     debug::d(&wd.to_string());
     debug::dl();
 
@@ -26,6 +28,8 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
         if let Some(mut resource) = url.open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
+            debug::d(&vec.len().to_string());
+            debug::d(" data read \n");
 
             let executable = ELF::from_data(vec.as_ptr() as usize);
             if let Some(segment) = executable.load_segment() {
@@ -44,7 +48,7 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
             } else {
                 debug::d("Invalid ELF\n");
             }
-        }else{
+        } else {
             debug::d("Failed to open\n");
         }
 
