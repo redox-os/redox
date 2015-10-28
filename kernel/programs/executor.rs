@@ -11,6 +11,7 @@ use common::scheduler;
 
 use schemes::URL;
 
+/// Excecute an excecutable
 pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
     debug::d("Execute ");
     debug::d(&url.to_string());
