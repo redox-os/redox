@@ -1,15 +1,19 @@
 export PATH := build/prefix/bin:$(PATH)
 
-all: sdl.bin test.bin
+all: sdl.bin sdl_ttf.bin test.bin
+
+sdl.bin: sdl.c program.ld
+	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $< -lSDL
+
+sdl_ttf.bin: sdl_ttf.c program.ld
+	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $< -lSDL_ttf -lSDL_image -lSDL -lfreetype -lpng -lz -lm
 
 test.bin: test.c program.ld
 	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $<
 
-test.list: test.bin
-	i386-elf-redox-objdump -C -M intel -d $< > $@
-
-sdl.bin: sdl.c program.ld
-	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $< -lSDL_ttf -lSDL_image -lSDL -lfreetype -lpng -lz -lm
+install: all
+	mkdir -p ../filesystem/libc/
+	cp *.bin ../filesystem/libc/
 
 libc:
 	./libc.sh

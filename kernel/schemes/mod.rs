@@ -4,7 +4,6 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cmp::{min, max};
-use core::mem;
 
 /// ARP scheme
 pub mod arp;

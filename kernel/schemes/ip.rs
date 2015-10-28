@@ -13,7 +13,7 @@ use common::{debug, random};
 use common::to_num::ToNum;
 use common::parse_ip::*;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, URL};
 
 /// A IP (internet protocole) resource
 pub struct IPResource {
