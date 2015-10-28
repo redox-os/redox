@@ -15,6 +15,7 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
+#![feature(slice_concat_ext)]
 #![no_std]
 
 #[macro_use]
@@ -39,6 +40,7 @@ use common::queue::Queue;
 use schemes::URL;
 use common::scheduler;
 use common::time::Duration;
+use common::parse_path::*;
 
 use drivers::pci::*;
 use drivers::pio::*;
@@ -397,7 +399,9 @@ unsafe fn init(font_data: usize) {
         if resource.read_to_end(&mut vec).is_some() {
             debug::d("Read background\n");
         }else{
-            debug::d("Failed to read background\n");
+            debug::d("Failed to read background at: ");
+            debug::d(URL::from_str("file:///ui/background.bmp").reference());
+            debug::d("\n");
         }
 
         let background = BMPFile::from_data(&vec);
@@ -406,8 +410,22 @@ unsafe fn init(font_data: usize) {
         session.background = background;
         session.redraw = true;
         scheduler::end_no_ints(reenable);
-    }else{
-        debug::d("Failed to open background\n");
+    } else {
+        debug::d("Failed to open background at: ");
+        debug::d(URL::from_str("file:///ui/background.bmp").reference());
+        debug::d("(scheme: ");
+        debug::d(URL::from_str("file:///ui/background.bmp").scheme());
+        debug::d(")\n");
+        debug::d("Parsed as: \n");
+
+        let parts = parse_path("///ui/background.bmp");
+        for i in parts {
+            debug::d(&i);
+            debug::d("\n");
+        }
+        debug::d("Path refered to as: ");
+        debug::d(URL::from_str("file:///ui/background.bmp").reference());
+        debug::d("\n");
     }
 
     debug::d("Enabling context switching\n");

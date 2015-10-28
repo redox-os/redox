@@ -7,6 +7,7 @@ use core::mem;
 
 use common::debug;
 use common::to_num::ToNum;
+use common::parse_ip::*;
 
 use network::common::*;
 use network::ethernet::*;
@@ -105,14 +106,14 @@ impl KScheme for EthernetScheme {
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if let Some(mut network) = URL::from_str("network://").open() {
-            if url.path().len() > 0 {
-                let ethertype = url.path().to_num_radix(16) as u16;
+            if !url.reference().is_empty() {
+                let ethertype = url.reference().to_num_radix(16) as u16;
 
-                if url.host().len() > 0 {
+                if parse_host(url.reference()).len() > 0 {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),
-                        peer_addr: MACAddr::from_string(&url.host()),
+                        peer_addr: MACAddr::from_string(&parse_host(url.reference()).to_string()),
                         ethertype: ethertype,
                     });
                 } else {

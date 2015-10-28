@@ -41,7 +41,7 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
                 }
 
                 entry = executable.entry();
-            }else{
+            } else {
                 debug::d("Invalid ELF\n");
             }
         }else{

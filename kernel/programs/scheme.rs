@@ -10,6 +10,7 @@ use common::elf::{self, ELF};
 use common::memory;
 use common::paging::Page;
 use common::scheduler::{start_no_ints, end_no_ints};
+use common::parse_path::parse_path;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -303,8 +304,8 @@ impl SchemeItem {
             _close: 0,
         };
 
-        let path_parts = url.path_parts();
-        if path_parts.len() > 0 {
+        let path_parts = parse_path(url.reference());
+        if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
                 scheme_item.binary = URL::from_string(&(url.to_string() + part + ".bin"));
