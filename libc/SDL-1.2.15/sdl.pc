@@ -1,6 +1,6 @@
 # sdl pkg-config source file
 
-prefix=/usr/local
+prefix=/home/jackpot/Projects/redox/libc/build/prefix
 exec_prefix=${prefix}
 libdir=${exec_prefix}/lib
 includedir=${prefix}/include
