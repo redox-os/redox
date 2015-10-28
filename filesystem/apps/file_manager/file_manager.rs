@@ -398,6 +398,7 @@ impl FileManager {
                     }
                     self.last_mouse_event = mouse_event;
                 }
+                EventOption::Quit(quit_event) => break,
                 _ => (),
             }
         }
