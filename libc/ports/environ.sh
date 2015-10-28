@@ -5,6 +5,17 @@ HOST="i386-elf-redox"
 BUILD="$(dirname "${PWD}")/build"
 PREFIX="${BUILD}/sysroot/usr"
 export PATH="${BUILD}/prefix/bin:$PATH"
+export AR="${HOST}-ar"
+export AS="${HOST}-as"
+export CC="${HOST}-gcc"
+export CXX="${HOST}-g++"
+export LD="${HOST}-ld"
+export NM="${HOST}-nm"
+export OBJCOPY="${HOST}-objcopy"
+export OBJDUMP="${HOST}-objdump"
+export RANLIB="${HOST}-ranlib"
+export READELF="${HOST}-readelf"
+export STRIP="${HOST}-strip"
 
 function make_template {
     case $1 in
