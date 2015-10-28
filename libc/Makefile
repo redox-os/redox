@@ -12,6 +12,9 @@ sdl.bin: sdl.c program.ld SDL-1.2.15/build/.libs/libSDL.a
 libc:
 	./setup.sh
 
+lua:
+	./lua.sh
+
 SDL-1.2.15/build/.libs/libSDL.a:
 	./libsdl.sh
 
