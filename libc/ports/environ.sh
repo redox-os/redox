@@ -111,11 +111,14 @@ function configure_template {
 
 function autogen_template {
     case $1 in
+        autogen)
+            pushd "${BUILD}/${DIR}"
+                ./autogen.sh $AUTOGEN_ARGS
+            popd
+            ;;
         add)
             fetch_template add
-            pushd "${BUILD}/${DIR}"
-                ./autogen.sh
-            popd
+            autogen_template autogen
             configure_template configure
             make_template build
             make_template install
