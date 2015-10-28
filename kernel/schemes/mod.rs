@@ -146,7 +146,12 @@ impl URL {
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        &self.string[(1 + self.string.find(':').unwrap_or(self.string.len()))..]
+        &self.string[
+        match self.string.find(':') {
+            Some(pos) => pos + 1,
+            None => self.string.len(),
+        }
+        ..]
     }
 
 }
