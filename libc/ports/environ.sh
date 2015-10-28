@@ -19,37 +19,32 @@ export STRIP="${HOST}-strip"
 
 function fetch_template {
     case $1 in
-        fetch)
-            if [ ! -f "$(basename "${SRC}")" ]
-            then
-                curl "${SRC}" -o "$(basename "${SRC}")"
-            fi
-            ;;
-        extract)
-            if [ ! -d "${DIR}" ]
-            then
-                tar xvf "$(basename "${SRC}")"
-            fi
-            ;;
         add)
-            fetch_template fetch
-            fetch_template extract
-            ;;
-        unextract)
+            if [ ! -f "${BUILD}/$(basename "${SRC}")" ]
+            then
+                wget "${SRC}" -O "${BUILD}/$(basename "${SRC}")"
+            fi
+            if [ ! -d "${BUILD}/${DIR}" ]
+            then
+                pushd "${BUILD}"
+                tar xvf "$(basename "${SRC}")"
+                popd
+            fi
             if [ -d "${DIR}" ]
             then
-                rm -rf "${DIR}"
-            fi
-            ;;
-        unfetch)
-            if [ -f "$(basename "${SRC}")" ]
-            then
-                rm -f "$(basename "${SRC}")"
+                cp -r -v "${DIR}"/* "${BUILD}/${DIR}"
             fi
             ;;
         remove)
-            fetch_template unextract
-            fetch_template unfetch
+            if [ -d "${BUILD}/${DIR}" ]
+            then
+                rm -rf "${BUILD}/${DIR}"
+            fi
+            if [ -f "${BUILD}/$(basename "${SRC}")" ]
+            then
+                rm -f "${BUILD}/$(basename "${SRC}")"
+            fi
+            ;;
         *)
             echo "$0: Unknown argument: '$1'. Try running with 'add' or 'remove'"
             ;;
@@ -77,8 +72,8 @@ function make_template {
             make -C "${BUILD}/${DIR}" -j `nproc` uninstall $UNINSTALL_ARGS
             ;;
         remove)
-            make_template uninstall
-            make_template clean
+            make_template uninstall || true
+            make_template clean || true
             fetch_template remove
             ;;
         *)
@@ -95,18 +90,38 @@ function configure_template {
             popd
             ;;
         add)
+            fetch_template add
             configure_template configure
-            make_template add
+            make_template build
+            make_template install
             ;;
         distclean)
             make -C "${BUILD}/${DIR}" -j `nproc` distclean $DISTCLEAN_ARGS
             ;;
         remove)
-            make_template remove
-            configure_template distclean
+            make_template uninstall || true
+            configure_template distclean || true
+            fetch_template remove
             ;;
         *)
             make_template $*
+            ;;
+    esac
+}
+
+function autogen_template {
+    case $1 in
+        add)
+            fetch_template add
+            pushd "${BUILD}/${DIR}"
+                ./autogen.sh
+            popd
+            configure_template configure
+            make_template build
+            make_template install
+            ;;
+        *)
+            configure_template $*
             ;;
     esac
 }
