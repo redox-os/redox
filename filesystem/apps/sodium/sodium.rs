@@ -1,4 +1,4 @@
-pub use collections::VecDeque;
+pub use redox::collections::VecDeque;
 
 
 mod editor;
