@@ -154,12 +154,17 @@ impl URL {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> String {
-        if let Some(part) = self.string.split('/').next() {
-            if let Some(scheme_part) = part.split(':').next() {
-                return scheme_part.to_string();
+        // TODO: Consider parsing once
+        let scm = String::new();
+        for c in self.string.chars() {
+            if c == ':' {
+                break;
             }
+
+            scm.push(c);
         }
-        return String::new();
+
+        scm
     }
 
     /// Get the owner's username (the conventional @)
