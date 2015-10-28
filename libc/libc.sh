@@ -1,19 +1,7 @@
 #!/bin/bash
+source environ.sh
 
-set -e
-
-mkdir -p build
 cd build
-
-PREFIX="${PWD}/prefix"
-rm -rf "${PREFIX}"
-mkdir -p "${PREFIX}"
-mkdir -p "${PREFIX}/bin"
-export PATH="${PREFIX}/bin:$PATH"
-
-SYSROOT="${PWD}/sysroot"
-rm -rf "${SYSROOT}"
-mkdir -p "${SYSROOT}"
 
 ###################BINUTILS#########################
 BINUTILS=binutils-2.24.90
