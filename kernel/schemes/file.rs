@@ -4,6 +4,7 @@ use alloc::boxed::Box;
 use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
+use collections::slice::SliceConcatExt;
 
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
@@ -14,6 +15,7 @@ use drivers::pciconfig::PCIConfig;
 use common::context::context_switch;
 use common::debug;
 use common::memory::Memory;
+use common::parse_path::*;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL, VecResource};
 
@@ -47,7 +49,7 @@ impl Node {
         for b in data.name.iter() {
             if *b > 0 {
                 bytes.push(*b);
-            }else{
+            } else {
                 break;
             }
         }
@@ -197,9 +199,9 @@ impl FileSystem {
     }
 
     /// Get node with a given filename
-    pub fn node(&self, filename: &String) -> Option<Node> {
+    pub fn node(&self, filename: &str) -> Option<Node> {
         for node in self.nodes.iter() {
-            if node.name == *filename {
+            if parse_path(&node.name) == parse_path(filename) {
                 return Some(node.clone());
             }
         }
@@ -208,15 +210,28 @@ impl FileSystem {
     }
 
     /// List nodes in a given directory
-    pub fn list(&self, directory: &String) -> Vec<String> {
+    pub fn list(&self, directory: Vec<String>) -> Vec<String> {
         let mut ret = Vec::<String>::new();
 
         for node in self.nodes.iter() {
-            if node.name.starts_with(directory) {
-                ret.push(node.name[directory.len() ..].to_string());
+            let mut eq = true;
+            for (n, i) in directory.iter().enumerate() {
+                match parse_path(&node.name).get(n) {
+                    Some(nd) if nd == i => {},
+                    _ => eq = false,
+                }
+            }
+            if eq {
+                ret.push(parse_path(&node.name)[directory.len()..].join("/"));
             }
         }
 
+        debug::d(&ret.len().to_string());
+        //debug::d(" directories found: \n");
+        //for d in &ret {
+        //    debug::d(&d);
+        //    debug::d("\n")
+        //}
         ret
     }
 }
@@ -490,12 +505,13 @@ impl KScheme for FileScheme {
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
-        let path = url.path();
-        if path.len() == 0 || path.ends_with('/') {
+        let path = url.reference();
+        if path.is_empty() || path.ends_with('/') {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
-            for file in self.fs.list(&path).iter() {
+            // Hmm... no deref coercions in libcollections ;(
+            for file in self.fs.list(parse_path(&path.to_string())).iter() {
                 let line;
                 match file.find('/') {
                     Some(index) => {
@@ -525,9 +541,9 @@ impl KScheme for FileScheme {
                 }
             }
 
-            return Some(box VecResource::new(url.clone(), list.into_bytes()));
+            Some(box VecResource::new(url.clone(), list.into_bytes()))
         } else {
-            match self.fs.node(&path) {
+            match self.fs.node(&path.to_string()) {
                 Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
                     //TODO: Handle more extents
@@ -573,20 +589,20 @@ impl KScheme for FileScheme {
                                     }
                                 }
 
-                                vec.push_all(& unsafe { slice::from_raw_parts(data.ptr, extent.length as usize) });
+                                vec.push_all(&unsafe { slice::from_raw_parts(data.ptr, extent.length as usize) });
                             }
                         }
                     }
 
-                    return Some(box FileResource {
+                    Some(box FileResource {
                         scheme: self,
                         node: node,
                         vec: vec,
                         seek: 0,
                         dirty: false,
-                    });
-                }
-                None => return None
+                    })
+                },
+                None => None,
             }
         }
     }

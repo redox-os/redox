@@ -10,7 +10,7 @@ pub trait ToNum {
     fn to_num_signed(&self) -> isize;
 }
 
-impl ToNum for String {
+impl ToNum for str {
     fn to_num_radix(&self, radix: usize) -> usize {
         if radix == 0 {
             return 0;

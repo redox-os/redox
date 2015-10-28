@@ -6,6 +6,7 @@ use core::{cmp, mem, ptr};
 
 use common::event::Event;
 use common::to_num::ToNum;
+use common::parse_path::parse_path;
 
 use graphics::display::Display;
 use graphics::point::Point;
@@ -102,7 +103,7 @@ impl KScheme for WindowScheme {
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
-        let url_path = url.path_parts();
+        let url_path = parse_path(url.reference());
         let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None => 0,
