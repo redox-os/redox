@@ -1,0 +1,346 @@
+CHANGES/VERSION
+===============
+
+Ver 2.0.25 - Sun, Oct 27, 2013  3:08:15 PM
+* Added patch for 32- and 64-bit GCC-compiled MMX support
+  (contributed by Sylvain Beucler, backported from SDL2_gfx)
+* Fixed bug in _aaline when x1>x2 and dy==0 (found by Yannick 
+  Guesnet - thanks!)
+* Updated documentation.
+* Fixed header in SDL_gfxBlitFunc.h (reported by Jaders77 on
+  sourceforge - thanks!)
+
+Ver 2.0.24 - Sun, Jul 22, 2012  9:27:29 AM
+* Removed some missed LGPL references
+* Fixed thick line swap bug (patch contributed by Thien-Thi)
+  and added accuracy test for thick line
+* Improved interface to SDL_framerateDelay (idea contributed by
+  Neil)
+* Fixed dramerate modules dependency on SDL_GetTicks returning a 
+  value >0 (issue report contributed by Douglas)
+* Fixed 32bpp blending function for BGRA (thanks for the test code
+  and contributing a fix sabbetts/Jay)
+* Updated VS2010 solution file to use SDL-1.2 sources
+* Fix for pixel blend routine (patch contributes by Mitjia)
+
+Ver 2.0.23 - Sat Dec  3 22:55:04 PST 2011
+* Updated sources to resolve some splint (static code analysis)
+  issues
+* Updates for OpenSDK (WinCE6/ARM) build target (patch contributed
+  itsnotabigtruck)
+* Added OSX Xcode3+ template files to Other Builds collection
+  (contributed by Vasyl)
+* Added various fixes and improvements contributed by folks on 
+  sourceforge (thanks contributors).
+* Switched library and test code to zlib license.
+
+Ver 2.0.22 - Sat Sep 11 23:26:42 EDT 2010
+* Fixed line width calculation for normal and textured polygons
+  (patch contributed by Daniel (SupSuper) 
+* Fixed version setup in configure.in
+* Added rounded rectangle and rounded box primitives
+* Updated test program for roundedbox + left/right-click support
+* Fixed pie calculation (line-case detection, end-angle clipping)
+* Updated DLL_EXPORT handling and added WIN64 test 
+  (patch contributed by tigerfishdaisy)
+* Added thick line primitive based on Murphy's algorithm
+
+Ver 2.0.21 - Thu May 27 21:14:37 PDT 2010
+* Add VC9 project files, source code formatting, fix compiler 
+  warnings, move VC8 project files, remove leftover autoconf/m4 files
+* Move static transfer lookup array from .h to .c 
+  (patch contributed by Zbigniew Holdys)
+* Add support for VC++ compiler/MASM assembly with active USE_MMX 
+  (contributed by Markus Hossner)
+* Added Haiku build support in configure.in 
+  (contributed by Scott McCreary)
+* Added helper function that multiplies the alpha channel in
+  a 32bit surface (contributed by Zbigniew Holdys)
+* Disable MMX for 64bit platforms due to lack of support for
+  pusha/popa (contributed by Olivier Boudeville)
+* Update all library functions for doxygen markup. Add doxygen
+  configuration file.
+* Added font rotation support and updated TestFonts sample
+* Fixed rotate90 for 0 degree case
+  (contributed by Chris Allport)
+* Updated TestRotozoom with rotate90 case and message display
+* Added support for SDL 1.3
+* Added doxygen generated documentation.
+
+Ver 2.0.20 - Wed Sep 23 18:42:02 PDT 2009
+* Fix for 1-pixel postponement with 8bit scaling 
+* Updates to headers and configure to allow for cross-compiling 
+  to DLL (not just static .a) and fixes for compiling on Windows 
+  using autotools
+* Added Visual CE Project to Other Builds
+* Added Symbian and Windows 64bit fix for lrint function.
+
+Ver 2.0.19 - Mon Apr 20 22:56:59 PDT 2009
+
+* gcc43 compiler patch for asm code in image filters 
+  as per http://bugs.gentoo.org/219621 (Peter Alfredsen)
+* off-by-one hline patch for 1byte indexed surfaces (Manuel Lausch)
+* update acinclude.m4 from SDL-1.2 and moved # serial in file
+* applied patch to add pkg-config support for SDL_gfx (Luca Bigliardi)
+* changed configure.in INTERFACE_AGE and BINARY_AGE based on Debian
+  build feedback (Barry deFreese)
+* fixed zoom XY-flip code and made it available for all modes in
+  zoom and rotations
+* fixed edge issue on interpolated rotozoom modes
+* updated TestRotozoom custom test mode, added delay parameter, added
+  tests which include flipping, included negative rotation
+* update libtool files
+* updated Makefile.mingw (Jan Leike)
+
+Ver 2.0.18 - Sun Dec 21 08:38:20 PST 2008
+
+* libtool update for dependencies
+* MSVC C89 variable hoisting to enable MSVC compile (sweetlilmre)
+* addition of VC9 (Visual Studio 2008) project file (sweetlilmre)
+* update to MinGW make file (Sergio Padrino, sweetlilmre)
+* fix uninitialised variables in _putPixelAlpha() (Paul Pedriana)
+* reverted to original alpha routine in _putPixelAlpha() as new one was causing issues in 16bbp
+  new routine #define has been renamed to EXPERIMENTAL_ALPHA_PIXEL_ROUTINE
+  original is now DEFAULT_ALPHA_PIXEL_ROUTINE
+* added colorkey handling patch to rotozoom (Sergio Padrino)
+* downgraded optimization to -O for asm compatibility with gcc4
+
+
+Ver 2.0.17 - Sun Jun  1 15:39:38 EDT 2008
+
+* hline/vline clipping and swap-logic fixed
+* clipping box dimension check added and clipping-checks optimized
+* TestFonts program updated
+* Updated documentation on cross-compilation, AMD64
+* Fixed circleColor overdraw
+* Added arcColor routine
+* Added polygonColorMT and polygonTextureMT routines
+* Updated 32bit alpha blending routine
+
+
+Ver 2.0.16 - Mon Feb  5 19:03:31 AST 2007
+* updated config.sub to newer version 
+* added custom RGBA blitter function that sets/maintains target alpha
+* added setAlpha function that sets alpha values in 32bit surfaces
+* added TextGfxBlit testprogram for new functions
+* Fixed C++ type in .h files (thanks Olivier)
+* Update some text in README and .spec file
+* Removed broken Uint filter routines from test program
+* "Cosmetic" changes to test programs and Automake.am
+
+
+Ver 2.0.15 - Fri Dec 22 08:44:31 AST 2006
+* bugfixes in 32bit _putPixelAlpha/filledRectAlpha (thanks CISC)
+* various bugfixes in return value generation and return (thanks CISC)
+* lock font-surface before using it (thanks CISC)
+* fix some breakage in non-MMX filter routines (thanks CISC)
+* fix typo in TestABGR (thanks CISC)
+* fix double buffer flipping in Tets programs (thanks CISC)
+* fixed microversion in .h
+* fixed texturePolygon inverted bug
+* fixed wrong surface use in test 21 of TestRotozoom
+* added pitch handling in font surface (thanks CISC)
+
+
+Ver 2.0.14 - Tue Dec 19 08:49:02 AST 2006
+* added texturedPolygon routine to library (thanks Jees)
+* changed iterator condition in aaellipse to add some overdraw to smooth circle
+* added ShrinkImage routine to rotozoom code
+* added TestABGR Test program (bug in SDL_gfx or SDL??)
+* improved TestImageFilter program (bug in Uint filters) 
+* changed .so versioning from .so.13.0.0 to .so.0.0.14
+  (best is to remove all old libs before installing)
+* added updated MacOSX ProjectBuilder file (thanks Brian)
+* added info on MacOSX 10.3 build
+* added mingw (on cygwin) makefile (thanks Brian)
+* added Dev-Cpp makefile (thanks Sebastian)
+* removed some unused variables from gfx and rotozoom code (thanks Thi)
+* fixed a non-critical typecast mistake (thanks Thi)
+* converted all C++ comments to C comments in SDL_imageFilter
+
+
+Ver 2.0.13 - Tue Dec 21 08:41:25 EST 2004
+* changed include back to "SDL.h"
+* compile fixes for OSX fink  (thanks (Michael)
+* compile fixes for gcc3.4 (thanks Dries)
+* support vertical and horizontal flipping of axis in new 
+  rotozoomSurfaceXY function (thanks Victor)
+* updated TestRotozoom program 
+
+
+Ver 2.0.12 - Mon Aug 30 09:04:11 EDT 2004
+* piecolor naming fix
+* primitive API change to 'filledPie'
+* introduction of some const variables
+
+
+Ver 2.0.11 - Thu May 13 09:42:34 EDT 2004
+* added pieRGBA/pieColor primitive (non filled pie)
+* added QNX6 build patch
+* use $(includedir)/SDL to automake setup
+* updated README
+* added 2x2 box & pie tests
+* added dynamic font setup routine
+* added sample font files to the Fonts directory
+* added font test program
+* string routines changed to use const char
+* fixed TestRotozoom clear color bug
+
+
+Ver 2.0.10 - Thu Dec 11 09:40:08 EST 2003
+* Updated "missing" script to newer version to avoid build errors
+* Fixed filled polygon int32 overflow error in calculation
+* Updated RPM spec file for new website path
+* Added micro version number to .h file
+
+
+Ver 2.0.9 - Mon Oct 27 10:03:18 EST 2003
+* Fixed "filled-box width too small by 1 bug" for A=255
+* Wrong versioning in .h file
+
+
+Ver 2.0.8 - Wed Jul 16 16:18:13 EDT 2003
+* Modified filledPolygon drawing
+  (The edges of a filled polygon and a polyline were 
+   reported to not intersect correctly. With this fix, the
+   edges do still do not intersect 100% due to the difference
+   in the algorithms. But now a polygon will never draw 
+   outside of the area enclosed by a polyline.)
+
+Ver 2.0.7 - Sun Jun  8 08:17:38 EDT 2003
+* Added MacOS X Project Builder code
+* changed SDL include to <SDL/SDL.h>
+* Added bezier curve
+
+
+Ver 2.0.6 - Sat May 25 15:12:17 EDT 2002
+* Fixed clipping code for most primitives
+* Added clipping code for character
+* Added VC7 project file
+
+
+Ver 2.0.5 - n/a
+* Removed some unused code
+
+
+Ver 2.0.4 - Sat Feb  9 22:09:45 EST 2002
+* Fixed rectangle drawing bug on edges for A<255
+* Added trigons (triangles) as wrapper calls to polygon.
+
+
+Ver 2.0.3 - Sat Jan 26 10:06:16 EST 2002
+
+* Zipped VisualC directory to avoid EOL problems.
+* Fixed aalineColor call (y2 parameter was y1).
+* Fixed rotozoom bug that caused black or undefined pixels on edges.
+
+
+Ver 2.0.2 - Sat Jan 19 21:41:28 EST 2002
+* Removed dependency from GL libraries during compile.
+* Added VisualC makefile.
+
+
+Ver 2.0.1 - Sat Jan  5 22:08:17 EST 2002
+
+* New better quality aacircle/aaellipse code
+* Better locking optimization for a 4-8% speed improvement on some
+  primitives (line, aaline, circle, ellipse)
+
+
+Ver 2.0 - Sat Dec 29 16:27:57 EST 2001
+
+* Initial release of SDL_gfx based on SDL_gfxPrimitives and SDL_rotozoom
+  code.
+* Added framerate code and testprogram.
+* Added imageFilters code and testprogram.
+* New distribution: source code, README, configure system etc.
+
+
+Previous versions
+=================
+
+SDL_gfxPrimitives:
+------------------
+
+Ver 1.5 - Mon Jul  2 11:27:40 EDT 2001
+
+* New alpha blending code for factor 4 speedups if a<255 on all functions.
+* Modified include file for W32 DLL support.
+* Added VC6 project files for DLL and static library building.
+* Added simple AA-circle/-ellipse routine - quality needs improvement.
+* Removed 32bit shift on 64bit number from aaline for better portability
+  across platforms.
+* Removed a couple more compiler warnings (i.e. purely cosmetic fix).
+
+Ver 1.4 - Sun Jun  3 11:52:07 EDT 2001
+
+* Fixed hline, vline and rectangle clipping and result codes.
+* Fixed AA-line arithmetic (was alpha subtraction, should be alpha ratio).
+* More caching on fonts for speedups.
+* More pointer checks in several places.
+* New special cases for ellipses for rx=0/ry=0.
+* Same sanity checks for circles/ellipses.
+* Same return code for polygon/filledpolygon.
+
+Ver 1.3 - Thu May 31 12:41:35 EDT 2001
+
+* Minor cleanups and fixes (gcc -Wall is your friend).
+
+Ver 1.2 again - Thu Apr  5 07:50:57 EDT 2001
+
+* Fixed lineRGBA and aalineRGBA calls (had coordinate-passing mixed up twice,
+  thanks Lion for pointing this out)
+
+Ver 1.2 - Wed Apr  4 08:32:42 EDT 2001
+
+* Changed to a dual, you-have-the-choice(TM) licencing system 
+  to accomodate GPL developments using SDL_gfxPrimitives.
+* Some minor fixes (thanks Karl).
+* All routines return proper result code now.
+* Clipping for aaline, circle and ellipse.
+
+Ver 1.1 - Thu Mar 22 15:28:27 EST 2001
+
+* Added code for Alpha=255 pixel drawing through direct memory writes to all routines
+resulting in a much faster performance (factor 5 to 20) for non transparent pixels.
+* New test and benchmark program with better info and nicer look.
+* More info in README. Proper licence file. Comment cleanup.
+
+Ver 1.0 - Fri Mar 16 08:38:07 EST 2001
+
+* Initial release
+
+
+SDL_rotozoom:
+-------------
+
+Ver 1.6 - Mon Nov 19 21:19:26 EST 2001
+* Added interpolation to alpha channel (simplifies code)
+* Ran the sourcecode through 'indent' for better readability
+
+Ver 1.5 - Sat Jul  7 13:02:07 EDT 2001
+* Added project files (VisualC.zip) and modifications for VC project building.
+* Fixed old versioning in configure.in file.
+* Fixed LICENSE file and LGPL source reference.
+
+Ver 1.4 - Mon Jun  4 12:15:31 EDT 2001
+* Removed SDL_SoftStretch call again in favour of an internal zoom routine.
+* Added new zoomSurface() function with seperate X and Y zoom factors.
+
+Ver 1.3 - Thu May 31 08:37:36 EDT 2001
+* Modified code to handle RGBA or ABGR source surfaces transparently.
+* More error checking, source surface locking.
+* Slighly expanded test program with event handling.
+
+Ver 1.2 - Wed May 30 18:18:05 EDT 2001
+* Fixed the completely broken 32bit routine's pointer arithmetic.
+* Uses SDL_SoftStretch in certain cases (angle=0, smooth=0).
+* Convert source surface on the fly if not 8/32bit.
+* Added license file - was empty before (duh).
+
+Ver 1.1 - Wed May 23 15:04:42 EDT 2001
+* Added automake/autoconf scripts and testprogram.
+
+Ver 1.0 - Fri Mar 16 08:16:06 EST 2001
+* Initial release
+

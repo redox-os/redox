@@ -1,0 +1,76 @@
+diff -r -u ./autogen.sh ./autogen.sh
+--- ./autogen.sh	Mon Nov  3 23:29:41 2003
++++ ./autogen.sh	Wed Feb 18 07:21:56 2004
+@@ -1,8 +1,8 @@
+ #!/bin/sh
+ #
+ aclocal
+-automake --foreign
++automake --foreign --include-deps --add-missing --copy
+ autoconf
+ 
+ #./configure $*
+ echo "Now you are ready to run ./configure"
+diff -r -u ./configure.in ./configure.in
+--- ./configure.in	Thu Dec 11 16:44:15 2003
++++ ./configure.in	Wed Feb 18 07:23:45 2004
+@@ -23,6 +23,10 @@
+ BINARY_AGE=0
+ VERSION=$MAJOR_VERSION.$MINOR_VERSION.$MICRO_VERSION
+ 
++dnl Detect the canonical host and target build environment
++AC_CANONICAL_HOST
++AC_CANONICAL_TARGET
++
+ AC_SUBST(MAJOR_VERSION)
+ AC_SUBST(MINOR_VERSION)
+ AC_SUBST(MICRO_VERSION)
+@@ -42,10 +46,6 @@
+ AC_SUBST(LT_AGE)
+ 
+ AM_INIT_AUTOMAKE(SDL_gfx, $VERSION)
+-
+-dnl Detect the canonical host and target build environment
+-AC_CANONICAL_HOST
+-AC_CANONICAL_TARGET
+ 
+ dnl Check for compilers
+ AC_LIBTOOL_WIN32_DLL
+diff -r -u ./Test/autogen.sh ./Test/autogen.sh
+--- ./Test/autogen.sh	Mon Nov  3 23:29:41 2003
++++ ./Test/autogen.sh	Wed Feb 18 07:26:29 2004
+@@ -1,8 +1,8 @@
+ #!/bin/sh
+ #
+ aclocal
+-automake --foreign
++automake --foreign --include-deps --add-missing --copy
+ autoconf
+ 
+ #./configure $*
+ echo "Now you are ready to run ./configure"
+diff -r -u ./Test/configure.in ./Test/configure.in
+--- ./Test/configure.in	Mon Nov  3 23:29:41 2003
++++ ./Test/configure.in	Wed Feb 18 07:27:47 2004
+@@ -1,6 +1,10 @@
+ dnl Process this file with autoconf to produce a configure script.
+ AC_INIT(TestGfxPrimitives.c)
+ 
++dnl Detect the canonical host and target build environment
++AC_CANONICAL_HOST
++AC_CANONICAL_TARGET
++
+ dnl Setup for automake
+ AM_INIT_AUTOMAKE(TestGfxPrimitives, 1.0)
+ 
+@@ -8,10 +12,6 @@
+ SDL_VERSION=1.2.0
+ 
+ dnl Setup for automake
+-
+-dnl Detect the canonical host and target build environment
+-AC_CANONICAL_HOST
+-AC_CANONICAL_TARGET
+ 
+ dnl Check for compilers
+ AC_LIBTOOL_WIN32_DLL
