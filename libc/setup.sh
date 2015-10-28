@@ -117,4 +117,6 @@ pushd "build-${GCC}"
     make -j `nproc` all-target-libgcc
     make -j `nproc` install-gcc
     make -j `nproc` install-target-libgcc
+    make -j `nproc` all-target-libstdc++-v3
+    make -j `nproc` install-target-libstdc++-v3
 popd
