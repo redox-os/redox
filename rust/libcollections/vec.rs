@@ -284,7 +284,7 @@ impl<T> Vec<T> {
 
     /// Creates a `Vec<T>` directly from the raw components of another vector.
     ///
-    /// # Unsafety
+    /// # Safety
     ///
     /// This is highly unsafe, due to the number of invariants that aren't
     /// checked:
@@ -865,8 +865,6 @@ impl<T: Clone> Vec<T> {
     /// # Examples
     ///
     /// ```
-    /// #![feature(vec_resize)]
-    ///
     /// let mut vec = vec!["hello"];
     /// vec.resize(3, "world");
     /// assert_eq!(vec, ["hello", "world", "world"]);
@@ -875,9 +873,7 @@ impl<T: Clone> Vec<T> {
     /// vec.resize(2, 0);
     /// assert_eq!(vec, [1, 2]);
     /// ```
-    #[unstable(feature = "vec_resize",
-               reason = "matches collection reform specification; waiting for dust to settle",
-               issue = "27790")]
+    #[stable(feature = "vec_resize", since = "1.5.0")]
     pub fn resize(&mut self, new_len: usize, value: T) {
         let len = self.len();
 
@@ -1577,6 +1573,7 @@ impl<T> ExactSizeIterator for IntoIter<T> {}
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Drop for IntoIter<T> {
+    #[unsafe_destructor_blind_to_params]
     fn drop(&mut self) {
         // destroy the remaining elements
         for _x in self {}

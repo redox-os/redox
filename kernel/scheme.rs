@@ -1,21 +1,11 @@
 #![crate_type="staticlib"]
 #![allow(unused_features)]
-#![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(collections)]
-#![feature(convert)]
-#![feature(core_slice_ext)]
 #![feature(no_std)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
 #![no_std]
-
-#[macro_use]
-extern crate alloc;
-
-#[macro_use]
-extern crate collections;
 
 #[macro_use]
 extern crate redox;

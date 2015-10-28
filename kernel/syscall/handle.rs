@@ -202,8 +202,11 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if path_str.ends_with(".bin") {
-        execute(&URL::from_string(&path_str),
-                &URL::new(),
+        let path = URL::from_string(&path_str);
+        let i = path_str.rfind('/').unwrap_or(0) + 1;
+        let wd = URL::from_string(&path_str[ .. i].to_string());
+        execute(&path,
+                &wd,
                 Vec::new());
         ret = 0;
     } else {

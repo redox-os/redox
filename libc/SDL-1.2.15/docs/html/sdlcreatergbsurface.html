@@ -1,0 +1,458 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_CreateRGBSurface</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_GetRGBA"
+HREF="sdlgetrgba.html"><LINK
+REL="NEXT"
+TITLE="SDL_CreateRGBSurfaceFrom"
+HREF="sdlcreatergbsurfacefrom.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlgetrgba.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlcreatergbsurfacefrom.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLCREATERGBSURFACE"
+></A
+>SDL_CreateRGBSurface</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN1773"
+></A
+><H2
+>Name</H2
+>SDL_CreateRGBSurface&nbsp;--&nbsp;Create an empty SDL_Surface</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN1776"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN1777"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>SDL_Surface *<B
+CLASS="FSFUNC"
+>SDL_CreateRGBSurface</B
+></CODE
+>(Uint32 flags, int width, int height, int depth, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1783"
+></A
+><H2
+>Description</H2
+><P
+>Allocate an empty surface (must be called after <A
+HREF="sdlsetvideomode.html"
+>SDL_SetVideoMode</A
+>)</P
+><P
+>If <TT
+CLASS="PARAMETER"
+><I
+>depth</I
+></TT
+> is 8 bits an empty palette is allocated for the surface, otherwise a 'packed-pixel' <A
+HREF="sdlpixelformat.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+></A
+> is created using the <TT
+CLASS="PARAMETER"
+><I
+>[RGBA]mask</I
+></TT
+>'s provided (see <A
+HREF="sdlpixelformat.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+></A
+>). The <TT
+CLASS="PARAMETER"
+><I
+>flags</I
+></TT
+> specifies the type of surface that should be created, it is an OR'd combination of the following possible values.</P
+><DIV
+CLASS="INFORMALTABLE"
+><A
+NAME="AEN1795"
+></A
+><P
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><TBODY
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_SWSURFACE</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>SDL will create the surface in system memory. This improves the performance of pixel level access, however you may not be able to take advantage of some types of hardware blitting.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_HWSURFACE</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>SDL will attempt to create the surface in video memory. This will allow SDL to take advantage of Video-&#62;Video blits (which are often accelerated).</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_SRCCOLORKEY</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>This flag turns on colourkeying for blits from this surface. If
+<TT
+CLASS="LITERAL"
+>SDL_HWSURFACE</TT
+> is also specified and colourkeyed blits
+are hardware-accelerated, then SDL will attempt to place the surface in
+video memory.
+Use <A
+HREF="sdlsetcolorkey.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetColorKey</TT
+></A
+>
+to set or clear this flag after surface creation.</TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+><TT
+CLASS="LITERAL"
+>SDL_SRCALPHA</TT
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+>This flag turns on alpha-blending for blits from this surface. If
+<TT
+CLASS="LITERAL"
+>SDL_HWSURFACE</TT
+> is also specified and alpha-blending blits
+are hardware-accelerated, then the surface will be placed in video memory if
+possible.
+Use <A
+HREF="sdlsetalpha.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetAlpha</TT
+></A
+> to
+set or clear this flag after surface creation.</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>If an alpha-channel is specified (that is, if <TT
+CLASS="PARAMETER"
+><I
+>Amask</I
+></TT
+> is
+nonzero), then the <TT
+CLASS="LITERAL"
+>SDL_SRCALPHA</TT
+> flag is automatically
+set. You may remove this flag by calling 
+<A
+HREF="sdlsetalpha.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetAlpha</TT
+></A
+>
+after surface creation.</P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1826"
+></A
+><H2
+>Return Value</H2
+><P
+>Returns the created surface, or <SPAN
+CLASS="RETURNVALUE"
+>NULL</SPAN
+> upon error.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1830"
+></A
+><H2
+>Example</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>    /* Create a 32-bit surface with the bytes of each pixel in R,G,B,A order,
+       as expected by OpenGL for textures */
+    SDL_Surface *surface;
+    Uint32 rmask, gmask, bmask, amask;
+
+    /* SDL interprets each pixel as a 32-bit number, so our masks must depend
+       on the endianness (byte order) of the machine */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    rmask = 0xff000000;
+    gmask = 0x00ff0000;
+    bmask = 0x0000ff00;
+    amask = 0x000000ff;
+#else
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = 0xff000000;
+#endif
+
+    surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32,
+                                   rmask, gmask, bmask, amask);
+    if(surface == NULL) {
+        fprintf(stderr, "CreateRGBSurface failed: %s\n", SDL_GetError());
+        exit(1);
+    }</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1833"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlcreatergbsurfacefrom.html"
+><TT
+CLASS="FUNCTION"
+>SDL_CreateRGBSurfaceFrom</TT
+></A
+>,
+<A
+HREF="sdlfreesurface.html"
+><TT
+CLASS="FUNCTION"
+>SDL_FreeSurface</TT
+></A
+>,
+<A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+>,
+<A
+HREF="sdllocksurface.html"
+><TT
+CLASS="FUNCTION"
+>SDL_LockSurface</TT
+></A
+>,
+<A
+HREF="sdlpixelformat.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_PixelFormat</SPAN
+></A
+>,
+<A
+HREF="sdlsurface.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Surface</SPAN
+></A
+>
+<A
+HREF="sdlsetalpha.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetAlpha</TT
+></A
+>
+<A
+HREF="sdlsetcolorkey.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetColorKey</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlgetrgba.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlcreatergbsurfacefrom.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_GetRGBA</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_CreateRGBSurfaceFrom</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

@@ -1,0 +1,32 @@
+SDL for Dreamcast (beta2)
+
+	BERO
+	berobero@users.sourceforge.net 
+
+	http://www.geocities.co.jp/Playtown/2004/
+
+this work with kos-newlib
+http://sourceforge.net/projects/dcquake/
+
+compile
+- source environ.sh (from the KOS distribution)
+- make -f Makefile.dc
+
+compile with gl support
+- install latest libgl from http://sourceforge.net/projects/dcquake/
+- uncomment GL=1 in Makefile.dc
+- make -f Makefile.dc clean
+- make -f Makefile.dc
+
+install
+- copy include/*.h and libSDL.a or libSDL_gl.a for your enviroment
+
+changelog:
+
+beta2
+- OpenGL support
+- Hardware page flip support
+
+beta
+- thread, timer don't tested so much.
+- not support OpenGL

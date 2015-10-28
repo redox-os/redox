@@ -1,0 +1,727 @@
+
+This is a list of API changes in SDL's version history.
+
+Version 1.0:
+
+1.2.14:
+	Added cast macros for correct usage with C++:
+		SDL_reinterpret_cast(type, expression)
+		SDL_static_cast(type, expression)
+
+	Added SDL_VIDEO_FULLSCREEN_DISPLAY as a preferred synonym for 
+	SDL_VIDEO_FULLSCREEN_HEAD on X11.
+
+	Added SDL_DISABLE_LOCK_KEYS environment variable to enable normal
+	up/down events for Caps-Lock and Num-Lock keys.
+
+1.2.13:
+	Added SDL_BUTTON_X1 and SDL_BUTTON_X2 constants.
+
+1.2.12:
+	Added SDL_VIDEO_ALLOW_SCREENSAVER to override SDL's disabling
+	of the screensaver on Mac OS X and X11.
+
+1.2.10:
+	If SDL_OpenAudio() is passed zero for the desired format
+	fields, the following environment variables will be used
+	to fill them in:
+		SDL_AUDIO_FREQUENCY
+		SDL_AUDIO_FORMAT
+		SDL_AUDIO_CHANNELS
+		SDL_AUDIO_SAMPLES
+	If an environment variable is not specified, it will be set
+	to a reasonable default value.
+
+	Added support for the SDL_VIDEO_FULLSCREEN_HEAD environment
+	variable, currently supported on X11 Xinerama configurations.
+
+	Added SDL_GL_SWAP_CONTROL to wait for vsync in OpenGL applications.
+
+	Added SDL_GL_ACCELERATED_VISUAL to guarantee hardware acceleration.
+
+	Added current_w and current_h to the SDL_VideoInfo structure,
+	which is set to the desktop resolution during video intialization,
+	and then set to the current resolution when a video mode is set.
+
+	SDL_SetVideoMode() now accepts 0 for width or height and will use
+	the current video mode (or the desktop mode if no mode has been set.)
+
+	Added SDL_GetKeyRepeat()
+
+	Added SDL_config.h, with defaults for various build environments.
+
+1.2.7:
+	Added CPU feature detection functions to SDL_cpuinfo.h:
+		SDL_HasRDTSC(), SDL_HasMMX(), SDL_Has3DNow(), SDL_HasSSE(),
+		SDL_HasAltiVec()
+	Added function to create RWops from const memory: SDL_RWFromConstMem()
+
+1.2.6:
+	Added SDL_LoadObject(), SDL_LoadFunction(), and SDL_UnloadObject()
+
+	Added SDL_GL_MULTISAMPLEBUFFERS and SDL_GL_MULTISAMPLESAMPLES for FSAA
+
+1.2.5:
+	Added SDL_BUTTON_WHEELUP (4) and SDL_BUTTON_WHEELDOWN (5)
+
+	Added SDL_GL_STEREO for stereoscopic OpenGL contexts
+
+1.2.0:
+	Added SDL_VIDEOEXPOSE event to signal that the screen needs to
+	be redrawn.  This is currently only delivered to OpenGL windows
+	on X11, though it may be delivered in the future when the video
+	memory is lost under DirectX.
+
+1.1.8:
+	You can pass SDL_NOFRAME to SDL_VideoMode() to create a window
+	that has no title bar or frame decoration.  Fullscreen video
+	modes automatically have this flag set.
+
+	Added a function to query the clipping rectangle for a surface:
+		void SDL_GetClipRect(SDL_Surface *surface, SDL_Rect *rect)
+
+	Added a function to query the current event filter:
+		SDL_EventFilter SDL_GetEventFilter(void)
+
+	If you pass -1 to SDL_ShowCursor(), it won't change the current
+	cursor visibility state, but will still return it.
+
+	SDL_LockSurface() and SDL_UnlockSurface() are recursive, meaning
+	you can nest them as deep as you want, as long as each lock call
+	has a matching unlock call.  The surface remains locked until the
+	last matching unlock call.
+
+	Note that you may not blit to or from a locked surface.
+
+1.1.7:
+	The SDL_SetGammaRamp() and SDL_GetGammaRamp() functions now take
+	arrays of Uint16 values instead of Uint8 values.  For the most part,
+	you can just take your old values and shift them up 8 bits to get
+	new correct values for your gamma ramps.
+
+	You can pass SDL_RLEACCEL in flags passed to SDL_ConvertSurface()
+        and SDL will try to RLE accelerate colorkey and alpha blits in the
+	resulting surface.
+
+1.1.6:
+	Added a function to return the thread ID of a specific thread:
+		Uint32 SDL_GetThreadID(SDL_Thread *thread)
+	If 'thread' is NULL, this function returns the id for this thread.
+
+1.1.5:
+	The YUV overlay structure has been changed to use an array of
+	pitches and pixels representing the planes of a YUV image, to
+	better enable hardware acceleration.  The YV12 and IYUV formats
+	each have three planes, corresponding to the Y, U, and V portions
+	of the image, while packed pixel YUV formats just have one plane.
+
+	For palettized mode (8bpp), the screen colormap is now split in
+	a physical and a logical palette. The physical palette determines
+	what colours the screen pixels will get when displayed, and the
+	logical palette controls the mapping from blits to/from the screen.
+	A new function, SDL_SetPalette() has been added to change
+	logical and physical palettes separately. SDL_SetColors() works
+	just as before, and is equivalent to calling SDL_SetPalette() with
+	a flag argument of (SDL_LOGPAL|SDL_PHYSPAL).
+
+	SDL_BlitSurface() no longer modifies the source rectangle, only the
+	destination rectangle. The width/height members of the destination
+	rectangle are ignored, only the position is used.
+
+	The old source clipping function SDL_SetClipping() has been replaced
+	with a more useful function to set the destination clipping rectangle:
+		SDL_bool SDL_SetClipRect(SDL_Surface *surface, SDL_Rect *rect)
+		
+	Added a function to see what subsystems have been initialized:
+		Uint32 SDL_WasInit(Uint32 flags)
+
+	The Big Alpha Flip: SDL now treats alpha as opacity like everybody
+	else, and not as transparency:
+
+	A new cpp symbol: SDL_ALPHA_OPAQUE is defined as 255
+	A new cpp symbol: SDL_ALPHA_TRANSPARENT is defined as 0
+	Values between 0 and 255 vary from fully transparent to fully opaque.
+
+	New functions:
+	SDL_DisplayFormatAlpha()
+	    Returns a surface converted to a format with alpha-channel
+	    that can be blit efficiently to the screen. (In other words,
+	    like SDL_DisplayFormat() but the resulting surface has
+	    an alpha channel.)  This is useful for surfaces with alpha.
+	SDL_MapRGBA()
+	    Works as SDL_MapRGB() but takes an additional alpha parameter.
+	SDL_GetRGBA()
+	    Works as SDL_GetRGB() but also returns the alpha value
+	    (SDL_ALPHA_OPAQUE for formats without an alpha channel)
+
+	Both SDL_GetRGB() and SDL_GetRGBA() now always return values in
+	the [0..255] interval. Previously, SDL_GetRGB() would return
+	(0xf8, 0xfc, 0xf8) for a completely white pixel in RGB565 format.
+	(N.B.: This is broken for bit fields < 3 bits.)
+
+	SDL_MapRGB() returns pixels in which the alpha channel is set opaque.
+
+	SDL_SetAlpha() can now be used for both setting the per-surface
+	alpha, using the new way of thinking of alpha, and also to enable
+	and disable per-pixel alpha blending for surfaces with an alpha
+	channel:
+		To disable alpha blending:
+			SDL_SetAlpha(surface, 0, 0);
+		To re-enable alpha blending:
+			SDL_SetAlpha(surface, SDL_SRCALPHA, 0);
+	Surfaces with an alpha channel have blending enabled by default.
+
+	SDL_SetAlpha() now accepts SDL_RLEACCEL as a flag, which requests
+	RLE acceleration of blits, just as like with SDL_SetColorKey().
+	This flag can be set for both surfaces with an alpha channel
+	and surfaces with an alpha value set by SDL_SetAlpha().
+	As always, RLE surfaces must be locked before pixel access is
+	allowed, and unlocked before any other SDL operations are done
+	on it.
+
+	The blit semantics for surfaces with and without alpha and colorkey
+	have now been defined:
+
+	RGBA->RGB:
+	    SDL_SRCALPHA set:
+		alpha-blend (using alpha-channel).
+		SDL_SRCCOLORKEY ignored.
+	    SDL_SRCALPHA not set:
+		copy RGB.
+		if SDL_SRCCOLORKEY set, only copy the pixels matching the
+		RGB values of the source colour key, ignoring alpha in the
+		comparison.
+
+	RGB->RGBA:
+	    SDL_SRCALPHA set:
+		alpha-blend (using the source per-surface alpha value);
+		set destination alpha to opaque.
+	    SDL_SRCALPHA not set:
+		copy RGB, set destination alpha to opaque.
+	    both:
+		if SDL_SRCCOLORKEY set, only copy the pixels matching the
+		source colour key.
+
+	RGBA->RGBA:
+	    SDL_SRCALPHA set:
+		alpha-blend (using the source alpha channel) the RGB values;
+		leave destination alpha untouched. [Note: is this correct?]
+		SDL_SRCCOLORKEY ignored.
+	    SDL_SRCALPHA not set:
+		copy all of RGBA to the destination.
+		if SDL_SRCCOLORKEY set, only copy the pixels matching the
+		RGB values of the source colour key, ignoring alpha in the
+		comparison.
+
+	RGB->RGB: 
+	    SDL_SRCALPHA set:
+		alpha-blend (using the source per-surface alpha value).
+	    SDL_SRCALPHA not set:
+		copy RGB.
+	    both:
+		if SDL_SRCCOLORKEY set, only copy the pixels matching the
+		source colour key.
+
+	As a special case, blits from surfaces with per-surface alpha
+	value of 128 (50% transparency) are optimised and much faster
+	than other alpha values. This does not apply to surfaces with
+	alpha channels (per-pixel alpha).
+
+	New functions for manipulating the gamma of the display have
+	been added:
+		int SDL_SetGamma(float red, float green, float blue);
+		int SDL_SetGammaRamp(Uint8 *red, Uint8 *green, Uint8 *blue);
+		int SDL_GetGammaRamp(Uint8 *red, Uint8 *green, Uint8 *blue);
+	Gamma ramps are tables with 256 entries which map the screen color
+	components into actually displayed colors.  For an example of
+	implementing gamma correction and gamma fades, see test/testgamma.c
+	Gamma control is not supported on all hardware.
+
+1.1.4:
+	The size of the SDL_CDtrack structure changed from 8 to 12 bytes
+	as the size of the length member was extended to 32 bits.
+
+        You can now use SDL for 2D blitting with a GL mode by passing the
+	SDL_OPENGLBLIT flag to SDL_SetVideoMode().  You can specify 16 or
+	32 bpp, and the data in the framebuffer is put into the GL scene
+	when you call SDL_UpdateRects(), and the scene will be visible
+	when you call SDL_GL_SwapBuffers().
+
+	Run the "testgl" test program with the -logo command line option
+	to see an example of this blending of 2D and 3D in SDL.
+
+1.1.3:
+	Added SDL_FreeRW() to the API, to complement SDL_AllocRW()
+
+	Added resizable window support - just add SDL_RESIZABLE to the
+	SDL_SetVideoMode() flags, and then wait for SDL_VIDEORESIZE events.
+	See SDL_events.h for details on the new SDL_ResizeEvent structure.
+
+	Added condition variable support, based on mutexes and semaphores.
+		SDL_CreateCond()
+		SDL_DestroyCond()
+		SDL_CondSignal()
+		SDL_CondBroadcast()
+		SDL_CondWait()
+		SDL_CondTimedWait()
+	The new function prototypes are in SDL_mutex.h
+
+	Added counting semaphore support, based on the mutex primitive.
+		SDL_CreateSemaphore()
+		SDL_DestroySemaphore()
+		SDL_SemWait()
+		SDL_SemTryWait()
+		SDL_SemWaitTimeout()
+		SDL_SemPost()
+		SDL_SemValue()
+	The new function prototypes are in SDL_mutex.h
+
+	Added support for asynchronous blitting.  To take advantage of this,
+	you must set the SDL_ASYNCBLIT flag when setting the video mode and
+	creating surfaces that you want accelerated in this way.  You must
+	lock surfaces that have this flag set, and the lock will block until
+	any queued blits have completed.
+
+	Added YUV video overlay support.
+	The supported YUV formats are: YV12, IYUV, YUY2, UYVY, and YVYU.
+	This function creates an overlay surface:
+		SDL_CreateYUVOverlay()
+	You must lock and unlock the overlay to get access to the data:
+		SDL_LockYUVOverlay() SDL_UnlockYUVOverlay()
+	You can then display the overlay:
+		SDL_DisplayYUVOverlay()
+	You must free the overlay when you are done using it:
+		SDL_FreeYUVOverlay()
+	See SDL_video.h for the full function prototypes.
+
+	The joystick hat position constants have been changed:
+	Old constant            New constant
+	------------            ------------
+	     0                  SDL_HAT_CENTERED
+	     1                  SDL_HAT_UP
+	     2                  SDL_HAT_RIGHTUP
+	     3                  SDL_HAT_RIGHT
+	     4                  SDL_HAT_RIGHTDOWN
+	     5                  SDL_HAT_DOWN
+	     6                  SDL_HAT_LEFTDOWN
+	     7                  SDL_HAT_LEFT
+	     8                  SDL_HAT_LEFTUP
+	The new constants are bitmasks, so you can check for the
+	individual axes like this:
+		if ( hat_position & SDL_HAT_UP ) {
+		}
+	and you'll catch left-up, up, and right-up.
+
+1.1.2:
+	Added multiple timer support:
+		SDL_AddTimer() and SDL_RemoveTimer()
+
+	SDL_WM_SetIcon() now respects the icon colorkey if mask is NULL.
+
+1.1.0:
+	Added initial OpenGL support.
+	First set GL attributes (such as RGB depth, alpha depth, etc.)
+		SDL_GL_SetAttribute()
+	Then call SDL_SetVideoMode() with the SDL_OPENGL flag.
+	Perform all of your normal GL drawing.
+	Finally swap the buffers with the new SDL function:
+		SDL_GL_SwapBuffers()
+	See the new 'testgl' test program for an example of using GL with SDL.
+
+	You can load GL extension functions by using the function:
+		SDL_GL_LoadProcAddress()
+
+	Added functions to initialize and cleanup specific SDL subsystems:
+		SDL_InitSubSystem() and SDL_QuitSubSystem()
+
+	Added user-defined event type:
+		typedef struct {
+        		Uint8 type;
+        		int code;
+        		void *data1;
+        		void *data2;
+		} SDL_UserEvent;
+	This structure is in the "user" member of an SDL_Event.
+
+	Added a function to push events into the event queue:
+		SDL_PushEvent()
+
+	Example of using the new SDL user-defined events:
+	{
+		SDL_Event event;
+
+		event.type = SDL_USEREVENT;
+		event.user.code = my_event_code;
+		event.user.data1 = significant_data;
+		event.user.data2 = 0;
+		SDL_PushEvent(&event);
+	}
+
+	Added a function to get mouse deltas since last query:
+		SDL_GetRelativeMouseState()
+
+	Added a boolean datatype to SDL_types.h:
+		SDL_bool = { SDL_TRUE, SDL_FALSE }
+
+	Added a function to get the current audio status:
+		SDL_GetAudioState();
+	It returns one of:
+		SDL_AUDIO_STOPPED,
+		SDL_AUDIO_PLAYING,
+		SDL_AUDIO_PAUSED
+
+	Added an AAlib driver (ASCII Art) - by Stephane Peter.
+
+1.0.6:
+	The input grab state is reset after each call to SDL_SetVideoMode().
+	The input is grabbed by default in fullscreen mode, and ungrabbed in
+	windowed mode.  If you want to set input grab to a particular value,
+	you should set it after each call to SDL_SetVideoMode().
+
+1.0.5:
+	Exposed SDL_AudioInit(), SDL_VideoInit()
+	Added SDL_AudioDriverName() and SDL_VideoDriverName()
+
+	Added new window manager function:
+		SDL_WM_ToggleFullScreen()
+	This is currently implemented only on Linux
+
+	The ALT-ENTER code has been removed - it's not appropriate for a
+	lib to bind keys when they aren't even emergency escape sequences.
+
+	ALT-ENTER functionality can be implemented with the following code:
+
+	int Handle_AltEnter(const SDL_Event *event)
+	{
+	    if ( event->type == SDL_KEYDOWN ) {
+	        if ( (event->key.keysym.sym == SDLK_RETURN) &&
+	             (event->key.keysym.mod & KMOD_ALT) ) {   
+	                SDL_WM_ToggleFullScreen(SDL_GetVideoSurface());
+	                return(0);
+	        }
+	    }
+	    return(1);
+	}
+	SDL_SetEventFilter(Handle_AltEnter);
+
+1.0.3:
+	Under X11, if you grab the input and hide the mouse cursor,
+	the mouse will go into a "relative motion" mode where you
+	will always get relative motion events no matter how far in
+	each direction you move the mouse - relative motion is not
+	bounded by the edges of the window (though the absolute values
+	of the mouse positions are clamped by the size of the window).
+	The SVGAlib, framebuffer console, and DirectInput drivers all
+	have this behavior naturally, and the GDI and BWindow drivers
+	never go into "relative motion" mode.
+
+1.0.2:
+	Added a function to enable keyboard repeat:
+		SDL_EnableKeyRepeat()
+
+	Added a function to grab the mouse and keyboard input
+		SDL_WM_GrabInput()
+
+	Added a function to iconify the window.
+		SDL_WM_IconifyWindow()
+	If this function succeeds, the application will receive an event
+	signaling SDL_APPACTIVE event 
+
+1.0.1:
+	Added constants to SDL_audio.h for 16-bit native byte ordering:
+		AUDIO_U16SYS, AUDIO_S16SYS
+
+1.0.0:
+	New public release
+
+Version 0.11:
+
+0.11.5:
+	A new function SDL_GetVideoSurface() has been added, and returns
+	a pointer to the current display surface.
+
+	SDL_AllocSurface() has been renamed SDL_CreateRGBSurface(), and
+	a new function SDL_CreateRGBSurfaceFrom() has been added to allow
+	creating an SDL surface from an existing pixel data buffer.
+
+	Added SDL_GetRGB() to the headers and documentation.
+
+0.11.4:
+	SDL_SetLibraryPath() is no longer meaningful, and has been removed.
+
+0.11.3:
+	A new flag for SDL_Init(), SDL_INIT_NOPARACHUTE, prevents SDL from
+	installing fatal signal handlers on operating systems that support
+	them.
+
+Version 0.9:
+
+0.9.15:
+	SDL_CreateColorCursor() has been removed.  Color cursors should
+	be implemented as sprites, blitted by the application when the
+	cursor moves.  To get smooth color cursor updates when the app
+	is busy, pass the SDL_INIT_EVENTTHREAD flag to SDL_Init().  This
+	allows you to handle the mouse motion in another thread from an
+	event filter function, but is currently only supported by Linux
+	and BeOS.  Note that you'll have to protect the display surface
+	from multi-threaded access by using mutexes if you do this.
+
+	Thread-safe surface support has been removed from SDL.
+	This makes blitting somewhat faster, by removing SDL_MiddleBlit().
+	Code that used SDL_MiddleBlit() should use SDL_LowerBlit() instead.
+	You can make your surfaces thread-safe by allocating your own
+	mutex and making lock/unlock calls around accesses to your surface.
+
+0.9.14:
+	SDL_GetMouseState() now takes pointers to int rather than Uint16.
+
+	If you set the SDL_WINDOWID environment variable under UNIX X11,
+	SDL will use that as the main window instead of creating it's own.
+	This is an unsupported extension to SDL, and not portable at all.
+
+0.9.13:
+	Added a function SDL_SetLibraryPath() which can be used to specify
+	the directory containing the SDL dynamic libraries.  This is useful
+	for commercial applications which ship with particular versions
+	of the libraries, and for security on multi-user systems.
+	If this function is not used, the default system directories are 
+	searched using the native dynamic object loading mechanism.
+
+	In order to support C linkage under Visual C++, you must declare
+	main() without any return type:
+		main(int argc, char *argv[]) {
+			/* Do the program... */
+			return(0);
+		}
+	C++ programs should also return a value if compiled under VC++.
+
+	The blit_endian member of the SDL_VideoInfo struct has been removed.
+
+	SDL_SymToASCII() has been replaced with SDL_GetKeyName(), so there
+	is now no longer any function to translate a keysym to a character.
+
+	The SDL_keysym structure has been extended with a 'scancode' and
+	'unicode' member.  The 'scancode' is a hardware specific scancode
+	for the key that was pressed, and may be 0.  The 'unicode' member
+	is a 16-bit UNICODE translation of the key that was pressed along
+	with any modifiers or compose keys that have been pressed.
+	If no UNICODE translation exists for the key, 'unicode' will be 0.
+
+	Added a function SDL_EnableUNICODE() to enable/disable UNICODE
+	translation of character keypresses.  Translation defaults off.
+
+	To convert existing code to use the new API, change code which
+	uses SDL_SymToASCII() to get the keyname to use SDL_GetKeyName(),
+	and change code which uses it to get the ASCII value of a sym to
+	use the 'unicode' member of the event keysym.
+
+0.9.12:
+	There is partial support for 64-bit datatypes.  I don't recommend 
+	you use this if you have a choice, because 64-bit datatypes are not
+	supported on many platforms.  On platforms for which it is supported,
+	the SDL_HAS_64BIT_TYPE C preprocessor define will be enabled, and
+	you can use the Uint64 and Sint64 datatypes.
+
+	Added functions to SDL_endian.h to support 64-bit datatypes:
+	    SDL_SwapLE64(), SDL_SwapBE64(),
+	    SDL_ReadLE64(), SDL_ReadBE64(), SDL_WriteLE64(), SDL_WriteBE64()
+
+	A new member "len_ratio" has been added to the SDL_AudioCVT structure,
+	and allows you to determine either the original buffer length or the
+	converted buffer length, given the other.
+
+	A new function SDL_FreeWAV() has been added to the API to free data
+	allocated by SDL_LoadWAV_RW().  This is necessary under Win32 since
+	the gcc compiled DLL uses a different heap than VC++ compiled apps.
+
+	SDL now has initial support for international keyboards using the
+	Latin character set.
+	If a particular mapping is desired, you can set the DEFAULT_KEYBOARD
+	compile-time variable, or you can set the environment variable 
+	"SDL_KEYBOARD" to a string identifying the keyboard mapping you desire.
+	The valid values for these variables can be found in SDL_keyboard.c
+
+	Full support for German and French keyboards under X11 is implemented.
+
+0.9.11:
+	The THREADED_EVENTS compile-time define has been replaced with the
+	SDL_INIT_EVENTTHREAD flag.  If this flag is passed to SDL_Init(),
+	SDL will create a separate thread to perform input event handling.
+	If this flag is passed to SDL_Init(), and the OS doesn't support 
+	event handling in a separate thread, SDL_Init() will fail.
+	Be sure to add calls to SDL_Delay() in your main thread to allow
+	the OS to schedule your event thread, or it may starve, leading
+	to slow event delivery and/or dropped events.
+	Currently MacOS and Win32 do not support this flag, while BeOS 
+	and Linux do support it.  I recommend that your application only
+	use this flag if absolutely necessary.
+
+	The SDL thread function passed to SDL_CreateThread() now returns a
+	status.  This status can be retrieved by passing a non-NULL pointer
+	as the 'status' argument to SDL_WaitThread().
+
+	The volume parameter to SDL_MixAudio() has been increased in range
+	from (0-8) to (0-128)
+
+	SDL now has a data source abstraction which can encompass a file,
+	an area of memory, or any custom object you can envision.  It uses
+	these abstractions, SDL_RWops, in the endian read/write functions,
+	and the built-in WAV and BMP file loaders.  This means you can load
+	WAV chunks from memory mapped files, compressed archives, network
+	pipes, or anything else that has a data read abstraction.
+
+	There are three built-in data source abstractions:
+	    SDL_RWFromFile(), SDL_RWFromFP(), SDL_RWFromMem()
+	along with a generic data source allocation function:
+	    SDL_AllocRW()
+	These data sources can be used like stdio file pointers with the
+	following convenience functions:
+	    SDL_RWseek(), SDL_RWread(), SDL_RWwrite(), SDL_RWclose()
+	These functions are defined in the new header file "SDL_rwops.h"
+
+	The endian swapping functions have been turned into macros for speed
+	and SDL_CalculateEndian() has been removed.  SDL_endian.h now defines
+	SDL_BYTEORDER as either SDL_BIG_ENDIAN or SDL_LIL_ENDIAN depending on
+	the endianness of the host system.
+
+	The endian read/write functions now take an SDL_RWops pointer
+	instead of a stdio FILE pointer, to support the new data source
+	abstraction.
+
+	The SDL_*LoadWAV() functions have been replaced with a single
+	SDL_LoadWAV_RW() function that takes a SDL_RWops pointer as it's
+	first parameter, and a flag whether or not to automatically 
+	free it as the second parameter.  SDL_LoadWAV() is a macro for
+	backward compatibility and convenience:
+	    SDL_LoadWAV_RW(SDL_RWFromFile("sample.wav", "rb"), 1, ...);
+
+	The SDL_*LoadBMP()/SDL_*SaveBMP() functions have each been replaced
+	with a single function that takes a SDL_RWops pointer as it's
+	first parameter, and a flag whether or not to automatically 
+	free it as the second parameter.  SDL_LoadBMP() and SDL_SaveBMP()
+	are macros for backward compatibility and convenience:
+	    SDL_LoadBMP_RW(SDL_RWFromFile("sample.bmp", "rb"), 1, ...);
+	    SDL_SaveBMP_RW(SDL_RWFromFile("sample.bmp", "wb"), 1, ...);
+	Note that these functions use SDL_RWseek() extensively, and should
+	not be used on pipes or other non-seekable data sources.
+
+0.9.10:
+	The Linux SDL_SysWMInfo and SDL_SysWMMsg structures have been 
+	extended to support multiple types of display drivers, as well as
+        safe access to the X11 display when THREADED_EVENTS is enabled.
+        The new structures are documented in the SDL_syswm.h header file.
+
+	Thanks to John Elliott <jce@seasip.demon.co.uk>, the UK keyboard
+	should now work properly, as well as the "Windows" keys on US
+	keyboards.
+
+	The Linux CD-ROM code now reads the CD-ROM devices from /etc/fstab
+	instead of trying to open each block device on the system.
+	The CD must be listed in /etc/fstab as using the iso9660 filesystem.
+
+	On Linux, if you define THREADED_EVENTS at compile time, a separate
+	thread will be spawned to gather X events asynchronously from the
+	graphics updates.  This hasn't been extensively tested, but it does
+	provide a means of handling keyboard and mouse input in a separate
+	thread from the graphics thread.  (This is now enabled by default.)
+
+	A special access function SDL_PeepEvents() allows you to manipulate
+	the event queue in a thread-safe manner, including peeking at events,
+	removing events of a specified type, and adding new events of arbitrary
+	type to the queue (use the new 'user' member of the SDL_Event type).
+
+	If you use SDL_PeepEvents() to gather events, then the main graphics
+	thread needs to call SDL_PumpEvents() periodically to drive the event
+	loop and generate input events.  This is not necessary if SDL has been 
+	compiled with THREADED_EVENTS defined, but doesn't hurt.
+
+	A new function SDL_ThreadID() returns the identifier associated with
+	the current thread.
+
+0.9.9:
+	The AUDIO_STEREO format flag has been replaced with a new 'channels'
+	member of the SDL_AudioSpec structure.  The channels are 1 for mono
+	audio, and 2 for stereo audio.  In the future more channels may be
+	supported for 3D surround sound.
+
+	The SDL_MixAudio() function now takes an additional volume parameter,
+	which should be set to SDL_MIX_MAXVOLUME for compatibility with the
+	original function.
+
+	The CD-ROM functions which take a 'cdrom' parameter can now be
+	passed NULL, and will act on the last successfully opened CD-ROM.
+
+0.9.8:
+	No changes, bugfixes only.
+	
+0.9.7:
+	No changes, bugfixes only.
+	
+0.9.6:
+	Added a fast rectangle fill function: SDL_FillRect()
+
+	Addition of a useful function for getting info on the video hardware:
+	    const SDL_VideoInfo *SDL_GetVideoInfo(void)
+        This function replaces SDL_GetDisplayFormat().
+
+	Initial support for double-buffering:
+	  Use the SDL_DOUBLEBUF flag in SDL_SetVideoMode()
+	  Update the screen with a new function: SDL_Flip()
+
+	SDL_AllocSurface() takes two new flags:
+	SDL_SRCCOLORKEY means that the surface will be used for colorkey blits
+	  and if the hardware supports hardware acceleration of colorkey blits
+	  between two surfaces in video memory, to place the surface in video
+	  memory if possible, otherwise it will be placed in system memory.
+	SDL_SRCALPHA means that the surface will be used for alpha blits and
+	  if the hardware supports hardware acceleration of alpha blits between
+	  two surfaces in video memory, to place the surface in video memory
+	  if possible, otherwise it will be placed in system memory.
+	SDL_HWSURFACE now means that the surface will be created with the 
+	  same format as the display surface, since having surfaces in video
+	  memory is only useful for fast blitting to the screen, and you can't
+	  blit surfaces with different surface formats in video memory.
+
+0.9.5:
+	You can now pass a NULL mask to SDL_WM_SetIcon(), and it will assume
+	that the icon consists of the entire image.
+
+	SDL_LowerBlit() is back -- but don't use it on the display surface.
+	It is exactly the same as SDL_MiddleBlit(), but doesn't check for
+	thread safety.
+
+	Added SDL_FPLoadBMP(), SDL_FPSaveBMP(), SDL_FPLoadWAV(), which take
+	a FILE pointer instead of a file name.
+
+	Added CD-ROM audio control API:
+	    SDL_CDNumDrives()
+	    SDL_CDName()
+	    SDL_CDOpen()
+	    SDL_CDStatus()
+	    SDL_CDPlayTracks()
+	    SDL_CDPlay()
+	    SDL_CDPause()
+	    SDL_CDResume()
+	    SDL_CDStop()
+	    SDL_CDEject()
+	    SDL_CDClose()
+
+0.9.4:
+	No changes, bugfixes only.
+
+0.9.3:
+	Mouse motion event now includes relative motion information:
+	    Sint16 event->motion.xrel, Sint16 event->motion.yrel
+
+	X11 keyrepeat handling can be disabled by defining IGNORE_X_KEYREPEAT
+	    (Add -DIGNORE_X_KEYREPEAT to CFLAGS line in obj/x11Makefile)
+
+0.9.2:
+	No changes, bugfixes only.
+
+0.9.1:
+	Removed SDL_MapSurface() and SDL_UnmapSurface() -- surfaces are now
+	automatically mapped on blit.
+
+0.8.0:
+	SDL stable release

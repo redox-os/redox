@@ -1,0 +1,70 @@
+.TH "SDL_AudioSpec" "3" "Tue 11 Sep 2001, 22:58" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_AudioSpec \- Audio Specification Structure
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  int freq;
+  Uint16 format;
+  Uint8 channels;
+  Uint8 silence;
+  Uint16 samples;
+  Uint32 size;
+  void (*callback)(void *userdata, Uint8 *stream, int len);
+  void *userdata;
+} SDL_AudioSpec;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBfreq\fR
+Audio frequency in samples per second
+.TP 20
+\fBformat\fR
+Audio data format
+.TP 20
+\fBchannels\fR
+Number of channels: 1 mono, 2 stereo
+.TP 20
+\fBsilence\fR
+Audio buffer silence value (calculated)
+.TP 20
+\fBsamples\fR
+Audio buffer size in samples
+.TP 20
+\fBsize\fR
+Audio buffer size in bytes (calculated)
+.TP 20
+\fBcallback(\&.\&.)\fR
+Callback function for filling the audio buffer
+.TP 20
+\fBuserdata\fR
+Pointer the user data which is passed to the callback function
+.SH "DESCRIPTION"
+.PP
+The \fBSDL_AudioSpec\fR structure is used to describe the format of some audio data\&. This structure is used by \fI\fBSDL_OpenAudio\fP\fR and \fI\fBSDL_LoadWAV\fP\fR\&. While all fields are used by \fBSDL_OpenAudio\fP only \fBfreq\fR, \fBformat\fR, \fBsamples\fR and \fBchannels\fR are used by \fBSDL_LoadWAV\fP\&. We will detail these common members here\&.
+.TP 20
+\fBfreq\fR
+The number of samples sent to the sound device every second\&. Common values are 11025, 22050 and 44100\&. The higher the better\&.
+.TP 20
+\fBformat\fR
+Specifies the size and type of each sample element 
+.IP "\fBAUDIO_U8\fP" 10Unsigned 8-bit samples
+.IP "\fBAUDIO_S8\fP" 10Signed 8-bit samples
+.IP "\fBAUDIO_U16\fP or \fBAUDIO_U16LSB\fP" 10Unsigned 16-bit little-endian samples
+.IP "\fBAUDIO_S16\fP or \fBAUDIO_S16LSB\fP" 10Signed 16-bit little-endian samples
+.IP "\fBAUDIO_U16MSB\fP" 10Unsigned 16-bit big-endian samples
+.IP "\fBAUDIO_S16MSB\fP" 10Signed 16-bit big-endian samples
+.IP "\fBAUDIO_U16SYS\fP" 10Either \fBAUDIO_U16LSB\fP or \fBAUDIO_U16MSB\fP depending on you systems endianness
+.IP "\fBAUDIO_S16SYS\fP" 10Either \fBAUDIO_S16LSB\fP or \fBAUDIO_S16MSB\fP depending on you systems endianness
+.TP 20
+\fBchannels\fR
+The number of seperate sound channels\&. 1 is mono (single channel), 2 is stereo (dual channel)\&.
+.TP 20
+\fBsamples\fR
+When used with \fI\fBSDL_OpenAudio\fP\fR this refers to the size of the audio buffer in samples\&. A sample a chunk of audio data of the size specified in \fBformat\fR mulitplied by the number of channels\&. When the \fBSDL_AudioSpec\fR is used with \fI\fBSDL_LoadWAV\fP\fR \fBsamples\fR is set to 4096\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_OpenAudio\fP\fR, \fI\fBSDL_LoadWAV\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:58

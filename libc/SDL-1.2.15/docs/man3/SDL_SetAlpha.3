@@ -1,0 +1,66 @@
+.TH "SDL_SetAlpha" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_SetAlpha \- Adjust the alpha properties of a surface
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_SetAlpha\fP\fR(\fBSDL_Surface *surface, Uint32 flag, Uint8 alpha\fR);
+.SH "DESCRIPTION"
+.PP
+.RS
+\fBNote:  
+.PP
+This function and the semantics of SDL alpha blending have changed since version 1\&.1\&.4\&. Up until version 1\&.1\&.5, an alpha value of 0 was considered opaque and a value of 255 was considered transparent\&. This has now been inverted: 0 (\fBSDL_ALPHA_TRANSPARENT\fP) is now considered transparent and 255 (\fBSDL_ALPHA_OPAQUE\fP) is now considered opaque\&.
+.RE
+.PP
+\fBSDL_SetAlpha\fP is used for setting the per-surface alpha value and/or enabling and disabling alpha blending\&.
+.PP
+The\fBsurface\fR parameter specifies which surface whose alpha attributes you wish to adjust\&. \fBflags\fR is used to specify whether alpha blending should be used (\fBSDL_SRCALPHA\fP) and whether the surface should use RLE acceleration for blitting (\fBSDL_RLEACCEL\fP)\&. \fBflags\fR can be an OR\&'d combination of these two options, one of these options or 0\&. If \fBSDL_SRCALPHA\fP is not passed as a flag then all alpha information is ignored when blitting the surface\&. The \fBalpha\fR parameter is the per-surface alpha value; a surface need not have an alpha channel to use per-surface alpha and blitting can still be accelerated with \fBSDL_RLEACCEL\fP\&.
+.PP
+.RS
+\fBNote:  
+.PP
+The per-surface alpha value of 128 is considered a special case and is optimised, so it\&'s much faster than other per-surface values\&.
+.RE
+.PP
+Alpha effects surface blitting in the following ways:
+.TP 20
+RGBA->RGB with \fBSDL_SRCALPHA\fP
+The source is alpha-blended with the destination, using the alpha channel\&. \fBSDL_SRCCOLORKEY\fP and the per-surface alpha are ignored\&.
+.TP 20
+RGBA->RGB without \fBSDL_SRCALPHA\fP
+The RGB data is copied from the source\&. The source alpha channel and the per-surface alpha value are ignored\&.
+.TP 20
+RGB->RGBA with \fBSDL_SRCALPHA\fP
+The source is alpha-blended with the destination using the per-surface alpha value\&. If \fBSDL_SRCCOLORKEY\fP is set, only the pixels not matching the colorkey value are copied\&. The alpha channel of the copied pixels is set to opaque\&.
+.TP 20
+RGB->RGBA without \fBSDL_SRCALPHA\fP
+The RGB data is copied from the source and the alpha value of the copied pixels is set to opaque\&. If \fBSDL_SRCCOLORKEY\fP is set, only the pixels not matching the colorkey value are copied\&. 
+.TP 20
+RGBA->RGBA with \fBSDL_SRCALPHA\fP
+The source is alpha-blended with the destination using the source alpha channel\&. The alpha channel in the destination surface is left untouched\&. \fBSDL_SRCCOLORKEY\fP is ignored\&.
+.TP 20
+RGBA->RGBA without \fBSDL_SRCALPHA\fP
+The RGBA data is copied to the destination surface\&. If \fBSDL_SRCCOLORKEY\fP is set, only the pixels not matching the colorkey value are copied\&.
+.TP 20
+RGB->RGB with \fBSDL_SRCALPHA\fP
+The source is alpha-blended with the destination using the per-surface alpha value\&. If \fBSDL_SRCCOLORKEY\fP is set, only the pixels not matching the colorkey value are copied\&.
+.TP 20
+RGB->RGB without \fBSDL_SRCALPHA\fP
+The RGB data is copied from the source\&. If \fBSDL_SRCCOLORKEY\fP is set, only the pixels not matching the colorkey value are copied\&.
+.PP
+.RS
+\fBNote:  
+.PP
+ Note that RGBA->RGBA blits (with SDL_SRCALPHA set) keep the alpha of the destination surface\&. This means that you cannot compose two arbitrary RGBA surfaces this way and get the result you would expect from "overlaying" them; the destination alpha will work as a mask\&.
+.PP
+Also note that per-pixel and per-surface alpha cannot be combined; the per-pixel alpha is always used if available
+.RE
+.SH "RETURN VALUE"
+.PP
+This function returns \fB0\fR, or \fB-1\fR if there was an error\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_MapRGBA\fP\fR, \fI\fBSDL_GetRGBA\fP\fR, \fI\fBSDL_DisplayFormatAlpha\fP\fR, \fI\fBSDL_BlitSurface\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

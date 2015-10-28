@@ -1,0 +1,18 @@
+.TH "SDL_JoystickOpened" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoystickOpened \- Determine if a joystick has been opened
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_JoystickOpened\fP\fR(\fBint index\fR);
+.SH "DESCRIPTION"
+.PP
+Determines whether a joystick has already been opened within the application\&. \fBindex\fR refers to the N\&'th joystick on the system\&.
+.SH "RETURN VALUE"
+.PP
+Returns \fB1\fR if the joystick has been opened, or \fB0\fR if it has not\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_JoystickOpen\fP\fR, \fI\fBSDL_JoystickClose\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

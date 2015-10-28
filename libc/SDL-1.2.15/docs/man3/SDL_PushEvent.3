@@ -1,0 +1,27 @@
+.TH "SDL_PushEvent" "3" "Tue 11 Sep 2001, 22:59" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_PushEvent \- Pushes an event onto the event queue
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_PushEvent\fP\fR(\fBSDL_Event *event\fR);
+.SH "DESCRIPTION"
+.PP
+The event queue can actually be used as a two way communication channel\&. Not only can events be read from the queue, but the user can also push their own events onto it\&. \fBevent\fR is a pointer to the event structure you wish to push onto the queue\&.
+.PP
+.RS
+\fBNote:  
+.PP
+Pushing device input events onto the queue doesn\&'t modify the state of the device within SDL\&.
+.RE
+.SH "RETURN VALUE"
+.PP
+Returns \fB0\fR on success or \fB-1\fR if the event couldn\&'t be pushed\&.
+.SH "EXAMPLES"
+.PP
+See \fI\fBSDL_Event\fR\fR\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_PollEvent\fP\fR, \fI\fBSDL_PeepEvents\fP\fR, \fI\fBSDL_Event\fR\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 22:59

@@ -1,0 +1,276 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_EventState</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Event Functions."
+HREF="eventfunctions.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_GetEventFilter"
+HREF="sdlgeteventfilter.html"><LINK
+REL="NEXT"
+TITLE="SDL_GetKeyState"
+HREF="sdlgetkeystate.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlgeteventfilter.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlgetkeystate.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLEVENTSTATE"
+></A
+>SDL_EventState</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN5646"
+></A
+><H2
+>Name</H2
+>SDL_EventState&nbsp;--&nbsp;This function allows you to set the state of processing certain events.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN5649"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN5650"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>Uint8 <B
+CLASS="FSFUNC"
+>SDL_EventState</B
+></CODE
+>(Uint8 type, int state);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN5656"
+></A
+><H2
+>Description</H2
+><P
+>This function allows you to set the state of processing certain event <TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>'s.</P
+><P
+>If <TT
+CLASS="PARAMETER"
+><I
+>state</I
+></TT
+> is set to <TT
+CLASS="LITERAL"
+>SDL_IGNORE</TT
+>, 
+that event <TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+> will be automatically dropped from the event queue and will 
+not be filtered.</P
+><P
+>If <TT
+CLASS="PARAMETER"
+><I
+>state</I
+></TT
+> is set to <TT
+CLASS="LITERAL"
+>SDL_ENABLE</TT
+>, 
+that event <TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+> will be processed normally.</P
+><P
+>If <TT
+CLASS="PARAMETER"
+><I
+>state</I
+></TT
+> is set to <TT
+CLASS="LITERAL"
+>SDL_QUERY</TT
+>,
+<TT
+CLASS="FUNCTION"
+>SDL_EventState</TT
+> will return the current processing 
+state of the specified event <TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>.</P
+><P
+>A list of event <TT
+CLASS="PARAMETER"
+><I
+>type</I
+></TT
+>'s can be found in the <A
+HREF="sdlevent.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+></A
+> section.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN5677"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlevent.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_Event</SPAN
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlgeteventfilter.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlgetkeystate.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_GetEventFilter</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="eventfunctions.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_GetKeyState</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

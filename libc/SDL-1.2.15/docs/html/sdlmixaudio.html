@@ -1,0 +1,237 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_MixAudio</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Audio"
+HREF="audio.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_ConvertAudio"
+HREF="sdlconvertaudio.html"><LINK
+REL="NEXT"
+TITLE="SDL_LockAudio"
+HREF="sdllockaudio.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlconvertaudio.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdllockaudio.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLMIXAUDIO"
+></A
+>SDL_MixAudio</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN7107"
+></A
+><H2
+>Name</H2
+>SDL_MixAudio&nbsp;--&nbsp;Mix audio data</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN7110"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN7111"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>void <B
+CLASS="FSFUNC"
+>SDL_MixAudio</B
+></CODE
+>(Uint8 *dst, Uint8 *src, Uint32 len, int volume);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7117"
+></A
+><H2
+>Description</H2
+><P
+>This function takes two audio buffers of <TT
+CLASS="PARAMETER"
+><I
+>len</I
+></TT
+> bytes each
+of the playing audio format and mixes them, performing addition, volume
+adjustment, and overflow clipping. The <TT
+CLASS="PARAMETER"
+><I
+>volume</I
+></TT
+> ranges
+from 0 to <TT
+CLASS="LITERAL"
+>SDL_MIX_MAXVOLUME</TT
+> and should be set to the maximum
+value for full audio volume. Note this does not change hardware volume. This is
+provided for convenience -- you can mix your own audio data.</P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>Do not use this function for mixing together more than two streams of sample
+data. The output from repeated application of this function may be distorted
+by clipping, because there is no accumulator with greater range than the
+input (not to mention this being an inefficient way of doing it).
+Use mixing functions from SDL_mixer, OpenAL, or write your own mixer instead.</P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7125"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlopenaudio.html"
+><TT
+CLASS="FUNCTION"
+>SDL_OpenAudio</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlconvertaudio.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdllockaudio.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_ConvertAudio</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="audio.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_LockAudio</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

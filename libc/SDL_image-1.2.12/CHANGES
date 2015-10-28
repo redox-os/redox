@@ -1,0 +1,198 @@
+1.2.12:
+Sam Lantinga - Thu Jan 19 23:18:09 EST 2012
+ * Fixed regression in 1.2.11 loading 8-bit PNG images with libpng
+
+1.2.11:
+Sam Lantinga - Sat Jan 14 17:54:38 EST 2012
+ * Fixed loading 8-bit PNG images on Mac OS X
+Sam Lantinga - Sat Dec 31 09:35:40 EST 2011
+ * SDL_image is now under the zlib license
+Michael Bonfils - Mon Nov 28 21:46:00 EST 2011
+ * Added WEBP image support
+Thomas Klausner - Wed Jan 19 19:31:25 PST 2011
+ * Fixed compiling with libpng 1.4
+Sam Lantinga - Mon Jan 10 12:09:57 2011 -0800
+ * Added Android.mk to build on the Android platform
+Sam Lantinga - Mon May 10 22:42:53 PDT 2010
+ * Fixed loading HAM6 images with stencil mask
+Mark Tucker - Fri, 27 Nov 2009 12:38:21 -0500
+ * Fixed bug loading 15 and 16 bit BMP images
+
+1.2.10:
+Sam Lantinga - Sat Nov 14 11:22:14 PST 2009
+ * Fixed bug loading multiple images
+
+1.2.9:
+Sam Lantinga - Tue Nov 10 00:29:20 PST 2009
+ * Fixed alpha premultiplication on Mac OS X and iPhone OS
+Sam Lantinga - Sun Nov  8 07:52:11 PST 2009
+ * Fixed checking for IMG_Init() return value in image loaders
+
+1.2.8:
+Sam Lantinga - Sun Oct  4 13:12:54 PDT 2009
+ * Added support for uncompressed PCX files
+Mason Wheeler - 2009-06-10 06:29:45 PDT 
+ * Added IMG_Init()/IMG_Quit() to prevent constantly loading and unloading DLLs
+Couriersud - Mon, 12 Jan 2009 17:21:13 -0800
+ * Added support for ICO and CUR image files
+Eric Wing - Fri, 2 Jan 2009 02:01:16 -0800
+ * Added ImageIO loading infrastructure for Mac OS X
+ * Added UIImage loading infrastructure for iPhone / iPod Touch
+
+1.2.7:
+Sam Lantinga - Sun Nov  2 15:08:27 PST 2008
+ * Fixed buffer overflow in BMP loading code, discovered by j00ru//vx
+Sam Lantinga - Fri Dec 28 08:34:54 PST 2007
+ * Fixed buffer overflow in GIF loading code, discovered by Michael Skladnikiewicz
+
+1.2.6:
+Sam lantinga - Wed Jul 18 00:30:32 PDT 2007
+ * Improved detection of libjpeg, libpng, and libtiff at configure time
+ * PNG and TIFF images are correctly identified even if dynamic libraries
+   to load them aren't available.
+ * Fixed loading of TIFF images using libtiff 3.6
+Sam Lantinga - Thu Jul 5 07:52:35 2007
+ * Fixed static linking with libjpeg
+Michael Koch - Tue Feb 13 10:09:17 2007
+ * Fixed crash in IMG_ReadXPMFromArray()
+
+1.2.5:
+Maurizio Monge - Sun May 14 13:57:32 PDT 2006
+ * Fixed loading BMP palettes at unusual offsets
+Sam Lantinga - Thu May 11 21:51:19 PDT 2006
+ * Added support for dynamically loading libjpeg, libpng, and libtiff.
+Sam Lantinga - Sun Apr 30 01:48:40 PDT 2006
+ * Added gcc-fat.sh for generating Universal binaries on Mac OS X
+ * Updated libtool support to version 1.5.22
+Sam Lantinga - Sat Feb  4 15:17:44 PST 2006
+ * Added support for XV thumbnail images
+Gautier Portet - Fri, 19 Mar 2004 17:35:12 +0100
+ * Added support for 32-bit BMP files with alpha
+
+1.2.4:
+Pierre G. Richard - Fri, 30 Jul 2004 11:13:11 +0000 (UTC)
+ * Added support for RLE encoded BMP files
+Marc Le Douarain - Fri, 26 Dec 2003 18:23:42 +0100
+ * Added EHB and HAM mode support to the ILBM loader
+Sam Lantinga - Wed Nov 19 00:23:44 PST 2003
+ * Updated libtool support for new mingw32 DLL build process
+Holger Schemel - Mon, 04 Aug 2003 21:50:52 +0200
+ * Fixed crash loading certain PCX images
+Kyle Davenport - Sat, 19 Apr 2003 17:13:31 -0500
+ * Added .la files to the development RPM, fixing RPM build on RedHat 8
+
+1.2.3:
+Ryan C. Gordon - Sat, 8 Feb 2003 09:36:33 -0500
+ * Fixed memory leak with non-seekable SDL_RWops
+Marc Le Douarain - Sun, 22 Dec 2002 22:59:51 +0100
+ * Added 24-bit support to the ILBM format loader
+Sam Lantinga - Sun Oct 20 20:55:46 PDT 2002
+ * Added shared library support for MacOS X
+Pete Shinners - Thu Jun 20 10:05:54 PDT 2002
+ * The JPEG loader can now load EXIF format JPEG images
+Dag-Erling Smorgrav - Thu May  2 19:09:48 PDT 2002
+ * The XCF loader now ignores invisible layers and channels
+
+1.2.2:
+Sam Lantinga - Sat Apr 13 07:49:47 PDT 2002
+ * Updated autogen.sh for new versions of automake
+ * Specify the SDL API calling convention (C by default)
+Mattias Engdegård - Fri Dec 28 17:54:31 PST 2001
+ * Worked around exit() in the jpeg image library
+
+1.2.1:
+Mattias Engdegård - Tue Nov 20 08:08:53 PST 2001
+ * Fixed transparency in the GIF loading code
+Daniel Morais - Sun Sep 23 16:32:13 PDT 2001
+ * Added support for the IFF (LBM) image format
+Sam Lantinga - Sun Aug 19 01:51:44 PDT 2001
+ * Added Project Builder projects for building MacOS X framework
+Mattias Engdegård - Tue Jul 31 04:32:29 PDT 2001
+ * Fixed transparency in 8-bit PNG files
+Mattias Engdegård - Sat Apr 28 11:30:22 PDT 2001
+ * Added support for loading XPM image data directly
+Paul Jenner - Sat, 14 Apr 2001 09:20:38 -0700 (PDT)
+ * Added support for building RPM directly from tar archive
+
+1.2.0:
+Sam Lantinga - Wed Apr  4 12:42:20 PDT 2001
+ * Synchronized release version with SDL 1.2.0
+
+1.1.1:
+Berni - Wed Mar  7 09:18:02 PST 2001
+ * Added initial GIMP XCF support (disabled by default)
+Mattias Engdegård - Wed Mar  7 09:01:49 PST 2001
+ * Added general PNM (PPM/PGM/PBM) support
+Mattias Engdegård - Sun Mar  4 14:23:42 PST 2001
+ * Fixed bugs in PPM support, added ASCII PPM support
+Mattias Engdegård - Fri Mar  2 14:48:09 PST 2001
+ * Cleaned up some compiler warnings
+Mattias Engdegård - Tue Feb 27 12:44:43 PST 2001
+ * Improved the PCX loading code
+ * Modified showimage to set hardware palette for 8-bit displays
+Robert Stein - Thu, 22 Feb 2001 14:26:19 -0600
+ * Improved the PPM loading code
+Sam Lantinga - Tue Jan 30 14:24:06 PST 2001
+ * Modified showimage to accept multiple images on the command line
+Sam Lantinga - Mon Dec 18 02:49:29 PST 2000
+ * Added a Visual C++ project including JPEG and PNG loading support
+Mattias Engdegård - Wed Dec  6 10:00:07 PST 2000
+ * Improved the XPM loading code
+
+1.1.0:
+Sam Lantinga - Wed Nov 29 00:46:27 PST 2000
+ * Added XPM file format support
+   Supports color, greyscale, and mono XPMs with and without transparency
+Mattias Engdegård - Thu, 2 Nov 2000 23:23:17 +0100 (MET)
+ * Fixed array overrun when loading an unsupported format
+ * Minor compilation fixes for various platforms
+
+1.0.10:
+Mattias Engdegård - Wed Aug  9 20:32:22 MET DST 2000
+ * Removed the alpha flipping, made IMG_InvertAlpha() a noop
+ * Fixed nonexisting PCX alpha support
+ * Some TIFF bugfixes
+ * PNG greyscale images are loaded as 8bpp with a greyscale palette
+Ray Kelm - Fri, 04 Aug 2000 20:58:00 -0400
+ * Added support for cross-compiling Windows DLL from Linux
+
+1.0.9:
+Mattias Engdegård - Sat Jul  1 17:57:37 PDT 2000
+ * PNG loader properly sets the colorkey on 8-bit transparent images
+Mattias Engdegård - Sat Jul  1 13:24:47 PDT 2000
+ * Fixed a bug in PCX detection
+ * Added support for TGA files
+ * showimage shows a checker background for transparent images
+
+1.0.8:
+Mark Baker - Tue May 30 12:20:00 PDT 2000
+ * Added TIFF format loading support
+
+1.0.7:
+Mattias Engdegård - Sat May 27 14:18:33 PDT 2000
+ * Added fixes for loading images on big-endian systems
+
+1.0.6:
+Sam Lantinga - Sat Apr 29 10:18:32 PDT 2000
+ * showimage puts the name of the image in the title bar caption
+Sam Lantinga - Sat Apr 29 10:05:58 PDT 2000
+ * Removed pitch check, since PNG already loads to a list of row pointers
+
+1.0.5:
+Sam Lantinga - Sun Apr 23 14:41:32 PDT 2000
+ * Added support for GIF transparency
+Sam Lantinga - Wed Apr 12 14:39:20 PDT 2000
+ * Fixed memory heap crash on NT using PNG images
+Matt Campbell - Thu, 13 Apr 2000 13:29:17 -0700
+ * Fixed PNG detection on some Linux systems
+
+1.0.4:
+Sam Lantinga - Tue Feb  1 13:33:53 PST 2000
+ * Cleaned up for Visual C++
+ * Added Visual C++ project file
+
+1.0.3:
+Sam Lantinga - Wed Jan 19 22:10:52 PST 2000
+ * Added CHANGES
+ * Added rpm spec file contributed by Hakan Tandogan
+ * Changed the name of the example program from "show" to "showimage"

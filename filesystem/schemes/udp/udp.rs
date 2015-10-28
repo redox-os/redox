@@ -1,5 +1,5 @@
 use redox::Box;
-use redox::fs::file::File;
+use redox::fs::File;
 use redox::io::{Read, Write, SeekFrom};
 use redox::mem;
 use redox::net::*;
@@ -143,7 +143,7 @@ impl Resource {
                                   Checksum::sum(udp.data.as_ptr() as usize, udp.data.len()));
         }
 
-        match self.ip.write(udp.to_bytes().as_slice()) {
+        match self.ip.write(&udp.to_bytes()) {
             Some(_) => return Some(buf.len()),
             None => return None,
         }

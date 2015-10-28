@@ -1,0 +1,270 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_VideoModeOK</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_ListModes"
+HREF="sdllistmodes.html"><LINK
+REL="NEXT"
+TITLE="SDL_SetVideoMode"
+HREF="sdlsetvideomode.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdllistmodes.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlsetvideomode.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLVIDEOMODEOK"
+></A
+>SDL_VideoModeOK</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN1202"
+></A
+><H2
+>Name</H2
+>SDL_VideoModeOK&nbsp;--&nbsp;Check to see if a particular video mode is supported.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN1205"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN1206"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>int <B
+CLASS="FSFUNC"
+>SDL_VideoModeOK</B
+></CODE
+>(int width, int height, int bpp, Uint32 flags);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1212"
+></A
+><H2
+>Description</H2
+><P
+><TT
+CLASS="FUNCTION"
+>SDL_VideoModeOK</TT
+> returns <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+> 
+if the requested mode is not supported under any bit depth, or returns the 
+bits-per-pixel of the closest available mode with the given width, height and requested <A
+HREF="sdlsurface.html"
+>surface</A
+> flags (see <A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+>).</P
+><P
+>The bits-per-pixel value returned is only a suggested mode. You can usually request and bpp you want when <A
+HREF="sdlsetvideomode.html"
+>setting</A
+>  the video mode and SDL will emulate that color depth with a shadow video surface.</P
+><P
+>The arguments to <TT
+CLASS="FUNCTION"
+>SDL_VideoModeOK</TT
+> are the same ones you 
+would pass to <A
+HREF="sdlsetvideomode.html"
+>SDL_SetVideoMode</A
+></P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1225"
+></A
+><H2
+>Example</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>SDL_Surface *screen;
+Uint32 bpp;
+.
+.
+.
+printf("Checking mode 640x480@16bpp.\n");
+bpp=SDL_VideoModeOK(640, 480, 16, SDL_HWSURFACE);
+
+if(!bpp){
+  printf("Mode not available.\n");
+  exit(-1);
+}
+
+printf("SDL Recommends 640x480@%dbpp.\n", bpp);
+screen=SDL_SetVideoMode(640, 480, bpp, SDL_HWSURFACE);
+.
+.</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1228"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlsetvideomode.html"
+><TT
+CLASS="FUNCTION"
+>SDL_SetVideoMode</TT
+></A
+>,
+<A
+HREF="sdlgetvideoinfo.html"
+><TT
+CLASS="FUNCTION"
+>SDL_GetVideoInfo</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdllistmodes.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlsetvideomode.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_ListModes</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_SetVideoMode</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

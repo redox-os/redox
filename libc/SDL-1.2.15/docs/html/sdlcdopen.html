@@ -1,0 +1,275 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_CDOpen</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="CD-ROM"
+HREF="cdrom.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_CDName"
+HREF="sdlcdname.html"><LINK
+REL="NEXT"
+TITLE="SDL_CDStatus"
+HREF="sdlcdstatus.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlcdname.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlcdstatus.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLCDOPEN"
+></A
+>SDL_CDOpen</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN7274"
+></A
+><H2
+>Name</H2
+>SDL_CDOpen&nbsp;--&nbsp;Opens a CD-ROM drive for access.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN7277"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN7278"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>SDL_CD *<B
+CLASS="FSFUNC"
+>SDL_CDOpen</B
+></CODE
+>(int drive);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7284"
+></A
+><H2
+>Description</H2
+><P
+>Opens a CD-ROM drive for access.  It returns a <A
+HREF="sdlcd.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_CD</SPAN
+></A
+> structure on success, or <TT
+CLASS="LITERAL"
+>NULL</TT
+> if the drive was invalid or busy.  This newly opened CD-ROM becomes the default CD used when other CD functions are passed a <TT
+CLASS="LITERAL"
+>NULL</TT
+> CD-ROM handle. </P
+><P
+>Drives are numbered starting with 0.  
+Drive 0 is the system default CD-ROM.</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7292"
+></A
+><H2
+>Examples</H2
+><PRE
+CLASS="PROGRAMLISTING"
+>SDL_CD *cdrom;
+int cur_track;
+int min, sec, frame;
+SDL_Init(SDL_INIT_CDROM);
+atexit(SDL_Quit);
+
+/* Check for CD drives */
+if(!SDL_CDNumDrives()){
+  /* None found */
+  fprintf(stderr, "No CDROM devices available\n");
+  exit(-1);
+}
+
+/* Open the default drive */
+cdrom=SDL_CDOpen(0);
+
+/* Did if open? Check if cdrom is NULL */
+if(!cdrom){
+  fprintf(stderr, "Couldn't open drive: %s\n", SDL_GetError());
+  exit(-1);
+}
+
+/* Print Volume info */
+printf("Name: %s\n", SDL_CDName(0));
+printf("Tracks: %d\n", cdrom-&#62;numtracks);
+for(cur_track=0;cur_track &#60; cdrom-&#62;numtracks; cur_track++){
+  FRAMES_TO_MSF(cdrom-&#62;track[cur_track].length, &#38;min, &#38;sec, &#38;frame);
+  printf("\tTrack %d: Length %d:%d\n", cur_track, min, sec);
+}
+
+SDL_CDClose(cdrom);</PRE
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN7295"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlcd.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_CD</SPAN
+></A
+>,
+<A
+HREF="sdlcdtrack.html"
+><SPAN
+CLASS="STRUCTNAME"
+>SDL_CDtrack</SPAN
+></A
+>,
+<A
+HREF="sdlcdclose.html"
+><TT
+CLASS="FUNCTION"
+>SDL_CDClose</TT
+></A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlcdname.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlcdstatus.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_CDName</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="cdrom.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_CDStatus</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

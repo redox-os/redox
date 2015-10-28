@@ -1,26 +1,13 @@
 #![crate_type="staticlib"]
 #![allow(unused_features)]
-#![feature(alloc)]
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(collections)]
-#![feature(convert)]
-#![feature(core_slice_ext)]
-#![feature(deque_extras)]
 #![feature(iter_arith)]
-#![feature(naked_attributes)]
 #![feature(no_std)]
 #![feature(slice_concat_ext)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
-#![feature(unwind_attributes)]
 #![no_std]
-
-#[macro_use]
-extern crate alloc;
-
-#[macro_use]
-extern crate collections;
 
 #[macro_use]
 extern crate redox;
@@ -31,7 +18,6 @@ use application::main;
 mod application;
 
 use redox::*;
-
 use redox::syscall::sys_exit;
 
 #[no_mangle]

@@ -199,6 +199,51 @@ impl ELF {
 
             let mut str_section = &*((self.data + header.sh_off as usize) as *const ELFSection);
 
+            debug::d("Program Headers:");
+            debug::dl();
+
+            for i in 0..header.ph_len {
+                let segment = &*((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ELFSegment);
+
+                debug::d("    Section ");
+                debug::dd(i as usize);
+                debug::dl();
+
+                debug::d("    Type: ");
+                debug::dh(segment._type as usize);
+                debug::dl();
+
+                debug::d("    Offset: ");
+                debug::dh(segment.off as usize);
+                debug::dl();
+
+                debug::d("    VAddr: ");
+                debug::dh(segment.vaddr as usize);
+                debug::dl();
+
+                debug::d("    PAddr: ");
+                debug::dh(segment.paddr as usize);
+                debug::dl();
+
+                debug::d("    File Length: ");
+                debug::dd(segment.file_len as usize);
+                debug::dl();
+
+                debug::d("    Mem Length: ");
+                debug::dd(segment.mem_len as usize);
+                debug::dl();
+
+                debug::d("    Flags: ");
+                debug::dh(segment.flags as usize);
+                debug::dl();
+
+                debug::d("    Align: ");
+                debug::dd(segment.align as usize);
+                debug::dl();
+
+                debug::dl();
+            }
+
             debug::d("Section Headers:");
             debug::dl();
 
@@ -317,6 +362,22 @@ impl ELF {
         } else {
             debug::d("Empty ELF File\n");
         }
+    }
+
+    pub unsafe fn load_segment(&self) -> Option<ELFSegment> {
+        if self.data > 0 {
+            let header = &*(self.data as *const ELFHeader);
+
+            for i in 0..header.ph_len {
+                let segment = ptr::read((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ELFSegment);
+
+                if segment._type == 1 {
+                    return Some(segment);
+                }
+            }
+        }
+
+        None
     }
 
     /// Get the entry field of the header

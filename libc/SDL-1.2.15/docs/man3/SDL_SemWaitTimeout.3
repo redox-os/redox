@@ -1,0 +1,41 @@
+.TH "SDL_SemWaitTimeout" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_SemWaitTimeout \- Lock a semaphore, but only wait up to a specified maximum time\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+#include "SDL_thread\&.h"
+.sp
+\fBint \fBSDL_SemWaitTimeout\fP\fR(\fBSDL_sem *sem, Uint32 timeout\fR);
+.SH "DESCRIPTION"
+.PP
+\fBSDL_SemWaitTimeout()\fP is a varient of \fISDL_SemWait\fR with a maximum timeout value\&. If the value of the semaphore pointed to by \fBsem\fR is positive (greater than zero) it will atomically decrement the semaphore value and return 0, otherwise it will wait up to \fBtimeout\fR milliseconds trying to lock the semaphore\&. This function is to be avoided if possible since on some platforms it is implemented by polling the semaphore every millisecond in a busy loop\&.
+.PP
+After \fBSDL_SemWaitTimeout()\fP is successful, the semaphore can be released and its count atomically incremented by a successful call to \fISDL_SemPost\fR\&.
+.SH "RETURN VALUE"
+.PP
+Returns \fB0\fR if the semaphore was successfully locked or either \fBSDL_MUTEX_TIMEOUT\fR or \fB-1\fR if the timeout period was exceeded or there was an error, respectivly\&.
+.PP
+If the semaphore was not successfully locked, the semaphore will be unchanged\&.
+.SH "EXAMPLES"
+.PP
+.PP
+.nf
+\f(CWres = SDL_SemWaitTimeout(my_sem, WAIT_TIMEOUT_MILLISEC);
+
+if (res == SDL_MUTEX_TIMEOUT) {
+        return TRY_AGAIN;
+}
+if (res == -1) {
+        return WAIT_ERROR;
+}
+
+\&.\&.\&.
+
+SDL_SemPost(my_sem);\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_CreateSemaphore\fP\fR, \fI\fBSDL_DestroySemaphore\fP\fR, \fI\fBSDL_SemWait\fP\fR, \fI\fBSDL_SemTryWait\fP\fR, \fI\fBSDL_SemPost\fP\fR, \fI\fBSDL_SemValue\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

@@ -1,0 +1,18 @@
+.TH "SDL_DisplayYUVOverlay" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_DisplayYUVOverlay \- Blit the overlay to the display
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBint \fBSDL_DisplayYUVOverlay\fP\fR(\fBSDL_Overlay *overlay, SDL_Rect *dstrect\fR);
+.SH "DESCRIPTION"
+.PP
+Blit the \fBoverlay\fR to the surface specified when it was \fIcreated\fR\&. The \fI\fBSDL_Rect\fR\fR structure, \fBdstrect\fR, specifies the position and size of the destination\&. If the \fBdstrect\fR is a larger or smaller than the overlay then the overlay will be scaled, this is optimized for 2x scaling\&.
+.SH "RETURN VALUES"
+.PP
+Returns 0 on success
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Overlay\fR\fR, \fI\fBSDL_CreateYUVOverlay\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

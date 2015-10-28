@@ -1,0 +1,16 @@
+.TH "SDL_CondWait" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_CondWait \- Wait on a condition variable
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+#include "SDL_thread\&.h"
+.sp
+\fBint \fBSDL_CondWait\fP\fR(\fBSDL_cond *cond, SDL_mutex *mut\fR);
+.SH "DESCRIPTION"
+.PP
+Wait on the condition variable \fBcond\fR and unlock the provided mutex\&. The mutex must the locked before entering this function\&. Returns \fB0\fR when it is signalled, or \fB-1\fR on an error\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_CondWaitTimeout\fP\fR, \fI\fBSDL_CondSignal\fP\fR, \fI\fBSDL_mutexP\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

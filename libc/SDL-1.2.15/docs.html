@@ -1,0 +1,698 @@
+<HTML>
+<HEAD><TITLE>SDL Stable Release</TITLE></HEAD>
+<BODY BGCOLOR="#FFEBCD" TEXT="#000000">
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+<P>
+This source is stable, and is fully tested on all supported platforms.<br>
+Please send bug reports or questions to the SDL mailing list:<br>
+<a href="http://www.libsdl.org/mailing-list.php"
+        >http://www.libsdl.org/mailing-list.php</a><br>
+The latest stable release may be found on the
+	<a href="http://www.libsdl.org/">SDL website</A>.
+</P>
+
+<H2> <A HREF="docs/index.html">API Documentation</A> </H2>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+<H2> SDL 1.2.15 Release Notes </H2>
+<P>
+SDL 1.2.15 is a minor bug fix release.
+</P>
+
+<H3> General Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed assembly register clobbering in CPU info routines
+</P>
+<P>
+	Fixed memory stomp when using stretch blit on large images
+</P>
+<P>
+	Fixed pixel corruption with overlapping blits
+</P>
+<P>
+	SDL_JOYSTICK_DEVICE can be a colon separated list of joystick devices
+</P>
+<P>
+	Disabled MMX blitters since they don't compile on modern compilers
+</P>
+</BLOCKQUOTE>
+
+<H3> Unix Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed crash in joystick code on newer Linux kernels
+</P>
+<P>
+	Fixed channel swizzling for ALSA target with 6-channel output
+</P>
+<P>
+	Use the OpenGL GLX_EXT_swap_control extension if available
+</P>
+<P>
+	XRandR support is disabled by default because it causes desktop reconfiguring.  It can be enabled with the SDL_VIDEO_X11_XRANDR=1 environment variable, or by applying this patch: <a href="http://hg.libsdl.org/SDL/raw-rev/8ec3036098df">http://hg.libsdl.org/SDL/raw-rev/8ec3036098df</a>
+</P>
+</BLOCKQUOTE>
+
+<H3> Windows Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed SDL_GL_ACCELERATED_VISUAL handling
+</P>
+<P>
+	Fixed application state handling with ALT-Tab
+</P>
+<P>
+	Fixed occasional crash handling WM_ACTIVATEAPP in Direct X code
+</P>
+<P>
+	Fixed UTF-8 decoding of Russian characters
+</P>
+</BLOCKQUOTE>
+
+<H3> Mac OS X Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed building and running on Mac OS X 10.7 (Lion)
+</P>
+</BLOCKQUOTE>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+<H2> SDL 1.2.14 Release Notes </H2>
+<P>
+SDL 1.2.14 is a significant bug fix release and a recommended update.
+</P>
+
+<H3> General Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed flicker when resizing the SDL window
+</P>
+<P>
+	Fixed crash in SDL_SetGammaRamp()
+</P>
+<P>
+	Fixed freeze in SDL_memset() with 0 length when assembly code is disabled.
+</P>
+<P>
+	Added SDL_DISABLE_LOCK_KEYS environment variable to enable normal up/down events for Caps-Lock and Num-Lock keys.
+</P>
+<P>
+	Fixed audio quality problem when converting between 22050 Hz and 44100 Hz.
+</P>
+<P>
+	Fixed a threading crash when a few threads are rapidly created and complete.
+</P>
+<P>
+	Increased accuracy of alpha blending routines.
+</P>
+<P>
+	Fixed crash loading BMP files saved with the scanlines inverted.
+</P>
+<P>
+	Fixed mouse coordinate clamping if SDL_SetVideoMode() isn't called in response to SDL_VIDEORESIZE event.
+</P>
+<P>
+	Added doxygen documentation for the SDL API headers.
+</P>
+</BLOCKQUOTE>
+
+<H3> Unix Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed potential memory corruption due to assembly bug with SDL_revcpy()
+</P>
+<P>
+	Fixed crashes trying to detect SSE features on x86_64 architecture.
+</P>
+<P>
+	Fixed assembly for GCC optimized 50% alpha blending blits.
+</P>
+<P>
+	Added configure option --enable-screensaver, to allow enabling the screensaver by default.
+</P>
+<P>
+	Use XResetScreenSaver() instead of disabling screensaver entirely.
+</P>
+<P>
+	Removed the maximum window size limitation on X11.
+</P>
+<P>
+	Fixed SDL_GL_SWAP_CONTROL on X11.
+</P>
+<P>
+	Fixed setting the X11 window input hint.
+</P>
+<P>
+	Fixed distorted X11 window icon for some visuals.
+</P>
+<P>
+	Fixed detecting X11 libraries for dynamic loading on 64-bit Linux.
+</P>
+<P>
+	SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL) returns the correct value with GLX_SGI_swap_control.
+</P>
+<P>
+	Added SDL_VIDEO_FULLSCREEN_DISPLAY as a preferred synonym for SDL_VIDEO_FULLSCREEN_HEAD on X11.
+</P>
+<P>
+	The SDL_VIDEO_FULLSCREEN_DISPLAY environment variable can be set to 0 to place fullscreen SDL windows on the first Xinerama screen.
+</P>
+<P>
+	Added the SDL_VIDEO_FBCON_ROTATION environment variable to control output orientation on the framebuffer console.
+	<BR>
+	Valid values are:
+	<UL>
+	<LI>not set   - Not rotating, no shadow.
+	<LI>"NONE"    - Not rotating, but still using shadow.
+	<LI>"CW"      - Rotating screen clockwise.
+	<LI>"UD"      - Rotating screen upside down.
+	<LI>"CCW"     - Rotating screen counter clockwise.
+	</UL>
+</P>
+<P>
+	Fixed DirectFB detection on some Linux distributions.
+</P>
+<P>
+	Added code to use the PS3 SPE processors for YUV conversion on Linux.
+</P>
+<P>
+	Updated ALSA support to the latest stable API
+</P>
+<P>
+	ALSA is now preferred over OSS audio.  (SDL_AUDIODRIVER=dsp will restore the previous behavior.)
+</P>
+<P>
+	Improved support for PulseAudio
+</P>
+<P>
+	The Network Audio System support is now dynamically loaded at runtime.
+</P>
+<P>
+	Fixed crash with the MP-8866 Dual USB Joypad on newer Linux kernels.
+</P>
+<P>
+	Fixed crash in SDL_Quit() when a joystick has been unplugged.
+</P>
+</BLOCKQUOTE>
+
+<H3> Windows Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Verified 100% compatibility with Windows 7.
+</P>
+<P>
+	Prevent loss of OpenGL context when setting the video mode in response to a window resize event.
+</P>
+<P>
+	Fixed video initialization with SDL_WINDOWID on Windows XP.
+</P>
+<P>
+	Improved mouse input responsiveness for first-person-shooter games.
+</P>
+<P>
+	IME messages are now generated for localized input.
+</P>
+<P>
+	SDL_RWFromFile() takes a UTF-8 filename when opening a file.
+</P>
+<P>
+	The SDL_STDIO_REDIRECT environment variable can be used to override whether SDL redirects stdio to stdout.txt and stderr.txt.
+</P>
+<P>
+	Fixed dynamic object loading on Windows CE.
+</P>
+</BLOCKQUOTE>
+
+<H3> Mac OS X Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	SDL now builds on Mac OS X 10.6 (Snow Leopard).
+	<BR>
+	Eric Wing posted a good rundown on the numerous changes here: <A HREF="http://playcontrol.net/ewing/jibberjabber/big_behind-the-scenes_chang.html">http://playcontrol.net/ewing/jibberjabber/big_behind-the-scenes_chang.html</A>
+</P>
+<P>
+	The X11 video driver is built by default.
+</P>
+<P>
+	Fixed SDL_VIDEO_WINDOW_POS environment variable for Quartz target.
+</P>
+<P>
+	Fixed setting the starting working directory in release builds.
+</P>
+</BLOCKQUOTE>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+<H2> SDL 1.2.13 Release Notes </H2>
+<P>
+SDL 1.2.13 is a minor bug fix release.
+</P>
+
+<H3> General Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed link error when building with Intel Compiler 10.
+</P>
+<P>
+	Removed stray C++ comment from public headers.
+</P>
+</BLOCKQUOTE>
+
+<H3> Unix Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed crash in SDL_SoftStretch() on secure operating systems.
+</P>
+<P>
+	Fixed undefined symbol on X11 implementations without UTF-8 support.
+</P>
+<P>
+	Worked around BadAlloc error when using XVideo on the XFree86 Intel Integrated Graphics driver.
+</P>
+<P>
+	Scan for all joysticks on Linux instead of stopping at one that was removed.
+</P>
+<P>
+	Fixed use of sdl-config arguments in sdl.m4
+</P>
+</BLOCKQUOTE>
+
+<H3> Windows Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed crash when a video driver reports higher than 32 bpp video modes.
+</P>
+<P>
+	Fixed restoring the desktop after setting a 24-bit OpenGL video mode.
+</P>
+<P>
+	Fixed window titles on Windows 95/98/ME.
+</P>
+<P>
+	Added SDL_BUTTON_X1 and SDL_BUTTON_X2 constants for extended mouse buttons.
+</P>
+<P>
+	Added support for quoted command line arguments.
+</P>
+</BLOCKQUOTE>
+
+<H3> Mac OS X Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	SDL now builds on Mac OS X 10.5 (Leopard).
+</P>
+<P>
+	Fixed high frequency crash involving text input.
+</P>
+<P>
+	Fixed beeping when the escape key is pressed and UNICODE translation is enabled.
+</P>
+<P>
+	Improved trackpad scrolling support.
+</P>
+<P>
+	Fixed joystick hat reporting for certain joysticks.
+</P>
+</BLOCKQUOTE>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+<H2> SDL 1.2.12 Release Notes </H2>
+<P>
+SDL 1.2.12 is a minor bug fix release.
+</P>
+
+<H3> General Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Added support for the PulseAudio sound server: http://www.pulseaudio.org/
+</P>
+<P>
+	Added SDL_VIDEO_ALLOW_SCREENSAVER to override SDL's disabling of the screensaver on Mac OS X, Windows, and X11.
+</P>
+<P>
+	Fixed buffer overrun crash when resampling audio rates.
+</P>
+<P>
+	Fixed audio bug where converting to mono was doubling the volume.
+</P>
+<P>
+	Fixed off-by-one error in the C implementation of SDL_revcpy()
+</P>
+<P>
+	Fixed compiling with Sun Studio.
+</P>
+<P>
+	Support for AmigaOS has been removed from the main SDL code.
+</P>
+<P>
+	Support for Nokia 9210 "EPOC" driver has been removed from the main SDL code.
+</P>
+<P>
+	Unofficial support for the S60/SymbianOS platform has been added.
+</P>
+<P>
+	Unofficial support for the Nintendo DS platform has been added.
+</P>
+<P>
+	Reenabled MMX assembly for YUV overlay processing (GNU C Compiler only).
+</P>
+</BLOCKQUOTE>
+
+<H3> Unix Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Fixed detection of X11 DGA mouse support.
+</P>
+<P>
+	Improved XIM support for asian character sets.
+</P>
+<P>
+	The GFX_Display has been added to the X11 window information in SDL_syswm.h.
+</P>
+<P>
+	Fixed PAGE_SIZE compile error in the fbcon video driver on newer Linux kernels.
+</P>
+<P>
+	Fixed hang or crash at startup if aRts can't access the hardware.
+</P>
+<P>
+	Fixed relative mouse mode when the cursor starts outside the X11 window.
+</P>
+<P>
+	Fixed accidental free of stack memory in X11 mouse acceleration code.
+</P>
+<P>
+	Closed minor memory leak in XME code.
+</P>
+<P>
+	Fixed TEXTRELs in the library to resolve some PIC issues.
+</P>
+</BLOCKQUOTE>
+
+<H3> Windows Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	The GDI video driver makes better use of the palette in 8-bit modes.
+</P>
+<P>
+	The windib driver now supports more mouse buttons with WM_XBUTTON events.
+</P>
+<P>
+	On Windows, SDL_SetVideoMode() will re-create the window instead of failing if the multisample settings are changed.
+</P>
+<P>
+	Added support for UTF-8 window titles on Windows.
+</P>
+<P>
+	Fixed joystick detection on Windows.
+</P>
+<P>
+	Improved performance with Win32 file I/O.
+</P>
+<P>
+	Fixed HBITMAP leak in GAPI driver.
+</P>
+</BLOCKQUOTE>
+
+<H3> Mac OS X Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Added support for multi-axis controllers like 3Dconnxion's SpaceNavigator on Mac OS X.
+</P>
+<P>
+	Fixed YUV overlay crash inside Quicktime on Intel Mac OS X.
+</P>
+<P>
+	Fixed blitting alignment in Altivec alpha blit functions.
+</P>
+<P>
+	Keys F13, F14, and F15 are now usable on Apple keyboards under Mac OS X.
+</P>
+<P>
+	Fixed joystick calibration code on Mac OS X.
+</P>
+<P>
+	Fixed mouse jitter when multiple motion events are queued up in Mac OS X.
+</P>
+<P>
+	Fixed changing the cursor in fullscreen mode on Mac OS X.
+</P>
+</BLOCKQUOTE>
+
+<H3> Mac OS Classic Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Added support for gamma ramps to both toolbox and DrawSprocket video drivers.
+</P>
+</BLOCKQUOTE>
+
+<H3> BeOS Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Implemented mouse grabbing and mouse relative mode on BeOS.
+</P>
+</BLOCKQUOTE>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+<H2> SDL 1.2.11 Release Notes </H2>
+<P>
+SDL 1.2.11 is a minor bug fix release.
+</P>
+
+<H3> Unix Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Dynamic X11 loading is only enabled with gcc 4 supporting -fvisibility=hidden.  This fixes crashes related to symbol collisions, and allows building on Solaris and IRIX.
+</P>
+<P>
+	Fixed building SDL with Xinerama disabled.
+</P>
+<P>
+	Fixed DRI OpenGL library loading, using RTLD_GLOBAL in dlopen().
+</P>
+<P>
+	Added pkgconfig configuration support.
+</P>
+</BLOCKQUOTE>
+
+<H3> Windows Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Setting SDL_GL_SWAP_CONTROL now works with Windows OpenGL.
+</P>
+<P>
+	The Win32 window positioning code works properly for windows with menus.
+</P>
+<P>
+	DirectSound audio quality has been improved on certain sound cards.
+</P>
+<P>
+	Fixed 5.1 audio channel ordering on Windows and Mac OS X.
+</P>
+<P>
+	Plugged a couple of minor memory leaks in the windib video driver.
+</P>
+<P>
+	Fixed type collision with stdint.h when building with gcc on Win32.
+</P>
+<P>
+	Fixed building with the Digital Mars Compiler on Win32.
+</P>
+</BLOCKQUOTE>
+
+<H3> Mac OS X Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	The Quartz video driver supports 32x32 cursors on Mac OS X 10.3 and above.
+</P>
+</BLOCKQUOTE>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+<H2> SDL 1.2.10 Release Notes </H2>
+<P>
+SDL 1.2.10 is a major release, featuring a revamp of the build system and many API improvements and bug fixes.
+</P>
+<H3> API enhancements </H3>
+<UL>
+<LI>
+	If SDL_OpenAudio() is passed zero for the desired format
+	fields, the following environment variables will be used
+	to fill them in:
+<pre><code>
+		SDL_AUDIO_FREQUENCY
+		SDL_AUDIO_FORMAT
+		SDL_AUDIO_CHANNELS
+		SDL_AUDIO_SAMPLES
+</code></pre>
+	If an environment variable is not specified, it will be set
+	to a reasonable default value.
+<LI>
+	SDL_SetVideoMode() now accepts 0 for width or height and will use
+	the current video mode (or the desktop mode if no mode has been set.)
+<LI>
+	Added current_w and current_h to the SDL_VideoInfo structure,
+	which is set to the desktop resolution during video intialization,
+	and then set to the current resolution when a video mode is set.
+<LI>
+	SDL_GL_LoadLibrary() will load the system default OpenGL library
+	if it is passed NULL as a parameter.
+<LI>
+	Added SDL_GL_SWAP_CONTROL to wait for vsync in OpenGL applications.
+<LI>
+	Added SDL_GL_ACCELERATED_VISUAL to guarantee hardware acceleration.
+<LI>
+	SDL_WM_SetCaption() now officially takes UTF-8 title and icon strings, and displays international characters on supported platforms.
+<LI>
+	Added SDL_GetKeyRepeat() to query the key repeat settings.
+<LI>
+	Added the "dummy" audio driver, which can be used to emulate audio
+	output without a sound card.
+<LI>
+	Added SDL_config.h, with defaults for various build environments.
+</UL>
+
+<H3> General Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	The SDL website now has an <A HREF="http://www.libsdl.org/rss/rss.xml">RSS feed</A>!
+<P>
+	The SDL development source code is now managed with <A HREF="http://www.libsdl.org/svn.php">Subversion</A>.
+<P>
+	SDL now uses the Bugzilla <A HREF="http://bugzilla.libsdl.org/">bug tracking system</A>, hosted by icculus.org.
+<P>
+	SDL is licensed under version 2.1 of the GNU Lesser General Public License.
+<P>
+	The entire build system has been revamped to make it much more portable, including versions of C library functions to make it possible to run SDL on a minimal embedded environment.  See README.Porting in the SDL source distribution for information on how to port SDL to a new platform.
+<P>
+	SDL_opengl.h has been updated with the latest glext.h from <A HREF="http://oss.sgi.com/projects/ogl-sample/registry/">http://oss.sgi.com/projects/ogl-sample/registry/</A>
+<P>
+	Alex Volkov contributed highly optimized RGB <-> RGBA blitters.
+</BLOCKQUOTE>
+
+<H3> Unix Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	The X11 libraries are dynamically loaded at runtime by default.  This allows the distributed version of SDL to run on systems without X11 libraries installed.
+<P>
+	The XiG XME extension code is now included in the X11 video driver by default.
+<P>
+	XRandR support for video mode switching has been added to the X11 driver, but is disabled because of undesired interactions with window managers.  You can enable this by setting the environment variable SDL_VIDEO_X11_XRANDR to 1.
+<P>
+	Xinerama multi-head displays are properly handled now, and the SDL_VIDEO_FULLSCREEN_HEAD environment variable can be used to select the screen used for fullscreen video modes.  Note that changing the video modes only works on screen 0.
+<P>
+	XVidMode video modes are now sorted so they maintain the refresh rates specified in the X11 configuration file.
+<P>
+	SDL windows are no longer transparent in X11 compositing systems like XGL.
+<P>
+	The mouse is properly released by the X11 video driver if the fullscreen window loses focus.
+<P>
+	The X11 input driver now uses XIM to handle international input.
+<P>
+	The screensaver and DPMS monitor blanking are disabled while SDL games are running under the X11 and DGA video drivers.  This behavior will be formalized and selectable in SDL 1.3.
+<P>
+	Fixed a bug preventing stereo OpenGL contexts from being selected on the X11 driver.
+<P>
+	The DGA video driver now waits for pending blits involving surfaces before they are freed.  This prevents display oddities when using SDL_DisplayFormat() to convert many images.
+<P>
+	The framebuffer console video driver now has a parser for /etc/fb.modes for improved video mode handling.
+<P>
+	The framebuffer console video driver now allows asynchronous VT switching, and restores the full contents of the screen when switched back.
+<P>
+	The framebuffer console now uses CTRL-ALT-FN to switch virtual terminals, to avoid collisions with application key bindings.
+<P>
+	The framebuffer console input driver correctly sets IMPS/2 mode for wheel mice.  It also properly detects when gpm is in IMPS/2 protocol mode, or passing raw protocol from an IMPS/2 mouse.
+<P>
+	The SVGAlib video driver now has support for banked (non-linear) video modes.
+<P>
+	A video driver for OpenBSD on the Sharp Zaurus has been contributed by Staffan Ulfberg.  See the file README.wscons in the SDL source distribution for details.
+<P>
+	Many patches have been incorporated from *BSD ports.
+</BLOCKQUOTE>
+
+<H3> Windows Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	The "windib" video driver is the default now, to prevent problems with certain laptops, 64-bit Windows, and Windows Vista.  The DirectX driver is still available, and can be selected by setting the environment variable SDL_VIDEODRIVER to "directx".
+<P>
+	SDL has been ported to 64-bit Windows.
+<P>
+	Dmitry Yakimov contributed a GAPI video driver for Windows CE.
+<P>
+	The default fullscreen refresh rate has been increased to match the desktop refresh rate, when using equivalent resolutions.  A full API for querying and selecting refresh rates is planned for SDL 1.3.
+<P>
+	Dialog boxes are now shown when SDL is in windowed OpenGL mode.
+<P>
+	The SDL window is recreated when necessary to maintain OpenGL context attributes, when switching between windowed and fullscreen modes.
+<P>
+	An SDL_VIDEORESIZE event is properly sent when the SDL window is maximized and restored.
+<P>
+	Window positions are retained when switching between fullscreen and windowed modes.
+<P>
+	ToUnicode() is used, when available, for improved handling of international keyboard input.
+<P>
+	The PrtScrn is now treated normally with both key down and key up events.
+<P>
+	Pressing ALT-F4 now delivers an SDL_QUIT event to SDL applications.
+<P>
+	Joystick names are now correct for joysticks which have been unplugged and then plugged back in since booting.
+<P>
+	An MCI error when playing the last track on a CD-ROM has been fixed.
+<P>
+	OpenWatcom projects for building SDL have been provided by Marc Peter.
+</BLOCKQUOTE>
+
+<H3> Mac OS X Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	SDL now supports building Universal binaries, both through Xcode projects and when using configure/make.  See README.MacOSX in the SDL source archive for details.
+<P>
+	The X11 video driver with GLX support can be built on Mac OS X, if the X11 development SDK is installed.
+<P>
+	Transitions between fullscreen resolutions and windowed mode now use a much faster asynchronous fade to hide desktop flicker.
+<P>
+	Icons set with SDL_WM_SetIcon() now have the proper colors on Intel Macs.
+</BLOCKQUOTE>
+
+<H3> OS/2 Notes </H3>
+
+<BLOCKQUOTE>
+<P>
+	Projects for building SDL on OS/2 with OpenWatcom have been contributed by Doodle.  See the file README.OS2 in the SDL source distribution for details.
+</BLOCKQUOTE>
+
+<IMG SRC="docs/images/rainbow.gif" ALT="[separator]" WIDTH="100%">
+
+</BODY>
+</HTML>

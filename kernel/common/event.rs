@@ -83,10 +83,10 @@ pub struct MouseEvent {
     pub y: isize,
     /// Is the left button pressed?
     pub left_button: bool,
-    /// Is the right button pressed?
-    pub right_button: bool,
     /// Is the midle button pressed?
     pub middle_button: bool,
+    /// Is the right button pressed?
+    pub right_button: bool,
 }
 
 impl MouseEvent {
@@ -96,7 +96,7 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: (self.left_button as isize) | (self.right_button as isize) << 1 | (self.middle_button as isize) << 2,
+            c: (self.left_button as isize) | (self.middle_button as isize) << 1 | (self.right_button as isize) << 2,
         }
     }
 
@@ -106,8 +106,8 @@ impl MouseEvent {
             x: event.a,
             y: event.b,
             left_button: event.c & 1 == 1,
-            middle_button: event.c & 4 == 4,
-            right_button: event.c & 2 == 2,
+            middle_button: event.c & 2 == 2,
+            right_button: event.c & 4 == 4,
         }
     }
 

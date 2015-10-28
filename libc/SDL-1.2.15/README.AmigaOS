@@ -1,0 +1,12 @@
+The AmigaOS code has been removed from SDL, since it had been broken for a
+ long time and had a few bits of fairly invasive code #ifdef'd into the
+ SDL core.
+
+However, there is an OS4 version of SDL here:
+   http://www.rcdrummond.net/amiga/index.html
+
+And a MorphOS version here:
+   http://www.lehtoranta.net/powersdl/
+
+--ryan.
+

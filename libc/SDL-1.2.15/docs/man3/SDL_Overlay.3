@@ -1,0 +1,52 @@
+.TH "SDL_Overlay" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_Overlay \- YUV video overlay
+.SH "STRUCTURE DEFINITION"
+.PP
+.nf
+\f(CWtypedef struct{
+  Uint32 format;
+  int w, h;
+  int planes;
+  Uint16 *pitches;
+  Uint8 **pixels;
+  Uint32 hw_overlay:1;
+} SDL_Overlay;\fR
+.fi
+.PP
+.SH "STRUCTURE DATA"
+.TP 20
+\fBformat\fR
+Overlay format (see below)
+.TP 20
+\fBw, h\fR
+Width and height of overlay
+.TP 20
+\fBplanes\fR
+Number of planes in the overlay\&. Usually either 1 or 3
+.TP 20
+\fBpitches\fR
+An array of pitches, one for each plane\&. Pitch is the length of a row in bytes\&.
+.TP 20
+\fBpixels\fR
+An array of pointers to teh data of each plane\&. The overlay should be locked before these pointers are used\&.
+.TP 20
+\fBhw_overlay\fR
+This will be set to 1 if the overlay is hardware accelerated\&.
+.SH "DESCRIPTION"
+.PP
+A \fBSDL_Overlay\fR is similar to a \fI\fBSDL_Surface\fR\fR except it stores a YUV overlay\&. All the fields are read only, except for \fBpixels\fR which should be \fIlocked\fR before use\&. The \fBformat\fR field stores the format of the overlay which is one of the following: 
+.PP
+.nf
+\f(CW#define SDL_YV12_OVERLAY  0x32315659  /* Planar mode: Y + V + U */
+#define SDL_IYUV_OVERLAY  0x56555949  /* Planar mode: Y + U + V */
+#define SDL_YUY2_OVERLAY  0x32595559  /* Packed mode: Y0+U0+Y1+V0 */
+#define SDL_UYVY_OVERLAY  0x59565955  /* Packed mode: U0+Y0+V0+Y1 */
+#define SDL_YVYU_OVERLAY  0x55595659  /* Packed mode: Y0+V0+Y1+U0 */\fR
+.fi
+.PP
+ More information on YUV formats can be found at \fIhttp://www\&.webartz\&.com/fourcc/indexyuv\&.htm (link to URL http://www.webartz.com/fourcc/indexyuv.htm) \fR\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_CreateYUVOverlay\fP\fR, \fI\fBSDL_LockYUVOverlay\fP\fR, \fI\fBSDL_UnlockYUVOverlay\fP\fR, \fI\fBSDL_FreeYUVOverlay\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

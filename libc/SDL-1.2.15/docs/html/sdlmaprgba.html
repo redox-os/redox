@@ -1,0 +1,242 @@
+<HTML
+><HEAD
+><TITLE
+>SDL_MapRGBA</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="Video"
+HREF="video.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_MapRGB"
+HREF="sdlmaprgb.html"><LINK
+REL="NEXT"
+TITLE="SDL_GetRGB"
+HREF="sdlgetrgb.html"></HEAD
+><BODY
+CLASS="REFENTRY"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlmaprgb.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlgetrgb.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><H1
+><A
+NAME="SDLMAPRGBA"
+></A
+>SDL_MapRGBA</H1
+><DIV
+CLASS="REFNAMEDIV"
+><A
+NAME="AEN1687"
+></A
+><H2
+>Name</H2
+>SDL_MapRGBA&nbsp;--&nbsp;Map a RGBA color value to a pixel format.</DIV
+><DIV
+CLASS="REFSYNOPSISDIV"
+><A
+NAME="AEN1690"
+></A
+><H2
+>Synopsis</H2
+><DIV
+CLASS="FUNCSYNOPSIS"
+><A
+NAME="AEN1691"
+></A
+><P
+></P
+><PRE
+CLASS="FUNCSYNOPSISINFO"
+>#include "SDL.h"</PRE
+><P
+><CODE
+><CODE
+CLASS="FUNCDEF"
+>Uint32 <B
+CLASS="FSFUNC"
+>SDL_MapRGBA</B
+></CODE
+>(SDL_PixelFormat *fmt, Uint8 r, Uint8 g, Uint8 b, Uint8 a);</CODE
+></P
+><P
+></P
+></DIV
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1697"
+></A
+><H2
+>Description</H2
+><P
+>Maps the RGBA color value to the specified pixel format and returns the
+pixel value as a 32-bit int.</P
+><P
+>If the format has a palette (8-bit) the index of the closest matching
+color in the palette will be returned.</P
+><P
+>If the specified pixel format has no alpha component the alpha value
+will be ignored (as it will be in formats with a palette).</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1702"
+></A
+><H2
+>Return Value</H2
+><P
+>A pixel value best approximating the given RGBA color value for a given
+pixel format. If the pixel format bpp (color depth) is less than 32-bpp
+then the unused upper bits of the return value can safely be ignored
+(e.g., with a 16-bpp format the return value can be assigned to a
+<SPAN
+CLASS="TYPE"
+>Uint16</SPAN
+>, and similarly a <SPAN
+CLASS="TYPE"
+>Uint8</SPAN
+> for an 8-bpp
+format).</P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN1707"
+></A
+><H2
+>See Also</H2
+><P
+><A
+HREF="sdlgetrgb.html"
+>SDL_GetRGB</A
+>,
+<A
+HREF="sdlgetrgba.html"
+>SDL_GetRGBA</A
+>,
+<A
+HREF="sdlmaprgb.html"
+>SDL_MapRGB</A
+>,
+<A
+HREF="sdlpixelformat.html"
+>SDL_PixelFormat</A
+></P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlmaprgb.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlgetrgb.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_MapRGB</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="video.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_GetRGB</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

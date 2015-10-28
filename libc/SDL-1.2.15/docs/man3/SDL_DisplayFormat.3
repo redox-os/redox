@@ -1,0 +1,22 @@
+.TH "SDL_DisplayFormat" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_DisplayFormat \- Convert a surface to the display format
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBSDL_Surface *\fBSDL_DisplayFormat\fP\fR(\fBSDL_Surface *surface\fR);
+.SH "DESCRIPTION"
+.PP
+This function takes a surface and copies it to a new surface of the pixel format and colors of the video framebuffer, suitable for fast blitting onto the display surface\&. It calls \fISDL_ConvertSurface\fR
+.PP
+If you want to take advantage of hardware colorkey or alpha blit acceleration, you should set the colorkey and alpha value before calling this function\&.
+.PP
+If you want an alpha channel, see \fISDL_DisplayFormatAlpha\fR\&.
+.SH "RETURN VALUE"
+.PP
+If the conversion fails or runs out of memory, it returns \fBNULL\fR
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_ConvertSurface\fP\fR, \fI\fBSDL_DisplayFormatAlpha\fP\fR \fI\fBSDL_SetAlpha\fP\fR, \fI\fBSDL_SetColorKey\fP\fR, \fI\fBSDL_Surface\fR\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01

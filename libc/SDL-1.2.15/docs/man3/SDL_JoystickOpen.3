@@ -1,0 +1,51 @@
+.TH "SDL_JoystickOpen" "3" "Tue 11 Sep 2001, 23:00" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_JoystickOpen \- Opens a joystick for use\&.
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBSDL_Joystick *\fBSDL_JoystickOpen\fP\fR(\fBint index\fR);
+.SH "DESCRIPTION"
+.PP
+Opens a joystick for use within SDL\&. The \fBindex\fR refers to the N\&'th joystick in the system\&. A joystick must be opened before it game be used\&.
+.SH "RETURN VALUE"
+.PP
+Returns a \fBSDL_Joystick\fR structure on success\&. \fBNULL\fR on failure\&.
+.SH "EXAMPLES"
+.PP
+.PP
+.nf
+\f(CWSDL_Joystick *joy;
+// Check for joystick
+if(SDL_NumJoysticks()>0){
+  // Open joystick
+  joy=SDL_JoystickOpen(0);
+  
+  if(joy)
+  {
+    printf("Opened Joystick 0
+");
+    printf("Name: %s
+", SDL_JoystickName(0));
+    printf("Number of Axes: %d
+", SDL_JoystickNumAxes(joy));
+    printf("Number of Buttons: %d
+", SDL_JoystickNumButtons(joy));
+    printf("Number of Balls: %d
+", SDL_JoystickNumBalls(joy));
+  }
+  else
+    printf("Couldn\&'t open Joystick 0
+");
+  
+  // Close if opened
+  if(SDL_JoystickOpened(0))
+    SDL_JoystickClose(joy);
+}\fR
+.fi
+.PP
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_JoystickClose\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:00

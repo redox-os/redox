@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject ProjectType="Visual C++" Version="8.00" Name="SDL_image" ProjectGUID="{2BD5534E-00E2-4BEA-AC96-D9A92EA24696}" RootNamespace="SDL_image" TargetFrameworkVersion="131072">
+  <Platforms>
+    <Platform Name="Pocket PC 2003 (ARMV4)" />
+    <Platform Name="Windows Mobile 5.0 Pocket PC SDK (ARMV4I)" />
+  </Platforms>
+  <ToolFiles>
+  </ToolFiles>
+  <Configurations>
+    <Configuration Name="Debug|Pocket PC 2003 (ARMV4)" OutputDirectory="$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="$(PlatformName)\$(ConfigurationName)" ConfigurationType="2" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops" UseOfMFC="0" ATLMinimizesCRunTimeLibraryUsage="false">
+      <Tool Name="VCPreBuildEventTool" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" PreprocessorDefinitions="_DEBUG" MkTypLibCompatible="true" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Debug/SDL_image.tlb" HeaderFileName="" />
+      <Tool Name="VCCLCompilerTool" ExecutionBucket="7" Optimization="0" AdditionalIncludeDirectories="graphics\include;&quot;..\..\SDL\include&quot;" PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;DEBUG;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);LOAD_BMP;LOAD_GIF;LOAD_JPG;LOAD_JPG_DYNAMIC=\&quot;jpeg.dll\&quot;;LOAD_LBM;LOAD_PCX;LOAD_PNG;LOAD_PNG_DYNAMIC=\&quot;libpng12-0.dll\&quot;;LOAD_PNM;LOAD_TGA;LOAD_TIF;LOAD_TIF_DYNAMIC=\&quot;libtiff-3.dll\&quot;;LOAD_XPM;LOAD_XV;PNG_USE_DLL;ZLIB_DLL" MinimalRebuild="true" RuntimeLibrary="1" PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pch" AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/" ObjectFile="$(PlatformName)\$(ConfigurationName)/" ProgramDataBaseFileName="$(PlatformName)\$(ConfigurationName)/" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="1033" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalOptions=" /subsystem:windowsce,4.20 /machine:ARM /ARMPADCODE" AdditionalDependencies="commctrl.lib coredll.lib secchk.lib ccrtrtti.lib SDL.lib" OutputFile="$(PlatformName)\$(ConfigurationName)/SDL_image.dll" LinkIncremental="2" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\..\SDL\VisualCE\SDL\$(OutDir)" GenerateDebugInformation="true" ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pdb" SubSystem="0" StackReserveSize="65536" StackCommitSize="4096" RandomizedBaseAddress="1" DataExecutionPrevention="0" ImportLibrary="$(PlatformName)\$(ConfigurationName)/SDL_image.lib" TargetMachine="0" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile=".\Debug/SDL_image.bsc" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCCodeSignTool" />
+      <Tool Name="VCPostBuildEventTool" />
+      <DeploymentTool ForceDirty="-1" RemoteDirectory="" RegisterOutput="0" AdditionalFiles="" />
+      <DebuggerTool />
+    </Configuration>
+    <Configuration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)" OutputDirectory="$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="$(PlatformName)\$(ConfigurationName)" ConfigurationType="2" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops" UseOfMFC="0" ATLMinimizesCRunTimeLibraryUsage="false">
+      <Tool Name="VCPreBuildEventTool" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" PreprocessorDefinitions="_DEBUG" MkTypLibCompatible="true" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Debug/SDL_image.tlb" HeaderFileName="" />
+      <Tool Name="VCCLCompilerTool" ExecutionBucket="7" AdditionalOptions=" /subsystem:windowsce,5.01" Optimization="0" AdditionalIncludeDirectories="graphics\include;&quot;..\..\SDL\include&quot;" PreprocessorDefinitions="_DEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;DEBUG;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);LOAD_BMP;LOAD_GIF;LOAD_JPG;LOAD_JPG_DYNAMIC=\&quot;jpeg.dll\&quot;;LOAD_LBM;LOAD_PCX;LOAD_PNG;LOAD_PNG_DYNAMIC=\&quot;libpng12-0.dll\&quot;;LOAD_PNM;LOAD_TGA;LOAD_TIF;LOAD_TIF_DYNAMIC=\&quot;libtiff-3.dll\&quot;;LOAD_XPM;LOAD_XV;PNG_USE_DLL;ZLIB_DLL" MinimalRebuild="true" RuntimeLibrary="1" PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pch" AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/" ObjectFile="$(PlatformName)\$(ConfigurationName)/" ProgramDataBaseFileName="$(PlatformName)\$(ConfigurationName)/" WarningLevel="3" SuppressStartupBanner="true" DebugInformationFormat="3" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="_DEBUG" Culture="1033" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalOptions=" /subsystem:windowsce,5.01" AdditionalDependencies="commctrl.lib coredll.lib  SDL.lib" OutputFile="$(PlatformName)\$(ConfigurationName)/SDL_image.dll" LinkIncremental="2" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\..\SDL\VisualCE\SDL\$(OutDir)" IgnoreDefaultLibraryNames="$(CENoDefaultLib)" GenerateDebugInformation="true" ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pdb" SubSystem="0" StackReserveSize="65536" StackCommitSize="4096" RandomizedBaseAddress="1" DataExecutionPrevention="0" ImportLibrary="$(PlatformName)\$(ConfigurationName)/SDL_image.lib" TargetMachine="0" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile=".\Debug/SDL_image.bsc" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCCodeSignTool" />
+      <Tool Name="VCPostBuildEventTool" />
+      <DeploymentTool ForceDirty="-1" RemoteDirectory="" RegisterOutput="0" AdditionalFiles="" />
+      <DebuggerTool />
+    </Configuration>
+    <Configuration Name="Release|Pocket PC 2003 (ARMV4)" OutputDirectory="$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="$(PlatformName)\$(ConfigurationName)" ConfigurationType="2" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops" UseOfMFC="0" ATLMinimizesCRunTimeLibraryUsage="false">
+      <Tool Name="VCPreBuildEventTool" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" PreprocessorDefinitions="NDEBUG" MkTypLibCompatible="true" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Release/SDL_image.tlb" HeaderFileName="" />
+      <Tool Name="VCCLCompilerTool" ExecutionBucket="7" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="graphics\include;&quot;..\..\SDL\include&quot;" PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);LOAD_BMP;LOAD_GIF;LOAD_JPG;LOAD_JPG_DYNAMIC=\&quot;jpeg.dll\&quot;;LOAD_LBM;LOAD_PCX;LOAD_PNG;LOAD_PNG_DYNAMIC=\&quot;libpng12-0.dll\&quot;;LOAD_PNM;LOAD_TGA;LOAD_TIF;LOAD_TIF_DYNAMIC=\&quot;libtiff-3.dll\&quot;;LOAD_XPM;LOAD_XV;PNG_USE_DLL;ZLIB_DLL" StringPooling="true" RuntimeLibrary="0" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pch" AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/" ObjectFile="$(PlatformName)\$(ConfigurationName)/" ProgramDataBaseFileName="$(PlatformName)\$(ConfigurationName)/" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="1033" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalOptions=" /subsystem:windowsce,4.20 /machine:ARM /ARMPADCODE" AdditionalDependencies="commctrl.lib coredll.lib secchk.lib ccrtrtti.lib SDL.lib" OutputFile="$(PlatformName)\$(ConfigurationName)/SDL_image.dll" LinkIncremental="1" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\..\SDL\VisualCE\SDL\$(OutDir)" ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pdb" SubSystem="0" StackReserveSize="65536" StackCommitSize="4096" RandomizedBaseAddress="1" DataExecutionPrevention="0" ImportLibrary="$(PlatformName)\$(ConfigurationName)/SDL_image.lib" TargetMachine="0" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile=".\Release/SDL_image.bsc" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCCodeSignTool" />
+      <Tool Name="VCPostBuildEventTool" />
+      <DeploymentTool ForceDirty="-1" RemoteDirectory="" RegisterOutput="0" AdditionalFiles="" />
+      <DebuggerTool />
+    </Configuration>
+    <Configuration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)" OutputDirectory="$(PlatformName)\$(ConfigurationName)" IntermediateDirectory="$(PlatformName)\$(ConfigurationName)" ConfigurationType="2" InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops" UseOfMFC="0" ATLMinimizesCRunTimeLibraryUsage="false">
+      <Tool Name="VCPreBuildEventTool" />
+      <Tool Name="VCCustomBuildTool" />
+      <Tool Name="VCXMLDataGeneratorTool" />
+      <Tool Name="VCWebServiceProxyGeneratorTool" />
+      <Tool Name="VCMIDLTool" PreprocessorDefinitions="NDEBUG" MkTypLibCompatible="true" SuppressStartupBanner="true" TargetEnvironment="1" TypeLibraryName=".\Release/SDL_image.tlb" HeaderFileName="" />
+      <Tool Name="VCCLCompilerTool" ExecutionBucket="7" AdditionalOptions=" /subsystem:windowsce,5.01" Optimization="2" InlineFunctionExpansion="1" AdditionalIncludeDirectories="graphics\include;&quot;..\..\SDL\include&quot;" PreprocessorDefinitions="NDEBUG;_WIN32_WCE=$(CEVER);UNDER_CE;$(PLATFORMDEFINES);WINCE;_WINDOWS;$(ARCHFAM);$(_ARCHFAM_);LOAD_BMP;LOAD_GIF;LOAD_JPG;LOAD_JPG_DYNAMIC=\&quot;jpeg.dll\&quot;;LOAD_LBM;LOAD_PCX;LOAD_PNG;LOAD_PNG_DYNAMIC=\&quot;libpng12-0.dll\&quot;;LOAD_PNM;LOAD_TGA;LOAD_TIF;LOAD_TIF_DYNAMIC=\&quot;libtiff-3.dll\&quot;;LOAD_XPM;LOAD_XV;PNG_USE_DLL;ZLIB_DLL" StringPooling="true" RuntimeLibrary="0" EnableFunctionLevelLinking="true" PrecompiledHeaderFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pch" AssemblerListingLocation="$(PlatformName)\$(ConfigurationName)/" ObjectFile="$(PlatformName)\$(ConfigurationName)/" ProgramDataBaseFileName="$(PlatformName)\$(ConfigurationName)/" WarningLevel="3" SuppressStartupBanner="true" />
+      <Tool Name="VCManagedResourceCompilerTool" />
+      <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="NDEBUG" Culture="1033" />
+      <Tool Name="VCPreLinkEventTool" />
+      <Tool Name="VCLinkerTool" AdditionalOptions=" /subsystem:windowsce,5.01" AdditionalDependencies="commctrl.lib coredll.lib  SDL.lib" OutputFile="$(PlatformName)\$(ConfigurationName)/SDL_image.dll" LinkIncremental="1" SuppressStartupBanner="true" AdditionalLibraryDirectories="..\..\SDL\VisualCE\SDL\$(OutDir)" ProgramDatabaseFile="$(PlatformName)\$(ConfigurationName)/SDL_image.pdb" SubSystem="0" StackReserveSize="65536" StackCommitSize="4096" RandomizedBaseAddress="1" DataExecutionPrevention="0" ImportLibrary="$(PlatformName)\$(ConfigurationName)/SDL_image.lib" TargetMachine="0" />
+      <Tool Name="VCALinkTool" />
+      <Tool Name="VCXDCMakeTool" />
+      <Tool Name="VCBscMakeTool" SuppressStartupBanner="true" OutputFile=".\Release/SDL_image.bsc" />
+      <Tool Name="VCFxCopTool" />
+      <Tool Name="VCCodeSignTool" />
+      <Tool Name="VCPostBuildEventTool" />
+      <DeploymentTool ForceDirty="-1" RemoteDirectory="" RegisterOutput="0" AdditionalFiles="" />
+      <DebuggerTool />
+    </Configuration>
+  </Configurations>
+  <References>
+  </References>
+  <Files>
+    <Filter Name="SDL_image Sources">
+      <File RelativePath="..\IMG.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_bmp.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_gif.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_jpg.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_lbm.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_pcx.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_png.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_pnm.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_tga.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_tif.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_xcf.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_xpm.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_xv.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Win32">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="..\IMG_xxx.c">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+      <File RelativePath="Version.rc">
+        <FileConfiguration Name="Debug|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Pocket PC 2003 (ARMV4)">
+          <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="" />
+        </FileConfiguration>
+        <FileConfiguration Name="Release|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)">
+          <Tool Name="VCResourceCompilerTool" PreprocessorDefinitions="" />
+        </FileConfiguration>
+      </File>
+    </Filter>
+    <Filter Name="SDL_image Headers">
+      <File RelativePath="..\SDL_image.h">
+      </File>
+    </Filter>
+  </Files>
+  <Globals>
+  </Globals>
+</VisualStudioProject>

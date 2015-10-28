@@ -1,0 +1,42 @@
+# Makefile to build the SDL library
+
+INCLUDE = -I./include
+CFLAGS  = -g -O2 $(INCLUDE)
+AR	= ar
+RANLIB	= ranlib
+
+CONFIG_H = include/SDL_config.h
+TARGET  = libSDL.a
+SOURCES = \
+	src/*.c \
+	src/audio/*.c \
+	src/cdrom/*.c \
+	src/cpuinfo/*.c \
+	src/events/*.c \
+	src/file/*.c \
+	src/joystick/*.c \
+	src/stdlib/*.c \
+	src/thread/*.c \
+	src/timer/*.c \
+	src/video/*.c \
+	src/audio/dummy/*.c \
+	src/video/dummy/*.c \
+	src/joystick/dummy/*.c \
+	src/cdrom/dummy/*.c \
+	src/thread/generic/*.c \
+	src/timer/dummy/*.c \
+	src/loadso/dummy/*.c \
+
+OBJECTS = $(shell echo $(SOURCES) | sed -e 's,\.c,\.o,g')
+
+all: $(TARGET)
+
+$(TARGET): $(CONFIG_H) $(OBJECTS)
+	$(AR) crv $@ $^
+	$(RANLIB) $@
+
+$(CONFIG_H):
+	cp $(CONFIG_H).default $(CONFIG_H)
+
+clean:
+	rm -f $(TARGET) $(OBJECTS)

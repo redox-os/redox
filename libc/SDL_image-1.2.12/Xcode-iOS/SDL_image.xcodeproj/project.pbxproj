@@ -1,0 +1,310 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		005DF5E90A140CA2006B0BD5 /* IMG_xv.c in Sources */ = {isa = PBXBuildFile; fileRef = 005DF5E70A140CA2006B0BD5 /* IMG_xv.c */; };
+		00728B2A0F0E004C00C302A9 /* IMG_tga.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB4C05F012FAC847F000001 /* IMG_tga.c */; };
+		00A06D7812FFBFD5009F1A11 /* SDL_image.h in Headers */ = {isa = PBXBuildFile; fileRef = 1014BAEA010A4B677F000001 /* SDL_image.h */; };
+		00A6250312F4E9CC00577F68 /* IMG_ImageIO.m in Sources */ = {isa = PBXBuildFile; fileRef = 00A624FD12F4E99800577F68 /* IMG_ImageIO.m */; };
+		61161B8914B6625C009198B1 /* IMG_webp.c in Sources */ = {isa = PBXBuildFile; fileRef = 61161B8814B6625C009198B1 /* IMG_webp.c */; };
+		BE1FA73207AF4C45004B6283 /* IMG.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB4C058012FAC847F000001 /* IMG.c */; };
+		BE1FA73607AF4C45004B6283 /* IMG_pcx.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB4C05C012FAC847F000001 /* IMG_pcx.c */; };
+		BE1FA73807AF4C45004B6283 /* IMG_pnm.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB4C05E012FAC847F000001 /* IMG_pnm.c */; };
+		BE1FA73B07AF4C45004B6283 /* IMG_xcf.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB4C061012FAC847F000001 /* IMG_xcf.c */; };
+		BE1FA73C07AF4C45004B6283 /* IMG_xpm.c in Sources */ = {isa = PBXBuildFile; fileRef = 3BB4C062012FAC847F000001 /* IMG_xpm.c */; };
+		BE1FA73D07AF4C45004B6283 /* IMG_lbm.c in Sources */ = {isa = PBXBuildFile; fileRef = F5FB1F0001CD818601FAFB42 /* IMG_lbm.c */; };
+		BE1FA73E07AF4C45004B6283 /* IMG_xxx.c in Sources */ = {isa = PBXBuildFile; fileRef = B2D7A06503FAB42200A8000A /* IMG_xxx.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		005DF5E70A140CA2006B0BD5 /* IMG_xv.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_xv.c; path = ../IMG_xv.c; sourceTree = SOURCE_ROOT; };
+		00A624FD12F4E99800577F68 /* IMG_ImageIO.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = IMG_ImageIO.m; path = ../IMG_ImageIO.m; sourceTree = SOURCE_ROOT; };
+		1014BAEA010A4B677F000001 /* SDL_image.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = SDL_image.h; path = ../SDL_image.h; sourceTree = SOURCE_ROOT; };
+		3BB4C058012FAC847F000001 /* IMG.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG.c; path = ../IMG.c; sourceTree = SOURCE_ROOT; };
+		3BB4C059012FAC847F000001 /* IMG_bmp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_bmp.c; path = ../IMG_bmp.c; sourceTree = SOURCE_ROOT; };
+		3BB4C05A012FAC847F000001 /* IMG_gif.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_gif.c; path = ../IMG_gif.c; sourceTree = SOURCE_ROOT; };
+		3BB4C05B012FAC847F000001 /* IMG_jpg.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_jpg.c; path = ../IMG_jpg.c; sourceTree = SOURCE_ROOT; };
+		3BB4C05C012FAC847F000001 /* IMG_pcx.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_pcx.c; path = ../IMG_pcx.c; sourceTree = SOURCE_ROOT; };
+		3BB4C05D012FAC847F000001 /* IMG_png.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_png.c; path = ../IMG_png.c; sourceTree = SOURCE_ROOT; };
+		3BB4C05E012FAC847F000001 /* IMG_pnm.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_pnm.c; path = ../IMG_pnm.c; sourceTree = SOURCE_ROOT; };
+		3BB4C05F012FAC847F000001 /* IMG_tga.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_tga.c; path = ../IMG_tga.c; sourceTree = SOURCE_ROOT; };
+		3BB4C060012FAC847F000001 /* IMG_tif.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_tif.c; path = ../IMG_tif.c; sourceTree = SOURCE_ROOT; };
+		3BB4C061012FAC847F000001 /* IMG_xcf.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_xcf.c; path = ../IMG_xcf.c; sourceTree = SOURCE_ROOT; };
+		3BB4C062012FAC847F000001 /* IMG_xpm.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_xpm.c; path = ../IMG_xpm.c; sourceTree = SOURCE_ROOT; };
+		61161B8814B6625C009198B1 /* IMG_webp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = IMG_webp.c; path = ../IMG_webp.c; sourceTree = SOURCE_ROOT; };
+		B2D7A06503FAB42200A8000A /* IMG_xxx.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_xxx.c; path = ../IMG_xxx.c; sourceTree = SOURCE_ROOT; };
+		BE1FA74107AF4C45004B6283 /* libSDL_image.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL_image.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5FB1F0001CD818601FAFB42 /* IMG_lbm.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = IMG_lbm.c; path = ../IMG_lbm.c; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BE1FA73F07AF4C45004B6283 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0153844A006D81B07F000001 /* Public Headers */ = {
+			isa = PBXGroup;
+			children = (
+				1014BAEA010A4B677F000001 /* SDL_image.h */,
+			);
+			name = "Public Headers";
+			sourceTree = "<group>";
+		};
+		034768DDFF38A45A11DB9C8B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				089C1665FE841158C02AAC07 /* Resources */,
+				BE1FA74107AF4C45004B6283 /* libSDL_image.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		0867D691FE84028FC02AAC07 /* SDL_imageFramework */ = {
+			isa = PBXGroup;
+			children = (
+				0153844A006D81B07F000001 /* Public Headers */,
+				08FB77ACFE841707C02AAC07 /* Library Source */,
+				034768DDFF38A45A11DB9C8B /* Products */,
+			);
+			name = SDL_imageFramework;
+			sourceTree = "<group>";
+		};
+		089C1665FE841158C02AAC07 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		08FB77ACFE841707C02AAC07 /* Library Source */ = {
+			isa = PBXGroup;
+			children = (
+				00A624FD12F4E99800577F68 /* IMG_ImageIO.m */,
+				3BB4C058012FAC847F000001 /* IMG.c */,
+				3BB4C059012FAC847F000001 /* IMG_bmp.c */,
+				3BB4C05A012FAC847F000001 /* IMG_gif.c */,
+				3BB4C05B012FAC847F000001 /* IMG_jpg.c */,
+				F5FB1F0001CD818601FAFB42 /* IMG_lbm.c */,
+				3BB4C05C012FAC847F000001 /* IMG_pcx.c */,
+				3BB4C05D012FAC847F000001 /* IMG_png.c */,
+				3BB4C05E012FAC847F000001 /* IMG_pnm.c */,
+				3BB4C05F012FAC847F000001 /* IMG_tga.c */,
+				3BB4C060012FAC847F000001 /* IMG_tif.c */,
+				61161B8814B6625C009198B1 /* IMG_webp.c */,
+				3BB4C061012FAC847F000001 /* IMG_xcf.c */,
+				3BB4C062012FAC847F000001 /* IMG_xpm.c */,
+				005DF5E70A140CA2006B0BD5 /* IMG_xv.c */,
+				B2D7A06503FAB42200A8000A /* IMG_xxx.c */,
+			);
+			name = "Library Source";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		BE1FA73007AF4C45004B6283 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				00A06D7812FFBFD5009F1A11 /* SDL_image.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		BE1FA72F07AF4C45004B6283 /* libSDL_image */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00B7E3AE097EB73D00826121 /* Build configuration list for PBXNativeTarget "libSDL_image" */;
+			buildPhases = (
+				BE1FA73007AF4C45004B6283 /* Headers */,
+				BE1FA73107AF4C45004B6283 /* Sources */,
+				BE1FA73F07AF4C45004B6283 /* Frameworks */,
+				BE1FA74007AF4C45004B6283 /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = libSDL_image;
+			productInstallPath = /usr/local/lib;
+			productName = "Static Library";
+			productReference = BE1FA74107AF4C45004B6283 /* libSDL_image.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0867D690FE84028FC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 00B7E3B6097EB73D00826121 /* Build configuration list for PBXProject "SDL_image" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = 0867D691FE84028FC02AAC07 /* SDL_imageFramework */;
+			productRefGroup = 034768DDFF38A45A11DB9C8B /* Products */;
+			projectDirPath = "";
+			projectRoot = ..;
+			targets = (
+				BE1FA72F07AF4C45004B6283 /* libSDL_image */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXRezBuildPhase section */
+		BE1FA74007AF4C45004B6283 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BE1FA73107AF4C45004B6283 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE1FA73207AF4C45004B6283 /* IMG.c in Sources */,
+				BE1FA73607AF4C45004B6283 /* IMG_pcx.c in Sources */,
+				BE1FA73807AF4C45004B6283 /* IMG_pnm.c in Sources */,
+				BE1FA73B07AF4C45004B6283 /* IMG_xcf.c in Sources */,
+				BE1FA73C07AF4C45004B6283 /* IMG_xpm.c in Sources */,
+				BE1FA73D07AF4C45004B6283 /* IMG_lbm.c in Sources */,
+				BE1FA73E07AF4C45004B6283 /* IMG_xxx.c in Sources */,
+				005DF5E90A140CA2006B0BD5 /* IMG_xv.c in Sources */,
+				00728B2A0F0E004C00C302A9 /* IMG_tga.c in Sources */,
+				00A6250312F4E9CC00577F68 /* IMG_ImageIO.m in Sources */,
+				61161B8914B6625C009198B1 /* IMG_webp.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		007288110F0DA5BA00C302A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					armv6,
+					armv7,
+				);
+				COPY_PHASE_STRIP = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					LOAD_BMP,
+					LOAD_GIF,
+					LOAD_JPG,
+					LOAD_LBM,
+					LOAD_PCX,
+					LOAD_PNG,
+					LOAD_PNM,
+					LOAD_TGA,
+					LOAD_TIF,
+					LOAD_XPM,
+					LOAD_XV,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../SDL/include";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		007288130F0DA5BA00C302A9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				LIBRARY_STYLE = STATIC;
+				PRODUCT_NAME = SDL_image;
+				SECTORDER_FLAGS = "";
+			};
+			name = Debug;
+		};
+		007288150F0DA5C400C302A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					armv6,
+					armv7,
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					LOAD_BMP,
+					LOAD_GIF,
+					LOAD_JPG,
+					LOAD_LBM,
+					LOAD_PCX,
+					LOAD_PNG,
+					LOAD_PNM,
+					LOAD_TGA,
+					LOAD_TIF,
+					LOAD_XPM,
+					LOAD_XV,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/../../SDL/include";
+				IPHONEOS_DEPLOYMENT_TARGET = 3.0;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		007288170F0DA5C400C302A9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				LIBRARY_STYLE = STATIC;
+				PRODUCT_NAME = SDL_image;
+				SECTORDER_FLAGS = "";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00B7E3AE097EB73D00826121 /* Build configuration list for PBXNativeTarget "libSDL_image" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				007288130F0DA5BA00C302A9 /* Debug */,
+				007288170F0DA5C400C302A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		00B7E3B6097EB73D00826121 /* Build configuration list for PBXProject "SDL_image" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				007288110F0DA5BA00C302A9 /* Debug */,
+				007288150F0DA5C400C302A9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0867D690FE84028FC02AAC07 /* Project object */;
+}

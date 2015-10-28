@@ -1,0 +1,260 @@
+<HTML
+><HEAD
+><TITLE
+>CD-ROM</TITLE
+><META
+NAME="GENERATOR"
+CONTENT="Modular DocBook HTML Stylesheet Version 1.76b+
+"><LINK
+REL="HOME"
+TITLE="SDL Library Documentation"
+HREF="index.html"><LINK
+REL="UP"
+TITLE="SDL Reference"
+HREF="reference.html"><LINK
+REL="PREVIOUS"
+TITLE="SDL_CloseAudio"
+HREF="sdlcloseaudio.html"><LINK
+REL="NEXT"
+TITLE="SDL_CDNumDrives"
+HREF="sdlcdnumdrives.html"><META
+NAME="KEYWORD"
+CONTENT="cdrom"><META
+NAME="KEYWORD"
+CONTENT="function"></HEAD
+><BODY
+CLASS="CHAPTER"
+BGCOLOR="#FFF8DC"
+TEXT="#000000"
+LINK="#0000ee"
+VLINK="#551a8b"
+ALINK="#ff0000"
+><DIV
+CLASS="NAVHEADER"
+><TABLE
+SUMMARY="Header navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TH
+COLSPAN="3"
+ALIGN="center"
+>SDL Library Documentation</TH
+></TR
+><TR
+><TD
+WIDTH="10%"
+ALIGN="left"
+VALIGN="bottom"
+><A
+HREF="sdlcloseaudio.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="80%"
+ALIGN="center"
+VALIGN="bottom"
+></TD
+><TD
+WIDTH="10%"
+ALIGN="right"
+VALIGN="bottom"
+><A
+HREF="sdlcdnumdrives.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+></TABLE
+><HR
+ALIGN="LEFT"
+WIDTH="100%"></DIV
+><DIV
+CLASS="CHAPTER"
+><H1
+><A
+NAME="CDROM"
+></A
+>Chapter 11. CD-ROM</H1
+><DIV
+CLASS="TOC"
+><DL
+><DT
+><B
+>Table of Contents</B
+></DT
+><DT
+><A
+HREF="sdlcdnumdrives.html"
+>SDL_CDNumDrives</A
+>&nbsp;--&nbsp;Returns the number of CD-ROM drives on the system.</DT
+><DT
+><A
+HREF="sdlcdname.html"
+>SDL_CDName</A
+>&nbsp;--&nbsp;Returns a human-readable, system-dependent identifier for the CD-ROM.</DT
+><DT
+><A
+HREF="sdlcdopen.html"
+>SDL_CDOpen</A
+>&nbsp;--&nbsp;Opens a CD-ROM drive for access.</DT
+><DT
+><A
+HREF="sdlcdstatus.html"
+>SDL_CDStatus</A
+>&nbsp;--&nbsp;Returns the current status of the given drive.</DT
+><DT
+><A
+HREF="sdlcdplay.html"
+>SDL_CDPlay</A
+>&nbsp;--&nbsp;Play a CD</DT
+><DT
+><A
+HREF="sdlcdplaytracks.html"
+>SDL_CDPlayTracks</A
+>&nbsp;--&nbsp;Play the given CD track(s)</DT
+><DT
+><A
+HREF="sdlcdpause.html"
+>SDL_CDPause</A
+>&nbsp;--&nbsp;Pauses a CDROM</DT
+><DT
+><A
+HREF="sdlcdresume.html"
+>SDL_CDResume</A
+>&nbsp;--&nbsp;Resumes a CDROM</DT
+><DT
+><A
+HREF="sdlcdstop.html"
+>SDL_CDStop</A
+>&nbsp;--&nbsp;Stops a CDROM</DT
+><DT
+><A
+HREF="sdlcdeject.html"
+>SDL_CDEject</A
+>&nbsp;--&nbsp;Ejects a CDROM</DT
+><DT
+><A
+HREF="sdlcdclose.html"
+>SDL_CDClose</A
+>&nbsp;--&nbsp;Closes a SDL_CD handle</DT
+><DT
+><A
+HREF="sdlcd.html"
+>SDL_CD</A
+>&nbsp;--&nbsp;CDROM Drive Information</DT
+><DT
+><A
+HREF="sdlcdtrack.html"
+>SDL_CDtrack</A
+>&nbsp;--&nbsp;CD Track Information Structure</DT
+></DL
+></DIV
+><P
+>SDL supports audio control of up to 32 local CD-ROM drives at once.</P
+><P
+>You use this API to perform all the basic functions of a CD player,
+including listing the tracks, playing, stopping, and ejecting the CD-ROM.
+(Currently, multi-changer CD drives are not supported.)</P
+><P
+>Before you call any of the SDL CD-ROM functions, you must first call
+"<TT
+CLASS="FUNCTION"
+>SDL_Init(SDL_INIT_CDROM)</TT
+>", which scans the system for
+CD-ROM drives, and sets the program up for audio control.  Check the 
+return code, which should be <SPAN
+CLASS="RETURNVALUE"
+>0</SPAN
+>, to see if there 
+were any errors in starting up.</P
+><P
+>After you have initialized the library, you can find out how many drives
+are available using the <TT
+CLASS="FUNCTION"
+>SDL_CDNumDrives()</TT
+> function.  
+The first drive listed is the system default CD-ROM drive.  After you have 
+chosen a drive, and have opened it with <TT
+CLASS="FUNCTION"
+>SDL_CDOpen()</TT
+>, 
+you can check the status and start playing if there's a CD in the drive.</P
+><P
+>A CD-ROM is organized into one or more tracks, each consisting of a certain
+number of "frames".  Each frame is ~2K in size, and at normal playing speed,
+a CD plays 75 frames per second.  SDL works with the number of frames on a
+CD, but this can easily be converted to the more familiar minutes/seconds
+format by using the <TT
+CLASS="FUNCTION"
+>FRAMES_TO_MSF()</TT
+> macro.</P
+></DIV
+><DIV
+CLASS="NAVFOOTER"
+><HR
+ALIGN="LEFT"
+WIDTH="100%"><TABLE
+SUMMARY="Footer navigation table"
+WIDTH="100%"
+BORDER="0"
+CELLPADDING="0"
+CELLSPACING="0"
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+><A
+HREF="sdlcloseaudio.html"
+ACCESSKEY="P"
+>Prev</A
+></TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="index.html"
+ACCESSKEY="H"
+>Home</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+><A
+HREF="sdlcdnumdrives.html"
+ACCESSKEY="N"
+>Next</A
+></TD
+></TR
+><TR
+><TD
+WIDTH="33%"
+ALIGN="left"
+VALIGN="top"
+>SDL_CloseAudio</TD
+><TD
+WIDTH="34%"
+ALIGN="center"
+VALIGN="top"
+><A
+HREF="reference.html"
+ACCESSKEY="U"
+>Up</A
+></TD
+><TD
+WIDTH="33%"
+ALIGN="right"
+VALIGN="top"
+>SDL_CDNumDrives</TD
+></TR
+></TABLE
+></DIV
+></BODY
+></HTML
+>

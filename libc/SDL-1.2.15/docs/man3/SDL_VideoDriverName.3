@@ -1,0 +1,18 @@
+.TH "SDL_VideoDriverName" "3" "Tue 11 Sep 2001, 23:01" "SDL" "SDL API Reference" 
+.SH "NAME"
+SDL_VideoDriverName \- Obtain the name of the video driver
+.SH "SYNOPSIS"
+.PP
+\fB#include "SDL\&.h"
+.sp
+\fBchar *\fBSDL_VideoDriverName\fP\fR(\fBchar *namebuf, int maxlen\fR);
+.SH "DESCRIPTION"
+.PP
+The buffer pointed to by \fBnamebuf\fR is filled up to a maximum of \fBmaxlen\fR characters (include the NULL terminator) with the name of the initialised video driver\&. The driver name is a simple one word identifier like "x11" or "windib"\&.
+.SH "RETURN VALUE"
+.PP
+Returns \fBNULL\fP if video has not been initialised with \fBSDL_Init\fP or a pointer to \fBnamebuf\fR otherwise\&.
+.SH "SEE ALSO"
+.PP
+\fI\fBSDL_Init\fP\fR \fI\fBSDL_InitSubSystem\fP\fR
+.\" created by instant / docbook-to-man, Tue 11 Sep 2001, 23:01
