@@ -13,6 +13,12 @@ impl Editor {
             Char('G') => (0, self.text.len() - 1),
             Char('L') => self.ln_end_pos(),
             Char('H') => (0, self.y()),
+            Char('t') => {
+                let ch = self.next_char();
+
+                // TODO!
+                (self.x(), self.y())
+            },
             _ => (self.x(), self.y()),
         }
     }

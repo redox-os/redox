@@ -141,6 +141,9 @@ impl Editor {
                             self.invoke(cmd);
                             self.prompt = String::new();
                         },
+                        Backspace => {
+                            self.prompt.pop();
+                        },
                         Char(c) => self.prompt.push(c),
                         _ => {},
                     }
