@@ -35,7 +35,7 @@ impl Resource for AC97Resource {
         URL::from_str("audio://")
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         None
     }
 
@@ -161,7 +161,7 @@ impl Resource for AC97Resource {
         Some(buf.len())
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
         None
     }
 
@@ -181,7 +181,7 @@ impl KScheme for AC97 {
         "audio"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         Some(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,

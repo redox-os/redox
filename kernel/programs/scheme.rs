@@ -10,15 +10,20 @@ use common::elf::{self, ELF};
 use common::memory;
 use common::paging::Page;
 use common::scheduler::{start_no_ints, end_no_ints};
+use common::parse_path::parse_path;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
+/// A scheme context
 pub struct SchemeContext {
+    /// Interrupted
     interrupts: bool,
+    /// The old memory (before context switch)
     old_memory: Vec<ContextMemory>,
 }
 
 impl SchemeContext {
+    /// Enter from a given context memory
     pub unsafe fn enter(memory: &ContextMemory) -> SchemeContext {
         let interrupts = start_no_ints();
         let mut old_memory: Vec<ContextMemory> = Vec::new();
@@ -59,6 +64,7 @@ impl SchemeContext {
         ptr
     }
 
+    /// Exit the context
     pub unsafe fn exit(self) {
         for memory in self.old_memory.iter() {
             for i in 0..(memory.virtual_size + 4095) / 4096 {
@@ -70,25 +76,37 @@ impl SchemeContext {
     }
 }
 
+/// A scheme resource
 pub struct SchemeResource {
+    /// The handle
     handle: usize,
+    /// The context memory
     memory: ContextMemory,
+    /// Duplicate?
     _dup: usize,
+    /// Internal fpath
     _fpath: usize,
+    /// Internal read
     _read: usize,
+    /// Internal write
     _write: usize,
+    /// Internal lseek
     _lseek: usize,
+    /// Internal fsync
     _fsync: usize,
+    /// Internal close
     _close: usize,
 }
 
 impl SchemeResource {
+    /// Check validity
     fn valid(&self, addr: usize) -> bool {
         addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
     }
 }
 
 impl Resource for SchemeResource {
+    // TODO: Clone instead?
     /// Duplicate the resource
     fn dup(&self) -> Option<Box<Resource>> {
         if self.valid(self._dup) {
@@ -237,11 +255,17 @@ impl Drop for SchemeResource {
     }
 }
 
+/// A scheme item
 pub struct SchemeItem {
+    /// The URL
     url: URL,
+    /// The scheme
     scheme: String,
+    /// The binary for the scheme
     binary: URL,
+    /// The handle
     handle: usize,
+    /// The context memory
     memory: ContextMemory,
     _start: usize,
     _stop: usize,
@@ -256,6 +280,7 @@ pub struct SchemeItem {
 }
 
 impl SchemeItem {
+    /// Load scheme item from URL
     pub fn from_url(url: &URL) -> Box<SchemeItem> {
         let mut scheme_item = box SchemeItem {
             url: url.clone(),
@@ -279,8 +304,8 @@ impl SchemeItem {
             _close: 0,
         };
 
-        let path_parts = url.path_parts();
-        if path_parts.len() > 0 {
+        let path_parts = parse_path(url.reference());
+        if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
                 scheme_item.binary = URL::from_string(&(url.to_string() + part + ".bin"));
@@ -327,6 +352,7 @@ impl SchemeItem {
         scheme_item
     }
 
+    /// Check validity
     fn valid(&self, addr: usize) -> bool {
         addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
     }

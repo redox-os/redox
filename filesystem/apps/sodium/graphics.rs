@@ -73,7 +73,7 @@ impl Editor {
 
             self.window.char(n as isize * 8, h as isize - 16 - 1 - {
                 if mode == Mode::Primitive(PrimitiveMode::Prompt) {
-                    16 + 1
+                    16 + 1 + 1
                 } else {
                     0
                 }

@@ -62,32 +62,45 @@ impl Editor {
                                 mode: InsertMode::Insert,
                             }));
                     }
-                    Char('h') => self.goto_left(n),
-                    Char('j') => self.goto_down(n),
-                    Char('k') => self.goto_up(n),
-                    Char('l') => self.goto_right(n),
-                    Char('J') => self.goto_down(15 * n),
-                    Char('K') => self.goto_up(15 * n),
+                    Char('h') => {
+                        let left = self.left(n);
+                        self.goto(left);
+                    },
+                    Char('j') => {
+                        let down = self.down(n);
+                        self.goto(down);
+                    },
+                    Char('k') => {
+                        let up = self.up(n);
+                        self.goto(up);
+                    },
+                    Char('l') => {
+                        let right = self.right(n);
+                        self.goto(right);
+                    },
+                    Char('J') => {
+                        let down = self.down(15 * n);
+                        self.goto(down);
+                    },
+                    Char('K') => {
+                        let up = self.up(15 * n);
+                        self.goto(up);
+                    },
                     Char('x') => self.delete(),
                     Char('X') => {
-                        self.goto_previous();
+                        let previous = self.previous();
+                        self.goto(previous);
                         self.delete();
                     },
-                    Char('L') => self.goto_ln_end(),
+                    Char('L') => {
+                        let ln_end = self.ln_end();
+                        self.goto(ln_end);
+                    },
                     Char('H') => self.cursor_mut().x = 0,
                     Char('r') => {
-                        loop {
-                            if let EventOption::Key(k) = self.window.poll()
-                                                         .unwrap_or(Event::new())
-                                                         .to_option() {
-                                if k.pressed {
-                                    let x = self.x();
-                                    let y = self.y();
-                                    self.text[y][x] = k.character;
-                                    break;
-                                }
-                            }
-                        }
+                        let x = self.x();
+                        let y = self.y();
+                        self.text[y][x] = self.next_char();
                     },
                     Char('R') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
@@ -135,7 +148,10 @@ impl Editor {
 //                    Char('J') => {
 //                        self.goto((0, self.text.len() - 1));
 //                    },
-                    Char(' ') => self.goto_next(),
+                    Char(' ') => {
+                        let next = self.next();
+                        self.goto(next);
+                    },
                     _ => {},
                 },
                 Primitive(Insert(opt)) => {
@@ -149,6 +165,9 @@ impl Editor {
 
                             self.invoke(cmd);
                             self.prompt = String::new();
+                        },
+                        Backspace => {
+                            self.prompt.pop();
                         },
                         Char(c) => self.prompt.push(c),
                         _ => {},

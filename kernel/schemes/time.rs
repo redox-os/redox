@@ -12,7 +12,7 @@ impl KScheme for TimeScheme {
         "time"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         let clock_realtime;
         let clock_monotonic;
         unsafe {
