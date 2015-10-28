@@ -17,21 +17,18 @@ pub fn parse_port(string: &str) -> &str {
     }
 
     &string[a..b + 1]
-
 }
 
 /// Get the host from a string (ip)
 pub fn parse_host(string: &str) -> &str {
-    let mut b = 0;
-
     // TODO: Username/Password syntax
-    for (n, c) in string.chars().enumerate() {
-        match c {
-            ':' | '/' => break,
-            _ => b += 1,
-        }
-    }
+    let pos = match string.find(':') {
+        Some(pos) => pos + 1,
+        None => match string.find('/') {
+            Some(pos) => pos + 1,
+            None => string.len(),
+        },
+    };
 
-    &string[..b + 1]
-
+    &string[..pos]
 }
