@@ -1,2 +1,4 @@
 - [ ] Fix `d<motion>`
 - [ ] Add 't' command
+- [ ] Clear up `let` borrowck bypassers
+- [ ] Make editor.pos method and use that instead of
