@@ -8,115 +8,96 @@ pub enum EventOption {
     Mouse(MouseEvent),
     /// A key event
     Key(KeyEvent),
+    /// A key event
+    Disp(DisplayEvent),
     /// A unknown event
     Unknown(Event),
     /// No event
     None,
 }
-
-/// An event
-// TODO: Make this a scheme
-#[derive(Copy, Clone)]
+// switched to this because rust doesn't guarantee
+// that two structs with the same definition will
+// have the same representation when compiled
+#[derive(Copy,Clone)]
 #[repr(packed)]
 pub struct Event {
-    pub code: char,
-    pub a: isize,
-    pub b: isize,
-    pub c: isize,
+    pub const DATA_LENGTH: usize = 4;
+    pub const EVENT_TYPE: u32 = 0;
+    pub const KEYBD_EVENT: u8 = 1;
+    pub const MOUSE_EVENT: u8 = 2;
+    pub const DISP_EVENT: u8 = 8;
+    pub data: [u32; DATA_LENGTH];
 }
 
 impl Event {
-    /// Create a null event
     pub fn new() -> Event {
-        Event {
-            code: '\0',
-            a: 0,
-            b: 0,
-            c: 0,
-        }
+        Event { data: [0;4] }
     }
 
-    /// Convert the event ot an optional event
-    // TODO: Consider doing this via a From trait.
     pub fn to_option(self) -> EventOption {
-        match self.code {
-            'm' => EventOption::Mouse(MouseEvent::from_event(self)),
-            'k' => EventOption::Key(KeyEvent::from_event(self)),
-            '\0' => EventOption::None,
-            _ => EventOption::Unknown(self),
+        match self.data[EVENT_TYPE] {
+            MOUSE_EVENT => EventOption::Mouse(MouseEvent::from_event(self)),
+            KEYBD_EVENT => EventOption::Key(KeyEvent::from_event(self)),
+            0           => EventOption::None,
+            _           => EventOption::Unknown(self),
         }
     }
 
-    /// Event trigger
+    // Trigger an event
     pub fn trigger(&self) {
-        let mut event = *self;
-
         unsafe {
             let reenable = scheduler::start_no_ints();
-
-            if event.code == 'm' {
-                event.a = cmp::max(0,
-                                   cmp::min((*::session_ptr).display.width as isize - 1,
-                                            (*::session_ptr).mouse_point.x + event.a));
-                event.b = cmp::max(0,
-                                   cmp::min((*::session_ptr).display.height as isize - 1,
-                                            (*::session_ptr).mouse_point.y + event.b));
-                (*::session_ptr).mouse_point.x = event.a;
-                (*::session_ptr).mouse_point.y = event.b;
-                (*::session_ptr).redraw = true;
-            }
-
-            //TODO: Dispatch to appropriate window
-            (*::events_ptr).push(event);
-
+            (*::events_ptr).push(self);
             scheduler::end_no_ints(reenable);
         }
     }
 }
 
-/// A event related to the mouse
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
     /// The x coordinate
-    pub x: isize,
+    pub x: u32,
     /// The y coordinate
-    pub y: isize,
+    pub y: u32,
     /// Is the left button pressed?
-    pub left_button: bool,
+    pub left_button: bool;
     /// Is the right button pressed?
-    pub right_button: bool,
-    /// Is the midle button pressed?
-    pub middle_button: bool,
+    pub right_button: bool;
+    /// Is the middle button pressed?
+    pub middle_button: bool;
 }
 
 impl MouseEvent {
     /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
-        Event {
-            code: 'm',
-            a: self.x,
-            b: self.y,
-            c: (self.left_button as isize) | (self.right_button as isize) << 1 | (self.middle_button as isize) << 2,
+        let button_state = (self.left_button as u32)       | 
+                           (self.right_button as u32) << 1 |
+                           (self.middle_button as u32) << 2);
+        Event { 
+            data: [ MOUSE_EVENT, self.x, self.y, button_state ],
         }
     }
 
-    /// Convert an `Event` to a `MouseEvent`
     pub fn from_event(event: Event) -> MouseEvent {
+        let button_info = event.data[3];
+        let left_button = button_info & 1 == 1;
+        let right_button = button_info & 2 == 2;
+        let middle_button = button_info & 4 == 4;
         MouseEvent {
-            x: event.a,
-            y: event.b,
-            left_button: event.c & 1 == 1,
-            middle_button: event.c & 4 == 4,
-            right_button: event.c & 2 == 2,
+            x: event.data[1],
+            y: event.data[2],
+            left_button: left_button,
+            right_button: right_button,
+            middle_button: middle_button,
         }
     }
 
-    /// Mouse event trigger
     #[inline]
     pub fn trigger(&self) {
-        self.to_event().trigger();
+        self.to_event().trigger()
     }
 }
+
 
 /// Escape key
 pub const K_ESC: u8 = 0x01;
@@ -171,45 +152,66 @@ pub const K_F11: u8 = 0x57;
 /// F12 key
 pub const K_F12: u8 = 0x58;
 
-/// A key event (such as a pressed key)
 #[derive(Copy, Clone)]
 pub struct KeyEvent {
-    /// The char of the key
     pub character: char,
-    /// The scancode of the key
     pub scancode: u8,
-    /// Is the key pressed?
     pub pressed: bool,
 }
 
 impl KeyEvent {
-    /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         Event {
-            code: 'k',
-            a: self.character as isize,
-            b: self.scancode as isize,
-            c: self.pressed as isize,
+            data: = [ KEYBD_EVENT, 
+                      self.character as u32, 
+                      self.character as u32, 
+                      self.pressed as u32 ]
         }
     }
 
-    /// Convert from an `Event`
     pub fn from_event(event: Event) -> KeyEvent {
-        match char::from_u32(event.a as u32) {
+        let ch = char::from_u32(event.data[1]);
+        match ch {
             Some(character) => KeyEvent {
                 character: character,
-                scancode: event.b as u8,
-                pressed: event.c > 0,
+                scancode: event.data[2],
+                pressed: event.data[3] > 0,
             },
             None => KeyEvent {
                 character: '\0',
-                scancode: event.b as u8,
-                pressed: event.c > 0,
+                scancode: event.data[2] as u8,
+                pressed: event.data[3] > 0,
             },
         }
     }
 
-    /// Key event trigger
+    #[inline]
+    pub fn trigger(&self) {
+        self.to_event().trigger();
+    }
+}
+
+#[derive(Copy,Clone)]
+pub struct DisplayEvent {
+    pub restricted: bool,
+}
+
+impl DisplayEvent {
+    pub fn to_event(&self) -> Event {
+        Event {
+            data: [ DISP_EVENT, 
+                      self.restricted as u32, 
+                      0,
+                      0]
+        }
+    }
+
+    pub fn from_event(event: Event) -> DisplayEvent {
+        DisplayEvent {
+            restricted: Event.data[1] > 0,
+        }
+    }
+
     #[inline]
     pub fn trigger(&self) {
         self.to_event().trigger();

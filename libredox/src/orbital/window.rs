@@ -30,6 +30,7 @@ pub struct Window {
     pub focused: bool,
     /// Is the window minimized?
     pub minimized: bool,
+    font: Vec<u8>,
     dragging: bool,
     last_mouse_event: MouseEvent,
     events: Queue<Event>,
@@ -39,15 +40,20 @@ pub struct Window {
 impl Window {
     /// Create a new window
     pub fn new(point: Point, size: Size, title: String) -> Box<Self> {
+        let mut font = Vec::new();
+        if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
+            font_file.read_to_end(&mut font);
+        }
         let mut ret = box Window {
             point: point,
             size: size,
             title: title,
             content: Display::new(size.width, size.height),
-            title_color: Color::new(255, 255, 255),
-            border_color: Color::alpha(64, 64, 64, 128),
+            title_color: Color::rgb(255, 255, 255),
+            border_color: Color::rgba(64, 64, 64, 128),
             focused: false,
             minimized: false,
+            font: font,
             dragging: false,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -63,6 +69,8 @@ impl Window {
         unsafe {
             ret.ptr = ret.deref_mut();
 
+            // TODO: Replace session ptr with something else
+            // LazyOxen
             if ret.ptr as usize > 0 {
                 (*::session_ptr).add_window(ret.ptr);
             }
@@ -71,40 +79,68 @@ impl Window {
         ret
     }
 
+    /* functions from old version */
+    /// Draw a pixel
+    pub fn pixel(&mut self, point: Point, color: Color) {
+        self.content.pixel(point, color);
+    }
+
+    /// Draw a character, using the loaded font
+    pub fn char(&mut self, x: isize, y: isize, c: char, color: Color) {
+        let cursor = Point { x: x, y: y };
+        self.content.char(c, self.font, cursor, color)
+    }
+
+    /// Set entire window to a color
+    pub fn set(&mut self, color: Color) {
+        self.content.rect(Point{0,0}, self.size, color);
+    }
+
     /// Poll the window (new)
     pub fn poll(&mut self) -> Option<Event> {
-        let event_option;
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            event_option = self.events.pop();
-            scheduler::end_no_ints(reenable);
-        }
-
-        return event_option;
+        self.events.pop();
     }
+
+    pub fn image(&mut self, point: Point, size: Size, data: &[Color]) {
+        if mem::size_of::<Color> == mem::size_of::<u32> {
+            unsafe {
+                self.content.image(point,
+                              data as *const u32,
+                              size);
+            }
+        } else {
+            // should probably do something here
+        }
+    }
+
+    pub fn sync(&mut self) -> bool {
+        self.redraw();
+        true
+    }
+    /* end of the old functions */
 
     /// Redraw the window
     pub fn redraw(&mut self) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.content.flip();
-            (*::session_ptr).redraw = true;
-            scheduler::end_no_ints(reenable);
-        }
+        self.content.flip();
+        //TODO: fix this
+        // LazyOxen
+        (*::session_ptr).redraw = true;
     }
 
+    /* I think all of this should move to the display manager */
+    /* the display draws the windows it wants to */
     /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
-            self.border_color = Color::alpha(128, 128, 128, 192);
+            self.border_color = Color::rgba(128, 128, 128, 192);
         } else {
-            self.border_color = Color::alpha(64, 64, 64, 128);
+            self.border_color = Color::rgba(64, 64, 64, 128);
         }
 
         if self.minimized {
-            self.title_color = Color::new(0, 0, 0);
+            self.title_color = Color::rgb(0, 0, 0);
         } else {
-            self.title_color = Color::new(255, 255, 255);
+            self.title_color = Color::rgb(255, 255, 255);
 
             display.rect(Point::new(self.point.x - 2, self.point.y - 18),
                          Size::new(self.size.width + 4, 18),
@@ -131,22 +167,16 @@ impl Window {
                          self.border_color);
 
             unsafe {
-                let reenable = scheduler::start_no_ints();
                 display.image(self.point,
                               self.content.onscreen as *const u32,
                               Size::new(self.content.width, self.content.height));
-                scheduler::end_no_ints(reenable);
             }
         }
     }
 
     /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.events.push(key_event.to_event());
-            scheduler::end_no_ints(reenable);
-        }
+        self.events.push(key_event.to_event());
     }
 
     /// Called on mouse movement
@@ -205,11 +235,7 @@ impl Window {
         self.last_mouse_event = orig_mouse_event;
 
         if caught && !self.dragging {
-            unsafe {
-                let reenable = scheduler::start_no_ints();
-                self.events.push(mouse_event.to_event());
-                scheduler::end_no_ints(reenable);
-            }
+            self.events.push(mouse_event.to_event());
         }
 
         caught
@@ -220,6 +246,7 @@ impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
             if self.ptr as usize > 0 {
+                // TODO: replace session_ptr
                 (*::session_ptr).remove_window(self.ptr);
             }
         }

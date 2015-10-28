@@ -27,9 +27,16 @@ impl Resource for DisplayResource {
         return URL::from_string(&("display://".to_string()));
     }
 
-    // not sure what to return here
+    // get display size here
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        None
+        if mem::size_of::<usize*2> <= buf.len() {
+            let size: [usize; 2] = [ self.size.x, self.size.y ];
+            let bptr = &mut [u8] as *mut _ as *mut [usize; 2];
+            unsafe { *bptr = size; }
+            Some(mem::size_of::<usize*2>)
+        } else {
+            None
+        }
     }
 
 

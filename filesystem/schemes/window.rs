@@ -2,16 +2,12 @@ use alloc::boxed::Box;
 
 use core::{cmp, mem, ptr};
 
-use common::context::context_switch;
-use common::event::Event;
-use common::string::{String, ToString};
-
 use graphics::display::Display;
 use graphics::point::Point;
 use graphics::size::Size;
-use graphics::window::Window;
+use orbital::window::Window;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{Scheme, Resource, ResourceSeek, URL};
 
 /// A window scheme
 pub struct WindowScheme;
@@ -51,7 +47,7 @@ impl Resource for WindowResource {
                     unsafe { ptr::write(buf.as_ptr().offset(i as isize) as *mut Event, event) };
                     i += mem::size_of::<Event>();
                 }
-                None => unsafe { context_switch(false) },
+                None => break, 
             }
         }
 
@@ -93,7 +89,7 @@ impl Resource for WindowResource {
     }
 }
 
-impl KScheme for WindowScheme {
+impl Scheme for WindowScheme {
     fn scheme(&self) -> String {
         return "window".to_string();
     }

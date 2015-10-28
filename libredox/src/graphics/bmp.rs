@@ -28,6 +28,18 @@ impl BMPFile {
         Self::new(0, 0)
     }
 
+    /// Load a bitmap from a file path
+    pub fn load(path: &str) -> Self {
+        match File::open(path) {
+            Some(f) => {
+                let mut data = Vec::new();
+                f.read_to_end(&data);
+                from_data(data)
+            },
+            None => Self::new(0,0),
+        }
+    }
+
     /// Create a bitmap from some data
     pub fn from_data(file_data: &[u8]) -> Self {
         let get = |i: usize| -> u8 {
