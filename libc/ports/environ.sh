@@ -20,29 +20,40 @@ export STRIP="${HOST}-strip"
 function fetch_template {
     case $1 in
         add)
-            if [ ! -f "${BUILD}/$(basename "${SRC}")" ]
+            if [ -n "${SRC}" ]
             then
-                wget "${SRC}" -O "${BUILD}/$(basename "${SRC}")"
-            fi
-            if [ ! -d "${BUILD}/${DIR}" ]
+                if [ ! -f "${BUILD}/$(basename "${SRC}")" ]
+                then
+                    wget "${SRC}" -O "${BUILD}/$(basename "${SRC}")"
+                fi
+                if [ ! -d "${BUILD}/${DIR}" ]
+                then
+                    pushd "${BUILD}"
+                    tar xvf "$(basename "${SRC}")"
+                    popd
+                fi
+            elif [ -n "${GIT}" ]
             then
-                pushd "${BUILD}"
-                tar xvf "$(basename "${SRC}")"
-                popd
+                if [ ! -d "${BUILD}/${DIR}" ]
+                then
+                    pushd "${BUILD}"
+                    git clone "${GIT}"
+                    popd
+                fi
             fi
             if [ -d "${DIR}" ]
             then
-                cp -r -v "${DIR}"/* "${BUILD}/${DIR}"
+                cp -rv "${DIR}"/* "${BUILD}/${DIR}"
             fi
             ;;
         remove)
             if [ -d "${BUILD}/${DIR}" ]
             then
-                rm -rf "${BUILD}/${DIR}"
+                rm -rfv "${BUILD}/${DIR}"
             fi
-            if [ -f "${BUILD}/$(basename "${SRC}")" ]
+            if [ -n "${SRC}" -a -f "${BUILD}/$(basename "${SRC}")" ]
             then
-                rm -f "${BUILD}/$(basename "${SRC}")"
+                rm -fv "${BUILD}/$(basename "${SRC}")"
             fi
             ;;
         *)
@@ -105,6 +116,26 @@ function configure_template {
             ;;
         *)
             make_template $*
+            ;;
+    esac
+}
+
+function autoconf_template {
+    case $1 in
+        autoconf)
+            pushd "${BUILD}/${DIR}"
+                autoconf $AUTOCONF_ARGS
+            popd
+            ;;
+        add)
+            fetch_template add
+            autoconf_template autoconf
+            configure_template configure
+            make_template build
+            make_template install
+            ;;
+        *)
+            configure_template $*
             ;;
     esac
 }
