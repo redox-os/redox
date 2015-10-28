@@ -7,6 +7,8 @@ pub enum EventOption {
     Mouse(MouseEvent),
     /// A key event
     Key(KeyEvent),
+    /// A quit request event
+    Quit(QuitEvent),
     /// An unknown event
     Unknown(Event),
     /// No event
@@ -40,6 +42,7 @@ impl Event {
         match self.code {
             'm' => EventOption::Mouse(MouseEvent::from_event(self)),
             'k' => EventOption::Key(KeyEvent::from_event(self)),
+            'q' => EventOption::Quit(QuitEvent::from_event(self)),
             '\0' => EventOption::None,
             _ => EventOption::Unknown(self),
         }
@@ -170,5 +173,23 @@ impl KeyEvent {
             scancode: event.b as u8,
             pressed: event.c > 0,
         }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct QuitEvent;
+
+impl QuitEvent {
+    pub fn to_event(&self) -> Event {
+        Event {
+            code: 'q',
+            a: 0,
+            b: 0,
+            c: 0,
+        }
+    }
+
+    pub fn from_event(event: Event) -> QuitEvent {
+        QuitEvent
     }
 }
