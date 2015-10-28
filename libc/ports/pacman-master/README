@@ -1,0 +1,25 @@
+PACMAN_SDL
+
+
+Project Information
+-------------------
+
+pacman_sdl is a clone of the classic arcade game using C++ and SDL.
+
+
+License
+-------------------
+
+pacman_sdl is licensed under the terms of the GNU General Public License 
+version 2 (or any later version).
+
+
+Contact / More Information
+-------------------
+
+Github: http://github.com/schuay/pacman
+
+Email: jakob.gruber@gmail.com
+
+
+Enjoy!
