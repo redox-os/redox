@@ -1,0 +1,56 @@
+
+Libpng 1.2.52 - November 20, 2014
+
+This is a public release of libpng, intended for use in production codes.
+
+Files available for download:
+
+Source files with LF line endings (for Unix/Linux) and with a
+"configure" script
+
+   libpng-1.2.52.tar.xz (LZMA-compressed, recommended)
+   libpng-1.2.52.tar.gz
+   libpng-1.2.52.tar.bz2
+
+Source files with LF line endings (for Unix/Linux) without the
+"configure" script
+
+   libpng-1.2.52-no-config.tar.xz (LZMA-compressed, recommended)
+   libpng-1.2.52-no-config.tar.gz
+   libpng-1.2.52-no-config.tar.bz2
+
+Source files with CRLF line endings (for Windows), without the
+"configure" script
+
+   lpng1252.zip
+   lpng1252.7z
+   lpng1252.tar.bz2
+
+Project files
+
+   libpng-1.2.52-project-netware.zip
+   libpng-1.2.52-project-wince.zip
+
+Other information:
+
+   libpng-1.2.52-README.txt
+   libpng-1.2.52-KNOWNBUGS.txt
+   libpng-1.2.52-LICENSE.txt
+   libpng-1.2.52-Y2K-compliance.txt
+   libpng-1.2.52-[previous version]-diff.txt
+   libpng-1.2.52-*.asc (armored detached GPG signatures)
+
+Changes since the last public release (1.2.51):
+  Avoid out-of-bounds memory access while checking version string in
+    pngread.c and pngwrite.c
+  Added "-D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS" to
+    CFLAGS in scripts/makefile.vcwin32
+
+Send comments/corrections/commendations to png-mng-implement at lists.sf.net
+(subscription required; visit
+https://lists.sourceforge.net/lists/listinfo/png-mng-implement
+to subscribe)
+or to glennrp at users.sourceforge.net
+
+Glenn R-P
+#endif

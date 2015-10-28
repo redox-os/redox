@@ -1,0 +1,295 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		BE48FE2E07AFA69500BB41DA /* SDLMain.h in Headers */ = {isa = PBXBuildFile; fileRef = F5A47A9D01A0482F01D3D55B /* SDLMain.h */; };
+		BE48FE3007AFA69500BB41DA /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		BE48FE3207AFA69500BB41DA /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = F5A47A9E01A0483001D3D55B /* SDLMain.m */; };
+		BE48FE3307AFA69500BB41DA /* glfont.c in Sources */ = {isa = PBXBuildFile; fileRef = F567D68C01CDA86B01F3E8B9 /* glfont.c */; };
+		BE48FE3507AFA69500BB41DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */; };
+		BE48FE3B07AFA6AB00BB41DA /* SDLttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE48FE3907AFA6AB00BB41DA /* SDLttf.framework */; };
+		BE48FE3C07AFA6AB00BB41DA /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE48FE3A07AFA6AB00BB41DA /* SDL.framework */; };
+		BE48FE6E07AFA72B00BB41DA /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BE48FE6D07AFA72B00BB41DA /* OpenGL.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
+		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
+		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
+		BE48FE3607AFA69500BB41DA /* Info-glfont__Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-glfont__Upgraded_.plist"; sourceTree = "<group>"; };
+		BE48FE3707AFA69500BB41DA /* glfont.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = glfont.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BE48FE3907AFA6AB00BB41DA /* SDLttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDLttf.framework; path = /Library/Frameworks/SDLttf.framework; sourceTree = "<absolute>"; };
+		BE48FE3A07AFA6AB00BB41DA /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL.framework; path = /Library/Frameworks/SDL.framework; sourceTree = "<absolute>"; };
+		BE48FE6D07AFA72B00BB41DA /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
+		F567D68C01CDA86B01F3E8B9 /* glfont.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = glfont.c; path = ../../glfont.c; sourceTree = SOURCE_ROOT; };
+		F5A47A9D01A0482F01D3D55B /* SDLMain.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDLMain.h; sourceTree = SOURCE_ROOT; };
+		F5A47A9E01A0483001D3D55B /* SDLMain.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		BE48FE3407AFA69500BB41DA /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE48FE3507AFA69500BB41DA /* Cocoa.framework in Frameworks */,
+				BE48FE3B07AFA6AB00BB41DA /* SDLttf.framework in Frameworks */,
+				BE48FE3C07AFA6AB00BB41DA /* SDL.framework in Frameworks */,
+				BE48FE6E07AFA72B00BB41DA /* OpenGL.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		080E96DDFE201D6D7F000001 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				F5A47A9D01A0482F01D3D55B /* SDLMain.h */,
+				F5A47A9E01A0483001D3D55B /* SDLMain.m */,
+			);
+			name = Classes;
+			sourceTree = "<group>";
+		};
+		1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				BE48FE3907AFA6AB00BB41DA /* SDLttf.framework */,
+				BE48FE3A07AFA6AB00BB41DA /* SDL.framework */,
+				BE48FE6D07AFA72B00BB41DA /* OpenGL.framework */,
+				1058C7A1FEA54F0111CA2CBB /* Cocoa.framework */,
+			);
+			name = "Linked Frameworks";
+			sourceTree = "<group>";
+		};
+		1058C7A2FEA54F0111CA2CBB /* Other Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				29B97325FDCFA39411CA2CEA /* Foundation.framework */,
+				29B97324FDCFA39411CA2CEA /* AppKit.framework */,
+			);
+			name = "Other Frameworks";
+			sourceTree = "<group>";
+		};
+		19C28FACFE9D520D11CA2CBB /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				BE48FE3707AFA69500BB41DA /* glfont.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		29B97314FDCFA39411CA2CEA /* SDL App */ = {
+			isa = PBXGroup;
+			children = (
+				080E96DDFE201D6D7F000001 /* Classes */,
+				29B97315FDCFA39411CA2CEA /* Other Sources */,
+				29B97317FDCFA39411CA2CEA /* Resources */,
+				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				19C28FACFE9D520D11CA2CBB /* Products */,
+				BE48FE3607AFA69500BB41DA /* Info-glfont__Upgraded_.plist */,
+			);
+			name = "SDL App";
+			sourceTree = "<group>";
+		};
+		29B97315FDCFA39411CA2CEA /* Other Sources */ = {
+			isa = PBXGroup;
+			children = (
+				F567D68C01CDA86B01F3E8B9 /* glfont.c */,
+			);
+			name = "Other Sources";
+			sourceTree = "<group>";
+		};
+		29B97317FDCFA39411CA2CEA /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+		};
+		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				1058C7A0FEA54F0111CA2CBB /* Linked Frameworks */,
+				1058C7A2FEA54F0111CA2CBB /* Other Frameworks */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		BE48FE2D07AFA69500BB41DA /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE48FE2E07AFA69500BB41DA /* SDLMain.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		BE48FE2C07AFA69500BB41DA /* glfont */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 00B7E273097E2DB500826121 /* Build configuration list for PBXNativeTarget "glfont" */;
+			buildPhases = (
+				BE48FE2D07AFA69500BB41DA /* Headers */,
+				BE48FE2F07AFA69500BB41DA /* Resources */,
+				BE48FE3107AFA69500BB41DA /* Sources */,
+				BE48FE3407AFA69500BB41DA /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = glfont;
+			productInstallPath = "$(HOME)/Applications";
+			productName = "SDL App";
+			productReference = BE48FE3707AFA69500BB41DA /* glfont.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		29B97313FDCFA39411CA2CEA /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 00B7E277097E2DB500826121 /* Build configuration list for PBXProject "glfont" */;
+			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL App */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				BE48FE2C07AFA69500BB41DA /* glfont */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BE48FE2F07AFA69500BB41DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE48FE3007AFA69500BB41DA /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		BE48FE3107AFA69500BB41DA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BE48FE3207AFA69500BB41DA /* SDLMain.m in Sources */,
+				BE48FE3307AFA69500BB41DA /* glfont.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				089C165DFE840E0CC02AAC07 /* English */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		00B7E274097E2DB500826121 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = HAVE_OPENGL;
+				HEADER_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
+					/Library/Frameworks/SDL_ttf.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-glfont__Upgraded_.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = glfont;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		00B7E275097E2DB500826121 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_PREPROCESSOR_DEFINITIONS = HAVE_OPENGL;
+				HEADER_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL.framework/Headers,
+					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
+					/Library/Frameworks/SDL_ttf.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-glfont__Upgraded_.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = glfont;
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
+		00B7E278097E2DB500826121 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				GCC_OPTIMIZATION_LEVEL = 0;
+			};
+			name = Debug;
+		};
+		00B7E279097E2DB500826121 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		00B7E273097E2DB500826121 /* Build configuration list for PBXNativeTarget "glfont" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00B7E274097E2DB500826121 /* Debug */,
+				00B7E275097E2DB500826121 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		00B7E277097E2DB500826121 /* Build configuration list for PBXProject "glfont" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				00B7E278097E2DB500826121 /* Debug */,
+				00B7E279097E2DB500826121 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 29B97313FDCFA39411CA2CEA /* Project object */;
+}

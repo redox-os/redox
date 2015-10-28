@@ -1,0 +1,15 @@
+Title SDL_ttf 2.0.7
+Version 1
+Description SDL_ttf Library for Mac OS X (http://www.libsdl.org/projects/SDL_ttf)
+DefaultLocation /Library/Frameworks
+Diskname (null)
+DeleteWarning 
+NeedsAuthorization NO
+DisableStop NO
+UseUserMask NO
+Application NO
+Relocatable YES
+Required NO
+InstallOnly NO
+RequiresReboot NO
+InstallFat NO
