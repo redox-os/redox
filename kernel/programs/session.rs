@@ -19,20 +19,31 @@ use graphics::window::Window;
 use schemes::KScheme;
 use schemes::{Resource, URL, VecResource};
 
+/// A session
 pub struct Session {
+    /// The display
     pub display: Box<Display>,
+    /// The background image
     pub background: BMPFile,
+    /// The cursor icon
     pub cursor: BMPFile,
+    /// The mouse point
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
-    pub items: Vec<Box<KScheme>>,
+    /// The scheme items
+    pub items: Vec<Box<KScheme>>, // FIXME: Vec<Box<T>> is equiv to Vec<T>
+    /// The packages (applications)
     pub packages: Vec<Box<Package>>,
+    /// Open windows
     pub windows: Vec<*mut Window>,
+    /// Ordered windows
     pub windows_ordered: Vec<*mut Window>,
+    /// Redraw
     pub redraw: bool,
 }
 
 impl Session {
+    /// Create new session
     pub fn new() -> Box<Self> {
         unsafe {
             box Session {
@@ -62,6 +73,7 @@ impl Session {
         self.redraw = true;
     }
 
+    /// Remove a window
     pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
         let mut i = 0;
         while i < self.windows.len() {
@@ -118,6 +130,7 @@ impl Session {
         scheduler::end_no_ints(reenable);
     }
 
+    /// Open a new resource
     pub fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
@@ -232,6 +245,7 @@ impl Session {
         self.last_mouse_event = mouse_event;
     }
 
+    /// Redraw screen
     pub unsafe fn redraw(&mut self) {
         if self.redraw {
             self.display.set(Color::new(75, 163, 253));

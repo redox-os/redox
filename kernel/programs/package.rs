@@ -9,18 +9,28 @@ use graphics::bmp::BMPFile;
 
 use schemes::URL;
 
+/// A package (_REDOX content serialized)
 pub struct Package {
+    /// The URL
     pub url: URL,
+    /// The ID of the package
     pub id: String,
+    /// The name of the package
     pub name: String,
+    /// The binary for the package
     pub binary: URL,
+    /// The icon for the package
     pub icon: BMPFile,
+    /// The accepted extensions
     pub accepts: Vec<String>,
+    /// The author(s) of the package
     pub authors: Vec<String>,
+    /// The description of the package
     pub descriptions: Vec<String>,
 }
 
 impl Package {
+    /// Create package from URL
     pub fn from_url(url: &URL) -> Box<Self> {
         let mut package = box Package {
             url: url.clone(),
