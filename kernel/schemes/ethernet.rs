@@ -44,7 +44,7 @@ impl Resource for EthernetResource {
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
-        return None;
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -86,17 +86,13 @@ impl Resource for EthernetResource {
             },
             data: data,
         }.to_bytes()) {
-            Some(_) => return Some(buf.len()),
-            None => return None,
+            Some(_) => Some(buf.len()),
+            None => None,
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return self.network.sync();
+        self.network.sync()
     }
 }
 

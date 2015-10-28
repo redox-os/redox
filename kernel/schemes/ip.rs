@@ -38,12 +38,12 @@ impl Resource for IPResource {
     }
 
     fn url(&self) -> URL {
-        return URL::from_string(&format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto));
+        URL::from_string(&format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ip://\n");
-        return None;
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -100,17 +100,13 @@ impl Resource for IPResource {
         }
 
         match self.link.write(&ip.to_bytes()) {
-            Some(_) => return Some(buf.len()),
-            None => return None,
+            Some(_) => Some(buf.len()),
+            None => None,
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return self.link.sync();
+        self.link.sync()
     }
 }
 

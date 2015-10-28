@@ -62,18 +62,28 @@ pub enum ResourceSeek {
 #[allow(unused_variables)]
 pub trait Resource {
     /// Duplicate the resource
-    fn dup(&self) -> Option<Box<Resource>>;
+    fn dup(&self) -> Option<Box<Resource>> {
+        None
+    }
     /// Return the url of this resource
     fn url(&self) -> URL;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize>;
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        None
+    }
     /// Write to resource
-    fn write(&mut self, buf: &[u8]) -> Option<usize>;
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        None
+    }
     /// Seek
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize>;
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        None
+    }
     /// Sync the resource
-    fn sync(&mut self) -> bool;
+    fn sync(&mut self) -> bool {
+        false
+    }
 
     //Helper functions
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {

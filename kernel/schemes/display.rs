@@ -20,19 +20,9 @@ pub struct DisplayResource {
 }
 
 impl Resource for DisplayResource {
-    // can't think of when you would wish to duplicate a display
-    fn dup(&self) -> Option<Box<Resource>> {
-        None
-    }
-
     /// Return the URL for display resource
     fn url(&self) -> URL {
         return URL::from_string(&("display://".to_string()));
-    }
-
-    // not sure what to return here
-    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
-        None
     }
 
 
@@ -63,7 +53,7 @@ impl Resource for DisplayResource {
 
     fn sync(&mut self) -> bool {
         self.display.flip();
-        return true;
+        true
     }
 }
 
