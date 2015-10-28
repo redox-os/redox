@@ -11,6 +11,7 @@ use network::ipv4::*;
 
 use common::{debug, random};
 use common::to_num::ToNum;
+use common::parse_ip::*;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
@@ -38,12 +39,12 @@ impl Resource for IPResource {
     }
 
     fn url(&self) -> URL {
-        return URL::from_string(&format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto));
+        URL::from_string(&format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ip://\n");
-        return None;
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -100,17 +101,13 @@ impl Resource for IPResource {
         }
 
         match self.link.write(&ip.to_bytes()) {
-            Some(_) => return Some(buf.len()),
-            None => return None,
+            Some(_) => Some(buf.len()),
+            None => None,
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return self.link.sync();
+        self.link.sync()
     }
 }
 
@@ -131,11 +128,11 @@ impl KScheme for IPScheme {
     }
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
-        if url.path().len() > 0 {
-            let proto = url.path().to_num_radix(16) as u8;
+        if !url.reference().is_empty() {
+            let proto = url.reference().to_num_radix(16) as u8;
 
-            if url.host().len() > 0 {
-                let peer_addr = IPv4Addr::from_string(&url.host());
+            if !parse_host(url.reference()).is_empty() {
+                let peer_addr = IPv4Addr::from_string(&parse_host(url.reference()).to_string());
                 let mut peer_mac = BROADCAST_MAC_ADDR;
 
                 for entry in self.arp.iter() {

@@ -4,9 +4,9 @@ use collections::string::String;
 
 use core::{cmp, mem, ptr};
 
-use common::context::context_switch;
 use common::event::Event;
 use common::to_num::ToNum;
+use common::parse_path::parse_path;
 
 use graphics::display::Display;
 use graphics::point::Point;
@@ -58,7 +58,7 @@ impl Resource for WindowResource {
             }
         }
 
-        return Some(i);
+        Some(i)
     }
 
     /// Write to resource
@@ -92,7 +92,7 @@ impl Resource for WindowResource {
     /// Sync the resource, should flip
     fn sync(&mut self) -> bool {
         self.window.redraw();
-        return true;
+        true
     }
 }
 
@@ -103,7 +103,7 @@ impl KScheme for WindowScheme {
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
-        let url_path = url.path_parts();
+        let url_path = parse_path(url.reference());
         let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None => 0,

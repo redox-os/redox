@@ -4,23 +4,34 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::debug;
+use common::parse_path::parse_path;
 
 use graphics::bmp::BMPFile;
 
 use schemes::URL;
 
+/// A package (_REDOX content serialized)
 pub struct Package {
+    /// The URL
     pub url: URL,
+    /// The ID of the package
     pub id: String,
+    /// The name of the package
     pub name: String,
+    /// The binary for the package
     pub binary: URL,
+    /// The icon for the package
     pub icon: BMPFile,
+    /// The accepted extensions
     pub accepts: Vec<String>,
+    /// The author(s) of the package
     pub authors: Vec<String>,
+    /// The description of the package
     pub descriptions: Vec<String>,
 }
 
 impl Package {
+    /// Create package from URL
     pub fn from_url(url: &URL) -> Box<Self> {
         let mut package = box Package {
             url: url.clone(),
@@ -33,9 +44,10 @@ impl Package {
             descriptions: Vec::new(),
         };
 
-        let path_parts = url.path_parts();
-        if path_parts.len() > 0 {
-            if let Some(part) = path_parts.get(path_parts.len() - 2) {
+        let path_parts = parse_path(url.reference());
+
+        if !path_parts.is_empty() {
+            if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 package.id = part.clone();
                 package.binary = URL::from_string(&(url.to_string() + part + ".bin"));
             }

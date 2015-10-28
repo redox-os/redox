@@ -7,6 +7,7 @@ use core::mem;
 
 use common::debug;
 use common::to_num::ToNum;
+use common::parse_ip::*;
 
 use network::common::*;
 use network::ethernet::*;
@@ -42,9 +43,9 @@ impl Resource for EthernetResource {
         URL::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
-        return None;
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
@@ -86,17 +87,13 @@ impl Resource for EthernetResource {
             },
             data: data,
         }.to_bytes()) {
-            Some(_) => return Some(buf.len()),
-            None => return None,
+            Some(_) => Some(buf.len()),
+            None => None,
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return self.network.sync();
+        self.network.sync()
     }
 }
 
@@ -109,14 +106,14 @@ impl KScheme for EthernetScheme {
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if let Some(mut network) = URL::from_str("network://").open() {
-            if url.path().len() > 0 {
-                let ethertype = url.path().to_num_radix(16) as u16;
+            if !url.reference().is_empty() {
+                let ethertype = url.reference().to_num_radix(16) as u16;
 
-                if url.host().len() > 0 {
+                if parse_host(url.reference()).len() > 0 {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),
-                        peer_addr: MACAddr::from_string(&url.host()),
+                        peer_addr: MACAddr::from_string(&parse_host(url.reference()).to_string()),
                         ethertype: ethertype,
                     });
                 } else {
