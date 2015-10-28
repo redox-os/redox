@@ -1,4 +1,0 @@
-#!/bin/bash
-
-cd /opt/pacman_v4/
-./pacman_v4

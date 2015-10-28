@@ -1,3 +1,0 @@
-This package installs the SDL_image library into /Library/Frameworks. You can also install it in 
-<your home directory>/Library/Frameworks if your access privileges are not high enough.
-

@@ -1,9 +1,0 @@
-This demonstrates the use of PNG_USER_CONFIG and pngusr.h
-
-To build a minimal write-only encoder with embedded libpng and zlib, run
-
-    gather.sh  # to collect needed files from pngminus, libpng, and zlib
-    make
- 
-If you prefer to use the shared libraries, go to contrib/pngminus
-and build the pnm2png application there.
