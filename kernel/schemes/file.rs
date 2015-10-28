@@ -227,12 +227,6 @@ impl FileSystem {
             }
         }
 
-        debug::d(&ret.len().to_string());
-        //debug::d(" directories found: \n");
-        //for d in &ret {
-        //    debug::d(&d);
-        //    debug::d("\n")
-        //}
         ret
     }
 }
