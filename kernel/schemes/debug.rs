@@ -57,7 +57,7 @@ impl Resource for DebugResource {
         return Some(buf.len());
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
         return None;
     }
 
@@ -73,7 +73,7 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         Some(box DebugResource)
     }
 }

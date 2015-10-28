@@ -42,7 +42,7 @@ impl Resource for EthernetResource {
         URL::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
         return None;
     }

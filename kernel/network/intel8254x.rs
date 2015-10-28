@@ -115,7 +115,7 @@ impl KScheme for Intel8254x {
         "network"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         Some(NetworkResource::new(self))
     }
 
