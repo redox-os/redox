@@ -53,32 +53,38 @@ impl Editor {
                 },
                 Key::Backspace => { // Backspace
                     if self.x() != 0 || self.y() != 0 {
-                        self.goto_previous();
+                        let prev = self.previous();
+                        self.goto(prev);
                         self.delete();
                     }
                 },
                 Key::Char(c) => {
                     self.text[y].insert(x, c);
-                    self.goto_next();
+
+                    let right = self.right(1);
+                    self.goto(right);
                 }
                 _ => {},
             },
             InsertMode::Replace => match k {
                 Key::Char(c) => {
                     if x == self.text[y].len() {
-                        self.goto_next();
+                        let next = self.next();
+                        self.goto(next);
                         x = self.x();
                         y = self.y();
                     }
 
                     if self.text.len() != y {
                         if self.text[y].len() == x {
-                            self.goto_next();
+                            let next = self.next();
+                            self.goto(next);
                         } else {
                             self.text[y][x] = c;
                         }
                     }
-                    self.goto_next();
+                    let next = self.next();
+                    self.goto(next);
                 },
                 _ => {},
             },
