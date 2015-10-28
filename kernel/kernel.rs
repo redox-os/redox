@@ -195,7 +195,7 @@ unsafe fn event_loop() -> ! {
                                             ::debug_draw = false;
                                             (*::session_ptr).redraw = true;
                                         },
-                                        event::K_BKSP => if cmd.len() > 0 {
+                                        event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
                                             cmd.pop();
                                         },

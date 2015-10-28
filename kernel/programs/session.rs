@@ -137,8 +137,8 @@ impl Session {
 
             for item in self.items.iter() {
                 let scheme = item.scheme();
-                if scheme.len() > 0 {
-                    if list.len() > 0 {
+                if !scheme.is_empty() {
+                    if !list.is_empty() {
                         list = list + "\n" + scheme;
                     } else {
                         list = scheme.to_string();
@@ -158,7 +158,7 @@ impl Session {
     }
 
     fn on_key(&mut self, key_event: KeyEvent) {
-        if self.windows.len() > 0 {
+        if !self.windows.is_empty() {
             match self.windows.get(self.windows.len() - 1) {
                 Some(window_ptr) => {
                     unsafe {
@@ -178,7 +178,7 @@ impl Session {
             if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
                 for package in self.packages.iter() {
-                    if package.icon.data.len() > 0 {
+                    if !package.icon.data.is_empty() {
                         if mouse_event.x >= x &&
                            mouse_event.x < x + package.icon.size.width as isize {
                             execute(&package.binary, &package.url, Vec::new());
@@ -249,7 +249,7 @@ impl Session {
     pub unsafe fn redraw(&mut self) {
         if self.redraw {
             self.display.set(Color::new(75, 163, 253));
-            if self.background.data.len() > 0 {
+            if !self.background.data.is_empty() {
                 self.background.draw(&self.display,
                                      Point::new((self.display.width as isize -
                                                  self.background.size.width as isize) /
@@ -275,7 +275,7 @@ impl Session {
 
             let mut x = 0;
             for package in self.packages.iter() {
-                if package.icon.data.len() > 0 {
+                if !package.icon.data.is_empty() {
                     let y = self.display.height as isize - package.icon.size.height as isize;
                     if self.mouse_point.y >= y && self.mouse_point.x >= x &&
                        self.mouse_point.x < x + package.icon.size.width as isize {
@@ -330,7 +330,7 @@ impl Session {
                 x += 8;
             }
 
-            if self.cursor.data.len() > 0 {
+            if !self.cursor.data.is_empty() {
                 self.display.image_alpha(self.mouse_point,
                                          self.cursor.data.as_ptr(),
                                          self.cursor.size);

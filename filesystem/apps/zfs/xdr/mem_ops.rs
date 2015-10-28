@@ -69,7 +69,7 @@ impl<'a> XdrOps for MemOps<'a> {
     }
 
     fn get_bytes(&mut self, bytes: &mut [u8]) -> XdrResult<()> {
-        if bytes.len() == 0 {
+        if bytes.is_empty() {
             return Ok(());
         }
         if self.pos >= self.buffer.len() {

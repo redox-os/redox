@@ -444,7 +444,7 @@ impl Scheme {
     pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
         let url = URL::from_str(&url_str);
 
-        if url.host().len() > 0 && url.port().len() > 0 {
+        if !url.host().is_empty() && !url.port().is_empty() {
             let peer_addr = IPv4Addr::from_string(&url.host());
             let peer_port = url.port().to_num() as u16;
             let host_port = (rand() % 32768 + 32768) as u16;
@@ -463,7 +463,7 @@ impl Scheme {
                     return Some(ret);
                 }
             }
-        } else if url.path().len() > 0 {
+        } else if !url.path().is_empty() {
             let host_port = url.path().to_num() as u16;
 
             while let Some(mut ip) = File::open("ip:///6") {
