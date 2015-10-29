@@ -19,12 +19,31 @@ impl NvList {
             pairs: Vec::new(),
         }
     }
+
+    pub fn find(&self, name: &str) -> Option<&NvValue> {
+        for pair in &self.pairs {
+            if pair.0 == name {
+                return Some(&pair.1);
+            }
+        }
+        None
+    }
+
+    pub fn find_mut(&mut self, name: &str) -> Option<&mut NvValue> {
+        for pair in &mut self.pairs {
+            if pair.0 == name {
+                return Some(&mut pair.1);
+            }
+        }
+        None
+    }
 }
 
 impl fmt::Debug for NvList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         try!(write!(f, "NvList {{ version: {:X}, nvflag: {:X}, pairs: [\n", self.version, self.nvflag));
         for &(ref name, ref value) in &self.pairs {
+            if name.is_empty() { break; }
             try!(write!(f, "{} : {:?}\n", name, value));
         }
         try!(write!(f, "] }}\n"));
