@@ -1,6 +1,7 @@
 /// Context
 pub mod context;
 /// Debug
+#[macro_use]
 pub mod debug;
 /// ELF File Support
 pub mod elf;
