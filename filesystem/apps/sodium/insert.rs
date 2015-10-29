@@ -23,8 +23,7 @@ pub struct InsertOptions {
 impl Editor {
     /// Insert text
     pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
-        let mut x = self.x();
-        let mut y = self.y();
+        let (mut x, mut y) = self.pos();
         match mode {
             InsertMode::Insert => match k {
                 Key::Char('\n') => {

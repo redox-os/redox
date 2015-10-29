@@ -30,8 +30,8 @@ impl Editor {
     /// Get the char under the cursor
     #[inline]
     pub fn current(&self) -> char {
-        let curs = self.cursor();
-        self.text[curs.y][curs.x]
+        let (x, y) = self.pos();
+        self.text[y][x]
     }
 
     /// Get the current cursor

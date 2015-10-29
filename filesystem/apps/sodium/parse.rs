@@ -131,6 +131,5 @@ impl Editor {
             }
         }
 
-        unreachable!()
     }
 }

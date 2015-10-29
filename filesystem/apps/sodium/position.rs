@@ -14,7 +14,7 @@ impl Editor {
     pub fn x(&self) -> usize {
         self.pos().0
     }
- 
+
     #[inline]
     /// Y coordinate
     pub fn y(&self) -> usize {
