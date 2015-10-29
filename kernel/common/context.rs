@@ -249,6 +249,7 @@ impl Context {
             fx_enabled: false,
             memory: Vec::new(),
             cwd: String::new(),
+            args: Vec::new(),
             files: Vec::new(),
             interrupted: false,
             exited: false,
