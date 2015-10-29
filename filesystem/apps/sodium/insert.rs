@@ -60,6 +60,7 @@ impl Editor {
                     }
                 },
                 Key::Char(c) => {
+                    //debugln!("length is: {}. \n y is: {} \n x is: {} \n x bound is: {}", self.text.len(), y, x, self.text[y].len());
                     self.text[y].insert(x, c);
 
                     let right = self.right(1);

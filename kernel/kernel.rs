@@ -76,6 +76,7 @@ pub mod alloc_system;
 /// Audio
 pub mod audio;
 /// Common std-like functionality
+#[macro_use]
 pub mod common;
 /// Various drivers
 pub mod drivers;
@@ -295,6 +296,8 @@ unsafe fn init(font_data: usize) {
     debug_draw = true;
 
     debug_command = Box::into_raw(box String::new());
+
+    debugln!("WELCOME TO REDOX!");
 
     debug::d("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
