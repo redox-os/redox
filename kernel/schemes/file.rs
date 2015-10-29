@@ -67,7 +67,7 @@ impl Node {
         for b in self.name.as_bytes().iter() {
             if i < name.len() {
                 name[i] = *b;
-            }else{
+            } else {
                 break;
             }
             i += 1;
@@ -527,8 +527,8 @@ impl KScheme for FileScheme {
                     }
                     None => line = file.clone(),
                 }
-                if line.len() > 0 {
-                    if list.len() > 0 {
+                if !line.is_empty() {
+                    if !list.is_empty() {
                         list = list + "\n" + &line;
                     } else {
                         list = line;

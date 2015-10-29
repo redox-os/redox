@@ -35,7 +35,7 @@ impl Page {
             if l4_i == 0 {
                 ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64,
                         (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
-            }else{
+            } else {
                 ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
             }
         }
@@ -44,7 +44,7 @@ impl Page {
             if dp_i < 4 {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64,
                         (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
-            }else{
+            } else {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
             }
         }

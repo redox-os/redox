@@ -49,7 +49,7 @@ impl Resource for EthernetResource {
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        if self.data.len() > 0 {
+        if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
@@ -109,7 +109,7 @@ impl KScheme for EthernetScheme {
             if !url.reference().is_empty() {
                 let ethertype = url.reference().to_num_radix(16) as u16;
 
-                if parse_host(url.reference()).len() > 0 {
+                if !parse_host(url.reference()).is_empty() {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),

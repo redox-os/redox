@@ -33,8 +33,9 @@ impl Editor {
 
         } else if self.key_state.alt {
 
-            let new_pos = self.to_motion(Inst(para, cmd));
-            self.goto(new_pos);
+            if let Some(m) = self.to_motion(Inst(para, cmd)) {
+                self.goto(m);
+            }
 
         } else {
             match self.cursor().mode {
@@ -89,7 +90,9 @@ impl Editor {
                     Char('x') => self.delete(),
                     Char('X') => {
                         let previous = self.previous();
-                        self.goto(previous);
+                        if let Some(p) = previous {
+                            self.goto(p);
+                        }
                         self.delete();
                     },
                     Char('L') => {
@@ -98,8 +101,7 @@ impl Editor {
                     },
                     Char('H') => self.cursor_mut().x = 0,
                     Char('r') => {
-                        let x = self.x();
-                        let y = self.y();
+                        let (x, y) = self.pos();
                         self.text[y][x] = self.next_char();
                     },
                     Char('R') => {
@@ -110,8 +112,9 @@ impl Editor {
                     },
                     Char('d') => {
                         let ins = self.next_inst();
-                        let motion = self.to_motion(ins);
-                        self.remove_rb(motion);
+                        if let Some(m) = self.to_motion(ins) {
+                            self.remove_rb(m);
+                        }
                     },
                     Char('G') => {
                         let last = self.text.len() - 1;
@@ -122,9 +125,10 @@ impl Editor {
                             self.goto((0, n - 1));
                         } else {
                             let inst = self.next_inst();
-                            let new = self.to_motion(inst);
-                            self.cursor_mut().x = new.0;
-                            self.cursor_mut().y = new.1;
+                            if let Some(m) = self.to_motion(inst) {
+                                self.cursor_mut().x = m.0;
+                                self.cursor_mut().y = m.1;
+                            }
                         }
 
                     },
@@ -138,9 +142,22 @@ impl Editor {
                         self.cursors.remove(self.current_cursor as usize);
                         self.next_cursor();
                     },
+                    Char('t') => {
+                        let ch = self.next_char();
+
+                        let pos = self.next_ocur(ch, n);
+                        if let Some(p) = pos {
+                            self.goto(p);
+                        }
+                    },
                     Char(';') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Prompt);
                     },
+//                    Char('P') => { // for debug pourpso
+//                        let pos = (self.x(), self.y());
+//                        self.goto(pos);
+//                    },
+//
 //                    ????
 //                    Char('K') => {
 //                        self.goto((0, 0));
@@ -150,7 +167,9 @@ impl Editor {
 //                    },
                     Char(' ') => {
                         let next = self.next();
-                        self.goto(next);
+                        if let Some(p) = next {
+                            self.goto(p);
+                        }
                     },
                     _ => {},
                 },

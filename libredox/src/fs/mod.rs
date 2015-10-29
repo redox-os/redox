@@ -26,7 +26,7 @@ impl File {
             let fd = sys_open((path.to_string() + "\0").as_ptr(), O_RDONLY, 0);
             if fd == usize::MAX {
                 None
-            }else{
+            } else {
                 Some(File {
                     fd: fd
                 })
@@ -40,7 +40,7 @@ impl File {
             let fd = sys_open((path.to_string() + "\0").as_ptr(), O_WRONLY | O_CREAT | O_TRUNC, 0);
             if fd == usize::MAX {
                 None
-            }else{
+            } else {
                 Some(File {
                     fd: fd
                 })

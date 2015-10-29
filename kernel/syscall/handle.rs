@@ -255,7 +255,7 @@ pub unsafe fn do_sys_fork() -> usize {
     let ret;
     if context_i == parent_i {
         ret = 0;
-    }else{
+    } else {
         ret = context_i;
     }
 

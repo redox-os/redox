@@ -241,7 +241,7 @@ impl Application {
         //Explode into arguments, replace variables
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in command_string.split(' ') {
-            if arg.len() > 0 {
+            if !arg.is_empty() {
                 if arg.starts_with('$') {
                     let name = arg[1 .. arg.len()].to_string();
                     for variable in self.variables.iter() {
@@ -301,7 +301,7 @@ impl Application {
 
             if cmd == "fi" {
                 let mut syntax_error = false;
-                if self.modes.len() > 0 {
+                if !self.modes.is_empty() {
                     self.modes.remove(0);
                 } else {
                     syntax_error = true;
@@ -323,7 +323,7 @@ impl Application {
                 let name = cmd[0 .. i].to_string();
                 let mut value = cmd[i + 1 .. cmd.len()].to_string();
 
-                if name.len() == 0 {
+                if name.is_empty() {
                     return;
                 }
 
@@ -333,7 +333,7 @@ impl Application {
                     }
                 }
 
-                if value.len() == 0 {
+                if value.is_empty() {
                     let mut remove = -1;
                     for i in 0..self.variables.len() {
                         match self.variables.get(i) {
@@ -391,7 +391,7 @@ impl Application {
             println!("# {}", command);
             if command == "exit" {
                 break;
-            } else if command.len() > 0 {
+            } else if !command.is_empty() {
                 self.on_command(&command);
             }
         }

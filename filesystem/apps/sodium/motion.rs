@@ -2,23 +2,27 @@ use super::*;
 
 impl Editor {
     /// Convert an instruction to a motion (new coordinate)
-    pub fn to_motion(&mut self, Inst(n, cmd): Inst) -> (usize, usize) {
+    pub fn to_motion(&mut self, Inst(n, cmd): Inst) -> Option<(usize, usize)> {
         use super::Key::*;
         match cmd {
-            Char('h') => self.left(n.d()),
-            Char('l') => self.right(n.d()),
-            Char('j') => self.down(n.d()),
-            Char('k') => self.up(n.d()),
-            Char('g') => (0, n.or(1) - 1),
-            Char('G') => (0, self.text.len() - 1),
-            Char('L') => self.ln_end(),
-            Char('H') => (0, self.y()),
+            Char('h') => Some(self.left(n.d())),
+            Char('l') => Some(self.right(n.d())),
+            Char('j') => Some(self.down(n.d())),
+            Char('k') => Some(self.up(n.d())),
+            Char('g') => Some((0, n.or(1) - 1)),
+            Char('G') => Some((0, self.text.len() - 1)),
+            Char('L') => Some(self.ln_end()),
+            Char('H') => Some((0, self.y())),
             Char('t') => {
 
-                // TODO!
-                (self.x(), self.y())
+                                                   // ~v~ Optimize (sorry, Knuth)
+                if let Some(o) = self.next_ocur(ch, n.d()) {
+                    Some(o)
+                } else {
+                    None
+                }
             },
-            _ => (self.x(), self.y()),
+            _ => None,
         }
     }
 }

@@ -196,7 +196,7 @@ impl ZFS {
                 match chunk.name() {
                     Some(chunk_name) => {
                         // Stop once we get to a null entry
-                        if chunk_name.len() == 0 {
+                        if chunk_name.is_empty() {
                             break;
                         }
 
@@ -296,11 +296,11 @@ impl ZFS {
                                             .map(|x| {
                                                 if x.value & 0xF000000000000000 == 0x4000000000000000 {
                                                     x.name().unwrap().to_string() + "/"
-                                                }else{
+                                                } else {
                                                     x.name().unwrap().to_string()
                                                 }
                                             })
-                                            .take_while(|x| x.len() > 0)
+                                            .take_while(|x| !x.is_empty())
                                             .collect();
                             *result = Some(ls);
                             return Some(ZfsTraverse::Done);
