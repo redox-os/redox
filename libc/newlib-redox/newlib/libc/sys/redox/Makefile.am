@@ -6,7 +6,10 @@ noinst_LIBRARIES = lib.a
 
 if MAY_SUPPLY_SYSCALLS
 extra_objs = \
-    syscalls.o \
+    common.o \
+    file.o \
+    process.o \
+    time.o \
     unimpl.o
 else
 extra_objs =
@@ -15,7 +18,10 @@ endif
 lib_a_SOURCES =
 lib_a_LIBADD = $(extra_objs)
 EXTRA_lib_a_SOURCES = \
-    syscalls.c \
+    common.c \
+    file.c \
+    process.c \
+    time.c \
     unimpl.c \
     crt0.c
 lib_a_DEPENDENCIES = $(extra_objs)

@@ -93,7 +93,7 @@ int     _EXFUN(truncate, (const char *, off_t __length));
 char *  _EXFUN(ttyname, (int __fildes ));
 int     _EXFUN(ttyname_r, (int __fildes, char *__buf, size_t __len));
 int     _EXFUN(unlink, (const char *__path ));
-int     _EXFUN(usleep, (unsigned int __useconds));
+int     _EXFUN(usleep, (useconds_t __useconds));
 int     _EXFUN(vhangup, (void ));
 _READ_WRITE_RETURN_TYPE _EXFUN(write, (int __fd, const void *__buf, size_t __nbyte ));
 
