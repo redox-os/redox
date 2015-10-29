@@ -18,6 +18,7 @@ use getopts::Options;
 use redox::fs::File;
 use redox::intrinsics::{copy_nonoverlapping};
 use redox::io::{stdout, stdin, stderr, Write, Read, Result};
+use redox::*;
 use libc::consts::os::posix88::redoxIN_FILENO;
 use libc::funcs::posix88::uniredox::isatty;
 use libc::types::os::arch::c95::c_int;

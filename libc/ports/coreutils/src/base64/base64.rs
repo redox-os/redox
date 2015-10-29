@@ -20,6 +20,7 @@ use redox::error::Error;
 use redox::fs::File;
 use redox::io::{BufReader, Read, stdin, stdout, Write};
 use redox::path::Path;
+use redox::*;
 
 #[path = "../common/util.rs"]
 #[macro_use]

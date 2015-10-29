@@ -15,6 +15,7 @@ extern crate libc;
 use getopts::Options;
 use redox::io::Write;
 use redox::path::{is_separator, PathBuf};
+use redox::*;
 
 #[path = "../common/util.rs"]
 #[macro_use]
