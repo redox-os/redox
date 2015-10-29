@@ -8,6 +8,7 @@ if MAY_SUPPLY_SYSCALLS
 extra_objs = \
     common.o \
     file.o \
+    folder.o \
     process.o \
     time.o \
     unimpl.o
@@ -20,6 +21,7 @@ lib_a_LIBADD = $(extra_objs)
 EXTRA_lib_a_SOURCES = \
     common.c \
     file.c \
+    folder.c \
     process.c \
     time.c \
     unimpl.c \
