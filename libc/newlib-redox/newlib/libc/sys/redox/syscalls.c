@@ -21,6 +21,7 @@ extern int errno;
 #define SYS_FPATH 3001
 #define SYS_FSTAT 28
 #define SYS_FSYNC 118
+#define SYS_FTRUNCATE 93
 #define SYS_GETTIMEOFDAY 78
 #define SYS_LINK 9
 #define SYS_LSEEK 19
@@ -43,6 +44,10 @@ void _exit(int code){
     syscall(SYS_EXIT, (uint)code, 0, 0);
 }
 
+int _execve(const char *name, const char **argv, const char **env) {
+    return (int)syscall(SYS_EXECVE, (uint)name, (uint)argv, (uint)env);
+}
+
 int chdir(const char *path){
     return (int)syscall(SYS_CHDIR, (uint)path, 0, 0);
 }
@@ -55,42 +60,49 @@ int dup(int file){
     return (int)syscall(SYS_DUP, (uint)file, 0, 0);
 }
 
-int execve(const char *name, const char **argv, const char **env) {
-    return (int)syscall(SYS_EXECVE, (uint)name, (uint)argv, (uint)env);
-}
-
-int fork(void) {
+int fork() {
     return (int)syscall(SYS_FORK, 0, 0, 0);
 }
 
-int fpath(int file, char *ptr, int len) {
-    return (int)syscall(SYS_FPATH, (uint)ptr, (uint)len, 0);
-}
-
-int fstat(int file, struct stat *st) {
-    st->st_mode = S_IFCHR;
-    return 0;
+int fpath(int file, char * buf, int len) {
+    return (int)syscall(SYS_FPATH, (uint)buf, (uint)len, 0);
 }
 
 int fsync(int file) {
     return (int)syscall(SYS_FSYNC, (uint)file, 0, 0);
 }
 
-int getpid() {
-    return 1;
+int ftruncate(int file, off_t len){
+    return (int)syscall(SYS_FTRUNCATE, (uint)file, (uint)len, 0);
+}
+
+char * getcwd(char * buf, size_t size) {
+    int file = open("", O_RDONLY);
+    if(file >= 0){
+        if(!buf){
+            if(size == 0){
+                size = 4096;
+            }
+            buf = (char *)calloc(size, 1);
+
+            if(fpath(file, buf, size) >= 0){
+                return buf;
+            }else{
+                free(buf);
+            }
+        }else{
+            memset(buf, 0, size);
+            if(fpath(file, buf, size) >= 0){
+                return buf;
+            }
+        }
+    }
+
+    return NULL;
 }
 
 int gettimeofday(struct timeval *__restrict tv, void *__restrict tz){
     return (int)syscall(SYS_GETTIMEOFDAY, (uint)tv, (uint)tz, 0);
-}
-
-int isatty(int file) {
-    return 1;
-}
-
-int kill(int pid, int sig) {
-    errno = EINVAL;
-    return -1;
 }
 
 int link(const char *old, const char *new) {
@@ -118,22 +130,8 @@ void *sbrk(ptrdiff_t increment){
     return curr_brk;
 }
 
-int stat(const char *__restrict path, struct stat *__restrict sbuf) {
-    sbuf->st_mode = S_IFCHR;
-    return 0;
-}
-
-clock_t times(struct tms *buf) {
-    return -1;
-}
-
 int unlink(const char *name) {
     return (int)syscall(SYS_UNLINK, (uint)name, 0, 0);
-}
-
-int wait(int *status) {
-    errno = ECHILD;
-    return -1;
 }
 
 int write(int file, const char *ptr, int len) {

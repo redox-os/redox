@@ -12,7 +12,7 @@ use common::parse_ip::*;
 use network::common::*;
 use network::ethernet::*;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, URL};
 
 /// A ethernet resource
 pub struct EthernetResource {
