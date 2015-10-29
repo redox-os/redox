@@ -19,6 +19,15 @@ impl NvList {
             pairs: Vec::new(),
         }
     }
+
+    pub fn find(&self, name: &str) -> Option<&NvValue> {
+        for pair in &self.pairs {
+            if pair.0.as_str() == name {
+                return Some(&pair.1);
+            }
+        }
+        None
+    }
 }
 
 impl fmt::Debug for NvList {

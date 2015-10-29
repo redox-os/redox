@@ -5,6 +5,7 @@
 #![feature(no_std)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
+#![feature(convert)]
 #![no_std]
 
 #[macro_use]
