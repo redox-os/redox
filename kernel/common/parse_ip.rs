@@ -23,13 +23,9 @@ pub fn parse_port(string: &str) -> &str {
 
 /// Get the host from a string (ip)
 pub fn parse_host(string: &str) -> &str {
-    // TODO: Username/Password syntax
-    let pos = match string.find(':') {
+    let pos = match string.find(|c| c == ':' || c == '/') {
         Some(pos) => pos + 1,
-        None => match string.find('/') {
-            Some(pos) => pos + 1,
-            None => string.len(),
-        },
+        None => string.len(),
     };
 
     &string[..pos]
