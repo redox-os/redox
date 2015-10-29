@@ -1,6 +1,11 @@
+.PHONY: help all docs apps schemes tests clean \
+	qemu qemu_bare qemu_no_kvm qemu_tap \
+	virtualbox virtualbox_tap \
+	arping ping wireshark
+
 #Modify fo different target support
-ARCH=i386
-#ARCH=x86_64
+ARCH?=i386
+#ARCH?=x86_64
 
 BUILD=build/$(ARCH)
 
@@ -178,11 +183,11 @@ $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -D $< > $@
 
 $(BUILD)/crt0.o: kernel/program-$(ARCH).asm
-	if [ "$(ARCH)" == "x86_64" ]; then \
-		$(AS) -f elf64 $< -o $@; \
-	else \
-		$(AS) -f elf $< -o $@; \
-	fi
+ifeq ($(ARCH),x86_64)
+	$(AS) -f elf64 $< -o $@
+else
+	$(AS) -f elf $< -o $@
+endif
 
 filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
 	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
@@ -328,3 +333,4 @@ ping:
 
 wireshark:
 	wireshark network.pcap
+
