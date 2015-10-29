@@ -89,7 +89,7 @@ impl Editor {
     #[inline]
     pub fn next_ocur(&self, c: char) -> Option<(usize, usize)> {
         loop {
-            let (mut x, mut y) = self.after((self.x(), self.y()));
+            let (x, y) = self.after((self.x(), self.y()));
 
             if self.text[y][x] == c {
                 return Some((x, y));
