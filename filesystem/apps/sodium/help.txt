@@ -77,6 +77,7 @@ Cursor management:
 
 Editing:
 - i : Go to insert mode
+- a : Go to insert (append) mode
 - r<char> : Replace the current char
             with <char>
 - R : Go to replace mode

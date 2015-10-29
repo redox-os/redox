@@ -47,6 +47,13 @@ impl Editor {
                             }));
 
                     },
+                    Char('a') => {
+                        self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
+                            InsertOptions {
+                                mode: InsertMode::Append,
+                            }));
+
+                    },
                     Char('o') => {
                         // TODO: Autoindent (keep the same indentation level)
                         let y = self.y();
