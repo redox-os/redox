@@ -1,6 +1,3 @@
-use super::*;
-use redox::*;
-
 pub struct Options {
     pub highlight: bool,
     pub autoindent: bool,
