@@ -28,6 +28,15 @@ impl NvList {
         }
         None
     }
+
+    pub fn find_mut(&mut self, name: &str) -> Option<&mut NvValue> {
+        for pair in &mut self.pairs {
+            if pair.0.as_str() == name {
+                return Some(&mut pair.1);
+            }
+        }
+        None
+    }
 }
 
 impl fmt::Debug for NvList {
