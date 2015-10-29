@@ -84,6 +84,10 @@ pub trait Resource {
         false
     }
 
+    fn truncate(&mut self, len: usize) -> bool {
+        false
+    }
+
     //Helper functions
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         let mut read = 0;
@@ -238,5 +242,14 @@ impl Resource for VecResource {
 
     fn sync(&mut self) -> bool {
         return true;
+    }
+
+    fn truncate(&mut self, len: usize) -> bool {
+        while len > self.vec.len() {
+            self.vec.push(0);
+        }
+        self.vec.truncate(len);
+        self.seek = min(self.seek, self.vec.len());
+        true
     }
 }
