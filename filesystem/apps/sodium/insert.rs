@@ -25,48 +25,55 @@ impl Editor {
     pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
         let (mut x, mut y) = self.pos();
         match mode {
-            InsertMode::Insert => match k {
-                Key::Char('\n') => {
-                    let ln = self.text[y].clone();
-                    let (slice, _) = ln.as_slices();
+            InsertMode::Insert | InsertMode::Append => {
+                let d = match mode {
+                    InsertMode::Append => 1,
+                    _ => 0,
+                };
 
-                    let first_part = (&slice[..x]).clone();
-                    let second_part = (&slice[x..]).clone();
+                match k {
+                    Key::Char('\n') => {
+                        let ln = self.text[y].clone();
+                        let (slice, _) = ln.as_slices();
 
-                    self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
+                        let first_part = (&slice[..x + d]).clone();
+                        let second_part = (&slice[x + d..]).clone();
 
-                    let ind = if self.options.autoindent {
-                        self.get_indent(y)
-                    } else {
-                        VecDeque::new()
-                    };
-                    let begin = ind.len();
+                        self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
 
-                    self.text.insert(y + 1, VecDeque::from_iter(
-                            ind.into_iter().chain(second_part.iter().map(|x| *x))));
+                        let ind = if self.options.autoindent {
+                            self.get_indent(y)
+                        } else {
+                            VecDeque::new()
+                        };
+                        let begin = ind.len();
 
-                    self.goto((begin, y + 1));
-                },
-                Key::Escape => { // Escape key
-                    self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
-                },
-                Key::Backspace => { // Backspace
-                    let prev = self.previous();
-                    if let Some(p) = prev {
-                        if self.x() != 0 || self.y() != 0 {
+                        self.text.insert(y + 1, VecDeque::from_iter(
+                                ind.into_iter().chain(second_part.iter().map(|x| *x))));
+
+                        self.goto((begin, y + 1));
+                    },
+                    Key::Escape => { // Escape key
+                        self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
+                    },
+                    Key::Backspace => { // Backspace
+                        let prev = self.previous();
+                        if let Some(p) = prev {
+                            //if self.x() != 0 || self.y() != 0 {
                             self.goto(p);
                             self.delete();
+                            //}
                         }
-                    }
-                },
-                Key::Char(c) => {
-                    //debugln!("length is: {}. \n y is: {} \n x is: {} \n x bound is: {}", self.text.len(), y, x, self.text[y].len());
-                    self.text[y].insert(x, c);
+                    },
+                    Key::Char(c) => {
+                        //debugln!("length is: {}. \n y is: {} \n x is: {} \n x bound is: {}", self.text.len(), y, x, self.text[y].len());
+                        self.text[y].insert(x + d, c);
 
-                    let right = self.right(1);
-                    self.goto(right);
+                        let right = self.right(1);
+                        self.goto(right);
+                    }
+                    _ => {},
                 }
-                _ => {},
             },
             InsertMode::Replace => match k {
                 Key::Char(c) => {
@@ -96,7 +103,6 @@ impl Editor {
                 },
                 _ => {},
             },
-            _ => {},
         }
     }
 
