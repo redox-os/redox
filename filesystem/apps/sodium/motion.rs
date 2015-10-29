@@ -14,7 +14,6 @@ impl Editor {
             Char('L') => self.ln_end(),
             Char('H') => (0, self.y()),
             Char('t') => {
-                let ch = self.next_char();
 
                 // TODO!
                 (self.x(), self.y())
