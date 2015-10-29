@@ -293,11 +293,11 @@ impl ZFS {
                                             .map(|x| {
                                                 if x.value & 0xF000000000000000 == 0x4000000000000000 {
                                                     x.name().unwrap().to_string() + "/"
-                                                }else{
+                                                } else {
                                                     x.name().unwrap().to_string()
                                                 }
                                             })
-                                            .take_while(|x| x.len() > 0)
+                                            .take_while(|x| !x.is_empty())
                                             .collect();
                             *result = Some(ls);
                             return Some(ZfsTraverse::Done);
@@ -405,7 +405,7 @@ impl Scheme {
                 if let Some(list) = zfs.ls(&path) {
                     let mut data: Vec<u8> = Vec::new();
                     for entry in list {
-                        if data.len() > 0 {
+                        if !data.is_empty() {
                             data.push(10);
                         }
                         data.push_all(entry.as_bytes());
@@ -417,7 +417,7 @@ impl Scheme {
                         seek: 0
                     });
                 }
-            }else{
+            } else {
                 write!(io::stdout(), "ZFS Read File {}\n", path);
                 if let Some(data) = zfs.read_file(&path) {
                     write!(io::stdout(), "ZFS Read File Data {}\n", data.len());

@@ -198,7 +198,7 @@ impl ConsoleWindow {
                                 let command = self.history[self.history_i].clone();
                                 self.offset = 0;
                                 self.history_i = 0;
-                                if self.history[0].len() > 0 {
+                                if !self.history[0].is_empty() {
                                     self.history.insert(0, "".to_string());
                                 }
                                 while self.history.len() > 1000 {

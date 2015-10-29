@@ -19,9 +19,9 @@ impl<T> Queue<T> {
 
     /// Pop the last element
     pub fn pop(&mut self) -> Option<T> {
-        if self.vec.len() > 0 {
+        if !self.vec.is_empty() {
             Some(self.vec.remove(0))
-        }else{
+        } else {
             None
         }
     }

@@ -37,7 +37,7 @@ impl Editor {
 
         let mut editor = Editor {
             current_cursor: 0,
-            cursors: Vec::new(),
+            cursors: vec![Cursor::new()],
             text: VecDeque::new(),
             scroll_x: 0,
             scroll_y: 0,
@@ -48,10 +48,10 @@ impl Editor {
             options: Options::new(),
         };
 
-        editor.cursors.push(Cursor::new());
         editor.text.push_back(VecDeque::new());
 
         editor.redraw();
+
         loop {
             let inp = editor.next_inst();
             editor.exec(inp);

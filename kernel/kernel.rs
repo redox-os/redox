@@ -195,7 +195,7 @@ unsafe fn event_loop() -> ! {
                                             ::debug_draw = false;
                                             (*::session_ptr).redraw = true;
                                         },
-                                        event::K_BKSP => if cmd.len() > 0 {
+                                        event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
                                             cmd.pop();
                                         },
@@ -398,7 +398,7 @@ unsafe fn init(font_data: usize) {
         let mut vec: Vec<u8> = Vec::new();
         if resource.read_to_end(&mut vec).is_some() {
             debug::d("Read background\n");
-        }else{
+        } else {
             debug::d("Failed to read background at: ");
             debug::d(URL::from_str("file:///ui/background.bmp").reference());
             debug::d("\n");

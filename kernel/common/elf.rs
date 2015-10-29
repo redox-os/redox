@@ -443,13 +443,13 @@ impl ELF {
                             return symbol.value as usize;
                         }
                     }
-                }else{
+                } else {
                     debug::d("No sym_section ent len\n");
                 }
-            }else{
+            } else {
                 debug::d("No sym_section or str_section\n");
             }
-        }else{
+        } else {
             debug::d("No data\n");
         }
 
