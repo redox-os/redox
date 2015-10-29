@@ -577,6 +577,8 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
             debug::d(", ");
             debug::dh(edx as usize);
             debug::dl();
+
+            eax = usize::MAX;
         }
     }
 
