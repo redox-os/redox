@@ -11,39 +11,39 @@ impl Editor {
     }
 
     /// Get the previous position
-    pub fn previous(&self) -> (usize, usize) {
-        self.before((self.x(), self.y()))
+    pub fn previous(&self) -> Option<(usize, usize)> {
+        self.before(self.pos())
     }
     /// Get the next position
-    pub fn next(&self) -> (usize, usize) {
-        self.after((self.x(), self.y()))
+    pub fn next(&self) -> Option<(usize, usize)> {
+        self.after(self.pos())
     }
 
     /// Get position of char after a given char
     #[inline]
-    pub fn after(&self, (x, y): (usize, usize)) -> (usize, usize) {
+    pub fn after(&self, (x, y): (usize, usize)) -> Option<(usize, usize)> {
 
         if x == self.text[y].len() {
             if y < self.text.len() - 1 {
-                (0, y + 1)
+                Some((0, y + 1))
             } else {
-                (x, y)
+                None //(x, y)
             }
         } else {
-            (x + 1, y)
+            Some((x + 1, y))
         }
     }
 
     /// Get the position of the char before a given char's position
-    pub fn before(&self, (x, y): (usize, usize)) -> (usize, usize) {
+    pub fn before(&self, (x, y): (usize, usize)) -> Option<(usize, usize)> {
         if x == 0 {
             if y > 0 {
-                (self.text[y - 1].len(), y - 1)
+                Some((self.text[y - 1].len(), y - 1))
             } else {
-                (x, y)
+                None //(x, y)
             }
         } else {
-            (x - 1, y)
+            Some((x - 1, y))
         }
     }
 
@@ -87,17 +87,29 @@ impl Editor {
 
     /// Get next ocurrence of a given charecter
     #[inline]
-    pub fn next_ocur(&self, c: char) -> Option<(usize, usize)> {
+    pub fn next_ocur(&self, c: char, n: usize) -> Option<(usize, usize)> {
+        let mut dn = 0;
+
+        let mut pos = self.after(self.pos());
         loop {
-            let (mut x, mut y) = self.after((self.x(), self.y()));
 
-            if self.text[y][x] == c {
-                return Some((x, y));
+            match pos {
+                None => return None,
+                Some(mut p) => {
+                    p = self.bounded(p);
+
+                    if self.text[p.1][p.0] == c {
+                        dn += 1;
+                        if dn == n {
+                            return Some(p);
+                        }
+                    }
+
+                    pos = self.after(p);
+
+                },
             }
 
-            if (x, y) == (self.text[self.text.len() - 1].len(), self.text.len() - 1) {
-                return None;
-            }
 
         }
     }

@@ -52,10 +52,12 @@ impl Editor {
                     self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
                 },
                 Key::Backspace => { // Backspace
-                    if self.x() != 0 || self.y() != 0 {
-                        let prev = self.previous();
-                        self.goto(prev);
-                        self.delete();
+                    let prev = self.previous();
+                    if let Some(p) = prev {
+                        if self.x() != 0 || self.y() != 0 {
+                            self.goto(p);
+                            self.delete();
+                        }
                     }
                 },
                 Key::Char(c) => {
@@ -70,21 +72,27 @@ impl Editor {
                 Key::Char(c) => {
                     if x == self.text[y].len() {
                         let next = self.next();
-                        self.goto(next);
-                        x = self.x();
-                        y = self.y();
+                        if let Some(p) = next {
+                            self.goto(p);
+                            x = self.x();
+                            y = self.y();
+                        }
                     }
 
                     if self.text.len() != y {
                         if self.text[y].len() == x {
                             let next = self.next();
-                            self.goto(next);
+                            if let Some(p) = next {
+                                self.goto(p);
+                            }
                         } else {
                             self.text[y][x] = c;
                         }
                     }
                     let next = self.next();
-                    self.goto(next);
+                    if let Some(p) = next {
+                        self.goto(p);
+                    }
                 },
                 _ => {},
             },
