@@ -451,6 +451,7 @@ case "${host}" in
   i[3-7]86-*-redox*)
 	sys_dir=redox
 	posix_dir=posix
+    newlib_cflags="${newlib_cflags} -DHAVE_NANOSLEEP -D_NO_GETLOGIN -D_NO_GETPWENT -D_NO_GETUT -D_NO_GETPASS -D_NO_SIGSET -D_NO_WORDEXP -D_NO_POPEN -D_NO_POSIX_SPAWN"
 	;;
   i[34567]86-*-sco*)
 	sys_dir=sysvi386

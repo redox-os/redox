@@ -9,6 +9,7 @@ use common::context::*;
 use common::debug;
 use common::memory;
 use common::scheduler;
+use common::time::Duration;
 
 use drivers::pio::*;
 
@@ -387,6 +388,27 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
+#[repr(packed)]
+pub struct TS {
+    pub tv_sec: i64,
+    pub tv_nsec: i32,
+}
+
+pub unsafe fn do_sys_nanosleep(req: *const TS, rem: *mut TS) -> usize{
+    if req as usize > 0 {
+        Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
+
+        if rem as usize > 0 {
+            (*rem).tv_sec = 0;
+            (*rem).tv_nsec = 0;
+        }
+
+        0
+    }else{
+        usize::MAX
+    }
+}
+
 pub unsafe fn do_sys_open(path: *const u8) -> usize {
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
@@ -532,6 +554,7 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut TV),
         //TODO: link
         SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
+        SYS_NANOSLEEP => eax = do_sys_nanosleep(ebx as *const TS, ecx as *mut TS),
         SYS_OPEN => eax = do_sys_open(ebx as *const u8), //ecx as isize, edx as isize),
         SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
         //TODO: unlink
