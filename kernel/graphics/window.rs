@@ -154,7 +154,14 @@ impl Window {
         !self.minimized && x >= -2 &&
             x < self.size.width as isize + 4 &&
             y >= -18 &&
-            y < self.size.height as isize + 2
+            y < 0
+    }
+
+    fn on_window_body(&self, x: isize, y: isize) -> bool {
+        !self.minimized && x >= 0 &&
+            x < self.size.width as isize &&
+            y >= 0 &&
+            y < self.size.height as isize
     }
 
     /// Called on mouse movement
@@ -168,35 +175,34 @@ impl Window {
 
         if allow_catch {
             if mouse_event.left_button {
-                if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
-                }
-
-                if !self.last_mouse_event.left_button && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 && mouse_event.y < 0 {
-                    self.dragging = true;
+                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
+                    if !self.last_mouse_event.left_button {
+                        self.dragging = true;
+                    }
                 }
             } else {
                 self.dragging = false;
             }
 
             if mouse_event.right_button {
-                if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
-                }
-
-                if !self.last_mouse_event.right_button && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 && mouse_event.y < 0 {
-                    self.minimized = !self.minimized;
+                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
+                    if !self.last_mouse_event.right_button {
+                        self.minimized = !self.minimized;
+                    }
                 }
             }
 
             if mouse_event.middle_button {
-                if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                if self.on_window_body(mouse_event.x, mouse_event.y) {
+                    caught = true;
+                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                    caught = true;
                     unsafe {
                         let reenable = scheduler::start_no_ints();
                         self.events.push(QuitEvent.to_event());
@@ -216,7 +222,7 @@ impl Window {
 
         self.last_mouse_event = orig_mouse_event;
 
-        if caught && !self.dragging {
+        if (caught && !self.dragging) || self.on_window_body(mouse_event.x, mouse_event.y) {
             unsafe {
                 let reenable = scheduler::start_no_ints();
                 self.events.push(mouse_event.to_event());
