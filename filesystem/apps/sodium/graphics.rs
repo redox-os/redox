@@ -5,8 +5,7 @@ impl Editor {
     /// Redraw the window
     pub fn redraw(&mut self) {
         // TODO: Only draw when relevant for the window
-        let x = self.x();
-        let y = self.y();
+        let (x, y) = self.pos();
         // Redraw window
         self.window.set(Color::rgb(25, 25, 25));
 

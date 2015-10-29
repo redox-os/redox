@@ -23,12 +23,14 @@ impl Editor {
     #[inline]
     pub fn after(&self, (x, y): (usize, usize)) -> Option<(usize, usize)> {
 
-        if x == self.text[y].len() {
-            if y < self.text.len() - 1 {
+        if y < self.text.len() - 1 {
+            if x == self.text[y].len() - 1 {
                 Some((0, y + 1))
             } else {
-                None //(x, y)
+                Some((x + 1, y))
             }
+        } else if x == self.text[y].len() - 1 {
+            None
         } else {
             Some((x + 1, y))
         }
@@ -50,7 +52,7 @@ impl Editor {
     /// Get the position of the right char
     #[inline]
     pub fn right(&self, n: usize) -> (usize, usize) {
-        (self.x() + n, self.y())
+        self.bound_hor((self.x() + n, self.y()))
     }
 
     /// Get the position of the left char
@@ -76,7 +78,7 @@ impl Editor {
     /// Get the position under the char
     #[inline]
     pub fn down(&self, n: usize) -> (usize, usize) {
-        (self.cursor().x, self.y() + n)
+        self.bound_ver((self.cursor().x, self.y() + n))
     }
 
     /// Get the position of the end of the line
@@ -96,7 +98,7 @@ impl Editor {
             match pos {
                 None => return None,
                 Some(mut p) => {
-                    p = self.bounded(p);
+                    p = self.bound(p);
 
                     if self.text[p.1][p.0] == c {
                         dn += 1;

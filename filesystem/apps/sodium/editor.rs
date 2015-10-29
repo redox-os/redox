@@ -29,6 +29,7 @@ impl Editor {
     /// Create new default state editor
     pub fn new() -> Editor {
 
+
         let window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,
                                  700,
@@ -49,6 +50,9 @@ impl Editor {
         };
 
         editor.text.push_back(VecDeque::new());
+
+        // Temporary hacky solution
+        editor.text[0].push_back(' ');
 
         editor.redraw();
 
