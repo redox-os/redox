@@ -22,7 +22,7 @@ impl NvList {
 
     pub fn find(&self, name: &str) -> Option<&NvValue> {
         for pair in &self.pairs {
-            if pair.0.as_str() == name {
+            if pair.0 == name {
                 return Some(&pair.1);
             }
         }
@@ -31,7 +31,7 @@ impl NvList {
 
     pub fn find_mut(&mut self, name: &str) -> Option<&mut NvValue> {
         for pair in &mut self.pairs {
-            if pair.0.as_str() == name {
+            if pair.0 == name {
                 return Some(&mut pair.1);
             }
         }
