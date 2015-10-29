@@ -14,7 +14,6 @@ impl Editor {
             Char('L') => Some(self.ln_end()),
             Char('H') => Some((0, self.y())),
             Char('t') => {
-                let ch = self.next_char();
 
                                                    // ~v~ Optimize (sorry, Knuth)
                 if let Some(o) = self.next_ocur(ch, n.d()) {
