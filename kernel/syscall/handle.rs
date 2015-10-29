@@ -330,6 +330,35 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
+        for i in 0..current.files.len() {
+            if let Some(mut file) = current.files.get_mut(i) {
+                if file.fd == fd {
+                    scheduler::end_no_ints(reenable);
+
+                    if file.resource.truncate(len) {
+                        ret = 0;
+                    }
+
+                    scheduler::start_no_ints();
+
+                    break;
+                }
+            }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
 #[repr(packed)]
 pub struct TV {
     pub tv_sec: i64,
@@ -551,6 +580,7 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         SYS_FPATH => eax = do_sys_fpath(ebx, ecx as *mut u8, edx),
         //TODO: fstat
         SYS_FSYNC => eax = do_sys_fsync(ebx),
+        SYS_FTRUNCATE => eax = do_sys_ftruncate(ebx, ecx),
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut TV),
         //TODO: link
         SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
