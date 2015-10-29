@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use common::context::context_switch;
 use common::scheduler;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, URL};
 
 use syscall::handle;
 

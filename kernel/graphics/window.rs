@@ -4,7 +4,7 @@ use collections::string::String;
 
 use core::ops::DerefMut;
 
-use common::event::{Event, KeyEvent, MouseEvent};
+use common::event::{Event, KeyEvent, MouseEvent, QuitEvent};
 use common::queue::Queue;
 use common::scheduler;
 
@@ -150,6 +150,13 @@ impl Window {
         }
     }
 
+    fn on_window_decoration(&self, x: isize, y: isize) -> bool {
+        !self.minimized && x >= -2 &&
+            x < self.size.width as isize + 4 &&
+            y >= -18 &&
+            y < self.size.height as isize + 2
+    }
+
     /// Called on mouse movement
     pub fn on_mouse(&mut self, orig_mouse_event: MouseEvent, allow_catch: bool) -> bool {
         let mut mouse_event = orig_mouse_event;
@@ -161,10 +168,7 @@ impl Window {
 
         if allow_catch {
             if mouse_event.left_button {
-                if !self.minimized && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 &&
-                   mouse_event.y < self.size.height as isize + 2 {
+                if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
                 }
 
@@ -179,10 +183,7 @@ impl Window {
             }
 
             if mouse_event.right_button {
-                if !self.minimized && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 &&
-                   mouse_event.y < self.size.height as isize + 2 {
+                if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
                 }
 
@@ -191,6 +192,16 @@ impl Window {
                    mouse_event.y >= -18 && mouse_event.y < 0 {
                     self.minimized = !self.minimized;
                     caught = true;
+                }
+            }
+
+            if mouse_event.middle_button {
+                if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                    unsafe {
+                        let reenable = scheduler::start_no_ints();
+                        self.events.push(QuitEvent.to_event());
+                        scheduler::end_no_ints(reenable);
+                    }
                 }
             }
 
