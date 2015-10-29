@@ -4,7 +4,7 @@ set -e
 HOST="i386-elf-redox"
 BUILD="$(dirname "${PWD}")/build"
 PREFIX="${BUILD}/sysroot/usr"
-export PATH="${BUILD}/prefix/bin:$PATH"
+export PATH="${BUILD}/prefix/bin:${PREFIX}/bin:$PATH"
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"

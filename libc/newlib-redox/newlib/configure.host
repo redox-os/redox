@@ -450,6 +450,7 @@ case "${host}" in
 	;;
   i[3-7]86-*-redox*)
 	sys_dir=redox
+	posix_dir=posix
 	;;
   i[34567]86-*-sco*)
 	sys_dir=sysvi386
