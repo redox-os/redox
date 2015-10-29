@@ -4,8 +4,7 @@ impl Editor {
     /// Delete char
     #[inline]
     pub fn delete(&mut self) {
-        let y = self.y();
-        let x = self.x();
+        let (x, y) = self.pos();
         if self.text[y].is_empty() {
             if self.text.len() != 1 {
                 self.text.remove(y);

@@ -69,6 +69,7 @@ Navigation:
 - <numeral>g : Go to <numeral> line
 - g<motion> : Do <motion>
 - G : Go to the end of the document
+- t<char> : Go to the next occurence of <char>
 
 Cursor management:
 - b : Branch the cursor
@@ -143,6 +144,7 @@ stated.
                line
 - <numeral>g : Go to <numeral> line
 - G : Go to the end of the document
+- t<char> : Go to the next occurence of <char>
 
 Tips'n'tricks
 -------------
