@@ -18,6 +18,7 @@ pub const SYS_LSEEK: usize = 19;
     pub const SEEK_SET: usize = 0;
     pub const SEEK_CUR: usize = 1;
     pub const SEEK_END: usize = 2;
+pub const SYS_NANOSLEEP: usize = 162;
 pub const SYS_OPEN: usize = 5;
     pub const O_RDONLY: usize = 0;
     pub const O_WRONLY: usize = 1;

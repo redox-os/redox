@@ -30,9 +30,12 @@ pub struct MZapWrapper {
 impl FromBytes for MZapWrapper {
     fn from_bytes(data: &[u8]) -> Option<Self> {
         if data.len() >= mem::size_of::<MZapPhys>() {
+            // Read the first part of the mzap -- its base phys struct
             let mzap_phys = unsafe { ptr::read(data.as_ptr() as *const MZapPhys) };
+            // Read the mzap entries, aka chunks
             let mut mzap_entries = Vec::new();
-            for i in 0..(data.len()-mem::size_of::<MZapPhys>()/mem::size_of::<MZapEntPhys>()) {
+            let num_entries = (data.len()-mem::size_of::<MZapPhys>()) / mem::size_of::<MZapEntPhys>();
+            for i in 0..num_entries {
                 let entry_pos = mem::size_of::<MZapPhys>() + i*mem::size_of::<MZapEntPhys>();
                 let mzap_ent = unsafe { ptr::read(data[entry_pos..].as_ptr() as *const MZapEntPhys) };
                 mzap_entries.push(mzap_ent);

@@ -3,7 +3,7 @@
 use core::cmp::{Ordering, PartialEq};
 use core::ops::{Add, Sub};
 
-use syscall::{TV, sys_gettimeofday, sys_yield};
+use syscall::{TV, TS, sys_gettimeofday, sys_nanosleep};
 
 pub const NANOS_PER_MICRO: i32 = 1_000;
 pub const NANOS_PER_MILLI: i32 = 1_000_000;
@@ -47,16 +47,20 @@ impl Duration {
     }
 
     /// Sleep the duration
-    pub fn sleep(&self) {
-        let start_time = Duration::realtime();
-        loop {
-            let elapsed = Duration::realtime() - start_time;
-            if elapsed > *self {
-                break;
-            } else {
-                unsafe { sys_yield() };
-            }
-        }
+    pub fn sleep(&self) -> Duration {
+        let req = TS {
+            tv_sec: self.secs,
+            tv_nsec: self.nanos,
+        };
+
+        let mut rem = TS {
+            tv_sec: 0,
+            tv_nsec: 0
+        };
+
+        unsafe { sys_nanosleep(&req, &mut rem) };
+
+        Duration::new(rem.tv_sec, rem.tv_nsec)
     }
 }
 

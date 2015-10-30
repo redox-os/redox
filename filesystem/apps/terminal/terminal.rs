@@ -6,6 +6,7 @@ use redox::fs::*;
 use redox::io::*;
 use redox::console::*;
 use redox::env::*;
+use redox::time::Duration;
 use redox::to_num::*;
 
 /* Magic Macros { */
@@ -105,6 +106,29 @@ impl Command {
                         None => println!("Failed to read"),
                     }
                 }
+            },
+        });
+
+        commands.push(Command {
+            name: "sleep".to_string(),
+            main: box |args: &Vec<String>| {
+                let secs = {
+                    match args.get(1) {
+                        Some(arg) => arg.to_num() as i64,
+                        None => 0,
+                    }
+                };
+
+                let nanos = {
+                    match args.get(2) {
+                        Some(arg) => arg.to_num() as i32,
+                        None => 0,
+                    }
+                };
+
+                println!("Sleep: {} {}", secs, nanos);
+                let remaining = Duration::new(secs, nanos).sleep();
+                println!("Remaining: {} {}", remaining.secs, remaining.nanos);
             },
         });
 

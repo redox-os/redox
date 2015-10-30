@@ -80,8 +80,8 @@ impl File {
         unsafe { sys_fsync(self.fd) == 0 }
     }
 
-    pub fn set_len(&mut self, size: u64) -> bool {
-        unsafe { sys_ftruncate(self.fd, size as usize) == 0 }
+    pub fn set_len(&mut self, size: usize) -> bool {
+        unsafe { sys_ftruncate(self.fd, size) == 0 }
     }
 }
 
