@@ -30,6 +30,13 @@ function STABLE {
     printf "%-16s \e[1m\e[32mSTABLE\e[39m\e[0m\n" "$(basename "$0" .sh)"
 }
 
+function DEPENDS {
+    for depend in $*
+    do
+        printf "%-16s \e[1m%s\e[0m\n" "$(basename "$0" .sh)" "$depend"
+    done
+}
+
 function fetch_template {
     case $1 in
         add)
