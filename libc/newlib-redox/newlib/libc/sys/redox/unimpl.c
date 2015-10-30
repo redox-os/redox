@@ -5,6 +5,11 @@ int access(const char * path, int amode){
     return -1;
 }
 
+int fcntl(int file, int cmd, ...){
+    errno = EACCES;
+    return -1;
+}
+
 int fstat(int file, struct stat *st) {
     st->st_mode = S_IFCHR;
     return 0;
