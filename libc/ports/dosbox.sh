@@ -1,6 +1,8 @@
 #!/bin/bash
 source environ.sh
 
+BROKEN
+
 SRC=http://downloads.sourceforge.net/project/dosbox/dosbox/0.74/dosbox-0.74.tar.gz
 DIR=dosbox-0.74
 

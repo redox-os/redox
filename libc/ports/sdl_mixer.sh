@@ -1,6 +1,8 @@
 #!/bin/bash
 source environ.sh
 
+UNSTABLE
+
 SRC=https://www.libsdl.org/projects/SDL_mixer/release/SDL_mixer-1.2.12.tar.gz
 DIR=SDL_mixer-1.2.12
 

@@ -1,6 +1,8 @@
 #!/bin/bash
 source environ.sh
 
+BROKEN
+
 GIT=https://github.com/ebuc99/pacman.git
 DIR=pacman
 

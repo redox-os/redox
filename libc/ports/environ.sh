@@ -18,6 +18,18 @@ export RANLIB="${HOST}-ranlib"
 export READELF="${HOST}-readelf"
 export STRIP="${HOST}-strip"
 
+function BROKEN {
+    printf "%-16s \e[1m\e[31mBROKEN\e[39m\e[0m\n" "$(basename "$0" .sh)"
+}
+
+function UNSTABLE {
+    printf "%-16s \e[1m\e[33mUNSTABLE\e[39m\e[0m\n" "$(basename "$0" .sh)"
+}
+
+function STABLE {
+    printf "%-16s \e[1m\e[32mSTABLE\e[39m\e[0m\n" "$(basename "$0" .sh)"
+}
+
 function fetch_template {
     case $1 in
         add)
@@ -65,9 +77,6 @@ function fetch_template {
                 mkdir -pv "$(dirname "${DIR}/$2")"
                 cp -v "${BUILD}/${DIR}/$2" "${DIR}/$2"
             fi
-            ;;
-        *)
-            echo "$0: Unknown argument: '$1'. Try running with 'add' or 'remove'"
             ;;
     esac
 }

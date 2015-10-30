@@ -1,6 +1,8 @@
 #!/bin/bash
 source environ.sh
 
+UNSTABLE
+
 SRC=https://www.libsdl.org/release/SDL-1.2.15.tar.gz
 DIR=SDL-1.2.15
 
