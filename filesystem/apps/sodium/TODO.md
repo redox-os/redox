@@ -27,3 +27,5 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
       4) Press a and go to append mode
       5) Type text
       6) Out of bound (index) error
+
+- [ ] When typing the first char in a line in normal insert mode, it wont go to the next char.
