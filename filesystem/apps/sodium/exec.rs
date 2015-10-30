@@ -10,14 +10,8 @@ impl Editor {
         use super::CommandMode::*;
 
         let n = para.d();
-        match cmd {
-            Ctrl(b) => self.key_state.ctrl = b,
-            Alt(b) => self.key_state.alt = b,
-            Shift(b) => self.key_state.shift = b,
-            _ => {},
-        }
 
-        if cmd == Char(' ') && self.key_state.shift {
+        if cmd.key == Key::Char(' ') && cmd.shift {
 
             let mode = self.cursor().mode;
 
@@ -27,11 +21,11 @@ impl Editor {
             }
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
 
-        } else if self.key_state.alt && cmd == Key::Char(' ') {
+        } else if cmd.alt && cmd.key == Key::Char(' ') {
 
             self.next_cursor();
 
-        } else if self.key_state.alt {
+        } else if cmd.alt {
 
             if let Some(m) = self.to_motion(Inst(para, cmd)) {
                 self.goto(m);
@@ -39,7 +33,7 @@ impl Editor {
 
         } else {
             match self.cursor().mode {
-                Command(Normal) => match cmd {
+                Command(Normal) => match cmd.key {
                     Char('i') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
                             InsertOptions {
@@ -120,6 +114,7 @@ impl Editor {
                     Char('d') => {
                         let ins = self.next_inst();
                         if let Some(m) = self.to_motion(ins) {
+                            debugln!("Delete (x, y) : ({}, {})", m.0, m.1);
                             self.remove_rb(m);
                         }
                     },
@@ -181,10 +176,10 @@ impl Editor {
                     _ => {},
                 },
                 Primitive(Insert(opt)) => {
-                    self.insert(cmd, opt);
+                    self.insert(cmd.key, opt);
                 },
                 Primitive(Prompt) => {
-                    match cmd {
+                    match cmd.key {
                         Char('\n') => {
                             self.cursor_mut().mode = Command(Normal);
                             let cmd = self.prompt.clone();
