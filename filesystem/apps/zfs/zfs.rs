@@ -7,6 +7,8 @@ use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
 use self::dvaddr::DVAddr;
 use self::from_bytes::FromBytes;
+use self::nvpair::NvValue;
+use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
@@ -112,6 +114,7 @@ pub enum ZfsTraverse {
 pub struct ZFS {
     pub reader: ZfsReader,
     pub uberblock: Uberblock, // The active uberblock
+    pub mos: ObjectSetPhys,
     fs_objset: ObjectSetPhys,
     master_node: DNodePhys,
     root: u64,
@@ -166,6 +169,7 @@ impl ZFS {
         Some(ZFS {
             reader: zfs_reader,
             uberblock: uberblock,
+            mos: mos,
             fs_objset: fs_objset,
             master_node: master_node,
             root: try!(root),
@@ -362,8 +366,41 @@ pub fn main() {
                         match VdevLabel::from_bytes(&zfs.reader.read(0, 256 * 2)) {
                             Some(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
-                                let nv_list = nvstream::decode_nv_list(&mut xdr);
+                                let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
                                 println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                                match nv_list.find("vdev_tree") {
+                                    Some(vdev_tree) => {
+                                        println_color!(green, "Got vdev_tree");
+
+                                        let vdev_tree =
+                                            if let NvValue::NvList(ref vdev_tree) = *vdev_tree {
+                                                Some(vdev_tree)
+                                            } else {
+                                                None
+                                            };
+
+                                        match vdev_tree.unwrap().find("metaslab_array") {
+                                            Some(metaslab_array) => {
+                                                println_color!(green, "Got metaslab_array");
+                                                if let NvValue::Uint64(metaslab_array) = *metaslab_array {
+                                                    let metaslab_array = metaslab_array as usize;
+                                                    let sm_dnode: Option<DNodePhys> =
+                                                        zfs.reader.read_type_array(zfs.mos.meta_dnode.get_blockptr(0), metaslab_array);
+
+                                                    println!("got space map dnode: {:?}", sm_dnode);
+                                                } else {
+                                                    println_color!(red, "Invalid metaslab_array NvValue type. Expected Uint64.");
+                                                }
+                                            },
+                                            None => {
+                                                println_color!(red, "No `metaslab_array` in vdev_tree");
+                                            },
+                                        };
+                                    },
+                                    None => {
+                                        println_color!(red, "No `vdev_tree` in vdev_label nvpairs");
+                                    },
+                                }
                             },
                             None => { println_color!(red, "Couldn't read vdev_label"); },
                         }
