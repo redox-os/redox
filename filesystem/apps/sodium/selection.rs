@@ -17,6 +17,7 @@ impl Editor {
                 self.text[y].remove(a);
             }
         } else {
+            debugln!("Full line mode!");
             // Full line mode
             let (a, b) = if self.y() < y {
                 (self.y(), y)

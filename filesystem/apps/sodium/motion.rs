@@ -4,34 +4,31 @@ impl Editor {
     /// Convert an instruction to a motion (new coordinate)
     pub fn to_motion(&mut self, Inst(n, cmd): Inst) -> Option<(usize, usize)> {
         use super::Key::*;
-        match cmd {
-            _ => match cmd.key {
-                Char('h') => Some(self.left(n.d())),
-                Char('l') => Some(self.right(n.d())),
-                Char('j') => Some(self.down(n.d())),
-                Char('k') => Some(self.up(n.d())),
-                Char('g') => Some((0, n.or(1) - 1)),
-                Char('G') => Some((0, self.text.len() - 1)),
-                Char('L') => Some(self.ln_end()),
-                Char('H') => Some((0, self.y())),
-                Char('t') => {
+        match cmd.key {
+            Char('h') => Some(self.left(n.d())),
+            Char('l') => Some(self.right(n.d())),
+            Char('j') => Some(self.down(n.d())),
+            Char('k') => Some(self.up(n.d())),
+            Char('g') => Some((0, n.or(1) - 1)),
+            Char('G') => Some((0, self.text.len() - 1)),
+            Char('L') => Some(self.ln_end()),
+            Char('H') => Some((0, self.y())),
+            Char('t') => {
 
-                    let ch = self.next_char();
+                let ch = self.next_char();
 
-                                                       // ~v~ Optimize (sorry, Knuth)
-                    if let Some(o) = self.next_ocur(ch, n.d()) {
-                        Some(o)
-                    } else {
-                        debug!("No ocur found!");
-                        None
-                    }
-                },
-                Char(c) => {
-                    debug!("Motion not found: {}", c);
+                if let Some(o) = self.next_ocur(ch, n.d()) {
+                    Some(o)
+                } else {
+                    debug!("No ocur found!");
                     None
-                },
-                _ => None,
-            }
+                }
+            },
+            Char(c) => {
+                debug!("Motion not found: {}", c);
+                None
+            },
+            _ => None,
         }
     }
 }
