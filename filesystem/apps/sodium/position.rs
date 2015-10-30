@@ -1,5 +1,10 @@
 use super::*;
 
+/// Convert a usize tuple to isize
+pub fn to_signed_pos((x, y): (usize, usize)) -> (isize, isize) {
+    (x as isize, y as isize)
+}
+
 impl Editor {
     /// Get the position of the cursor
     /// (if out of bound, it's the length which is given)

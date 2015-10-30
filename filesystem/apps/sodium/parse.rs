@@ -3,7 +3,7 @@ use redox::*;
 
 #[derive(Copy, Clone)]
 /// An instruction
-pub struct Inst(pub Parameter, pub Key);
+pub struct Inst(pub Parameter, pub Cmd);
 
 /// A numeral parameter
 #[derive(Copy, Clone)]
@@ -49,16 +49,23 @@ impl Editor {
         let mut n = 0;
         let mut unset = true;
 
+        let mut ctrl = false;
+        let mut alt = false;
+        let mut shift = false;
+
+        let mut key = Key::Null;
+
         loop {
             if let EventOption::Key(k) = self.window.poll().unwrap_or(Event::new()).to_option() {
                 let c = k.character;
                 match c {
                     '\0' => {
-                        return Inst(Parameter::Null, match k.scancode {
-                            K_ALT => Key::Alt(k.pressed),
-                            K_CTRL => Key::Ctrl(k.pressed),
-                            K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift(k.pressed),
-                            s if k.pressed => match s {
+                        // HERES THE BUG! It returns a modifier (which it shouldnt)
+                        match k.scancode {
+                            K_ALT => alt = k.pressed,
+                            K_CTRL => ctrl = k.pressed,
+                            K_LEFT_SHIFT | K_RIGHT_SHIFT => shift = k.pressed,
+                            s if k.pressed => key = match s {
                                 K_BKSP => Key::Backspace,
                                 K_LEFT => Key::Left,
                                 K_RIGHT => Key::Right,
@@ -68,13 +75,13 @@ impl Editor {
                                 K_ESC => Key::Escape,
                                 _ => Key::Unknown(s),
                             },
-                            s => Key::Unknown(s),
-                        })
+                            s => key = Key::Unknown(s),
+                        }
                     }
                     _ => if k.pressed {
                         match self.cursor().mode {
                             Mode::Primitive(_) => {
-                                return Inst(Parameter::Null, Key::Char(c));
+                                key = Key::Char(c);
                             },
                             Mode::Command(_) => {
                                 n = match c {
@@ -120,7 +127,9 @@ impl Editor {
                                     },
                                     _   => {
 
-                                        return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, Key::Char(c));
+                                        key = Key::Char(c);
+                                        n
+                                        //return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, Key::Char(c));
                                     }
                                 }
                             }
@@ -128,6 +137,16 @@ impl Editor {
 
                     },
                 }
+            }
+            if key != Key::Null {
+                return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, {
+                    Cmd {
+                        key: key,
+                        ctrl: ctrl,
+                        alt: alt,
+                        shift: shift,
+                    }
+                });
             }
         }
 
