@@ -5,12 +5,19 @@ impl Editor {
     /// Redraw the window
     pub fn redraw(&mut self) {
         // TODO: Only draw when relevant for the window
-        let (x, y) = self.pos();
+        let (mut pos_x, pos_y) = self.pos();
         // Redraw window
         self.window.set(Color::rgb(25, 25, 25));
 
-        self.window.rect(8 * (x - self.scroll_y) as isize,
-                         16 * (y - self.scroll_x) as isize,
+        pos_x += match self.cursor().mode {
+            Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
+                mode: InsertMode::Append,
+            })) => 1,
+            _ => 0,
+        };
+
+        self.window.rect(8 * (pos_x - self.scroll_y) as isize,
+                         16 * (pos_y - self.scroll_x) as isize,
                          8,
                          16,
                          Color::WHITE);
@@ -39,7 +46,7 @@ impl Editor {
 
                 let c = if c == '\t' { ' ' } else { c };
 
-                if self.x() == x && self.y() == y {
+                if pos_x == x && pos_y == y {
                     self.window.char(8 * (x - self.scroll_y) as isize,
                                      16 * (y - self.scroll_x) as isize,
                                      c,
