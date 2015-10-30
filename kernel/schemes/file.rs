@@ -420,6 +420,16 @@ impl Resource for FileResource {
         }
         true
     }
+
+    fn truncate(&mut self, len: usize) -> bool {
+        while len > self.vec.len() {
+            self.vec.push(0);
+        }
+        self.vec.truncate(len);
+        self.seek = cmp::min(self.seek, self.vec.len());
+        self.dirty = true;
+        true
+    }
 }
 
 impl Drop for FileResource {

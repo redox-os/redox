@@ -4,7 +4,8 @@ set -e
 HOST="i386-elf-redox"
 BUILD="$(dirname "${PWD}")/build"
 PREFIX="${BUILD}/sysroot/usr"
-export PATH="${BUILD}/prefix/bin:$PATH"
+export PATH="${BUILD}/prefix/bin:${PREFIX}/bin:$PATH"
+export PKG_CONFIG_LIBDIR="${PREFIX}/lib/pkgconfig/"
 export AR="${HOST}-ar"
 export AS="${HOST}-as"
 export CC="${HOST}-gcc"
@@ -51,9 +52,18 @@ function fetch_template {
             then
                 rm -rfv "${BUILD}/${DIR}"
             fi
+            ;;
+        unfetch)
             if [ -n "${SRC}" -a -f "${BUILD}/$(basename "${SRC}")" ]
             then
                 rm -fv "${BUILD}/$(basename "${SRC}")"
+            fi
+            ;;
+        patch)
+            if [ -f "${BUILD}/${DIR}/$2" ]
+            then
+                mkdir -pv "$(dirname "${DIR}/$2")"
+                cp -v "${BUILD}/${DIR}/$2" "${DIR}/$2"
             fi
             ;;
         *)
@@ -66,10 +76,10 @@ function fetch_template {
 function make_template {
     case $1 in
         build)
-            make -C "${BUILD}/${DIR}" -j `nproc` $BUILD_ARGS
+            make -C "${BUILD}/${DIR}/${MAKE_DIR}" -j `nproc` $BUILD_ARGS
             ;;
         install)
-            make -C "${BUILD}/${DIR}" -j `nproc` install $INSTALL_ARGS
+            make -C "${BUILD}/${DIR}/${MAKE_DIR}" -j `nproc` install $INSTALL_ARGS
             ;;
         add)
             fetch_template add
@@ -77,10 +87,10 @@ function make_template {
             make_template install
             ;;
         clean)
-            make -C "${BUILD}/${DIR}" -j `nproc` clean $CLEAN_ARGS
+            make -C "${BUILD}/${DIR}/${MAKE_DIR}" -j `nproc` clean $CLEAN_ARGS
             ;;
         uninstall)
-            make -C "${BUILD}/${DIR}" -j `nproc` uninstall $UNINSTALL_ARGS
+            make -C "${BUILD}/${DIR}/${MAKE_DIR}" -j `nproc` uninstall $UNINSTALL_ARGS
             ;;
         remove)
             make_template uninstall || true
@@ -96,7 +106,7 @@ function make_template {
 function configure_template {
     case $1 in
         configure)
-            pushd "${BUILD}/${DIR}"
+            pushd "${BUILD}/${DIR}/${MAKE_DIR}"
             ./configure --prefix="${PREFIX}" $CONFIGURE_ARGS
             popd
             ;;
@@ -107,7 +117,7 @@ function configure_template {
             make_template install
             ;;
         distclean)
-            make -C "${BUILD}/${DIR}" -j `nproc` distclean $DISTCLEAN_ARGS
+            make -C "${BUILD}/${DIR}/${MAKE_DIR}" -j `nproc` distclean $DISTCLEAN_ARGS
             ;;
         remove)
             make_template uninstall || true
@@ -123,7 +133,7 @@ function configure_template {
 function autoconf_template {
     case $1 in
         autoconf)
-            pushd "${BUILD}/${DIR}"
+            pushd "${BUILD}/${DIR}/${MAKE_DIR}"
                 autoconf $AUTOCONF_ARGS
             popd
             ;;

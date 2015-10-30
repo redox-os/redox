@@ -43,6 +43,7 @@ impl Editor {
             Some(ref mut file) => {
                 file.seek(SeekFrom::Start(0));
                 file.write(&self.string.as_bytes());
+                file.set_len(self.string.len());
                 file.sync();
             }
             None => {

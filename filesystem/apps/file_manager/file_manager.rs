@@ -53,23 +53,31 @@ impl FileManager {
                 file_types.insert("rs".to_string(),
                                   FileType::new("Rust source code", "text-x-makefile"));
                 file_types.insert("crate".to_string(),
-                                  FileType::new("Rust crate", "image-x-makefile"));
+                                  FileType::new("Rust crate", "application-x-archive"));
+                file_types.insert("rlib".to_string(),
+                                  FileType::new("Static Rust library", "application-x-object"));
                 file_types.insert("asm".to_string(),
                                   FileType::new("Assembly source", "text-x-makefile"));
                 file_types.insert("list".to_string(),
                                   FileType::new("Disassembly source", "text-x-makefile"));
                 file_types.insert("c".to_string(),
-                                  FileType::new("C source code", "text-x-makefile"));
+                                  FileType::new("C source code", "text-x-csrc"));
                 file_types.insert("cpp".to_string(),
-                                  FileType::new("C++ source code", "text-x-makefile"));
+                                  FileType::new("C++ source code", "text-x-c++src"));
+                file_types.insert("h".to_string(),
+                                  FileType::new("C header", "text-x-chdr"));
                 file_types.insert("sh".to_string(),
                                   FileType::new("Shell script", "text-x-script"));
                 file_types.insert("lua".to_string(),
                                   FileType::new("Lua script", "text-x-script"));
                 file_types.insert("txt".to_string(),
-                                  FileType::new("plain text document", "text-x-generic"));
+                                  FileType::new("Plain text document", "text-x-generic"));
                 file_types.insert("md".to_string(),
-                                  FileType::new("Markdown", "text-x-generic"));
+                                  FileType::new("Markdown document", "text-x-generic"));
+                file_types.insert("toml".to_string(),
+                                  FileType::new("TOML document", "text-x-generic"));
+                file_types.insert("json".to_string(),
+                                  FileType::new("JSON document", "text-x-generic"));
                 file_types.insert("REDOX".to_string(),
                                   FileType::new("Redox package", "text-x-generic"));
                 file_types.insert(String::new(),

@@ -6,15 +6,12 @@ noinst_LIBRARIES = lib.a
 
 if MAY_SUPPLY_SYSCALLS
 extra_objs = \
-    syscalls.o \
-    unimpl.o \
-    dirent.o \
-    execl.o \
-    execle.o \
-    execlp.o \
-    execv.o \
-    execve.o \
-    execvp.o
+    common.o \
+    file.o \
+    folder.o \
+    process.o \
+    time.o \
+    unimpl.o
 else
 extra_objs =
 endif
@@ -22,17 +19,14 @@ endif
 lib_a_SOURCES =
 lib_a_LIBADD = $(extra_objs)
 EXTRA_lib_a_SOURCES = \
-    syscalls.c \
+    common.c \
+    file.c \
+    folder.c \
+    process.c \
+    time.c \
     unimpl.c \
-    dirent.c \
-    execl.c \
-    execle.c \
-    execlp.c \
-    execv.c \
-    execve.c \
-    execve.c \
     crt0.c
-lib_a_DEPENDENCIES = $(extra_objs)      # syscalls.c into multiple files
+lib_a_DEPENDENCIES = $(extra_objs)
 lib_a_CCASFLAGS = $(AM_CCASFLAGS)
 lib_a_CFLAGS = $(AM_CFLAGS)
 

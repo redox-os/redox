@@ -94,6 +94,8 @@ pub struct SchemeResource {
     _lseek: usize,
     /// Internal fsync
     _fsync: usize,
+    /// Internal ftruncate
+    _ftruncate: usize,
     /// Internal close
     _close: usize,
 }
@@ -132,6 +134,7 @@ impl Resource for SchemeResource {
                     _write: self._write,
                     _lseek: self._lseek,
                     _fsync: self._fsync,
+                    _ftruncate: self._ftruncate,
                     _close: self._close,
                 });
             }
@@ -240,6 +243,20 @@ impl Resource for SchemeResource {
         }
         false
     }
+
+    fn truncate(&mut self, len: usize) -> bool {
+        if self.valid(self._ftruncate) {
+            let result;
+            unsafe {
+                let context = SchemeContext::enter(&self.memory);
+                let fn_ptr: *const usize = &self._ftruncate;
+                result = (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle, len);
+                context.exit();
+            }
+            return result == 0;
+        }
+        false
+    }
 }
 
 impl Drop for SchemeResource {
@@ -276,6 +293,7 @@ pub struct SchemeItem {
     _write: usize,
     _lseek: usize,
     _fsync: usize,
+    _ftruncate: usize,
     _close: usize,
 }
 
@@ -301,6 +319,7 @@ impl SchemeItem {
             _write: 0,
             _lseek: 0,
             _fsync: 0,
+            _ftruncate: 0,
             _close: 0,
         };
 
@@ -334,6 +353,7 @@ impl SchemeItem {
                     scheme_item._write = executable.symbol("_write");
                     scheme_item._lseek = executable.symbol("_lseek");
                     scheme_item._fsync = executable.symbol("_fsync");
+                    scheme_item._ftruncate = executable.symbol("_ftruncate");
                     scheme_item._close = executable.symbol("_close");
                 }
             }
@@ -389,6 +409,7 @@ impl KScheme for SchemeItem {
                     _write: self._write,
                     _lseek: self._lseek,
                     _fsync: self._fsync,
+                    _ftruncate: self._ftruncate,
                     _close: self._close,
                 });
             }

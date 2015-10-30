@@ -19,6 +19,7 @@ pub mod from_bytes;
 pub mod lzjb;
 pub mod nvpair;
 pub mod nvstream;
+pub mod space_map;
 pub mod uberblock;
 pub mod vdev;
 pub mod xdr;
@@ -67,7 +68,8 @@ impl ZfsReader {
     }
 
     pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Option<T> {
-        self.read_type_array(block_ptr, 0)
+        let data = self.read_block(block_ptr);
+        data.and_then(|data| T::from_bytes(&data[..]))
     }
 
     pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Option<T> {
@@ -130,7 +132,8 @@ impl ZFS {
         // 2nd dnode in MOS points at the root dataset zap
         let dnode1: DNodePhys = zfs_reader.read_type_array(&mos_block_ptr1, 1).unwrap();
 
-        let root_ds: zap::MZapWrapper = zfs_reader.read_type(dnode1.get_blockptr(0)).unwrap();
+        let thing = dnode1.get_blockptr(0);
+        let root_ds: zap::MZapWrapper = zfs_reader.read_type(thing).unwrap();
 
         let root_ds_dnode: DNodePhys =
             zfs_reader.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize).unwrap();
