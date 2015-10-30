@@ -51,6 +51,8 @@ function fetch_template {
             then
                 rm -rfv "${BUILD}/${DIR}"
             fi
+            ;;
+        unfetch)
             if [ -n "${SRC}" -a -f "${BUILD}/$(basename "${SRC}")" ]
             then
                 rm -fv "${BUILD}/$(basename "${SRC}")"
