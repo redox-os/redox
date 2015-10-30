@@ -450,7 +450,11 @@ case "${host}" in
 	;;
   i[3-7]86-*-redox*)
 	sys_dir=redox
-    newlib_cflags="${newlib_cflags} -DHAVE_NANOSLEEP -D_NO_GETLOGIN -D_NO_GETPWENT -D_NO_GETUT -D_NO_GETPASS -D_NO_SIGSET -D_NO_WORDEXP -D_NO_POPEN -D_NO_POSIX_SPAWN"
+    posix_dir=posix
+    unix_dir=unix
+    newlib_cflags="${newlib_cflags} -DHAVE_NANOSLEEP -DHAVE_OPENDIR"
+    newlib_cflags="${newlib_cflags} -D_NO_GETCWD -D_NO_GETLOGIN -D_NO_GETPWENT -D_NO_GETUT -D_NO_GETPASS -D_NO_POPEN -D_NO_SIGSET -D_NO_TTYNAME -D_NO_WORDEXP"
+    newlib_cflags="${newlib_cflags} -D_NO_POSIX_SPAWN"
 	;;
   i[34567]86-*-sco*)
 	sys_dir=sysvi386
