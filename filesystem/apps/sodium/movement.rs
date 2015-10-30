@@ -54,6 +54,11 @@ impl Editor {
     pub fn right(&self, n: usize) -> (usize, usize) {
         self.bound_hor((self.x() + n, self.y()))
     }
+    /// Get the position of the right char (unbounded)
+    #[inline]
+    pub fn right_unbounded(&self, n: usize) -> (isize, isize) {
+        ((self.x() + n) as isize, self.y() as isize)
+    }
 
     /// Get the position of the left char
     #[inline]
@@ -63,6 +68,11 @@ impl Editor {
         } else {
             (0, self.y())
         }
+    }
+    /// Get the position of the left char (unbounded)
+    #[inline]
+    pub fn left_unbounded(&self, n: usize) -> (isize, isize) {
+        (self.x() as isize - n as isize, self.y() as isize)
     }
 
     /// Get the position of the char above the cursor
@@ -74,11 +84,21 @@ impl Editor {
             (self.cursor().x, 0)
         }
     }
+    /// Get the position of the char above the cursor (unbounded)
+    #[inline]
+    pub fn up_unbounded(&self, n: usize) -> (isize, isize) {
+        (self.cursor().x as isize, self.y() as isize - n as isize)
+    }
 
     /// Get the position under the char
     #[inline]
     pub fn down(&self, n: usize) -> (usize, usize) {
         self.bound_ver((self.cursor().x, self.y() + n))
+    }
+    /// Get the position under the char (unbounded)
+    #[inline]
+    pub fn down_unbounded(&self, n: usize) -> (isize, isize) {
+        (self.cursor().x as isize, self.y() as isize + n as isize)
     }
 
     /// Get the position of the end of the line
