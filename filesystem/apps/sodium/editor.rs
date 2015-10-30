@@ -15,8 +15,6 @@ pub struct Editor {
     pub scroll_y: usize,
     /// The window
     pub window: Window,
-    /// The key state
-    pub key_state: KeyState,
     /// The status bar
     pub status_bar: StatusBar,
     /// The prompt
@@ -43,7 +41,6 @@ impl Editor {
             scroll_x: 0,
             scroll_y: 0,
             window: *window,
-            key_state: KeyState::new(),
             status_bar: StatusBar::new(),
             prompt: String::new(),
             options: Options::new(),
