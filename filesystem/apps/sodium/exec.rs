@@ -113,7 +113,7 @@ impl Editor {
                     },
                     Char('d') => {
                         let ins = self.next_inst();
-                        if let Some(m) = self.to_motion(ins) {
+                        if let Some(m) = self.to_motion_unbounded(ins) {
                             debugln!("Delete (x, y) : ({}, {})", m.0, m.1);
                             self.remove_rb(m);
                         }
