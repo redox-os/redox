@@ -110,9 +110,6 @@ impl<'a> XdrOps for MemOps<'a> {
         self.pos = new_pos;
         Ok(())
     }
-
-    fn destroy(&mut self) {
-    }
 }
 
 #[test]
