@@ -38,6 +38,8 @@ impl Editor {
                                          .unwrap_or(Event::new())
                                          .to_option() {
                 if k.pressed {
+                    self.status_bar.cmd.push(k.character);
+                    self.redraw_status_bar();
                     return k.character;
                 }
             }
@@ -54,9 +56,12 @@ impl Editor {
         let mut shift = false;
 
         let mut key = Key::Null;
+        self.status_bar.cmd = String::new();
 
+//        self.status_bar.cmd = String::new();
         loop {
             if let EventOption::Key(k) = self.window.poll().unwrap_or(Event::new()).to_option() {
+
                 let c = k.character;
                 match c {
                     '\0' => {
@@ -79,6 +84,9 @@ impl Editor {
                         }
                     }
                     _ => if k.pressed {
+                        self.status_bar.cmd.push(c);
+                        self.redraw_status_bar();
+
                         match self.cursor().mode {
                             Mode::Primitive(_) => {
                                 key = Key::Char(c);
@@ -131,7 +139,8 @@ impl Editor {
                                         n
                                         //return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, Key::Char(c));
                                     }
-                                }
+                                };
+//                                self.status_bar.cmd.push(c);
                             }
                         }
 
