@@ -10,7 +10,7 @@ use redox::time::Duration;
 use redox::to_num::*;
 
 /* Magic Macros { */
-static mut application: *mut Application = 0 as *mut Application;
+static mut application: *mut Application<'static> = 0 as *mut Application;
 
 /// Execute a command
 macro_rules! exec {
@@ -23,18 +23,18 @@ macro_rules! exec {
 /* } Magic Macros */
 
 /// A command
-pub struct Command {
-    pub name: String,
+pub struct Command<'a> {
+    pub name: &'a str,
     pub main: Box<Fn(&Vec<String>)>,
 }
 
-impl Command {
+impl<'a> Command<'a> {
     /// Return the vector of the commands
     // TODO: Use a more efficient collection instead
     pub fn vec() -> Vec<Self> {
         let mut commands: Vec<Self> = Vec::new();
         commands.push(Command {
-            name: "echo".to_string(),
+            name: "echo",
             main: box |args: &Vec<String>| {
                 let echo = args.iter()
                     .skip(1)
@@ -44,7 +44,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "open".to_string(),
+            name: "open",
             main: box |args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
                     File::exec(arg);
@@ -53,7 +53,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "run".to_string(),
+            name: "run",
             main: box |args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
@@ -72,7 +72,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "send".to_string(),
+            name: "send",
             main: box |args: &Vec<String>| {
                 if args.len() < 3 {
                     println!("Error: incorrect arguments");
@@ -110,7 +110,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "sleep".to_string(),
+            name: "sleep",
             main: box |args: &Vec<String>| {
                 let secs = {
                     match args.get(1) {
@@ -133,7 +133,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "url".to_string(),
+            name: "url",
             main: box |args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
@@ -155,7 +155,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "url_hex".to_string(),
+            name: "url_hex",
             main: box |args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
@@ -183,7 +183,7 @@ impl Command {
         });
 
         commands.push(Command {
-            name: "wget".to_string(),
+            name: "wget",
             main: box |args: &Vec<String>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
@@ -206,10 +206,10 @@ impl Command {
             },
         });
 
-        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + &c.name) + " exit";
+        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name) + " exit";
 
         commands.push(Command {
-            name: "help".to_string(),
+            name: "help",
             main: box move |args: &Vec<String>| {
                 println!("Commands:{}", command_list);
             },
@@ -230,13 +230,13 @@ pub struct Mode {
 }
 
 /// An application
-pub struct Application {
-    commands: Vec<Command>,
+pub struct Application<'a> {
+    commands: Vec<Command<'a>>,
     variables: Vec<Variable>,
     modes: Vec<Mode>,
 }
 
-impl Application {
+impl<'a> Application<'a> {
     /// Create a new empty application
     pub fn new() -> Self {
         return Application {
@@ -246,18 +246,17 @@ impl Application {
         };
     }
 
-    fn on_command(&mut self, command_string: &String) {
+    fn on_command(&mut self, command_string: &str) {
         //Comment
         if command_string.starts_with('#') {
             return;
         }
 
         //Show variables
-        if *command_string == "$" {
-            let mut variables = String::new();
-            for variable in self.variables.iter() {
-                variables = variables + "\n" + &variable.name + "=" + &variable.value;
-            }
+        if command_string == "$" {
+            let variables = self.variables.iter()
+                .fold(String::new(),
+                      |string, variable| string + "\n" + &variable.name + "=" + &variable.value);
             println!("{}", variables);
             return;
         }
