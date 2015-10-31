@@ -254,10 +254,9 @@ impl<'a> Application<'a> {
 
         //Show variables
         if command_string == "$" {
-            let mut variables = String::new();
-            for variable in self.variables.iter() {
-                variables = variables + "\n" + &variable.name + "=" + &variable.value;
-            }
+            let variables = self.variables.iter()
+                .fold(String::new(),
+                      |string, variable| string + "\n" + &variable.name + "=" + &variable.value);
             println!("{}", variables);
             return;
         }
