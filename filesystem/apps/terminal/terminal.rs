@@ -246,14 +246,14 @@ impl<'a> Application<'a> {
         };
     }
 
-    fn on_command(&mut self, command_string: &String) {
+    fn on_command(&mut self, command_string: &str) {
         //Comment
         if command_string.starts_with('#') {
             return;
         }
 
         //Show variables
-        if *command_string == "$" {
+        if command_string == "$" {
             let mut variables = String::new();
             for variable in self.variables.iter() {
                 variables = variables + "\n" + &variable.name + "=" + &variable.value;
