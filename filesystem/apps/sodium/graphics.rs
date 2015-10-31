@@ -64,6 +64,14 @@ impl Editor {
             }
         }
 
+
+        self.redraw_status_bar();
+        self.window.sync();
+    }
+    pub fn redraw_status_bar(&mut self) {
+        let h = self.window.height();
+        let w = self.window.width();
+        let mode = self.cursor().mode;
         self.window.rect(0, h as isize - 18 - {
             if mode == Mode::Primitive(PrimitiveMode::Prompt) {
                 18
@@ -72,26 +80,43 @@ impl Editor {
             }
         }, w, 18, Color::rgba(74, 74, 74, 255));
 
-        for (n, c) in (if self.status_bar.mode.len() > w / (8 * 4) {
-            self.status_bar.mode.chars().take(w / (8 * 4) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
-        } else {
-            self.status_bar.mode.chars().collect()
-        }).into_iter().enumerate() {
-
-            self.window.char(n as isize * 8, h as isize - 16 - 1 - {
-                if mode == Mode::Primitive(PrimitiveMode::Prompt) {
-                    16 + 1 + 1
-                } else {
-                    0
-                }
-            }, c, Color::WHITE);
-        }
+        let sb_mode = self.status_bar.mode.clone();
+        status_bar(self, sb_mode, 0, 4);
+        let sb_file = self.status_bar.file.clone();
+        status_bar(self, sb_file, 1, 4);
+        let sb_cmd = self.status_bar.cmd.clone();
+        status_bar(self, sb_cmd, 2, 4);
+        let sb_msg = self.status_bar.msg.clone();
+        status_bar(self, sb_msg, 3, 4);
 
         for (n, c) in self.prompt.chars().enumerate() {
             self.window.char(n as isize * 8, h as isize - 16 - 1, c, Color::WHITE);
         }
 
         self.window.sync();
+    }
+}
+
+fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
+
+    let h = editor.window.height();
+    let w = editor.window.width();
+    let (x, y) = editor.pos();
+    let mode = editor.cursor().mode;
+
+    for (n, c) in (if text.len() > w / (8 * b) {
+        text.chars().take(w / (8 * b) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
+    } else {
+        text.chars().collect()
+    }).into_iter().enumerate() {
+
+        editor.window.char(((w * a) / b) as isize + (n as isize * 8), h as isize - 16 - 1 - {
+            if mode == Mode::Primitive(PrimitiveMode::Prompt) {
+                16 + 1 + 1
+            } else {
+                0
+            }
+        }, c, Color::WHITE);
     }
 }
 
@@ -114,7 +139,7 @@ impl StatusBar {
             mode: "Normal".to_string(),
             file: String::new(),
             cmd: String::new(),
-            msg: String::new(),
+            msg: "Welcome to Sodium!".to_string(),
         }
     }
 }

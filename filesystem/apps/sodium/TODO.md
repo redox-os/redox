@@ -20,7 +20,7 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
       6) Now go one down
       7) You'll end up on e, even though it should be d
 
-- [ ] Crashes when:
+- [x] Crashes when:
       1) Write abc on line 1
       2) Press o to go to the next line
       3) Go to normal mode
@@ -28,4 +28,4 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
       5) Type text
       6) Out of bound (index) error
 
-- [ ] When typing the first char in a line in normal insert mode, it wont go to the next char.
+- [x] When typing the first char in a line in normal insert mode, it wont go to the next char.

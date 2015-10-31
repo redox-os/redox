@@ -168,7 +168,14 @@ impl Editor {
                             self.goto(p);
                         }
                     },
-                    _ => {},
+                    Char(c) => {
+                        self.status_bar.msg = format!("Unknown command: {}", c);
+                        self.redraw_status_bar();
+                    }
+                    _ => {
+                        self.status_bar.msg = format!("Unknown command");
+                        self.redraw_status_bar();
+                    },
                 },
                 Primitive(Insert(opt)) => {
                     self.insert(cmd.key, opt);
