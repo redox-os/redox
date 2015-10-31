@@ -1,6 +1,7 @@
 pub struct Options {
     pub highlight: bool,
     pub autoindent: bool,
+    pub line_marker: bool,
 }
 
 impl Options {
@@ -9,6 +10,7 @@ impl Options {
         Options {
             highlight: true,
             autoindent: true,
+            line_marker: true,
         }
     }
 
@@ -17,6 +19,7 @@ impl Options {
         match name {
             "hightlight" | "hl" => Some(&mut self.highlight),
             "autoindent" | "ai" => Some(&mut self.autoindent),
+            "line_marker" | "linemarker" | "linemark" | "lm" => Some(&mut self.line_marker),
             _ => None,
         }
     }
@@ -26,6 +29,7 @@ impl Options {
         match name {
             "hightlight" | "hl" => Some(self.highlight),
             "autoindent" | "ai" => Some(self.autoindent),
+            "line_marker" | "linemarker" | "linemark" | "lm" => Some(self.line_marker),
             _ => None,
         }
     }

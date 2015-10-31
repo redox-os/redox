@@ -23,7 +23,15 @@ impl Editor {
                     None
                 }
             },
-            _ => None,
+            Char(c) => {
+                self.status_bar.msg = format!("Motion not defined: '{}'", c);
+                self.redraw_status_bar();
+                None
+            },
+            _ => {
+                self.status_bar.msg = format!("Motion not defined");
+                None
+            },
         }
     }
     /// Convert an instruction to a motion (new coordinate) (unbounded)

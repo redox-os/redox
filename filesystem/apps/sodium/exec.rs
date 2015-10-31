@@ -114,7 +114,6 @@ impl Editor {
                     Char('d') => {
                         let ins = self.next_inst();
                         if let Some(m) = self.to_motion_unbounded(ins) {
-                            debugln!("Delete (x, y) : ({}, {})", m.0, m.1);
                             self.remove_rb(m);
                         }
                     },
@@ -155,10 +154,6 @@ impl Editor {
                     Char(';') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Prompt);
                     },
-//                    Char('P') => { // for debug pourpso
-//                        let pos = (self.x(), self.y());
-//                        self.goto(pos);
-//                    },
 //
 //                    ????
 //                    Char('K') => {
@@ -173,7 +168,14 @@ impl Editor {
                             self.goto(p);
                         }
                     },
-                    _ => {},
+                    Char(c) => {
+                        self.status_bar.msg = format!("Unknown command: {}", c);
+                        self.redraw_status_bar();
+                    }
+                    _ => {
+                        self.status_bar.msg = format!("Unknown command");
+                        self.redraw_status_bar();
+                    },
                 },
                 Primitive(Insert(opt)) => {
                     self.insert(cmd.key, opt);
