@@ -1,8 +1,9 @@
 use super::*;
 use redox::*;
 
+// TODO: Move the command definitions outta here
 impl Editor {
-    /// Execute a instruction
+    /// Execute an instruction
     pub fn exec(&mut self, Inst(para, cmd): Inst) {
         use super::Key::*;
         use super::Mode::*;

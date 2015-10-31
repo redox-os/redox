@@ -7,9 +7,6 @@ pub use self::editor::*;
 mod parse;
 pub use self::parse::*;
 
-mod keystate;
-pub use self::keystate::*;
-
 mod key;
 pub use self::key::*;
 

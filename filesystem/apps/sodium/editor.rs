@@ -1,7 +1,7 @@
 use super::*;
 use redox::*;
 
-/// The state of the editor
+/// The current state of the editor, including the file, the cursor, the scrolling info, etc.
 pub struct Editor {
     /// The current cursor
     pub current_cursor: u8,
@@ -66,7 +66,7 @@ impl Editor {
         self.text[n].as_slices().0
     }
 
-    /// Get the leading whitespaces
+    /// Get the leading whitespaces of the current line. Used for autoindenting.
     pub fn get_indent(&self, n: usize) -> VecDeque<char> {
         let mut ind = VecDeque::new();
         let ln = self.get_ln(n);

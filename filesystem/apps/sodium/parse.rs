@@ -2,19 +2,20 @@ use super::*;
 use redox::*;
 
 #[derive(Copy, Clone)]
-/// An instruction
+/// An instruction, i.e. a command and a numeral parameter
 pub struct Inst(pub Parameter, pub Cmd);
 
-/// A numeral parameter
+/// A numeral parameter, i.e. a number (or nothing) given before a command (toghether making an
+/// instruction)
 #[derive(Copy, Clone)]
 pub enum Parameter {
-    /// An integer
+    /// An integer as parameter
     Int(usize),
-    /// Not given
+    /// Not given (the user have not defined any numeral parameter to this command)
     Null,
 }
 impl Parameter {
-    /// Either unwrap the Int(n) or fallback to a given value
+    /// Either unwrap the Int(n) to n or fallback to a given value
     #[inline]
     pub fn or(self, fallback: usize) -> usize {
         if let Parameter::Int(n) = self {
@@ -31,7 +32,8 @@ impl Parameter {
 }
 
 impl Editor {
-    /// Get the next char
+    /// Get the next character input. Useful for commands taking a character as post-parameter,
+    /// such as r (replace).
     pub fn next_char(&mut self) -> char {
         loop {
             if let EventOption::Key(k) = self.window.poll()
@@ -46,7 +48,8 @@ impl Editor {
         }
     }
 
-    /// Get the next instruction
+    /// Get the next instruction, i.e. the next input of a command together with a numeral
+    /// parameter.
     pub fn next_inst(&mut self) -> Inst {
         let mut n = 0;
         let mut unset = true;
@@ -65,7 +68,7 @@ impl Editor {
                 let c = k.character;
                 match c {
                     '\0' => {
-                        // HERES THE BUG! It returns a modifier (which it shouldnt)
+                        // "I once lived here" - bug
                         match k.scancode {
                             K_ALT => alt = k.pressed,
                             K_CTRL => ctrl = k.pressed,
@@ -137,10 +140,8 @@ impl Editor {
 
                                         key = Key::Char(c);
                                         n
-                                        //return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, Key::Char(c));
                                     }
                                 };
-//                                self.status_bar.cmd.push(c);
                             }
                         }
 

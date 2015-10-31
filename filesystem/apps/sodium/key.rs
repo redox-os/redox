@@ -15,6 +15,7 @@ pub enum Key {
 }
 
 #[derive(Copy, Clone, PartialEq)]
+/// A command, i.e. a key toghether with information on the modifiers.
 pub struct Cmd {
     pub key: Key,
     pub ctrl: bool,
