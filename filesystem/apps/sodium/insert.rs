@@ -13,6 +13,7 @@ pub enum InsertMode {
     Replace,
 }
 
+
 #[derive(Clone, PartialEq, Copy)]
 /// The insert options
 pub struct InsertOptions {
@@ -21,15 +22,28 @@ pub struct InsertOptions {
 }
 
 impl Editor {
+    /// Delta x
+    pub fn delta(&self) -> usize {
+        let (x, y) = self.pos();
+        match self.cursor().mode {
+            _ if x > self.text[y].len() => {
+                debugln!("D is set to 0 because the next char is empty");
+                0
+            },
+            Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) if x == self.text[y].len() => 0,
+
+            Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) => 1,
+            _ => 0,
+        }
+    }
+
     /// Insert text
     pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
         let (mut x, mut y) = self.pos();
         match mode {
             InsertMode::Insert | InsertMode::Append => {
-                let d = match mode {
-                    InsertMode::Append => 1,
-                    _ => 0,
-                };
+                let d = self.delta();
+                debugln!("D is {}", d);
 
                 match k {
                     Key::Char('\n') => {
@@ -49,18 +63,16 @@ impl Editor {
                         let begin = ind.len();
 
                         self.text.insert(y + 1, VecDeque::from_iter(
-                                ind.into_iter().chain(second_part.iter().map(|x| *x))));
+                                ind.into_iter().chain(second_part.iter().map(|x| *x))
+                        ));
 
                         self.goto((begin, y + 1));
                     },
-                    Key::Escape => { // Escape key
-                        self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
-                    },
                     Key::Backspace => { // Backspace
                         let prev = self.previous();
-                        if let Some(p) = prev {
+                        if let Some((x, y)) = prev {
                             //if self.x() != 0 || self.y() != 0 {
-                            self.goto(p);
+                            self.goto((x + d, y));
                             self.delete();
                             //}
                         }
@@ -69,6 +81,17 @@ impl Editor {
                         //debugln!("length is: {}. \n y is: {} \n x is: {} \n x bound is: {}", self.text.len(), y, x, self.text[y].len());
                         self.text[y].insert(x + d, c);
 
+                        match mode {
+                            InsertMode::Insert if x + 1 == self.text[y].len() => {                                self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
+                                    mode: InsertMode::Append,
+                                }));
+                                debugln!("Switched to append mode");
+                            },
+                            _ => {
+                                debugln!("No switch x is {}", x);
+                            },
+                        }
+                        
                         let right = self.right(1);
                         self.goto(right);
                     }
