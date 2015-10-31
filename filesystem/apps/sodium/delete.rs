@@ -1,7 +1,7 @@
 use super::*;
 
 impl Editor {
-    /// Delete char
+    /// Delete a character
     #[inline]
     pub fn delete(&mut self) {
         let (x, y) = self.pos();

@@ -22,7 +22,10 @@ pub struct InsertOptions {
 }
 
 impl Editor {
-    /// Delta x
+    /// Delta x, i.e. the cursors visual position's x coordinate relative to the cursors actual
+    /// position. For example append will append character after the cursor, but visually it have
+    /// delta x = 1, so it will look like normal insert mode, except when going back to normal
+    /// mode, the cursor will move back (visually), because the delta x will drop to 0.
     pub fn delta(&self) -> usize {
         let (x, y) = self.pos();
         match self.cursor().mode {
@@ -36,7 +39,7 @@ impl Editor {
         }
     }
 
-    /// Insert text
+    /// Insert text under the current cursor.
     pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
         let (mut x, mut y) = self.pos();
         match mode {

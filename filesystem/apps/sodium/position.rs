@@ -6,8 +6,7 @@ pub fn to_signed_pos((x, y): (usize, usize)) -> (isize, isize) {
 }
 
 impl Editor {
-    /// Get the position of the cursor
-    /// (if out of bound, it's the length which is given)
+    /// Get the position of the current cursor, bounded
     #[inline]
     pub fn pos(&self) -> (usize, usize) {
         let cursor = self.cursor();
@@ -15,13 +14,13 @@ impl Editor {
     }
 
     #[inline]
-    /// X coordinate
+    /// Get the X coordinate of the current cursor (bounded)
     pub fn x(&self) -> usize {
         self.pos().0
     }
 
     #[inline]
-    /// Y coordinate
+    /// Get the Y coordinate of the current cursor (bounded)
     pub fn y(&self) -> usize {
         self.pos().1
     }
@@ -49,13 +48,15 @@ impl Editor {
         }
     }
 
-    /// Bound horizontal
+    /// Bound horizontally, i.e. don't change the vertical axis only make sure that the horizontal
+    /// axis is bounded.
     #[inline]
     pub fn bound_hor(&self, (x, y): (usize, usize)) -> (usize, usize) {
 
         (self.bound((x, y)).0, y)
     }
-    /// Bound vertical
+    /// Bound vertically, i.e. don't change the horizontal axis only make sure that the vertical
+    /// axis is bounded.
     #[inline]
     pub fn bound_ver(&self, (x, mut y): (usize, usize)) -> (usize, usize) {
 

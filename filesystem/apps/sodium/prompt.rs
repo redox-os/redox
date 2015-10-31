@@ -2,6 +2,7 @@ use super::*;
 use redox::*;
 
 impl Editor {
+    /// Invoke a command in the prompt
     pub fn invoke(&mut self, cmd: String) {
         let mut split = cmd.split(' ');
         let base_cmd = split.nth(0).unwrap_or("");

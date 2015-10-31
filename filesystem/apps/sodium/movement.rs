@@ -3,23 +3,23 @@ use super::*;
 // TODO! Clear up naming!
 
 impl Editor {
-    /// Goto a given position
+    /// Goto a given position. Does not automatically bound.
     #[inline]
     pub fn goto(&mut self, (x, y): (usize, usize)) {
         self.cursor_mut().x = x;
         self.cursor_mut().y = y;
     }
 
-    /// Get the previous position
+    /// Get the previous position, i.e. the position before the cursor (*not* left to the cursor)
     pub fn previous(&self) -> Option<(usize, usize)> {
         self.before(self.pos())
     }
-    /// Get the next position
+    /// Get the next position, i.e. the position after the cursor (*not* right to the cursor)
     pub fn next(&self) -> Option<(usize, usize)> {
         self.after(self.pos())
     }
 
-    /// Get position of char after a given char
+    /// Get position after a given position, i.e. a generalisation of .next()
     #[inline]
     pub fn after(&self, (x, y): (usize, usize)) -> Option<(usize, usize)> {
 
@@ -36,7 +36,7 @@ impl Editor {
         }
     }
 
-    /// Get the position of the char before a given char's position
+    /// Get the position before a given position, i.e. a generalisation .before()
     pub fn before(&self, (x, y): (usize, usize)) -> Option<(usize, usize)> {
         if x == 0 {
             if y > 0 {
@@ -49,18 +49,18 @@ impl Editor {
         }
     }
 
-    /// Get the position of the right char
+    /// Get the position of the character right to the cursor (horizontally bounded)
     #[inline]
     pub fn right(&self, n: usize) -> (usize, usize) {
         self.bound_hor((self.x() + n, self.y()))
     }
-    /// Get the position of the right char (unbounded)
+    /// Get the position of the character right to the cursor (unbounded)
     #[inline]
     pub fn right_unbounded(&self, n: usize) -> (isize, isize) {
         ((self.x() + n) as isize, self.y() as isize)
     }
 
-    /// Get the position of the left char
+    /// Get the position of the character left to the cursor (horizontally bounded)
     #[inline]
     pub fn left(&self, n: usize) -> (usize, usize) {
         if n <= self.x() {
@@ -69,13 +69,13 @@ impl Editor {
             (0, self.y())
         }
     }
-    /// Get the position of the left char (unbounded)
+    /// Get the position of the character left to the cursor (unbounded)
     #[inline]
     pub fn left_unbounded(&self, n: usize) -> (isize, isize) {
         (self.x() as isize - n as isize, self.y() as isize)
     }
 
-    /// Get the position of the char above the cursor
+    /// Get the position of the character above the cursor (vertically bounded)
     #[inline]
     pub fn up(&self, n: usize) -> (usize, usize) {
         if n <= self.y() {
@@ -84,18 +84,18 @@ impl Editor {
             (self.cursor().x, 0)
         }
     }
-    /// Get the position of the char above the cursor (unbounded)
+    /// Get the position of the character above the cursor (unbounded)
     #[inline]
     pub fn up_unbounded(&self, n: usize) -> (isize, isize) {
         (self.cursor().x as isize, self.y() as isize - n as isize)
     }
 
-    /// Get the position under the char
+    /// Get the position of the character under the cursor (vertically bounded)
     #[inline]
     pub fn down(&self, n: usize) -> (usize, usize) {
         self.bound_ver((self.cursor().x, self.y() + n))
     }
-    /// Get the position under the char (unbounded)
+    /// Get the position of the character above the cursor (unbounded)
     #[inline]
     pub fn down_unbounded(&self, n: usize) -> (isize, isize) {
         (self.cursor().x as isize, self.y() as isize + n as isize)
@@ -107,7 +107,7 @@ impl Editor {
         (self.text[self.y()].len(), self.y())
     }
 
-    /// Get next ocurrence of a given charecter
+    /// Get n'th next ocurrence of a given charecter (relatively to the cursor)
     #[inline]
     pub fn next_ocur(&self, c: char, n: usize) -> Option<(usize, usize)> {
         let mut dn = 0;
