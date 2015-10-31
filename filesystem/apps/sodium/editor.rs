@@ -48,8 +48,6 @@ impl Editor {
 
         editor.text.push_back(VecDeque::new());
 
-        // Temporary hacky solution
-        editor.text[0].push_back(' ');
 
         editor.redraw();
 

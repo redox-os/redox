@@ -9,12 +9,7 @@ impl Editor {
         // Redraw window
         self.window.set(Color::rgb(25, 25, 25));
 
-        pos_x += match self.cursor().mode {
-            Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
-                mode: InsertMode::Append,
-            })) => 1,
-            _ => 0,
-        };
+        pos_x += self.delta();
 
         self.window.rect(8 * (pos_x - self.scroll_y) as isize,
                          16 * (pos_y - self.scroll_x) as isize,
