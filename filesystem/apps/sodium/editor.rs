@@ -21,6 +21,8 @@ pub struct Editor {
     pub prompt: String,
     /// The settings
     pub options: Options,
+    /// The key state
+    pub key_state: KeyState,
 }
 
 impl Editor {
@@ -44,6 +46,7 @@ impl Editor {
             status_bar: StatusBar::new(),
             prompt: String::new(),
             options: Options::new(),
+            key_state: KeyState::new(),
         };
 
         editor.text.push_back(VecDeque::new());
