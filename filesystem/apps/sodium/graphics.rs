@@ -11,6 +11,14 @@ impl Editor {
 
         pos_x += self.delta();
 
+        let h = self.window.height();
+        let w = self.window.width();
+        let mode = self.cursor().mode;
+
+        if self.options.line_marker {
+            self.window.rect(0, (pos_y * 16) as isize, w, 16, Color::rgb(45, 45, 45));
+        }
+
         self.window.rect(8 * (pos_x - self.scroll_y) as isize,
                          16 * (pos_y - self.scroll_x) as isize,
                          8,
@@ -18,6 +26,7 @@ impl Editor {
                          Color::WHITE);
 
         let mut string = false;
+
 
         for (y, row) in self.text.iter().enumerate() {
             for (x, &c) in row.iter().enumerate() {
@@ -54,9 +63,6 @@ impl Editor {
                 }
             }
         }
-        let h = self.window.height();
-        let w = self.window.width();
-        let mode = self.cursor().mode;
 
         self.window.rect(0, h as isize - 18 - {
             if mode == Mode::Primitive(PrimitiveMode::Prompt) {
