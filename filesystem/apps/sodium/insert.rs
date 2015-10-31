@@ -27,7 +27,6 @@ impl Editor {
         let (x, y) = self.pos();
         match self.cursor().mode {
             _ if x > self.text[y].len() => {
-                debugln!("D is set to 0 because the next char is empty");
                 0
             },
             Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) if x == self.text[y].len() => 0,
@@ -43,7 +42,6 @@ impl Editor {
         match mode {
             InsertMode::Insert | InsertMode::Append => {
                 let d = self.delta();
-                debugln!("D is {}", d);
 
                 match k {
                     Key::Char('\n') => {
@@ -78,20 +76,17 @@ impl Editor {
                         }
                     },
                     Key::Char(c) => {
-                        //debugln!("length is: {}. \n y is: {} \n x is: {} \n x bound is: {}", self.text.len(), y, x, self.text[y].len());
                         self.text[y].insert(x + d, c);
 
+                        // TODO: Are there a better way than switching?
                         match mode {
                             InsertMode::Insert if x + 1 == self.text[y].len() => {                                self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
                                     mode: InsertMode::Append,
                                 }));
-                                debugln!("Switched to append mode");
                             },
-                            _ => {
-                                debugln!("No switch x is {}", x);
-                            },
+                            _ => {},
                         }
-                        
+
                         let right = self.right(1);
                         self.goto(right);
                     }
