@@ -15,7 +15,7 @@ impl Editor {
              } else {
                 (self.x(), x)
             };
-            for _ in a..(b + 1) {
+            for _ in a..b {
                 self.text[y].remove(a);
             }
         } else {

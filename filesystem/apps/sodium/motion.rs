@@ -21,9 +21,19 @@ impl Editor {
             Char('H') => Some((0, self.y())),
             Char('t') => {
 
-                let ch = self.next_char();
+                let ch = self.get_char();
 
                 if let Some(o) = self.next_ocur(ch, n.d()) {
+                    Some(o)
+                } else {
+                    None
+                }
+            },
+            Char('f') => {
+
+                let ch = self.get_char();
+
+                if let Some(o) = self.previous_ocur(ch, n.d()) {
                     Some(o)
                 } else {
                     None
@@ -56,9 +66,19 @@ impl Editor {
             Char('H') => Some((0, self.y() as isize)),
             Char('t') => {
 
-                let ch = self.next_char();
+                let ch = self.get_char();
 
                 if let Some(o) = self.next_ocur(ch, n.d()) {
+                    Some(to_signed_pos(o))
+                } else {
+                    None
+                }
+            },
+            Char('f') => {
+
+                let ch = self.get_char();
+
+                if let Some(o) = self.previous_ocur(ch, n.d()) {
                     Some(to_signed_pos(o))
                 } else {
                     None

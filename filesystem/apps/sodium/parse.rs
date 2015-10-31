@@ -34,7 +34,7 @@ impl Parameter {
 impl Editor {
     /// Get the next character input. Useful for commands taking a character as post-parameter,
     /// such as r (replace).
-    pub fn next_char(&mut self) -> char {
+    pub fn get_char(&mut self) -> char {
         loop {
             if let EventOption::Key(k) = self.window.poll()
                                          .unwrap_or(Event::new())
@@ -50,7 +50,7 @@ impl Editor {
 
     /// Get the next instruction, i.e. the next input of a command together with a numeral
     /// parameter.
-    pub fn next_inst(&mut self) -> Inst {
+    pub fn get_inst(&mut self) -> Inst {
         let mut n = 0;
         let mut unset = true;
 

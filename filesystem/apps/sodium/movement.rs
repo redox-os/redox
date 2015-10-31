@@ -11,10 +11,12 @@ impl Editor {
     }
 
     /// Get the previous position, i.e. the position before the cursor (*not* left to the cursor)
+    #[inline]
     pub fn previous(&self) -> Option<(usize, usize)> {
         self.before(self.pos())
     }
     /// Get the next position, i.e. the position after the cursor (*not* right to the cursor)
+    #[inline]
     pub fn next(&self) -> Option<(usize, usize)> {
         self.after(self.pos())
     }
@@ -37,6 +39,7 @@ impl Editor {
     }
 
     /// Get the position before a given position, i.e. a generalisation .before()
+    #[inline]
     pub fn before(&self, (x, y): (usize, usize)) -> Option<(usize, usize)> {
         if x == 0 {
             if y > 0 {
@@ -108,7 +111,6 @@ impl Editor {
     }
 
     /// Get n'th next ocurrence of a given charecter (relatively to the cursor)
-    #[inline]
     pub fn next_ocur(&self, c: char, n: usize) -> Option<(usize, usize)> {
         let mut dn = 0;
 
@@ -135,4 +137,34 @@ impl Editor {
 
         }
     }
+    /// Get n'th previous ocurrence of a given charecter (relatively to the cursor)
+    pub fn previous_ocur(&self, c: char, n: usize) -> Option<(usize, usize)> {
+        let mut dn = 0;
+
+        let mut pos = self.before(self.pos());
+        loop {
+
+            match pos {
+                None => return None,
+                Some(mut p) => {
+                    p = self.bound(p);
+
+                    if self.text[p.1][p.0] == c {
+                        dn += 1;
+                        if dn == n {
+                            return Some(p);
+                        }
+                    }
+
+                    pos = self.before(p);
+
+                },
+            }
+
+
+        }
+    }
+
+
 }
+

@@ -104,7 +104,7 @@ impl Editor {
                     Char('H') => self.cursor_mut().x = 0,
                     Char('r') => {
                         let (x, y) = self.pos();
-                        self.text[y][x] = self.next_char();
+                        self.text[y][x] = self.get_char();
                     },
                     Char('R') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
@@ -113,7 +113,7 @@ impl Editor {
                             }));
                     },
                     Char('d') => {
-                        let ins = self.next_inst();
+                        let ins = self.get_inst();
                         if let Some(m) = self.to_motion_unbounded(ins) {
                             self.remove_rb(m);
                         }
@@ -126,7 +126,7 @@ impl Editor {
                         if let Parameter::Int(n) = para {
                             self.goto((0, n - 1));
                         } else {
-                            let inst = self.next_inst();
+                            let inst = self.get_inst();
                             if let Some(m) = self.to_motion(inst) {
                                 self.cursor_mut().x = m.0;
                                 self.cursor_mut().y = m.1;
@@ -145,9 +145,17 @@ impl Editor {
                         self.next_cursor();
                     },
                     Char('t') => {
-                        let ch = self.next_char();
+                        let ch = self.get_char();
 
                         let pos = self.next_ocur(ch, n);
+                        if let Some(p) = pos {
+                            self.goto(p);
+                        }
+                    },
+                    Char('f') => {
+                        let ch = self.get_char();
+
+                        let pos = self.previous_ocur(ch, n);
                         if let Some(p) = pos {
                             self.goto(p);
                         }
@@ -164,13 +172,10 @@ impl Editor {
 //                        self.goto((0, self.text.len() - 1));
 //                    },
                     Char(' ') => {
-                        let next = self.next();
-                        if let Some(p) = next {
-                            self.goto(p);
-                        }
+                        self.next_cursor();
                     },
                     Char('z') => {
-                        let Inst(param, cmd) = self.next_inst();
+                        let Inst(param, cmd) = self.get_inst();
                         match param {
                             Parameter::Null => {
                                 if let Some(m) = self.to_motion(Inst(param, cmd)) {

@@ -52,7 +52,7 @@ impl Editor {
         editor.redraw();
 
         loop {
-            let inp = editor.next_inst();
+            let inp = editor.get_inst();
             editor.exec(inp);
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();
