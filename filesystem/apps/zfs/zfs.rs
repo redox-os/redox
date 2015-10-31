@@ -50,38 +50,38 @@ impl ZfsReader {
         self.read(dva.sector() as usize, dva.asize() as usize)
     }
 
-    pub fn read_block(&mut self, block_ptr: &BlockPtr) -> Option<Vec<u8>> {
+    pub fn read_block(&mut self, block_ptr: &BlockPtr) -> Result<Vec<u8>, String> {
         let data = self.read_dva(&block_ptr.dvas[0]);
         match block_ptr.compression() {
             2 => {
                 // compression off
-                Some(data)
+                Ok(data)
             },
             1 | 3 => {
                 // lzjb compression
                 let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
                 lzjb::decompress(&data, &mut decompressed);
-                Some(decompressed)
+                Ok(decompressed)
             },
-            _ => None,
+            _ => Err("Error: not enough bytes".to_string()),
         }
     }
 
-    pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Option<T> {
+    pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Result<T, String> {
         let data = self.read_block(block_ptr);
         data.and_then(|data| T::from_bytes(&data[..]))
     }
 
-    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Option<T> {
+    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Result<T, String> {
         let data = self.read_block(block_ptr);
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
-    pub fn uber(&mut self) -> Option<Uberblock> {
-        let mut newest_uberblock: Option<Uberblock> = None;
+    pub fn uber(&mut self) -> Result<Uberblock, String> {
+        let mut newest_uberblock: Result<Uberblock> = Err("Error: failed to read Uberblock".to_string());
         for i in 0..128 {
             match Uberblock::from_bytes(&self.read(256 + i * 2, 2)) {
-                Some(uberblock) => {
+                Ok(uberblock) => {
                     let mut newest = false;
                     match newest_uberblock {
                         Some(previous) => {
@@ -89,14 +89,14 @@ impl ZfsReader {
                                 newest = true;
                             }
                         }
-                        None => newest = true,
+                        None => newest = true, // NOTICE: Tedsta, shouldn't this be false?
                     }
 
                     if newest {
-                        newest_uberblock = Some(uberblock);
+                        newest_uberblock = Ok(uberblock);
                     }
                 }
-                None => (), //Invalid uberblock
+                Err(e) => Err(e + " and invalid Uberblock"),
             }
         }
         return newest_uberblock;
@@ -118,47 +118,48 @@ pub struct ZFS {
 }
 
 impl ZFS {
-    pub fn new(disk: File) -> Option<Self> {
+    pub fn new(disk: File) -> Result<Self, String> {
         let mut zfs_reader = ZfsReader { disk: disk };
 
-        let uberblock = zfs_reader.uber().unwrap();
+        let uberblock = try!(zfs_reader.uber());
 
         //let mos_dva = uberblock.rootbp.dvas[0];
-        let mos: ObjectSetPhys = zfs_reader.read_type(&uberblock.rootbp).unwrap();
+        let mos: ObjectSetPhys = try!(zfs_reader.read_type(&uberblock.rootbp));
         let mos_block_ptr1 = mos.meta_dnode.get_blockptr(0);
         //let mos_block_ptr2 = mos.meta_dnode.get_blockptr(1);
         //let mos_block_ptr2 = mos.meta_dnode.get_blockptr(2);
 
         // 2nd dnode in MOS points at the root dataset zap
-        let dnode1: DNodePhys = zfs_reader.read_type_array(&mos_block_ptr1, 1).unwrap();
+        let dnode1: DNodePhys = try!(zfs_reader.read_type_array(&mos_block_ptr1, 1));
 
         let thing = dnode1.get_blockptr(0);
-        let root_ds: zap::MZapWrapper = zfs_reader.read_type(thing).unwrap();
+        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(thing));
 
         let root_ds_dnode: DNodePhys =
-            zfs_reader.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize).unwrap();
+            try!(zfs_reader.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize));
 
-        let dsl_dir = DslDirPhys::from_bytes(root_ds_dnode.get_bonus()).unwrap();
+        let dsl_dir = try!(DslDirPhys::from_bytes(root_ds_dnode.get_bonus()));
         let head_ds_dnode: DNodePhys =
-            zfs_reader.read_type_array(&mos_block_ptr1, dsl_dir.head_dataset_obj as usize).unwrap();
+            try!(zfs_reader.read_type_array(&mos_block_ptr1, dsl_dir.head_dataset_obj as usize));
 
-        let root_dataset = DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()).unwrap();
+        let root_dataset = try!(DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()));
 
-        let fs_objset: ObjectSetPhys = zfs_reader.read_type(&root_dataset.bp).unwrap();
+        let fs_objset: ObjectSetPhys = try!(zfs_reader.read_type(&root_dataset.bp));
 
-        let mut indirect: BlockPtr = zfs_reader.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 0).unwrap();
+        let mut indirect: BlockPtr = try!(zfs_reader.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 0));
         while indirect.level() > 0 {
-            indirect = zfs_reader.read_type_array(&indirect, 0).unwrap();
+            indirect = try!(zfs_reader.read_type_array(&indirect, 0));
         }
 
         // Master node is always the second object in the object set
-        let master_node: DNodePhys = zfs_reader.read_type_array(&indirect, 1).unwrap();
-        let master_node_zap: zap::MZapWrapper = zfs_reader.read_type(master_node.get_blockptr(0)).unwrap();
+        let master_node: DNodePhys = try!(zfs_reader.read_type_array(&indirect, 1));
+        let master_node_zap: zap::MZapWrapper = try!(zfs_reader.read_type(master_node.get_blockptr(0)));
         // Find the ROOT zap entry
-        let mut root = None;
+        let mut root = Err("Error: failed to get the ROOT".to_string());
         for chunk in &master_node_zap.chunks {
-            if chunk.name().unwrap() == "ROOT" {
-                root = Some(chunk.value);
+            if chunk.name() == Some("ROOT") {
+                root = Ok(chunk.value);
+                break;
             }
         }
 
@@ -167,7 +168,7 @@ impl ZFS {
             uberblock: uberblock,
             fs_objset: fs_objset,
             master_node: master_node,
-            root: root.unwrap(),
+            root: try!(root),
         })
     }
 
