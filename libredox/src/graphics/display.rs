@@ -3,11 +3,13 @@ use alloc::boxed::Box;
 use core::{cmp, mem};
 use core::simd::*;
 
-uee common::{memory};
-
-use color::Color;
-use point::Point;
-use size::Size;
+use graphics::color::Color;
+use graphics::point::Point;
+use graphics::size::Size;
+use fs::File;
+use io::*;
+use vec::Vec;
+use syscall::{sys_alloc, sys_unalloc};
 
 /// A display
 pub struct Display {
@@ -17,9 +19,45 @@ pub struct Display {
     pub bytesperrow: usize,
     pub width: usize,
     pub height: usize,
+    pub root: bool,
 }
 
 impl Display {
+    pub fn root() -> Box<Self> {
+        unsafe {
+            let mut dimensions: Vec<u8> = Vec::new();
+            if let Some(mut file) = File::open("display://") {
+                file.read_to_end(&mut dimensions);
+                if dimensions.len() < (mem::size_of::<usize>()*2) {
+                    panic!("{}: unable to read display dimensions", file!());
+                }
+
+                let width: usize = mem::transmute(&dimensions[0]);
+                let height: usize = mem::transmute(&dimensions[mem::size_of::<usize>()]);
+
+                let bytesperrow = width * 4;
+                let memory_size = bytesperrow * height;
+                let ret = box Display {
+                   offscreen: sys_alloc(memory_size),
+                   onscreen: sys_alloc(memory_size),
+                   size: memory_size,
+                   bytesperrow: bytesperrow,
+                   width: width,
+                   height: height,
+                   root: true,
+                };
+
+                ret.set(Color::rgb(0, 0, 0));
+                ret.flip();
+
+                ret
+            } else {
+                panic!("{}: unable to open display://", file!());
+                //Self::new(0,0)
+            }
+
+        }
+    }
 
     /// Create a new display
     pub fn new(width: usize, height: usize) -> Box<Self> {
@@ -28,12 +66,13 @@ impl Display {
             let memory_size = bytesperrow * height;
 
             let ret = box Display {
-                offscreen: memory::alloc(memory_size),
-                onscreen: memory::alloc(memory_size),
+                offscreen: sys_alloc(memory_size),
+                onscreen: sys_alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width: width,
                 height: height,
+                root: false,
             };
 
             ret.set(Color::rgb(0, 0, 0));
@@ -112,15 +151,18 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            let reenable = scheduler::start_no_ints();
             if self.root {
+                // TODO: 
+                // Maybe userspace Displays
+                // should only have one buffer? that gets written to the 
+                // display:// scheme
+                // LazyOxen: wonder if the length will be known...
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
                 let self_mut: *mut Self = mem::transmute(self);
                 mem::swap(&mut (*self_mut).offscreen,
                      &mut (*self_mut).onscreen);
             }
-            scheduler::end_no_ints(reenable);
         }
     }
 
@@ -173,8 +215,6 @@ impl Display {
             }
         }
     }
-
-    // TODO: Move to orbital?
 
     /// Draw an line (without antialiasing) with width 1
     /// (using Bresenham's algorithm)
@@ -269,8 +309,6 @@ impl Display {
 
         if steep {
             self
-        } else {
-            self
         };
 
     }
@@ -361,7 +399,7 @@ impl Display {
     }
 
     /// Draw a char
-    pub fn char(&self, Vec<u8> font, point: Point, character: char, color: Color) {
+    pub fn char(&self, font: &Vec<u8>, point: Point, character: char, color: Color) {
         let mut offset = (character as usize)*16;
         for row in 0..16 {
             let row_data = if offset < font.len() { font[offset+row] } else { 0 };
@@ -379,11 +417,11 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                memory::unalloc(self.offscreen);
+                sys_unalloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                memory::unalloc(self.onscreen);
+                sys_unalloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

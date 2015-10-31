@@ -5,7 +5,7 @@ use vec::Vec;
 
 use event::*;
 
-use orbital::*;
+use orbital::window::*;
 use graphics::color::Color;
 
 use rand_old::*;
@@ -133,12 +133,7 @@ impl ConsoleWindow {
 
     /// Set the window title
     pub fn set_title(&mut self, title: &str) {
-        //TODO THIS IS A HACK, should use self.window.setTitle(title);
-        self.window = Window::new(self.window.x(),
-                                  self.window.y(),
-                                  self.window.width(),
-                                  self.window.height(),
-                                  title).unwrap();
+        self.window.set_title(title);
     }
 
     /// Poll the window

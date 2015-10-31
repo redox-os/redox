@@ -32,7 +32,7 @@ use core::{mem, ptr};
 
 use common::context::*;
 use common::debug;
-use common::event::{self, Event, EventOption};
+use common::event::{self, Event, EventOption, DisplayEvent};
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
@@ -52,6 +52,7 @@ use graphics::bmp::BMPFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
+use programs::executor::*;
 use programs::package::*;
 use programs::scheme::*;
 use programs::session::*;
@@ -64,8 +65,8 @@ use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
 use schemes::time::*;
-use schemes::window::*;
 use schemes::display::*;
+use schemes::events::*;
 
 use syscall::handle::*;
 
@@ -184,7 +185,7 @@ unsafe fn event_loop() -> ! {
 
             match event_option {
                 Some(event) => {
-                    match.event.to_option() {
+                    match event.to_option() {
                         EventOption::Key(key_event) => {
                             if key_event.pressed {
                                 if debug_draw {
@@ -332,6 +333,8 @@ unsafe fn init(font_data: usize) {
         arp: Vec::new()
     });
     session.items.push(box DisplayScheme);
+    EventScheme::init();
+    session.items.push(box EventScheme);
 
     Context::spawn(box move || {
         poll_loop();
@@ -364,9 +367,33 @@ unsafe fn init(font_data: usize) {
         }
     }
 
+    /*
+    debug::d("Loading apps\n");
+    if let Some(mut resource) = URL::from_str("file:///apps/").open() {
+        let mut vec: Vec<u8> = Vec::new();
+        resource.read_to_end(&mut vec);
+
+        for folder in String::from_utf8_unchecked(vec).lines() {
+            if folder.ends_with('/') {
+                let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
+                let reenable = scheduler::start_no_ints();
+                session.packages.push(package);
+                scheduler::end_no_ints(reenable);
+            }
+        }
+    }
+    */
+
+
+
     debug::d("Enabling context switching\n");
     debug_draw = false;
     context_enabled = true;
+
+    debug::d("Launching windowing session\n");
+    let wm = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + "orbital/")));
+    execute(&wm.binary, &wm.url, Vec::new());
+    // launch session
 }
 
 fn dr(reg: &str, value: usize) {

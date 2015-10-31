@@ -15,27 +15,28 @@ pub enum EventOption {
     /// No event
     None,
 }
+pub const DATA_LENGTH: usize = 4;
+pub const EVENT_TYPE: isize= 0;
+pub const KEYBD_EVENT: isize = 1;
+pub const MOUSE_EVENT: isize = 2;
+pub const DISP_EVENT: isize = 8;
 // switched to this because rust doesn't guarantee
 // that two structs with the same definition will
 // have the same representation when compiled
+pub type EventData = [isize; DATA_LENGTH];
 #[derive(Copy,Clone)]
 #[repr(packed)]
 pub struct Event {
-    pub const DATA_LENGTH: usize = 4;
-    pub const EVENT_TYPE: u32 = 0;
-    pub const KEYBD_EVENT: u8 = 1;
-    pub const MOUSE_EVENT: u8 = 2;
-    pub const DISP_EVENT: u8 = 8;
-    pub data: [u32; DATA_LENGTH];
+    pub data: EventData,
 }
 
 impl Event {
     pub fn new() -> Event {
-        Event { data: [0;4] }
+        Event { data: [0;DATA_LENGTH] }
     }
 
     pub fn to_option(self) -> EventOption {
-        match self.data[EVENT_TYPE] {
+        match self.data[EVENT_TYPE as usize] {
             MOUSE_EVENT => EventOption::Mouse(MouseEvent::from_event(self)),
             KEYBD_EVENT => EventOption::Key(KeyEvent::from_event(self)),
             0           => EventOption::None,
@@ -45,9 +46,10 @@ impl Event {
 
     // Trigger an event
     pub fn trigger(&self) {
+        let event = *self;
         unsafe {
             let reenable = scheduler::start_no_ints();
-            (*::events_ptr).push(self);
+            (*::events_ptr).push(event);
             scheduler::end_no_ints(reenable);
         }
     }
@@ -56,25 +58,25 @@ impl Event {
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
     /// The x coordinate
-    pub x: u32,
+    pub x: isize,
     /// The y coordinate
-    pub y: u32,
+    pub y: isize,
     /// Is the left button pressed?
-    pub left_button: bool;
+    pub left_button: bool,
     /// Is the right button pressed?
-    pub right_button: bool;
+    pub right_button: bool,
     /// Is the middle button pressed?
-    pub middle_button: bool;
+    pub middle_button: bool,
 }
 
 impl MouseEvent {
     /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
-        let button_state = (self.left_button as u32)       | 
-                           (self.right_button as u32) << 1 |
-                           (self.middle_button as u32) << 2);
+        let button_state = (self.left_button as isize)       | 
+                           (self.right_button as isize) << 1 |
+                           (self.middle_button as isize) << 2;
         Event { 
-            data: [ MOUSE_EVENT, self.x, self.y, button_state ],
+            data: [ MOUSE_EVENT as isize, self.x, self.y, button_state ],
         }
     }
 
@@ -162,19 +164,19 @@ pub struct KeyEvent {
 impl KeyEvent {
     pub fn to_event(&self) -> Event {
         Event {
-            data: = [ KEYBD_EVENT, 
-                      self.character as u32, 
-                      self.character as u32, 
-                      self.pressed as u32 ]
+            data: [ KEYBD_EVENT , 
+                    self.character as isize, 
+                    self.scancode as isize, 
+                    self.pressed as isize]
         }
     }
 
     pub fn from_event(event: Event) -> KeyEvent {
-        let ch = char::from_u32(event.data[1]);
+        let ch = char::from_u32(event.data[1] as u32);
         match ch {
             Some(character) => KeyEvent {
                 character: character,
-                scancode: event.data[2],
+                scancode: event.data[2] as u8,
                 pressed: event.data[3] > 0,
             },
             None => KeyEvent {
@@ -200,7 +202,7 @@ impl DisplayEvent {
     pub fn to_event(&self) -> Event {
         Event {
             data: [ DISP_EVENT, 
-                      self.restricted as u32, 
+                      self.restricted as isize, 
                       0,
                       0]
         }
@@ -208,7 +210,7 @@ impl DisplayEvent {
 
     pub fn from_event(event: Event) -> DisplayEvent {
         DisplayEvent {
-            restricted: Event.data[1] > 0,
+            restricted: event.data[1] > 0,
         }
     }
 

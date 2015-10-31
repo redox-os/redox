@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use collections::string::ToString;
 
-use core::cmp;
+use core::{cmp, mem, ptr};
 
 use graphics::display::Display;
 
@@ -27,15 +27,17 @@ impl Resource for DisplayResource {
         return URL::from_string(&("display://".to_string()));
     }
 
-    // get display size here
+    // get display info here
+    // currently only the dimensions
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        if mem::size_of::<usize*2> <= buf.len() {
-            let size: [usize; 2] = [ self.size.x, self.size.y ];
-            let bptr = &mut [u8] as *mut _ as *mut [usize; 2];
-            unsafe { *bptr = size; }
-            Some(mem::size_of::<usize*2>)
-        } else {
-            None
+        unsafe {
+            if mem::size_of::<[usize;2]>() <= buf.len() {
+                let size: [usize; 2] = [ self.display.width, self.display.height ];
+                unsafe { ptr::write(buf.as_ptr() as *mut [usize; 2], size); }
+                Some(mem::size_of::<[usize;2]>())
+            } else {
+                None
+            }
         }
     }
 

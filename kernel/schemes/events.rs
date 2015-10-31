@@ -1,51 +1,113 @@
-use core::cmp;
-use common::string::{String, ToString};
-use common::events::Event;
+use alloc::boxed::Box;
+use core::{cmp, mem};
+use collections::string::*;
+use common::event::{Event, EventData};
+use common::queue::Queue;
+use common::scheduler;
 use schemes::{KScheme, Resource, ResourceSeek, URL};
+
+static mut events_to_userspace_ptr: *mut Queue<[isize; 4]> = 0 as *mut Queue<[isize; 4]>;
 
 pub struct EventScheme;
 
-pub struct EventResource {
-    pub queue: Queue<Event>;
-}
+pub struct EventResource;
 
+impl EventResource {
+    pub fn add_event(event: Event) {
+        unsafe {
+            let events = &mut *events_to_userspace_ptr;
+            let reenable = scheduler::start_no_ints();
+            events.push(event.data);
+            scheduler::end_no_ints(reenable);
+        }
+    }
+}
 impl Resource for EventResource {
+    fn dup(&self) -> Option<Box<Resource>> {
+        None
+    }
+
+    /// Return the URL for event resource
     fn url(&self) -> URL {
         return URL::from_string(&("events://".to_string()));
     }
 
-    fn add_event(&mut self, event: Event) {
-        self.queue.push(event);
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        let data_size = mem::size_of::<EventData>();
+        if buf.len() < data_size {
+            None
+        } else {
+            unsafe {
+                let events = &mut *events_to_userspace_ptr;
+                let reenable = scheduler::start_no_ints();
+                let event = events.pop();
+                scheduler::end_no_ints(reenable);
+                match event {
+                    Some(evt) => {
+                        let bptr = buf as *mut _ as *mut [isize;4];
+                        *bptr = evt;
+                        Some(data_size)
+                    },
+                    None => None
+                }
+            }
+        }
+        /*
+        // read multiple events?
+        let mut evt_capacity = buf.len() / data_size;
+        if evt_capacity == 0 { return None; }
+        let mut i = 0;
+        let mut j = 0;
+        unsafe {
+            let events = &mut *events_to_userspace_ptr;
+            while i < evt_capacity {
+                let reenable = scheduler::start_no_ints();
+                let next_event = events.pop();
+                scheduler::end_no_ints(reenable);
+                match next_event {
+                    Some(event) => {
+                        let bptr = &mut buf[i*data_size] as *mut _ as *mut [isize;4];
+                        *bptr = event;
+                        j += 1;
+                    },
+                    None => return None, // bail if we were too late to get the next event
+                }
+                i += 1;
+            }
+        }
+        Some(j * data_size)
+        */
     }
 
-    // might make more sense to just return 1 event at a time
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        let evts_to_read = cmp::min(buf.len() / 16, queue.len());
-        if evts_to_read == 0 { return None; }
-        let mut i = 0;
-        while i < evts_to_read {
-            let evt: [u32; 4] = queue.pop().data;
-            let bptr = &mut buf[i*16] as *mut _ as *mut [u32;4];
-            unsafe { *bptr = evt; }
-            i += 1;
-        }
-        Some(i*16)
+    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+        None
+    }
+
+    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+        None
+    }
+
+    fn sync(&mut self) -> bool {
+        true
     }
 }
 
-// TODO: make a URL for keyboard events and one for mouse events?
 impl KScheme for EventScheme {
-    fn scheme(&self) -> String {
+    fn scheme(&self) -> &str {
         return "events";
     }
 
-    // TODO: make a URL for keyboard events and one for mouse events?
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         unsafe {
-            return Some(box EventResource {
-                queue: Queue<Event>::new(),
-            });
+            return Some(box EventResource);
         }
     }
+}
 
+impl EventScheme {
+    pub fn init() {
+        unsafe {
+            events_to_userspace_ptr = Box::into_raw(box Queue::new());
+        }
+    }
 }

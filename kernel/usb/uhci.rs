@@ -553,6 +553,15 @@ impl UHCI {
                                     let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
                                     let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
+                                    //TODO: ask jackpot what the relevance of this code is
+                                    // looks like it's for coercing the mouse pointer to staying
+                                    // onscreen...
+                                    // going to send the stuff up to userspace
+                                    // session pointer can decide what to do with it,
+                                    // eventually this will change too, user should be able to get
+                                    // mouse status when it's in their window i think
+                                    // LazyOxen
+                                    /*
                                     let mouse_x = (x * (*::session_ptr).display.width) / 32768;
                                     let mouse_y = (y * (*::session_ptr).display.height) / 32768;
 
@@ -566,10 +575,11 @@ impl UHCI {
                                                  cmp::min((*::session_ptr).display.height as isize -
                                                           1,
                                                           mouse_y as isize));
+                                    */
 
                                     MouseEvent {
-                                        x: 0,
-                                        y: 0,
+                                        x: x as isize,
+                                        y: y as isize,
                                         left_button: buttons & 1 == 1,
                                         middle_button: buttons & 4 == 4,
                                         right_button: buttons & 2 == 2,

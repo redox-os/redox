@@ -44,6 +44,8 @@ impl Editor {
                         return Inst(Parameter::Null, match k.scancode {
                             K_ALT => Key::Alt(k.pressed),
                             K_CTRL => Key::Ctrl(k.pressed),
+                            //TODO: uncomment this
+                            //LazyOxen
                             K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift(k.pressed),
                             s if k.pressed => match s {
                                 K_BKSP => Key::Backspace,

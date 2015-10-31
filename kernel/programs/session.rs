@@ -11,20 +11,21 @@ use common::scheduler;
 
 use graphics::point::Point;
 use graphics::size::Size;
-use graphics::window::Window;
 
 use schemes::KScheme;
 use schemes::{Resource, URL, VecResource};
 
 pub struct Session {
     pub items: Vec<Box<KScheme>>,
+    pub packages: Vec<Box<Package>>,
 }
 
 impl Session {
-    pub fn new() -> Box<Self> {
+    pub fn new() -> Box<Self> {     
         unsafe {
             box Session {
                 items: Vec::new(),
+                packages: Vec::new(),
             }
         }
     }
