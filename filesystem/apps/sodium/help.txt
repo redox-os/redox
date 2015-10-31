@@ -71,6 +71,11 @@ Navigation:
 - G : Go to the end of the document
 - t<char> : Go to the next occurence of <char>
 
+Scrolling:
+- z<motion> : Scroll <motion>
+- <numeral>z : Scroll to line <numeral>
+- Z : Scroll to cursor
+
 Cursor management:
 - b : Branch the cursor
 - B : Delete the current cursor
@@ -107,6 +112,8 @@ Following commands are valid:
 - set <option> : Set <option>
 - unset <option> : Unset <option>
 - toggle <option> : Toggle <option>
+- get <option> : Get the state of 
+                 <option>
 
 Following option exists:
 
@@ -115,6 +122,10 @@ Following option exists:
   default: on
 - autoindent or ai : Automatically indent
                      newlines.
+  default: on
+- line_marker or lm : Slightly dim the
+                      background of the
+                      current line
   default: on
 
 To leave prompt press enter and the command

@@ -168,6 +168,23 @@ impl Editor {
                             self.goto(p);
                         }
                     },
+                    Char('z') => {
+                        let Inst(param, cmd) = self.next_inst();
+                        match param {
+                            Parameter::Null => {
+                                if let Some(m) = self.to_motion(Inst(param, cmd)) {
+                                    self.scroll_y = m.1;
+                                    self.goto(m);
+                                }
+                            },
+                            Parameter::Int(n) => {
+                                self.scroll_y = n;
+                            },
+                        }
+                    },
+                    Char('Z') => {
+                        self.scroll_y = self.y() - 3;
+                    },
                     Char(c) => {
                         self.status_bar.msg = format!("Unknown command: {}", c);
                         self.redraw_status_bar();
