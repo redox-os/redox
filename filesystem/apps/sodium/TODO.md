@@ -29,3 +29,5 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
       6) Out of bound (index) error
 
 - [x] When typing the first char in a line in normal insert mode, it wont go to the next char.
+
+- [ ] The modifier keys are only working for one command
