@@ -39,10 +39,10 @@ impl Editor {
             if let EventOption::Key(k) = self.window.poll()
                                          .unwrap_or(Event::new())
                                          .to_option() {
-                if k.pressed {
-                    self.status_bar.cmd.push(k.character);
+                if let Some(Key::Char(c)) = self.key_state.feed(k) {
+                    self.status_bar.cmd.push(c);
                     self.redraw_status_bar();
-                    return k.character;
+                    return c;
                 }
             }
         }
@@ -63,98 +63,74 @@ impl Editor {
 
 //        self.status_bar.cmd = String::new();
         loop {
-            if let EventOption::Key(k) = self.window.poll().unwrap_or(Event::new()).to_option() {
+            if let EventOption::Key(key_event) = self.window.poll().unwrap_or(Event::new()).to_option() {
 
-                let c = k.character;
-                match c {
-                    '\0' => {
-                        // "I once lived here" - bug
-                        match k.scancode {
-                            K_ALT => alt = k.pressed,
-                            K_CTRL => ctrl = k.pressed,
-                            K_LEFT_SHIFT | K_RIGHT_SHIFT => shift = k.pressed,
-                            s if k.pressed => key = match s {
-                                K_BKSP => Key::Backspace,
-                                K_LEFT => Key::Left,
-                                K_RIGHT => Key::Right,
-                                K_UP => Key::Up,
-                                K_DOWN => Key::Down,
-                                K_TAB => Key::Tab,
-                                K_ESC => Key::Escape,
-                                _ => Key::Unknown(s),
-                            },
-                            s => key = Key::Unknown(s),
+                if let Some(k) = self.key_state.feed(key_event) {
+                    let c = k.to_char();
+                    self.status_bar.cmd.push(c);
+                    self.redraw_status_bar();
+
+                    match self.cursor().mode {
+                        Mode::Primitive(_) => {
+                            key = Key::Char(c);
+                        },
+                        Mode::Command(_) => {
+                            n = match c {
+                                '0' => {
+                                    unset = false;
+                                    n * 10
+                                },
+                                '1' => {
+                                    unset = false;
+                                    n * 10 + 1
+                                },
+                                '2' => {
+                                    unset = false;
+                                    n * 10 + 2
+                                },
+                                '3' => {
+                                    unset = false;
+                                    n * 10 + 3
+                                },
+                                '4' => {
+                                    unset = false;
+                                    n * 10 + 4
+                                },
+                                '5' => {
+                                    unset = false;
+                                    n * 10 + 5
+                                },
+                                '6' => {
+                                    unset = false;
+                                    n * 10 + 6
+                                },
+                                '7' => {
+                                    unset = false;
+                                    n * 10 + 7
+                                },
+                                '8' => {
+                                    unset = false;
+                                    n * 10 + 8
+                                },
+                                '9' => {
+                                    unset = false;
+                                    n * 10 + 9
+                                },
+                                _   => {
+
+                                    key = Key::Char(c);
+                                    n
+                                }
+                            };
                         }
+
                     }
-                    _ => if k.pressed {
-                        self.status_bar.cmd.push(c);
-                        self.redraw_status_bar();
-
-                        match self.cursor().mode {
-                            Mode::Primitive(_) => {
-                                key = Key::Char(c);
-                            },
-                            Mode::Command(_) => {
-                                n = match c {
-                                    '0' => {
-                                        unset = false;
-                                        n * 10
-                                    },
-                                    '1' => {
-                                        unset = false;
-                                        n * 10 + 1
-                                    },
-                                    '2' => {
-                                        unset = false;
-                                        n * 10 + 2
-                                    },
-                                    '3' => {
-                                        unset = false;
-                                        n * 10 + 3
-                                    },
-                                    '4' => {
-                                        unset = false;
-                                        n * 10 + 4
-                                    },
-                                    '5' => {
-                                        unset = false;
-                                        n * 10 + 5
-                                    },
-                                    '6' => {
-                                        unset = false;
-                                        n * 10 + 6
-                                    },
-                                    '7' => {
-                                        unset = false;
-                                        n * 10 + 7
-                                    },
-                                    '8' => {
-                                        unset = false;
-                                        n * 10 + 8
-                                    },
-                                    '9' => {
-                                        unset = false;
-                                        n * 10 + 9
-                                    },
-                                    _   => {
-
-                                        key = Key::Char(c);
-                                        n
-                                    }
-                                };
-                            }
-                        }
-
-                    },
                 }
             }
             if key != Key::Null {
                 return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, {
                     Cmd {
                         key: key,
-                        ctrl: ctrl,
-                        alt: alt,
-                        shift: shift,
                     }
                 });
             }

@@ -12,7 +12,7 @@ impl Editor {
 
         let n = para.d();
 
-        if cmd.key == Key::Char(' ') && cmd.shift {
+        if cmd.key == Key::Char(' ') && self.key_state.shift {
 
             let mode = self.cursor().mode;
 
@@ -22,11 +22,11 @@ impl Editor {
             }
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
 
-        } else if cmd.alt && cmd.key == Key::Char(' ') {
+        } else if self.key_state.alt && cmd.key == Key::Char(' ') {
 
             self.next_cursor();
 
-        } else if cmd.alt {
+        } else if self.key_state.alt {
 
             if let Some(m) = self.to_motion(Inst(para, cmd)) {
                 self.goto(m);

@@ -1,5 +1,6 @@
 - [x] Make editor.pos method and use that instead of
 - [ ] Add word navigation
+- [ ] `.` command
 
 
 Known bugs:
@@ -30,4 +31,9 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
 
 - [x] When typing the first char in a line in normal insert mode, it wont go to the next char.
 
-- [ ] The modifier keys are only working for one command
+- [x] The modifier keys are only working for one command
+     Solutions:
+     - Make a struct KeyState storing info on the modifiers active. Add a method `feed` which feeds the keystate with a key, updating it. This should Option<Key>, where a key should be returned iff the key entered was not a modifier
+
+Refactoring:
+- Organize into modules
