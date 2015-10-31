@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq)]
 /// A key
 pub enum Key {
     Char(char),
