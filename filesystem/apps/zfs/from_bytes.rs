@@ -1,12 +1,12 @@
 use redox::*;
 
 pub trait FromBytes: Sized {
-    fn from_bytes(data: &[u8]) -> Option<Self> {
+    fn from_bytes(data: &[u8]) -> Result<Self, String> {
         if data.len() >= mem::size_of::<Self>() {
             let s = unsafe { ptr::read(data.as_ptr() as *const Self) };
-            Some(s)
+            Ok(s)
         } else {
-            None
+            Err(format!("Error: bytes length of {} not long enough for the byte size of {}", data.len(), mem::size_of::<Self>()))
         }
     }
 }
