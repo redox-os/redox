@@ -34,7 +34,7 @@ impl Resource for EventResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         let data_size = mem::size_of::<EventData>();
-        //TODO: why does this only work when commented out?
+        //TODO: why does this only work when length check is commented out?
         // LazyOxen
         /*
         if buf.len() < data_size {

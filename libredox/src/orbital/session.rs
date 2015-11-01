@@ -33,6 +33,8 @@ pub struct Session {
     pub suspend_display: bool,
 }
 
+// TODO: Arc<Mutex> this thing?
+// LazyOxen
 static mut session_ptr: *mut Session = 0 as *mut Session;
 
 impl Session {
@@ -46,7 +48,7 @@ impl Session {
             Some(mut dir) => {
                 let mut vec: Vec<u8> = Vec::new();
                 dir.read_to_end(&mut vec);
-                //TODO: handle this properly
+                //TODO: get rid of unwrap
                 // LazyOxen
                 let dir_listing = String::from_utf8(vec).unwrap();
                 dir_listing.split("\n")
@@ -63,15 +65,15 @@ impl Session {
     pub fn new() -> Option<Box<Self>> {
         // TODO: this font gets opened everywhere, should probably not do that
         // LazyOxen
-        let mut disp = File::open("display://").unwrap();
         let mut font = Vec::new();
         if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
             font_file.read_to_end(&mut font);
             if let Some(mut events) = File::open("events://") {
                 if let Some(mut display_file) = File::open("display://") {
-
                     let mut dimensions: [usize;2]= [0;2];
                     let buf = unsafe { mem::transmute::<&mut [usize],&mut [u8]>(&mut dimensions[..]) };
+                    // TODO: verify the dimensions read are correct
+                    // LazyOxen
                     display_file.read(buf);
 
                     let ret =
@@ -98,15 +100,12 @@ impl Session {
                     };
                     Some(ret)
                 } else {
-                    //panic!("{}: unable to connect to display://", file!());
                     None
                 }
             } else {
-                //panic!("{}: unable to connect to events://", file!());
                 None
             }
         } else {
-            //panic!("{}: unable to open font file", file!());
             None
         }
     }
@@ -155,7 +154,6 @@ impl Session {
         }
 
         self.redraw = true;
-        self.display_file.seek(SeekFrom::Start(0));
     }
 
     fn on_key(&mut self, key_event: KeyEvent) {
@@ -171,6 +169,9 @@ impl Session {
             }
         }
     }
+        // TODO: determine if pointer needs to be updated from this bit that was
+        // in uhci
+        // LazyOxen
         /*
         let mouse_x = (mouse_event.x * (*::session_ptr).display.width) / 32768;
         let mouse_y = (y * (*::session_ptr).display.height) / 32768;
@@ -195,7 +196,8 @@ impl Session {
                 let mut x = 0;
                 for package in self.packages.iter() {
                     //if package.icon.data.len() > 0 {
-                    // TODO: not sure this is really kosher
+                    // TODO: replace the width check with something else
+                    //       maybe has_data property
                     // LazyOxen
                     if package.icon.width() > 0 {
                         if mouse_event.x >= x &&
@@ -272,9 +274,8 @@ impl Session {
 
     pub unsafe fn redraw(&mut self) {
         if self.redraw && !self.suspend_display {
-            self.display_file.seek(SeekFrom::Start(0));
             self.display.set(Color::rgb(75, 163, 253));
-            //LazyOxen
+            //LazyOxen - replace width check
             if self.background.width() > 0 {
                 self.background.draw(&self.display,
                                      Point::new((self.display.width as isize -
@@ -301,7 +302,7 @@ impl Session {
 
             let mut x = 0;
             for package in self.packages.iter() {
-                //LazyOxen
+                //LazyOxen - replace width check
                 if package.icon.width() > 0 {
                     let y = self.display.height as isize - package.icon.height() as isize;
                     if self.mouse_point.y >= y && self.mouse_point.x >= x &&
@@ -348,8 +349,7 @@ impl Session {
                 x += 8;
             }
 
-            //TODO: no hacky checks
-            //LazyOxen
+            //LazyOxen - replace width check
             if self.cursor.width() > 0 {
                 self.display.image_alpha(self.mouse_point,
                                          self.cursor.data_ptr(),
@@ -360,14 +360,10 @@ impl Session {
                                   Color::rgb(255, 255, 255));
             }
 
-            let buf: &[u8] = slice::from_raw_parts(self.display.screen as *const u8, self.display.size);
-            let ptr = self.display.screen as *const u8;
-            let mut mybuf: Vec<u8> = Vec::new();
-            for i in 0..self.display.size {
-                mybuf.push(*ptr.offset(i as isize));
-            }
-            //self.display_file.write(buf);//data);
-            self.display_file.write(&mybuf[..]);//data);
+            self.display.flip();
+            let buf: &[u8] = slice::from_raw_parts(self.display.onscreen as *const u8, self.display.size);
+            self.display_file.seek(SeekFrom::Start(0));
+            self.display_file.write(buf);
             self.display_file.sync();
             self.redraw = false;
         }

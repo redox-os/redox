@@ -127,25 +127,26 @@ impl Window {
     pub fn image(&mut self, x: isize, y: isize, w: usize, h: usize, data: &[Color]) {
         let point = Point::new(x,y);
         let size = Size::new(w,h);
-        if mem::size_of::<Color>() == mem::size_of::<u32>() {
-            unsafe {
-                self.content.image(point,
-                              self.content.screen as *const u32, 
-                              size);
-            }
-        } else {
-            // do a loop otherwise
-            let mut i = 0;
-            let Point{ x: start_x, y: start_y } = point;
-            let w = cmp::min(start_x as usize + size.width, self.size.width);
-            let h = cmp::min(start_y as usize + size.height, self.size.height);
-            for y in start_y..start_y + h as isize {
-                for x in start_x..start_x + w as isize {
-                    if i < data.len() {
-                        self.pixel(x, y, data[i])
-                    }
-                    i += 1;
-                }
+        // TODO: make the types happy and remove the nested loop
+        // LazyOxen
+        /*
+        unsafe {
+            self.content.image(point,
+                               data as *const u32, 
+                               size);
+        }
+        */
+        let mut i = 0;
+        let Point{ x: start_x, y: start_y } = point;
+        let w = cmp::min(start_x as usize + size.width, self.size.width);
+        let h = cmp::min(start_y as usize + size.height, self.size.height);
+        let len = data.len();
+        for y in start_y..start_y + h as isize {
+            for x in start_x..start_x + w as isize {
+               if i < len {
+                   self.pixel(x, y, data[i])
+               }
+               i += 1;
             }
         }
     }
@@ -190,8 +191,6 @@ impl Window {
         }
     }
 
-    /* I think all of this should move to the display manager */
-    /* the display draws the windows it wants to */
     /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
@@ -231,7 +230,7 @@ impl Window {
 
             unsafe {
                 display.image(self.point,
-                              self.content.screen as *const u32,
+                              self.content.onscreen as *const u32,
                               Size::new(self.content.width, self.content.height));
             }
         }
