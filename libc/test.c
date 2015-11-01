@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <dirent.h>
 #include <sys/time.h>
 
 int main(int argc, char ** argv){
@@ -17,13 +18,24 @@ int main(int argc, char ** argv){
             free(test);
             printf("Free\n");
 
-	    pid_t pid = fork();
-            if(pid == 0){
-                printf("Fork Parent\n");
-            }else if(pid > 0){
-                printf("Fork Child %d\n", pid);
-            } else {
-                printf("Fork Failed\n");
+            DIR * dir = opendir("file:///");
+            if (dir != NULL) {
+                struct dirent * ent;
+                while ((ent = readdir(dir)) != NULL) {
+                    printf("[%s]\n", ent->d_name);
+                }
+                closedir(dir);
+
+        	    pid_t pid = fork();
+                if(pid == 0){
+                    printf("Fork Parent\n");
+                }else if(pid > 0){
+                    printf("Fork Child %d\n", pid);
+                } else {
+                    printf("Fork Failed\n");
+                }
+            }else{
+                printf("Opendir Failed\n");
             }
         } else {
             printf("Malloc Failed\n");
