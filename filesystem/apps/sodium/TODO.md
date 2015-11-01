@@ -1,6 +1,7 @@
 - [x] Make editor.pos method and use that instead of
 - [ ] Add word navigation
 - [ ] `.` command
+- [ ] More partial redrawing (register "is_modified")
 
 
 Known bugs:
