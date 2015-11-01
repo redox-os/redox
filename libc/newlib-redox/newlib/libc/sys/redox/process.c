@@ -4,6 +4,10 @@ int chdir(const char *path){
     return (int)syscall(SYS_CHDIR, (uint)path, 0, 0);
 }
 
+int clone() {
+    return (int)syscall(SYS_CLONE, 0, 0, 0);
+}
+
 void _exit(int code){
     syscall(SYS_EXIT, (uint)code, 0, 0);
 }

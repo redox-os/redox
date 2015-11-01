@@ -41,8 +41,16 @@ pub unsafe fn sys_chdir(path: *const u8) -> usize {
     syscall(SYS_CHDIR, path as usize, 0, 0)
 }
 
+pub unsafe fn sys_clone() -> usize {
+    syscall(SYS_CLONE, 0, 0, 0)
+}
+
 pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd, 0, 0)
+}
+
+pub unsafe fn sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize{
+    syscall(SYS_CLOCK_GETTIME, clock, tp as usize, 0)
 }
 
 pub unsafe fn sys_dup(fd: usize) -> usize {
@@ -75,17 +83,6 @@ pub unsafe fn sys_ftruncate(fd: usize, len: usize) -> usize {
     syscall(SYS_FTRUNCATE, fd, len, 0)
 }
 
-#[repr(packed)]
-pub struct TV {
-    pub tv_sec: i64,
-    pub tv_usec: i32,
-}
-
-//TODO: gettimeofday
-pub unsafe fn sys_gettimeofday(tv: *mut TV) -> usize{
-    syscall(SYS_GETTIMEOFDAY, tv as usize, 0, 0)
-}
-
 pub unsafe fn sys_link(old: *const u8, new: *const u8) -> usize {
     syscall(SYS_LINK, old as usize, new as usize, 0)
 }
@@ -94,14 +91,7 @@ pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd, offset as usize, whence)
 }
 
-#[repr(packed)]
-pub struct TS {
-    pub tv_sec: i64,
-    pub tv_nsec: i32,
-}
-
-//TODO: gettimeofday
-pub unsafe fn sys_nanosleep(req: *const TS, rem: *mut TS) -> usize{
+pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
     syscall(SYS_NANOSLEEP, req as usize, rem as usize, 0)
 }
 

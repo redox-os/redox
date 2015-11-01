@@ -13,7 +13,9 @@ extern int errno;
 
 #define SYS_BRK 45
 #define SYS_CHDIR 12
+#define SYS_CLONE 120
 #define SYS_CLOSE 6
+#define SYS_CLOCK_GETTIME 265
 #define SYS_DUP 41
 #define SYS_EXECVE 11
 #define SYS_EXIT 1
@@ -22,7 +24,6 @@ extern int errno;
 #define SYS_FSTAT 28
 #define SYS_FSYNC 118
 #define SYS_FTRUNCATE 93
-#define SYS_GETTIMEOFDAY 78
 #define SYS_LINK 9
 #define SYS_LSEEK 19
 #define SYS_NANOSLEEP 162

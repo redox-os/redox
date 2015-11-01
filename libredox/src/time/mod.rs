@@ -3,7 +3,8 @@
 use core::cmp::{Ordering, PartialEq};
 use core::ops::{Add, Sub};
 
-use syscall::{TV, TS, sys_gettimeofday, sys_nanosleep};
+use syscall::{sys_clock_gettime, sys_nanosleep};
+use syscall::common::{CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
 
 pub const NANOS_PER_MICRO: i32 = 1_000;
 pub const NANOS_PER_MILLI: i32 = 1_000_000;
@@ -34,26 +35,38 @@ impl Duration {
         }
     }
 
-    /// Get the realtime
-    pub fn realtime() -> Self {
-        let mut tv = TV {
+    /// Get the monotonic time
+    pub fn monotonic() -> Self {
+        let mut tp = TimeSpec {
             tv_sec: 0,
-            tv_usec: 0,
+            tv_nsec: 0,
         };
 
-        unsafe { sys_gettimeofday(&mut tv) };
+        unsafe { sys_clock_gettime(CLOCK_MONOTONIC, &mut tp) };
 
-        Duration::new(tv.tv_sec, tv.tv_usec * 1000)
+        Duration::new(tp.tv_sec, tp.tv_nsec)
+    }
+
+    /// Get the realtime
+    pub fn realtime() -> Self {
+        let mut tp = TimeSpec {
+            tv_sec: 0,
+            tv_nsec: 0,
+        };
+
+        unsafe { sys_clock_gettime(CLOCK_REALTIME, &mut tp) };
+
+        Duration::new(tp.tv_sec, tp.tv_nsec)
     }
 
     /// Sleep the duration
     pub fn sleep(&self) -> Duration {
-        let req = TS {
+        let req = TimeSpec {
             tv_sec: self.secs,
             tv_nsec: self.nanos,
         };
 
-        let mut rem = TS {
+        let mut rem = TimeSpec {
             tv_sec: 0,
             tv_nsec: 0
         };
