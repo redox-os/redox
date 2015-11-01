@@ -16,11 +16,11 @@ impl Editor {
         let mode = self.cursor().mode;
 
         if self.options.line_marker {
-            self.window.rect(0, (pos_y * 16) as isize, w, 16, Color::rgb(45, 45, 45));
+            self.window.rect(0, (pos_y - self.scroll_y) as isize * 16, w, 16, Color::rgb(45, 45, 45));
         }
 
-        self.window.rect(8 * (pos_x - self.scroll_y) as isize,
-                         16 * (pos_y - self.scroll_x) as isize,
+        self.window.rect(8 * (pos_x - self.scroll_x) as isize,
+                         16 * (pos_y - self.scroll_y) as isize,
                          8,
                          16,
                          Color::WHITE);
@@ -51,23 +51,27 @@ impl Editor {
                 let c = if c == '\t' { ' ' } else { c };
 
                 if pos_x == x && pos_y == y {
-                    self.window.char(8 * (x - self.scroll_y) as isize,
-                                     16 * (y - self.scroll_x) as isize,
+                    self.window.char(8 * (x - self.scroll_x) as isize,
+                                     16 * (y - self.scroll_y) as isize,
                                      c,
                                      Color::rgb(color.0 / 3, color.1 / 3, color.2 / 3));
                 } else {
-                    self.window.char(8 * (x - self.scroll_y) as isize,
-                                     16 * (y - self.scroll_x) as isize,
+                    self.window.char(8 * (x - self.scroll_x) as isize,
+                                     16 * (y - self.scroll_y) as isize,
                                      c,
                                      Color::rgb(color.0, color.1, color.2));
                 }
             }
         }
 
+        self.redraw_task = RedrawTask::Null;
+
 
         self.redraw_status_bar();
         self.window.sync();
     }
+
+    /// Redraw the status bar
     pub fn redraw_status_bar(&mut self) {
         let h = self.window.height();
         let w = self.window.width();

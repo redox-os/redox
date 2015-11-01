@@ -69,7 +69,15 @@ Navigation:
 - <numeral>g : Go to <numeral> line
 - g<motion> : Do <motion>
 - G : Go to the end of the document
-- t<char> : Go to the next occurence of <char>
+- <numeral>t<char> : Go to the next occurence
+                     of <char>
+- <numeral>f<char> : Go to the previous occurence
+                     of <char>
+
+Scrolling:
+- z<motion> : Scroll <motion>
+- <numeral>z : Scroll to line <numeral>
+- Z : Scroll to cursor
 
 Cursor management:
 - b : Branch the cursor
@@ -87,6 +95,9 @@ Editing:
               (given by <motion>)
 - o : Insert a new line
 - ; : Go to prompt mode
+
+Cursor:
+- [space] : Go to the next cursor
 
 # Insert
 
@@ -107,6 +118,8 @@ Following commands are valid:
 - set <option> : Set <option>
 - unset <option> : Unset <option>
 - toggle <option> : Toggle <option>
+- get <option> : Get the state of 
+                 <option>
 
 Following option exists:
 
@@ -115,6 +128,10 @@ Following option exists:
   default: on
 - autoindent or ai : Automatically indent
                      newlines.
+  default: on
+- line_marker or lm : Slightly dim the
+                      background of the
+                      current line
   default: on
 
 To leave prompt press enter and the command
@@ -145,7 +162,10 @@ stated.
                line
 - <numeral>g : Go to <numeral> line
 - G : Go to the end of the document
-- t<char> : Go to the next occurence of <char>
+- <numeral>t<char> : Go to the next occurence
+                     of <char>
+- <numeral>f<char> : Go to the previous occurence
+                     of <char>
 
 Tips'n'tricks
 -------------

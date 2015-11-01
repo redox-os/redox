@@ -7,14 +7,17 @@ pub use self::editor::*;
 mod parse;
 pub use self::parse::*;
 
-mod keystate;
-pub use self::keystate::*;
+mod key_state;
+pub use self::key_state::*;
 
 mod key;
 pub use self::key::*;
 
 mod prompt;
 pub use self::prompt::*;
+
+mod redraw;
+pub use self::redraw::*;
 
 mod options;
 pub use self::options::*;

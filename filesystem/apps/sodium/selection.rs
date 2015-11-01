@@ -2,7 +2,10 @@ use super::*;
 use redox::*;
 
 impl Editor {
-    /// Remove from a given motion (row based)
+    /// Remove from a given motion (row based), i.e. if the motion given is to another line, all
+    /// the lines from the current one to the one defined by the motion are removed. If the motion
+    /// defines a position on the same line, only the characters from the current position to the
+    /// motion's position are removed.
     pub fn remove_rb<'a>(&mut self, (x, y): (isize, isize)) {
         if y == self.y() as isize {
             let (x, y) = self.bound((x as usize, y as usize));
@@ -12,7 +15,7 @@ impl Editor {
              } else {
                 (self.x(), x)
             };
-            for _ in a..(b + 1) {
+            for _ in a..b {
                 self.text[y].remove(a);
             }
         } else {

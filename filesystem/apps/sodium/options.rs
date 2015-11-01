@@ -34,6 +34,7 @@ impl Options {
         }
     }
 
+    /// Set a given option (mark it as active)
     pub fn set(&mut self, name: &str) -> Result<(), ()> {
         match self.get_mut(name) {
             Some(x) => {
@@ -43,6 +44,7 @@ impl Options {
             None => Err(()),
         }
     }
+    /// Unset a given option (mark it as inactive)
     pub fn unset(&mut self, name: &str) -> Result<(), ()> {
         match self.get_mut(name) {
             Some(x) => {
@@ -52,6 +54,7 @@ impl Options {
             None => Err(()),
         }
     }
+    /// Toggle a given option
     pub fn toggle(&mut self, name: &str) -> Result<(), ()> {
         match self.get_mut(name) {
             Some(x) => {
