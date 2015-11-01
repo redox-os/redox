@@ -1,5 +1,8 @@
+use super::from_bytes::FromBytes;
+
 const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
 
+#[derive(Debug)]
 pub struct SpaceMapPhys {
     object: u64,   // on-disk space map object
     objsize: u64,  // size of the object
@@ -14,3 +17,5 @@ pub struct SpaceMapPhys {
      */
     histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE],
 }
+
+impl FromBytes for SpaceMapPhys { }
