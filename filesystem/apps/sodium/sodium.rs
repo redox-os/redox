@@ -16,6 +16,9 @@ pub use self::key::*;
 mod prompt;
 pub use self::prompt::*;
 
+mod redraw;
+pub use self::redraw::*;
+
 mod options;
 pub use self::options::*;
 

@@ -102,6 +102,7 @@ impl Editor {
     #[inline]
     pub fn down_unbounded(&self, n: usize) -> (isize, isize) {
         (self.cursor().x as isize, self.y() as isize + n as isize)
+
     }
 
     /// Get the position of the end of the line
