@@ -1,7 +1,7 @@
 use redox::{self, cmp, env, BMPFile, Color};
 use redox::collections::BTreeMap;
 use redox::event::{self, EventOption, MouseEvent};
-use redox::fs::File;
+use redox::fs::{self, File};
 use redox::io::{Read, Seek, SeekFrom};
 use redox::orbital::Window;
 use redox::time::{self, Duration};
@@ -248,51 +248,47 @@ impl FileManager {
     fn main(&mut self, path: &str) {
         let mut width = [48, 48, 48];
         let mut height = 0;
-        if let Some(mut file) = File::open(path) {
-            let mut list = String::new();
-            file.read_to_string(&mut list);
-
-            for entry in list.split('\n') {
-                self.files.push(entry.to_string());
+        if let Some(readdir) = fs::read_dir(path) {
+            for entry in readdir {
+                self.files.push(entry.path().to_string());
                 self.file_sizes.push(
-                    match File::open(&(path.to_string() + entry)) {
-                        Some(mut file) => {
-                            // When the entry is a folder
-                            if entry.ends_with('/') {
-                                let mut string = String::new();
-                                file.read_to_string(&mut string);
+                    // When the entry is a folder
+                    if entry.path().ends_with('/') {
+                        let count = match fs::read_dir(&(path.to_string() + entry.path())) {
+                            Some(entry_readdir) => entry_readdir.count(),
+                            None => 0
+                        };
 
-                                let count = string.split('\n').count();
-                                if count == 1 {
-                                    "1 entry".to_string()
-                                } else {
-                                    format!("{} entries", count)
-                                }
-                            } else {
-                                match file.seek(SeekFrom::End(0)) {
-                                    Some(size) => {
-                                        if size >= 1_000_000_000 {
-                                            format!("{:.1} GB", (size as f64)/1_000_000_000.0)
-                                        } else if size >= 1_000_000 {
-                                            format!("{:.1} MB", (size as f64)/1_000_000.0)
-                                        } else if size >= 1_000 {
-                                            format!("{:.1} KB", (size as f64)/1_000.0)
-                                        } else {
-                                            format!("{:.1} bytes", size)
-                                        }
+                        if count == 1 {
+                            "1 entry".to_string()
+                        } else {
+                            format!("{} entries", count)
+                        }
+                    } else {
+                        match File::open(&(path.to_string() + entry.path())) {
+                            Some(mut file) => match file.seek(SeekFrom::End(0)) {
+                                Some(size) => {
+                                    if size >= 1_000_000_000 {
+                                        format!("{:.1} GB", (size as f64)/1_000_000_000.0)
+                                    } else if size >= 1_000_000 {
+                                        format!("{:.1} MB", (size as f64)/1_000_000.0)
+                                    } else if size >= 1_000 {
+                                        format!("{:.1} KB", (size as f64)/1_000.0)
+                                    } else {
+                                        format!("{:.1} bytes", size)
                                     }
-                                    None => "Failed to seek".to_string()
                                 }
-                            }
-                        },
-                        None => "Failed to open".to_string(),
+                                None => "Failed to seek".to_string()
+                            },
+                            None => "Failed to open".to_string()
+                        }
                     }
                 );
                 // Unwrapping the last file size will not panic since it has
                 // been at least pushed once in the vector
-                width[0] = cmp::max(width[0], 48 + (entry.len()) * 8);
+                width[0] = cmp::max(width[0], 48 + (entry.path().len()) * 8);
                 width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
-                width[2] = cmp::max(width[2], 8 + (self.get_description(entry).len()) * 8);
+                width[2] = cmp::max(width[2], 8 + (self.get_description(entry.path()).len()) * 8);
             }
 
             if height < self.files.len() * 32 {
