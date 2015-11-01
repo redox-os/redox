@@ -67,7 +67,7 @@ impl Editor {
                                 ind.into_iter().chain(second_part.iter().map(|x| *x))
                         ));
 
-                        self.redraw_task = RedrawTask::Lines(y..y + 1);
+                        self.redraw_task = RedrawTask::LinesAfter(y);
                         self.goto((begin, y + 1));
                     },
                     Key::Backspace => { // Backspace
@@ -91,7 +91,7 @@ impl Editor {
                             _ => {},
                         }
 
-                        self.redraw_task = RedrawTask::Lines(y..y);
+                        self.redraw_task = RedrawTask::Lines(y..y + 1);
                         let right = self.right(1);
                         self.goto(right);
                     }
@@ -123,7 +123,7 @@ impl Editor {
                     if let Some(p) = next {
                         self.goto(p);
                     }
-                    self.redraw_task = RedrawTask::Lines(y..y);
+                    self.redraw_task = RedrawTask::Lines(y..y + 1);
                 },
                 _ => {},
             },

@@ -11,7 +11,7 @@ impl Editor {
         use super::CommandMode::*;
 
         let n = para.d();
-        let bef = self.y();
+        let bef = self.pos();
         let mut mov = false;
 
         if cmd.key == Key::Char(' ') && self.key_state.shift {
@@ -240,7 +240,7 @@ impl Editor {
             }
         }
         if mov {
-            self.redraw_task = RedrawTask::Lines(bef..self.y());
+            self.redraw_task = RedrawTask::Cursor(bef, self.pos());
         }
     }
 }

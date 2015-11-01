@@ -64,6 +64,8 @@ impl Editor {
             }
         }
 
+        self.redraw_task = RedrawTask::Null;
+
 
         self.redraw_status_bar();
         self.window.sync();
