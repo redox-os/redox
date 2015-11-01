@@ -73,24 +73,6 @@ macro_rules! println {
     });
 }
 
-
-/// Debug new line to console
-#[macro_export]
-macro_rules! debugln {
-    ($($arg:tt)*) => ({
-        debug!($($arg)*);
-        debug!("\n");
-    });
-}
-
-/// Debug to console
-#[macro_export]
-macro_rules! debug {
-    ($($arg:tt)*) => ({
-        $crate::debug::debug(format!($($arg)*));
-    });
-}
-
 /// Print new line to console with color
 #[macro_export]
 macro_rules! println_color {

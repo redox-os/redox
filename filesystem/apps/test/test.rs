@@ -1,5 +1,6 @@
 use redox::Box;
 use redox::console::*;
+use redox::fs;
 use redox::rand;
 use redox::ptr;
 use redox::slice::SliceConcatExt;
@@ -29,8 +30,9 @@ pub fn main() {
                 command if command == console_commands[0] =>
                     panic!("Test panic"),
                 command if command == console_commands[1] => {
-                    // TODO: import std::fs functions into libredox
-                    //fs::read_dir("/").unwrap().map(|dir| println!("{}", dir));
+                    for entry in fs::read_dir("file:///").unwrap() {
+                        println!("{}", entry.path());
+                    }
                 }
                 command if command == console_commands[2] => {
                     let a_ptr = rand() as *mut u8;
