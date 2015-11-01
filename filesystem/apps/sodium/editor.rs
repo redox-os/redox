@@ -23,6 +23,8 @@ pub struct Editor {
     pub options: Options,
     /// The key state
     pub key_state: KeyState,
+    /// Redraw
+    pub redraw_task: RedrawTask,
 }
 
 impl Editor {
@@ -47,6 +49,7 @@ impl Editor {
             prompt: String::new(),
             options: Options::new(),
             key_state: KeyState::new(),
+            redraw_task: RedrawTask::Null,
         };
 
         editor.text.push_back(VecDeque::new());

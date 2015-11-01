@@ -41,7 +41,7 @@ impl Editor {
                                          .to_option() {
                 if let Some(Key::Char(c)) = self.key_state.feed(k) {
                     self.status_bar.cmd.push(c);
-                    self.redraw_status_bar();
+                    self.redraw_task = RedrawTask::StatusBar;
                     return c;
                 }
             }
@@ -72,7 +72,7 @@ impl Editor {
 
                     match self.cursor().mode {
                         Mode::Primitive(_) => {
-                            key = Key::Char(c);
+                            key = k;
                         },
                         Mode::Command(_) => {
                             n = match c {
@@ -118,7 +118,7 @@ impl Editor {
                                 },
                                 _   => {
 
-                                    key = Key::Char(c);
+                                    key = k;
                                     n
                                 }
                             };
