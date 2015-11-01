@@ -22,7 +22,7 @@ int main(int argc, char ** argv){
             if (dir != NULL) {
                 struct dirent * ent;
                 while ((ent = readdir(dir)) != NULL) {
-                    printf("[%s]\n", ent->d_name);
+                    printf("%s\n", ent->d_name);
                 }
                 closedir(dir);
 
