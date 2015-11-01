@@ -1,16 +1,16 @@
 use collections::string::String;
 use collections::vec::Vec;
 
-use core::ptr;
-
 use common::context::{self, Context, ContextFile, ContextMemory};
 use common::debug;
-use common::elf::{self, ELF, ELFSegment};
+use common::elf::ELF;
 use common::memory;
 use common::scheduler;
+use collections::string::ToString;
 
 use schemes::URL;
 
+/// Excecute an excecutable
 pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
     debug::d("Execute ");
     debug::d(&url.to_string());
@@ -42,10 +42,10 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
                 }
 
                 entry = executable.entry();
-            }else{
+            } else {
                 debug::d("Invalid ELF\n");
             }
-        }else{
+        } else {
             debug::d("Failed to open\n");
         }
 

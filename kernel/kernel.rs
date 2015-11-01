@@ -15,6 +15,7 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
+#![feature(slice_concat_ext)]
 #![no_std]
 
 #[macro_use]
@@ -39,6 +40,7 @@ use common::queue::Queue;
 use schemes::URL;
 use common::scheduler;
 use common::time::Duration;
+use common::parse_path::*;
 
 use drivers::pci::*;
 use drivers::pio::*;
@@ -75,6 +77,7 @@ pub mod alloc_system;
 /// Audio
 pub mod audio;
 /// Common std-like functionality
+#[macro_use]
 pub mod common;
 /// Various drivers
 pub mod drivers;
@@ -192,12 +195,11 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            debug::d("WM UNrestricted\n");
                                             EventResource::add_event(DisplayEvent { 
                                                 restricted: false
                                             }.to_event());
                                         },
-                                        event::K_BKSP => if cmd.len() > 0 {
+                                        event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
                                             cmd.pop();
                                         },
@@ -222,7 +224,6 @@ unsafe fn event_loop() -> ! {
                                         event::K_F1 => {
                                             ::debug_draw = true;
                                             ::debug_redraw = true;
-                                            debug::d("WM restricted\n");
                                             EventResource::add_event(DisplayEvent { 
                                                 restricted: true
                                             }.to_event());
@@ -301,6 +302,8 @@ unsafe fn init(font_data: usize) {
 
     debug_command = Box::into_raw(box String::new());
 
+    debugln!("WELCOME TO REDOX!");
+
     debug::d("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
     debug::d(" bits ");
@@ -368,7 +371,6 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    /*
     debug::d("Loading apps\n");
     if let Some(mut resource) = URL::from_str("file:///apps/").open() {
         let mut vec: Vec<u8> = Vec::new();
@@ -383,9 +385,6 @@ unsafe fn init(font_data: usize) {
             }
         }
     }
-    */
-
-
 
     debug::d("Enabling context switching\n");
     debug_draw = false;

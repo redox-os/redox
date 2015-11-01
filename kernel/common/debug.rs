@@ -2,6 +2,31 @@ use core::str::StrExt;
 
 use syscall::handle::do_sys_debug;
 
+/// Debug new line to console
+#[macro_export]
+macro_rules! debugln {
+    ($($arg:tt)*) => ({
+        debug!($($arg)*);
+        debug!("\n");
+    });
+}
+
+/// Debug to console
+#[macro_export]
+macro_rules! debug {
+    ($($arg:tt)*) => ({
+        $crate::common::debug::debug(format!($($arg)*));
+    });
+}
+
+pub fn debug<T: AsRef<str>>(msg: T) {
+    for b in msg.as_ref().bytes() {
+        unsafe {
+            do_sys_debug(b);
+        }
+    }
+}
+
 /// Set debug level
 pub fn db(byte: u8) {
     unsafe {

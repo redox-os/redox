@@ -1,5 +1,5 @@
-use redox::mem;
-use redox::ptr;
+use redox::{mem, ptr};
+use redox::{String, ToString};
 
 use super::from_bytes::FromBytes;
 use super::block_ptr::BlockPtr;
@@ -27,16 +27,16 @@ impl Uberblock {
 }
 
 impl FromBytes for Uberblock {
-    fn from_bytes(data: &[u8]) -> Option<Self> {
+    fn from_bytes(data: &[u8]) -> Result<Self, String> {
         if data.len() >= mem::size_of::<Uberblock>() {
             let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
             if uberblock.magic == Uberblock::magic_little() {
-                return Some(uberblock);
+                return Ok(uberblock);
             } else if uberblock.magic == Uberblock::magic_big() {
-                return Some(uberblock);
+                return Ok(uberblock);
             }
         }
 
-        None
+        Err("Error: cannot find Uberblock".to_string())
     }
 }

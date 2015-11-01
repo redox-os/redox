@@ -1,9 +1,7 @@
-use super::*;
-use redox::*;
-
 pub struct Options {
     pub highlight: bool,
     pub autoindent: bool,
+    pub line_marker: bool,
 }
 
 impl Options {
@@ -12,6 +10,7 @@ impl Options {
         Options {
             highlight: true,
             autoindent: true,
+            line_marker: true,
         }
     }
 
@@ -20,6 +19,7 @@ impl Options {
         match name {
             "hightlight" | "hl" => Some(&mut self.highlight),
             "autoindent" | "ai" => Some(&mut self.autoindent),
+            "line_marker" | "linemarker" | "linemark" | "lm" => Some(&mut self.line_marker),
             _ => None,
         }
     }
@@ -29,10 +29,12 @@ impl Options {
         match name {
             "hightlight" | "hl" => Some(self.highlight),
             "autoindent" | "ai" => Some(self.autoindent),
+            "line_marker" | "linemarker" | "linemark" | "lm" => Some(self.line_marker),
             _ => None,
         }
     }
 
+    /// Set a given option (mark it as active)
     pub fn set(&mut self, name: &str) -> Result<(), ()> {
         match self.get_mut(name) {
             Some(x) => {
@@ -42,6 +44,7 @@ impl Options {
             None => Err(()),
         }
     }
+    /// Unset a given option (mark it as inactive)
     pub fn unset(&mut self, name: &str) -> Result<(), ()> {
         match self.get_mut(name) {
             Some(x) => {
@@ -51,6 +54,7 @@ impl Options {
             None => Err(()),
         }
     }
+    /// Toggle a given option
     pub fn toggle(&mut self, name: &str) -> Result<(), ()> {
         match self.get_mut(name) {
             Some(x) => {

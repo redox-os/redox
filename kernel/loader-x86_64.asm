@@ -47,6 +47,7 @@ load:
     sub cx, 64
 
     jmp load
+
 .good_size:
     mov [DAPACK.addr], ax
     mov [DAPACK.buf], bx

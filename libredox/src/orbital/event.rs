@@ -7,18 +7,23 @@ pub enum EventOption {
     Mouse(MouseEvent),
     /// A key event
     Key(KeyEvent),
-    /// A key event
+    /// A display event
     Display(DisplayEvent),
     /// A unknown event
+    /// A quit request event
+    Quit(QuitEvent),
+    /// An unknown event
     Unknown(Event),
     /// No event
     None,
 }
 pub const DATA_LENGTH: usize = 4;
 pub const EVENT_TYPE: isize= 0;
+// TODO: make these sequential, no need to use powers of 2
 pub const KEYBD_EVENT: isize = 1;
 pub const MOUSE_EVENT: isize = 2;
 pub const DISP_EVENT: isize = 8;
+pub const QUIT_EVENT: isize = 16;
 // switched to this because rust doesn't guarantee
 // that two structs with the same definition will
 // have the same representation when compiled
@@ -43,6 +48,7 @@ impl Event {
             MOUSE_EVENT => EventOption::Mouse(MouseEvent::from_event(self)),
             KEYBD_EVENT => EventOption::Key(KeyEvent::from_event(self)),
             DISP_EVENT  => EventOption::Display(DisplayEvent::from_event(self)),
+            QUIT_EVENT  => EventOption::Quit(QuitEvent::from_event(self)),
             0           => EventOption::None,
             _           => EventOption::Unknown(self),
         }
@@ -57,10 +63,10 @@ pub struct MouseEvent {
     pub y: isize,
     /// Is the left button pressed?
     pub left_button: bool,
-    /// Is the right button pressed?
-    pub right_button: bool,
     /// Is the middle button pressed?
     pub middle_button: bool,
+    /// Was the right button pressed?
+    pub right_button: bool,
 }
 
 impl MouseEvent {
@@ -200,5 +206,20 @@ impl DisplayEvent {
         DisplayEvent {
             restricted: event.data[1] > 0,
         }
+    }
+}
+
+#[derive(Copy, Clone)]
+pub struct QuitEvent;
+
+impl QuitEvent {
+    pub fn to_event(&self) -> Event {
+        Event {
+            data: [ QUIT_EVENT, 0, 0, 0 ]
+        }
+    }
+
+    pub fn from_event(event: Event) -> QuitEvent {
+        QuitEvent
     }
 }

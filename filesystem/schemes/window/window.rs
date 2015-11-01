@@ -1,4 +1,5 @@
 use redox::*;
+
 /// A window scheme
 pub struct Scheme;
 
@@ -43,7 +44,7 @@ impl Resource {
             }
         }
 
-        return Some(i);
+        Some(i)
     }
 
     /// Write to resource
@@ -77,7 +78,7 @@ impl Resource {
     /// Sync the resource, should flip
     pub fn sync(&mut self) -> bool {
         self.window.redraw();
-        return true;
+        true
     }
 }
 
@@ -88,6 +89,7 @@ impl Scheme {
 
     pub fn open(&mut self, path: &str) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
+        // TODO: use same parsing as in kernel space?
         let url_path = URL::from_string(&path.to_string()).path_parts();
         let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),

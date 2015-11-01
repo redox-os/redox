@@ -13,6 +13,7 @@ pub enum InsertMode {
     Replace,
 }
 
+
 #[derive(Clone, PartialEq, Copy)]
 /// The insert options
 pub struct InsertOptions {
@@ -21,68 +22,111 @@ pub struct InsertOptions {
 }
 
 impl Editor {
-    /// Insert text
+    /// Delta x, i.e. the cursors visual position's x coordinate relative to the cursors actual
+    /// position. For example append will append character after the cursor, but visually it have
+    /// delta x = 1, so it will look like normal insert mode, except when going back to normal
+    /// mode, the cursor will move back (visually), because the delta x will drop to 0.
+    pub fn delta(&self) -> usize {
+        let (x, y) = self.pos();
+        match self.cursor().mode {
+            _ if x > self.text[y].len() => {
+                0
+            },
+            Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) if x == self.text[y].len() => 0,
+
+            Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) => 1,
+            _ => 0,
+        }
+    }
+
+    /// Insert text under the current cursor.
     pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
-        let mut x = self.x();
-        let mut y = self.y();
+        let (mut x, mut y) = self.pos();
         match mode {
-            InsertMode::Insert => match k {
-                Key::Char('\n') => {
-                    let ln = self.text[y].clone();
-                    let (slice, _) = ln.as_slices();
+            InsertMode::Insert | InsertMode::Append => {
+                let d = self.delta();
 
-                    let first_part = (&slice[..x]).clone();
-                    let second_part = (&slice[x..]).clone();
+                match k {
+                    Key::Char('\n') => {
+                        let ln = self.text[y].clone();
+                        let (slice, _) = ln.as_slices();
 
-                    self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
+                        let first_part = (&slice[..x + d]).clone();
+                        let second_part = (&slice[x + d..]).clone();
 
-                    let ind = if self.options.autoindent {
-                        self.get_indent(y)
-                    } else {
-                        VecDeque::new()
-                    };
-                    let begin = ind.len();
+                        self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
 
-                    self.text.insert(y + 1, VecDeque::from_iter(
-                            ind.into_iter().chain(second_part.iter().map(|x| *x))));
+                        let ind = if self.options.autoindent {
+                            self.get_indent(y)
+                        } else {
+                            VecDeque::new()
+                        };
+                        let begin = ind.len();
 
-                    self.goto((begin, y + 1));
-                },
-                Key::Escape => { // Escape key
-                    self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
-                },
-                Key::Backspace => { // Backspace
-                    if self.x() != 0 || self.y() != 0 {
-                        self.goto_previous();
-                        self.delete();
+                        self.text.insert(y + 1, VecDeque::from_iter(
+                                ind.into_iter().chain(second_part.iter().map(|x| *x))
+                        ));
+
+                        self.redraw_task = RedrawTask::LinesAfter(y);
+                        self.goto((begin, y + 1));
+                    },
+                    Key::Backspace => { // Backspace
+                        let prev = self.previous();
+                        if let Some((x, y)) = prev {
+                            //if self.x() != 0 || self.y() != 0 {
+                            self.goto((x + d, y));
+                            self.delete();
+                            //}
+                        }
+                    },
+                    Key::Char(c) => {
+                        self.text[y].insert(x + d, c);
+
+                        // TODO: Are there a better way than switching?
+                        match mode {
+                            InsertMode::Insert if x + 1 == self.text[y].len() => {                                self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
+                                    mode: InsertMode::Append,
+                                }));
+                            },
+                            _ => {},
+                        }
+
+                        self.redraw_task = RedrawTask::Lines(y..y + 1);
+                        let right = self.right(1);
+                        self.goto(right);
                     }
-                },
-                Key::Char(c) => {
-                    self.text[y].insert(x, c);
-                    self.goto_next();
+                    _ => {},
                 }
-                _ => {},
             },
             InsertMode::Replace => match k {
                 Key::Char(c) => {
                     if x == self.text[y].len() {
-                        self.goto_next();
-                        x = self.x();
-                        y = self.y();
+                        let next = self.next();
+                        if let Some(p) = next {
+                            self.goto(p);
+                            x = self.x();
+                            y = self.y();
+                        }
                     }
 
                     if self.text.len() != y {
                         if self.text[y].len() == x {
-                            self.goto_next();
+                            let next = self.next();
+                            if let Some(p) = next {
+                                self.goto(p);
+                            }
                         } else {
                             self.text[y][x] = c;
                         }
                     }
-                    self.goto_next();
+                    let next = self.next();
+                    if let Some(p) = next {
+                        self.goto(p);
+                    }
+                    self.redraw_task = RedrawTask::Lines(y..y + 1);
                 },
                 _ => {},
             },
-            _ => {},
         }
     }
 

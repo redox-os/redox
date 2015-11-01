@@ -73,6 +73,7 @@
     pub use core::result;
     pub use core::option;
     pub mod error;
+    pub mod debug;
 
     pub use alloc::boxed;
     pub use alloc::rc;

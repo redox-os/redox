@@ -94,6 +94,17 @@ pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd, offset as usize, whence)
 }
 
+#[repr(packed)]
+pub struct TS {
+    pub tv_sec: i64,
+    pub tv_nsec: i32,
+}
+
+//TODO: gettimeofday
+pub unsafe fn sys_nanosleep(req: *const TS, rem: *mut TS) -> usize{
+    syscall(SYS_NANOSLEEP, req as usize, rem as usize, 0)
+}
+
 pub unsafe fn sys_open(path: *const u8, flags: usize, mode: usize) -> usize {
     syscall(SYS_OPEN, path as usize, flags, mode)
 }

@@ -5,18 +5,28 @@ impl Editor {
     /// Redraw the window
     pub fn redraw(&mut self) {
         // TODO: Only draw when relevant for the window
-        let x = self.x();
-        let y = self.y();
+        let (mut pos_x, pos_y) = self.pos();
         // Redraw window
         self.window.set(Color::rgb(25, 25, 25));
 
-        self.window.rect(8 * (x - self.scroll_y) as isize,
-                         16 * (y - self.scroll_x) as isize,
+        pos_x += self.delta();
+
+        let h = self.window.height();
+        let w = self.window.width();
+        let mode = self.cursor().mode;
+
+        if self.options.line_marker {
+            self.window.rect(0, (pos_y - self.scroll_y) as isize * 16, w, 16, Color::rgb(45, 45, 45));
+        }
+
+        self.window.rect(8 * (pos_x - self.scroll_x) as isize,
+                         16 * (pos_y - self.scroll_y) as isize,
                          8,
                          16,
                          Color::WHITE);
 
         let mut string = false;
+
 
         for (y, row) in self.text.iter().enumerate() {
             for (x, &c) in row.iter().enumerate() {
@@ -40,23 +50,32 @@ impl Editor {
 
                 let c = if c == '\t' { ' ' } else { c };
 
-                if self.x() == x && self.y() == y {
-                    self.window.char(8 * (x - self.scroll_y) as isize,
-                                     16 * (y - self.scroll_x) as isize,
+                if pos_x == x && pos_y == y {
+                    self.window.char(8 * (x - self.scroll_x) as isize,
+                                     16 * (y - self.scroll_y) as isize,
                                      c,
                                      Color::rgb(color.0 / 3, color.1 / 3, color.2 / 3));
                 } else {
-                    self.window.char(8 * (x - self.scroll_y) as isize,
-                                     16 * (y - self.scroll_x) as isize,
+                    self.window.char(8 * (x - self.scroll_x) as isize,
+                                     16 * (y - self.scroll_y) as isize,
                                      c,
                                      Color::rgb(color.0, color.1, color.2));
                 }
             }
         }
+
+        self.redraw_task = RedrawTask::Null;
+
+
+        self.redraw_status_bar();
+        self.window.sync();
+    }
+
+    /// Redraw the status bar
+    pub fn redraw_status_bar(&mut self) {
         let h = self.window.height();
         let w = self.window.width();
         let mode = self.cursor().mode;
-
         self.window.rect(0, h as isize - 18 - {
             if mode == Mode::Primitive(PrimitiveMode::Prompt) {
                 18
@@ -65,26 +84,43 @@ impl Editor {
             }
         }, w, 18, Color::rgba(74, 74, 74, 255));
 
-        for (n, c) in (if self.status_bar.mode.len() > w / (8 * 4) {
-            self.status_bar.mode.chars().take(w / (8 * 4) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
-        } else {
-            self.status_bar.mode.chars().collect()
-        }).into_iter().enumerate() {
-
-            self.window.char(n as isize * 8, h as isize - 16 - 1 - {
-                if mode == Mode::Primitive(PrimitiveMode::Prompt) {
-                    16 + 1
-                } else {
-                    0
-                }
-            }, c, Color::WHITE);
-        }
+        let sb_mode = self.status_bar.mode.clone();
+        status_bar(self, sb_mode, 0, 4);
+        let sb_file = self.status_bar.file.clone();
+        status_bar(self, sb_file, 1, 4);
+        let sb_cmd = self.status_bar.cmd.clone();
+        status_bar(self, sb_cmd, 2, 4);
+        let sb_msg = self.status_bar.msg.clone();
+        status_bar(self, sb_msg, 3, 4);
 
         for (n, c) in self.prompt.chars().enumerate() {
             self.window.char(n as isize * 8, h as isize - 16 - 1, c, Color::WHITE);
         }
 
         self.window.sync();
+    }
+}
+
+fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
+
+    let h = editor.window.height();
+    let w = editor.window.width();
+    let (x, y) = editor.pos();
+    let mode = editor.cursor().mode;
+
+    for (n, c) in (if text.len() > w / (8 * b) {
+        text.chars().take(w / (8 * b) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
+    } else {
+        text.chars().collect()
+    }).into_iter().enumerate() {
+
+        editor.window.char(((w * a) / b) as isize + (n as isize * 8), h as isize - 16 - 1 - {
+            if mode == Mode::Primitive(PrimitiveMode::Prompt) {
+                16 + 1 + 1
+            } else {
+                0
+            }
+        }, c, Color::WHITE);
     }
 }
 
@@ -107,7 +143,7 @@ impl StatusBar {
             mode: "Normal".to_string(),
             file: String::new(),
             cmd: String::new(),
-            msg: String::new(),
+            msg: "Welcome to Sodium!".to_string(),
         }
     }
 }

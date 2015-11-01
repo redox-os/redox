@@ -1,6 +1,6 @@
 //! Types convertable to integers
 
-use collections::string::{String, ToString};
+use collections::string::ToString;
 
 /// Parse the string to a integer using a given radix
 pub trait ToNum {
@@ -10,7 +10,7 @@ pub trait ToNum {
     fn to_num_signed(&self) -> isize;
 }
 
-impl ToNum for String {
+impl ToNum for str {
     fn to_num_radix(&self, radix: usize) -> usize {
         if radix == 0 {
             return 0;

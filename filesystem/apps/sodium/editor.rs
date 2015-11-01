@@ -1,7 +1,7 @@
 use super::*;
 use redox::*;
 
-/// The state of the editor
+/// The current state of the editor, including the file, the cursor, the scrolling info, etc.
 pub struct Editor {
     /// The current cursor
     pub current_cursor: u8,
@@ -15,19 +15,22 @@ pub struct Editor {
     pub scroll_y: usize,
     /// The window
     pub window: Window,
-    /// The key state
-    pub key_state: KeyState,
     /// The status bar
     pub status_bar: StatusBar,
     /// The prompt
     pub prompt: String,
     /// The settings
     pub options: Options,
+    /// The key state
+    pub key_state: KeyState,
+    /// Redraw
+    pub redraw_task: RedrawTask,
 }
 
 impl Editor {
     /// Create new default state editor
     pub fn new() -> Editor {
+
 
         let window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,
@@ -37,23 +40,25 @@ impl Editor {
 
         let mut editor = Editor {
             current_cursor: 0,
-            cursors: Vec::new(),
+            cursors: vec![Cursor::new()],
             text: VecDeque::new(),
             scroll_x: 0,
             scroll_y: 0,
             window: *window,
-            key_state: KeyState::new(),
             status_bar: StatusBar::new(),
             prompt: String::new(),
             options: Options::new(),
+            key_state: KeyState::new(),
+            redraw_task: RedrawTask::Null,
         };
 
-        editor.cursors.push(Cursor::new());
         editor.text.push_back(VecDeque::new());
 
+
         editor.redraw();
+
         loop {
-            let inp = editor.next_inst();
+            let inp = editor.get_inst();
             editor.exec(inp);
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();
@@ -67,7 +72,7 @@ impl Editor {
         self.text[n].as_slices().0
     }
 
-    /// Get the leading whitespaces
+    /// Get the leading whitespaces of the current line. Used for autoindenting.
     pub fn get_indent(&self, n: usize) -> VecDeque<char> {
         let mut ind = VecDeque::new();
         let ln = self.get_ln(n);

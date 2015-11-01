@@ -1,6 +1,7 @@
 use core::usize;
 
-use io::{Read, Write, Seek, SeekFrom};
+use io::{stdout, Read, Write, Seek, SeekFrom};
+use str;
 use string::{String, ToString};
 use vec::Vec;
 
@@ -26,7 +27,7 @@ impl File {
             let fd = sys_open((path.to_string() + "\0").as_ptr(), O_RDONLY, 0);
             if fd == usize::MAX {
                 None
-            }else{
+            } else {
                 Some(File {
                     fd: fd
                 })
@@ -40,7 +41,7 @@ impl File {
             let fd = sys_open((path.to_string() + "\0").as_ptr(), O_WRONLY | O_CREAT | O_TRUNC, 0);
             if fd == usize::MAX {
                 None
-            }else{
+            } else {
                 Some(File {
                     fd: fd
                 })
@@ -80,8 +81,8 @@ impl File {
         unsafe { sys_fsync(self.fd) == 0 }
     }
 
-    pub fn set_len(&mut self, size: u64) -> bool {
-        unsafe { sys_ftruncate(self.fd, size as usize) == 0 }
+    pub fn set_len(&mut self, size: usize) -> bool {
+        unsafe { sys_ftruncate(self.fd, size) == 0 }
     }
 }
 
@@ -135,5 +136,63 @@ impl Drop for File {
         unsafe {
             sys_close(self.fd);
         }
+    }
+}
+
+pub struct DirEntry {
+    path: String
+}
+
+impl DirEntry {
+    pub fn path(&self) -> &str {
+        &self.path
+    }
+}
+
+pub struct ReadDir {
+    file: File
+}
+
+impl Iterator for ReadDir {
+    type Item = DirEntry;
+    fn next(&mut self) -> Option<DirEntry> {
+        let mut path = String::new();
+        let mut buf: [u8; 1] = [0; 1];
+        loop {
+            match self.file.read(&mut buf) {
+                Some(0) => break,
+                Some(count) => {
+                    if buf[0] == 10 {
+                        break;
+                    } else {
+                        path.push_str(unsafe { str::from_utf8_unchecked(&buf[.. count]) });
+                    }
+                },
+                None => break
+            }
+        }
+        if path.is_empty() {
+            None
+        }else {
+            Some(DirEntry {
+                path: path
+            })
+        }
+    }
+}
+
+pub fn read_dir(path: &str) -> Option<ReadDir> {
+    let file_option = if path.ends_with('/') {
+        File::open(path)
+    } else {
+        File::open(&(path.to_string() + "/"))
+    };
+
+    if let Some(file) = file_option {
+        Some(ReadDir{
+            file: file
+        })
+    } else {
+        None
     }
 }

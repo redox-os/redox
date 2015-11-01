@@ -51,8 +51,7 @@ impl Display {
                         }
                 }
             }
-            //ret.set(Color::rgb(0, 0, 0));
-            ret.set(Color::rgb(128, 128, 128));
+            ret.set(Color::rgb(0, 0, 0));
             ret.flip();
 
             ret

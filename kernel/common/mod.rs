@@ -1,6 +1,7 @@
 /// Context
 pub mod context;
 /// Debug
+#[macro_use]
 pub mod debug;
 /// ELF File Support
 pub mod elf;
@@ -26,3 +27,7 @@ pub mod scheduler;
 pub mod time;
 /// String to number
 pub mod to_num;
+/// A module for parsing paths
+pub mod parse_path;
+/// A module for parsing IP related string 
+pub mod parse_ip;

@@ -9,6 +9,7 @@ use self::dsl_dir::DslDirPhys;
 use self::dvaddr::DVAddr;
 use self::from_bytes::FromBytes;
 use self::uberblock::Uberblock;
+use self::vdev::VdevLabel;
 
 pub mod block_ptr;
 pub mod dnode;
@@ -19,6 +20,7 @@ pub mod from_bytes;
 pub mod lzjb;
 pub mod nvpair;
 pub mod nvstream;
+pub mod space_map;
 pub mod uberblock;
 pub mod vdev;
 pub mod xdr;
@@ -73,6 +75,19 @@ impl ZfsReader {
     pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Option<T> {
         let data = self.read_block(block_ptr);
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
+    }
+
+    pub fn read_vdev_label(&mut self) {
+        match VdevLabel::from_bytes(&self.read(0, 256 * 2)) {
+            Some(ref mut vdev_label) => {
+                let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
+                let nv_list = nvstream::decode_nv_list(&mut xdr);
+                println!("Got nv_list:\n{:?}", nv_list);
+            },
+            None => {
+                println!("Couldn't read vdev_label");
+            },
+        }
     }
 
     pub fn uber(&mut self) -> Option<Uberblock> {
@@ -293,11 +308,11 @@ impl ZFS {
                                             .map(|x| {
                                                 if x.value & 0xF000000000000000 == 0x4000000000000000 {
                                                     x.name().unwrap().to_string() + "/"
-                                                }else{
+                                                } else {
                                                     x.name().unwrap().to_string()
                                                 }
                                             })
-                                            .take_while(|x| x.len() > 0)
+                                            .take_while(|x| !x.is_empty())
                                             .collect();
                             *result = Some(ls);
                             return Some(ZfsTraverse::Done);
@@ -405,7 +420,7 @@ impl Scheme {
                 if let Some(list) = zfs.ls(&path) {
                     let mut data: Vec<u8> = Vec::new();
                     for entry in list {
-                        if data.len() > 0 {
+                        if !data.is_empty() {
                             data.push(10);
                         }
                         data.push_all(entry.as_bytes());
@@ -417,7 +432,7 @@ impl Scheme {
                         seek: 0
                     });
                 }
-            }else{
+            } else {
                 write!(io::stdout(), "ZFS Read File {}\n", path);
                 if let Some(data) = zfs.read_file(&path) {
                     write!(io::stdout(), "ZFS Read File Data {}\n", data.len());

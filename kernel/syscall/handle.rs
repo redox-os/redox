@@ -9,6 +9,7 @@ use common::context::*;
 use common::debug;
 use common::memory;
 use common::scheduler;
+use common::time::Duration;
 
 use drivers::pio::*;
 
@@ -233,7 +234,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_exit(status: isize) {
+pub unsafe fn do_sys_exit(_: isize) {
     context_exit();
 }
 
@@ -255,7 +256,7 @@ pub unsafe fn do_sys_fork() -> usize {
     let ret;
     if context_i == parent_i {
         ret = 0;
-    }else{
+    } else {
         ret = context_i;
     }
 
@@ -313,6 +314,35 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
                     scheduler::end_no_ints(reenable);
 
                     if file.resource.sync() {
+                        ret = 0;
+                    }
+
+                    scheduler::start_no_ints();
+
+                    break;
+                }
+            }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
+        for i in 0..current.files.len() {
+            if let Some(mut file) = current.files.get_mut(i) {
+                if file.fd == fd {
+                    scheduler::end_no_ints(reenable);
+
+                    if file.resource.truncate(len) {
                         ret = 0;
                     }
 
@@ -387,7 +417,28 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
+#[repr(packed)]
+pub struct TS {
+    pub tv_sec: i64,
+    pub tv_nsec: i32,
+}
+
+pub unsafe fn do_sys_nanosleep(req: *const TS, rem: *mut TS) -> usize{
+    if req as usize > 0 {
+        Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
+
+        if rem as usize > 0 {
+            (*rem).tv_sec = 0;
+            (*rem).tv_nsec = 0;
+        }
+
+        0
+    }else{
+        usize::MAX
+    }
+}
+
+pub unsafe fn do_sys_open(path: *const u8) -> usize {
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
         len += 1;
@@ -405,7 +456,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: isize, mode: isize) -> usize {
             if path_str.starts_with('/') {
                 let i = current.cwd.find(':').unwrap_or(0) + 1;
                 path_str = current.cwd[.. i].to_string() + &path_str;
-            }else{
+            } else {
                 path_str = current.cwd.clone() + &path_str;
             }
         }
@@ -529,10 +580,12 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         SYS_FPATH => eax = do_sys_fpath(ebx, ecx as *mut u8, edx),
         //TODO: fstat
         SYS_FSYNC => eax = do_sys_fsync(ebx),
+        SYS_FTRUNCATE => eax = do_sys_ftruncate(ebx, ecx),
         SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut TV),
         //TODO: link
         SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
-        SYS_OPEN => eax = do_sys_open(ebx as *const u8, ecx as isize, edx as isize),
+        SYS_NANOSLEEP => eax = do_sys_nanosleep(ebx as *const TS, ecx as *mut TS),
+        SYS_OPEN => eax = do_sys_open(ebx as *const u8), //ecx as isize, edx as isize),
         SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
         //TODO: unlink
         SYS_WRITE => eax = do_sys_write(ebx, ecx as *mut u8, edx),
@@ -554,6 +607,8 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
             debug::d(", ");
             debug::dh(edx as usize);
             debug::dl();
+
+            eax = usize::MAX;
         }
     }
 

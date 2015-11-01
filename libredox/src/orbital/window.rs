@@ -42,8 +42,6 @@ pub struct Window {
 }
 
 impl Window {
-    // TODO: revert to old style with 5 parameters
-    // LazyOxen
     /// Create a new window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
         let point = Point::new(x, y);
@@ -109,10 +107,6 @@ impl Window {
         }
     }
 
-    // TODO: event queue
-    // LazyOxen
-    // this isn't really polling, but keeping compatible with
-    // current stuff
     /// Poll the window (new)
     pub fn poll(&mut self) -> Option<Event> {
         loop {
@@ -241,6 +235,20 @@ impl Window {
         self.events.push(key_event.to_event());
     }
 
+    fn on_window_decoration(&self, x: isize, y: isize) -> bool {
+        !self.minimized && x >= -2 &&
+            x < self.size.width as isize + 4 &&
+            y >= -18 &&
+            y < 0
+    }
+
+    fn on_window_body(&self, x: isize, y: isize) -> bool {
+        !self.minimized && x >= 0 &&
+            x < self.size.width as isize &&
+            y >= 0 &&
+            y < self.size.height as isize
+    }
+
     /// Called on mouse movement
     pub fn on_mouse(&mut self, orig_mouse_event: MouseEvent, allow_catch: bool) -> bool {
         let mut mouse_event = orig_mouse_event;
@@ -252,35 +260,33 @@ impl Window {
 
         if allow_catch {
             if mouse_event.left_button {
-                if !self.minimized && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 &&
-                   mouse_event.y < self.size.height as isize + 2 {
+                if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
-                }
-
-                if !self.last_mouse_event.left_button && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 && mouse_event.y < 0 {
-                    self.dragging = true;
+                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
+                    if !self.last_mouse_event.left_button {
+                        self.dragging = true;
+                    }
                 }
             } else {
                 self.dragging = false;
             }
 
             if mouse_event.right_button {
-                if !self.minimized && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 &&
-                   mouse_event.y < self.size.height as isize + 2 {
+                if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
+                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                    caught = true;
+                    if !self.last_mouse_event.right_button {
+                        self.minimized = !self.minimized;
+                    }
                 }
+            }
 
-                if !self.last_mouse_event.right_button && mouse_event.x >= -2 &&
-                   mouse_event.x < self.size.width as isize + 4 &&
-                   mouse_event.y >= -18 && mouse_event.y < 0 {
-                    self.minimized = !self.minimized;
+            if mouse_event.middle_button {
+                if self.on_window_body(mouse_event.x, mouse_event.y) {
+                    caught = true;
+                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
                 }
             }

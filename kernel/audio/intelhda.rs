@@ -58,7 +58,7 @@ impl Resource for IntelHDAResource {
         URL::from_str("hda://")
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         None
     }
 
@@ -197,7 +197,7 @@ impl Resource for IntelHDAResource {
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
         None
     }
 
@@ -218,7 +218,7 @@ impl KScheme for IntelHDA {
         "hda"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         Some(box IntelHDAResource { base: self.base })
     }
 

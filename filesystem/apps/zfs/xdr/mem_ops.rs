@@ -26,7 +26,7 @@ impl<'a> XdrOps for MemOps<'a> {
             Err(XdrError)
         } else {
             let d: &i64 = unsafe { mem::transmute(&self.buffer[self.pos]) };
-            let val_d = i64::from_be(*d);
+            //let val_d = i64::from_be(*d);
             self.pos += 8;
             Ok(i64::from_be(*d))
         }
@@ -69,7 +69,7 @@ impl<'a> XdrOps for MemOps<'a> {
     }
 
     fn get_bytes(&mut self, bytes: &mut [u8]) -> XdrResult<()> {
-        if bytes.len() == 0 {
+        if bytes.is_empty() {
             return Ok(());
         }
         if self.pos >= self.buffer.len() {
@@ -109,9 +109,6 @@ impl<'a> XdrOps for MemOps<'a> {
     fn set_pos(&mut self, new_pos: usize) -> XdrResult<()> {
         self.pos = new_pos;
         Ok(())
-    }
-
-    fn destroy(&mut self) {
     }
 }
 

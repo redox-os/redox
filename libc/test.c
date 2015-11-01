@@ -22,13 +22,13 @@ int main(int argc, char ** argv){
                 printf("Fork Parent\n");
             }else if(pid > 0){
                 printf("Fork Child %d\n", pid);
-            }else{
+            } else {
                 printf("Fork Failed\n");
             }
-        }else{
+        } else {
             printf("Malloc Failed\n");
         }
-    }else{
+    } else {
         printf("Gettimeofday Failed\n");
     }
     return 0;

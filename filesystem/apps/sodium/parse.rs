@@ -2,19 +2,20 @@ use super::*;
 use redox::*;
 
 #[derive(Copy, Clone)]
-/// An instruction
-pub struct Inst(pub Parameter, pub Key);
+/// An instruction, i.e. a command and a numeral parameter
+pub struct Inst(pub Parameter, pub Cmd);
 
-/// A numeral parameter
+/// A numeral parameter, i.e. a number (or nothing) given before a command (toghether making an
+/// instruction)
 #[derive(Copy, Clone)]
 pub enum Parameter {
-    /// An integer
+    /// An integer as parameter
     Int(usize),
-    /// Not given
+    /// Not given (the user have not defined any numeral parameter to this command)
     Null,
 }
 impl Parameter {
-    /// Either unwrap the Int(n) or fallback to a given value
+    /// Either unwrap the Int(n) to n or fallback to a given value
     #[inline]
     pub fn or(self, fallback: usize) -> usize {
         if let Parameter::Int(n) = self {
@@ -31,93 +32,109 @@ impl Parameter {
 }
 
 impl Editor {
-    /// Get the next instruction
-    pub fn next_inst(&mut self) -> Inst {
-        let mut n = 0;
-        let mut unset = true;
-
+    /// Get the next character input. Useful for commands taking a character as post-parameter,
+    /// such as r (replace).
+    pub fn get_char(&mut self) -> char {
         loop {
-            if let EventOption::Key(k) = self.window.poll().unwrap_or(Event::new()).to_option() {
-                let c = k.character;
-                match c {
-                    '\0' => {
-                        return Inst(Parameter::Null, match k.scancode {
-                            K_ALT => Key::Alt(k.pressed),
-                            K_CTRL => Key::Ctrl(k.pressed),
-                            K_LEFT_SHIFT | K_RIGHT_SHIFT => Key::Shift(k.pressed),
-                            s if k.pressed => match s {
-                                K_BKSP => Key::Backspace,
-                                K_LEFT => Key::Left,
-                                K_RIGHT => Key::Right,
-                                K_UP => Key::Up,
-                                K_DOWN => Key::Down,
-                                K_TAB => Key::Tab,
-                                K_ESC => Key::Escape,
-                                _ => Key::Unknown(s),
-                            },
-                            s => Key::Unknown(s),
-                        })
-                    }
-                    _ => if k.pressed {
-                        match self.cursor().mode {
-                            Mode::Primitive(_) => {
-                                return Inst(Parameter::Null, Key::Char(c));
-                            },
-                            Mode::Command(_) => {
-                                n = match c {
-                                    '0' => {
-                                        unset = false;
-                                        n * 10
-                                    },
-                                    '1' => {
-                                        unset = false;
-                                        n * 10 + 1
-                                    },
-                                    '2' => {
-                                        unset = false;
-                                        n * 10 + 2
-                                    },
-                                    '3' => {
-                                        unset = false;
-                                        n * 10 + 3
-                                    },
-                                    '4' => {
-                                        unset = false;
-                                        n * 10 + 4
-                                    },
-                                    '5' => {
-                                        unset = false;
-                                        n * 10 + 5
-                                    },
-                                    '6' => {
-                                        unset = false;
-                                        n * 10 + 6
-                                    },
-                                    '7' => {
-                                        unset = false;
-                                        n * 10 + 7
-                                    },
-                                    '8' => {
-                                        unset = false;
-                                        n * 10 + 8
-                                    },
-                                    '9' => {
-                                        unset = false;
-                                        n * 10 + 9
-                                    },
-                                    _   => {
-
-                                        return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, Key::Char(c));
-                                    }
-                                }
-                            }
-                        }
-
-                    },
+            if let EventOption::Key(k) = self.window.poll()
+                                         .unwrap_or(Event::new())
+                                         .to_option() {
+                if let Some(Key::Char(c)) = self.key_state.feed(k) {
+                    self.status_bar.cmd.push(c);
+                    self.redraw_task = RedrawTask::StatusBar;
+                    return c;
                 }
             }
         }
+    }
 
-        unreachable!()
+    /// Get the next instruction, i.e. the next input of a command together with a numeral
+    /// parameter.
+    pub fn get_inst(&mut self) -> Inst {
+        let mut n = 0;
+        let mut unset = true;
+
+        let mut ctrl = false;
+        let mut alt = false;
+        let mut shift = false;
+
+        let mut key = Key::Null;
+        self.status_bar.cmd = String::new();
+
+//        self.status_bar.cmd = String::new();
+        loop {
+            if let EventOption::Key(key_event) = self.window.poll().unwrap_or(Event::new()).to_option() {
+
+                if let Some(k) = self.key_state.feed(key_event) {
+                    let c = k.to_char();
+                    self.status_bar.cmd.push(c);
+                    self.redraw_status_bar();
+
+                    match self.cursor().mode {
+                        Mode::Primitive(_) => {
+                            key = k;
+                        },
+                        Mode::Command(_) => {
+                            n = match c {
+                                '0' => {
+                                    unset = false;
+                                    n * 10
+                                },
+                                '1' => {
+                                    unset = false;
+                                    n * 10 + 1
+                                },
+                                '2' => {
+                                    unset = false;
+                                    n * 10 + 2
+                                },
+                                '3' => {
+                                    unset = false;
+                                    n * 10 + 3
+                                },
+                                '4' => {
+                                    unset = false;
+                                    n * 10 + 4
+                                },
+                                '5' => {
+                                    unset = false;
+                                    n * 10 + 5
+                                },
+                                '6' => {
+                                    unset = false;
+                                    n * 10 + 6
+                                },
+                                '7' => {
+                                    unset = false;
+                                    n * 10 + 7
+                                },
+                                '8' => {
+                                    unset = false;
+                                    n * 10 + 8
+                                },
+                                '9' => {
+                                    unset = false;
+                                    n * 10 + 9
+                                },
+                                _   => {
+
+                                    key = k;
+                                    n
+                                }
+                            };
+                        }
+
+                    }
+                }
+            }
+            if key != Key::Null {
+                return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, {
+                    Cmd {
+                        key: key,
+                    }
+                });
+            }
+        }
+
     }
 }

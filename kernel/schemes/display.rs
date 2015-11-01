@@ -11,17 +11,15 @@ use schemes::{KScheme, Resource, ResourceSeek, URL};
 pub struct DisplayScheme;
 
 // Should there only be one display per session?
+/// A display resource
 pub struct DisplayResource {
+    /// The display
     pub display: Box<Display>,
+    /// Seek
     pub seek: usize,
 }
 
 impl Resource for DisplayResource {
-    // can't think of when you would wish to duplicate a display
-    fn dup(&self) -> Option<Box<Resource>> {
-        None
-    }
-
     /// Return the URL for display resource
     fn url(&self) -> URL {
         return URL::from_string(&("display://".to_string()));
@@ -40,7 +38,6 @@ impl Resource for DisplayResource {
             }
         }
     }
-
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let display = &mut self.display;
@@ -69,7 +66,7 @@ impl Resource for DisplayResource {
 
     fn sync(&mut self) -> bool {
         self.display.flip();
-        return true;
+        true
     }
 }
 
@@ -78,7 +75,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         // TODO: ponder these things:
         // - should display:// be the only only valid url
         //      for this scheme?

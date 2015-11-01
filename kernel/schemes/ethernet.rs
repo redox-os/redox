@@ -7,11 +7,12 @@ use core::mem;
 
 use common::debug;
 use common::to_num::ToNum;
+use common::parse_ip::*;
 
 use network::common::*;
 use network::ethernet::*;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, URL};
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -42,13 +43,13 @@ impl Resource for EthernetResource {
         URL::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ethernet://\n");
-        return None;
+        None
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
-        if self.data.len() > 0 {
+        if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
@@ -86,17 +87,13 @@ impl Resource for EthernetResource {
             },
             data: data,
         }.to_bytes()) {
-            Some(_) => return Some(buf.len()),
-            None => return None,
+            Some(_) => Some(buf.len()),
+            None => None,
         }
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return self.network.sync();
+        self.network.sync()
     }
 }
 
@@ -109,14 +106,14 @@ impl KScheme for EthernetScheme {
 
     fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
         if let Some(mut network) = URL::from_str("network://").open() {
-            if url.path().len() > 0 {
-                let ethertype = url.path().to_num_radix(16) as u16;
+            if !url.reference().is_empty() {
+                let ethertype = url.reference().to_num_radix(16) as u16;
 
-                if url.host().len() > 0 {
+                if !parse_host(url.reference()).is_empty() {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),
-                        peer_addr: MACAddr::from_string(&url.host()),
+                        peer_addr: MACAddr::from_string(&parse_host(url.reference()).to_string()),
                         ethertype: ethertype,
                     });
                 } else {

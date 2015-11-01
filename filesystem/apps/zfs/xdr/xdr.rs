@@ -41,9 +41,6 @@ pub trait XdrOps {
     // Buf quick ptr to buffered data
     //fn inline(&mut self, len: usize) -> *mut i32;
 
-    /// Free privates of this xdr_stream
-    fn destroy(&mut self);
-
     // TODO: Not sure if we'll need this?
     // Change, retrieve client info
     //fn control(&mut self, req: isize, op: void *);

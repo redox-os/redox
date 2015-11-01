@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use common::context::context_switch;
 use common::scheduler;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, URL};
 
 use syscall::handle;
 
@@ -24,7 +24,7 @@ impl Resource for DebugResource {
             loop {
                 let reenable = scheduler::start_no_ints();
 
-                if (*::debug_command).len() > 0 {
+                if !(*::debug_command).is_empty() {
                     break;
                 }
 
@@ -37,7 +37,7 @@ impl Resource for DebugResource {
 
             //TODO: Unicode
             let mut i = 0;
-            while i < buf.len() && (*::debug_command).as_mut_vec().len() > 0 {
+            while i < buf.len() && !(*::debug_command).as_mut_vec().is_empty() {
                 buf[i] = (*::debug_command).as_mut_vec().remove(0);
                 i += 1;
             }
@@ -57,12 +57,8 @@ impl Resource for DebugResource {
         return Some(buf.len());
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        return None;
-    }
-
     fn sync(&mut self) -> bool {
-        return true;
+        true
     }
 }
 
@@ -73,7 +69,7 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
         Some(box DebugResource)
     }
 }

@@ -99,7 +99,7 @@ impl Session {
                             suspend_display: false,
                     };
                     Some(ret)
-                } else {
+                } else { // TODO: some kind of diagnostics would be nice...
                     None
                 }
             } else {
@@ -116,6 +116,7 @@ impl Session {
         self.redraw = true;
     }
 
+    /// Remove a window
     pub unsafe fn remove_window(&mut self, remove_window_ptr: *mut Window) {
         let mut i = 0;
         while i < self.windows.len() {
@@ -157,7 +158,7 @@ impl Session {
     }
 
     fn on_key(&mut self, key_event: KeyEvent) {
-        if self.windows.len() > 0 {
+        if !self.windows.is_empty() {
             match self.windows.get(self.windows.len() - 1) {
                 Some(window_ptr) => {
                     unsafe {
@@ -190,16 +191,13 @@ impl Session {
 
     fn on_mouse(&mut self, mouse_event: MouseEvent) {
         let mut catcher = -1;
+        let num_windows = self.windows.len();
 
         if mouse_event.y >= self.display.height as isize - 32 {
             if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
                 for package in self.packages.iter() {
-                    //if package.icon.data.len() > 0 {
-                    // TODO: replace the width check with something else
-                    //       maybe has_data property
-                    // LazyOxen
-                    if package.icon.width() > 0 {
+                    if package.icon.data.is_empty() {
                         if mouse_event.x >= x &&
                            mouse_event.x < x + package.icon.width() as isize {
                             unsafe { sys_execve((package.binary.to_string() + "\0").as_ptr()) };
@@ -210,7 +208,7 @@ impl Session {
 
                 let mut chars = 32;
                 while chars > 4 &&
-                      (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
+                      (x as usize + (chars * 8 + 3 * 4) * num_windows) >
                       self.display.width + 32 {
                     chars -= 1;
                 }
@@ -219,12 +217,12 @@ impl Session {
                 for window_ptr in self.windows_ordered.iter() {
                     let w = (chars*8 + 2*4) as usize;
                     if mouse_event.x >= x && mouse_event.x < x + w as isize {
-                        for j in 0..self.windows.len() {
+                        for j in 0..num_windows {
                             match self.windows.get(j) {
                                 Some(catcher_window_ptr) =>
                                     if catcher_window_ptr == window_ptr {
                                     unsafe {
-                                        if j == self.windows.len() - 1 {
+                                        if j == num_windows - 1 {
                                             (**window_ptr).minimized = !(**window_ptr).minimized;
                                         } else {
                                             catcher = j as isize;
@@ -243,8 +241,8 @@ impl Session {
                 }
             }
         } else {
-            for reverse_i in 0..self.windows.len() {
-                let i = self.windows.len() - 1 - reverse_i;
+            for reverse_i in 0..num_windows {
+                let i = num_windows - 1 - reverse_i;
                 match self.windows.get(i) {
                     Some(window_ptr) => unsafe {
                         if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
@@ -258,9 +256,9 @@ impl Session {
             }
         }
 
-        if catcher >= 0 && catcher < self.windows.len() as isize - 1 {
-            let removed_window = self.windows.remove(catcher as usize);
-            self.windows.push(removed_window);
+        if catcher >= 0 && catcher < num_windows as isize - 1 {
+            let window_ptr = self.windows.remove(catcher as usize);
+            self.windows.push(window_ptr);
         }
 
         self.last_mouse_event = mouse_event;
@@ -272,11 +270,11 @@ impl Session {
         self.redraw = !self.suspend_display;
     }
 
+    /// Redraw screen
     pub unsafe fn redraw(&mut self) {
         if self.redraw && !self.suspend_display {
             self.display.set(Color::rgb(75, 163, 253));
-            //LazyOxen - replace width check
-            if self.background.width() > 0 {
+            if self.background.data.is_empty() {
                 self.background.draw(&self.display,
                                      Point::new((self.display.width as isize -
                                                  self.background.width() as isize) /
@@ -302,14 +300,17 @@ impl Session {
 
             let mut x = 0;
             for package in self.packages.iter() {
-                //LazyOxen - replace width check
-                if package.icon.width() > 0 {
+                if package.icon.data.is_empty()  {
                     let y = self.display.height as isize - package.icon.height() as isize;
                     if self.mouse_point.y >= y && self.mouse_point.x >= x &&
                        self.mouse_point.x < x + package.icon.width() as isize {
                         self.display.rect(Point::new(x, y),
                                           package.icon.size(),
                                           Color::rgba(128, 128, 128, 128));
+
+                        self.display.rect(Point::new(x, y - 16),
+                                          Size::new(package.name.len() * 8, 16),
+                                          Color::rgba(0, 0, 0, 128));
 
                         let mut c_x = x;
                         for c in package.name.chars() {
@@ -349,8 +350,7 @@ impl Session {
                 x += 8;
             }
 
-            //LazyOxen - replace width check
-            if self.cursor.width() > 0 {
+            if self.cursor.data.is_empty() {
                 self.display.image_alpha(self.mouse_point,
                                          self.cursor.data_ptr(),
                                          self.cursor.size());

@@ -1,19 +1,22 @@
 export PATH := build/prefix/bin:$(PATH)
 
+all: sdl.bin sdl_ttf.bin test.bin
+
+sdl.bin: sdl.c program.ld
+	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $< -lSDL
+
+sdl_ttf.bin: sdl_ttf.c program.ld
+	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $< -lSDL_ttf -lSDL_image -lSDL -lfreetype -lpng -lz -lm
+
 test.bin: test.c program.ld
 	i386-elf-redox-gcc -Os -static -T program.ld -o $@ $<
 
-test.list: test.bin
-	i386-elf-redox-objdump -C -M intel -d $< > $@
-
-sdl.bin: sdl.c program.ld SDL-1.2.15/build/.libs/libSDL.a
-	i386-elf-redox-gcc -Os -static -T program.ld -I SDL-1.2.15/include/ -o $@ $< SDL-1.2.15/build/.libs/libSDL.a
+install: all
+	mkdir -p ../filesystem/libc/
+	cp *.bin ../filesystem/libc/
 
 libc:
-	./setup.sh
-
-SDL-1.2.15/build/.libs/libSDL.a:
-	./libsdl.sh
+	./libc.sh
 
 clean:
 	rm -f *.bin *.list *.o
