@@ -117,7 +117,44 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     ret
 }
 
-//TODO: chdir
+pub unsafe fn do_sys_chdir(path: *const u8) -> usize {
+    let mut len = 0;
+    while *path.offset(len as isize) > 0 {
+        len += 1;
+    }
+
+    let mut path_str = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
+
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    if path_str.find(':').is_none() {
+        let contexts = &*contexts_ptr;
+        if let Some(current) = contexts.get(context_i) {
+            if path_str.starts_with('/') {
+                let i = current.cwd.find(':').unwrap_or(0) + 1;
+                path_str = current.cwd[.. i].to_string() + &path_str;
+            } else {
+                path_str = current.cwd.clone() + &path_str;
+            }
+        }
+    }
+
+    let contexts = &mut *contexts_ptr;
+    if let Some(mut current) = contexts.get_mut(context_i) {
+        current.cwd = path_str;
+        ret = 0;
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_clone() -> usize {
+    usize::MAX
+}
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
     let mut ret = usize::MAX;
@@ -149,6 +186,32 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 
                 break;
             }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    if tp as usize > 0 {
+        match clock {
+            CLOCK_REALTIME => {
+                (*tp).tv_sec = ::clock_realtime.secs;
+                (*tp).tv_nsec = ::clock_realtime.nanos;
+                ret = 0;
+            },
+            CLOCK_MONOTONIC => {
+                (*tp).tv_sec = ::clock_monotonic.secs;
+                (*tp).tv_nsec = ::clock_monotonic.nanos;
+                ret = 0;
+            },
+            _ => ()
         }
     }
 
@@ -359,25 +422,6 @@ pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
     ret
 }
 
-#[repr(packed)]
-pub struct TV {
-    pub tv_sec: i64,
-    pub tv_usec: i32,
-}
-
-pub unsafe fn do_sys_gettimeofday(tv: *mut TV) -> usize {
-    let reenable = scheduler::start_no_ints();
-
-    if tv as usize > 0 {
-        (*tv).tv_sec = ::clock_realtime.secs;
-        (*tv).tv_usec = ::clock_realtime.nanos/1000;
-    }
-
-    scheduler::end_no_ints(reenable);
-
-    0
-}
-
 //TODO: link
 
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
@@ -417,13 +461,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-#[repr(packed)]
-pub struct TS {
-    pub tv_sec: i64,
-    pub tv_nsec: i32,
-}
-
-pub unsafe fn do_sys_nanosleep(req: *const TS, rem: *mut TS) -> usize{
+pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
     if req as usize > 0 {
         Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
 
@@ -571,8 +609,10 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         SYS_DEBUG => do_sys_debug(ebx as u8),
         // Linux
         SYS_BRK => eax = do_sys_brk(ebx),
-        //TODO: chdir
+        SYS_CHDIR => eax = do_sys_chdir(ebx as *const u8),
+        SYS_CLONE => eax = do_sys_clone(),
         SYS_CLOSE => eax = do_sys_close(ebx as usize),
+        SYS_CLOCK_GETTIME => eax = do_sys_clock_gettime(ebx, ecx as *mut TimeSpec),
         SYS_DUP => eax = do_sys_dup(ebx),
         SYS_EXECVE => eax = do_sys_execve(ebx as *const u8),
         SYS_EXIT => do_sys_exit(ebx as isize),
@@ -581,10 +621,9 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         //TODO: fstat
         SYS_FSYNC => eax = do_sys_fsync(ebx),
         SYS_FTRUNCATE => eax = do_sys_ftruncate(ebx, ecx),
-        SYS_GETTIMEOFDAY => eax = do_sys_gettimeofday(ebx as *mut TV),
         //TODO: link
         SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
-        SYS_NANOSLEEP => eax = do_sys_nanosleep(ebx as *const TS, ecx as *mut TS),
+        SYS_NANOSLEEP => eax = do_sys_nanosleep(ebx as *const TimeSpec, ecx as *mut TimeSpec),
         SYS_OPEN => eax = do_sys_open(ebx as *const u8), //ecx as isize, edx as isize),
         SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
         //TODO: unlink
