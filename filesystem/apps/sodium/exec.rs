@@ -1,8 +1,9 @@
 use super::*;
 use redox::*;
 
+// TODO: Move the command definitions outta here
 impl Editor {
-    /// Execute a instruction
+    /// Execute an instruction
     pub fn exec(&mut self, Inst(para, cmd): Inst) {
         use super::Key::*;
         use super::Mode::*;
@@ -10,8 +11,10 @@ impl Editor {
         use super::CommandMode::*;
 
         let n = para.d();
+        let bef = self.pos();
+        let mut mov = false;
 
-        if cmd.key == Key::Char(' ') && cmd.shift {
+        if cmd.key == Key::Char(' ') && self.key_state.shift {
 
             let mode = self.cursor().mode;
 
@@ -21,11 +24,11 @@ impl Editor {
             }
             self.cursor_mut().mode = Mode::Command(CommandMode::Normal);
 
-        } else if cmd.alt && cmd.key == Key::Char(' ') {
+        } else if self.key_state.alt && cmd.key == Key::Char(' ') {
 
             self.next_cursor();
 
-        } else if cmd.alt {
+        } else if self.key_state.alt {
 
             if let Some(m) = self.to_motion(Inst(para, cmd)) {
                 self.goto(m);
@@ -49,7 +52,6 @@ impl Editor {
 
                     },
                     Char('o') => {
-                        // TODO: Autoindent (keep the same indentation level)
                         let y = self.y();
                         let ind = if self.options.autoindent {
                             self.get_indent(y)
@@ -67,26 +69,32 @@ impl Editor {
                     Char('h') => {
                         let left = self.left(n);
                         self.goto(left);
+                        mov = true;
                     },
                     Char('j') => {
                         let down = self.down(n);
                         self.goto(down);
+                        mov = true;
                     },
                     Char('k') => {
                         let up = self.up(n);
                         self.goto(up);
+                        mov = true;
                     },
                     Char('l') => {
                         let right = self.right(n);
                         self.goto(right);
+                        mov = true;
                     },
                     Char('J') => {
                         let down = self.down(15 * n);
                         self.goto(down);
+                        mov = true;
                     },
                     Char('K') => {
                         let up = self.up(15 * n);
                         self.goto(up);
+                        mov = true;
                     },
                     Char('x') => self.delete(),
                     Char('X') => {
@@ -99,11 +107,15 @@ impl Editor {
                     Char('L') => {
                         let ln_end = self.ln_end();
                         self.goto(ln_end);
+                        mov = true;
                     },
-                    Char('H') => self.cursor_mut().x = 0,
+                    Char('H') => {
+                        self.cursor_mut().x = 0;
+                        mov = true;
+                    },
                     Char('r') => {
                         let (x, y) = self.pos();
-                        self.text[y][x] = self.next_char();
+                        self.text[y][x] = self.get_char();
                     },
                     Char('R') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
@@ -112,7 +124,7 @@ impl Editor {
                             }));
                     },
                     Char('d') => {
-                        let ins = self.next_inst();
+                        let ins = self.get_inst();
                         if let Some(m) = self.to_motion_unbounded(ins) {
                             self.remove_rb(m);
                         }
@@ -120,15 +132,17 @@ impl Editor {
                     Char('G') => {
                         let last = self.text.len() - 1;
                         self.goto((0, last));
+                        mov = true;
                     },
                     Char('g') => {
                         if let Parameter::Int(n) = para {
                             self.goto((0, n - 1));
+                            mov = true;
                         } else {
-                            let inst = self.next_inst();
+                            let inst = self.get_inst();
                             if let Some(m) = self.to_motion(inst) {
-                                self.cursor_mut().x = m.0;
-                                self.cursor_mut().y = m.1;
+                                self.goto(m); // fix
+                                mov = true;
                             }
                         }
 
@@ -144,11 +158,21 @@ impl Editor {
                         self.next_cursor();
                     },
                     Char('t') => {
-                        let ch = self.next_char();
+                        let ch = self.get_char();
 
                         let pos = self.next_ocur(ch, n);
                         if let Some(p) = pos {
                             self.goto(p);
+                            mov = true;
+                        }
+                    },
+                    Char('f') => {
+                        let ch = self.get_char();
+
+                        let pos = self.previous_ocur(ch, n);
+                        if let Some(p) = pos {
+                            self.goto(p);
+                            mov = true;
                         }
                     },
                     Char(';') => {
@@ -163,18 +187,34 @@ impl Editor {
 //                        self.goto((0, self.text.len() - 1));
 //                    },
                     Char(' ') => {
-                        let next = self.next();
-                        if let Some(p) = next {
-                            self.goto(p);
+                        self.next_cursor();
+                    },
+                    Char('z') => {
+                        let Inst(param, cmd) = self.get_inst();
+                        match param {
+                            Parameter::Null => {
+                                if let Some(m) = self.to_motion(Inst(param, cmd)) {
+                                    self.scroll_y = m.1;
+                                    self.goto(m);
+                                }
+                            },
+                            Parameter::Int(n) => {
+                                self.scroll_y = n;
+                            },
                         }
+                        self.redraw_task = RedrawTask::Full;
+                    },
+                    Char('Z') => {
+                        self.scroll_y = self.y() - 3;
+                        self.redraw_task = RedrawTask::Full;
                     },
                     Char(c) => {
                         self.status_bar.msg = format!("Unknown command: {}", c);
-                        self.redraw_status_bar();
+                        self.redraw_task = RedrawTask::StatusBar;
                     }
                     _ => {
                         self.status_bar.msg = format!("Unknown command");
-                        self.redraw_status_bar();
+                        self.redraw_task = RedrawTask::StatusBar;
                     },
                 },
                 Primitive(Insert(opt)) => {
@@ -195,8 +235,12 @@ impl Editor {
                         Char(c) => self.prompt.push(c),
                         _ => {},
                     }
+                    self.redraw_task = RedrawTask::StatusBar;
                 },
             }
+        }
+        if mov {
+            self.redraw_task = RedrawTask::Cursor(bef, self.pos());
         }
     }
 }
