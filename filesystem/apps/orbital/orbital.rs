@@ -1,6 +1,33 @@
 use redox::*;
 pub fn main() {
-    unsafe { Session::exec(); }
+    /*
+    match Session::new() {
+        Some(_) => {
+            if let Some(mut display) = File::open("display://") {
+                let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
+                unsafe { 
+                    let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                    display.write(u8s);
+                    display.sync();
+                }
+            }
+        },
+        None => {
+            if let Some(mut display) = File::open("display://") {
+                let colors:Vec<u32> = vec![0xFF0000FF; 640*480];
+                unsafe { 
+                    let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                    display.write(u8s);
+                    display.sync();
+                }
+            }
+        },
+    }
+    */
+    unsafe {
+        Session::exec();
+    }
+    loop {}
     /*
     // THIS WORKS
     if let Some(mut display) = File::open("display://") {

@@ -60,7 +60,7 @@ impl Session {
         }
     }
 
-    fn new() -> Box<Self> {
+    pub fn new() -> Option<Box<Self>> {
         // TODO: this font gets opened everywhere, should probably not do that
         // LazyOxen
         let mut disp = File::open("display://").unwrap();
@@ -69,9 +69,14 @@ impl Session {
             font_file.read_to_end(&mut font);
             if let Some(mut events) = File::open("events://") {
                 if let Some(mut display_file) = File::open("display://") {
+
+                    let mut dimensions: [usize;2]= [0;2];
+                    let buf = unsafe { mem::transmute::<&mut [usize],&mut [u8]>(&mut dimensions[..]) };
+                    display_file.read(buf);
+
                     let ret =
                     box Session {
-                            display: Display::root(),
+                            display: Display::new(dimensions[0],dimensions[1]),
                             display_file: display_file,
                             background: BMPFile::load("file:///ui/background.bmp"),
                             cursor: BMPFile::load("file:///ui/cursor.bmp"),
@@ -86,44 +91,23 @@ impl Session {
                             packages: Self::load_packages(),
                             windows: Vec::new(),
                             windows_ordered: Vec::new(),
-                            redraw: false,//true,
+                            redraw: true,
                             events: events,
                             font: font,
                             suspend_display: false,
                     };
-                    let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
-                        unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            disp.write(u8s);
-                            disp.sync();
-                    }
-                    ret
+                    Some(ret)
                 } else {
-                    let colors:Vec<u32> = vec![0xFF0000FF; 640*480];
-                        unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            disp.write(u8s);
-                            disp.sync();
-                    }
-                    panic!("{}: unable to connect to display://", file!());
+                    //panic!("{}: unable to connect to display://", file!());
+                    None
                 }
             } else {
-                    let colors:Vec<u32> = vec![0xFFFF0000; 640*480];
-                        unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            disp.write(u8s);
-                            disp.sync();
-                    }
-                panic!("{}: unable to connect to events://", file!());
+                //panic!("{}: unable to connect to events://", file!());
+                None
             }
         } else {
-                    let colors:Vec<u32> = vec![0xFFFF00FF; 640*480];
-                        unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            disp.write(u8s);
-                            disp.sync();
-                    }
-            panic!("{}: unable to open font file", file!());
+            //panic!("{}: unable to open font file", file!());
+            None
         }
     }
 
@@ -285,13 +269,14 @@ impl Session {
     }
 
     pub unsafe fn redraw(&mut self) {
-            let colors:Vec<u32> = vec![0xFFFFFFFF; 640*480];
-            unsafe { 
-                let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                self.display_file.write(u8s);
-                self.display_file.sync();
-            }
-            /*
+        /*
+                       let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
+                       unsafe { 
+                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                            self.display_file.write(u8s);
+                            self.display_file.sync();
+                        }
+                        */
         if self.redraw && !self.suspend_display {
             self.display.set(Color::rgb(75, 163, 253));
             //LazyOxen
@@ -381,12 +366,19 @@ impl Session {
             }
 
             self.display.flip();
-            let buf: &[u8] = slice::from_raw_parts(self.display.onscreen as *const u8, self.display.size);
+            let buf: &[u8] = slice::from_raw_parts(self.display.offscreen as *const u8, self.display.size);
             self.display_file.write(buf);//data);
             self.display_file.sync();
+            /*
+                       let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
+                       unsafe { 
+                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                            self.display_file.write(u8s);
+                            self.display_file.sync();
+                        }
+            */
             self.redraw = false;
         }
-        */
     }
 
     pub fn event(&mut self, event: Event) {
@@ -398,7 +390,7 @@ impl Session {
         }
     }
 
-    pub unsafe fn exec() -> ! {
+//    pub unsafe fn exec() -> ! {
         //session_ptr = Box::into_raw(Session::new());
         /*
         if let Some(mut display) = File::open("display://") {
@@ -425,10 +417,7 @@ impl Session {
             }
         }
         */
-        let mut ses = Session::new();
-        //ses.redraw();
-        loop {
-            //ses.redraw();
+ //       loop {
             // TODO: maybe get rid of the event data alias? it makes this bit
             //  of code look funky
             //  LazyOxen
@@ -439,6 +428,18 @@ impl Session {
             (*session_ptr).event(Event::from_data(evt));
             */
             //(*session_ptr).redraw();
+//        }
+//    }
+    pub unsafe fn exec() -> ! {
+        session_ptr = Box::into_raw(Session::new().unwrap());
+        (*session_ptr).redraw();
+        loop {
+            let mut evt: EventData = [0;4];
+            let buf = mem::transmute::<&mut [isize],&mut [u8]>(&mut evt[..]);
+            (*session_ptr).events.read(buf);
+            (*session_ptr).event(Event::from_data(evt));
+            (*session_ptr).redraw = true;
+            (*session_ptr).redraw();
         }
     }
 }
