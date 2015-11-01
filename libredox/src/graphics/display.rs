@@ -13,8 +13,7 @@ use syscall::{sys_alloc, sys_unalloc};
 
 /// A display
 pub struct Display {
-    pub offscreen: usize,
-    pub onscreen: usize,
+    pub screen: usize,
     pub size: usize,
     pub bytesperrow: usize,
     pub width: usize,
@@ -23,42 +22,6 @@ pub struct Display {
 }
 
 impl Display {
-    pub fn root() -> Box<Self> {
-        unsafe {
-            let mut dimensions: Vec<u8> = Vec::new();
-            if let Some(mut file) = File::open("display://") {
-                file.read_to_end(&mut dimensions);
-                if dimensions.len() < (mem::size_of::<usize>()*2) {
-                    panic!("{}: unable to read display dimensions", file!());
-                }
-
-                let width: usize = mem::transmute(&dimensions[0]);
-                let height: usize = mem::transmute(&dimensions[mem::size_of::<usize>()]);
-
-                let bytesperrow = width * 4;
-                let memory_size = bytesperrow * height;
-                let ret = box Display {
-                   offscreen: sys_alloc(memory_size),
-                   onscreen: sys_alloc(memory_size),
-                   size: memory_size,
-                   bytesperrow: bytesperrow,
-                   width: width,
-                   height: height,
-                   root: true,
-                };
-
-                ret.set(Color::rgb(0, 0, 0));
-                ret.flip();
-
-                ret
-            } else {
-                panic!("{}: unable to open display://", file!());
-                //Self::new(0,0)
-            }
-
-        }
-    }
-
     /// Create a new display
     pub fn new(width: usize, height: usize) -> Box<Self> {
         unsafe {
@@ -66,8 +29,7 @@ impl Display {
             let memory_size = bytesperrow * height;
 
             let ret = box Display {
-                offscreen: sys_alloc(memory_size),
-                onscreen: sys_alloc(memory_size),
+                screen: sys_alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width: width,
@@ -75,7 +37,19 @@ impl Display {
                 root: false,
             };
 
-            ret.set(Color::rgb(0, 0, 0));
+            if ret.screen == 0 {
+                if let Some(mut disp) = File::open("display://") {
+                       let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
+                       unsafe { 
+                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                            disp.write(u8s);
+                            disp.sync();
+                            disp.seek(SeekFrom::Start(0));
+                        }
+                }
+            }
+            //ret.set(Color::rgb(0, 0, 0));
+            ret.set(Color::rgb(128, 128, 128));
             ret.flip();
 
             ret
@@ -131,7 +105,7 @@ impl Display {
     /// Set the color
     pub fn set(&self, color: Color) {
         unsafe {
-            Display::set_run(color.data, self.offscreen, self.size);
+            Display::set_run(color.data, self.screen, self.size);
         }
     }
 
@@ -140,16 +114,17 @@ impl Display {
         if rows > 0 && rows < self.height {
             let offset = rows * self.bytesperrow;
             unsafe {
-                Display::copy_run(self.offscreen + offset,
-                                  self.offscreen,
+                Display::copy_run(self.screen + offset,
+                                  self.screen,
                                   self.size - offset);
-                Display::set_run(0, self.offscreen + self.size - offset, offset);
+                Display::set_run(0, self.screen + self.size - offset, offset);
             }
         }
     }
 
     /// Flip the display
     pub fn flip(&self) {
+        /*
         unsafe {
             if self.root {
                 // TODO: 
@@ -157,13 +132,14 @@ impl Display {
                 // should only have one buffer? that gets written to the 
                 // display:// scheme
                 // LazyOxen: wonder if the length will be known...
-                Display::copy_run(self.offscreen, self.onscreen, self.size);
+                Display::copy_run(self.offscreen, self.nscreen, self.size);
             } else {
                 let self_mut: *mut Self = mem::transmute(self);
                 mem::swap(&mut (*self_mut).offscreen,
-                     &mut (*self_mut).onscreen);
+                     &mut (*self_mut).nscreen);
             }
         }
+        */
     }
 
     /// Draw a rectangle
@@ -184,7 +160,7 @@ impl Display {
                 for y in start_y..end_y {
                     unsafe {
                         Display::set_run(data,
-                                         self.offscreen + y * self.bytesperrow + start_x,
+                                         self.screen + y * self.bytesperrow + start_x,
                                          len);
                     }
                 }
@@ -198,7 +174,7 @@ impl Display {
                     unsafe {
                         Display::set_run_alpha(premul,
                                                n_alpha,
-                                               self.offscreen + y * self.bytesperrow + start_x,
+                                               self.screen + y * self.bytesperrow + start_x,
                                                len);
                     }
                 }
@@ -211,7 +187,7 @@ impl Display {
         unsafe {
             if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
                point.y < self.height as isize {
-                *((self.offscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
+                *((self.screen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
             }
         }
     }
@@ -322,7 +298,7 @@ impl Display {
         let start_x = cmp::max(0, point.x) as usize;
         let len = cmp::min(self.width as isize, point.x + size.width as isize) as usize * 4 -
                   start_x * 4;
-        let offscreen_offset = self.offscreen + start_x * 4;
+        let screen_offset = self.screen + start_x * 4;
 
         let bytesperrow = size.width * 4;
         let data_offset = data as usize - start_y * bytesperrow -
@@ -330,7 +306,7 @@ impl Display {
 
         for y in start_y..end_y {
             Display::copy_run(data_offset + y * bytesperrow,
-                              offscreen_offset + y * self.bytesperrow,
+                              screen_offset + y * self.bytesperrow,
                               len);
         }
     }
@@ -344,7 +320,7 @@ impl Display {
         let start_x = cmp::max(0, point.x) as usize;
         let len = cmp::min(self.width as isize, point.x + size.width as isize) as usize * 4 -
                   start_x * 4;
-        let offscreen_offset = self.offscreen + start_x * 4;
+        let screen_offset = self.screen + start_x * 4;
 
         let bytesperrow = size.width * 4;
         let data_offset = data as usize - start_y * bytesperrow -
@@ -352,7 +328,7 @@ impl Display {
 
         for y in start_y..end_y {
             Display::copy_run_alpha(data_offset + y * bytesperrow,
-                                    offscreen_offset + y * self.bytesperrow,
+                                    screen_offset + y * self.bytesperrow,
                                     len);
         }
     }
@@ -416,13 +392,9 @@ impl Display {
 impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
-            if self.offscreen > 0 {
-                sys_unalloc(self.offscreen);
-                self.offscreen = 0;
-            }
-            if !self.root && self.onscreen > 0 {
-                sys_unalloc(self.onscreen);
-                self.onscreen = 0;
+            if self.screen > 0 {
+                sys_unalloc(self.screen);
+                self.screen = 0;
             }
             self.size = 0;
             self.bytesperrow = 0;

@@ -1,12 +1,12 @@
 use alloc::boxed::Box;
-use core::{cmp, mem};
+use core::{cmp, mem, ptr};
 use collections::string::*;
 use common::event::{Event, EventData};
 use common::queue::Queue;
 use common::scheduler;
 use schemes::{KScheme, Resource, ResourceSeek, URL};
 
-static mut events_to_userspace_ptr: *mut Queue<[isize; 4]> = 0 as *mut Queue<[isize; 4]>;
+static mut events_to_userspace_ptr: *mut Queue<EventData> = 0 as *mut Queue<EventData>;
 
 pub struct EventScheme;
 
@@ -34,9 +34,13 @@ impl Resource for EventResource {
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         let data_size = mem::size_of::<EventData>();
+        //TODO: why does this only work when commented out?
+        // LazyOxen
+        /*
         if buf.len() < data_size {
-            None
+            Some(0)
         } else {
+        */
             unsafe {
                 let events = &mut *events_to_userspace_ptr;
                 let reenable = scheduler::start_no_ints();
@@ -44,14 +48,19 @@ impl Resource for EventResource {
                 scheduler::end_no_ints(reenable);
                 match event {
                     Some(evt) => {
-                        let bptr = buf as *mut _ as *mut [isize;4];
+                        ptr::write(buf.as_ptr() as *mut EventData, evt);
+                        /*
+                        let bptr = buf.as_mut_ptr() as *mut _ as *mut [isize;4];
                         *bptr = evt;
+                        */
                         Some(data_size)
                     },
                     None => None
                 }
             }
+            /*
         }
+        */
         /*
         // read multiple events?
         let mut evt_capacity = buf.len() / data_size;
@@ -70,7 +79,7 @@ impl Resource for EventResource {
                         *bptr = event;
                         j += 1;
                     },
-                    None => return None, // bail if we were too late to get the next event
+                    None => break, // bail if we were too late to get the next event
                 }
                 i += 1;
             }

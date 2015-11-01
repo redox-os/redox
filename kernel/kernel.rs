@@ -192,6 +192,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
+                                            debug::d("WM UNrestricted\n");
                                             EventResource::add_event(DisplayEvent { 
                                                 restricted: false
                                             }.to_event());
@@ -221,12 +222,12 @@ unsafe fn event_loop() -> ! {
                                         event::K_F1 => {
                                             ::debug_draw = true;
                                             ::debug_redraw = true;
-                                        },
-                                        _ => {
+                                            debug::d("WM restricted\n");
                                             EventResource::add_event(DisplayEvent { 
                                                 restricted: true
                                             }.to_event());
-                                        }
+                                        },
+                                        _ => EventResource::add_event(event),
                                     }
                                 }
                             }

@@ -53,7 +53,7 @@ impl Resource {
         let size = cmp::min(content.size - self.seek, buf.len());
         unsafe {
             Display::copy_run(buf.as_ptr() as usize,
-                              content.offscreen + self.seek,
+                              content.screen + self.seek,
                               size);
         }
         self.seek += size;

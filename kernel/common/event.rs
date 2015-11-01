@@ -31,7 +31,7 @@ pub struct Event {
 }
 
 impl Event {
-    pub fn new() -> Event {
+    pub fn new() -> Self {
         Event { data: [0;DATA_LENGTH] }
     }
 

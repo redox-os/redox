@@ -155,6 +155,7 @@ impl Session {
         }
 
         self.redraw = true;
+        self.display_file.seek(SeekFrom::Start(0));
     }
 
     fn on_key(&mut self, key_event: KeyEvent) {
@@ -266,18 +267,12 @@ impl Session {
 
     fn on_display(&mut self, display_event:DisplayEvent) {
         self.suspend_display = display_event.restricted;
+        self.redraw = !self.suspend_display;
     }
 
     pub unsafe fn redraw(&mut self) {
-        /*
-                       let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
-                       unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            self.display_file.write(u8s);
-                            self.display_file.sync();
-                        }
-                        */
         if self.redraw && !self.suspend_display {
+            self.display_file.seek(SeekFrom::Start(0));
             self.display.set(Color::rgb(75, 163, 253));
             //LazyOxen
             if self.background.width() > 0 {
@@ -365,18 +360,15 @@ impl Session {
                                   Color::rgb(255, 255, 255));
             }
 
-            self.display.flip();
-            let buf: &[u8] = slice::from_raw_parts(self.display.offscreen as *const u8, self.display.size);
-            self.display_file.write(buf);//data);
+            let buf: &[u8] = slice::from_raw_parts(self.display.screen as *const u8, self.display.size);
+            let ptr = self.display.screen as *const u8;
+            let mut mybuf: Vec<u8> = Vec::new();
+            for i in 0..self.display.size {
+                mybuf.push(*ptr.offset(i as isize));
+            }
+            //self.display_file.write(buf);//data);
+            self.display_file.write(&mybuf[..]);//data);
             self.display_file.sync();
-            /*
-                       let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
-                       unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            self.display_file.write(u8s);
-                            self.display_file.sync();
-                        }
-            */
             self.redraw = false;
         }
     }
@@ -390,55 +382,35 @@ impl Session {
         }
     }
 
-//    pub unsafe fn exec() -> ! {
-        //session_ptr = Box::into_raw(Session::new());
-        /*
-        if let Some(mut display) = File::open("display://") {
-            if let Some(mut events) = File::open("events://") {
-                let mut data = vec![0,64];
-                match events.read(&mut data) {
-                    Some(_) => {
-                       let colors:Vec<u32> = vec![0xFF00FF00; 640*480];
-                       unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            display.write(u8s);
-                            display.sync();
-                        }
-                    },
-                    None => {
-                       let colors:Vec<u32> = vec![0xFF00FFFF; 640*480];
-                       unsafe { 
-                            let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
-                            display.write(u8s);
-                            display.sync();
-                        }
-                    }
-                }
-            }
-        }
-        */
- //       loop {
-            // TODO: maybe get rid of the event data alias? it makes this bit
-            //  of code look funky
-            //  LazyOxen
-            /*
-            let mut evt: EventData = [0;4];
-            let buf = mem::transmute::<&mut [isize],&mut [u8]>(&mut evt[..]);
-            (*session_ptr).events.read(buf);
-            (*session_ptr).event(Event::from_data(evt));
-            */
-            //(*session_ptr).redraw();
-//        }
-//    }
     pub unsafe fn exec() -> ! {
         session_ptr = Box::into_raw(Session::new().unwrap());
-        (*session_ptr).redraw();
         loop {
-            let mut evt: EventData = [0;4];
-            let buf = mem::transmute::<&mut [isize],&mut [u8]>(&mut evt[..]);
-            (*session_ptr).events.read(buf);
-            (*session_ptr).event(Event::from_data(evt));
-            (*session_ptr).redraw = true;
+            let mut evt: Event = Event::new();
+            let buf = mem::transmute::<&mut [isize],&mut [u8]>(&mut evt.data[..]);
+            match (*session_ptr).events.read(buf) {
+                Some(0) => { 
+                    let colors:Vec<u32> = vec![0xFFFFFFFF; 640*480];
+                    unsafe { 
+                        let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                        (*session_ptr).display_file.write(u8s);
+                        (*session_ptr).display_file.sync();
+                    }
+                    //(*session_ptr).event(Event::from_data(evt));
+                } ,
+                Some(_) => { 
+                    (*session_ptr).event(evt);
+                } ,
+                None => {
+                    /*
+                    let colors:Vec<u32> = vec![0xFF0000FF; 640*480];
+                    unsafe { 
+                        let u8s = mem::transmute::<&[u32],&[u8]>(&colors[..]); 
+                        (*session_ptr).display_file.write(u8s);
+                        (*session_ptr).display_file.sync();
+                    }
+                    */
+                },
+            };
             (*session_ptr).redraw();
         }
     }

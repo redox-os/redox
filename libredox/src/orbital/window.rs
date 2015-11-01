@@ -130,7 +130,7 @@ impl Window {
         if mem::size_of::<Color>() == mem::size_of::<u32>() {
             unsafe {
                 self.content.image(point,
-                              self.content.onscreen as *const u32, 
+                              self.content.screen as *const u32, 
                               size);
             }
         } else {
@@ -231,7 +231,7 @@ impl Window {
 
             unsafe {
                 display.image(self.point,
-                              self.content.onscreen as *const u32,
+                              self.content.screen as *const u32,
                               Size::new(self.content.width, self.content.height));
             }
         }
