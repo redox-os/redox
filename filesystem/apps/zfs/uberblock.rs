@@ -1,5 +1,5 @@
 use redox::{mem, ptr};
-use redox::String;
+use redox::{String, ToString};
 
 use super::from_bytes::FromBytes;
 use super::block_ptr::BlockPtr;
