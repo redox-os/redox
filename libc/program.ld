@@ -1,7 +1,7 @@
 ENTRY(_start)
 
 MEMORY {
-	highmem : org = 0x80000000, l = 4096K
+	highmem : org = 0x80000000, l = 1024M
 }
 
 SECTIONS {
