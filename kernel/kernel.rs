@@ -142,8 +142,11 @@ static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 /// # Code Migration
 ///
 /// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
-/// `foo[a..]`  => `foo.get_slice(Some(a), None)`
-/// `foo[..b]`  => `foo.get_slice(None, Some(b))`
+///
+/// `foo[a..]` => `foo.get_slice(Some(a), None)`
+///
+/// `foo[..b]` => `foo.get_slice(None, Some(b))`
+///
 pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
 
 impl GetSlice for str {
