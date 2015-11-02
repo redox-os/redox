@@ -44,6 +44,7 @@ char * getcwd(char * buf, size_t size) {
     return cwd;
 }
 
+//TODO: Replace with clone
 int fork() {
     return (int)syscall(SYS_FORK, 0, 0, 0);
 }

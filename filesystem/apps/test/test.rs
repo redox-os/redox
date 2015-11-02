@@ -5,6 +5,8 @@ use redox::rand;
 use redox::ptr;
 use redox::slice::SliceConcatExt;
 use redox::string::*;
+use redox::syscall::sys_clone;
+use redox::syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
 use redox::Vec;
 
 pub fn main() {
@@ -22,6 +24,7 @@ pub fn main() {
                                     "box_write",
                                     "reboot",
                                     "shutdown",
+                                    "clone",
                                     "leak_test"];
 
             match &a_command[..] {
@@ -62,6 +65,15 @@ pub fn main() {
                     }
                 }
                 command if command == console_commands[6] => {
+                    unsafe {
+                        if sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES) == 0 {
+                            println!("Parent from clone");
+                        } else {
+                            println!("Child from clone");
+                        }
+                    }
+                }
+                command if command == console_commands[7] => {
                     let mut stack_it: Vec<Box<u8>> = Vec::new();
                     loop {
                         stack_it.push(Box::new(rand() as u8))
