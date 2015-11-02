@@ -1,7 +1,7 @@
 //To use this, please install zfs-fuse
 use redox::*;
 
-use self::dnode::{DNodePhys, ObjectSetPhys};
+use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
 use self::block_ptr::BlockPtr;
 use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
@@ -261,7 +261,7 @@ impl ZFS {
                         *node = zfs.reader.read_type_array(indirect,
                                                            node_id as usize).unwrap();
                         if name == path_end {
-                            if node.object_type != 0x13 {
+                            if node.object_type != ObjectType::PlainFileContents {
                                 // Not a file
                                 return Some(ZfsTraverse::Done);
                             }
@@ -276,7 +276,7 @@ impl ZFS {
                     }
                 }
                 if this_dir {
-                    if node.object_type != 0x14 {
+                    if node.object_type != ObjectType::DirectoryContents {
                         // Not a folder
                         return Some(ZfsTraverse::Done);
                     }
@@ -393,11 +393,22 @@ pub fn main() {
                                             Some(metaslab_array) => {
                                                 println_color!(green, "Got metaslab_array");
                                                 if let NvValue::Uint64(metaslab_array) = *metaslab_array {
+                                                    // Get metaslab array dnode
                                                     let metaslab_array = metaslab_array as usize;
-                                                    let sm_dnode: Result<DNodePhys, String> =
+                                                    let ma_dnode: Result<DNodePhys, String> =
                                                         zfs.reader.read_type_array(zfs.mos.meta_dnode.get_blockptr(0), metaslab_array);
+                                                    let ma_dnode = ma_dnode.unwrap(); // TODO
 
-                                                    println!("got space map dnode: {:?}", sm_dnode);
+                                                    // Get a spacemap object id
+                                                    let sm_id: Result<u64, String> =
+                                                        zfs.reader.read_type_array(ma_dnode.get_blockptr(0), 0);
+                                                    let sm_id = sm_id.unwrap(); // TODO
+
+                                                    let sm_dnode: Result<DNodePhys, String> =
+                                                        zfs.reader.read_type_array(zfs.mos.meta_dnode.get_blockptr(0), sm_id as usize);
+                                                    let sm_dnode = sm_dnode.unwrap(); // TODO
+
+                                                    println!("got spacemap dnode: {:?}", sm_dnode);
                                                 } else {
                                                     println_color!(red, "Invalid metaslab_array NvValue type. Expected Uint64.");
                                                 }
