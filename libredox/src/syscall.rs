@@ -41,8 +41,8 @@ pub unsafe fn sys_chdir(path: *const u8) -> usize {
     syscall(SYS_CHDIR, path as usize, 0, 0)
 }
 
-pub unsafe fn sys_clone() -> usize {
-    syscall(SYS_CLONE, 0, 0, 0)
+pub unsafe fn sys_clone(flags: usize) -> usize {
+    syscall(SYS_CLONE, flags, 0, 0)
 }
 
 pub unsafe fn sys_close(fd: usize) -> usize {

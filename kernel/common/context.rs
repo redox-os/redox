@@ -7,11 +7,14 @@ use collections::vec::Vec;
 use core::cell::UnsafeCell;
 use core::{mem, ptr};
 
+use common::debug;
 use common::memory;
 use common::paging::Page;
 use common::scheduler;
 
 use schemes::Resource;
+
+use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
@@ -71,6 +74,83 @@ pub unsafe fn context_switch(interrupted: bool) {
             }
         }
     }
+
+    scheduler::end_no_ints(reenable);
+}
+
+/// Clone context
+///
+/// Unsafe due to interrupt disabling, C memory handling, and raw pointers
+pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize){
+    let reenable = scheduler::start_no_ints();
+
+    debug::debug(&format!("Parent During: {:X} {} {:X}\n", parent_ptr as usize, Context::current_i(), flags));
+
+    let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+    if stack > 0 {
+        let parent = &*parent_ptr;
+
+        debug::debug(&format!("Copy stack {:X} {:X} {:X} {:X}\n", parent.stack, parent.stack_ptr, parent.stack_ptr - parent.stack, CONTEXT_STACK_SIZE));
+        ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
+
+        debug::debug("Push\n");
+        let contexts = &mut *contexts_ptr;
+        contexts.push(box Context {
+            interrupted: parent.interrupted,
+            exited: parent.exited,
+
+            stack: stack,
+            stack_ptr: stack + (parent.stack_ptr - parent.stack),
+            fx: stack + CONTEXT_STACK_SIZE,
+            fx_enabled: parent.fx_enabled,
+
+            args: parent.args.clone(),
+            cwd: if flags & CLONE_FS == CLONE_FS {
+                debug::debug("Clone cwd\n");
+                parent.cwd.clone()
+            } else {
+                debug::debug("Copy cwd\n");
+                Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+            },
+            memory: if flags & CLONE_VM == CLONE_VM {
+                debug::debug("Clone memory\n");
+                parent.memory.clone()
+            } else {
+                debug::debug("Copy memory\n");
+                let mut mem: Vec<ContextMemory> = Vec::new();
+                for entry in (*parent.memory.get()).iter() {
+                    let physical_address = memory::alloc(entry.virtual_size);
+                    if physical_address > 0 {
+                        ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
+                        mem.push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: entry.virtual_address,
+                            virtual_size: entry.virtual_size,
+                        });
+                    }
+                }
+                Rc::new(UnsafeCell::new(mem))
+            },
+            files: if flags & CLONE_FILES == CLONE_FILES {
+                debug::debug("Clone files\n");
+                parent.files.clone()
+            }else {
+                debug::debug("Copy files\n");
+                let mut files: Vec<ContextFile> = Vec::new();
+                for file in (*parent.files.get()).iter() {
+                    if let Some(resource) = file.resource.dup() {
+                        files.push(ContextFile {
+                            fd: file.fd,
+                            resource: resource
+                        });
+                    }
+                }
+                Rc::new(UnsafeCell::new(files))
+            },
+        });
+    }
+
+    debug::debug(&format!("Parent Return: {:X}\n", parent_ptr as usize));
 
     scheduler::end_no_ints(reenable);
 }
@@ -279,6 +359,10 @@ impl Context {
             }
             scheduler::end_no_ints(reenable);
         }
+    }
+
+    pub unsafe fn current_i() -> usize {
+        return context_i;
     }
 
     pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {

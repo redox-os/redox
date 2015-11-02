@@ -6,7 +6,7 @@ use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync};
-use syscall::common::{O_RDONLY, O_WRONLY, O_CREAT, O_TRUNC};
+use syscall::common::{O_RDONLY, O_WRONLY, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
 pub struct File {
@@ -116,9 +116,9 @@ impl Seek for File {
     /// Seek a given position
     fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
         let (whence, offset) = match pos {
-            SeekFrom::Start(offset) => (0, offset as isize),
-            SeekFrom::Current(offset) => (1, offset),
-            SeekFrom::End(offset) => (2, offset),
+            SeekFrom::Start(offset) => (SEEK_SET, offset as isize),
+            SeekFrom::Current(offset) => (SEEK_CUR, offset),
+            SeekFrom::End(offset) => (SEEK_END, offset),
         };
 
         let position = unsafe { sys_lseek(self.fd, offset, whence) };

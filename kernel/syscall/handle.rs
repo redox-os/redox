@@ -3,9 +3,10 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
-use common::context::{context_enabled, context_exit, context_switch, Context, ContextFile};
+use common::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
 use common::debug;
 use common::memory;
 use common::scheduler;
@@ -132,8 +133,47 @@ pub unsafe fn do_sys_chdir(path: *const u8) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_clone() -> usize {
-    usize::MAX
+#[cold]
+#[inline(never)]
+pub unsafe fn do_sys_clone(flags: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(parent) = Context::current() {
+        let parent_ptr: *const Context = parent.deref();
+
+        let mut context_clone_args: Vec<usize> = Vec::new();
+        context_clone_args.push(flags);
+        context_clone_args.push(parent_ptr as usize);
+        context_clone_args.push(context_exit as usize);
+
+        let contexts = &mut *::common::context::contexts_ptr;
+        contexts.push(Context::new(context_clone as usize, &context_clone_args));
+
+        debugln!("Parent Before: {:X} {}", parent_ptr as usize, Context::current_i());
+
+        scheduler::end_no_ints(reenable);
+
+        context_switch(false);
+
+        scheduler::start_no_ints();
+
+        if let Some(new) = Context::current() {
+            let new_ptr: *const Context = new.deref();
+            if new_ptr == parent_ptr {
+                debugln!("Parent After: {:X} {}", new_ptr as usize, Context::current_i());
+                ret = 0;
+            }else{
+                debugln!("Child After: {:X} {}", new_ptr as usize, Context::current_i());
+                ret = 1;
+            }
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
 }
 
 pub unsafe fn do_sys_close(fd: usize) -> usize {
@@ -501,7 +541,7 @@ pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize)
         // Linux
         SYS_BRK => eax = do_sys_brk(ebx),
         SYS_CHDIR => eax = do_sys_chdir(ebx as *const u8),
-        SYS_CLONE => eax = do_sys_clone(),
+        SYS_CLONE => eax = do_sys_clone(ebx),
         SYS_CLOSE => eax = do_sys_close(ebx as usize),
         SYS_CLOCK_GETTIME => eax = do_sys_clock_gettime(ebx, ecx as *mut TimeSpec),
         SYS_DUP => eax = do_sys_dup(ebx),
