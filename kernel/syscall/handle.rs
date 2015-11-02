@@ -535,51 +535,49 @@ pub unsafe fn do_sys_unalloc(ptr: usize) {
     memory::unalloc(ptr)
 }
 
-pub unsafe fn syscall_handle(mut eax: usize, ebx: usize, ecx: usize, edx: usize) -> usize {
-    match eax {
-        SYS_DEBUG => do_sys_debug(ebx as u8),
+pub unsafe fn syscall_handle(regs: &mut Regs) {
+    match regs.ax {
+        SYS_DEBUG => do_sys_debug(regs.bx as u8),
         // Linux
-        SYS_BRK => eax = do_sys_brk(ebx),
-        SYS_CHDIR => eax = do_sys_chdir(ebx as *const u8),
-        SYS_CLONE => eax = do_sys_clone(ebx),
-        SYS_CLOSE => eax = do_sys_close(ebx as usize),
-        SYS_CLOCK_GETTIME => eax = do_sys_clock_gettime(ebx, ecx as *mut TimeSpec),
-        SYS_DUP => eax = do_sys_dup(ebx),
-        SYS_EXECVE => eax = do_sys_execve(ebx as *const u8),
-        SYS_EXIT => do_sys_exit(ebx as isize),
-        SYS_FPATH => eax = do_sys_fpath(ebx, ecx as *mut u8, edx),
+        SYS_BRK => regs.ax = do_sys_brk(regs.bx),
+        SYS_CHDIR => regs.ax = do_sys_chdir(regs.bx as *const u8),
+        SYS_CLONE => regs.ax = do_sys_clone(regs.bx),
+        SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
+        SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
+        SYS_DUP => regs.ax = do_sys_dup(regs.bx),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
+        SYS_EXIT => do_sys_exit(regs.bx as isize),
+        SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: fstat
-        SYS_FSYNC => eax = do_sys_fsync(ebx),
-        SYS_FTRUNCATE => eax = do_sys_ftruncate(ebx, ecx),
+        SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
+        SYS_FTRUNCATE => regs.ax = do_sys_ftruncate(regs.bx, regs.cx),
         //TODO: link
-        SYS_LSEEK => eax = do_sys_lseek(ebx, ecx as isize, edx as usize),
-        SYS_NANOSLEEP => eax = do_sys_nanosleep(ebx as *const TimeSpec, ecx as *mut TimeSpec),
-        SYS_OPEN => eax = do_sys_open(ebx as *const u8), //ecx as isize, edx as isize),
-        SYS_READ => eax = do_sys_read(ebx, ecx as *mut u8, edx),
+        SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
+        SYS_NANOSLEEP => regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
+        SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8), //regs.cx as isize, regs.dx as isize),
+        SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
-        SYS_WRITE => eax = do_sys_write(ebx, ecx as *mut u8, edx),
+        SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_YIELD => do_sys_yield(),
 
         // Rust Memory
-        SYS_ALLOC => eax = do_sys_alloc(ebx),
-        SYS_REALLOC => eax = do_sys_realloc(ebx, ecx),
-        SYS_REALLOC_INPLACE => eax = do_sys_realloc_inplace(ebx, ecx),
-        SYS_UNALLOC => do_sys_unalloc(ebx),
+        SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),
+        SYS_REALLOC => regs.ax = do_sys_realloc(regs.bx, regs.cx),
+        SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
+        SYS_UNALLOC => do_sys_unalloc(regs.bx),
 
         _ => {
             debug::d("Unknown Syscall: ");
-            debug::dd(eax as usize);
+            debug::dd(regs.ax as usize);
             debug::d(", ");
-            debug::dh(ebx as usize);
+            debug::dh(regs.bx as usize);
             debug::d(", ");
-            debug::dh(ecx as usize);
+            debug::dh(regs.cx as usize);
             debug::d(", ");
-            debug::dh(edx as usize);
+            debug::dh(regs.dx as usize);
             debug::dl();
 
-            eax = usize::MAX;
+            regs.ax = usize::MAX;
         }
     }
-
-    eax
 }
