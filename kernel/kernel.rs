@@ -151,7 +151,7 @@ impl GetSlice for str {
         let a = if let Some(tmp) = a {
             let len = slice.len();
             if tmp > len { len }
-            else { 0 }
+            else { tmp }
         } else {
             0
         };
@@ -172,7 +172,7 @@ impl<T> GetSlice for [T] {
         let a = if let Some(tmp) = a {
             let len = slice.len();
             if tmp > len { len }
-            else { 0 }
+            else { tmp }
         } else {
             0
         };
