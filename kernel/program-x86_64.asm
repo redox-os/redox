@@ -2,9 +2,11 @@ extern _start_stack
 section .text
 global _start
 _start:
-	push rsp
+	mov rdi, rsp
+	mov rbp, rsp
+	and rsp, 0xFFFFFFFFFFFFFFF0
 	call _start_stack
-	add rsp, 4
+	mov rsp, rbp
 	mov rax, 1
 	xor rbx, rbx
 	int 0x80
