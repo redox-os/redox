@@ -68,32 +68,32 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
             let mut context = Context::new(entry, &context_args);
 
             //TODO: Push arg c_strs as things to clean up
-            context.memory.push(ContextMemory {
+            (*context.memory.get()).push(ContextMemory {
                 physical_address: physical_address,
                 virtual_address: virtual_address,
                 virtual_size: virtual_size,
             });
 
-            context.cwd = wd.to_string();
+            *context.cwd.get() = wd.to_string();
 
-            context.args = args;
+            *context.args.get() = args;
 
             if let Some(stdin) = URL::from_str("debug://").open() {
-                context.files.push(ContextFile {
+                (*context.files.get()).push(ContextFile {
                     fd: 0, // STDIN
                     resource: stdin,
                 });
             }
 
             if let Some(stdout) = URL::from_str("debug://").open() {
-                context.files.push(ContextFile {
+                (*context.files.get()).push(ContextFile {
                     fd: 1, // STDOUT
                     resource: stdout,
                 });
             }
 
             if let Some(stderr) = URL::from_str("debug://").open() {
-                context.files.push(ContextFile {
+                (*context.files.get()).push(ContextFile {
                     fd: 2, // STDERR
                     resource: stderr,
                 });

@@ -5,7 +5,6 @@ use redox::rand;
 use redox::ptr;
 use redox::slice::SliceConcatExt;
 use redox::string::*;
-use redox::syscall::sys_fork;
 use redox::Vec;
 
 pub fn main() {
@@ -23,7 +22,6 @@ pub fn main() {
                                     "box_write",
                                     "reboot",
                                     "shutdown",
-                                    "fork",
                                     "leak_test"];
 
             match &a_command[..] {
@@ -64,15 +62,6 @@ pub fn main() {
                     }
                 }
                 command if command == console_commands[6] => {
-                    unsafe {
-                        if sys_fork() == 0 {
-                            println!("Parent from fork");
-                        } else {
-                            println!("Child from fork");
-                        }
-                    }
-                }
-                command if command == console_commands[7] => {
                     let mut stack_it: Vec<Box<u8>> = Vec::new();
                     loop {
                         stack_it.push(Box::new(rand() as u8))

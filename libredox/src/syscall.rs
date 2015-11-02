@@ -65,10 +65,6 @@ pub unsafe fn sys_exit(status: isize) {
     syscall(SYS_EXIT, status as usize, 0, 0);
 }
 
-pub unsafe fn sys_fork() -> usize {
-    syscall(SYS_FORK, 0, 0, 0)
-}
-
 pub unsafe fn sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
     syscall(SYS_FPATH, fd, buf as usize, len)
 }
