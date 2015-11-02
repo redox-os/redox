@@ -149,7 +149,13 @@ impl<'a> GetSlice for &'a str {
     fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> Self {
         let slice = unsafe { slice::from_raw_parts(self.repr().data, self.repr().len) };
         let a = a.unwrap_or(0);
-        let b = b.unwrap_or(slice.len());
+        let b = if let Some(tmp) = b {
+            let len = slice.len();
+            if tmp > len { len }
+            else { tmp }
+        } else {
+            slice.len()
+        };
         unsafe { str::from_utf8_unchecked(&slice[a..b]) }
     }
 }
@@ -158,7 +164,13 @@ impl<'a, T> GetSlice for &'a [T] {
     fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> Self {
         let slice = unsafe { slice::from_raw_parts(SliceExt::as_ptr(*self), SliceExt::len(*self)) };
         let a = a.unwrap_or(0);
-        let b = b.unwrap_or(slice.len());
+        let b = if let Some(tmp) = b {
+            let len = slice.len();
+            if tmp > len { len }
+            else { tmp }
+        } else {
+            slice.len()
+        };
         &slice[a..b]
     }
 }
