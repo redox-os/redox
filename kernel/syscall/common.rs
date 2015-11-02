@@ -11,7 +11,6 @@ pub const SYS_CLOCK_GETTIME: usize = 265;
 pub const SYS_DUP: usize = 41;
 pub const SYS_EXECVE: usize = 11;
 pub const SYS_EXIT: usize = 1;
-pub const SYS_FORK: usize = 2;
 pub const SYS_FPATH: usize = 3001;
 pub const SYS_FSTAT: usize = 28;
 pub const SYS_FSYNC: usize = 118;
