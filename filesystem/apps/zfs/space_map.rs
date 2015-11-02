@@ -19,8 +19,8 @@ pub struct SpaceMapPhys {
     object: u64,   // on-disk space map object
     objsize: u64,  // size of the object
     alloc: u64,    // space allocated from the map
-    pad: [u64; 5], // reserved
-    histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE],
+    //pad: [u64; 5], // reserved
+    //histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE],
 }
 
 impl FromBytes for SpaceMapPhys { }
