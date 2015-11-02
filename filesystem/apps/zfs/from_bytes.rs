@@ -10,3 +10,5 @@ pub trait FromBytes: Sized {
         }
     }
 }
+
+impl FromBytes for u64 { }
