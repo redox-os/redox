@@ -6,6 +6,7 @@ use collections::vec::Vec;
 use core::{ptr, usize};
 
 use common::context::ContextMemory;
+use common::debug;
 use common::elf::{self, ELF};
 use common::memory;
 use common::paging::Page;
@@ -307,7 +308,7 @@ impl SchemeItem {
             handle: 0,
             memory: ContextMemory {
                 physical_address: 0,
-                virtual_address: 0xC0000000,
+                virtual_address: 0,
                 virtual_size: 0,
             },
             _start: 0,
@@ -337,12 +338,17 @@ impl SchemeItem {
 
             unsafe {
                 let executable = ELF::from_data(vec.as_ptr() as usize);
-                if executable.data > 0 {
-                    scheme_item.memory.virtual_size = memory::alloc_size(executable.data) - elf::ELF_OFFSET;
+                if let Some(segment) = executable.load_segment() {
+                    scheme_item.memory.virtual_address = segment.vaddr as usize;
+                    scheme_item.memory.virtual_size = segment.mem_len as usize;
                     scheme_item.memory.physical_address = memory::alloc(scheme_item.memory.virtual_size);
-                    ptr::copy((executable.data + elf::ELF_OFFSET) as *const u8,
-                              scheme_item.memory.physical_address as *mut u8,
-                              scheme_item.memory.virtual_size);
+
+                    if scheme_item.memory.physical_address > 0 {
+                        //Copy progbits
+                        ::memcpy(scheme_item.memory.physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
+                        //Zero bss
+                        ::memset((scheme_item.memory.physical_address + segment.file_len as usize) as *mut u8, 0, segment.mem_len as usize - segment.file_len as usize);
+                    }
 
                     scheme_item._start = executable.symbol("_start");
                     scheme_item._stop = executable.symbol("_stop");
@@ -355,6 +361,8 @@ impl SchemeItem {
                     scheme_item._fsync = executable.symbol("_fsync");
                     scheme_item._ftruncate = executable.symbol("_ftruncate");
                     scheme_item._close = executable.symbol("_close");
+                } else {
+                    debug::d("Invalid ELF\n");
                 }
             }
         }

@@ -4,93 +4,15 @@ use core::{ptr, str, slice};
 
 use common::{debug, memory};
 
+pub use self::elf_arch::*;
+
 #[cfg(target_arch = "x86")]
-pub const ELF_OFFSET: usize = 0x1000;
+#[path="elf_arch-i386.rs"]
+pub mod elf_arch;
 
 #[cfg(target_arch = "x86_64")]
-pub const ELF_OFFSET: usize = 0x200000;
-
-/// An ELF header
-#[repr(packed)]
-pub struct ELFHeader {
-    /// The "magic number" (4 bytes)
-    pub magic: [u8; 4],
-    /// 64 or 32 bit?
-    pub class: u8,
-    /// Little (1) or big endianness (2)?
-    pub endian: u8,
-    /// The ELF version (set to 1 for default)
-    pub ver: u8,
-    /// Operating system ABI (0x03 for Linux)
-    pub abi: [u8; 2],
-    /// Unused
-    pub pad: [u8; 7],
-    /// Specify whether the object is relocatable, executable, shared, or core (in order).
-    pub _type: u16,
-    /// Instruction set archcitecture
-    pub machine: u16,
-    /// Second version
-    pub ver_2: u32,
-    /// The ELF entry
-    pub entry: u32,
-    /// The program header table offset
-    pub ph_off: u32,
-    /// The section header table offset
-    pub sh_off: u32,
-    /// The flags set
-    pub flags: u32,
-    /// The header table length
-    pub h_len: u16,
-    /// The program header table entry length
-    pub ph_ent_len: u16,
-    /// The program head table length
-    pub ph_len: u16,
-    /// The section header table entry length
-    pub sh_ent_len: u16,
-    /// The section header table length
-    pub sh_len: u16,
-    /// The section header table string index
-    pub sh_str_index: u16,
-}
-
-/// An ELF segment
-#[repr(packed)]
-pub struct ELFSegment {
-    pub _type: u32,
-    pub off: u32,
-    pub vaddr: u32,
-    pub paddr: u32,
-    pub file_len: u32,
-    pub mem_len: u32,
-    pub flags: u32,
-    pub align: u32,
-}
-
-/// An ELF section
-#[repr(packed)]
-pub struct ELFSection {
-    pub name: u32,
-    pub _type: u32,
-    pub flags: u32,
-    pub addr: u32,
-    pub off: u32,
-    pub len: u32,
-    pub link: u32,
-    pub info: u32,
-    pub addr_align: u32,
-    pub ent_len: u32,
-}
-
-/// An ELF symbol
-#[repr(packed)]
-pub struct ELFSymbol {
-    pub name: u32,
-    pub value: u32,
-    pub size: u32,
-    pub info: u8,
-    pub other: u8,
-    pub sh_index: u16,
-}
+#[path="elf_arch-x86_64.rs"]
+pub mod elf_arch;
 
 /// An ELF executable
 pub struct ELF {
@@ -110,7 +32,8 @@ impl ELF {
             if file_data > 0 && *(file_data as *const u8) == 0x7F &&
                *((file_data + 1) as *const u8) == 'E' as u8 &&
                *((file_data + 2) as *const u8) == 'L' as u8 &&
-               *((file_data + 3) as *const u8) == 'F' as u8 {
+               *((file_data + 3) as *const u8) == 'F' as u8 &&
+               *((file_data + 4) as *const u8) == ELF_CLASS {
                 let size = memory::alloc_size(file_data);
                 data = memory::alloc(size);
                 ptr::copy(file_data as *const u8, data as *mut u8, size);
