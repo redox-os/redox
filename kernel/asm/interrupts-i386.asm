@@ -37,9 +37,11 @@ interrupts:
     push ecx
     push ebx
     push eax
+    push esp
     push dword [0x100000]
     call [.handler]
-    add esp, 8 ;Skip interrupt and eax
+    add esp, 8 ;Skip interrupt and reg pointer
+    pop eax
     pop ebx
     pop ecx
     pop edx

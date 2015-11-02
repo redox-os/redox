@@ -47,10 +47,10 @@ interrupts:
 	push rcx
 	push rbx
 	push rax
-	push qword [0x100000]
+	mov rdi, qword [0x100000]
+	mov rsi, rsp
     call qword [.handler]
-    ;Put return value in stack for pop
-    add rsp, 16 ;Skip interrupt and rax
+	pop rax
 	pop rbx
 	pop rcx
 	pop rdx

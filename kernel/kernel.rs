@@ -74,6 +74,7 @@ use schemes::time::*;
 use schemes::window::*;
 use schemes::display::*;
 
+use syscall::common::Regs;
 use syscall::handle::*;
 
 /// Allocation
@@ -505,11 +506,8 @@ fn dr(reg: &str, value: usize) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
-#[cfg(target_arch = "x86")]
 /// Take regs for kernel calls and exceptions
-pub unsafe extern "cdecl" fn kernel(
-                            interrupt: usize, mut ax: usize, bx: usize, cx: usize, dx: usize, di: usize, si: usize, bp: usize, sp: usize,
-                            ip: usize, flags: usize, error: usize) -> usize {
+pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception {
         ($name:expr) => ({
             debug::d($name);
@@ -517,16 +515,16 @@ pub unsafe extern "cdecl" fn kernel(
 
             dr("INT", interrupt);
             dr("CONTEXT", context_i);
-            dr("IP", ip);
-            dr("FLAGS", flags);
-            dr("AX", ax);
-            dr("BX", bx);
-            dr("CX", cx);
-            dr("DX", dx);
-            dr("DI", di);
-            dr("SI", si);
-            dr("BP", bp);
-            dr("SP", sp);
+            dr("IP", regs.ip);
+            dr("FLAGS", regs.flags);
+            dr("AX", regs.ax);
+            dr("BX", regs.bx);
+            dr("CX", regs.cx);
+            dr("DX", regs.dx);
+            dr("DI", regs.di);
+            dr("SI", regs.si);
+            dr("BP", regs.bp);
+            dr("SP", regs.sp);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
@@ -559,17 +557,17 @@ pub unsafe extern "cdecl" fn kernel(
 
             dr("INT", interrupt);
             dr("CONTEXT", context_i);
-            dr("IP", flags);
-            dr("FLAGS", error);
-            dr("ERROR", ip);
-            dr("AX", ax);
-            dr("BX", bx);
-            dr("CX", cx);
-            dr("DX", dx);
-            dr("DI", di);
-            dr("SI", si);
-            dr("BP", bp);
-            dr("SP", sp);
+            dr("IP", regs.flags);
+            dr("FLAGS", regs.error);
+            dr("ERROR", regs.ip);
+            dr("AX", regs.ax);
+            dr("BX", regs.bx);
+            dr("CX", regs.cx);
+            dr("DX", regs.dx);
+            dr("DI", regs.di);
+            dr("SI", regs.si);
+            dr("BP", regs.bp);
+            dr("SP", regs.sp);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
@@ -626,9 +624,9 @@ pub unsafe extern "cdecl" fn kernel(
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => ax = syscall_handle(ax, bx, cx, dx),
+        0x80 => syscall_handle(regs),
         0xFF => {
-            init(ax);
+            init(regs.ax);
             idle_loop();
         }
         0x0 => exception!("Divide by zero exception"),
@@ -653,179 +651,4 @@ pub unsafe extern "cdecl" fn kernel(
         0x1E => exception_error!("Security exception"),
         _ => exception!("Unknown Interrupt"),
     }
-
-    ax
-}
-
-#[cold]
-#[inline(never)]
-#[no_mangle]
-#[cfg(target_arch = "x86_64")]
-/// Take regs for kernel calls and exceptions
-pub unsafe extern "cdecl" fn kernel(
-                        s1: usize, s2: usize, s3: usize, s4: usize, s5: usize, s6: usize, //TODO Remove thse scratch values by modifying interrupts-x86_64.asm
-                        interrupt: usize, mut ax: usize, bx: usize, cx: usize, dx: usize, di: usize, si: usize,
-                        r8: usize, r9: usize, r10: usize, r11: usize, r12: usize, r13: usize, r14: usize, r15: usize,
-                        bp: usize, sp: usize, ip: usize, flags: usize, error: usize) -> usize {
-    macro_rules! exception {
-        ($name:expr) => ({
-            debug::d($name);
-            debug::dl();
-
-            dr("INT", interrupt);
-            dr("CONTEXT", context_i);
-            dr("IP", ip);
-            dr("FLAGS", flags);
-            dr("AX", ax);
-            dr("BX", bx);
-            dr("CX", cx);
-            dr("DX", dx);
-            dr("DI", di);
-            dr("SI", si);
-            dr("R8", r8);
-            dr("R9", r9);
-            dr("R10", r10);
-            dr("R11", r11);
-            dr("R12", r12);
-            dr("R13", r13);
-            dr("R14", r14);
-            dr("R15", r15);
-            dr("BP", bp);
-            dr("SP", sp);
-
-            let cr0: usize;
-            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            dr("CR0", cr0);
-
-            let cr2: usize;
-            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            dr("CR2", cr2);
-
-            let cr3: usize;
-            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            dr("CR3", cr3);
-
-            let cr4: usize;
-            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            dr("CR4", cr4);
-
-            do_sys_exit(-1);
-            loop {
-                asm!("cli");
-                asm!("hlt");
-            }
-        })
-    };
-
-    macro_rules! exception_error {
-        ($name:expr) => ({
-            debug::d($name);
-            debug::dl();
-
-            dr("INT", interrupt);
-            dr("CONTEXT", context_i);
-            dr("IP", flags);
-            dr("FLAGS", error);
-            dr("ERROR", ip);
-            dr("AX", ax);
-            dr("BX", bx);
-            dr("CX", cx);
-            dr("DX", dx);
-            dr("DI", di);
-            dr("SI", si);
-            dr("BP", bp);
-            dr("SP", sp);
-            dr("R8", r8);
-            dr("R9", r9);
-            dr("R10", r10);
-            dr("R11", r11);
-            dr("R12", r12);
-            dr("R13", r13);
-            dr("R14", r14);
-            dr("R15", r15);
-
-            let cr0: usize;
-            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            dr("CR0", cr0);
-
-            let cr2: usize;
-            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            dr("CR2", cr2);
-
-            let cr3: usize;
-            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            dr("CR3", cr3);
-
-            let cr4: usize;
-            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            dr("CR4", cr4);
-
-            do_sys_exit(-1);
-            loop {
-                asm!("cli");
-                asm!("hlt");
-            }
-        })
-    };
-
-    if interrupt >= 0x20 && interrupt < 0x30 {
-        if interrupt >= 0x28 {
-            PIO8::new(0xA0).write(0x20);
-        }
-
-        PIO8::new(0x20).write(0x20);
-    }
-
-    match interrupt {
-        0x20 => {
-            let reenable = scheduler::start_no_ints();
-            clock_realtime = clock_realtime + PIT_DURATION;
-            clock_monotonic = clock_monotonic + PIT_DURATION;
-            scheduler::end_no_ints(reenable);
-
-            context_switch(true);
-        }
-        0x21 => (*session_ptr).on_irq(0x1), //keyboard
-        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
-        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
-        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
-        0x26 => (*session_ptr).on_irq(0x6), //floppy
-        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
-        0x28 => (*session_ptr).on_irq(0x8), //RTC
-        0x29 => (*session_ptr).on_irq(0x9), //pci
-        0x2A => (*session_ptr).on_irq(0xA), //pci
-        0x2B => (*session_ptr).on_irq(0xB), //pci
-        0x2C => (*session_ptr).on_irq(0xC), //mouse
-        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
-        0x2E => (*session_ptr).on_irq(0xE), //disk
-        0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => ax = syscall_handle(ax, bx, cx, dx),
-        0xFF => {
-            init(ax);
-            idle_loop();
-        }
-        0x0 => exception!("Divide by zero exception"),
-        0x1 => exception!("Debug exception"),
-        0x2 => exception!("Non-maskable interrupt"),
-        0x3 => exception!("Breakpoint exception"),
-        0x4 => exception!("Overflow exception"),
-        0x5 => exception!("Bound range exceeded exception"),
-        0x6 => exception!("Invalid opcode exception"),
-        0x7 => exception!("Device not available exception"),
-        0x8 => exception_error!("Double fault"),
-        0xA => exception_error!("Invalid TSS exception"),
-        0xB => exception_error!("Segment not present exception"),
-        0xC => exception_error!("Stack-segment fault"),
-        0xD => exception_error!("General protection fault"),
-        0xE => exception_error!("Page fault"),
-        0x10 => exception!("x87 floating-point exception"),
-        0x11 => exception_error!("Alignment check exception"),
-        0x12 => exception!("Machine check exception"),
-        0x13 => exception!("SIMD floating-point exception"),
-        0x14 => exception!("Virtualization exception"),
-        0x1E => exception_error!("Security exception"),
-        _ => exception!("Unknown Interrupt"),
-    }
-
-    ax
 }
