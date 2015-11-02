@@ -49,7 +49,12 @@ interrupts:
 	push rax
 	mov rdi, qword [0x100000]
 	mov rsi, rsp
+		;Stack Align
+		mov rbp, rsp
+		and rsp, 0xFFFFFFFFFFFFFFF0
     call qword [.handler]
+		;Stack Restore
+		mov rsp, rbp
 	pop rax
 	pop rbx
 	pop rcx
