@@ -131,8 +131,8 @@
 
     /* Runtime and platform support */
 
-    // TODO #[macro_use]
-    // TODO pub mod thread;
+    #[macro_use]
+    pub mod thread;
 
     pub mod collections;
     // TODO pub mod dynamic_lib;
