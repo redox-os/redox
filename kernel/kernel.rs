@@ -7,6 +7,7 @@
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_str_ext)]
+#![feature(core_slice_ext)]
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
@@ -15,6 +16,7 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
+#![feature(raw)]
 #![feature(slice_concat_ext)]
 #![no_std]
 
@@ -30,6 +32,9 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::{mem, ptr};
+use core::slice::{self, SliceExt};
+use core::str;
+use core::raw::Repr;
 
 use common::context::*;
 use common::debug;
@@ -131,6 +136,56 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
+
+/// Bounded slice abstraction
+/// ```
+/// foo[a..b] => foo.get_slice(Some(a), Some(b))
+/// foo[a..]  => foo.get_slice(Some(a), None)
+/// foo[..b]  => foo.get_slice(None, Some(b))
+/// ```
+pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
+
+impl GetSlice for str {
+    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
+        let slice = unsafe { slice::from_raw_parts(self.repr().data, self.repr().len) };
+        let a = if let Some(tmp) = a {
+            let len = slice.len();
+            if tmp > len { len }
+            else { tmp }
+        } else {
+            0
+        };
+        let b = if let Some(tmp) = b {
+            let len = slice.len();
+            if tmp > len { len }
+            else { tmp }
+        } else {
+            slice.len()
+        };
+        unsafe { str::from_utf8_unchecked(&slice[a..b]) }
+    }
+}
+
+impl<T> GetSlice for [T] {
+    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
+        let slice = unsafe { slice::from_raw_parts(SliceExt::as_ptr(self), SliceExt::len(self)) };
+        let a = if let Some(tmp) = a {
+            let len = slice.len();
+            if tmp > len { len }
+            else { tmp }
+        } else {
+            0
+        };
+        let b = if let Some(tmp) = b {
+            let len = slice.len();
+            if tmp > len { len }
+            else { tmp }
+        } else {
+            slice.len()
+        };
+        &slice[a..b]
+    }
+}
 
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
