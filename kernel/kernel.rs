@@ -138,11 +138,15 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
 /// Bounded slice abstraction
-/// ```
-/// foo[a..b] => foo.get_slice(Some(a), Some(b))
-/// foo[a..]  => foo.get_slice(Some(a), None)
-/// foo[..b]  => foo.get_slice(None, Some(b))
-/// ```
+///
+/// # Code Migration
+///
+/// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
+///
+/// `foo[a..]` => `foo.get_slice(Some(a), None)`
+///
+/// `foo[..b]` => `foo.get_slice(None, Some(b))`
+///
 pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
 
 impl GetSlice for str {
