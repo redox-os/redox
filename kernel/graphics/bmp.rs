@@ -10,17 +10,17 @@ use super::size::Size;
 
 // TODO: Follow naming convention
 /// A bitmap
-pub struct BMPFile {
+pub struct BmpFile {
     /// The data of the bitmap
     pub data: Vec<u32>,
     /// The bitmap size
     pub size: Size,
 }
 
-impl BMPFile {
+impl BmpFile {
     /// Create a new empty bitmap
     pub fn new() -> Self {
-        BMPFile {
+        BmpFile {
             data: Vec::new(),
             size: Size {
                 width: 0,
@@ -31,7 +31,7 @@ impl BMPFile {
 
     /// Create a bitmap from some data
     pub fn from_data(file_data: &Vec<u8>) -> Self {
-        let mut ret = BMPFile::new();
+        let mut ret = BmpFile::new();
 
         let get = |i: usize| -> u8 {
             match file_data.get(i) {

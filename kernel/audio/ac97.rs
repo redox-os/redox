@@ -4,10 +4,10 @@ use core::{cmp, ptr, mem};
 
 use common::debug;
 use common::memory;
-use schemes::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, Url};
 use common::time::{self, Duration};
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
 
 use schemes::KScheme;
@@ -31,8 +31,8 @@ impl Resource for AC97Resource {
         })
     }
 
-    fn url(&self) -> URL {
-        URL::from_str("audio://")
+    fn url(&self) -> Url {
+        Url::from_str("audio://")
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -43,18 +43,18 @@ impl Resource for AC97Resource {
         unsafe {
             let audio = self.audio as u16;
 
-            let mut master_volume = PIO16::new(audio + 2);
-            let mut pcm_volume = PIO16::new(audio + 0x18);
+            let mut master_volume = Pio16::new(audio + 2);
+            let mut pcm_volume = Pio16::new(audio + 0x18);
 
             master_volume.write(0x808);
             pcm_volume.write(0x808);
 
             let bus_master = self.bus_master as u16;
 
-            let mut po_bdbar = PIO32::new(bus_master + 0x10);
-            let po_civ = PIO8::new(bus_master + 0x14);
-            let mut po_lvi = PIO8::new(bus_master + 0x15);
-            let mut po_cr = PIO8::new(bus_master + 0x1B);
+            let mut po_bdbar = Pio32::new(bus_master + 0x10);
+            let po_civ = Pio8::new(bus_master + 0x14);
+            let mut po_lvi = Pio8::new(bus_master + 0x15);
+            let mut po_cr = Pio8::new(bus_master + 0x1B);
 
             loop {
                 if po_cr.read() & 1 == 0 {
@@ -181,7 +181,7 @@ impl KScheme for AC97 {
         "audio"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         Some(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
@@ -199,7 +199,7 @@ impl KScheme for AC97 {
 }
 
 impl AC97 {
-    pub unsafe fn new(mut pci: PCIConfig) -> Box<AC97> {
+    pub unsafe fn new(mut pci: PciConfig) -> Box<AC97> {
         pci.flag(4, 4, true); // Bus mastering
 
         let module = box AC97 {

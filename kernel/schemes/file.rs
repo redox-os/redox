@@ -10,14 +10,14 @@ use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use drivers::disk::{Disk, Extent, Request};
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 
 use scheduler::context::recursive_unsafe_yield;
 use common::debug;
 use common::memory::Memory;
 use common::parse_path::*;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL, VecResource};
+use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
 /// The header of the fs
 #[repr(packed)]
@@ -251,8 +251,8 @@ impl Resource for FileResource {
         })
     }
 
-    fn url(&self) -> URL {
-        return URL::from_string(&("file:///".to_string() + &self.node.name));
+    fn url(&self) -> Url {
+        return Url::from_string(&("file:///".to_string() + &self.node.name));
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -440,14 +440,14 @@ impl Drop for FileResource {
 
 /// A file scheme (pci + fs)
 pub struct FileScheme {
-    pci: PCIConfig,
+    pci: PciConfig,
     fs: FileSystem,
 }
 
 impl FileScheme {
     ///TODO Allow busmaster for secondary
     /// Create a new file scheme from a PCI configuration
-    pub fn new(mut pci: PCIConfig) -> Option<Box<Self>> {
+    pub fn new(mut pci: PciConfig) -> Option<Box<Self>> {
         unsafe { pci.flag(4, 4, true) }; // Bus mastering
 
         let base = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
@@ -509,7 +509,7 @@ impl KScheme for FileScheme {
         "file"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
         let path = url.reference();
         if path.is_empty() || path.ends_with('/') {
             let mut list = String::new();

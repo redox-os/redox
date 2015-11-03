@@ -6,7 +6,7 @@ pub type ElfWord = u32;
 
 /// An ELF header
 #[repr(packed)]
-pub struct ELFHeader {
+pub struct ElfHeader {
     /// The "magic number" (4 bytes)
     pub magic: [u8; 4],
     /// 64 or 32 bit?
@@ -49,7 +49,7 @@ pub struct ELFHeader {
 
 /// An ELF segment
 #[repr(packed)]
-pub struct ELFSegment {
+pub struct ElfSegment {
     pub _type: ElfWord,
     pub off: ElfOff,
     pub vaddr: ElfAddr,
@@ -62,7 +62,7 @@ pub struct ELFSegment {
 
 /// An ELF section
 #[repr(packed)]
-pub struct ELFSection {
+pub struct ElfSection {
     pub name: ElfWord,
     pub _type: ElfWord,
     pub flags: ElfWord,
@@ -77,7 +77,7 @@ pub struct ELFSection {
 
 /// An ELF symbol
 #[repr(packed)]
-pub struct ELFSymbol {
+pub struct ElfSymbol {
     pub name: ElfWord,
     pub value: ElfAddr,
     pub size: ElfWord,

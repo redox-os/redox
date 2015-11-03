@@ -10,17 +10,17 @@ use common::memory::{self, Memory};
 use scheduler;
 use common::time::{self, Duration};
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
 
 use schemes::KScheme;
 
-pub struct UHCI {
+pub struct Uhci {
     pub base: usize,
     pub irq: u8,
 }
 
-impl KScheme for UHCI {
+impl KScheme for Uhci {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             //d("UHCI IRQ\n");
@@ -32,7 +32,7 @@ impl KScheme for UHCI {
 }
 
 #[repr(packed)]
-struct SETUP {
+struct Setup {
     request_type: u8,
     request: u8,
     value: u16,
@@ -41,7 +41,7 @@ struct SETUP {
 }
 
 #[repr(packed)]
-struct TD {
+struct Td {
     link_ptr: u32,
     ctrl_sts: u32,
     token: u32,
@@ -49,7 +49,7 @@ struct TD {
 }
 
 #[repr(packed)]
-struct QH {
+struct Qh {
     head_ptr: u32,
     element_ptr: u32,
 }
@@ -292,11 +292,11 @@ impl HIDDescriptor {
     }
 }
 
-impl UHCI {
-    pub unsafe fn new(mut pci: PCIConfig) -> Box<Self> {
+impl Uhci {
+    pub unsafe fn new(mut pci: PciConfig) -> Box<Self> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let module = box UHCI {
+        let module = box Uhci {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
         };
@@ -308,20 +308,20 @@ impl UHCI {
 
     unsafe fn set_address(&self, frame_list: *mut u32, address: u8) {
         let base = self.base as u16;
-        let frnum = PIO16::new(base + 6);
+        let frnum = Pio16::new(base + 6);
 
-        let mut in_td = Memory::<TD>::new(1).unwrap();
+        let mut in_td = Memory::<Td>::new(1).unwrap();
         in_td.store(0,
-                    TD {
+                    Td {
                         link_ptr: 1,
                         ctrl_sts: 1 << 23,
                         token: 0x7FF << 21 | 0x69,
                         buffer: 0,
                     });
 
-        let mut setup = Memory::<SETUP>::new(1).unwrap();
+        let mut setup = Memory::<Setup>::new(1).unwrap();
         setup.store(0,
-                    SETUP {
+                    Setup {
                         request_type: 0b00000000,
                         request: 5,
                         value: address as u16,
@@ -329,18 +329,18 @@ impl UHCI {
                         len: 0,
                     });
 
-        let mut setup_td = Memory::<TD>::new(1).unwrap();
+        let mut setup_td = Memory::<Td>::new(1).unwrap();
         setup_td.store(0,
-                       TD {
+                       Td {
                            link_ptr: in_td.address() as u32 | 4,
                            ctrl_sts: 1 << 23,
-                           token: (mem::size_of::<SETUP>() as u32 - 1) << 21 | 0x2D,
+                           token: (mem::size_of::<Setup>() as u32 - 1) << 21 | 0x2D,
                            buffer: setup.address() as u32,
                        });
 
-        let mut queue_head = Memory::<QH>::new(1).unwrap();
+        let mut queue_head = Memory::<Qh>::new(1).unwrap();
         queue_head.store(0,
-                         QH {
+                         Qh {
                              head_ptr: 1,
                              element_ptr: setup_td.address() as u32,
                          });
@@ -380,29 +380,29 @@ impl UHCI {
                          descriptor_ptr: u32,
                          descriptor_len: u32) {
         let base = self.base as u16;
-        let frnum = PIO16::new(base + 6);
+        let frnum = Pio16::new(base + 6);
 
-        let mut out_td = Memory::<TD>::new(1).unwrap();
+        let mut out_td = Memory::<Td>::new(1).unwrap();
         out_td.store(0,
-                     TD {
+                     Td {
                          link_ptr: 1,
                          ctrl_sts: 1 << 23,
                          token: 0x7FF << 21 | (address as u32) << 8 | 0xE1,
                          buffer: 0,
                      });
 
-        let mut in_td = Memory::<TD>::new(1).unwrap();
+        let mut in_td = Memory::<Td>::new(1).unwrap();
         in_td.store(0,
-                    TD {
+                    Td {
                         link_ptr: out_td.address() as u32 | 4,
                         ctrl_sts: 1 << 23,
                         token: (descriptor_len - 1) << 21 | (address as u32) << 8 | 0x69,
                         buffer: descriptor_ptr,
                     });
 
-        let mut setup = Memory::<SETUP>::new(1).unwrap();
+        let mut setup = Memory::<Setup>::new(1).unwrap();
         setup.store(0,
-                    SETUP {
+                    Setup {
                         request_type: 0b10000000,
                         request: 6,
                         value: (descriptor_type as u16) << 8 | (descriptor_index as u16),
@@ -410,19 +410,19 @@ impl UHCI {
                         len: descriptor_len as u16,
                     });
 
-        let mut setup_td = Memory::<TD>::new(1).unwrap();
+        let mut setup_td = Memory::<Td>::new(1).unwrap();
         setup_td.store(0,
-                       TD {
+                       Td {
                            link_ptr: in_td.address() as u32 | 4,
                            ctrl_sts: 1 << 23,
-                           token: (mem::size_of::<SETUP>() as u32 - 1) << 21 |
+                           token: (mem::size_of::<Setup>() as u32 - 1) << 21 |
                                   (address as u32) << 8 | 0x2D,
                            buffer: setup.address() as u32,
                        });
 
-        let mut queue_head = Memory::<QH>::new(1).unwrap();
+        let mut queue_head = Memory::<Qh>::new(1).unwrap();
         queue_head.store(0,
-                         QH {
+                         Qh {
                              head_ptr: 1,
                              element_ptr: setup_td.address() as u32,
                          });
@@ -514,7 +514,7 @@ impl UHCI {
 
                         Context::spawn(box move || {
                             let in_ptr = memory::alloc(in_len) as *mut u8;
-                            let in_td: *mut TD = memory::alloc_type();
+                            let in_td: *mut Td = memory::alloc_type();
 
                             loop {
                                 for i in 0..in_len as isize {
@@ -522,7 +522,7 @@ impl UHCI {
                                 }
 
                                 ptr::write(in_td,
-                                           TD {
+                                           Td {
                                                link_ptr: 1,
                                                ctrl_sts: 1 << 25 | 1 << 23,
                                                token: (in_len as u32 - 1) << 21 |
