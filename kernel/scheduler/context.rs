@@ -14,7 +14,7 @@ use scheduler;
 
 use schemes::Resource;
 
-use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM, Regs};
+use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM, Regs, SYS_YIELD};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
@@ -22,10 +22,17 @@ pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 
+/// This provides a way to yield inside of the kernel
+///
+/// It should only be used when absolutely necessary
+pub unsafe fn recursive_unsafe_yield(){
+    asm!("int 0x80" : : "{eax}"(SYS_YIELD) : : "intel", "volatile");
+}
+
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(interrupted: bool) {
+pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
@@ -162,7 +169,7 @@ pub unsafe fn context_exit() {
 
     scheduler::end_no_ints(reenable);
 
-    context_switch(false);
+    recursive_unsafe_yield();
 }
 
 // Currently unused?

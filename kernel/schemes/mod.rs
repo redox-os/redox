@@ -17,6 +17,8 @@ pub mod display;
 pub mod ethernet;
 /// File scheme
 pub mod file;
+/// ICMP scheme
+pub mod icmp;
 /// IP scheme
 pub mod ip;
 /// Memory scheme

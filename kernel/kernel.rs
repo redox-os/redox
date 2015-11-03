@@ -66,6 +66,7 @@ use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
+use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
@@ -224,7 +225,7 @@ unsafe fn idle_loop() -> ! {
             asm!("sti");
         }
 
-        context_switch(false);
+        recursive_unsafe_yield();
     }
 }
 
@@ -235,7 +236,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        context_switch(false);
+        recursive_unsafe_yield();
     }
 }
 
@@ -310,7 +311,7 @@ unsafe fn event_loop() -> ! {
             session.redraw();
         }
 
-        context_switch(false);
+        recursive_unsafe_yield();
     }
 }
 
@@ -364,8 +365,6 @@ unsafe fn init(font_data: usize) {
 
     debug_command = Box::into_raw(box String::new());
 
-    debugln!("WELCOME TO REDOX!");
-
     debug::d("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
     debug::d(" bits ");
@@ -395,6 +394,7 @@ unsafe fn init(font_data: usize) {
 
     session.items.push(box EthernetScheme);
     session.items.push(box ARPScheme);
+    session.items.push(box ICMPScheme);
     session.items.push(box IPScheme {
         arp: Vec::new()
     });
@@ -409,6 +409,9 @@ unsafe fn init(font_data: usize) {
     });
     Context::spawn(box move || {
         ARPScheme::reply_loop();
+    });
+    Context::spawn(box move || {
+        ICMPScheme::reply_loop();
     });
 
     debug::d("Reenabling interrupts\n");
@@ -480,22 +483,6 @@ unsafe fn init(font_data: usize) {
         session.background = background;
         session.redraw = true;
         scheduler::end_no_ints(reenable);
-    } else {
-        debug::d("Failed to open background at: ");
-        debug::d(URL::from_str("file:///ui/background.bmp").reference());
-        debug::d("(scheme: ");
-        debug::d(URL::from_str("file:///ui/background.bmp").scheme());
-        debug::d(")\n");
-        debug::d("Parsed as: \n");
-
-        let parts = parse_path("///ui/background.bmp");
-        for i in parts {
-            debug::d(&i);
-            debug::d("\n");
-        }
-        debug::d("Path refered to as: ");
-        debug::d(URL::from_str("file:///ui/background.bmp").reference());
-        debug::d("\n");
     }
 
     debug::d("Enabling context switching\n");
@@ -615,7 +602,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(true);
+            context_switch(regs, true);
         }
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4

@@ -1,4 +1,3 @@
-pub mod arp;
 pub mod common;
 pub mod ethernet;
 pub mod intel8254x;

@@ -1,3 +1,13 @@
+use collections::vec::Vec;
+
+use core::{mem, slice};
+
+use scheduler::context::recursive_unsafe_yield;
+
+use network::common::*;
+
+use schemes::{KScheme, URL};
+
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct ICMPHeader {
@@ -14,12 +24,11 @@ pub struct ICMP {
 
 impl FromBytes for ICMP {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
-        if bytes.len() >= size_of::<ICMPHeader>() {
+        if bytes.len() >= mem::size_of::<ICMPHeader>() {
             unsafe {
                 return Some(ICMP {
                     header: *(bytes.as_ptr() as *const ICMPHeader),
-                    data: bytes.sub(size_of::<ICMPHeader>(),
-                                    bytes.len() - size_of::<ICMPHeader>()),
+                    data: bytes[mem::size_of::<ICMPHeader>()..].to_vec(),
                 });
             }
         }
@@ -31,21 +40,27 @@ impl ToBytes for ICMP {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const ICMPHeader = &self.header;
-            let mut ret = Vec::from_raw_buf(header_ptr as *const u8, size_of::<ICMPHeader>());
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ICMPHeader>()));
             ret.push_all(&self.data);
             ret
         }
     }
 }
 
-pub struct Scheme;
+pub struct ICMPScheme;
 
-impl Scheme {
-    pub fn run(&mut self){
+impl KScheme for ICMPScheme {
+    fn scheme(&self) -> &str {
+        "icmp"
+    }
+}
+
+impl ICMPScheme {
+    pub fn reply_loop() {
         while let Some(mut ip) = URL::from_str("ip:///1").open() {
-            let mut bytes: Vec<u8> = Vec::new();
-            match ip.read_to_end(&mut bytes) {
-                Some(_) => {
+            loop {
+                let mut bytes: Vec<u8> = Vec::new();
+                if let Some(_) = ip.read_to_end(&mut bytes) {
                     if let Some(message) = ICMP::from_bytes(bytes) {
                         if message.header._type == 0x08 {
                             let mut response = ICMP {
@@ -65,12 +80,14 @@ impl Scheme {
                                 );
                             }
 
-                            ip.write(&response.to_bytes().as_slice());
+                            ip.write(&response.to_bytes());
                         }
                     }
+                } else {
+                    break;
                 }
-                None => unsafe { context_switch(false) },
             }
+            unsafe { recursive_unsafe_yield() };
         }
     }
 }
