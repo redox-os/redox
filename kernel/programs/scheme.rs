@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use alloc::boxed::Box;
 
 use collections::string::String;
@@ -156,7 +158,7 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return Url::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..result])) });
+                return Url::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result)))) });
             }
         }
         Url::new()

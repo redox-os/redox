@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 
@@ -223,7 +225,7 @@ impl FileSystem {
                 }
             }
             if eq {
-                ret.push(parse_path(&node.name)[directory.len()..].join("/"));
+                ret.push(parse_path(&node.name).get_slice(Some(directory.len()), None).join("/"));
             }
         }
 
@@ -520,7 +522,7 @@ impl KScheme for FileScheme {
                 let line;
                 match file.find('/') {
                     Some(index) => {
-                        let dirname = file[.. index + 1].to_string();
+                        let dirname = file.get_slice(None, Some(index + 1)).to_string();
                         let mut found = false;
                         for dir in dirs.iter() {
                             if dirname == *dir {

@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use collections::vec::Vec;
 
 use core::{mem, slice};
@@ -33,7 +35,7 @@ impl FromBytes for Arp {
             unsafe {
                 return Some(Arp {
                     header: *(bytes.as_ptr() as *const ArpHeader),
-                    data: bytes[mem::size_of::<ArpHeader>() ..].to_vec()
+                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec()
                 });
             }
         }
