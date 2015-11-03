@@ -4,10 +4,10 @@ use collections::vec::Vec;
 
 use core::ops::DerefMut;
 
-use common::context::context_switch;
+use scheduler::context::context_switch;
 use common::debug;
 use common::queue::Queue;
-use common::scheduler;
+use scheduler;
 
 use schemes::{Resource, ResourceSeek, URL};
 

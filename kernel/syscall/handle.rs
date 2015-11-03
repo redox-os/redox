@@ -4,10 +4,10 @@ use collections::vec::Vec;
 use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
-use common::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
+use scheduler::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
 use common::debug;
 use common::memory;
-use common::scheduler;
+use scheduler;
 use common::time::Duration;
 
 use drivers::pio::*;
@@ -111,7 +111,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_chdir(path: *const u8) -> usize {
+pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
         len += 1;
@@ -134,42 +134,42 @@ pub unsafe fn do_sys_chdir(path: *const u8) -> usize {
 #[cold]
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
-    let mut ret = usize::MAX;
+    let mut parent_ptr: *const Context = 0 as *const Context;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        let parent_ptr: *const Context = parent.deref();
+        parent_ptr = parent.deref();
 
         let mut context_clone_args: Vec<usize> = Vec::new();
         context_clone_args.push(flags);
         context_clone_args.push(parent_ptr as usize);
         context_clone_args.push(context_exit as usize);
 
-        let contexts = &mut *::common::context::contexts_ptr;
+        let contexts = &mut *::scheduler::context::contexts_ptr;
         contexts.push(Context::new(context_clone as usize, &context_clone_args));
+    }
 
-        debugln!("Parent Before: {:X} {}", parent_ptr as usize, Context::current_i());
+    scheduler::end_no_ints(reenable);
 
-        scheduler::end_no_ints(reenable);
+    context_switch(false);
 
-        context_switch(false);
+    let mut ret = usize::MAX;
 
-        scheduler::start_no_ints();
+    if parent_ptr as usize > 0 {
+        let reenable = scheduler::start_no_ints();
 
         if let Some(new) = Context::current() {
             let new_ptr: *const Context = new.deref();
             if new_ptr == parent_ptr {
-                debugln!("Parent After: {:X} {}", new_ptr as usize, Context::current_i());
-                ret = 0;
-            }else{
-                debugln!("Child After: {:X} {}", new_ptr as usize, Context::current_i());
                 ret = 1;
+            }else{
+                ret = 0;
             }
         }
-    }
 
-    scheduler::end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
+    }
 
     ret
 }

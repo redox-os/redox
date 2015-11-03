@@ -1,5 +1,3 @@
-/// Context
-pub mod context;
 /// Debug
 #[macro_use]
 pub mod debug;
@@ -21,13 +19,11 @@ pub mod paging;
 pub mod queue;
 /// A module for pseudorandom generator
 pub mod random;
-/// A module for scheduling
-pub mod scheduler;
 /// A module for time
 pub mod time;
 /// String to number
 pub mod to_num;
 /// A module for parsing paths
 pub mod parse_path;
-/// A module for parsing IP related string 
+/// A module for parsing IP related string
 pub mod parse_ip;

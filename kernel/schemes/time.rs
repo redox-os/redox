@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use common::scheduler;
+use scheduler;
 
 use schemes::{KScheme, Resource, URL, VecResource};
 

@@ -1,6 +1,6 @@
 use collections::vec::Vec;
 
-use common::context::context_switch;
+use scheduler::context::context_switch;
 
 use network::arp::*;
 use network::common::*;

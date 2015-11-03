@@ -5,12 +5,12 @@ use collections::vec::Vec;
 
 use core::{ptr, usize};
 
-use common::context::ContextMemory;
+use scheduler::context::ContextMemory;
 use common::debug;
 use common::elf::{self, ELF};
 use common::memory;
 use common::paging::Page;
-use common::scheduler::{start_no_ints, end_no_ints};
+use scheduler::{start_no_ints, end_no_ints};
 use common::parse_path::parse_path;
 
 use schemes::{KScheme, Resource, ResourceSeek, URL};

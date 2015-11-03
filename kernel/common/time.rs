@@ -1,8 +1,8 @@
 use core::cmp::Ordering;
 use core::ops::{Add, Sub};
 
-use common::context::context_switch;
-use common::scheduler;
+use scheduler::context::context_switch;
+use scheduler;
 
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;

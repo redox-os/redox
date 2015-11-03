@@ -6,7 +6,7 @@ use core::ops::DerefMut;
 
 use common::event::{Event, KeyEvent, MouseEvent, QuitEvent};
 use common::queue::Queue;
-use common::scheduler;
+use scheduler;
 
 use super::color::Color;
 use super::display::Display;

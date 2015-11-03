@@ -1,6 +1,6 @@
 use core::{char, cmp};
 
-use common::scheduler;
+use scheduler;
 
 /// An optional event
 pub enum EventOption {

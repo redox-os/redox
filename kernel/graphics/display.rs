@@ -3,7 +3,9 @@ use alloc::boxed::Box;
 use core::{cmp, mem};
 use core::simd::*;
 
-use common::{memory, scheduler};
+use common::memory;
+
+use scheduler;
 
 use super::color::Color;
 use super::point::Point;

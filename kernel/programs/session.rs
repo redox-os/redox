@@ -7,7 +7,7 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::event::{Event, EventOption, KeyEvent, MouseEvent};
-use common::scheduler;
+use scheduler;
 
 use graphics::bmp::BMPFile;
 use graphics::color::Color;
