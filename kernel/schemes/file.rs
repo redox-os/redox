@@ -12,7 +12,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use drivers::disk::{Disk, Extent, Request};
 use drivers::pciconfig::PCIConfig;
 
-use common::context::context_switch;
+use scheduler::context::context_switch;
 use common::debug;
 use common::memory::Memory;
 use common::parse_path::*;

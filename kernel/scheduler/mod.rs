@@ -1,3 +1,6 @@
+/// Context
+pub mod context;
+
 #[cfg(target_arch = "x86")]
 pub unsafe fn start_no_ints() -> bool {
     let flags: u32;

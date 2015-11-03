@@ -1,4 +1,4 @@
-use common::scheduler::*;
+use scheduler::*;
 use common::time::Duration;
 
 use drivers::pio::*;

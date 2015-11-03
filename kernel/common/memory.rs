@@ -4,7 +4,7 @@ use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::ptr;
 
-use common::scheduler;
+use scheduler;
 
 use common::paging::PAGE_END;
 

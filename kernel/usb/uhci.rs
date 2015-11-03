@@ -3,11 +3,11 @@ use alloc::boxed::Box;
 use core::intrinsics::{volatile_load, volatile_store};
 use core::{cmp, mem, ptr};
 
-use common::context::{self, Context};
+use scheduler::context::{self, Context};
 use common::debug;
 use common::event::MouseEvent;
 use common::memory::{self, Memory};
-use common::scheduler;
+use scheduler;
 use common::time::{self, Duration};
 
 use drivers::pciconfig::PCIConfig;

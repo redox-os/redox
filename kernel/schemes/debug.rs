@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
-use common::context::context_switch;
-use common::scheduler;
+use scheduler::context::context_switch;
+use scheduler;
 
 use schemes::{KScheme, Resource, URL};
 

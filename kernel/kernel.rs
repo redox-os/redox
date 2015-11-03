@@ -36,14 +36,13 @@ use core::slice::{self, SliceExt};
 use core::str;
 use core::raw::Repr;
 
-use common::context::*;
+use scheduler::context::*;
 use common::debug;
 use common::event::{self, Event, EventOption};
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
 use schemes::URL;
-use common::scheduler;
 use common::time::Duration;
 use common::parse_path::*;
 
@@ -98,6 +97,8 @@ pub mod panic;
 pub mod programs;
 /// Schemes
 pub mod schemes;
+/// Scheduling
+pub mod scheduler;
 /// System calls
 pub mod syscall;
 /// USB input/output

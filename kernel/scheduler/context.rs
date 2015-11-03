@@ -10,7 +10,7 @@ use core::{mem, ptr};
 use common::debug;
 use common::memory;
 use common::paging::Page;
-use common::scheduler;
+use scheduler;
 
 use schemes::Resource;
 
@@ -57,20 +57,20 @@ pub unsafe fn context_switch(interrupted: bool) {
         }
 
         if context_i != current_i {
-            match contexts.get(current_i) {
-                Some(current) => match contexts.get(context_i) {
-                    Some(next) => {
-                        let current_ptr: *mut Box<Context> = mem::transmute(current as *const Box<Context>);
-                        let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
+            if let Some(current) = contexts.get(current_i) {
+                if let Some(next) = contexts.get(context_i) {
+                    let current_ptr: *mut Box<Context> = mem::transmute(current as *const Box<Context>);
+                    let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
 
-                        (*current_ptr).interrupted = interrupted;
-                        (*next_ptr).interrupted = false;
-                        (*current_ptr).remap(&mut *next_ptr);
-                        (*current_ptr).switch(&mut *next_ptr);
-                    }
-                    None => (),
-                },
-                None => (),
+                    (*current_ptr).interrupted = interrupted;
+                    (*next_ptr).interrupted = false;
+
+                    (*current_ptr).unmap();
+                    (*next_ptr).map();
+
+                    (*current_ptr).switch_fx(&mut *next_ptr);
+                    (*current_ptr).switch_stack(&mut *next_ptr);
+                }
             }
         }
     }
@@ -90,10 +90,8 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
     if stack > 0 {
         let parent = &*parent_ptr;
 
-        debug::debug(&format!("Copy stack {:X} {:X} {:X} {:X}\n", parent.stack, parent.stack_ptr, parent.stack_ptr - parent.stack, CONTEXT_STACK_SIZE));
         ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
 
-        debug::debug("Push\n");
         let contexts = &mut *contexts_ptr;
         contexts.push(box Context {
             interrupted: parent.interrupted,
@@ -106,17 +104,13 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 
             args: parent.args.clone(),
             cwd: if flags & CLONE_FS == CLONE_FS {
-                debug::debug("Clone cwd\n");
                 parent.cwd.clone()
             } else {
-                debug::debug("Copy cwd\n");
                 Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
             },
             memory: if flags & CLONE_VM == CLONE_VM {
-                debug::debug("Clone memory\n");
                 parent.memory.clone()
             } else {
-                debug::debug("Copy memory\n");
                 let mut mem: Vec<ContextMemory> = Vec::new();
                 for entry in (*parent.memory.get()).iter() {
                     let physical_address = memory::alloc(entry.virtual_size);
@@ -132,10 +126,8 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                 Rc::new(UnsafeCell::new(mem))
             },
             files: if flags & CLONE_FILES == CLONE_FILES {
-                debug::debug("Clone files\n");
                 parent.files.clone()
             }else {
-                debug::debug("Copy files\n");
                 let mut files: Vec<ContextFile> = Vec::new();
                 for file in (*parent.files.get()).iter() {
                     if let Some(resource) = file.resource.dup() {
@@ -149,8 +141,6 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
             },
         });
     }
-
-    debug::debug(&format!("Parent Return: {:X}\n", parent_ptr as usize));
 
     scheduler::end_no_ints(reenable);
 }
@@ -185,6 +175,19 @@ pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
     pub virtual_size: usize,
+}
+
+impl ContextMemory {
+    pub unsafe fn map(&mut self) {
+        for i in 0..(self.virtual_size + 4095) / 4096 {
+            Page::new(self.virtual_address + i * 4096).map(self.physical_address + i * 4096);
+        }
+    }
+    pub unsafe fn unmap(&mut self) {
+        for i in 0..(self.virtual_size + 4095) / 4096 {
+            Page::new(self.virtual_address + i * 4096).map_identity();
+        }
+    }
 }
 
 impl Drop for ContextMemory {
@@ -440,24 +443,35 @@ impl Context {
     }
 
     pub unsafe fn map(&mut self) {
-        for entry in (*self.memory.get()).iter() {
-            for i in 0..(entry.virtual_size + 4095) / 4096 {
-                Page::new(entry.virtual_address + i * 4096).map(entry.physical_address + i * 4096);
-            }
+        for entry in (*self.memory.get()).iter_mut() {
+            entry.map();
         }
     }
 
     pub unsafe fn unmap(&mut self) {
-        for entry in (*self.memory.get()).iter() {
-            for i in 0..(entry.virtual_size + 4095) / 4096 {
-                Page::new(entry.virtual_address + i * 4096).map_identity();
-            }
+        for entry in (*self.memory.get()).iter_mut() {
+            entry.unmap();
         }
     }
 
-    pub unsafe fn remap(&mut self, other: &mut Self) {
-        self.unmap();
-        other.map();
+    #[cold]
+    #[inline(never)]
+    pub unsafe fn switch_fx(&mut self, other: &mut Self) {
+        asm!("fxsave [$0]"
+            :
+            : "r"(self.fx)
+            : "memory"
+            : "intel", "volatile");
+
+        self.fx_enabled = true;
+
+        if other.fx_enabled {
+            asm!("fxrstor [$0]"
+                :
+                : "r"(other.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
@@ -466,7 +480,7 @@ impl Context {
     #[inline(never)]
     //#[naked]
     #[cfg(target_arch = "x86")]
-    pub unsafe fn switch(&mut self, other: &mut Self) {
+    pub unsafe fn switch_stack(&mut self, other: &mut Self) {
         asm!("pushfd
             pushad
             mov [eax], esp"
@@ -474,22 +488,6 @@ impl Context {
             : "{eax}"(&mut self.stack_ptr)
             : "memory"
             : "intel", "volatile");
-
-        asm!("fxsave [eax]"
-            :
-            : "{eax}"(self.fx)
-            : "memory"
-            : "intel", "volatile");
-
-        self.fx_enabled = true;
-
-        if other.fx_enabled {
-            asm!("fxrstor [eax]"
-                :
-                : "{eax}"(other.fx)
-                : "memory"
-                : "intel", "volatile");
-        }
 
         asm!("mov esp, [eax]
             popad
@@ -506,7 +504,7 @@ impl Context {
     #[inline(never)]
     //#[naked]
     #[cfg(target_arch = "x86_64")]
-    pub unsafe fn switch(&mut self, other: &mut Self) {
+    pub unsafe fn switch_stack(&mut self, other: &mut Self) {
         asm!("pushfq
             push rax
             push rbx
@@ -528,22 +526,6 @@ impl Context {
             : "{rax}"(&mut self.stack_ptr)
             : "memory"
             : "intel", "volatile");
-
-        asm!("fxsave [rax]"
-            :
-            : "{rax}"(self.fx)
-            : "memory"
-            : "intel", "volatile");
-        self.fx_enabled = true;
-
-        //TODO: Clear registers
-        if other.fx_enabled {
-            asm!("fxrstor [rax]"
-                :
-                : "{rax}"(other.fx)
-                : "memory"
-                : "intel", "volatile");
-        }
 
         asm!("mov rsp, [rax]
             pop rbp

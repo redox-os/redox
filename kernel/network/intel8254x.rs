@@ -7,7 +7,7 @@ use core::ptr;
 
 use common::{debug, memory};
 use common::queue::Queue;
-use common::scheduler;
+use scheduler;
 
 use drivers::pciconfig::PCIConfig;
 

@@ -1,11 +1,11 @@
 use collections::string::String;
 use collections::vec::Vec;
 
-use common::context::{self, Context, ContextFile, ContextMemory};
+use scheduler::context::{self, Context, ContextFile, ContextMemory};
 use common::debug;
 use common::elf::ELF;
 use common::memory;
-use common::scheduler;
+use scheduler;
 use collections::string::ToString;
 
 use schemes::URL;

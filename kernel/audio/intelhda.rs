@@ -7,7 +7,7 @@ use drivers::pciconfig::PCIConfig;
 use common::debug;
 use common::memory;
 use schemes::{Resource, ResourceSeek, URL};
-use common::scheduler;
+use scheduler;
 use common::time::{self, Duration};
 
 use schemes::KScheme;
