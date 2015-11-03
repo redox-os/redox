@@ -252,6 +252,9 @@ virtualbox: $(BUILD)/harddrive.bin
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
+bochs: $(BUILD)/harddrive.bin
+	-bochs -f bochs.$(ARCH)
+
 qemu: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
@@ -333,4 +336,3 @@ ping:
 
 wireshark:
 	wireshark network.pcap
-
