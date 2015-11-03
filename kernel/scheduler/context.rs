@@ -16,6 +16,7 @@ use schemes::Resource;
 
 use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM, Regs, SYS_YIELD};
 
+pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
@@ -72,11 +73,11 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
                     (*current_ptr).interrupted = interrupted;
                     (*next_ptr).interrupted = false;
 
+                    (*current_ptr).save();
+                    (*current_ptr).stack_physical();
                     (*current_ptr).unmap();
                     (*next_ptr).map();
-
-                    (*current_ptr).switch_fx(&mut *next_ptr);
-                    (*current_ptr).switch_stack(&mut *next_ptr);
+                    (*next_ptr).restore();
                 }
             }
         }
@@ -90,8 +91,6 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
 /// Unsafe due to interrupt disabling, C memory handling, and raw pointers
 pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize){
     let reenable = scheduler::start_no_ints();
-
-    debug::debug(&format!("Parent During: {:X} {} {:X}\n", parent_ptr as usize, Context::current_i(), flags));
 
     let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
     if stack > 0 {
@@ -146,8 +145,6 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                 Rc::new(UnsafeCell::new(files))
             },
         };
-
-        context.regs.sp = stack + (parent.regs.sp - parent.stack);
 
         let contexts = &mut *contexts_ptr;
         contexts.push(context);
@@ -288,6 +285,8 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
+        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+
         ret
     }
 
@@ -329,6 +328,8 @@ impl Context {
         ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
 
         ret.push(call); //We will ret into this function call
+
+        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
     }
@@ -429,6 +430,11 @@ impl Context {
     }
 
     pub unsafe fn map(&mut self) {
+        if self.stack > 0 {
+            for i in 0..(CONTEXT_STACK_SIZE + 4095) / 4096 {
+                Page::new(CONTEXT_STACK_ADDR + i * 4096).map(self.stack + i * 4096);
+            }
+        }
         for entry in (*self.memory.get()).iter_mut() {
             entry.map();
         }
@@ -438,11 +444,24 @@ impl Context {
         for entry in (*self.memory.get()).iter_mut() {
             entry.unmap();
         }
+        if self.stack > 0 {
+            for i in 0..(CONTEXT_STACK_SIZE + 4095) / 4096 {
+                Page::new(CONTEXT_STACK_ADDR + i * 4096).map_identity();
+            }
+        }
     }
 
+    //Warning: This function MUST be inspected in disassembly for correct push/pop
+    //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
-    pub unsafe fn switch_fx(&mut self, other: &mut Self) {
+    pub unsafe fn save(&mut self) {
+        asm!(""
+            : "={esp}"(self.regs.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
         asm!("fxsave [$0]"
             :
             : "r"(self.fx)
@@ -450,11 +469,17 @@ impl Context {
             : "intel", "volatile");
 
         self.fx_enabled = true;
+    }
 
-        if other.fx_enabled {
-            asm!("fxrstor [$0]"
+    //Warning: This function MUST be inspected in disassembly for correct push/pop
+    //It should have exactly no extra pushes or pops
+    #[cold]
+    #[inline(never)]
+    pub unsafe fn stack_physical(&mut self) {
+        if self.stack > 0 {
+            asm!("add esp, $0"
                 :
-                : "r"(other.fx)
+                : "r"(self.stack - CONTEXT_STACK_ADDR)
                 : "memory"
                 : "intel", "volatile");
         }
@@ -464,36 +489,18 @@ impl Context {
     //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
-    #[cfg(target_arch = "x86")]
-    pub unsafe fn switch_stack(&mut self, other: &mut Self) {
-        asm!(""
-            : "={esp}"(self.regs.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
+    pub unsafe fn restore(&mut self) {
+        if self.fx_enabled {
+            asm!("fxrstor [$0]"
+                :
+                : "r"(self.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
 
         asm!(""
             :
-            : "{esp}"(other.regs.sp)
-            : "memory"
-            : "intel", "volatile");
-    }
-
-    //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have no extra pushes or pops
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86_64")]
-    pub unsafe fn switch_stack(&mut self, other: &mut Self) {
-        asm!(""
-            : "={rsp}"(self.regs.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!(""
-            :
-            : "{rsp}"(other.regs.sp)
+            : "{esp}"(self.regs.sp)
             : "memory"
             : "intel", "volatile");
     }
