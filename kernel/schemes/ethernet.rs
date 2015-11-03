@@ -12,7 +12,7 @@ use common::parse_ip::*;
 use network::common::*;
 use network::ethernet::*;
 
-use schemes::{KScheme, Resource, URL};
+use schemes::{KScheme, Resource, Url};
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -21,7 +21,7 @@ pub struct EthernetResource {
     /// The data
     data: Vec<u8>,
     /// The MAC addresss
-    peer_addr: MACAddr,
+    peer_addr: MacAddr,
     /// The ethernet type
     ethertype: u16,
 }
@@ -39,8 +39,8 @@ impl Resource for EthernetResource {
         }
     }
 
-    fn url(&self) -> URL {
-        URL::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
+    fn url(&self) -> Url {
+        Url::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -104,8 +104,8 @@ impl KScheme for EthernetScheme {
         "ethernet"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
-        if let Some(mut network) = URL::from_str("network://").open() {
+    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+        if let Some(mut network) = Url::from_str("network://").open() {
             if !url.reference().is_empty() {
                 let ethertype = url.reference().to_num_radix(16) as u16;
 
@@ -113,7 +113,7 @@ impl KScheme for EthernetScheme {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),
-                        peer_addr: MACAddr::from_string(&parse_host(url.reference()).to_string()),
+                        peer_addr: MacAddr::from_string(&parse_host(url.reference()).to_string()),
                         ethertype: ethertype,
                     });
                 } else {

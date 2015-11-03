@@ -6,34 +6,34 @@ use scheduler::context::recursive_unsafe_yield;
 
 use network::common::*;
 
-use schemes::{KScheme, URL};
+use schemes::{KScheme, Url};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
-pub struct ARPHeader {
+pub struct ArpHeader {
     pub htype: n16,
     pub ptype: n16,
     pub hlen: u8,
     pub plen: u8,
     pub oper: n16,
-    pub src_mac: MACAddr,
-    pub src_ip: IPv4Addr,
-    pub dst_mac: MACAddr,
-    pub dst_ip: IPv4Addr,
+    pub src_mac: MacAddr,
+    pub src_ip: Ipv4Addr,
+    pub dst_mac: MacAddr,
+    pub dst_ip: Ipv4Addr,
 }
 
-pub struct ARP {
-    pub header: ARPHeader,
+pub struct Arp {
+    pub header: ArpHeader,
     pub data: Vec<u8>,
 }
 
-impl FromBytes for ARP {
+impl FromBytes for Arp {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
-        if bytes.len() >= mem::size_of::<ARPHeader>() {
+        if bytes.len() >= mem::size_of::<ArpHeader>() {
             unsafe {
-                return Some(ARP {
-                    header: *(bytes.as_ptr() as *const ARPHeader),
-                    data: bytes[mem::size_of::<ARPHeader>() ..].to_vec()
+                return Some(Arp {
+                    header: *(bytes.as_ptr() as *const ArpHeader),
+                    data: bytes[mem::size_of::<ArpHeader>() ..].to_vec()
                 });
             }
         }
@@ -41,34 +41,34 @@ impl FromBytes for ARP {
     }
 }
 
-impl ToBytes for ARP {
+impl ToBytes for Arp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
-            let header_ptr: *const ARPHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ARPHeader>()));
+            let header_ptr: *const ArpHeader = &self.header;
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ArpHeader>()));
             ret.push_all(&self.data);
             ret
         }
     }
 }
 
-pub struct ARPScheme;
+pub struct ArpScheme;
 
-impl KScheme for ARPScheme {
+impl KScheme for ArpScheme {
     fn scheme(&self) -> &str {
         "arp"
     }
 }
 
-impl ARPScheme {
+impl ArpScheme {
     pub fn reply_loop() {
-        while let Some(mut link) = URL::from_str("ethernet:///806").open() {
+        while let Some(mut link) = Url::from_str("ethernet:///806").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
                 if let Some(_) = link.read_to_end(&mut bytes) {
-                    if let Some(packet) = ARP::from_bytes(bytes) {
+                    if let Some(packet) = Arp::from_bytes(bytes) {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
-                            let mut response = ARP {
+                            let mut response = Arp {
                                 header: packet.header,
                                 data: packet.data.clone(),
                             };

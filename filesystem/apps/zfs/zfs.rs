@@ -116,7 +116,7 @@ pub enum ZfsTraverse {
     Done,
 }
 
-pub struct ZFS {
+pub struct Zfs {
     pub reader: ZfsReader,
     pub uberblock: Uberblock, // The active uberblock
     pub mos: ObjectSetPhys,
@@ -125,7 +125,7 @@ pub struct ZFS {
     root: u64,
 }
 
-impl ZFS {
+impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
         let mut zfs_reader = ZfsReader { disk: disk };
 
@@ -176,7 +176,7 @@ impl ZFS {
                 None => Err("Error: failed to get the ROOT".to_string()),
             };
 
-        Ok(ZFS {
+        Ok(Zfs {
             reader: zfs_reader,
             uberblock: uberblock,
             mos: mos,
@@ -187,7 +187,7 @@ impl ZFS {
     }
 
     pub fn traverse<F, T>(&mut self, mut f: F) -> Option<T>
-        where F: FnMut(&mut ZFS, &str, usize, &mut DNodePhys, &BlockPtr, &mut Option<T>) -> Option<ZfsTraverse>,
+        where F: FnMut(&mut Self, &str, usize, &mut DNodePhys, &BlockPtr, &mut Option<T>) -> Option<ZfsTraverse>,
     {
         // Given the fs_objset and the object id of the root directory, we can traverse the
         // directory tree.
@@ -347,7 +347,7 @@ pub fn main() {
 
     println!("Type open zfs.img to open the image file");
 
-    let mut zfs_option: Option<ZFS> = None;
+    let mut zfs_option: Option<Zfs> = None;
 
     while let Some(line) = readln!() {
         let mut args: Vec<String> = Vec::new();
@@ -527,7 +527,7 @@ pub fn main() {
                                 match File::open(arg) {
                                     Some(file) => {
                                         println_color!(green, "Open: {}", arg);
-                                        zfs_option = ZFS::new(file).ok();
+                                        zfs_option = Zfs::new(file).ok();
                                     },
                                     None => println_color!(red, "File not found!"),
                                 }

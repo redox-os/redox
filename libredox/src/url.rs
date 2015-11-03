@@ -15,24 +15,24 @@ use vec::Vec;
             //Split the query by &
 
 /// An URL, see wiki
-pub struct URL {
+pub struct Url {
     pub string: String,
 }
 
-impl URL {
+impl Url {
     /// Create a new empty URL
     pub fn new() -> Self {
-        URL { string: String::new() }
+        Url { string: String::new() }
     }
 
     /// Create an URL from a string literal
     pub fn from_str(url_str: &&str) -> Self {
-        return URL::from_string(&url_str.to_string());
+        return Url::from_string(&url_str.to_string());
     }
 
     /// Create an URL from `String`
     pub fn from_string(url_string: &String) -> Self {
-        URL { string: url_string.clone() }
+        Url { string: url_string.clone() }
     }
 
     /// Convert to string
@@ -267,8 +267,8 @@ impl URL {
     }
 }
 
-impl Clone for URL {
+impl Clone for Url {
     fn clone(&self) -> Self {
-        URL { string: self.string.clone() }
+        Url { string: self.string.clone() }
     }
 }

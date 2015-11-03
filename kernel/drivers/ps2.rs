@@ -7,11 +7,11 @@ use drivers::pio::*;
 use schemes::KScheme;
 
 /// PS2
-pub struct PS2 {
+pub struct Ps2 {
     /// The data
-    data: PIO8,
+    data: Pio8,
     /// The command
-    cmd: PIO8,
+    cmd: Pio8,
     /// Left shift?
     lshift: bool,
     /// Right shift?
@@ -26,12 +26,12 @@ pub struct PS2 {
     mouse_i: usize,
 }
 
-impl PS2 {
+impl Ps2 {
     /// Create new PS2 data
     pub fn new() -> Box<Self> {
-        let mut module = box PS2 {
-            data: PIO8::new(0x60),
-            cmd: PIO8::new(0x64),
+        let mut module = box Ps2 {
+            data: Pio8::new(0x60),
+            cmd: Pio8::new(0x64),
             lshift: false,
             rshift: false,
             caps_lock: false,
@@ -222,7 +222,7 @@ impl PS2 {
     }
 }
 
-impl KScheme for PS2 {
+impl KScheme for Ps2 {
     fn on_irq(&mut self, irq: u8) {
         if irq == 0x1 || irq == 0xC {
             self.on_poll();

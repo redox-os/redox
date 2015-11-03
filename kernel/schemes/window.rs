@@ -13,7 +13,7 @@ use graphics::point::Point;
 use graphics::size::Size;
 use graphics::window::Window;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, ResourceSeek, Url};
 
 /// A window scheme
 pub struct WindowScheme;
@@ -35,8 +35,8 @@ impl Resource for WindowResource {
     }
 
     /// Return the url of this resource
-    fn url(&self) -> URL {
-        return URL::from_string(&format!("window://{}/{}/{}/{}/{}",
+    fn url(&self) -> Url {
+        return Url::from_string(&format!("window://{}/{}/{}/{}/{}",
                                     self.window.point.x,
                                     self.window.point.y,
                                     self.window.size.width,
@@ -101,7 +101,7 @@ impl KScheme for WindowScheme {
         "window"
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = parse_path(url.reference());
         let pointx = match url_path.get(0) {

@@ -6,22 +6,22 @@ use collections::vec::Vec;
 use common::debug;
 use common::queue::Queue;
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 
 use network::intel8254x::Intel8254x;
-use network::rtl8139::RTL8139;
+use network::rtl8139::Rtl8139;
 
 use programs::session::Session;
 
 use schemes::file::FileScheme;
 
-use usb::ehci::EHCI;
-use usb::uhci::UHCI;
-use usb::xhci::XHCI;
+use usb::ehci::Ehci;
+use usb::uhci::Uhci;
+use usb::xhci::Xhci;
 
 /// PCI device
 pub unsafe fn pci_device(session: &mut Session,
-                         mut pci: PCIConfig,
+                         mut pci: PciConfig,
                          class_id: u32,
                          subclass_id: u32,
                          interface_id: u32,
@@ -35,7 +35,7 @@ pub unsafe fn pci_device(session: &mut Session,
         if interface_id == 0x30 {
             let base = pci.read(0x10) as usize;
 
-            let module = box XHCI {
+            let module = box Xhci {
                 pci: pci,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,
@@ -46,7 +46,7 @@ pub unsafe fn pci_device(session: &mut Session,
         } else if interface_id == 0x20 {
             let base = pci.read(0x10) as usize;
 
-            let mut module = box EHCI {
+            let mut module = box Ehci {
                 pci: pci,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,
@@ -61,7 +61,7 @@ pub unsafe fn pci_device(session: &mut Session,
             debug::dh(base & 0xFFFFFFF0);
             debug::dl();
         } else if interface_id == 0x00 {
-            session.items.push(UHCI::new(pci));
+            session.items.push(Uhci::new(pci));
         } else {
             debug::d("Unknown USB interface version\n");
         }
@@ -69,7 +69,7 @@ pub unsafe fn pci_device(session: &mut Session,
         match vendor_code {
             0x10EC => match device_code { // REALTEK
                 0x8139 => {
-                    session.items.push(RTL8139::new(pci));
+                    session.items.push(Rtl8139::new(pci));
                 }
                 _ => (),
             },
@@ -113,7 +113,7 @@ pub unsafe fn pci_init(session: &mut Session) {
     for bus in 0..256 {
         for slot in 0..32 {
             for func in 0..8 {
-                let mut pci = PCIConfig::new(bus as u8, slot as u8, func as u8);
+                let mut pci = PciConfig::new(bus as u8, slot as u8, func as u8);
                 let id = pci.read(0);
 
                 if (id & 0xFFFF) != 0xFFFF {

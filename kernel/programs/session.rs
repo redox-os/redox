@@ -9,7 +9,7 @@ use collections::vec::Vec;
 use common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use scheduler;
 
-use graphics::bmp::BMPFile;
+use graphics::bmp::BmpFile;
 use graphics::color::Color;
 use graphics::display::Display;
 use graphics::point::Point;
@@ -17,16 +17,16 @@ use graphics::size::Size;
 use graphics::window::Window;
 
 use schemes::KScheme;
-use schemes::{Resource, URL, VecResource};
+use schemes::{Resource, Url, VecResource};
 
 /// A session
 pub struct Session {
     /// The display
     pub display: Box<Display>,
     /// The background image
-    pub background: BMPFile,
+    pub background: BmpFile,
     /// The cursor icon
-    pub cursor: BMPFile,
+    pub cursor: BmpFile,
     /// The mouse point
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
@@ -48,8 +48,8 @@ impl Session {
         unsafe {
             box Session {
                 display: Display::root(),
-                background: BMPFile::new(),
-                cursor: BMPFile::new(),
+                background: BmpFile::new(),
+                cursor: BmpFile::new(),
                 mouse_point: Point::new(0, 0),
                 last_mouse_event: MouseEvent {
                     x: 0,
@@ -131,7 +131,7 @@ impl Session {
     }
 
     /// Open a new resource
-    pub fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -146,7 +146,7 @@ impl Session {
                 }
             }
 
-            Some(box VecResource::new(URL::new(), list.into_bytes()))
+            Some(box VecResource::new(Url::new(), list.into_bytes()))
         } else {
             for mut item in self.items.iter_mut() {
                 if item.scheme() == url.scheme() {

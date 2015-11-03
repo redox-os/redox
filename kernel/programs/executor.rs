@@ -3,15 +3,15 @@ use collections::vec::Vec;
 
 use scheduler::context::{self, Context, ContextFile, ContextMemory};
 use common::debug;
-use common::elf::ELF;
+use common::elf::Elf;
 use common::memory;
 use scheduler;
 use collections::string::ToString;
 
-use schemes::URL;
+use schemes::Url;
 
 /// Excecute an excecutable
-pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
+pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
     debug::d("Execute ");
     debug::d(&url.to_string());
     debug::d(" in ");
@@ -28,7 +28,7 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
-            let executable = ELF::from_data(vec.as_ptr() as usize);
+            let executable = Elf::from_data(vec.as_ptr() as usize);
             if let Some(segment) = executable.load_segment() {
                 virtual_address = segment.vaddr as usize;
                 virtual_size = segment.mem_len as usize;
@@ -78,21 +78,21 @@ pub fn execute(url: &URL, wd: &URL, mut args: Vec<String>) {
 
             *context.args.get() = args;
 
-            if let Some(stdin) = URL::from_str("debug://").open() {
+            if let Some(stdin) = Url::from_str("debug://").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 0, // STDIN
                     resource: stdin,
                 });
             }
 
-            if let Some(stdout) = URL::from_str("debug://").open() {
+            if let Some(stdout) = Url::from_str("debug://").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 1, // STDOUT
                     resource: stdout,
                 });
             }
 
-            if let Some(stderr) = URL::from_str("debug://").open() {
+            if let Some(stderr) = Url::from_str("debug://").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 2, // STDERR
                     resource: stderr,

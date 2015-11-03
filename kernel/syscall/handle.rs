@@ -17,7 +17,7 @@ use programs::executor::execute;
 use graphics::color::Color;
 use graphics::size::Size;
 
-use schemes::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, Url};
 
 use syscall::common::*;
 
@@ -60,10 +60,10 @@ pub unsafe fn do_sys_debug(byte: u8) {
         }
     }
 
-    let serial_status = PIO8::new(0x3F8 + 5);
+    let serial_status = Pio8::new(0x3F8 + 5);
     while serial_status.read() & 0x20 == 0 {}
 
-    let mut serial_data = PIO8::new(0x3F8);
+    let mut serial_data = Pio8::new(0x3F8);
     serial_data.write(byte);
 
     scheduler::end_no_ints(reenable);
@@ -276,9 +276,9 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if path_str.ends_with(".bin") {
-        let path = URL::from_string(&path_str);
+        let path = Url::from_string(&path_str);
         let i = path_str.rfind('/').unwrap_or(0) + 1;
-        let wd = URL::from_string(&path_str[ .. i].to_string());
+        let wd = Url::from_string(&path_str[ .. i].to_string());
         execute(&path,
                 &wd,
                 Vec::new());
@@ -448,7 +448,7 @@ pub unsafe fn do_sys_open(path: *const u8) -> usize {
 
         scheduler::end_no_ints(reenable);
 
-        let resource_option = (*::session_ptr).open(&URL::from_string(&path_str));
+        let resource_option = (*::session_ptr).open(&Url::from_string(&path_str));
 
         scheduler::start_no_ints();
 
