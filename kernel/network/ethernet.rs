@@ -8,8 +8,8 @@ use network::common::*;
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct EthernetIIHeader {
-    pub dst: MACAddr,
-    pub src: MACAddr,
+    pub dst: MacAddr,
+    pub src: MacAddr,
     pub ethertype: n16,
 }
 

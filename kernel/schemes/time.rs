@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use scheduler;
 
-use schemes::{KScheme, Resource, URL, VecResource};
+use schemes::{KScheme, Resource, Url, VecResource};
 
 /// A time scheme
 pub struct TimeScheme;
@@ -12,7 +12,7 @@ impl KScheme for TimeScheme {
         "time"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         let clock_realtime;
         let clock_monotonic;
         unsafe {
@@ -23,6 +23,6 @@ impl KScheme for TimeScheme {
         }
 
         let string = format!("Time: {}\nUptime: {}", clock_realtime.secs as isize, clock_monotonic.secs as isize);
-        Some(box VecResource::new(URL::from_str("time://"), string.into_bytes()))
+        Some(box VecResource::new(Url::from_str("time://"), string.into_bytes()))
     }
 }

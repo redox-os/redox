@@ -18,7 +18,7 @@ pub fn main() {
                                  &("Player (".to_string() + &url + ")")).unwrap();
     window.sync();
 
-    let wav = WAV::from_data(&vec);
+    let wav = WavFile::from_data(&vec);
 
     if let Some(mut audio) = File::open("audio://") {
         audio.write(&wav.data);

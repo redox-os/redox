@@ -5,7 +5,7 @@ use vec::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap
-pub struct BMPFile {
+pub struct BmpFile {
     /// The bitmap width
     w: usize,
     /// The bitmap height
@@ -15,10 +15,10 @@ pub struct BMPFile {
     data: Vec<Color>,
 }
 
-impl BMPFile {
+impl BmpFile {
     /// Create a new bitmap
     pub fn new(width: usize, height: usize) -> Self {
-        BMPFile {
+        BmpFile {
             w: width,
             h: height,
             data: Vec::new(),
@@ -50,7 +50,7 @@ impl BMPFile {
             (start..start + len).map(|i| get(i) as char).collect::<String>()
         };
 
-        let mut ret: BMPFile;
+        let mut ret: BmpFile;
 
         if gets(0, 2) == "BM" {
             //let file_size = getd(2);

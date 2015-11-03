@@ -15,14 +15,14 @@ pub mod elf_arch;
 pub mod elf_arch;
 
 /// An ELF executable
-pub struct ELF {
+pub struct Elf {
     pub data: usize,
 }
 
-impl ELF {
+impl Elf {
     /// Create a new empty ELF executable
     pub fn new() -> Self {
-        ELF { data: 0 }
+        Elf { data: 0 }
     }
 
     /// Create a ELF executable from data
@@ -43,14 +43,14 @@ impl ELF {
             }
         }
 
-        ELF { data: data }
+        Elf { data: data }
     }
 
     /// Debug
     pub unsafe fn d(&self) {
         if self.data > 0 {
             debug::d("Debug ELF\n");
-            let header = &*(self.data as *const ELFHeader);
+            let header = &*(self.data as *const ElfHeader);
 
             debug::d("Magic: ");
             for i in 0..4 {
@@ -116,17 +116,17 @@ impl ELF {
             debug::dd(header.sh_str_index as usize);
             debug::dl();
 
-            let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ELFSection);
+            let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ElfSection);
 
-            let mut sym_section = &*((self.data + header.sh_off as usize) as *const ELFSection);
+            let mut sym_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
-            let mut str_section = &*((self.data + header.sh_off as usize) as *const ELFSection);
+            let mut str_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
             debug::d("Program Headers:");
             debug::dl();
 
             for i in 0..header.ph_len {
-                let segment = &*((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ELFSegment);
+                let segment = &*((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ElfSegment);
 
                 debug::d("    Section ");
                 debug::dd(i as usize);
@@ -171,7 +171,7 @@ impl ELF {
             debug::dl();
 
             for i in 0..header.sh_len {
-                let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ELFSection);
+                let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ElfSection);
 
                 let section_name_ptr = (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
                 let mut section_name_len = 0;
@@ -241,7 +241,7 @@ impl ELF {
                     debug::dd(len as usize);
                     debug::dl();
                     for i in 0..len {
-                        let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
+                        let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ElfSymbol);
 
                         let symbol_name_ptr = (self.data + str_section.off as usize + symbol.name as usize) as *const u8;
                         let mut symbol_name_len = 0;
@@ -287,12 +287,12 @@ impl ELF {
         }
     }
 
-    pub unsafe fn load_segment(&self) -> Option<ELFSegment> {
+    pub unsafe fn load_segment(&self) -> Option<ElfSegment> {
         if self.data > 0 {
-            let header = &*(self.data as *const ELFHeader);
+            let header = &*(self.data as *const ElfHeader);
 
             for i in 0..header.ph_len {
-                let segment = ptr::read((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ELFSegment);
+                let segment = ptr::read((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ElfSegment);
 
                 if segment._type == 1 {
                     return Some(segment);
@@ -308,7 +308,7 @@ impl ELF {
         if self.data > 0 {
             // TODO: Support 64-bit version
             // TODO: Get information from program headers
-            let header = &*(self.data as *const ELFHeader);
+            let header = &*(self.data as *const ElfHeader);
             return header.entry as usize;
         }
 
@@ -318,16 +318,16 @@ impl ELF {
     /// ELF symbol
     pub unsafe fn symbol(&self, name: &str) -> usize {
         if self.data > 0 {
-            let header = &*(self.data as *const ELFHeader);
+            let header = &*(self.data as *const ElfHeader);
 
-            let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ELFSection);
+            let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ElfSection);
 
-            let mut sym_section = &*((self.data + header.sh_off as usize) as *const ELFSection);
+            let mut sym_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
-            let mut str_section = &*((self.data + header.sh_off as usize) as *const ELFSection);
+            let mut str_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
             for i in 0..header.sh_len {
-                let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ELFSection);
+                let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ElfSection);
 
                 let section_name_ptr = (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
                 let mut section_name_len = 0;
@@ -350,7 +350,7 @@ impl ELF {
                 if sym_section.ent_len > 0 {
                     let len = sym_section.len / sym_section.ent_len;
                     for i in 0..len {
-                        let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ELFSymbol);
+                        let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ElfSymbol);
 
                         let symbol_name_ptr = (self.data + str_section.off as usize + symbol.name as usize) as *const u8;
                         let mut symbol_name_len = 0;
@@ -380,7 +380,7 @@ impl ELF {
     }
 }
 
-impl Drop for ELF {
+impl Drop for Elf {
     fn drop(&mut self) {
         unsafe {
             if self.data > 0 {

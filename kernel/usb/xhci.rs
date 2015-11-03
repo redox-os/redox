@@ -1,25 +1,25 @@
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 
 use common::debug;
 
 use schemes::KScheme;
 
 #[repr(packed)]
-struct STE {
+struct Ste {
     pub ptr: u64,
     pub length: u64,
 }
 
 #[repr(packed)]
-struct TRB {
+struct Trb {
     pub data: u64,
     pub status: u32,
     pub control: u32,
 }
 
-impl TRB {
+impl Trb {
     pub fn new() -> Self {
-        TRB {
+        Trb {
             data: 0,
             status: 0,
             control: 0,
@@ -27,7 +27,7 @@ impl TRB {
     }
 
     pub fn from_type(trb_type: u32) -> Self {
-        TRB {
+        Trb {
             data: 0,
             status: 0,
             control: (trb_type & 0x3F) << 10,
@@ -35,14 +35,14 @@ impl TRB {
     }
 }
 
-pub struct XHCI {
-    pub pci: PCIConfig,
+pub struct Xhci {
+    pub pci: PciConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
 }
 
-impl KScheme for XHCI {
+impl KScheme for Xhci {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             debug::d("XHCI handle\n");
@@ -50,7 +50,7 @@ impl KScheme for XHCI {
     }
 }
 
-impl XHCI {
+impl Xhci {
     pub unsafe fn init(&self) {
         debug::d("XHCI on: ");
         debug::dh(self.base);

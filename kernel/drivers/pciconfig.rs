@@ -2,24 +2,24 @@ use drivers::pio::*;
 
 /// A PCI configuration
 #[derive(Copy, Clone)]
-pub struct PCIConfig {
+pub struct PciConfig {
     bus: u8,
     slot: u8,
     func: u8,
-    addr: PIO32,
-    data: PIO32,
+    addr: Pio32,
+    data: Pio32,
 }
 
-impl PCIConfig {
+impl PciConfig {
     /// Create a new configuration
     pub fn new(bus: u8, slot: u8, func: u8) -> Self {
-        return PCIConfig {
+        PciConfig {
             bus: bus,
             slot: slot,
             func: func,
-            addr: PIO32::new(0xCF8),
-            data: PIO32::new(0xCFC),
-        };
+            addr: Pio32::new(0xCF8),
+            data: Pio32::new(0xCFC),
+        }
     }
 
     fn address(&self, offset: u8) -> u32 {

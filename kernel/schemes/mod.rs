@@ -44,7 +44,7 @@ pub trait KScheme {
         ""
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
         None
     }
 }
@@ -67,7 +67,7 @@ pub trait Resource {
         None
     }
     /// Return the url of this resource
-    fn url(&self) -> URL;
+    fn url(&self) -> Url;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -108,24 +108,24 @@ pub trait Resource {
 }
 
 /// An URL, see wiki
-pub struct URL {
+pub struct Url {
     pub string: String,
 }
 
-impl URL {
+impl Url {
     /// Create a new empty URL
     pub fn new() -> Self {
-        URL { string: String::new() }
+        Url { string: String::new() }
     }
 
     /// Create an URL from a string literal
     pub fn from_str(url_str: &'static str) -> Self {
-        return URL::from_string(&url_str.to_string());
+        return Url::from_string(&url_str.to_string());
     }
 
     /// Create an URL from `String`
     pub fn from_string(url_string: &String) -> Self {
-        URL { string: url_string.clone() }
+        Url { string: url_string.clone() }
     }
 
     /// Convert to string
@@ -162,21 +162,21 @@ impl URL {
 
 }
 
-impl Clone for URL {
+impl Clone for Url {
     fn clone(&self) -> Self {
-        URL { string: self.string.clone() }
+        Url { string: self.string.clone() }
     }
 }
 
 /// A vector resource
 pub struct VecResource {
-    url: URL,
+    url: Url,
     vec: Vec<u8>,
     seek: usize,
 }
 
 impl VecResource {
-    pub fn new(url: URL, vec: Vec<u8>) -> Self {
+    pub fn new(url: Url, vec: Vec<u8>) -> Self {
         VecResource {
             url: url,
             vec: vec,
@@ -198,7 +198,7 @@ impl Resource for VecResource {
         })
     }
 
-    fn url(&self) -> URL {
+    fn url(&self) -> Url {
         return self.url.clone();
     }
 
