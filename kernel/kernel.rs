@@ -42,7 +42,7 @@ use common::event::{self, Event, EventOption};
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
-use schemes::URL;
+use schemes::Url;
 use common::time::Duration;
 use common::parse_path::*;
 
@@ -54,7 +54,7 @@ use drivers::serial::*;
 
 pub use externs::*;
 
-use graphics::bmp::BMPFile;
+use graphics::bmp::BmpFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
@@ -317,14 +317,14 @@ unsafe fn event_loop() -> ! {
 
 /// Initialize debug
 pub unsafe fn debug_init() {
-    PIO8::new(0x3F8 + 1).write(0x00);
-    PIO8::new(0x3F8 + 3).write(0x80);
-    PIO8::new(0x3F8 + 0).write(0x03);
-    PIO8::new(0x3F8 + 1).write(0x00);
-    PIO8::new(0x3F8 + 3).write(0x03);
-    PIO8::new(0x3F8 + 2).write(0xC7);
-    PIO8::new(0x3F8 + 4).write(0x0B);
-    PIO8::new(0x3F8 + 1).write(0x01);
+    Pio8::new(0x3F8 + 1).write(0x00);
+    Pio8::new(0x3F8 + 3).write(0x80);
+    Pio8::new(0x3F8 + 0).write(0x03);
+    Pio8::new(0x3F8 + 1).write(0x00);
+    Pio8::new(0x3F8 + 3).write(0x03);
+    Pio8::new(0x3F8 + 2).write(0xC7);
+    Pio8::new(0x3F8 + 4).write(0x0B);
+    Pio8::new(0x3F8 + 1).write(0x01);
 }
 
 /// Initialize kernel
@@ -370,7 +370,7 @@ unsafe fn init(font_data: usize) {
     debug::d(" bits ");
     debug::dl();
 
-    clock_realtime = RTC::new().time();
+    clock_realtime = Rtc::new().time();
 
     contexts_ptr = Box::into_raw(box Vec::new());
     (*contexts_ptr).push(Context::root());
@@ -381,7 +381,7 @@ unsafe fn init(font_data: usize) {
 
     let session = &mut *session_ptr;
 
-    session.items.push(PS2::new());
+    session.items.push(Ps2::new());
     session.items.push(Serial::new(0x3F8, 0x4));
 
     pci_init(session);
@@ -393,9 +393,9 @@ unsafe fn init(font_data: usize) {
     session.items.push(box TimeScheme);
 
     session.items.push(box EthernetScheme);
-    session.items.push(box ARPScheme);
-    session.items.push(box ICMPScheme);
-    session.items.push(box IPScheme {
+    session.items.push(box ArpScheme);
+    session.items.push(box IcmpScheme);
+    session.items.push(box IpScheme {
         arp: Vec::new()
     });
     session.items.push(box DisplayScheme);
@@ -408,10 +408,10 @@ unsafe fn init(font_data: usize) {
         event_loop();
     });
     Context::spawn(box move || {
-        ARPScheme::reply_loop();
+        ArpScheme::reply_loop();
     });
     Context::spawn(box move || {
-        ICMPScheme::reply_loop();
+        IcmpScheme::reply_loop();
     });
 
     debug::d("Reenabling interrupts\n");
@@ -421,11 +421,11 @@ unsafe fn init(font_data: usize) {
 
     //Load cursor before getting out of debug mode
     debug::d("Loading cursor\n");
-    if let Some(mut resource) = URL::from_str("file:///ui/cursor.bmp").open() {
+    if let Some(mut resource) = Url::from_str("file:///ui/cursor.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
-        let cursor = BMPFile::from_data(&vec);
+        let cursor = BmpFile::from_data(&vec);
 
         let reenable = scheduler::start_no_ints();
         session.cursor = cursor;
@@ -434,13 +434,13 @@ unsafe fn init(font_data: usize) {
     }
 
     debug::d("Loading schemes\n");
-    if let Some(mut resource) = URL::from_str("file:///schemes/").open() {
+    if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&URL::from_string(&("file:///schemes/".to_string() + &folder)));
+                let scheme_item = SchemeItem::from_url(&Url::from_string(&("file:///schemes/".to_string() + &folder)));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -450,13 +450,13 @@ unsafe fn init(font_data: usize) {
     }
 
     debug::d("Loading apps\n");
-    if let Some(mut resource) = URL::from_str("file:///apps/").open() {
+    if let Some(mut resource) = Url::from_str("file:///apps/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
+                let package = Package::from_url(&Url::from_string(&("file:///apps/".to_string() + folder)));
 
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
@@ -467,17 +467,17 @@ unsafe fn init(font_data: usize) {
     }
 
     debug::d("Loading background\n");
-    if let Some(mut resource) = URL::from_str("file:///ui/background.bmp").open() {
+    if let Some(mut resource) = Url::from_str("file:///ui/background.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         if resource.read_to_end(&mut vec).is_some() {
             debug::d("Read background\n");
         } else {
             debug::d("Failed to read background at: ");
-            debug::d(URL::from_str("file:///ui/background.bmp").reference());
+            debug::d(Url::from_str("file:///ui/background.bmp").reference());
             debug::d("\n");
         }
 
-        let background = BMPFile::from_data(&vec);
+        let background = BmpFile::from_data(&vec);
 
         let reenable = scheduler::start_no_ints();
         session.background = background;
@@ -589,10 +589,10 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
     if interrupt >= 0x20 && interrupt < 0x30 {
         if interrupt >= 0x28 {
-            PIO8::new(0xA0).write(0x20);
+            Pio8::new(0xA0).write(0x20);
         }
 
-        PIO8::new(0x20).write(0x20);
+        Pio8::new(0x20).write(0x20);
     }
 
     match interrupt {

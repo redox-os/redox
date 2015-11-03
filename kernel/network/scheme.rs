@@ -9,7 +9,7 @@ use common::debug;
 use common::queue::Queue;
 use scheduler;
 
-use schemes::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, Url};
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -61,8 +61,8 @@ impl Resource for NetworkResource {
         Some(ret)
     }
 
-    fn url(&self) -> URL {
-        URL::from_str("network://")
+    fn url(&self) -> Url {
+        Url::from_str("network://")
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {

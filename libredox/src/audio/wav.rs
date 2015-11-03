@@ -3,7 +3,7 @@ use vec::Vec;
 
 /// A WAV file
 // TODO: Follow naming conventions
-pub struct WAV {
+pub struct WavFile {
     /// The number of channels
     pub channels: u16,
     /// The sample rate
@@ -14,10 +14,10 @@ pub struct WAV {
     pub data: Vec<u8>,
 }
 
-impl WAV {
+impl WavFile {
     /// Create a new empty WAV file
     pub fn new() -> Self {
-        WAV {
+        WavFile {
             channels: 0,
             sample_rate: 0,
             sample_bits: 0,
@@ -27,7 +27,7 @@ impl WAV {
 
     /// Create a WAV file from data
     pub fn from_data(file_data: &[u8]) -> Self {
-        let mut ret = WAV::new();
+        let mut ret = WavFile::new();
 
         let get = |i: usize| -> u8 {
             match file_data.get(i) {

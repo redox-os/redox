@@ -9,12 +9,12 @@ use common::{debug, memory};
 use common::queue::Queue;
 use scheduler;
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 
 use network::common::*;
 use network::scheme::*;
 
-use schemes::{KScheme, Resource, URL};
+use schemes::{KScheme, Resource, Url};
 
 const CTRL: u32 = 0x00;
     const CTRL_LRST: u32 = 1 << 3;
@@ -64,7 +64,7 @@ const RAL0: u32 = 0x5400;
 const RAH0: u32 = 0x5404;
 
 #[repr(packed)]
-struct RD {
+struct Rd {
     buffer: u64,
     length: u16,
     checksum: u16,
@@ -86,7 +86,7 @@ const TDH: u32 = 0x3810;
 const TDT: u32 = 0x3818;
 
 #[repr(packed)]
-struct TD {
+struct Td {
     buffer: u64,
     length: u16,
     cso: u8,
@@ -101,7 +101,7 @@ struct TD {
     const TD_DD: u8 = 1;
 
 pub struct Intel8254x {
-    pub pci: PCIConfig,
+    pub pci: PciConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
@@ -115,7 +115,7 @@ impl KScheme for Intel8254x {
         "network"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         Some(NetworkResource::new(self))
     }
 
@@ -195,14 +195,14 @@ impl NetworkScheme for Intel8254x {
 
 impl Intel8254x {
     pub unsafe fn receive_inbound(&mut self) {
-        let receive_ring = self.read(RDBAL) as *mut RD;
+        let receive_ring = self.read(RDBAL) as *mut Rd;
         let length = self.read(RDLEN);
 
         for tail in 0..length / 16 {
             let rd = &mut *receive_ring.offset(tail as isize);
             if rd.status & RD_DD == RD_DD {
                 debug::d("Recv ");
-                debug::dh(rd as *mut RD as usize);
+                debug::dh(rd as *mut Rd as usize);
                 debug::d(" ");
                 debug::dh(rd.status as usize);
                 debug::d(" ");
@@ -220,7 +220,7 @@ impl Intel8254x {
 
     pub unsafe fn send_outbound(&mut self) {
         while let Some(bytes) = self.outbound.pop() {
-            let transmit_ring = self.read(TDBAL) as *mut TD;
+            let transmit_ring = self.read(TDBAL) as *mut Td;
             let length = self.read(TDLEN);
 
             loop {
@@ -331,7 +331,7 @@ impl Intel8254x {
         debug::d(" MAC: ");
         let mac_low = self.read(RAL0);
         let mac_high = self.read(RAH0);
-        MAC_ADDR = MACAddr {
+        MAC_ADDR = MacAddr {
             bytes: [mac_low as u8,
                     (mac_low >> 8) as u8,
                     (mac_low >> 16) as u8,
@@ -347,11 +347,11 @@ impl Intel8254x {
 
         //Receive Buffer
         let receive_ring_length = 1024;
-        let receive_ring = memory::alloc(receive_ring_length * 16) as *mut RD;
+        let receive_ring = memory::alloc(receive_ring_length * 16) as *mut Rd;
         for i in 0..receive_ring_length {
             let receive_buffer = memory::alloc(16384);
             ptr::write(receive_ring.offset(i as isize),
-                       RD {
+                       Rd {
                            buffer: receive_buffer as u64,
                            length: 0,
                            checksum: 0,
@@ -369,11 +369,11 @@ impl Intel8254x {
 
         //Transmit Buffer
         let transmit_ring_length = 64;
-        let transmit_ring = memory::alloc(transmit_ring_length * 16) as *mut TD;
+        let transmit_ring = memory::alloc(transmit_ring_length * 16) as *mut Td;
         for i in 0..transmit_ring_length {
             let transmit_buffer = memory::alloc(16384);
             ptr::write(transmit_ring.offset(i as isize),
-                       TD {
+                       Td {
                            buffer: transmit_buffer as u64,
                            length: 0,
                            cso: 0,
