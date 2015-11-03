@@ -52,6 +52,7 @@ pub const SYS_UNALLOC: usize = 1003;
 //Structures
 
 #[cfg(target_arch = "x86")]
+#[derive(Copy, Clone, Default)]
 pub struct Regs {
     pub ax: usize,
     pub bx: usize,
@@ -67,6 +68,7 @@ pub struct Regs {
 }
 
 #[cfg(target_arch = "x86_64")]
+#[derive(Copy, Clone, Default)]
 pub struct Regs {
     pub ax: usize,
     pub bx: usize,

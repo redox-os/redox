@@ -48,7 +48,7 @@ interrupts:
     pop edi
     pop esi
     pop ebp
-    add esp, 4 ;Skip esp
+    pop esp ;Pop new esp (if modified in Regs structure)
     iretd
 
 .handler: dd 0

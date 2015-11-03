@@ -218,7 +218,7 @@ unsafe fn idle_loop() -> ! {
             asm!("sti");
         }
 
-        context_switch(true);
+        context_switch(false);
     }
 }
 

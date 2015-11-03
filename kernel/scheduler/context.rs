@@ -14,7 +14,7 @@ use scheduler;
 
 use schemes::Resource;
 
-use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
+use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM, Regs};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 
@@ -92,13 +92,12 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 
         ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
 
-        let contexts = &mut *contexts_ptr;
-        contexts.push(box Context {
+        let mut context = box Context {
             interrupted: parent.interrupted,
             exited: parent.exited,
 
+            regs: parent.regs,
             stack: stack,
-            stack_ptr: stack + (parent.stack_ptr - parent.stack),
             fx: stack + CONTEXT_STACK_SIZE,
             fx_enabled: parent.fx_enabled,
 
@@ -139,7 +138,12 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                 }
                 Rc::new(UnsafeCell::new(files))
             },
-        });
+        };
+
+        context.regs.sp = stack + (parent.regs.sp - parent.stack);
+
+        let contexts = &mut *contexts_ptr;
+        contexts.push(context);
     }
 
     scheduler::end_no_ints(reenable);
@@ -210,10 +214,10 @@ pub struct Context {
     /* } */
 
     /* These members control the stack and registers and are unique to each context { */
+        /// The context registers
+        pub regs: Regs,
         /// The context stack
         pub stack: usize,
-        /// The saved stack pointer
-        pub stack_ptr: usize,
         /// The location used to save and load SSE and FPU registers
         pub fx: usize,
         /// Indicates that fx can be loaded (it must be saved first)
@@ -238,8 +242,8 @@ impl Context {
             interrupted: false,
             exited: false,
 
+            regs: Regs::default(),
             stack: 0,
-            stack_ptr: 0,
             fx: memory::alloc(512),
             fx_enabled: false,
 
@@ -258,8 +262,8 @@ impl Context {
             interrupted: false,
             exited: false,
 
+            regs: Regs::default(),
             stack: stack,
-            stack_ptr: stack + CONTEXT_STACK_SIZE,
             fx: stack + CONTEXT_STACK_SIZE,
             fx_enabled: false,
 
@@ -269,6 +273,8 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
+        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
+
         for arg in args.iter() {
             ret.push(*arg);
         }
@@ -276,15 +282,6 @@ impl Context {
         ret.push(call); //We will ret into this function call
 
         ret.push(1 << 9); //Flags
-
-        ret.push(0); //EAX
-        ret.push(0); //ECX
-        ret.push(0); //EDX
-        ret.push(0); //EBX
-        ret.push(0); //ESP (ignored)
-        ret.push(0); //EBP
-        ret.push(0); //ESI
-        ret.push(0); //EDI
 
         ret
     }
@@ -297,8 +294,8 @@ impl Context {
             interrupted: false,
             exited: false,
 
+            regs: Regs::default(),
             stack: stack,
-            stack_ptr: stack + CONTEXT_STACK_SIZE,
             fx: stack + CONTEXT_STACK_SIZE,
             fx_enabled: false,
 
@@ -317,32 +314,16 @@ impl Context {
         }
 
         //First six args are in regs
-        let r9 = if args_mut.len() >= 6 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        let r8 = if args_mut.len() >= 5 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        let rcx = if args_mut.len() >= 4 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        let rdx = if args_mut.len() >= 3 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        let rsi = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        let rdi = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        ret.regs.r9 = if args_mut.len() >= 6 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        ret.regs.r8 = if args_mut.len() >= 5 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        ret.regs.cx = if args_mut.len() >= 4 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        ret.regs.dx = if args_mut.len() >= 3 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        ret.regs.si = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
+        ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
 
         ret.push(call); //We will ret into this function call
 
         ret.push(1 << 9); //Flags
-
-        ret.push(0); //RAX
-        ret.push(0); //RBX
-        ret.push(rcx); //RCX
-        ret.push(rdx); //RDX
-        ret.push(rdi); //RDI
-        ret.push(rsi); //RSI
-        ret.push(r8); //R8
-        ret.push(r9); //R9
-        ret.push(0); //R10
-        ret.push(0); //R11
-        ret.push(0); //R12
-        ret.push(0); //R13
-        ret.push(0); //R14
-        ret.push(0); //R15
-        ret.push(0); //RBP
 
         ret
     }
@@ -438,8 +419,8 @@ impl Context {
     }
 
     pub unsafe fn push(&mut self, data: usize) {
-        self.stack_ptr -= mem::size_of::<usize>();
-        ptr::write(self.stack_ptr as *mut usize, data);
+        self.regs.sp -= mem::size_of::<usize>();
+        ptr::write(self.regs.sp as *mut usize, data);
     }
 
     pub unsafe fn map(&mut self) {
@@ -478,22 +459,17 @@ impl Context {
     //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
-    //#[naked]
     #[cfg(target_arch = "x86")]
     pub unsafe fn switch_stack(&mut self, other: &mut Self) {
-        asm!("pushfd
-            pushad
-            mov [eax], esp"
+        asm!("pushfd"
+            : "={esp}"(self.regs.sp)
             :
-            : "{eax}"(&mut self.stack_ptr)
             : "memory"
             : "intel", "volatile");
 
-        asm!("mov esp, [eax]
-            popad
-            popfd"
+        asm!("popfd"
             :
-            : "{eax}"(&mut other.stack_ptr)
+            : "{esp}"(other.regs.sp)
             : "memory"
             : "intel", "volatile");
     }
@@ -502,50 +478,17 @@ impl Context {
     //It should have no extra pushes or pops
     #[cold]
     #[inline(never)]
-    //#[naked]
     #[cfg(target_arch = "x86_64")]
     pub unsafe fn switch_stack(&mut self, other: &mut Self) {
-        asm!("pushfq
-            push rax
-            push rbx
-            push rcx
-            push rdx
-            push rdi
-            push rsi
-            push r8
-            push r9
-            push r10
-            push r11
-            push r12
-            push r13
-            push r14
-            push r15
-            push rbp
-            mov [rax], rsp"
+        asm!("pushfq"
+            : "={rsp}"(self.regs.sp)
             :
-            : "{rax}"(&mut self.stack_ptr)
             : "memory"
             : "intel", "volatile");
 
-        asm!("mov rsp, [rax]
-            pop rbp
-            pop r15
-            pop r14
-            pop r13
-            pop r12
-            pop r11
-            pop r10
-            pop r9
-            pop r8
-            pop rsi
-            pop rdi
-            pop rdx
-            pop rcx
-            pop rbx
-            pop rax
-            popfq"
+        asm!("popfq"
             :
-            : "{rax}"(&mut other.stack_ptr)
+            : "{rsp}"(other.regs.sp)
             : "memory"
             : "intel", "volatile");
     }
