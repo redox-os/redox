@@ -57,11 +57,11 @@ impl n32 {
 }
 
 #[derive(Copy, Clone)]
-pub struct MACAddr {
+pub struct MacAddr {
     pub bytes: [u8; 6],
 }
 
-impl MACAddr {
+impl MacAddr {
     pub fn equals(&self, other: Self) -> bool {
         for i in 0..6 {
             if self.bytes[i] != other.bytes[i] {
@@ -72,7 +72,7 @@ impl MACAddr {
     }
 
     pub fn from_string(string: &String) -> Self {
-        let mut addr = MACAddr { bytes: [0, 0, 0, 0, 0, 0] };
+        let mut addr = MacAddr { bytes: [0, 0, 0, 0, 0, 0] };
 
         let mut i = 0;
         for part in string.split('.') {
@@ -104,16 +104,16 @@ impl MACAddr {
     }
 }
 
-pub static BROADCAST_MAC_ADDR: MACAddr = MACAddr { bytes: [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF] };
+pub static BROADCAST_MAC_ADDR: MacAddr = MacAddr { bytes: [0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF] };
 
-pub static mut MAC_ADDR: MACAddr = MACAddr { bytes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00] };
+pub static mut MAC_ADDR: MacAddr = MacAddr { bytes: [0x00, 0x00, 0x00, 0x00, 0x00, 0x00] };
 
 #[derive(Copy, Clone)]
-pub struct IPv4Addr {
+pub struct Ipv4Addr {
     pub bytes: [u8; 4],
 }
 
-impl IPv4Addr {
+impl Ipv4Addr {
     pub fn equals(&self, other: Self) -> bool {
         for i in 0..4 {
             if self.bytes[i] != other.bytes[i] {
@@ -124,7 +124,7 @@ impl IPv4Addr {
     }
 
     pub fn from_string(string: &String) -> Self {
-        let mut addr = IPv4Addr { bytes: [0, 0, 0, 0] };
+        let mut addr = Ipv4Addr { bytes: [0, 0, 0, 0] };
 
         let mut i = 0;
         for part in string.split('.') {
@@ -157,11 +157,11 @@ impl IPv4Addr {
 }
 
 #[derive(Copy, Clone)]
-pub struct IPv6Addr {
+pub struct Ipv6Addr {
     pub bytes: [u8; 16],
 }
 
-impl IPv6Addr {
+impl Ipv6Addr {
     pub fn to_string(&self) -> String {
         let mut string = String::new();
 
@@ -176,9 +176,9 @@ impl IPv6Addr {
     }
 }
 
-pub static BROADCAST_IP_ADDR: IPv4Addr = IPv4Addr { bytes: [10, 85, 85, 255] };
+pub static BROADCAST_IP_ADDR: Ipv4Addr = Ipv4Addr { bytes: [10, 85, 85, 255] };
 
-pub static IP_ADDR: IPv4Addr = IPv4Addr { bytes: [10, 85, 85, 2] };
+pub static IP_ADDR: Ipv4Addr = Ipv4Addr { bytes: [10, 85, 85, 2] };
 
 #[derive(Copy, Clone)]
 pub struct Checksum {

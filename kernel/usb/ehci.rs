@@ -2,12 +2,12 @@ use core::ptr::{read, write};
 
 use common::debug;
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 
 use schemes::KScheme;
 
 #[repr(packed)]
-struct SETUP {
+struct Setup {
     request_type: u8,
     request: u8,
     value: u16,
@@ -16,7 +16,7 @@ struct SETUP {
 }
 
 #[repr(packed)]
-struct QTD {
+struct Qtd {
     next: u32,
     next_alt: u32,
     token: u32,
@@ -29,17 +29,17 @@ struct QueueHead {
     characteristics: u32,
     capabilities: u32,
     qtd_ptr: u32,
-    qtd: QTD,
+    qtd: Qtd,
 }
 
-pub struct EHCI {
-    pub pci: PCIConfig,
+pub struct Ehci {
+    pub pci: PciConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
 }
 
-impl KScheme for EHCI {
+impl KScheme for Ehci {
     #[allow(non_snake_case)]
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
@@ -69,7 +69,7 @@ impl KScheme for EHCI {
     }
 }
 
-impl EHCI {
+impl Ehci {
     #[allow(non_snake_case)]
     pub unsafe fn init(&mut self) {
         debug::d("EHCI on: ");
@@ -319,8 +319,8 @@ impl EHCI {
                     debug::dl();
 
                     /*
-                    let out_qtd = alloc(size_of::<QTD>()) as *mut QTD;
-                    ptr::write(out_qtd, QTD {
+                    let out_qtd = alloc(size_of::<Qtd>()) as *mut Qtd;
+                    ptr::write(out_qtd, Qtd {
                         next: 1,
                         next_alt: 1,
                         token: (1 << 31) | (0b11 << 10) | 0x80,
@@ -332,16 +332,16 @@ impl EHCI {
                         *in_data.offset(i) = 0;
                     }
 
-                    let in_qtd = alloc(size_of::<QTD>()) as *mut QTD;
-                    ptr::write(in_qtd, QTD {
+                    let in_qtd = alloc(size_of::<Qtd>()) as *mut Qtd;
+                    ptr::write(in_qtd, Qtd {
                         next: out_qtd as u32,
                         next_alt: 1,
                         token: (1 << 31) | (64 << 16) | (0b11 << 10) | (0b01 << 8) | 0x80,
                         buffers: [in_data as u32, 0, 0, 0, 0]
                     });
 
-                    let setup_packet = alloc(size_of::<SETUP>()) as *mut SETUP;
-                    ptr::write(setup_packet, SETUP {
+                    let setup_packet = alloc(size_of::<Setup>()) as *mut Setup;
+                    ptr::write(setup_packet, Setup {
                         request_type: 0b10000000,
                         request: 6,
                         value: 1 << 8,
@@ -349,11 +349,11 @@ impl EHCI {
                         len: 64
                     });
 
-                    let setup_qtd = alloc(size_of::<QTD>()) as *mut QTD;
-                    ptr::write(setup_qtd, QTD {
+                    let setup_qtd = alloc(size_of::<Qtd>()) as *mut Qtd;
+                    ptr::write(setup_qtd, Qtd {
                         next: in_qtd as u32,
                         next_alt: 1,
-                        token: ((size_of::<SETUP>() as u32) << 16) | (0b11 << 10) | (0b10 << 8) | 0x80,
+                        token: ((size_of::<Setup>() as u32) << 16) | (0b11 << 10) | (0b10 << 8) | 0x80,
                         buffers: [setup_packet as u32, 0, 0, 0, 0]
                     });
 

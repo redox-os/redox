@@ -7,13 +7,13 @@ use core::{ptr, usize};
 
 use scheduler::context::ContextMemory;
 use common::debug;
-use common::elf::{self, ELF};
+use common::elf::{self, Elf};
 use common::memory;
 use common::paging::Page;
 use scheduler::{start_no_ints, end_no_ints};
 use common::parse_path::parse_path;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, ResourceSeek, Url};
 
 /// A scheme context
 pub struct SchemeContext {
@@ -145,7 +145,7 @@ impl Resource for SchemeResource {
     }
 
     /// Return the url of this resource
-    fn url(&self) -> URL {
+    fn url(&self) -> Url {
         if self.valid(self._fpath) {
             let mut buf: [u8; 4096] = [0; 4096];
             let result;
@@ -156,10 +156,10 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return URL::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..result])) });
+                return Url::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..result])) });
             }
         }
-        URL::new()
+        Url::new()
     }
 
     /// Read data to buffer
@@ -276,11 +276,11 @@ impl Drop for SchemeResource {
 /// A scheme item
 pub struct SchemeItem {
     /// The URL
-    url: URL,
+    url: Url,
     /// The scheme
     scheme: String,
     /// The binary for the scheme
-    binary: URL,
+    binary: Url,
     /// The handle
     handle: usize,
     /// The context memory
@@ -300,11 +300,11 @@ pub struct SchemeItem {
 
 impl SchemeItem {
     /// Load scheme item from URL
-    pub fn from_url(url: &URL) -> Box<SchemeItem> {
+    pub fn from_url(url: &Url) -> Box<SchemeItem> {
         let mut scheme_item = box SchemeItem {
             url: url.clone(),
             scheme: String::new(),
-            binary: URL::new(),
+            binary: Url::new(),
             handle: 0,
             memory: ContextMemory {
                 physical_address: 0,
@@ -328,7 +328,7 @@ impl SchemeItem {
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
-                scheme_item.binary = URL::from_string(&(url.to_string() + part + ".bin"));
+                scheme_item.binary = Url::from_string(&(url.to_string() + part + ".bin"));
             }
         }
 
@@ -337,7 +337,7 @@ impl SchemeItem {
             resource.read_to_end(&mut vec);
 
             unsafe {
-                let executable = ELF::from_data(vec.as_ptr() as usize);
+                let executable = Elf::from_data(vec.as_ptr() as usize);
                 if let Some(segment) = executable.load_segment() {
                     scheme_item.memory.virtual_address = segment.vaddr as usize;
                     scheme_item.memory.virtual_size = segment.mem_len as usize;
@@ -391,7 +391,7 @@ impl KScheme for SchemeItem {
         return &self.scheme;
     }
 
-    fn open(&mut self, url: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
         if self.valid(self._open) {
             let fd;
             unsafe {

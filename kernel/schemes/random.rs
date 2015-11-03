@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use common::random;
 
-use schemes::{KScheme, Resource, URL, VecResource};
+use schemes::{KScheme, Resource, Url, VecResource};
 
 /// A pseudorandomness scheme
 pub struct RandomScheme;
@@ -12,7 +12,7 @@ impl KScheme for RandomScheme {
         "random"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
-        Some(box VecResource::new(URL::from_str("random://"), format!("{}", random::rand()).into_bytes()))
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+        Some(box VecResource::new(Url::from_str("random://"), format!("{}", random::rand()).into_bytes()))
     }
 }

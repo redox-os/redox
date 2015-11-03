@@ -1,4 +1,4 @@
-use redox::{self, cmp, env, BMPFile, Color};
+use redox::{self, cmp, env, BmpFile, Color};
 use redox::collections::BTreeMap;
 use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::{self, File};
@@ -10,7 +10,7 @@ use redox::string::{String, ToString};
 
 pub struct FileType {
     description: String,
-    icon: BMPFile,
+    icon: BmpFile,
 }
 
 impl FileType {
@@ -29,12 +29,12 @@ pub struct FileManager {
     click_time: Duration,
 }
 
-fn load_icon(path: &str) -> BMPFile {
+fn load_icon(path: &str) -> BmpFile {
     let mut vec: Vec<u8> = Vec::new();
     if let Some(mut file) = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp")) {
         file.read_to_end(&mut vec);
     }
-    BMPFile::from_data(&vec)
+    BmpFile::from_data(&vec)
 }
 
 impl FileManager {

@@ -6,7 +6,7 @@ use core::cmp;
 
 use graphics::display::Display;
 
-use schemes::{KScheme, Resource, ResourceSeek, URL};
+use schemes::{KScheme, Resource, ResourceSeek, Url};
 
 pub struct DisplayScheme;
 
@@ -21,8 +21,8 @@ pub struct DisplayResource {
 
 impl Resource for DisplayResource {
     /// Return the URL for display resource
-    fn url(&self) -> URL {
-        return URL::from_string(&("display://".to_string()));
+    fn url(&self) -> Url {
+        return Url::from_string(&("display://".to_string()));
     }
 
 
@@ -62,7 +62,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         // TODO: ponder these things:
         // - should display:// be the only only valid url
         //      for this scheme?

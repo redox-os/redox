@@ -413,7 +413,7 @@ impl Scheme {
         }
 
         if let Some(ref mut zfs) = self.zfs {
-            let url = URL::from_str(&url_str);
+            let url = Url::from_str(&url_str);
 
             let path = url.path();
             if path.ends_with("/") {

@@ -8,10 +8,10 @@ use core::ptr;
 
 use common::{debug, memory};
 use common::queue::Queue;
-use schemes::{Resource, URL};
+use schemes::{Resource, Url};
 use scheduler;
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
 
 use network::common::*;
@@ -20,30 +20,30 @@ use network::scheme::*;
 use schemes::KScheme;
 
 #[repr(packed)]
-struct TXD {
+struct Txd {
     pub address_port: u16,
     pub status_port: u16,
     pub buffer: usize,
 }
 
-pub struct RTL8139 {
-    pci: PCIConfig,
+pub struct Rtl8139 {
+    pci: PciConfig,
     base: usize,
     memory_mapped: bool,
     irq: u8,
     resources: Vec<*mut NetworkResource>,
     inbound: Queue<Vec<u8>>,
     outbound: Queue<Vec<u8>>,
-    txds: Vec<TXD>,
+    txds: Vec<Txd>,
     txd_i: usize,
 }
 
-impl RTL8139 {
-    pub fn new(mut pci: PCIConfig) -> Box<Self> {
+impl Rtl8139 {
+    pub fn new(mut pci: PciConfig) -> Box<Self> {
         let base = unsafe { pci.read(0x10) as usize };
         let irq = unsafe { pci.read(0x3C) as u8 & 0xF };
 
-        let mut module = box RTL8139 {
+        let mut module = box Rtl8139 {
             pci: pci,
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
@@ -83,7 +83,7 @@ impl RTL8139 {
         debug::d(" MAC: ");
         let mac_low = ind(base);
         let mac_high = ind(base + 4);
-        MAC_ADDR = MACAddr {
+        MAC_ADDR = MacAddr {
             bytes: [mac_low as u8,
                     (mac_low >> 8) as u8,
                     (mac_low >> 16) as u8,
@@ -97,7 +97,7 @@ impl RTL8139 {
         outd(base + 0x30, receive_buffer as u32);
 
         for i in 0..4 {
-            self.txds.push(TXD {
+            self.txds.push(Txd {
                 address_port: base + 0x20 + (i as u16) * 4,
                 status_port: base + 0x10 + (i as u16) * 4,
                 buffer: memory::alloc(4096),
@@ -200,12 +200,12 @@ impl RTL8139 {
     }
 }
 
-impl KScheme for RTL8139 {
+impl KScheme for Rtl8139 {
     fn scheme(&self) -> &str {
         "network"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         Some(NetworkResource::new(self))
     }
 
@@ -230,7 +230,7 @@ impl KScheme for RTL8139 {
     }
 }
 
-impl NetworkScheme for RTL8139 {
+impl NetworkScheme for Rtl8139 {
     fn add(&mut self, resource: *mut NetworkResource) {
         unsafe {
             let reenable = scheduler::start_no_ints();

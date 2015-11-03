@@ -8,17 +8,17 @@ fn cvt_bcd(value: usize) -> usize {
 }
 
 /// RTC
-pub struct RTC {
-    addr: PIO8,
-    data: PIO8,
+pub struct Rtc {
+    addr: Pio8,
+    data: Pio8,
 }
 
-impl RTC {
+impl Rtc {
     /// Create new empty RTC
     pub fn new() -> Self {
-        return RTC {
-            addr: PIO8::new(0x70),
-            data: PIO8::new(0x71),
+        return Rtc {
+            addr: Pio8::new(0x70),
+            data: Pio8::new(0x71),
         }
     }
 
