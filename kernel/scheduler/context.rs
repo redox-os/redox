@@ -288,8 +288,6 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
-        ret.push(1 << 9); //Flags
-
         ret
     }
 
@@ -312,6 +310,8 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
+        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
+
         let mut args_mut = args.clone();
 
         while args_mut.len() >= 7 {
@@ -329,8 +329,6 @@ impl Context {
         ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
 
         ret.push(call); //We will ret into this function call
-
-        ret.push(1 << 9); //Flags
 
         ret
     }
@@ -468,13 +466,13 @@ impl Context {
     #[inline(never)]
     #[cfg(target_arch = "x86")]
     pub unsafe fn switch_stack(&mut self, other: &mut Self) {
-        asm!("pushfd"
+        asm!(""
             : "={esp}"(self.regs.sp)
             :
             : "memory"
             : "intel", "volatile");
 
-        asm!("popfd"
+        asm!(""
             :
             : "{esp}"(other.regs.sp)
             : "memory"
@@ -487,13 +485,13 @@ impl Context {
     #[inline(never)]
     #[cfg(target_arch = "x86_64")]
     pub unsafe fn switch_stack(&mut self, other: &mut Self) {
-        asm!("pushfq"
+        asm!(""
             : "={rsp}"(self.regs.sp)
             :
             : "memory"
             : "intel", "volatile");
 
-        asm!("popfq"
+        asm!(""
             :
             : "{rsp}"(other.regs.sp)
             : "memory"
