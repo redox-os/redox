@@ -4,7 +4,7 @@ use collections::vec::Vec;
 use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
-use scheduler::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
+use scheduler::context::{recursive_unsafe_yield, context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
 use common::debug;
 use common::memory;
 use scheduler;
@@ -152,7 +152,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 
     scheduler::end_no_ints(reenable);
 
-    context_switch(false);
+    recursive_unsafe_yield();
 
     let mut ret = usize::MAX;
 
@@ -513,8 +513,8 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_yield() {
-    context_switch(false);
+pub unsafe fn do_sys_yield(regs: &mut Regs) {
+    context_switch(regs, false);
 }
 
 pub unsafe fn do_sys_alloc(size: usize) -> usize {
@@ -556,7 +556,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_YIELD => do_sys_yield(),
+        SYS_YIELD => do_sys_yield(regs),
 
         // Rust Memory
         SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),

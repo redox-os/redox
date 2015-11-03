@@ -12,7 +12,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use drivers::disk::{Disk, Extent, Request};
 use drivers::pciconfig::PCIConfig;
 
-use scheduler::context::context_switch;
+use scheduler::context::recursive_unsafe_yield;
 use common::debug;
 use common::memory::Memory;
 use common::parse_path::*;
@@ -343,7 +343,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                context_switch(false);
+                                recursive_unsafe_yield();
                             }
 
                             sector += 65535;
@@ -362,7 +362,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                context_switch(false);
+                                recursive_unsafe_yield();
                             }
                         }
                     }
@@ -395,7 +395,7 @@ impl Resource for FileResource {
 
                         debug::d("Wait request\n");
                         while request.complete.load(Ordering::SeqCst) == false {
-                            context_switch(false);
+                            recursive_unsafe_yield();
                         }
 
                         debug::d("Renode\n");
@@ -571,7 +571,7 @@ impl KScheme for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { context_switch(false) };
+                                        unsafe { recursive_unsafe_yield() };
                                     }
 
                                     sector += 65535;
@@ -590,7 +590,7 @@ impl KScheme for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { context_switch(false) };
+                                        unsafe { recursive_unsafe_yield() };
                                     }
                                 }
 

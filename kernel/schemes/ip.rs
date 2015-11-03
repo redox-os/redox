@@ -5,7 +5,6 @@ use collections::vec::Vec;
 
 use core::mem;
 
-use network::arp::*;
 use network::common::*;
 use network::ipv4::*;
 
@@ -13,6 +12,7 @@ use common::{debug, random};
 use common::to_num::ToNum;
 use common::parse_ip::*;
 
+use schemes::arp::{ARP, ARPHeader};
 use schemes::{KScheme, Resource, URL};
 
 /// A IP (internet protocole) resource
