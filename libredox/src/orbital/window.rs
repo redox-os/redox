@@ -1,17 +1,20 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
+use string::{String, ToString};
 
 use core::ops::DerefMut;
 
-use common::event::{Event, KeyEvent, MouseEvent, QuitEvent};
-use common::queue::Queue;
-use common::scheduler;
+use event::*;
 
-use super::color::Color;
-use super::display::Display;
-use super::point::Point;
-use super::size::Size;
+use graphics::color::Color;
+use graphics::display::Display;
+use graphics::point::Point;
+use graphics::size::Size;
+use orbital::session::Session;
+use vec::Vec;
+use fs::File;
+use io::*;
+use core::{cmp,mem};
 
 /// A window
 pub struct Window {
@@ -20,7 +23,7 @@ pub struct Window {
     /// The size of the window
     pub size: Size,
     /// The title of the window
-    pub title: String,
+    pub t: String,
     /// The content of the window
     pub content: Box<Display>,
     /// The color of the window title
@@ -31,24 +34,32 @@ pub struct Window {
     pub focused: bool,
     /// Is the window minimized?
     pub minimized: bool,
+    font: Vec<u8>,
     dragging: bool,
     last_mouse_event: MouseEvent,
-    events: Queue<Event>,
+    events: Vec<Event>,
     ptr: *mut Window,
 }
 
 impl Window {
     /// Create a new window
-    pub fn new(point: Point, size: Size, title: String) -> Box<Self> {
+    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
+        let point = Point::new(x, y);
+        let size = Size { width: w, height: h };
+        let mut font = Vec::new();
+        if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
+            font_file.read_to_end(&mut font);
+        }
         let mut ret = box Window {
             point: point,
             size: size,
-            title: title,
+            t: title.to_string(),
             content: Display::new(size.width, size.height),
-            title_color: Color::new(255, 255, 255),
-            border_color: Color::alpha(64, 64, 64, 128),
+            title_color: Color::rgb(255, 255, 255),
+            border_color: Color::rgba(64, 64, 64, 128),
             focused: false,
             minimized: false,
+            font: font,
             dragging: false,
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -57,64 +68,144 @@ impl Window {
                 right_button: false,
                 middle_button: false,
             },
-            events: Queue::new(),
+            events: Vec::new(),
             ptr: 0 as *mut Window,
         };
 
         unsafe {
             ret.ptr = ret.deref_mut();
-
             if ret.ptr as usize > 0 {
-                (*::session_ptr).add_window(ret.ptr);
+                (*Session::session()).add_window(ret.ptr);
             }
         }
 
-        ret
+        Some(ret)
+    }
+
+    /* functions from old version */
+    /// Draw a pixel
+    pub fn pixel(&mut self, x: isize, y: isize, color: Color) {
+        self.content.pixel(Point::new(x,y), color);
+    }
+
+    /// Draw a character, using the loaded font
+    pub fn char(&mut self, x: isize, y: isize, c: char, color: Color) {
+        let cursor = Point::new(x, y);
+        self.content.char(&self.font, cursor, c, color)
+    }
+
+    /// Set entire window to a color
+    pub fn set(&mut self, color: Color) {
+        self.content.rect(Point::new(0,0), self.size, color);
+    }
+
+    pub fn rect(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, color: Color) {
+        for y in start_y..start_y + h as isize {
+            for x in start_x..start_x + w as isize {
+                self.pixel(x, y, color);
+            }
+        }
     }
 
     /// Poll the window (new)
     pub fn poll(&mut self) -> Option<Event> {
-        let event_option;
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            event_option = self.events.pop();
-            scheduler::end_no_ints(reenable);
+        loop {
+            if !self.events.is_empty() {
+                return Some(self.events.remove(0));
+            } else {
+                return None
+            }
         }
-
-        return event_option;
     }
+
+    pub fn image(&mut self, x: isize, y: isize, w: usize, h: usize, data: &[Color]) {
+        let point = Point::new(x,y);
+        let size = Size::new(w,h);
+        // TODO: make the types happy and remove the nested loop
+        // LazyOxen
+        /*
+        unsafe {
+            self.content.image(point,
+                               data as *const u32, 
+                               size);
+        }
+        */
+        let mut i = 0;
+        let Point{ x: start_x, y: start_y } = point;
+        let w = cmp::min(start_x as usize + size.width, self.size.width);
+        let h = cmp::min(start_y as usize + size.height, self.size.height);
+        let len = data.len();
+        for y in start_y..start_y + h as isize {
+            for x in start_x..start_x + w as isize {
+               if i < len {
+                   self.pixel(x, y, data[i])
+               }
+               i += 1;
+            }
+        }
+    }
+
+    pub fn sync(&mut self) -> bool {
+        self.redraw();
+        true
+    }
+
+    pub fn x(&self) -> isize {
+        self.point.x
+    }
+
+    pub fn y(&self) -> isize {
+        self.point.y
+    }
+
+    pub fn width(&self) -> usize {
+        self.size.width
+    }
+
+    pub fn height(&self) -> usize {
+        self.size.height
+    }
+
+    pub fn title(&self) -> String {
+        self.t.clone()
+    }
+
+    pub fn set_title(&mut self, title: &str) {
+        self.t = title.to_string();
+    }
+    /* end of the old functions */
 
     /// Redraw the window
     pub fn redraw(&mut self) {
+        self.content.flip();
+        //TODO: fix this
+        // LazyOxen
         unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.content.flip();
-            (*::session_ptr).redraw = true;
-            scheduler::end_no_ints(reenable);
+            (*Session::session()).redraw = true;
         }
     }
 
     /// Draw the window using a `Display`
     pub fn draw(&mut self, display: &Display) {
         if self.focused {
-            self.border_color = Color::alpha(128, 128, 128, 192);
+            self.border_color = Color::rgba(128, 128, 128, 192);
         } else {
-            self.border_color = Color::alpha(64, 64, 64, 128);
+            self.border_color = Color::rgba(64, 64, 64, 128);
         }
 
         if self.minimized {
-            self.title_color = Color::new(0, 0, 0);
+            self.title_color = Color::rgb(0, 0, 0);
         } else {
-            self.title_color = Color::new(255, 255, 255);
+            self.title_color = Color::rgb(255, 255, 255);
 
             display.rect(Point::new(self.point.x - 2, self.point.y - 18),
                          Size::new(self.size.width + 4, 18),
                          self.border_color);
 
             let mut cursor = Point::new(self.point.x, self.point.y - 17);
-            for c in self.title.chars() {
+            for c in self.t.chars() {
                 if cursor.x + 8 <= self.point.x + self.size.width as isize {
-                    display.char(cursor, c, self.title_color);
+                    display.char(&self.font, cursor, c, self.title_color);
                 }
                 cursor.x += 8;
             }
@@ -132,22 +223,16 @@ impl Window {
                          self.border_color);
 
             unsafe {
-                let reenable = scheduler::start_no_ints();
                 display.image(self.point,
                               self.content.onscreen as *const u32,
                               Size::new(self.content.width, self.content.height));
-                scheduler::end_no_ints(reenable);
             }
         }
     }
 
     /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.events.push(key_event.to_event());
-            scheduler::end_no_ints(reenable);
-        }
+        self.events.push(key_event.to_event());
     }
 
     fn on_window_decoration(&self, x: isize, y: isize) -> bool {
@@ -203,11 +288,6 @@ impl Window {
                     caught = true;
                 }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
-                    unsafe {
-                        let reenable = scheduler::start_no_ints();
-                        self.events.push(QuitEvent.to_event());
-                        scheduler::end_no_ints(reenable);
-                    }
                 }
             }
 
@@ -222,12 +302,8 @@ impl Window {
 
         self.last_mouse_event = orig_mouse_event;
 
-        if (caught && !self.dragging) || self.on_window_body(mouse_event.x, mouse_event.y) {
-            unsafe {
-                let reenable = scheduler::start_no_ints();
-                self.events.push(mouse_event.to_event());
-                scheduler::end_no_ints(reenable);
-            }
+        if caught && !self.dragging {
+            self.events.push(mouse_event.to_event());
         }
 
         caught
@@ -238,8 +314,19 @@ impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
             if self.ptr as usize > 0 {
-                (*::session_ptr).remove_window(self.ptr);
+                (*Session::session()).remove_window(self.ptr);
             }
         }
+    }
+}
+/// Event iterator
+pub struct EventIter<'a> {
+    window: &'a mut Window,
+}
+
+impl<'a> Iterator for EventIter<'a> {
+    type Item = Event;
+    fn next(&mut self) -> Option<Event> {
+        self.window.poll()
     }
 }

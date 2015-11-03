@@ -141,6 +141,7 @@
     pub mod fs;
     pub mod io;
     pub mod net;
+    pub mod package;
     // TODO pub mod os;
     // TODO pub mod path;
     // TODO pub mod process;
@@ -188,8 +189,13 @@
     pub use console::*;
     pub use graphics::bmp::*;
     pub use graphics::color::*;
+    pub use graphics::size::*;
+    pub use graphics::point::*;
+    pub use graphics::display::*;
     pub use orbital::*;
     pub use orbital::event::*;
+    pub use orbital::session::*;
+    pub use orbital::window::*;
     pub use url::*;
     pub use to_num::*;
 
@@ -217,9 +223,16 @@
     mod graphics {
         pub mod bmp;
         pub mod color;
+        pub mod point;
+        pub mod size;
+        pub mod display;
     }
     /// A module for window support
-    pub mod orbital;
+    pub mod orbital {
+        pub mod session;
+        pub mod window;
+        pub mod event;
+    }
 
     pub mod url;
 

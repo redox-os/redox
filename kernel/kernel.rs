@@ -38,7 +38,7 @@ use core::raw::Repr;
 
 use common::context::*;
 use common::debug;
-use common::event::{self, Event, EventOption};
+use common::event::{self, Event, EventOption, DisplayEvent};
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
@@ -59,6 +59,7 @@ use graphics::bmp::BMPFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
+use programs::executor::*;
 use programs::package::*;
 use programs::scheme::*;
 use programs::session::*;
@@ -71,8 +72,8 @@ use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
 use schemes::time::*;
-use schemes::window::*;
 use schemes::display::*;
+use schemes::events::*;
 
 use syscall::common::Regs;
 use syscall::handle::*;
@@ -247,14 +248,16 @@ unsafe fn event_loop() -> ! {
 
             match event_option {
                 Some(event) => {
-                    if debug_draw {
-                        match event.to_option() {
-                            EventOption::Key(key_event) => {
-                                if key_event.pressed {
+                    match event.to_option() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed {
+                                if debug_draw {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = true;
+                                            EventResource::add_event(DisplayEvent { 
+                                                restricted: false
+                                            }.to_event());
                                         },
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
@@ -266,7 +269,6 @@ unsafe fn event_loop() -> ! {
                                                 let reenable = scheduler::start_no_ints();
                                                 *::debug_command = cmd + "\n";
                                                 scheduler::end_no_ints(reenable);
-
                                                 cmd = String::new();
                                                 debug::dl();
                                             },
@@ -276,17 +278,22 @@ unsafe fn event_loop() -> ! {
                                             },
                                         },
                                     }
+                                    
+                                } else {
+                                    match key_event.scancode {
+                                        event::K_F1 => {
+                                            ::debug_draw = true;
+                                            ::debug_redraw = true;
+                                            EventResource::add_event(DisplayEvent { 
+                                                restricted: true
+                                            }.to_event());
+                                        },
+                                        _ => EventResource::add_event(event),
+                                    }
                                 }
-                            },
-                            _ => (),
-                        }
-                    } else {
-                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
-                            ::debug_draw = true;
-                            ::debug_redraw = true;
-                        } else {
-                            session.event(event);
-                        }
+                            }
+                        },
+                        _ => EventResource::add_event(event),
                     }
                 },
                 None => break
@@ -299,9 +306,7 @@ unsafe fn event_loop() -> ! {
                 debug_redraw = false;
                 display.flip();
             }
-        } else {
-            session.redraw();
-        }
+        } 
 
         context_switch(false);
     }
@@ -392,7 +397,8 @@ unsafe fn init(font_data: usize) {
         arp: Vec::new()
     });
     session.items.push(box DisplayScheme);
-    session.items.push(box WindowScheme);
+    EventScheme::init();
+    session.items.push(box EventScheme);
 
     Context::spawn(box move || {
         poll_loop();
@@ -408,20 +414,6 @@ unsafe fn init(font_data: usize) {
 
     //Start interrupts
     scheduler::end_no_ints(true);
-
-    //Load cursor before getting out of debug mode
-    debug::d("Loading cursor\n");
-    if let Some(mut resource) = URL::from_str("file:///ui/cursor.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        let cursor = BMPFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        session.cursor = cursor;
-        session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    }
 
     debug::d("Loading schemes\n");
     if let Some(mut resource) = URL::from_str("file:///schemes/").open() {
@@ -447,53 +439,21 @@ unsafe fn init(font_data: usize) {
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
                 let package = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + folder)));
-
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
-                session.redraw = true;
                 scheduler::end_no_ints(reenable);
             }
         }
     }
 
-    debug::d("Loading background\n");
-    if let Some(mut resource) = URL::from_str("file:///ui/background.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        if resource.read_to_end(&mut vec).is_some() {
-            debug::d("Read background\n");
-        } else {
-            debug::d("Failed to read background at: ");
-            debug::d(URL::from_str("file:///ui/background.bmp").reference());
-            debug::d("\n");
-        }
-
-        let background = BMPFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        session.background = background;
-        session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    } else {
-        debug::d("Failed to open background at: ");
-        debug::d(URL::from_str("file:///ui/background.bmp").reference());
-        debug::d("(scheme: ");
-        debug::d(URL::from_str("file:///ui/background.bmp").scheme());
-        debug::d(")\n");
-        debug::d("Parsed as: \n");
-
-        let parts = parse_path("///ui/background.bmp");
-        for i in parts {
-            debug::d(&i);
-            debug::d("\n");
-        }
-        debug::d("Path refered to as: ");
-        debug::d(URL::from_str("file:///ui/background.bmp").reference());
-        debug::d("\n");
-    }
-
     debug::d("Enabling context switching\n");
     debug_draw = false;
     context_enabled = true;
+
+    debug::d("Launching windowing session\n");
+    let wm = Package::from_url(&URL::from_string(&("file:///apps/".to_string() + "orbital/")));
+    execute(&wm.binary, &wm.url, Vec::new());
+    // launch session
 }
 
 fn dr(reg: &str, value: usize) {

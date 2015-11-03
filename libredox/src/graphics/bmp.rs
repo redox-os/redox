@@ -1,7 +1,13 @@
 use super::color::Color;
 
+use core::{mem};
+use fs::File;
+use io::*;
 use string::String;
 use vec::Vec;
+use super::display::Display;
+use super::point::Point;
+use super::size::Size;
 
 // TODO: Follow naming convention
 /// A bitmap
@@ -11,8 +17,7 @@ pub struct BMPFile {
     /// The bitmap height
     h: usize,
     /// The data of the bitmap
-    //data: Vec<[u8; 4]>,
-    data: Vec<Color>,
+    pub data: Vec<Color>,
 }
 
 impl BMPFile {
@@ -28,6 +33,18 @@ impl BMPFile {
     /// Create a new empty bitmap
     pub fn default() -> Self {
         Self::new(0, 0)
+    }
+
+    /// Load a bitmap from a file path
+    pub fn load(path: &str) -> Self {
+        match File::open(path) {
+            Some(mut f) => {
+                let mut data = Vec::new();
+                f.read_to_end(&mut data);
+                Self::from_data(&data)
+            },
+            None => Self::new(0,0),
+        }
     }
 
     /// Create a bitmap from some data
@@ -130,5 +147,20 @@ impl BMPFile {
 
     pub fn height(&self) -> usize {
         self.h
+    }
+
+    pub fn size(&self) -> Size {
+        Size{ width: self.w, height: self.h }
+    }
+
+    pub fn data_ptr(&self) -> *const u32 {
+        let data : &[u32] = unsafe {mem::transmute::<&[Color],&[u32]>(&self.data) };
+        data.as_ptr()
+    }
+    /// Draw the bitmap to the screen
+    pub fn draw(&self, display: &Display, point: Point) {
+        unsafe {
+            display.image_alpha(point, self.data_ptr(), self.size());
+        }
     }
 }

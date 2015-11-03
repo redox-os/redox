@@ -222,6 +222,7 @@ impl PS2 {
     }
 }
 
+
 impl KScheme for PS2 {
     fn on_irq(&mut self, irq: u8) {
         if irq == 0x1 || irq == 0xC {
