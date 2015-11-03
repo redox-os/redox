@@ -57,21 +57,21 @@ const PRD_EOT: u32 = 0x80000000;
 
 /// Physical Region Descriptor
 #[repr(packed)]
-struct PRD {
+struct Prd {
     addr: u32,
     size: u32,
 }
 
-struct PRDT {
-    reg: PIO32,
-    mem: Memory<PRD>,
+struct Prdt {
+    reg: Pio32,
+    mem: Memory<Prd>,
 }
 
-impl PRDT {
+impl Prdt {
     fn new(port: u16) -> Option<Self> {
         if let Some(mem) = Memory::new_align(8192, 65536) {
-            return Some(PRDT {
-                reg: PIO32::new(port),
+            return Some(Prdt {
+                reg: Pio32::new(port),
                 mem: mem,
             });
         }
@@ -80,7 +80,7 @@ impl PRDT {
     }
 }
 
-impl Drop for PRDT {
+impl Drop for Prdt {
     fn drop(&mut self) {
         unsafe { self.reg.write(0) };
     }
@@ -169,9 +169,9 @@ pub struct Disk {
     master: bool,
     request: Option<Request>,
     requests: Queue<Request>,
-    cmd: PIO8,
-    sts: PIO8,
-    prdt: Option<PRDT>,
+    cmd: Pio8,
+    sts: Pio8,
+    prdt: Option<Prdt>,
     pub irq: u8,
 }
 
@@ -184,9 +184,9 @@ impl Disk {
             master: true,
             request: None,
             requests: Queue::new(),
-            cmd: PIO8::new(base),
-            sts: PIO8::new(base + 2),
-            prdt: PRDT::new(base + 4),
+            cmd: Pio8::new(base),
+            sts: Pio8::new(base + 2),
+            prdt: Prdt::new(base + 4),
             irq: 0xE,
         }
     }
@@ -199,9 +199,9 @@ impl Disk {
             master: false,
             request: None,
             requests: Queue::new(),
-            cmd: PIO8::new(base),
-            sts: PIO8::new(base + 2),
-            prdt: PRDT::new(base + 4),
+            cmd: Pio8::new(base),
+            sts: Pio8::new(base + 2),
+            prdt: Prdt::new(base + 4),
             irq: 0xE,
         }
     }
@@ -214,9 +214,9 @@ impl Disk {
             master: true,
             request: None,
             requests: Queue::new(),
-            cmd: PIO8::new(base + 8),
-            sts: PIO8::new(base + 0xA),
-            prdt: PRDT::new(base + 0xC),
+            cmd: Pio8::new(base + 8),
+            sts: Pio8::new(base + 0xA),
+            prdt: Prdt::new(base + 0xC),
             irq: 0xF,
         }
     }
@@ -229,9 +229,9 @@ impl Disk {
             master: false,
             request: None,
             requests: Queue::new(),
-            cmd: PIO8::new(base + 8),
-            sts: PIO8::new(base + 0xA),
-            prdt: PRDT::new(base + 0xC),
+            cmd: Pio8::new(base + 8),
+            sts: Pio8::new(base + 0xA),
+            prdt: Prdt::new(base + 0xC),
             irq: 0xF,
         }
     }
@@ -327,7 +327,7 @@ impl Disk {
             return false;
         }
 
-        let data = PIO16::new(self.base + ATA_REG_DATA);
+        let data = Pio16::new(self.base + ATA_REG_DATA);
         let mut destination = Memory::<u16>::new(256).unwrap();
         for word in 0..256 {
             destination.write(word, data.read());
@@ -486,7 +486,7 @@ impl Disk {
                         }
 
                         prdt.mem.store(i,
-                                       PRD {
+                                       Prd {
                                            addr: (req.mem + i * 65536) as u32,
                                            size: eot,
                                        });
@@ -496,7 +496,7 @@ impl Disk {
                     }
                     if size > 0 && i < 8192 {
                         prdt.mem.store(i,
-                                       PRD {
+                                       Prd {
                                            addr: (req.mem + i * 65536) as u32,
                                            size: size as u32 | PRD_EOT,
                                        });

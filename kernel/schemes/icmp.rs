@@ -6,29 +6,29 @@ use scheduler::context::recursive_unsafe_yield;
 
 use network::common::*;
 
-use schemes::{KScheme, URL};
+use schemes::{KScheme, Url};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
-pub struct ICMPHeader {
+pub struct IcmpHeader {
     pub _type: u8,
     pub code: u8,
     pub checksum: Checksum,
     pub data: [u8; 4],
 }
 
-pub struct ICMP {
-    pub header: ICMPHeader,
+pub struct Icmp {
+    pub header: IcmpHeader,
     pub data: Vec<u8>,
 }
 
-impl FromBytes for ICMP {
+impl FromBytes for Icmp {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
-        if bytes.len() >= mem::size_of::<ICMPHeader>() {
+        if bytes.len() >= mem::size_of::<IcmpHeader>() {
             unsafe {
-                return Some(ICMP {
-                    header: *(bytes.as_ptr() as *const ICMPHeader),
-                    data: bytes[mem::size_of::<ICMPHeader>()..].to_vec(),
+                return Some(Icmp {
+                    header: *(bytes.as_ptr() as *const IcmpHeader),
+                    data: bytes[mem::size_of::<IcmpHeader>()..].to_vec(),
                 });
             }
         }
@@ -36,34 +36,34 @@ impl FromBytes for ICMP {
     }
 }
 
-impl ToBytes for ICMP {
+impl ToBytes for Icmp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
-            let header_ptr: *const ICMPHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ICMPHeader>()));
+            let header_ptr: *const IcmpHeader = &self.header;
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<IcmpHeader>()));
             ret.push_all(&self.data);
             ret
         }
     }
 }
 
-pub struct ICMPScheme;
+pub struct IcmpScheme;
 
-impl KScheme for ICMPScheme {
+impl KScheme for IcmpScheme {
     fn scheme(&self) -> &str {
         "icmp"
     }
 }
 
-impl ICMPScheme {
+impl IcmpScheme {
     pub fn reply_loop() {
-        while let Some(mut ip) = URL::from_str("ip:///1").open() {
+        while let Some(mut ip) = Url::from_str("ip:///1").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
                 if let Some(_) = ip.read_to_end(&mut bytes) {
-                    if let Some(message) = ICMP::from_bytes(bytes) {
+                    if let Some(message) = Icmp::from_bytes(bytes) {
                         if message.header._type == 0x08 {
-                            let mut response = ICMP {
+                            let mut response = Icmp {
                                 header: message.header,
                                 data: message.data,
                             };
@@ -73,9 +73,9 @@ impl ICMPScheme {
                             unsafe {
                                 response.header.checksum.data = 0;
 
-                                let header_ptr: *const ICMPHeader = &response.header;
+                                let header_ptr: *const IcmpHeader = &response.header;
                                 response.header.checksum.data = Checksum::compile(
-                                    Checksum::sum(header_ptr as usize, mem::size_of::<ICMPHeader>()) +
+                                    Checksum::sum(header_ptr as usize, mem::size_of::<IcmpHeader>()) +
                                     Checksum::sum(response.data.as_ptr() as usize, response.data.len())
                                 );
                             }

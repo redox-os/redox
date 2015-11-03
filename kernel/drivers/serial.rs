@@ -8,8 +8,8 @@ use schemes::KScheme;
 
 /// Serial
 pub struct Serial {
-    pub data: PIO8,
-    pub status: PIO8,
+    pub data: Pio8,
+    pub status: Pio8,
     pub irq: u8,
     pub escape: bool,
     pub cursor_control: bool,
@@ -19,8 +19,8 @@ impl Serial {
     /// Create new
     pub fn new(port: u16, irq: u8) -> Box<Self> {
         box Serial {
-            data: PIO8::new(port),
-            status: PIO8::new(port + 5),
+            data: Pio8::new(port),
+            status: Pio8::new(port + 5),
             irq: irq,
             escape: false,
             cursor_control: false,
@@ -76,7 +76,7 @@ impl KScheme for Serial {
                     scancode: sc,
                     pressed: true,
                 }
-                    .trigger();
+                .trigger();
             }
         }
     }

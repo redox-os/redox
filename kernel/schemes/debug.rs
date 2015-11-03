@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use scheduler::context::recursive_unsafe_yield;
 use scheduler;
 
-use schemes::{KScheme, Resource, URL};
+use schemes::{KScheme, Resource, Url};
 
 use syscall::handle;
 
@@ -15,8 +15,8 @@ impl Resource for DebugResource {
         Some(box DebugResource)
     }
 
-    fn url(&self) -> URL {
-        return URL::from_str("debug://");
+    fn url(&self) -> Url {
+        return Url::from_str("debug://");
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -69,7 +69,7 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         Some(box DebugResource)
     }
 }

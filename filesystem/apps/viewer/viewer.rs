@@ -13,7 +13,7 @@ pub fn main() {
         file.read_to_end(&mut vec);
     }
 
-    let bmp = BMPFile::from_data(&vec);
+    let bmp = BmpFile::from_data(&vec);
     let mut window = Window::new((rand() % 400 + 50) as isize,
                                  (rand() % 300 + 50) as isize,
                                  max(320, bmp.width()),

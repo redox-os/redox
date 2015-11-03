@@ -2,11 +2,11 @@ use alloc::boxed::Box;
 
 use core::{ptr, mem};
 
-use drivers::pciconfig::PCIConfig;
+use drivers::pciconfig::PciConfig;
 
 use common::debug;
 use common::memory;
-use schemes::{Resource, ResourceSeek, URL};
+use schemes::{Resource, ResourceSeek, Url};
 use scheduler;
 use common::time::{self, Duration};
 
@@ -54,8 +54,8 @@ impl Resource for IntelHDAResource {
         })
     }
 
-    fn url(&self) -> URL {
-        URL::from_str("hda://")
+    fn url(&self) -> Url {
+        Url::from_str("hda://")
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -207,7 +207,7 @@ impl Resource for IntelHDAResource {
 }
 
 pub struct IntelHDA {
-    pub pci: PCIConfig,
+    pub pci: PciConfig,
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
@@ -218,7 +218,7 @@ impl KScheme for IntelHDA {
         "hda"
     }
 
-    fn open(&mut self, _: &URL) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
         Some(box IntelHDAResource { base: self.base })
     }
 

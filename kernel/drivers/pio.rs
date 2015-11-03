@@ -1,13 +1,13 @@
 /// PIO8
 #[derive(Copy, Clone)]
-pub struct PIO8 {
+pub struct Pio8 {
     port: u16,
 }
 
-impl PIO8 {
+impl Pio8 {
     /// Create a PIO8 from a given port
     pub fn new(port: u16) -> Self {
-        return PIO8 { port: port };
+        return Pio8 { port: port };
     }
 
     /// Read
@@ -25,24 +25,24 @@ impl PIO8 {
 
 //TODO: Remove
 pub unsafe fn inb(port: u16) -> u8 {
-    return PIO8::new(port).read();
+    return Pio8::new(port).read();
 }
 
 //TODO: Remove
 pub unsafe fn outb(port: u16, value: u8) {
-    PIO8::new(port).write(value);
+    Pio8::new(port).write(value);
 }
 
 /// PIO16
 #[derive(Copy, Clone)]
-pub struct PIO16 {
+pub struct Pio16 {
     port: u16,
 }
 
-impl PIO16 {
+impl Pio16 {
     /// Create a new PIO16 from a given port
     pub fn new(port: u16) -> Self {
-        return PIO16 { port: port };
+        return Pio16 { port: port };
     }
 
     /// Read
@@ -60,24 +60,24 @@ impl PIO16 {
 
 //TODO: Remove
 pub unsafe fn inw(port: u16) -> u16 {
-    return PIO16::new(port).read();
+    return Pio16::new(port).read();
 }
 
 //TODO: Remove
 pub unsafe fn outw(port: u16, value: u16) {
-    PIO16::new(port).write(value);
+    Pio16::new(port).write(value);
 }
 
 /// PIO32
 #[derive(Copy, Clone)]
-pub struct PIO32 {
+pub struct Pio32 {
     port: u16,
 }
 
-impl PIO32 {
+impl Pio32 {
     /// Create a new PIO32 from a port
     pub fn new(port: u16) -> Self {
-        return PIO32 { port: port };
+        return Pio32 { port: port };
     }
 
     /// Read
@@ -95,10 +95,10 @@ impl PIO32 {
 
 //TODO: Remove
 pub unsafe fn ind(port: u16) -> u32 {
-    return PIO32::new(port).read();
+    return Pio32::new(port).read();
 }
 
 //TODO: Remove
 pub unsafe fn outd(port: u16, value: u32) {
-    PIO32::new(port).write(value);
+    Pio32::new(port).write(value);
 }

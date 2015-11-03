@@ -9,29 +9,29 @@ use redox::slice;
 use redox::{String, ToString};
 use redox::to_num::*;
 use redox::Vec;
-use redox::URL;
+use redox::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
-pub struct UDPHeader {
+pub struct UdpHeader {
     pub src: n16,
     pub dst: n16,
     pub len: n16,
     pub checksum: Checksum,
 }
 
-pub struct UDP {
-    pub header: UDPHeader,
+pub struct Udp {
+    pub header: UdpHeader,
     pub data: Vec<u8>,
 }
 
-impl FromBytes for UDP {
+impl FromBytes for Udp {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
-        if bytes.len() >= mem::size_of::<UDPHeader>() {
+        if bytes.len() >= mem::size_of::<UdpHeader>() {
             unsafe {
-                return Option::Some(UDP {
-                    header: ptr::read(bytes.as_ptr() as *const UDPHeader),
-                    data: bytes[mem::size_of::<UDPHeader>().. bytes.len()].to_vec(),
+                return Option::Some(Udp {
+                    header: ptr::read(bytes.as_ptr() as *const UdpHeader),
+                    data: bytes[mem::size_of::<UdpHeader>().. bytes.len()].to_vec(),
                 });
             }
         }
@@ -39,11 +39,11 @@ impl FromBytes for UDP {
     }
 }
 
-impl ToBytes for UDP {
+impl ToBytes for Udp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
-            let header_ptr: *const UDPHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<UDPHeader>()));
+            let header_ptr: *const UdpHeader = &self.header;
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<UdpHeader>()));
             ret.push_all(&self.data);
             ret
         }
@@ -94,7 +94,7 @@ impl Resource {
             let mut bytes: Vec<u8> = Vec::new();
             match self.ip.read_to_end(&mut bytes) {
                 Some(_) => {
-                    if let Some(datagram) = UDP::from_bytes(bytes) {
+                    if let Some(datagram) = Udp::from_bytes(bytes) {
                         if datagram.header.dst.get() == self.host_port &&
                            datagram.header.src.get() == self.peer_port {
                             //TODO: Allow splitting
@@ -116,11 +116,11 @@ impl Resource {
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let udp_data = Vec::from(buf);
 
-        let mut udp = UDP {
-            header: UDPHeader {
+        let mut udp = Udp {
+            header: UdpHeader {
                 src: n16::new(self.host_port),
                 dst: n16::new(self.peer_port),
-                len: n16::new((mem::size_of::<UDPHeader>() + udp_data.len()) as u16),
+                len: n16::new((mem::size_of::<UdpHeader>() + udp_data.len()) as u16),
                 checksum: Checksum { data: 0 },
             },
             data: udp_data,
@@ -128,7 +128,7 @@ impl Resource {
 
         unsafe {
             let proto = n16::new(0x11);
-            let datagram_len = n16::new((mem::size_of::<UDPHeader>() + udp.data.len()) as u16);
+            let datagram_len = n16::new((mem::size_of::<UdpHeader>() + udp.data.len()) as u16);
             udp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
@@ -138,8 +138,8 @@ impl Resource {
                                                 mem::size_of::<n16>()) +
                                   Checksum::sum((&datagram_len as *const n16) as usize,
                                                 mem::size_of::<n16>()) +
-                                  Checksum::sum((&udp.header as *const UDPHeader) as usize,
-                                                mem::size_of::<UDPHeader>()) +
+                                  Checksum::sum((&udp.header as *const UdpHeader) as usize,
+                                                mem::size_of::<UdpHeader>()) +
                                   Checksum::sum(udp.data.as_ptr() as usize, udp.data.len()));
         }
 
@@ -167,7 +167,7 @@ impl Scheme {
     }
 
     pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
-        let url = URL::from_str(&url_str);
+        let url = Url::from_str(&url_str);
 
         //Check host and port vs path
         if !url.path().is_empty() {
@@ -176,10 +176,10 @@ impl Scheme {
                 if let Some(mut ip) = File::open("ip:///11") {
                     let mut bytes: Vec<u8> = Vec::new();
                     if ip.read_to_end(&mut bytes).is_some() {
-                        if let Some(datagram) = UDP::from_bytes(bytes) {
+                        if let Some(datagram) = Udp::from_bytes(bytes) {
                             if datagram.header.dst.get() as usize == host_port {
                                 if let Some(path) = ip.path() {
-                                    let url = URL::from_string(&path);
+                                    let url = Url::from_string(&path);
 
                                     return Some(box Resource {
                                         ip: ip,
