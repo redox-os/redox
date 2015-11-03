@@ -5,9 +5,39 @@ use super::block_ptr::BlockPtr;
 use super::from_bytes::FromBytes;
 use super::zil_header::ZilHeader;
 
+#[repr(u8)]
+#[derive(Debug, Eq, PartialEq)]
+pub enum ObjectType {
+    None,
+    ObjectDirectory,
+    ObjectArray,
+    PackedNvList,
+    NvListSize,
+    BlockPtrList,
+    BlockPtrListHdr,
+    SpaceMapHeader,
+    SpaceMap,
+    IntentLog,
+    DNode,
+    ObjSet,
+    DataSet,
+    DataSetChildMap,
+    ObjSetSnapMap,
+    DslProps,
+    DslObjSet,
+    ZNode,
+    Acl,
+    PlainFileContents,
+    DirectoryContents,
+    MasterNode,
+    DeleteQueue,
+    ZVol,
+    ZVolProp,
+}
+
 #[repr(packed)]
 pub struct DNodePhys {
-    pub object_type: u8,
+    pub object_type: ObjectType,
     pub indblkshift: u8, // ln2(indirect block size)
     pub nlevels: u8, // 1=blkptr->data blocks
     pub nblkptr: u8, // length of blkptr
@@ -42,7 +72,7 @@ impl FromBytes for DNodePhys { }
 
 impl fmt::Debug for DNodePhys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "DNodePhys {{ object_type: {:X}, nlevels: {:X}, nblkptr: {:X}, bonus_type: {:X}, bonus_len: {:X}}}\n",
+        try!(write!(f, "DNodePhys {{ object_type: {:?}, nlevels: {:X}, nblkptr: {:X}, bonus_type: {:X}, bonus_len: {:X}}}\n",
                     self.object_type, self.nlevels, self.nblkptr, self.bonus_type, self.bonus_len));
         Ok(())
     }
