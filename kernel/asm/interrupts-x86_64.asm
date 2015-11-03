@@ -70,7 +70,7 @@ interrupts:
 	pop r14
 	pop r15
 	pop rbp
-	add rsp, 8 ;Skip rsp
+    pop rsp ;Pop new rsp (if modified in Regs structure)
     iretq
 
 .handler: dq 0
