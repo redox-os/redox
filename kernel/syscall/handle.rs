@@ -1,3 +1,4 @@
+use ::GetSlice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
@@ -277,8 +278,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
 
     if path_str.ends_with(".bin") {
         let path = Url::from_string(&path_str);
-        let i = path_str.rfind('/').unwrap_or(0) + 1;
-        let wd = Url::from_string(&path_str[ .. i].to_string());
+        let wd = Url::from_string(&path_str.get_slice(None, Some(path_str.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path,
                 &wd,
                 Vec::new());
@@ -287,7 +287,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
         for package in (*::session_ptr).packages.iter() {
             let mut accepted = false;
             for accept in package.accepts.iter() {
-                if path_str.ends_with(&accept[1 ..]) {
+                if path_str.ends_with(accept.get_slice(Some(1), None)) {
                     accepted = true;
                     break;
                 }

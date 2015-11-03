@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use collections::slice;
 use collections::vec::Vec;
 
@@ -24,7 +26,7 @@ impl FromBytes for EthernetII {
             unsafe {
                 return Some(EthernetII {
                     header: *(bytes.as_ptr() as *const EthernetIIHeader),
-                    data: bytes[mem::size_of::<EthernetIIHeader>() ..].to_vec(),
+                    data: bytes.get_slice(Some(mem::size_of::<EthernetIIHeader>()), None).to_vec(),
                 });
             }
         }
