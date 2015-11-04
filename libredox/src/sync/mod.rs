@@ -1,10 +1,11 @@
+pub use alloc::arc::{Arc, Weak};
+pub use core::sync::atomic;
+
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use common::debug;
-
-use syscall::call::sys_yield;
+use syscall::sys_yield;
 
 /// A mutex, i.e. a form of safe shared memory between threads. See rust std's Mutex.
 pub struct Mutex<T: ?Sized> {
@@ -26,7 +27,7 @@ impl<T: ?Sized> Mutex<T> {
     /// Lock the mutex
     pub fn lock(&self) -> MutexGuard<T> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
-            sys_yield();
+            unsafe { sys_yield() };
         }
         MutexGuard::new(&self.lock, &self.value)
     }
@@ -68,7 +69,7 @@ impl<'mutex, T: ?Sized> DerefMut for MutexGuard<'mutex, T> {
 impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     fn drop(&mut self) {
         if !self.lock.compare_and_swap(true, false, Ordering::SeqCst) {
-            debug::d("Mutex was already unlocked!\n");
+            //Mutex was already unlocked!
         }
     }
 }
