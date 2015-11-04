@@ -75,6 +75,7 @@
     pub mod error;
     pub mod debug;
 
+    pub use alloc::arc;
     pub use alloc::boxed;
     pub use alloc::rc;
 

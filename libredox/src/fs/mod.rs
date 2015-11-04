@@ -1,6 +1,6 @@
 use core::usize;
 
-use io::{stdout, Read, Write, Seek, SeekFrom};
+use io::{Read, Write, Seek, SeekFrom};
 use str;
 use string::{String, ToString};
 use vec::Vec;

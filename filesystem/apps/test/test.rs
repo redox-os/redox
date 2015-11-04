@@ -64,16 +64,16 @@ pub fn main() {
                     }
                 }
                 command if command == console_commands[6] => {
+                    let parent_message = "Parent Message";
                     let handle = thread::spawn(move || {
-                        println!("Child from clone");
+                        println!("Child after spawn: {}", parent_message);
                         return "Child message";
                     });
-                    println!("Parent after clone");
+                    println!("Parent after spawn: {}", parent_message);
                     match handle.join() {
-                        Some(message) => println!("{}", message),
+                        Some(child_message) => println!("Parent after join: {}", child_message),
                         None => println!("Failed to join")
                     }
-                    println!("Parent after join");
                 }
                 command if command == console_commands[7] => {
                     let mut stack_it: Vec<Box<u8>> = Vec::new();
