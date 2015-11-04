@@ -1,6 +1,6 @@
 use redox::fmt;
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Hash)]
 #[repr(packed)]
 pub struct DVAddr {
     pub vdev: u64,

@@ -11,6 +11,7 @@ use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
+pub mod arc;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
