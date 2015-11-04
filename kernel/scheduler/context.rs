@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use alloc::boxed::{Box, FnBox};
 use alloc::rc::Rc;
 
@@ -375,11 +377,11 @@ impl Context {
 
     pub unsafe fn canonicalize(&self, path: &str) -> String {
         if path.find(':').is_none() {
+            let cwd = &*self.cwd.get();
             if path.starts_with('/') {
-                let i = (*self.cwd.get()).find(':').unwrap_or(0) + 1;
-                (*self.cwd.get())[.. i].to_string() + &path
+                cwd.get_slice(None, Some(cwd.find(':').map_or(1, |i| i + 1))).to_string() + &path
             } else {
-                (*self.cwd.get()).clone() + &path
+                cwd.to_string() + &path
             }
         }else{
             path.to_string()
