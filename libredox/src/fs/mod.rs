@@ -5,7 +5,7 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync};
+use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir};
 use syscall::common::{O_RDONLY, O_WRONLY, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
@@ -194,5 +194,11 @@ pub fn read_dir(path: &str) -> Option<ReadDir> {
         })
     } else {
         None
+    }
+}
+
+pub fn change_cwd(path: &str) -> bool {
+    unsafe {
+        sys_chdir(path.as_ptr()) == 0
     }
 }
