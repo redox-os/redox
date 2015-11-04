@@ -76,7 +76,7 @@ impl MacAddr {
 
         let mut i = 0;
         for part in string.split('.') {
-            let octet = part.to_string().to_num_radix(16) as u8;
+            let octet = part.to_num_radix(16) as u8;
             match i {
                 0 => addr.bytes[0] = octet,
                 1 => addr.bytes[1] = octet,
@@ -128,7 +128,7 @@ impl Ipv4Addr {
 
         let mut i = 0;
         for part in string.split('.') {
-            let octet = part.to_string().to_num() as u8;
+            let octet = part.to_num() as u8;
             match i {
                 0 => addr.bytes[0] = octet,
                 1 => addr.bytes[1] = octet,
