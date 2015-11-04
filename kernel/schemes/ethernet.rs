@@ -113,7 +113,7 @@ impl KScheme for EthernetScheme {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),
-                        peer_addr: MacAddr::from_string(&parse_host(url.reference()).to_string()),
+                        peer_addr: MacAddr::from_str(parse_host(url.reference())),
                         ethertype: ethertype,
                     });
                 } else {

@@ -71,7 +71,7 @@ impl MacAddr {
         true
     }
 
-    pub fn from_string(string: &String) -> Self {
+    pub fn from_str(string: &str) -> Self {
         let mut addr = MacAddr { bytes: [0, 0, 0, 0, 0, 0] };
 
         let mut i = 0;
