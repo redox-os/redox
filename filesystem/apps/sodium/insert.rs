@@ -71,7 +71,7 @@ impl Editor {
                         self.goto((begin, y + 1));
                     },
                     Key::Backspace => { // Backspace
-                        let prev = self.previous(d + 1);
+                        let prev = self.previous(1);
                         if let Some((x, y)) = prev {
                             //if self.x() != 0 || self.y() != 0 {
                             self.goto((x + d, y));
