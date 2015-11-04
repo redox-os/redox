@@ -37,6 +37,20 @@ impl Editor {
         } else {
             match self.cursor().mode {
                 Command(Normal) => match cmd.key {
+//                    // { for debuging
+//                    Char('n') => {
+//                        let p = self.next(n);
+//                        if let Some(p) = p {
+//                            self.goto(p);
+//                        }
+//                    },
+//                    Char('p') => {
+//                        let p = self.previous(n);
+//                        if let Some(p) = p {
+//                            self.goto(p);
+//                        }
+//                    },
+//                    // }
                     Char('i') => {
                         self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(
                             InsertOptions {
@@ -98,7 +112,7 @@ impl Editor {
                     },
                     Char('x') => self.delete(),
                     Char('X') => {
-                        let previous = self.previous();
+                        let previous = self.previous(1);
                         if let Some(p) = previous {
                             self.goto(p);
                         }
