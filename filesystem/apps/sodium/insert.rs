@@ -71,7 +71,7 @@ impl Editor {
                         self.goto((begin, y + 1));
                     },
                     Key::Backspace => { // Backspace
-                        let prev = self.previous();
+                        let prev = self.previous(d + 1);
                         if let Some((x, y)) = prev {
                             //if self.x() != 0 || self.y() != 0 {
                             self.goto((x + d, y));
@@ -101,7 +101,7 @@ impl Editor {
             InsertMode::Replace => match k {
                 Key::Char(c) => {
                     if x == self.text[y].len() {
-                        let next = self.next();
+                        let next = self.next(1);
                         if let Some(p) = next {
                             self.goto(p);
                             x = self.x();
@@ -111,7 +111,7 @@ impl Editor {
 
                     if self.text.len() != y {
                         if self.text[y].len() == x {
-                            let next = self.next();
+                            let next = self.next(1);
                             if let Some(p) = next {
                                 self.goto(p);
                             }
@@ -119,7 +119,7 @@ impl Editor {
                             self.text[y][x] = c;
                         }
                     }
-                    let next = self.next();
+                    let next = self.next(1);
                     if let Some(p) = next {
                         self.goto(p);
                     }
