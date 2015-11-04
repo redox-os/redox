@@ -44,7 +44,6 @@ use common::paging::Page;
 use common::queue::Queue;
 use schemes::Url;
 use common::time::Duration;
-use common::parse_path::*;
 
 use drivers::pci::*;
 use drivers::pio::*;
