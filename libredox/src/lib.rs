@@ -145,7 +145,7 @@
     // TODO pub mod os;
     // TODO pub mod path;
     // TODO pub mod process;
-    // TODO pub mod sync;
+    pub mod sync;
     pub mod time;
 
     //TODO #[macro_use]
