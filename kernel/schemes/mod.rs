@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
@@ -99,7 +101,7 @@ pub trait Resource {
                 Some(0) => return Some(read),
                 None => return None,
                 Some(count) => {
-                    vec.push_all(&bytes[0..count]);
+                    vec.push_all(bytes.get_slice(None, Some(count)));
                     read += count;
                 }
             }
@@ -147,17 +149,12 @@ impl Url {
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        &self.string[..self.string.find(':').unwrap_or(self.string.len())]
+        self.string.get_slice(None, self.string.find(':'))
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        &self.string[
-        match self.string.find(':') {
-            Some(pos) => pos + 1,
-            None => self.string.len(),
-        }
-        ..]
+        self.string.get_slice(self.string.find(':').map(|a| a + 1), None)
     }
 
 }
