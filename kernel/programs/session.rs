@@ -327,6 +327,10 @@ impl Session {
                         break;
                     }
                 }
+                while i < chars {
+                    x += 8;
+                    i += 1;
+                }
                 x += 8;
             }
 
