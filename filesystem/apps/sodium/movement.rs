@@ -1,6 +1,6 @@
 use super::*;
 
-// TODO! Clear up naming!
+
 
 impl Editor {
     /// Goto a given position. Does not automatically bound.
@@ -83,7 +83,7 @@ impl Editor {
                 loop {
                     if mv <= self.text[ry].len() {
 //                        debugln!("LOOP:IF1 mv: {}, ry: {}", mv, ry);
-                        return Some((x - mv, ry));
+                        return Some((self.text[ry].len() - mv, ry));
                     } else {
 //                        debugln!("LOOP:ELSE1 mv: {}, ry: {}", mv, ry);
                         if ry > 0 && mv >= self.text[ry].len() {
@@ -93,6 +93,7 @@ impl Editor {
                         } else if ry == 0 {
 //                            debugln!("LOOP:ELSE2 mv: {}, ry: {}", mv, ry);
                             return None;
+
                         }
                     }
                 }
