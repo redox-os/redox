@@ -36,12 +36,12 @@ impl Resource for WindowResource {
 
     /// Return the url of this resource
     fn url(&self) -> Url {
-        return Url::from_string(&format!("window://{}/{}/{}/{}/{}",
-                                    self.window.point.x,
-                                    self.window.point.y,
-                                    self.window.size.width,
-                                    self.window.size.height,
-                                    self.window.title));
+        Url::from_string(format!("window://{}/{}/{}/{}/{}",
+                                 self.window.point.x,
+                                 self.window.point.y,
+                                 self.window.size.width,
+                                 self.window.size.height,
+                                 self.window.title))
     }
 
     /// Read data to buffer
