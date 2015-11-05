@@ -71,7 +71,16 @@ impl Editor {
                         self.goto((begin, y + 1));
                     },
                     Key::Backspace => { // Backspace
-                        let prev = self.previous(1);
+                        let del = if self.text[y].len() == 0 {
+                            1
+                        } else if d == 0 && x == 0 {
+                            self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append }));
+                            1
+
+                        } else {
+                            1 - d
+                        };
+                        let prev = self.previous(del);
                         if let Some((x, y)) = prev {
                             //if self.x() != 0 || self.y() != 0 {
                             self.goto((x + d, y));
