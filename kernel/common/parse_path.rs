@@ -21,8 +21,8 @@ pub fn parse_path(path: &str) -> Vec<String> {
                 },
                 '/' if !new_part => {
                     new_part = true;
-                    parts.push(cur_part);
-                    cur_part = String::new();
+                    parts.push(cur_part.clone());
+                    cur_part.clear();
                 },
                 '/' => {},
                 c => {
