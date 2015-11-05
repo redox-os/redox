@@ -224,6 +224,9 @@ impl Editor {
                     self.draw_content(&mut window);
                 }
             }
+            if let EventOption::Quit(quit_event) = event.to_option() {
+                break;
+            }
         }
     }
 }
