@@ -39,7 +39,7 @@ impl Resource for IpResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_string(&format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto))
+        Url::from_string(format!("ip://{}/{:X}", self.peer_addr.to_string(), self.proto))
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -143,7 +143,7 @@ impl KScheme for IpScheme {
                 }
 
                 if peer_mac.equals(BROADCAST_MAC_ADDR) {
-                    if let Some(mut link) = Url::from_string(&("ethernet://".to_string() + &peer_mac.to_string() + "/806")).open() {
+                    if let Some(mut link) = Url::from_string("ethernet://".to_string() + &peer_mac.to_string() + "/806").open() {
                         let arp = Arp {
                             header: ArpHeader {
                                 htype: n16::new(1),
@@ -183,7 +183,7 @@ impl KScheme for IpScheme {
                     }
                 }
 
-                if let Some(link) = Url::from_string(&("ethernet://".to_string() + &peer_mac.to_string() + "/800")).open() {
+                if let Some(link) = Url::from_string("ethernet://".to_string() + &peer_mac.to_string() + "/800").open() {
                     return Some(box IpResource {
                         link: link,
                         data: Vec::new(),

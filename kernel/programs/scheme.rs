@@ -158,7 +158,7 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return Url::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result)))) });
+                return Url::from_string(unsafe { String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result)))) });
             }
         }
         Url::new()
@@ -330,7 +330,7 @@ impl SchemeItem {
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
-                scheme_item.binary = Url::from_string(&(url.to_string() + part + ".bin"));
+                scheme_item.binary = Url::from_string(url.to_string() + part + ".bin");
             }
         }
 
