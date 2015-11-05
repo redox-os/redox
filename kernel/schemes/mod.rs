@@ -7,6 +7,8 @@ use collections::vec::Vec;
 
 use core::cmp::{min, max};
 
+use syscall::common::{O_CREAT, O_RDWR, O_TRUNC};
+
 /// ARP scheme
 pub mod arp;
 /// Context scheme
@@ -46,7 +48,7 @@ pub trait KScheme {
         ""
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         None
     }
 }
@@ -143,7 +145,14 @@ impl Url {
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
         unsafe {
-            return (*::session_ptr).open(&self);
+            return (*::session_ptr).open(&self, O_RDWR);
+        }
+    }
+
+    /// Create this URL (returns a resource)
+    pub fn create(&self) -> Option<Box<Resource>> {
+        unsafe {
+            return (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC);
         }
     }
 

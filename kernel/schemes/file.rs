@@ -14,7 +14,7 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use drivers::disk::{Disk, Extent, Request};
 use drivers::pciconfig::PciConfig;
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 use common::debug;
 use common::memory::Memory;
 use common::parse_path::*;
@@ -346,7 +346,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                recursive_unsafe_yield();
+                                context_switch(false);
                             }
 
                             sector += 65535;
@@ -365,7 +365,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                recursive_unsafe_yield();
+                                context_switch(false);
                             }
                         }
                     }
@@ -398,7 +398,7 @@ impl Resource for FileResource {
 
                         debug::d("Wait request\n");
                         while request.complete.load(Ordering::SeqCst) == false {
-                            recursive_unsafe_yield();
+                            context_switch(false);
                         }
 
                         debug::d("Renode\n");
@@ -512,7 +512,7 @@ impl KScheme for FileScheme {
         "file"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         let path = url.reference();
         if path.is_empty() || path.ends_with('/') {
             let mut list = String::new();
@@ -574,7 +574,7 @@ impl KScheme for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { recursive_unsafe_yield() };
+                                        unsafe { context_switch(false) };
                                     }
 
                                     sector += 65535;
@@ -593,7 +593,7 @@ impl KScheme for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { recursive_unsafe_yield() };
+                                        unsafe { context_switch(false) };
                                     }
                                 }
 

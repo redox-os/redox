@@ -4,7 +4,7 @@ use collections::vec::Vec;
 
 use core::{mem, slice};
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 
 use network::common::*;
 
@@ -89,7 +89,7 @@ impl IcmpScheme {
                     break;
                 }
             }
-            unsafe { recursive_unsafe_yield() };
+            unsafe { context_switch(false) };
         }
     }
 }

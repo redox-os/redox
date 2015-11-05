@@ -2,7 +2,7 @@ use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 
 /// A mutex, i.e. a form of safe shared memory between threads. See rust std's Mutex.
 pub struct Mutex<T: ?Sized> {
@@ -24,7 +24,7 @@ impl<T: ?Sized> Mutex<T> {
     /// Lock the mutex
     pub fn lock(&self) -> MutexGuard<T> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
-            unsafe { recursive_unsafe_yield() };
+            unsafe { context_switch(false) };
         }
         MutexGuard::new(&self.lock, &self.value)
     }

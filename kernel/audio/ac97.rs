@@ -181,7 +181,7 @@ impl KScheme for AC97 {
         "audio"
     }
 
-    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,

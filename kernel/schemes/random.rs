@@ -12,7 +12,7 @@ impl KScheme for RandomScheme {
         "random"
     }
 
-    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box VecResource::new(Url::from_str("random://"), format!("{}", random::rand()).into_bytes()))
     }
 }

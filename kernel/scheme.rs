@@ -36,7 +36,7 @@ pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Resource {
+pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usize) -> *mut Resource {
     let mut len = 0;
     for i in 0..4096 {
         len = i as usize;
@@ -45,7 +45,7 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8) -> *mut Res
         }
     }
 
-    match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len))) {
+    match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len)), flags) {
         Some(resource) => return Box::into_raw(resource),
         None => return usize::MAX as *mut Resource
     }

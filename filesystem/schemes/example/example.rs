@@ -56,7 +56,7 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, path: &str) -> Option<Box<Resource>> {
+    pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
         write!(io::stdout(), "Open {}\n", path);
         Some(box Resource {
             path: path.to_string()

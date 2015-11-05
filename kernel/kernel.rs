@@ -224,7 +224,7 @@ unsafe fn idle_loop() -> ! {
             asm!("sti");
         }
 
-        recursive_unsafe_yield();
+        context_switch(false);
     }
 }
 
@@ -235,7 +235,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        recursive_unsafe_yield();
+        context_switch(false);
     }
 }
 
@@ -310,7 +310,7 @@ unsafe fn event_loop() -> ! {
             session.redraw();
         }
 
-        recursive_unsafe_yield();
+        context_switch(false);
     }
 }
 
@@ -601,7 +601,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(regs, true);
+            context_switch(true);
         }
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4

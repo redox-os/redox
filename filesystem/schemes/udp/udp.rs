@@ -166,7 +166,7 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
         //Check host and port vs path
