@@ -104,7 +104,7 @@ impl KScheme for EthernetScheme {
         "ethernet"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
         if let Some(mut network) = Url::from_str("network://").open() {
             if !url.reference().is_empty() {
                 let ethertype = url.reference().to_num_radix(16) as u16;

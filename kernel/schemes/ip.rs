@@ -127,7 +127,7 @@ impl KScheme for IpScheme {
         "ip"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
         if !url.reference().is_empty() {
             let proto = url.reference().to_num_radix(16) as u8;
 

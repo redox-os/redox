@@ -4,7 +4,7 @@ use collections::vec::Vec;
 
 use core::ops::DerefMut;
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 use common::debug;
 use common::queue::Queue;
 use scheduler;
@@ -84,7 +84,7 @@ impl Resource for NetworkResource {
                     return Some(bytes.len());
                 }
 
-                recursive_unsafe_yield();
+                context_switch(false);
             }
         }
     }

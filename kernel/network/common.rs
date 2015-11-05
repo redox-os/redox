@@ -1,4 +1,4 @@
-use collections::string::{String, ToString};
+use collections::string::String;
 use collections::vec::Vec;
 
 use common::to_num::ToNum;

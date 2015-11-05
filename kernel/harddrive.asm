@@ -70,4 +70,5 @@ fs_data.%1:
 
     align 512, db 0
 fs_free_space:
+    times 64 * 1024 * 1024 db 0  ;64 MB of free space
 .end:

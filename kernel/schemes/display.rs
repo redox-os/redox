@@ -62,7 +62,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         // TODO: ponder these things:
         // - should display:// be the only only valid url
         //      for this scheme?

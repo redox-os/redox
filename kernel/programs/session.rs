@@ -131,7 +131,7 @@ impl Session {
     }
 
     /// Open a new resource
-    pub fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
@@ -150,7 +150,7 @@ impl Session {
         } else {
             for mut item in self.items.iter_mut() {
                 if item.scheme() == url.scheme() {
-                    return item.open(url);
+                    return item.open(url, flags);
                 }
             }
             None

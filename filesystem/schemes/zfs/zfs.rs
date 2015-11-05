@@ -404,7 +404,7 @@ impl Scheme {
         }
     }
 
-    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, mode: usize) -> Option<Box<Resource>> {
         if self.zfs.is_none() {
             if let Some(file) = File::open("file:///apps/zfs/zfs.img") {
                 write!(io::stdout(), "ZFS Mount {:?}\n", file.path());

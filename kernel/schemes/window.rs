@@ -101,7 +101,7 @@ impl KScheme for WindowScheme {
         "window"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = parse_path(url.reference());
         let pointx = match url_path.get(0) {
