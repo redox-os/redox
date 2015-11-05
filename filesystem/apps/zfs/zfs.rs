@@ -11,7 +11,7 @@ use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
-pub mod arc;
+pub mod zarc;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
@@ -31,7 +31,7 @@ pub mod zio;
 
 pub struct ZfsReader {
     pub zio: zio::Reader,
-    pub arc: arc::Arc,
+    pub arc: zarc::Arc,
 }
 
 impl ZfsReader {
@@ -110,7 +110,7 @@ pub struct Zfs {
 
 impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
-        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: arc::Arc::new() };
+        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: zarc::Arc::new() };
 
         let uberblock = try!(zfs_reader.uber());
 
