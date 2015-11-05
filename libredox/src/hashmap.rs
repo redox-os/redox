@@ -3,12 +3,13 @@ use super::hash::*;
 use core::mem;
 
 /// An linked list (used for entries)
-pub enum LinkedList<T> {
+#[derive(Clone)]
+pub enum LinkedList<T: Clone> {
     Elem(T, Box<LinkedList<T>>),
     Nil,
 }
 
-impl<T> LinkedList<T> {
+impl<T: Clone> LinkedList<T> {
     /// Follow
     pub fn follow(&self) -> Option<&Self> {
         use self::LinkedList::*;
@@ -42,11 +43,12 @@ impl<T> LinkedList<T> {
 }
 
 /// A entry in the hash map
-pub struct Entry<K, V> {
+#[derive(Clone)]
+pub struct Entry<K: Clone, V: Clone> {
     data: LinkedList<(K, V)>,
 }
 
-impl<K: PartialEq<K>, V> Entry<K, V> {
+impl<K: PartialEq<K> + Clone, V: Clone> Entry<K, V> {
     /// Create new
     pub fn new(key: K, value: V) -> Self {
         Entry {
@@ -111,11 +113,11 @@ impl<K: PartialEq<K>, V> Entry<K, V> {
 }
 
 /// A hashtable
-pub struct HashMap<K, V> {
+pub struct HashMap<K: Clone, V: Clone> {
     data: [Entry<K, V>; 256],
 }
 
-impl<K: Hash + PartialEq, V> HashMap<K, V> {
+impl<K: Hash + PartialEq + Clone, V: Clone> HashMap<K, V> {
     /// Get value
     pub fn get(&self, key: &K) -> Option<&V> {
         let mut s = Djb2::new();
@@ -140,7 +142,7 @@ impl<K: Hash + PartialEq, V> HashMap<K, V> {
             _ => {}
         }
         let n = (s.finish() % 256) as usize;
-        mem::replace(&mut self.data[n], self.data[n].push(key, val));
+        self.data[n] = self.data[n].clone().push(key, val);
     }
 }
 
