@@ -519,7 +519,7 @@ impl KScheme for FileScheme {
 
             // Hmm... no deref coercions in libcollections ;(
             for file in self.fs.list(parse_path(&path.to_string())).iter() {
-                let line;
+                let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
                         let dirname = file.get_slice(None, Some(index + 1)).to_string();
@@ -531,7 +531,7 @@ impl KScheme for FileScheme {
                             }
                         }
                         if found {
-                            line = String::new();
+                            line.clear();
                         } else {
                             line = dirname.clone();
                             dirs.push(dirname);

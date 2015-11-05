@@ -271,10 +271,10 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd + "\n";
+                                                *::debug_command = cmd.clone() + "\n";
                                                 scheduler::end_no_ints(reenable);
 
-                                                cmd = String::new();
+                                                cmd.clear();
                                                 debug::dl();
                                             },
                                             _ => {
