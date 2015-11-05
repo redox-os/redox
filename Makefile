@@ -219,10 +219,10 @@ filesystem/apps/zfs/zfs.img:
 $(BUILD)/filesystem.gen: apps schemes
 	$(FIND) filesystem -not -path '*/\.*' -type f -o -type l | $(CUT) -d '/' -f2- | $(SORT) | $(AWK) '{printf("file %d,\"%s\"\n", NR, $$0)}' > $@
 
-$(BUILD)/harddrive.bin: kernel/loader.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
+$(BUILD)/harddrive.bin: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
 	$(AS) -f bin -o $@ -D ARCH_$(ARCH) -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
-$(BUILD)/harddrive.list: kernel/loader.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
+$(BUILD)/harddrive.list: kernel/harddrive.asm $(BUILD)/kernel.bin $(BUILD)/filesystem.gen
 	$(AS) -f bin -o $(BUILD)/harddrive.bin -l $@ -D ARCH_$(ARCH) -i$(BUILD)/ -ikernel/ -ifilesystem/ $<
 
 virtualbox: $(BUILD)/harddrive.bin
