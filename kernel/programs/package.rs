@@ -61,7 +61,7 @@ impl Package {
             resource.read_to_end(unsafe { info.as_mut_vec() });
         }
 
-        for line in info.lines_any() {
+        for line in info.lines() {
             if line.starts_with("name=") {
                 package.name = line.get_slice(Some(5), None).to_string();
             } else if line.starts_with("binary=") {
