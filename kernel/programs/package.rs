@@ -51,13 +51,13 @@ impl Package {
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 package.id = part.clone();
-                package.binary = Url::from_string(&(url.to_string() + part + ".bin"));
+                package.binary = Url::from_string(url.to_string() + part + ".bin");
             }
         }
 
         let mut info = String::new();
 
-        if let Some(mut resource) = Url::from_string(&(url.to_string() + "_REDOX")).open() {
+        if let Some(mut resource) = Url::from_string(url.to_string() + "_REDOX").open() {
             resource.read_to_end(unsafe { info.as_mut_vec() });
         }
 
@@ -65,9 +65,9 @@ impl Package {
             if line.starts_with("name=") {
                 package.name = line.get_slice(Some(5), None).to_string();
             } else if line.starts_with("binary=") {
-                package.binary = Url::from_string(&(url.to_string() + line.get_slice(Some(7), None)));
+                package.binary = Url::from_string(url.to_string() + line.get_slice(Some(7), None));
             } else if line.starts_with("icon=") {
-                if let Some(mut resource) = Url::from_string(&line.get_slice(Some(5), None).to_string()).open() {
+                if let Some(mut resource) = Url::from_string(line.get_slice(Some(5), None).to_string()).open() {
                     let mut vec: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut vec);
                     package.icon = BmpFile::from_data(&vec);

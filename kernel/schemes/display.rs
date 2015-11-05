@@ -22,7 +22,7 @@ pub struct DisplayResource {
 impl Resource for DisplayResource {
     /// Return the URL for display resource
     fn url(&self) -> Url {
-        return Url::from_string(&("display://".to_string()));
+        Url::from_string("display://".to_string())
     }
 
 
