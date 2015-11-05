@@ -25,8 +25,9 @@ use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 #[repr(packed)]
 pub struct Header {
     pub signature: [u8; 8],
-    pub version: u32,
-    pub name: [u8; 244],
+    pub version: u64,
+    pub free_space: Extent,
+    pub padding: [u8; 224],
     pub extents: [Extent; 16],
 }
 
@@ -118,7 +119,7 @@ impl FileSystem {
                    header.signature[5] == 'F' as u8 &&
                    header.signature[6] == 'S' as u8 &&
                    header.signature[7] == '\0' as u8 &&
-                   header.version == 0xFFFFFFFF {
+                   header.version == 1 {
 
                     debug::d(" Redox Filesystem\n");
 
