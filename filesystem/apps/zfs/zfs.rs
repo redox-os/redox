@@ -29,6 +29,69 @@ pub mod zap;
 pub mod zil_header;
 pub mod zio;
 
+pub struct ZfsReader {
+    pub zio: zio::Reader,
+    pub arc: arc::Arc,
+}
+
+impl ZfsReader {
+    pub fn read_block(&mut self, block_ptr: &BlockPtr) -> Result<Vec<u8>, String> {
+        let data = self.arc.read(&mut self.zio, &block_ptr.dvas[0]);
+        match block_ptr.compression() {
+            2 => {
+                // compression off
+                Ok(data)
+            },
+            1 | 3 => {
+                // lzjb compression
+                let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
+                lzjb::decompress(&data, &mut decompressed);
+                Ok(decompressed)
+            },
+            _ => Err("Error: not enough bytes".to_string()),
+        }
+    }
+
+    pub fn read_type<T: FromBytes>(&mut self, block_ptr: &BlockPtr) -> Result<T, String> {
+        let data = self.read_block(block_ptr);
+        data.and_then(|data| T::from_bytes(&data[..]))
+    }
+
+    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Result<T, String> {
+        let data = self.read_block(block_ptr);
+        data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
+    }
+
+    pub fn uber(&mut self) -> Result<Uberblock, String> {
+        let mut newest_uberblock: Option<Uberblock> = None;
+        for i in 0..128 {
+            if let Ok(uberblock) = Uberblock::from_bytes(&self.zio.read(256 + i * 2, 2)) {
+                let newest =
+                    match newest_uberblock {
+                        Some(previous) => {
+                            if uberblock.txg > previous.txg {
+                                // Found a newer uberblock
+                                true
+                            } else {
+                                false
+                            }
+                        }
+                        // No uberblock yet, so first one we find is the newest
+                        None => true,
+                    };
+
+                if newest {
+                    newest_uberblock = Some(uberblock);
+                }
+            }
+        }
+
+        match newest_uberblock {
+            Some(uberblock) => Ok(uberblock),
+            None => Err("Failed to find valid uberblock".to_string()),
+        }
+    }
+}
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum ZfsTraverse {
@@ -47,7 +110,7 @@ pub struct Zfs {
 
 impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
-        let mut zfs_reader = zio::Reader { disk: disk };
+        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: arc::Arc::new() };
 
         let uberblock = try!(zfs_reader.uber());
 
@@ -293,7 +356,7 @@ pub fn main() {
                         println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
                         println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
                     } else if command == "vdev_label" {
-                        match VdevLabel::from_bytes(&zfs.reader.read(0, 256 * 2)) {
+                        match VdevLabel::from_bytes(&zfs.reader.zio.read(0, 256 * 2)) {
                             Ok(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
@@ -418,7 +481,7 @@ pub fn main() {
                                 let sector = arg.to_num();
                                 println_color!(green, "Dump sector: {}", sector);
 
-                                let data = zfs.reader.read(sector, 1);
+                                let data = zfs.reader.zio.read(sector, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);
