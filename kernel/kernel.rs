@@ -169,7 +169,7 @@ impl GetSlice for str {
             slice.len()
         };
 
-        if a > b { return ""; }
+        if a >= b { return ""; }
 
         unsafe { str::from_utf8_unchecked(&slice[a..b]) }
     }
@@ -193,7 +193,7 @@ impl<T> GetSlice for [T] {
             slice.len()
         };
 
-        if a > b { return &[]; }
+        if a >= b { return &[]; }
 
         &slice[a..b]
     }
