@@ -272,13 +272,13 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
         len += 1;
     }
 
-    let path_str = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
+    let path_string = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
 
     let reenable = scheduler::start_no_ints();
 
-    if path_str.ends_with(".bin") {
-        let path = Url::from_string(&path_str);
-        let wd = Url::from_string(&path_str.get_slice(None, Some(path_str.rfind('/').unwrap_or(0) + 1)).to_string());
+    if path_string.ends_with(".bin") {
+        let path = Url::from_string(path_string.clone());
+        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path,
                 &wd,
                 Vec::new());
@@ -287,14 +287,14 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
         for package in (*::session_ptr).packages.iter() {
             let mut accepted = false;
             for accept in package.accepts.iter() {
-                if path_str.ends_with(accept.get_slice(Some(1), None)) {
+                if path_string.ends_with(accept.get_slice(Some(1), None)) {
                     accepted = true;
                     break;
                 }
             }
             if accepted {
                 let mut args: Vec<String> = Vec::new();
-                args.push(path_str.clone());
+                args.push(path_string.clone());
                 execute(&package.binary, &package.url, args);
                 ret = 0;
                 break;
@@ -444,11 +444,11 @@ pub unsafe fn do_sys_open(path: *const u8) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(mut current) = Context::current_mut() {
-        let path_str = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+        let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
 
         scheduler::end_no_ints(reenable);
 
-        let resource_option = (*::session_ptr).open(&Url::from_string(&path_str));
+        let resource_option = (*::session_ptr).open(&Url::from_string(path_string));
 
         scheduler::start_no_ints();
 
