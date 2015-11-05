@@ -439,7 +439,7 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string(&("file:///schemes/".to_string() + &folder)));
+                let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -455,7 +455,7 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let package = Package::from_url(&Url::from_string(&("file:///apps/".to_string() + folder)));
+                let package = Package::from_url(&Url::from_string("file:///apps/".to_string() + folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);

@@ -254,7 +254,7 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> Url {
-        return Url::from_string(&("file:///".to_string() + &self.node.name));
+        Url::from_string("file:///".to_string() + &self.node.name)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
