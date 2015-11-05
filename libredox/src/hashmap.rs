@@ -49,21 +49,18 @@ impl<K: PartialEq<K>, V> Entry<K, V> {
         let mut cur = self.data.follow();
 
         loop {
-            let next;
-            match cur {
+            cur = match cur {
                 Some(&LinkedList::Elem((ref k, ref v), ref l)) => {
                     if &key == k {
                         return Some(v);
                     } else {
-                        next = l.follow();
+                        l.follow()
                     }
                 },
                 Some(&LinkedList::Nil) | None => {
                     return None;
                 },
             }
-
-            cur = next;
         }
 
     }
