@@ -74,6 +74,7 @@
 #![no_std]
 #![cfg_attr(not(stage0), needs_allocator)]
 
+#![feature(drop_in_place)]
 #![feature(allocator)]
 #![feature(box_syntax)]
 #![feature(coerce_unsized)]

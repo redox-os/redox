@@ -40,6 +40,8 @@ pub use intrinsics::copy;
 #[stable(feature = "rust1", since = "1.0.0")]
 pub use intrinsics::write_bytes;
 
+pub use intrinsics::drop_in_place;
+
 /// Creates a null raw pointer.
 ///
 /// # Examples
@@ -531,6 +533,10 @@ impl<T: ?Sized> Unique<T> {
         &mut ***self
     }
 }
+
+#[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "unique", issue = "27730")]
+impl<T: ?Sized, U: ?Sized> CoerceUnsized<Unique<U>> for Unique<T> where T: Unsize<U> { }
 
 #[unstable(feature = "unique", issue= "27730")]
 impl<T:?Sized> Deref for Unique<T> {
