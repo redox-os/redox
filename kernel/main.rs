@@ -34,7 +34,6 @@ use collections::vec::Vec;
 use core::{mem, ptr};
 use core::slice::{self, SliceExt};
 use core::str;
-use core::raw::Repr;
 
 use scheduler::context::*;
 use common::debug;
@@ -42,6 +41,7 @@ use common::event::{self, Event, EventOption};
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
+use common::prompt;
 use schemes::Url;
 use common::time::Duration;
 
@@ -53,11 +53,9 @@ use drivers::serial::*;
 
 pub use externs::*;
 
-use graphics::bmp::BmpFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
-use programs::package::*;
 use programs::scheme::*;
 use programs::session::*;
 
@@ -68,9 +66,6 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::random::*;
-use schemes::time::*;
-use schemes::window::*;
 use schemes::display::*;
 
 use syscall::common::Regs;
@@ -84,6 +79,7 @@ pub mod audio;
 #[macro_use]
 pub mod common;
 /// Various drivers
+// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
 /// Externs
 pub mod externs;
@@ -139,66 +135,6 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
-/// Bounded slice abstraction
-///
-/// # Code Migration
-///
-/// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
-///
-/// `foo[a..]` => `foo.get_slice(Some(a), None)`
-///
-/// `foo[..b]` => `foo.get_slice(None, Some(b))`
-///
-pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
-
-impl GetSlice for str {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.repr().data, self.repr().len) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            slice.len()
-        };
-
-        if a >= b { return ""; }
-
-        unsafe { str::from_utf8_unchecked(&slice[a..b]) }
-    }
-}
-
-impl<T> GetSlice for [T] {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(SliceExt::as_ptr(self), SliceExt::len(self)) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            slice.len()
-        };
-
-        if a >= b { return &[]; }
-
-        &slice[a..b]
-    }
-}
-
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
     loop {
@@ -241,9 +177,12 @@ unsafe fn poll_loop() -> ! {
 
 /// Event loop
 unsafe fn event_loop() -> ! {
-    let session = &mut *session_ptr;
+    //let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
+    debugln!("");
+    debugln!("");
+    debug!("redox => ");
     loop {
         loop {
             let reenable = scheduler::start_no_ints();
@@ -261,7 +200,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = true;
+                                            //(*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
@@ -274,8 +213,9 @@ unsafe fn event_loop() -> ! {
                                                 *::debug_command = cmd.clone() + "\n";
                                                 scheduler::end_no_ints(reenable);
 
-                                                cmd.clear();
                                                 debug::dl();
+                                                prompt::run(mem::replace(&mut cmd, String::new()));
+                                                debug!("redox => ");
                                             },
                                             _ => {
                                                 cmd.push(key_event.character);
@@ -291,8 +231,7 @@ unsafe fn event_loop() -> ! {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
-                        } else {
-                            session.event(event);
+                            //session.event(event);
                         }
                     }
                 },
@@ -307,7 +246,7 @@ unsafe fn event_loop() -> ! {
                 display.flip();
             }
         } else {
-            session.redraw();
+            //session.redraw();
         }
 
         context_switch(false);
@@ -364,9 +303,9 @@ unsafe fn init(font_data: usize) {
 
     debug_command = Box::into_raw(box String::new());
 
-    debug::d("Redox ");
+    debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
-    debug::d(" bits ");
+    debug!(" bits ");
     debug::dl();
 
     clock_realtime = Rtc::new().time();
@@ -385,11 +324,11 @@ unsafe fn init(font_data: usize) {
 
     pci_init(session);
 
-    session.items.push(box ContextScheme);
+    //session.items.push(box ContextScheme);
     session.items.push(box DebugScheme);
     session.items.push(box MemoryScheme);
-    session.items.push(box RandomScheme);
-    session.items.push(box TimeScheme);
+    //session.items.push(box RandomScheme);
+    //session.items.push(box TimeScheme);
 
     session.items.push(box EthernetScheme);
     session.items.push(box ArpScheme);
@@ -397,8 +336,7 @@ unsafe fn init(font_data: usize) {
     session.items.push(box IpScheme {
         arp: Vec::new()
     });
-    session.items.push(box DisplayScheme);
-    session.items.push(box WindowScheme);
+    //session.items.push(box DisplayScheme);
 
     Context::spawn(box move || {
         poll_loop();
@@ -413,26 +351,12 @@ unsafe fn init(font_data: usize) {
         IcmpScheme::reply_loop();
     });
 
-    debug::d("Reenabling interrupts\n");
+    debugln!("Reenabling interrupts");
 
     //Start interrupts
     scheduler::end_no_ints(true);
 
-    //Load cursor before getting out of debug mode
-    debug::d("Loading cursor\n");
-    if let Some(mut resource) = Url::from_str("file:///ui/cursor.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        let cursor = BmpFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        session.cursor = cursor;
-        session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    }
-
-    debug::d("Loading schemes\n");
+    debugln!("Loading schemes");
     if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -448,50 +372,14 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    debug::d("Loading apps\n");
-    if let Some(mut resource) = Url::from_str("file:///apps/").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        for folder in String::from_utf8_unchecked(vec).lines() {
-            if folder.ends_with('/') {
-                let package = Package::from_url(&Url::from_string("file:///apps/".to_string() + folder));
-
-                let reenable = scheduler::start_no_ints();
-                session.packages.push(package);
-                session.redraw = true;
-                scheduler::end_no_ints(reenable);
-            }
-        }
-    }
-
-    debug::d("Loading background\n");
-    if let Some(mut resource) = Url::from_str("file:///ui/background.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        if resource.read_to_end(&mut vec).is_some() {
-            debug::d("Read background\n");
-        } else {
-            debug::d("Failed to read background at: ");
-            debug::d(Url::from_str("file:///ui/background.bmp").reference());
-            debug::d("\n");
-        }
-
-        let background = BmpFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        session.background = background;
-        session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    }
-
-    debug::d("Enabling context switching\n");
-    debug_draw = false;
+    debugln!("Enabling context switching");
+    //debug_draw = false;
     context_enabled = true;
 }
 
 fn dr(reg: &str, value: usize) {
-    debug::d(reg);
-    debug::d(": ");
+    debug!("{}", reg);
+    debug!(": ");
     debug::dh(value as usize);
     debug::dl();
 }
@@ -503,7 +391,7 @@ fn dr(reg: &str, value: usize) {
 pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception {
         ($name:expr) => ({
-            debug::d($name);
+            debug!("{}", $name);
             debug::dl();
 
             dr("INT", interrupt);
@@ -545,7 +433,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
     macro_rules! exception_error {
         ($name:expr) => ({
-            debug::d($name);
+            debug!("{}", $name);
             debug::dl();
 
             dr("INT", interrupt);
@@ -602,7 +490,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             scheduler::end_no_ints(reenable);
 
             context_switch(true);
-        }
+        },
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3

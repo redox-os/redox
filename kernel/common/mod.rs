@@ -5,6 +5,8 @@ pub mod debug;
 pub mod elf;
 /// Event input
 pub mod event;
+/// Get slice implementation
+pub mod get_slice;
 /// Kernel memory allocation
 pub mod memory;
 /// Kernel mutex
@@ -29,3 +31,5 @@ pub mod to_num;
 pub mod parse_path;
 /// A module for parsing IP related string
 pub mod parse_ip;
+/// Prompt
+pub mod prompt;
