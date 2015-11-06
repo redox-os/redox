@@ -31,8 +31,6 @@ pub mod memory;
 pub mod random;
 /// Time scheme
 pub mod time;
-/// Window scheme
-pub mod window;
 
 #[allow(unused_variables)]
 pub trait KScheme {
@@ -144,16 +142,18 @@ impl Url {
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
-        unsafe {
-            return (*::session_ptr).open(&self, O_RDWR);
-        }
+        None
+//        unsafe {
+//            //return (*::session_ptr).open(&self, O_RDWR);
+//        }
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Option<Box<Resource>> {
-        unsafe {
-            return (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC);
-        }
+        None
+//        unsafe {
+//            //return (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC);
+//        }
     }
 
     /// Return the scheme of this url
