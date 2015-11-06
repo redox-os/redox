@@ -123,7 +123,7 @@ impl Url {
     }
 
     /// Create an URL from a string literal
-    pub fn from_str(url_str: &'static str) -> Self {
+    pub fn from_str(url_str: &str) -> Self {
         Url::from_string(url_str.to_string())
     }
 

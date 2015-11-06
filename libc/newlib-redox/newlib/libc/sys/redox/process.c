@@ -5,7 +5,7 @@ int chdir(const char *path){
 }
 
 int clone() {
-    return (int)syscall(SYS_CLONE, 0, 0, 0);
+    return (int)syscall(SYS_CLONE, CLONE_VM | CLONE_FS | CLONE_FILES, 0, 0);
 }
 
 void _exit(int code){
@@ -44,9 +44,8 @@ char * getcwd(char * buf, size_t size) {
     return cwd;
 }
 
-//TODO: Replace with clone
 int fork() {
-    return (int)syscall(SYS_FORK, 0, 0, 0);
+    return (int)syscall(SYS_CLONE, 0, 0, 0);
 }
 
 void * sbrk(ptrdiff_t increment){
@@ -56,4 +55,8 @@ void * sbrk(ptrdiff_t increment){
         return (void *) -1;
     }
     return curr_brk;
+}
+
+int sched_yield() {
+    return (int)syscall(SYS_YIELD, 0, 0, 0);
 }
