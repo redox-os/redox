@@ -69,7 +69,7 @@ impl Event {
 //                (*::session_ptr).redraw = true;
 //            }
 //
-            //TODO: Dispatch to appropriate window
+
             (*::events_ptr).push(event);
 
             scheduler::end_no_ints(reenable);
