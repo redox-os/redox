@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 use scheduler;
 
 use schemes::{KScheme, Resource, Url};
@@ -30,7 +30,7 @@ impl Resource for DebugResource {
 
                 scheduler::end_no_ints(reenable);
 
-                recursive_unsafe_yield();
+                context_switch(false);
             }
 
             let reenable = scheduler::start_no_ints();
@@ -69,7 +69,7 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box DebugResource)
     }
 }

@@ -232,7 +232,7 @@ impl QuitEvent {
         }
     }
 
-    pub fn from_event(event: Event) -> QuitEvent {
+    pub fn from_event(_: Event) -> QuitEvent {
         QuitEvent
     }
 }

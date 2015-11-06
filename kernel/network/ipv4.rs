@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use collections::slice;
 use collections::vec::Vec;
 
@@ -35,8 +37,8 @@ impl FromBytes for Ipv4 {
 
                 return Some(Ipv4 {
                     header: header,
-                    options: bytes[mem::size_of::<Ipv4Header>() .. header_len].to_vec(),
-                    data: bytes[header_len ..].to_vec(),
+                    options: bytes.get_slice(Some(mem::size_of::<Ipv4Header>()), Some(header_len)).to_vec(),
+                    data: bytes.get_slice(Some(header_len), None).to_vec(),
                 });
             }
         }

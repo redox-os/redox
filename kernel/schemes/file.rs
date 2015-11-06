@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use alloc::arc::Arc;
 use alloc::boxed::Box;
 
@@ -12,19 +14,24 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use drivers::disk::{Disk, Extent, Request};
 use drivers::pciconfig::PciConfig;
 
-use scheduler::context::recursive_unsafe_yield;
 use common::debug;
 use common::memory::Memory;
 use common::parse_path::*;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
+use scheduler::{start_no_ints, end_no_ints};
+use scheduler::context::context_switch;
+
+use syscall::common::O_CREAT;
+
 /// The header of the fs
 #[repr(packed)]
 pub struct Header {
     pub signature: [u8; 8],
-    pub version: u32,
-    pub name: [u8; 244],
+    pub version: u64,
+    pub free_space: Extent,
+    pub padding: [u8; 224],
     pub extents: [Extent; 16],
 }
 
@@ -116,7 +123,7 @@ impl FileSystem {
                    header.signature[5] == 'F' as u8 &&
                    header.signature[6] == 'S' as u8 &&
                    header.signature[7] == '\0' as u8 &&
-                   header.version == 0xFFFFFFFF {
+                   header.version == 1 {
 
                     debug::d(" Redox Filesystem\n");
 
@@ -223,7 +230,7 @@ impl FileSystem {
                 }
             }
             if eq {
-                ret.push(parse_path(&node.name)[directory.len()..].join("/"));
+                ret.push(parse_path(&node.name).get_slice(Some(directory.len()), None).join("/"));
             }
         }
 
@@ -252,7 +259,7 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> Url {
-        return Url::from_string(&("file:///".to_string() + &self.node.name));
+        Url::from_string("file:///".to_string() + &self.node.name)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -311,8 +318,30 @@ impl Resource for FileResource {
             let mut pos: isize = 0;
             let mut remaining = self.vec.len() as isize;
             for ref mut extent in &mut self.node.extents {
+                if remaining > 0 && extent.empty() {
+                    debug::d("Reallocate file, extra: ");
+                    debug::ds(remaining);
+                    debug::dl();
+
+                    unsafe {
+                        let reenable = start_no_ints();
+
+                        let sectors = ((remaining + 511)/512) as u64;
+                        if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
+                            extent.block = (*self.scheme).fs.header.free_space.block;
+                            extent.length = remaining as u64;
+                            (*self.scheme).fs.header.free_space.block = (*self.scheme).fs.header.free_space.block +  sectors;
+                            (*self.scheme).fs.header.free_space.length = (*self.scheme).fs.header.free_space.length - sectors * 512;
+
+                            node_dirty = true;
+                        }
+
+                        end_no_ints(reenable);
+                    }
+                }
+
                 //Make sure it is a valid extent
-                if extent.block > 0 && extent.length > 0 {
+                if ! extent.empty() {
                     let current_sectors = (extent.length as usize + block_size - 1) / block_size;
                     let max_size = current_sectors * 512;
 
@@ -343,7 +372,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                recursive_unsafe_yield();
+                                context_switch(false);
                             }
 
                             sector += 65535;
@@ -362,7 +391,7 @@ impl Resource for FileResource {
                             (*self.scheme).fs.disk.request(request.clone());
 
                             while request.complete.load(Ordering::SeqCst) == false {
-                                recursive_unsafe_yield();
+                                context_switch(false);
                             }
                         }
                     }
@@ -375,44 +404,52 @@ impl Resource for FileResource {
             if node_dirty {
                 debug::d("Node dirty, rewrite\n");
 
-                unsafe {
-                    if let Some(mut node_data) = Memory::<NodeData>::new(1) {
-                        node_data.write(0, self.node.data());
+                if self.node.block > 0 {
+                    unsafe {
+                        if let Some(mut node_data) = Memory::<NodeData>::new(1) {
+                            node_data.write(0, self.node.data());
 
-                        let request = Request {
-                            extent: Extent {
-                                block: self.node.block,
-                                length: 1,
-                            },
-                            mem: node_data.address(),
-                            read: false,
-                            complete: Arc::new(AtomicBool::new(false)),
-                        };
+                            let request = Request {
+                                extent: Extent {
+                                    block: self.node.block,
+                                    length: 1,
+                                },
+                                mem: node_data.address(),
+                                read: false,
+                                complete: Arc::new(AtomicBool::new(false)),
+                            };
 
-                        debug::d("Disk request\n");
+                            debug::d("Disk request\n");
 
-                        (*self.scheme).fs.disk.request(request.clone());
+                            (*self.scheme).fs.disk.request(request.clone());
 
-                        debug::d("Wait request\n");
-                        while request.complete.load(Ordering::SeqCst) == false {
-                            recursive_unsafe_yield();
-                        }
-
-                        debug::d("Renode\n");
-
-                        for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                            if node.block == self.node.block {
-                                *node = self.node.clone();
+                            debug::d("Wait request\n");
+                            while request.complete.load(Ordering::SeqCst) == false {
+                                context_switch(false);
                             }
+
+                            debug::d("Renode\n");
+
+                            let reenable = start_no_ints();
+
+                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                                if node.block == self.node.block {
+                                    *node = self.node.clone();
+                                }
+                            }
+
+                            end_no_ints(reenable);
                         }
                     }
+                }else{
+                    debug::d("Need to place Node block\n");
                 }
             }
 
             self.dirty = false;
 
             if remaining > 0 {
-                debug::d("Need to reallocate file, extra: ");
+                debug::d("Need to defragment file, extra: ");
                 debug::ds(remaining);
                 debug::dl();
                 return false;
@@ -509,7 +546,7 @@ impl KScheme for FileScheme {
         "file"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         let path = url.reference();
         if path.is_empty() || path.ends_with('/') {
             let mut list = String::new();
@@ -517,10 +554,10 @@ impl KScheme for FileScheme {
 
             // Hmm... no deref coercions in libcollections ;(
             for file in self.fs.list(parse_path(&path.to_string())).iter() {
-                let line;
+                let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
-                        let dirname = file[.. index + 1].to_string();
+                        let dirname = file.get_slice(None, Some(index + 1)).to_string();
                         let mut found = false;
                         for dir in dirs.iter() {
                             if dirname == *dir {
@@ -529,7 +566,7 @@ impl KScheme for FileScheme {
                             }
                         }
                         if found {
-                            line = String::new();
+                            line.clear();
                         } else {
                             line = dirname.clone();
                             dirs.push(dirname);
@@ -548,7 +585,7 @@ impl KScheme for FileScheme {
 
             Some(box VecResource::new(url.clone(), list.into_bytes()))
         } else {
-            match self.fs.node(&path.to_string()) {
+            match self.fs.node(path) {
                 Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
                     //TODO: Handle more extents
@@ -571,7 +608,7 @@ impl KScheme for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { recursive_unsafe_yield() };
+                                        unsafe { context_switch(false) };
                                     }
 
                                     sector += 65535;
@@ -590,7 +627,7 @@ impl KScheme for FileScheme {
                                     self.fs.disk.request(request.clone());
 
                                     while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { recursive_unsafe_yield() };
+                                        unsafe { context_switch(false) };
                                     }
                                 }
 
@@ -607,7 +644,37 @@ impl KScheme for FileScheme {
                         dirty: false,
                     })
                 },
-                None => None,
+                None => {
+                    if flags & O_CREAT == O_CREAT {
+                        //TODO: Create file
+                        let mut node = Node {
+                            block: 0,
+                            name: path.to_string(),
+                            extents: [Extent {
+                                block: 0,
+                                length: 0
+                            }; 16]
+                        };
+
+                        if self.fs.header.free_space.length >= 512 {
+                            node.block = self.fs.header.free_space.block;
+                            self.fs.header.free_space.block = self.fs.header.free_space.block +  1;
+                            self.fs.header.free_space.length = self.fs.header.free_space.length - 512;
+                        }
+
+                        self.fs.nodes.push(node.clone());
+
+                        Some(box FileResource {
+                            scheme: self,
+                            node: node,
+                            vec: Vec::new(),
+                            seek: 0,
+                            dirty: false,
+                        })
+                    }else{
+                        None
+                    }
+                },
             }
         }
     }

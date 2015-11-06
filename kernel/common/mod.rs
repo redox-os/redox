@@ -7,6 +7,8 @@ pub mod elf;
 pub mod event;
 /// Kernel memory allocation
 pub mod memory;
+/// Kernel mutex
+pub mod mutex;
 /// Paging (x86)
 #[cfg(target_arch = "x86")]
 #[path="paging-i386.rs"]

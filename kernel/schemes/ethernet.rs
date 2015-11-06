@@ -40,7 +40,7 @@ impl Resource for EthernetResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_string(&format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
+        Url::from_string(format!("ethernet://{}/{:X}", self.peer_addr.to_string(), self.ethertype))
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -104,7 +104,7 @@ impl KScheme for EthernetScheme {
         "ethernet"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
         if let Some(mut network) = Url::from_str("network://").open() {
             if !url.reference().is_empty() {
                 let ethertype = url.reference().to_num_radix(16) as u16;
@@ -113,7 +113,7 @@ impl KScheme for EthernetScheme {
                     return Some(box EthernetResource {
                         network: network,
                         data: Vec::new(),
-                        peer_addr: MacAddr::from_string(&parse_host(url.reference()).to_string()),
+                        peer_addr: MacAddr::from_str(parse_host(url.reference())),
                         ethertype: ethertype,
                     });
                 } else {

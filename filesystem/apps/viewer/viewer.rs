@@ -29,5 +29,8 @@ pub fn main() {
                 break;
             }
         }
+        if let EventOption::Quit(quit_event) = event.to_option() {
+            break;
+        }
     }
 }

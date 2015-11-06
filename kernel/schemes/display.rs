@@ -22,7 +22,7 @@ pub struct DisplayResource {
 impl Resource for DisplayResource {
     /// Return the URL for display resource
     fn url(&self) -> Url {
-        return Url::from_string(&("display://".to_string()));
+        Url::from_string("display://".to_string())
     }
 
 
@@ -62,7 +62,7 @@ impl KScheme for DisplayScheme {
         "display"
     }
 
-    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         // TODO: ponder these things:
         // - should display:// be the only only valid url
         //      for this scheme?

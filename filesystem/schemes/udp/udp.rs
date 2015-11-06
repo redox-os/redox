@@ -166,7 +166,7 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
         //Check host and port vs path
@@ -179,7 +179,7 @@ impl Scheme {
                         if let Some(datagram) = Udp::from_bytes(bytes) {
                             if datagram.header.dst.get() as usize == host_port {
                                 if let Some(path) = ip.path() {
-                                    let url = Url::from_string(&path);
+                                    let url = Url::from_string(path);
 
                                     return Some(box Resource {
                                         ip: ip,

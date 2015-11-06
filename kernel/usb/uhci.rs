@@ -543,7 +543,7 @@ impl Uhci {
                                         break;
                                     }
 
-                                    context::recursive_unsafe_yield();
+                                    context::context_switch(false);
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);

@@ -77,6 +77,7 @@
     #[macro_use]
     pub mod debug;
 
+    pub use alloc::arc;
     pub use alloc::boxed;
     pub use alloc::rc;
 
@@ -146,7 +147,7 @@
     // TODO pub mod os;
     // TODO pub mod path;
     // TODO pub mod process;
-    // TODO pub mod sync;
+    pub mod sync;
     pub mod time;
 
     //TODO #[macro_use]

@@ -36,12 +36,12 @@ impl Resource for WindowResource {
 
     /// Return the url of this resource
     fn url(&self) -> Url {
-        return Url::from_string(&format!("window://{}/{}/{}/{}/{}",
-                                    self.window.point.x,
-                                    self.window.point.y,
-                                    self.window.size.width,
-                                    self.window.size.height,
-                                    self.window.title));
+        Url::from_string(format!("window://{}/{}/{}/{}/{}",
+                                 self.window.point.x,
+                                 self.window.point.y,
+                                 self.window.size.width,
+                                 self.window.size.height,
+                                 self.window.title))
     }
 
     /// Read data to buffer
@@ -101,7 +101,7 @@ impl KScheme for WindowScheme {
         "window"
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = parse_path(url.reference());
         let pointx = match url_path.get(0) {

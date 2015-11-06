@@ -43,11 +43,9 @@ int stat(const char *__restrict path, struct stat *__restrict sbuf) {
     return 0;
 }
 
-/*
 clock_t times(struct tms *buf) {
     return -1;
 }
-*/
 
 /*
 int wait(int *status) {

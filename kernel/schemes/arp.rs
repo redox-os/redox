@@ -1,8 +1,10 @@
+use ::GetSlice;
+
 use collections::vec::Vec;
 
 use core::{mem, slice};
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 
 use network::common::*;
 
@@ -33,7 +35,7 @@ impl FromBytes for Arp {
             unsafe {
                 return Some(Arp {
                     header: *(bytes.as_ptr() as *const ArpHeader),
-                    data: bytes[mem::size_of::<ArpHeader>() ..].to_vec()
+                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec()
                 });
             }
         }
@@ -85,7 +87,7 @@ impl ArpScheme {
                     break;
                 }
             }
-            unsafe { recursive_unsafe_yield() }
+            unsafe { context_switch(false) }
         }
     }
 }
