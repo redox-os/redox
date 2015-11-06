@@ -39,12 +39,32 @@ protected_mode:
     mov fs, eax
     mov gs, eax
     mov ss, eax
-    ; set up stack
-    mov esp, 0x200000
+    ; set up temporary stack
+    mov esp, 0x180000
 
     mov eax, gdt.tss
     ltr ax
 
+    xchg bx, bx
+
+    mov eax, 0x23
+    mov ebx, esp
+    mov ecx, 0x1B
+    mov edx, user_mode
+
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
+
+    push eax
+    push ebx
+    pushfd
+    push ecx
+    push edx
+    iretd
+
+user_mode:
     ;rust init
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
