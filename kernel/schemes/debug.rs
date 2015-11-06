@@ -50,7 +50,7 @@ impl Resource for DebugResource {
                     i += 1;
                 }
 
-                if(i > 0 && (*::debug_command).is_empty()){
+                if i > 0 && (*::debug_command).is_empty() {
                     self.line_toggle = true;
                 }
 

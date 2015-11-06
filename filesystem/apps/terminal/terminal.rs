@@ -447,14 +447,18 @@ impl<'a> Application<'a> {
             self.on_command(&command);
         }
 
-        while let Some(command_original) = readln!() {
-            let command = command_original.trim();
-            println!("# {}", command);
-            if command == "exit" {
-                println!("Exit temporarily blocked (due to using terminal as init)")
-                //break;
-            } else if !command.is_empty() {
-                self.on_command(&command);
+        loop {
+            print!("# ");
+            if let Some(command_original) = readln!() {
+                let command = command_original.trim();
+                if command == "exit" {
+                    println!("Exit temporarily blocked (due to using terminal as init)")
+                    //break;
+                } else if !command.is_empty() {
+                    self.on_command(&command);
+                }
+            } else {
+                println!("Failed to read from stdin");
             }
         }
     }
