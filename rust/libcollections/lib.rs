@@ -37,6 +37,7 @@
 // SNAP 1af31d4
 #![allow(unused_attributes)]
 
+#![feature(drop_in_place)]
 #![feature(alloc)]
 #![feature(box_patterns)]
 #![feature(box_syntax)]
