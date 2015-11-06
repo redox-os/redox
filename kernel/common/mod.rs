@@ -31,5 +31,3 @@ pub mod to_num;
 pub mod parse_path;
 /// A module for parsing IP related string
 pub mod parse_ip;
-/// Prompt
-pub mod prompt;

@@ -1,5 +1,4 @@
 use core::{char, cmp};
-use common::prompt::*;
 
 use scheduler;
 
