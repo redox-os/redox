@@ -356,13 +356,13 @@ unsafe fn init(font_data: usize) {
     scheduler::end_no_ints(true);
 
     debugln!("Loading schemes");
-    if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
+    if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
+                let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -377,7 +377,7 @@ unsafe fn init(font_data: usize) {
 
     debugln!("Loading init");
     {
-        let path_string = "file:///apps/terminal/terminal.bin";
+        let path_string = "file:/apps/terminal/terminal.bin";
         let path = Url::from_string(path_string.to_string());
         let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path, &wd, Vec::new());
