@@ -18,6 +18,12 @@ pub struct Extent {
     pub length: u64,
 }
 
+impl Extent {
+    pub fn empty(&self) -> bool {
+        return self.block == 0 || self.length == 0;
+    }
+}
+
 /// A disk request
 pub struct Request {
     /// The disk extent
