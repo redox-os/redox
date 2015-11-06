@@ -1,4 +1,5 @@
 use core::{char, cmp};
+use common::prompt::*;
 
 use scheduler;
 
@@ -69,7 +70,10 @@ impl Event {
 //                (*::session_ptr).redraw = true;
 //            }
 //
-            //TODO: Dispatch to appropriate window
+            if let EventOption::Key(key) = self.to_option() {
+                run(key.char);
+            }
+
             (*::events_ptr).push(event);
 
             scheduler::end_no_ints(reenable);
