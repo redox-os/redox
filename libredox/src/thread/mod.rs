@@ -24,7 +24,7 @@ impl<T> JoinHandle<T> {
 pub fn spawn<F, T>(f: F) -> JoinHandle<T> where F: FnOnce() -> T, F: Send + 'static, T: Send + 'static {
     unsafe {
         let result_ptr: *mut Option<T> = Box::into_raw(box None);
-        
+
         if sys_clone(CLONE_VM | CLONE_FS | CLONE_FILES) == 0 {
             *result_ptr = Some(f());
             sys_exit(0);
