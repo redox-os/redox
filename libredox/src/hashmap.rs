@@ -1,6 +1,7 @@
 use super::prelude::v1::*;
 use super::hash::*;
-use core::mem;
+use super::mem;
+use super::fmt::{Debug, Display};
 
 /// An linked list (used for entries)
 #[derive(Clone)]
@@ -48,7 +49,7 @@ pub struct Entry<K: Clone, V: Clone> {
     data: LinkedList<(K, V)>,
 }
 
-impl<K: PartialEq<K> + Clone, V: Clone> Entry<K, V> {
+impl<K: PartialEq<K> + Clone + Debug + Display, V: Clone> Entry<K, V> {
     /// Create new
     pub fn new(key: K, value: V) -> Self {
         Entry {
@@ -58,18 +59,19 @@ impl<K: PartialEq<K> + Clone, V: Clone> Entry<K, V> {
 
     /// Get value from entry
     pub fn get(&self, key: &K) -> Option<&V> {
-        let mut cur = self.data.follow();
+        let mut cur = Some(&self.data);
 
         loop {
             cur = match cur {
                 Some(&LinkedList::Elem((ref k, ref v), ref l)) => {
+                    debugln!("Check key against: {:?}", k);
                     if key == k {
                         return Some(v);
                     } else {
                         l.follow()
                     }
                 },
-                Some(&LinkedList::Nil) | None => {
+                _ => { 
                     return None;
                 },
             }
@@ -80,12 +82,13 @@ impl<K: PartialEq<K> + Clone, V: Clone> Entry<K, V> {
     /// Get value mutable from entry
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
 
-        let mut cur = self.data.follow_mut();
+        let mut cur = Some(&mut self.data);
 
         loop {
             cur = match cur {
                 Some(x) => match *x {
                     LinkedList::Elem((ref k, ref mut v), ref mut l) => {
+                        debugln!("Check key against: {}", k);
                         if key == k {
                             return Some(v);
                         } else {
@@ -117,32 +120,48 @@ pub struct HashMap<K: Clone, V: Clone> {
     data: [Entry<K, V>; 256],
 }
 
-impl<K: Hash + PartialEq + Clone, V: Clone> HashMap<K, V> {
+impl<K: Hash + PartialEq + Clone + Debug + Display, V: Clone + Debug> HashMap<K, V> {
+    /// Make new HT
+    pub fn new() -> Self {
+        HashMap {
+            // Sorry, but LinkedList is not, and will not be copyable
+            data: [Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil} , Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}, Entry {data: LinkedList::Nil}],
+        }
+    }
+
+    /// Get entry num
+    fn get_entry(key: &K) -> usize {
+        let mut s = Djb2::new();
+        key.hash(&mut s);
+        let res = (s.finish() % 256) as usize;
+        debugln!("Res is: {}", res);
+        res
+    }
+
     /// Get value
     pub fn get(&self, key: &K) -> Option<&V> {
-        let mut s = Djb2::new();
-        key.hash(&mut s);
-        self.data[(s.finish() % 256) as usize].get(key)
+        self.data[Self::get_entry(key)].get(key)
     }
+
     /// Get value mutable
     pub fn get_mut(&mut self, key: &K) -> Option<&mut V> {
-        let mut s = Djb2::new();
-        key.hash(&mut s);
-        self.data[(s.finish() % 256) as usize].get_mut(key)
+        self.data[Self::get_entry(key)].get_mut(key)
     }
-    /// Set value
-    pub fn set(&mut self, key: K, val: V) {
-        let mut s = Djb2::new();
-        key.hash(&mut s);
+
+    /// Set value (return the previous one if overwritten)
+    pub fn insert(&mut self, key: K, val: V) -> Option<V> {
         match self.get_mut(&key) {
-            Some(k) => {
-                *k = val;
-                return;
+            Some(r) => {
+                debugln!("Key inserted: {:?}", key);
+                debugln!("Old val: {:?}", r);
+                debugln!("New val: {:?}", val);
+                return Some(mem::replace(r, val));
             },
             _ => {}
         }
-        let n = (s.finish() % 256) as usize;
+        let n = Self::get_entry(&key);
         self.data[n] = self.data[n].clone().push(key, val);
+        None
     }
 }
 
@@ -169,4 +188,24 @@ impl Hasher for Djb2 {
             self.state = ((self.state << 5) + self.state) + b as u64;
         }
     }
+}
+
+pub fn test() {
+    let mut ht = HashMap::new();
+
+    ht.insert(2123, 42);
+    assert_eq!(ht.get(&2123), Some(&42));
+    assert_eq!(ht.get(&1084), None);
+
+
+    for i in 1..80000 {
+        debugln!("Set {}", i);
+        ht.insert(i, i);
+    }
+
+    for i in 1..2000 {
+        debugln!("Get {}", i);
+        assert_eq!(ht.get_mut(&i), Some(&i));
+    }
+
 }

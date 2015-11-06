@@ -74,6 +74,7 @@
     pub use core::result;
     pub use core::option;
     pub mod error;
+    #[macro_use]
     pub mod debug;
 
     pub use alloc::boxed;
