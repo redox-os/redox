@@ -32,11 +32,11 @@ impl Package {
             descriptions: Vec::new(),
         };
 
-        let path_parts = Url::from_string(&package.path).path_parts();
+        let path_parts = Url::from_string(package.path.clone()).path_parts();
         if path_parts.len() > 0 {
-            if let Some(part) = path_parts.get(path_parts.len() - 2) {
+            if let Some(part) = path_parts.get(path_parts.len() - 2).clone() {
                 package.id = part.clone();
-                package.binary = Url::from_string(&(path.to_string() + part + ".bin"));
+                package.binary = Url::from_string(path.to_string() + part + ".bin");
             }
         }
 
@@ -50,7 +50,7 @@ impl Package {
             if line.starts_with("name=") {
                 package.name = line[5 ..].to_string();
             } else if line.starts_with("binary=") {
-                package.binary = Url::from_string(&(path.to_string() + &line[7 ..]));
+                package.binary = Url::from_string(path.to_string() + &line[7 ..]);
             } else if line.starts_with("icon=") {
                 if let Some(mut resource) = File::open(&line[5 ..].to_string()) {
                     // TODO: refactor this to just load from file

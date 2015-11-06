@@ -90,7 +90,7 @@ impl Scheme {
     pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         // TODO: use same parsing as in kernel space?
-        let url_path = Url::from_string(&path.to_string()).path_parts();
+        let url_path = Url::from_string(path.to_string()).path_parts();
         let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None => 0,

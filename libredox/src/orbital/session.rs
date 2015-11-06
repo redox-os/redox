@@ -456,8 +456,6 @@ impl Session {
                 i = i - 1;
             }
             session.redraw();
-            // be kind so everything doesn't lock up
-            unsafe { sys_yield(); }
         }
     }
 }
