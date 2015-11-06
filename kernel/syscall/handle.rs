@@ -399,7 +399,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
+pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
     if req as usize > 0 {
         Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
 
@@ -409,7 +409,7 @@ pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usiz
         }
 
         0
-    }else{
+    } else {
         usize::MAX
     }
 }
@@ -429,7 +429,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
        scheduler::end_no_ints(reenable);
 
-       //let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+       let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
 
        scheduler::start_no_ints();
 
