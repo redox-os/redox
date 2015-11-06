@@ -14,12 +14,16 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use drivers::disk::{Disk, Extent, Request};
 use drivers::pciconfig::PciConfig;
 
-use scheduler::context::context_switch;
 use common::debug;
 use common::memory::Memory;
 use common::parse_path::*;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
+
+use scheduler::{start_no_ints, end_no_ints};
+use scheduler::context::context_switch;
+
+use syscall::common::O_CREAT;
 
 /// The header of the fs
 #[repr(packed)]
@@ -314,8 +318,30 @@ impl Resource for FileResource {
             let mut pos: isize = 0;
             let mut remaining = self.vec.len() as isize;
             for ref mut extent in &mut self.node.extents {
+                if remaining > 0 && extent.empty() {
+                    debug::d("Reallocate file, extra: ");
+                    debug::ds(remaining);
+                    debug::dl();
+
+                    unsafe {
+                        let reenable = start_no_ints();
+
+                        let sectors = ((remaining + 511)/512) as u64;
+                        if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
+                            extent.block = (*self.scheme).fs.header.free_space.block;
+                            extent.length = remaining as u64;
+                            (*self.scheme).fs.header.free_space.block = (*self.scheme).fs.header.free_space.block +  sectors;
+                            (*self.scheme).fs.header.free_space.length = (*self.scheme).fs.header.free_space.length - sectors * 512;
+
+                            node_dirty = true;
+                        }
+
+                        end_no_ints(reenable);
+                    }
+                }
+
                 //Make sure it is a valid extent
-                if extent.block > 0 && extent.length > 0 {
+                if ! extent.empty() {
                     let current_sectors = (extent.length as usize + block_size - 1) / block_size;
                     let max_size = current_sectors * 512;
 
@@ -378,44 +404,52 @@ impl Resource for FileResource {
             if node_dirty {
                 debug::d("Node dirty, rewrite\n");
 
-                unsafe {
-                    if let Some(mut node_data) = Memory::<NodeData>::new(1) {
-                        node_data.write(0, self.node.data());
+                if self.node.block > 0 {
+                    unsafe {
+                        if let Some(mut node_data) = Memory::<NodeData>::new(1) {
+                            node_data.write(0, self.node.data());
 
-                        let request = Request {
-                            extent: Extent {
-                                block: self.node.block,
-                                length: 1,
-                            },
-                            mem: node_data.address(),
-                            read: false,
-                            complete: Arc::new(AtomicBool::new(false)),
-                        };
+                            let request = Request {
+                                extent: Extent {
+                                    block: self.node.block,
+                                    length: 1,
+                                },
+                                mem: node_data.address(),
+                                read: false,
+                                complete: Arc::new(AtomicBool::new(false)),
+                            };
 
-                        debug::d("Disk request\n");
+                            debug::d("Disk request\n");
 
-                        (*self.scheme).fs.disk.request(request.clone());
+                            (*self.scheme).fs.disk.request(request.clone());
 
-                        debug::d("Wait request\n");
-                        while request.complete.load(Ordering::SeqCst) == false {
-                            context_switch(false);
-                        }
-
-                        debug::d("Renode\n");
-
-                        for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                            if node.block == self.node.block {
-                                *node = self.node.clone();
+                            debug::d("Wait request\n");
+                            while request.complete.load(Ordering::SeqCst) == false {
+                                context_switch(false);
                             }
+
+                            debug::d("Renode\n");
+
+                            let reenable = start_no_ints();
+
+                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                                if node.block == self.node.block {
+                                    *node = self.node.clone();
+                                }
+                            }
+
+                            end_no_ints(reenable);
                         }
                     }
+                }else{
+                    debug::d("Need to place Node block\n");
                 }
             }
 
             self.dirty = false;
 
             if remaining > 0 {
-                debug::d("Need to reallocate file, extra: ");
+                debug::d("Need to defragment file, extra: ");
                 debug::ds(remaining);
                 debug::dl();
                 return false;
@@ -551,7 +585,7 @@ impl KScheme for FileScheme {
 
             Some(box VecResource::new(url.clone(), list.into_bytes()))
         } else {
-            match self.fs.node(&path.to_string()) {
+            match self.fs.node(path) {
                 Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
                     //TODO: Handle more extents
@@ -610,7 +644,37 @@ impl KScheme for FileScheme {
                         dirty: false,
                     })
                 },
-                None => None,
+                None => {
+                    if flags & O_CREAT == O_CREAT {
+                        //TODO: Create file
+                        let mut node = Node {
+                            block: 0,
+                            name: path.to_string(),
+                            extents: [Extent {
+                                block: 0,
+                                length: 0
+                            }; 16]
+                        };
+
+                        if self.fs.header.free_space.length >= 512 {
+                            node.block = self.fs.header.free_space.block;
+                            self.fs.header.free_space.block = self.fs.header.free_space.block +  1;
+                            self.fs.header.free_space.length = self.fs.header.free_space.length - 512;
+                        }
+
+                        self.fs.nodes.push(node.clone());
+
+                        Some(box FileResource {
+                            scheme: self,
+                            node: node,
+                            vec: Vec::new(),
+                            seek: 0,
+                            dirty: false,
+                        })
+                    }else{
+                        None
+                    }
+                },
             }
         }
     }
