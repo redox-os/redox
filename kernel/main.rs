@@ -70,7 +70,6 @@ use schemes::ip::*;
 use schemes::memory::*;
 use schemes::random::*;
 use schemes::time::*;
-use schemes::window::*;
 use schemes::display::*;
 
 use syscall::common::Regs;
@@ -399,7 +398,6 @@ unsafe fn init(font_data: usize) {
         arp: Vec::new()
     });
     session.items.push(box DisplayScheme);
-    session.items.push(box WindowScheme);
 
     Context::spawn(box move || {
         poll_loop();
