@@ -2,9 +2,10 @@ use alloc::boxed::Box;
 
 use collections::string::ToString;
 
-use core::cmp;
+use core::{cmp, mem, ptr};
 
 use graphics::display::Display;
+use graphics::size::Size;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
 
@@ -25,7 +26,20 @@ impl Resource for DisplayResource {
         Url::from_string("display://".to_string())
     }
 
+    /// Get display information
+    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+        unsafe {
+            if mem::size_of::<Size>() <= buf.len() {
+                let size = Size::new(self.display.width, self.display.height);
+                unsafe { ptr::write(buf.as_ptr() as *mut Size, size); }
+                Some(mem::size_of::<Size>())
+            } else {
+                None
+            }
+        }
+    }
 
+    /// Draw to the display
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let display = &mut self.display;
 
@@ -36,7 +50,7 @@ impl Resource for DisplayResource {
                               size);
         }
         self.seek += size;
-        return Some(size);
+        Some(size)
     }
 
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
@@ -48,7 +62,7 @@ impl Resource for DisplayResource {
             ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
         };
 
-        return Some(self.seek);
+        Some(self.seek)
     }
 
     fn sync(&mut self) -> bool {
@@ -71,7 +85,7 @@ impl KScheme for DisplayScheme {
         unsafe {
             return Some(box DisplayResource {
                         display: Display::root(),
-                       seek: 0,
+                        seek: 0,
             });
         }
     }

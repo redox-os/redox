@@ -1,7 +1,6 @@
 use core::char;
 
 /// An optional event
-#[derive(Copy, Clone)]
 pub enum EventOption {
     /// A mouse event
     Mouse(MouseEvent),
@@ -9,6 +8,8 @@ pub enum EventOption {
     Key(KeyEvent),
     /// A quit request event
     Quit(QuitEvent),
+    /// A display event
+    Display(DisplayEvent),
     /// An unknown event
     Unknown(Event),
     /// No event
@@ -43,6 +44,7 @@ impl Event {
             'm' => EventOption::Mouse(MouseEvent::from_event(self)),
             'k' => EventOption::Key(KeyEvent::from_event(self)),
             'q' => EventOption::Quit(QuitEvent::from_event(self)),
+            'd' => EventOption::Display(DisplayEvent::from_event(self)),
             '\0' => EventOption::None,
             _ => EventOption::Unknown(self),
         }
@@ -62,6 +64,8 @@ pub struct MouseEvent {
     pub middle_button: bool,
     /// Was the right button pressed?
     pub right_button: bool,
+    /// Was this a position update?
+    pub position_update: bool,
 }
 
 impl MouseEvent {
@@ -71,7 +75,10 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: self.left_button as isize | (self.middle_button as isize) << 1 | (self.right_button as isize) << 2,
+            c: (self.left_button as isize)        | 
+               (self.middle_button as isize) << 1 | 
+               (self.right_button as isize) << 2  |
+               (self.position_update as isize) << 3,
         }
     }
 
@@ -83,6 +90,8 @@ impl MouseEvent {
             left_button: event.c & 1 == 1,
             middle_button: event.c & 2 == 2,
             right_button: event.c & 4 == 4,
+            position_update: event.c & 8 == 8,
+
         }
     }
 }
@@ -191,5 +200,27 @@ impl QuitEvent {
 
     pub fn from_event(event: Event) -> QuitEvent {
         QuitEvent
+    }
+}
+
+#[derive(Copy,Clone)]
+pub struct DisplayEvent {
+    pub restricted: bool,
+}
+
+impl DisplayEvent {
+    pub fn to_event(&self) -> Event {
+        Event {
+            code: 'd',
+            a: self.restricted as isize,
+            b: 0,
+            c: 0,
+        }
+    }
+
+    pub fn from_event(event: Event) -> DisplayEvent {
+        DisplayEvent {
+            restricted: event.a > 0,
+        }
     }
 }

@@ -6,6 +6,8 @@ use drivers::pio::*;
 
 use schemes::KScheme;
 
+use common::debug;
+
 /// PS2
 pub struct Ps2 {
     /// The data
@@ -215,6 +217,7 @@ impl Ps2 {
                 left_button: left_button,
                 right_button: right_button,
                 middle_button: middle_button,
+                position_update: false, //FIXME: LazyOxen why false?
             });
         }
 

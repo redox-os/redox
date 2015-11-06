@@ -553,26 +553,13 @@ impl Uhci {
                                     let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
                                     let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                    let mouse_x = (x * (*::session_ptr).display.width) / 32768;
-                                    let mouse_y = (y * (*::session_ptr).display.height) / 32768;
-
-                                    (*::session_ptr).mouse_point.x =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.width as isize -
-                                                          1,
-                                                          mouse_x as isize));
-                                    (*::session_ptr).mouse_point.y =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.height as isize -
-                                                          1,
-                                                          mouse_y as isize));
-
                                     MouseEvent {
-                                        x: 0,
-                                        y: 0,
+                                        x: x as isize,
+                                        y: y as isize,
                                         left_button: buttons & 1 == 1,
                                         middle_button: buttons & 4 == 4,
                                         right_button: buttons & 2 == 2,
+                                        position_update: true,
                                     }
                                         .trigger();
                                 }
