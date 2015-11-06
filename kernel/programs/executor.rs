@@ -72,6 +72,8 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             let mut context = Context::new(entry, &context_args);
 
+            context.userspace = true;
+
             //TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {
                 physical_address: physical_address,

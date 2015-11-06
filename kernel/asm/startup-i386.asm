@@ -68,7 +68,7 @@ gdt:
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b10011010   ; access byte - code
-    db 0xff         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
 .kernel_data equ $ - gdt
@@ -76,7 +76,7 @@ gdt:
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b10010010   ; access byte - data
-    db 0xff         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
 .user_code equ $ - gdt
@@ -84,7 +84,7 @@ gdt:
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b11111010   ; access byte - code
-    db 0xff         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
 .user_data equ $ - gdt
@@ -92,15 +92,15 @@ gdt:
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
     db 0b11110010   ; access byte - data
-    db 0xff         ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
 .tss equ $ - gdt
-    dw (tss.end-$$+0x7C00) & 0xFFFF         ; limit 0:15
+    dw (tss.end-tss) & 0xFFFF         ; limit 0:15
     dw (tss-$$+0x7C00) & 0xFFFF             ; base 0:15
     db ((tss-$$+0x7C00) >> 16) & 0xFF       ; base 16:23
     db 0b11101001                           ; access byte - data
-    db ((tss.end-$$+0x7C00) >> 16) & 0xF    ; flags/(limit 16:19). flag is set to 32 bit protected mode
+    db 0x40 | ((tss.end-tss) >> 16) & 0xF    ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db ((tss-$$+0x7C00) >> 24) & 0xFF       ; base 24:31
 
 .end equ $ - gdt

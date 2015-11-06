@@ -71,6 +71,12 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*current_ptr).stack_physical();
                     (*current_ptr).unmap();
                     (*next_ptr).map();
+                    if (*next_ptr).userspace {
+                        if ! (*next_ptr).started {
+                            (*next_ptr).started = true;
+                            (*next_ptr).enter_user();
+                        }
+                    }
                     (*next_ptr).restore();
                 }
             }
@@ -95,6 +101,8 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
         let mut context = box Context {
             interrupted: parent.interrupted,
             exited: parent.exited,
+            userspace: parent.userspace,
+            started: parent.started,
 
             regs: parent.regs,
             stack: stack,
@@ -209,6 +217,10 @@ pub struct Context {
         pub interrupted: bool,
         /// Indicates that the context exited and needs to be cleaned up
         pub exited: bool,
+        /// Indicates that the context has not been started
+        pub started: bool,
+        /// Indicates that this is a ring 3 process
+        pub userspace: bool,
     /* } */
 
     /* These members control the stack and registers and are unique to each context { */
@@ -239,6 +251,8 @@ impl Context {
         box Context {
             interrupted: false,
             exited: false,
+            started: false,
+            userspace: false,
 
             regs: Regs::default(),
             stack: 0,
@@ -259,6 +273,8 @@ impl Context {
         let mut ret = box Context {
             interrupted: false,
             exited: false,
+            started: false,
+            userspace: false,
 
             regs: Regs::default(),
             stack: stack,
@@ -271,6 +287,7 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
+        ret.regs.ip = call;
         ret.regs.sp = stack + CONTEXT_STACK_SIZE;
         ret.regs.flags = 1 << 9;
 
@@ -292,6 +309,8 @@ impl Context {
         let mut ret = box Context {
             interrupted: false,
             exited: false,
+            started: false,
+            userspace: false,
 
             regs: Regs::default(),
             stack: stack,
@@ -304,6 +323,7 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
+        ret.regs.ip = call;
         ret.regs.sp = stack + CONTEXT_STACK_SIZE;
         ret.regs.flags = 1 << 9;
 
@@ -513,6 +533,26 @@ impl Context {
             : "r"(self.regs.flags)
             : "memory"
             : "intel", "volatile");
+    }
+
+    #[cold]
+    #[inline(never)]
+    #[cfg(target_arch = "x86")]
+    pub unsafe fn enter_user(&mut self){
+        asm!("mov ds, eax
+        mov es, eax
+        mov fs, eax
+        mov gs, eax
+        push eax
+        push ebx
+        push edi
+        push ecx
+        push edx
+        iretd"
+        :
+        : "{eax}"(0x23), "{ebx}"(self.regs.sp), "{ecx}"(0x1B), "{edx}"(self.regs.ip), "{edi}"(self.regs.flags)
+        : "memory"
+        : "intel", "volatile")
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
