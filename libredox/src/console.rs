@@ -46,6 +46,7 @@ pub fn console_title(title: &str) {
     console_window().set_title(title);
 }
 
+/*
 /// Print to console
 #[macro_export]
 macro_rules! print {
@@ -87,6 +88,7 @@ macro_rules! println_color {
 macro_rules! readln {
     () => (console_window().read());
 }
+*/
 
 /// A console char
 pub struct ConsoleChar {

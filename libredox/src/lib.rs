@@ -92,9 +92,8 @@
 
     /* Exported macros */
 
-    #[cfg(std)]
     #[macro_use]
-    mod macros;
+    pub mod macros;
 
     // TODO mod rtdeps;
 
@@ -158,7 +157,6 @@
     //TODO #[cfg(windows)]
     //TODO #[path = "sys/windows/mod.rs"] mod sys;
 
-    #[cfg(std)]
     pub mod rt;
     //TODO mod panicking;
     pub use __core::panicking;
@@ -188,7 +186,6 @@
     pub use vec::Vec;
 
     pub use audio::wav::*;
-    #[cfg(not(std))]
     pub use console::*;
     pub use graphics::bmp::*;
     pub use graphics::color::*;
@@ -203,8 +200,6 @@
     #[path="../../kernel/externs.rs"]
     pub mod externs;
 
-    pub mod panic;
-
     /// A module for system calls
     pub mod syscall;
 
@@ -214,7 +209,6 @@
     }
 
     /// A module for console functionality
-    #[cfg(not(std))]
     #[macro_use]
     pub mod console;
     /// Graphics support
@@ -222,6 +216,9 @@
         pub mod bmp;
         pub mod color;
     }
+    
+    pub mod panic;
+
     /// A module for window support
     pub mod orbital;
 

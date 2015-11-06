@@ -14,7 +14,7 @@ RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead_code -A deprecated \
-	-L $(BUILD) 
+	-L $(BUILD)
 AS=nasm
 AWK=awk
 BASENAME=basename
@@ -168,7 +168,7 @@ $(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liball
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --cfg std --crate-name redox -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
