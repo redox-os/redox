@@ -4,7 +4,6 @@ use redox::vec::Vec;
 use redox::boxed::Box;
 use redox::fs::*;
 use redox::io::*;
-use redox::console::*;
 use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
@@ -33,6 +32,45 @@ impl<'a> Command<'a> {
     // TODO: Use a more efficient collection instead
     pub fn vec() -> Vec<Self> {
         let mut commands: Vec<Self> = Vec::new();
+
+        commands.push(Command {
+            name: "cat",
+            main: box |args: &Vec<String>| {
+                let path = {
+                    match args.get(1) {
+                        Some(arg) => arg.clone(),
+                        None => String::new(),
+                    }
+                };
+
+                if let Some(mut file) = File::open(&path) {
+                    println!("URL: {:?}", file.path());
+
+                    let mut string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read"),
+                    }
+                } else {
+                    println!("Failed to open file: {}", path);
+                }
+            },
+        });
+
+        commands.push(Command {
+            name: "cd",
+            main: box |args: &Vec<String>| {
+                match args.get(1) {
+                    Some(path) => {
+                        if !change_cwd(&path) {
+                            println!("Bad path: {}", path);
+                        }
+                    }
+                    None => println!("No path given")
+                }
+            },
+        });
+
         commands.push(Command {
             name: "echo",
             main: box |args: &Vec<String>| {
@@ -44,12 +82,38 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
-            name: "open",
+            name: "exec",
             main: box |args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
                     File::exec(arg);
                 }
             },
+        });
+
+        commands.push(Command {
+            name: "exit",
+            main: box |_: &Vec<String>| {
+            },
+        });
+
+        commands.push(Command {
+            name: "ls",
+            main: box |args: &Vec<String>| {
+                let path = {
+                    match args.get(1) {
+                        Some(arg) => arg.clone(),
+                        None => String::new(),
+                    }
+                };
+
+                if let Some(dir) = read_dir(&path) {
+                    for entry in dir {
+                        println!("{}", entry.path());
+                    }
+                } else {
+                    println!("Failed to open directory: {}", path);
+                }
+            }
         });
 
         commands.push(Command {
@@ -68,6 +132,48 @@ impl<'a> Command<'a> {
                         exec!(command);
                     }
                 }
+            },
+        });
+
+        commands.push(Command {
+            name: "pwd",
+            main: box |_: &Vec<String>| {
+                let mut err = false;
+                if let Some(file) = File::open("") {
+                    if let Some(path) = file.path() {
+                        println!("{}", path);
+                    } else {
+                        err = true;
+                    }
+                } else {
+                    err = true;
+                }
+                if err {
+                    println!("Could not get the path");
+                }
+            },
+        });
+
+        commands.push(Command {
+            name: "sleep",
+            main: box |args: &Vec<String>| {
+                let secs = {
+                    match args.get(1) {
+                        Some(arg) => arg.to_num() as i64,
+                        None => 0,
+                    }
+                };
+
+                let nanos = {
+                    match args.get(2) {
+                        Some(arg) => arg.to_num() as i32,
+                        None => 0,
+                    }
+                };
+
+                println!("Sleep: {} {}", secs, nanos);
+                let remaining = Duration::new(secs, nanos).sleep();
+                println!("Remaining: {} {}", remaining.secs, remaining.nanos);
             },
         });
 
@@ -110,54 +216,9 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
-            name: "sleep",
-            main: box |args: &Vec<String>| {
-                let secs = {
-                    match args.get(1) {
-                        Some(arg) => arg.to_num() as i64,
-                        None => 0,
-                    }
-                };
-
-                let nanos = {
-                    match args.get(2) {
-                        Some(arg) => arg.to_num() as i32,
-                        None => 0,
-                    }
-                };
-
-                println!("Sleep: {} {}", secs, nanos);
-                let remaining = Duration::new(secs, nanos).sleep();
-                println!("Remaining: {} {}", remaining.secs, remaining.nanos);
-            },
-        });
-
-        commands.push(Command {
             name: "test_ht",
-            main: box |args: &Vec<String>| {
+            main: box |_: &Vec<String>| {
                 ::redox::hashmap::test();
-            },
-        });
-
-        commands.push(Command {
-            name: "url",
-            main: box |args: &Vec<String>| {
-                let path = {
-                    match args.get(1) {
-                        Some(arg) => arg.clone(),
-                        None => String::new(),
-                    }
-                };
-
-                if let Some(mut file) = File::open(&path) {
-                    println!("URL: {:?}", file.path());
-
-                    let mut string = String::new();
-                    match file.read_to_string(&mut string) {
-                        Some(_) => println!("{}", string),
-                        None => println!("Failed to read"),
-                    }
-                }
             },
         });
 
@@ -213,44 +274,11 @@ impl<'a> Command<'a> {
             },
         });
 
-        commands.push(Command {
-            name: "pwd",
-            main: box |args: &Vec<String>| {
-                let mut err = false;
-                if let Some(file) = File::open("") {
-                    if let Some(path) = file.path() {
-                        println!("{}", path);
-                    } else {
-                        err = true;
-                    }
-                } else {
-                    err = true;
-                }
-                if err {
-                    println!("Could not get the path");
-                }
-            },
-        });
-
-        commands.push(Command {
-            name: "cd",
-            main: box |args: &Vec<String>| {
-                match args.get(1) {
-                    Some(path) => {
-                        if !change_cwd(&path) {
-                            println!("Bad path: {}", path);
-                        }
-                    }
-                    None => println!("No path given")
-                }
-            },
-        });
-
-        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name) + " exit";
+        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name);
 
         commands.push(Command {
             name: "help",
-            main: box move |args: &Vec<String>| {
+            main: box move |_: &Vec<String>| {
                 println!("Commands:{}", command_list);
             },
          });
@@ -441,8 +469,6 @@ impl<'a> Application<'a> {
 
     /// Run the application
     pub fn main(&mut self) {
-        console_title("Terminal");
-
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
@@ -450,12 +476,18 @@ impl<'a> Application<'a> {
             self.on_command(&command);
         }
 
-        while let Some(command) = readln!() {
-            println!("# {}", command);
-            if command == "exit" {
-                break;
-            } else if !command.is_empty() {
-                self.on_command(&command);
+        loop {
+            print!("# ");
+            if let Some(command_original) = readln!() {
+                let command = command_original.trim();
+                if command == "exit" {
+                    println!("Exit temporarily blocked (due to using terminal as init)")
+                    //break;
+                } else if !command.is_empty() {
+                    self.on_command(&command);
+                }
+            } else {
+                println!("Failed to read from stdin");
             }
         }
     }

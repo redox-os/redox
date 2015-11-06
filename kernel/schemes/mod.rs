@@ -138,18 +138,16 @@ impl Url {
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
-        None
-//        unsafe {
-//            //return (*::session_ptr).open(&self, O_RDWR);
-//        }
+        unsafe {
+            (*::session_ptr).open(&self, O_RDWR)
+        }
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Option<Box<Resource>> {
-        None
-//        unsafe {
-//            //return (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC);
-//        }
+        unsafe {
+            (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC)
+        }
     }
 
     /// Return the scheme of this url

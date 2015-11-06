@@ -1,4 +1,6 @@
 use redox::*;
+use redox::console::*;
+use redox::orbital::*;
 
 pub struct Editor {
     url: String,
