@@ -125,7 +125,7 @@ help:
 
 all: $(BUILD)/harddrive.bin
 
-docs: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
+docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
 
 apps: apps/editor apps/file_manager apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
@@ -170,10 +170,10 @@ $(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liball
 $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/kernel.rlib: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-$(BUILD)/kernel.ir: kernel/kernel.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/kernel.ir: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
