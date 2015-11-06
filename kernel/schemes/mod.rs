@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -27,10 +27,6 @@ pub mod icmp;
 pub mod ip;
 /// Memory scheme
 pub mod memory;
-/// Pseudo random generation scheme
-pub mod random;
-/// Time scheme
-pub mod time;
 
 #[allow(unused_variables)]
 pub trait KScheme {

@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 use alloc::boxed::{Box, FnBox};
 use alloc::rc::Rc;
@@ -17,8 +17,8 @@ use schemes::Resource;
 
 use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM, Regs};
 
-pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
+pub const CONTEXT_STACK_ADDR: usize = 0xC0000000 - CONTEXT_STACK_SIZE;
 
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
@@ -68,7 +68,7 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*next_ptr).interrupted = false;
 
                     (*current_ptr).save();
-                    //(*current_ptr).stack_physical();
+                    (*current_ptr).stack_physical();
                     (*current_ptr).unmap();
                     (*next_ptr).map();
                     (*next_ptr).restore();
@@ -280,7 +280,7 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
-        //ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
     }
@@ -323,7 +323,7 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
-        //ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
     }
