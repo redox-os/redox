@@ -2,39 +2,53 @@ use collections::string::String;
 use collections::vec::Vec;
 
 /// Parse the path
-pub fn parse_path(path: &str) -> Vec<String> {
+pub fn parse_path(path: &str, cwd: Vec<String>) -> Vec<String> {
     // This method do also canonicalize the path
-    let mut parts = Vec::new();
+    let mut parts = if let Some('/') = path.chars().next() {
+        Vec::new()
+    } else {
+        cwd
+    };
     let mut new_part = true;
+    let mut climb = false;
     let mut escape = false;
 
-    let mut cur_part = String::new();
+    let mut head = String::new();
 
     for c in path.chars() {
         if escape {
-            cur_part.push(c);
+            head.push(c);
         } else {
             match c {
                 '\\' => {
+                    climb = false;
                     new_part = false;
                     escape = true;
                 },
+                '.' if new_part => {
+                    climb = true;
+                },
+                '.' if climb => {
+                    parts.pop();
+                },
                 '/' if !new_part => {
+                    climb = false;
                     new_part = true;
-                    parts.push(cur_part.clone());
-                    cur_part.clear();
+                    parts.push(head.clone());
+                    head.clear();
                 },
                 '/' => {},
                 c => {
+                    climb = false;
                     new_part = false;
-                    cur_part.push(c);
+                    head.push(c);
                 },
             }
         }
     }
 
-    if !cur_part.is_empty() {
-        parts.push(cur_part);
+    if !head.is_empty() {
+        parts.push(head);
     }
 
     parts

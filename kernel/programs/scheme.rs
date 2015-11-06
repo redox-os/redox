@@ -326,7 +326,7 @@ impl SchemeItem {
             _close: 0,
         };
 
-        let path_parts = parse_path(url.reference());
+        let path_parts = parse_path(url.reference(), Vec::new());
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();

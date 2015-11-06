@@ -5,6 +5,7 @@ use scheduler::context::{self, Context, ContextFile, ContextMemory};
 use common::debug;
 use common::elf::Elf;
 use common::memory;
+use common::parse_path::parse_path;
 use scheduler;
 use collections::string::ToString;
 
@@ -46,6 +47,9 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 debug::d("Invalid ELF\n");
             }
         } else {
+            for p in parse_path(url.reference(), Vec::new()) {
+            debugln!("{}", p);
+            }
             debug::d("Failed to open\n");
         }
 
