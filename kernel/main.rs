@@ -41,6 +41,7 @@ use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
+//use common::prompt;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -182,6 +183,9 @@ unsafe fn event_loop() -> ! {
     //let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
+    debugln!("");
+    debugln!("");
+//    debug!("redox => ");
     loop {
         loop {
             let reenable = scheduler::start_no_ints();
@@ -212,8 +216,10 @@ unsafe fn event_loop() -> ! {
                                                 *::debug_command = cmd.clone() + "\n";
                                                 scheduler::end_no_ints(reenable);
 
-                                                cmd.clear();
                                                 debug::dl();
+                                                cmd.clear();
+//                                                prompt::run(mem::replace(&mut cmd, String::new()));
+ //                                               debug!("redox => ");
                                             },
                                             _ => {
                                                 cmd.push(key_event.character);
@@ -229,7 +235,6 @@ unsafe fn event_loop() -> ! {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
-                        } else {
                             //session.event(event);
                         }
                     }
