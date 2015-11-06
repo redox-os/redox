@@ -18,10 +18,8 @@ pub struct Session {
 impl Session {
     /// Create new session
     pub fn new() -> Box<Self> {
-        unsafe {
-            box Session {
-                items: Vec::new(),
-            }
+        box Session {
+            items: Vec::new(),
         }
     }
 
@@ -43,6 +41,7 @@ impl Session {
 
     /// Open a new resource
     pub fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
+        debugln!("Open {}", url.to_string());
         if url.scheme().len() == 0 {
             let mut list = String::new();
 

@@ -35,13 +35,12 @@ use core::{mem, ptr};
 use core::slice::{self, SliceExt};
 use core::str;
 
-use scheduler::context::*;
 use common::debug;
 use common::event::{self, Event, EventOption};
+use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
-use schemes::Url;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -55,9 +54,13 @@ pub use externs::*;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
+use programs::executor::execute;
 use programs::scheme::*;
 use programs::session::*;
 
+use scheduler::context::*;
+
+use schemes::Url;
 use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
@@ -369,8 +372,16 @@ unsafe fn init(font_data: usize) {
     }
 
     debugln!("Enabling context switching");
-    debug_draw = false;
+    //debug_draw = false;
     context_enabled = true;
+
+    debugln!("Loading init");
+    {
+        let path_string = "file:///apps/terminal/terminal.bin";
+        let path = Url::from_string(path_string.to_string());
+        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
+        execute(&path, &wd, Vec::new());
+    }
 }
 
 fn dr(reg: &str, value: usize) {

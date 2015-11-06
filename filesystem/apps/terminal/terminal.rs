@@ -4,7 +4,6 @@ use redox::vec::Vec;
 use redox::boxed::Box;
 use redox::fs::*;
 use redox::io::*;
-use redox::console::*;
 use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
@@ -134,7 +133,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "test_ht",
-            main: box |args: &Vec<String>| {
+            main: box |_: &Vec<String>| {
                 ::redox::hashmap::test();
             },
         });
@@ -215,7 +214,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "pwd",
-            main: box |args: &Vec<String>| {
+            main: box |_: &Vec<String>| {
                 let mut err = false;
                 if let Some(file) = File::open("") {
                     if let Some(path) = file.path() {
@@ -250,7 +249,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "help",
-            main: box move |args: &Vec<String>| {
+            main: box move |_: &Vec<String>| {
                 println!("Commands:{}", command_list);
             },
          });
@@ -441,8 +440,6 @@ impl<'a> Application<'a> {
 
     /// Run the application
     pub fn main(&mut self) {
-        console_title("Terminal");
-
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
@@ -450,10 +447,12 @@ impl<'a> Application<'a> {
             self.on_command(&command);
         }
 
-        while let Some(command) = readln!() {
+        while let Some(command_original) = readln!() {
+            let command = command_original.trim();
             println!("# {}", command);
             if command == "exit" {
-                break;
+                println!("Exit temporarily blocked (due to using terminal as init)")
+                //break;
             } else if !command.is_empty() {
                 self.on_command(&command);
             }

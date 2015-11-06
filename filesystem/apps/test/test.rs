@@ -1,6 +1,7 @@
 use redox::Box;
 use redox::console::*;
 use redox::fs;
+use redox::io::Read;
 use redox::rand;
 use redox::ptr;
 use redox::slice::SliceConcatExt;
