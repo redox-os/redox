@@ -63,27 +63,25 @@ impl ZfsReader {
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
-    pub fn uber(&mut self) -> Result<Uberblock, String> {
+    pub fn uber(&mut self, uberblocks: &[Uberblock]) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
-        for i in 0..128 {
-            if let Ok(uberblock) = Uberblock::from_bytes(&self.zio.read(256 + i * 2, 2)) {
-                let newest =
-                    match newest_uberblock {
-                        Some(previous) => {
-                            if uberblock.txg > previous.txg {
-                                // Found a newer uberblock
-                                true
-                            } else {
-                                false
-                            }
+        for uberblock in uberblocks.iter() {
+            let newest =
+                match newest_uberblock {
+                    Some(previous) => {
+                        if uberblock.txg > previous.txg {
+                            // Found a newer uberblock
+                            true
+                        } else {
+                            false
                         }
-                        // No uberblock yet, so first one we find is the newest
-                        None => true,
-                    };
+                    }
+                    // No uberblock yet, so first one we find is the newest
+                    None => true,
+                };
 
-                if newest {
-                    newest_uberblock = Some(uberblock);
-                }
+            if newest {
+                newest_uberblock = Some(*uberblock);
             }
         }
 
@@ -113,7 +111,29 @@ impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
         let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: ArCache::new() };
 
-        let uberblock = try!(zfs_reader.uber());
+        // Read vdev label
+        let mut vdev_label = try!(VdevLabel::from_bytes(&zfs_reader.zio.read(0, 256 * 2)));
+        let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
+        let nv_list = try!(nvstream::decode_nv_list(&mut xdr).map_err(|e| format!("{:?}", e)));
+        /*let vdev_tree =
+            match nv_list.find("vdev_tree") {
+                Some(vdev_tree) => {
+                    vdev_tree
+                },
+                None => {
+                    return Err("No vdev_tree in vdev label nvpairs".to_string());
+                },
+            };
+
+        let vdev_tree =
+            if let NvValue::NvList(ref vdev_tree) = *vdev_tree {
+                vdev_tree
+            } else {
+                return Err("vdev_tree is not NvValue::NvList".to_string());
+            };*/
+
+        // Get the active uberblock
+        let uberblock = try!(zfs_reader.uber(&vdev_label.uberblocks));
 
         //let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = try!(zfs_reader.read_type(&uberblock.rootbp));
