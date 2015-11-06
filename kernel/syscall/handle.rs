@@ -429,7 +429,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
        scheduler::end_no_ints(reenable);
 
-       //let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+       let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
 
        scheduler::start_no_ints();
 
