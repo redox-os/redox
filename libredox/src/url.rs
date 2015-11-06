@@ -26,13 +26,13 @@ impl Url {
     }
 
     /// Create an URL from a string literal
-    pub fn from_str(url_str: &&str) -> Self {
-        return Url::from_string(&url_str.to_string());
+    pub fn from_str(url_str: &str) -> Self {
+        return Url::from_string(url_str.to_string());
     }
 
     /// Create an URL from `String`
-    pub fn from_string(url_string: &String) -> Self {
-        Url { string: url_string.clone() }
+    pub fn from_string(url_string: String) -> Self {
+        Url { string: url_string }
     }
 
     /// Convert to string
