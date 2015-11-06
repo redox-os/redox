@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 /// Get the port from a string (ip)
 pub fn parse_port(string: &str) -> &str {
