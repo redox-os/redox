@@ -62,7 +62,7 @@ idt:
 %rep 256	;fill in overrideable functions
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
-		at IDTEntry.selector, dw 0x08
+		at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
 		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
         at IDTEntry.offseth, dw 0
