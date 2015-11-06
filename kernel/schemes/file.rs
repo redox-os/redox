@@ -24,6 +24,7 @@ use scheduler::{start_no_ints, end_no_ints};
 use scheduler::context::context_switch;
 
 use syscall::common::O_CREAT;
+use common::pwd;
 
 /// The header of the fs
 #[repr(packed)]
@@ -207,9 +208,9 @@ impl FileSystem {
 
     /// Get node with a given filename
     pub fn node(&self, filename: &str) -> Option<Node> {
-        let path = parse_path(filename, Vec::new());
+        let path = parse_path(filename, pwd());
         for node in self.nodes.iter() {
-            if parse_path(&node.name, Vec::new()) == path {
+            if parse_path(&node.name, pwd()) == path {
                 return Some(node.clone());
             }
         }
