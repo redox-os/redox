@@ -198,14 +198,14 @@ pub fn test() {
     assert_eq!(ht.get(&1084), None);
 
 
-    for i in 1..80000 {
+    for i in 1..100000 {
         debugln!("Set {}", i);
         ht.insert(i, i);
     }
 
-    for i in 1..2000 {
+    for i in 1..20000 {
         debugln!("Get {}", i);
-        assert_eq!(ht.get_mut(&i), Some(&i));
+        assert_eq!(ht.get(&i), Some(&i));
     }
 
 }
