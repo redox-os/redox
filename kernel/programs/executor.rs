@@ -35,6 +35,14 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 physical_address = memory::alloc(virtual_size);
 
                 if physical_address > 0 {
+                    debug::d("Progbits ");
+                    debug::dh(segment.off as usize);
+                    debug::d(" ");
+                    debug::dh(segment.file_len as usize);
+                    debug::d(" ");
+                    debug::dh(segment.mem_len as usize);
+                    debug::dl();
+
                     //Copy progbits
                     ::memcpy(physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
                     //Zero bss

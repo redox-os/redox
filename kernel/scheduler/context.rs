@@ -68,7 +68,7 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*next_ptr).interrupted = false;
 
                     (*current_ptr).save();
-                    (*current_ptr).stack_physical();
+                    //(*current_ptr).stack_physical();
                     (*current_ptr).unmap();
                     (*next_ptr).map();
                     (*next_ptr).restore();
@@ -272,6 +272,7 @@ impl Context {
         };
 
         ret.regs.sp = stack + CONTEXT_STACK_SIZE;
+        ret.regs.flags = 1 << 9;
 
         for arg in args.iter() {
             ret.push(*arg);
@@ -279,7 +280,7 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
-        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        //ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
     }
@@ -304,13 +305,12 @@ impl Context {
         };
 
         ret.regs.sp = stack + CONTEXT_STACK_SIZE;
+        ret.regs.flags = 1 << 9;
 
         let mut args_mut = args.clone();
 
         while args_mut.len() >= 7 {
-            if let Some(value) = args_mut.pop() {
-                ret.push(value);
-            }
+            ret.push(args_mut.remove(6));
         }
 
         //First six args are in regs
@@ -323,7 +323,7 @@ impl Context {
 
         ret.push(call); //We will ret into this function call
 
-        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        //ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
     }
@@ -449,7 +449,15 @@ impl Context {
     //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
+    #[cfg(target_arch = "x86")]
     pub unsafe fn save(&mut self) {
+        asm!("pushfd
+            pop $0"
+            : "=r"(self.regs.flags)
+            :
+            : "memory"
+            : "intel", "volatile");
+
         asm!(""
             : "={esp}"(self.regs.sp)
             :
@@ -465,10 +473,9 @@ impl Context {
         self.fx_enabled = true;
     }
 
-    //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
+    #[cfg(target_arch = "x86")]
     pub unsafe fn stack_physical(&mut self) {
         if self.stack > 0 {
             asm!("add esp, $0"
@@ -483,6 +490,7 @@ impl Context {
     //It should have exactly no extra pushes or pops
     #[cold]
     #[inline(never)]
+    #[cfg(target_arch = "x86")]
     pub unsafe fn restore(&mut self) {
         if self.fx_enabled {
             asm!("fxrstor [$0]"
@@ -495,6 +503,83 @@ impl Context {
         asm!(""
             :
             : "{esp}"(self.regs.sp)
+            : "memory"
+            : "intel", "volatile");
+
+
+        asm!("push $0
+            popfd"
+            :
+            : "r"(self.regs.flags)
+            : "memory"
+            : "intel", "volatile");
+    }
+
+    //Warning: This function MUST be inspected in disassembly for correct push/pop
+    //It should have exactly no extra pushes or pops
+    #[cold]
+    #[inline(never)]
+    #[cfg(target_arch = "x86_64")]
+    pub unsafe fn save(&mut self) {
+        asm!("pushfq
+            pop $0"
+            : "=r"(self.regs.flags)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!(""
+            : "={rsp}"(self.regs.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("fxsave [$0]"
+            :
+            : "r"(self.fx)
+            : "memory"
+            : "intel", "volatile");
+
+        self.fx_enabled = true;
+    }
+
+    #[cold]
+    #[inline(never)]
+    #[cfg(target_arch = "x86_64")]
+    pub unsafe fn stack_physical(&mut self) {
+        if self.stack > 0 {
+            asm!("add rsp, $0"
+                :
+                : "r"(self.stack - CONTEXT_STACK_ADDR)
+                : "memory"
+                : "intel", "volatile");
+        }
+    }
+
+    //Warning: This function MUST be inspected in disassembly for correct push/pop
+    //It should have exactly no extra pushes or pops
+    #[cold]
+    #[inline(never)]
+    #[cfg(target_arch = "x86_64")]
+    pub unsafe fn restore(&mut self) {
+        if self.fx_enabled {
+            asm!("fxrstor [$0]"
+                :
+                : "r"(self.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
+
+        asm!(""
+            :
+            : "{rsp}"(self.regs.sp)
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("push $0
+            popfq"
+            :
+            : "r"(self.regs.flags)
             : "memory"
             : "intel", "volatile");
     }
