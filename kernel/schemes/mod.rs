@@ -31,8 +31,6 @@ pub mod memory;
 pub mod random;
 /// Time scheme
 pub mod time;
-/// Window scheme
-pub mod window;
 
 #[allow(unused_variables)]
 pub trait KScheme {
