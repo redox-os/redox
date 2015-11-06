@@ -44,7 +44,6 @@ use common::paging::Page;
 use common::queue::Queue;
 use schemes::Url;
 use common::time::Duration;
-use common::parse_path::*;
 
 use drivers::pci::*;
 use drivers::pio::*;
@@ -170,7 +169,7 @@ impl GetSlice for str {
             slice.len()
         };
 
-        if a > b { return ""; }
+        if a >= b { return ""; }
 
         unsafe { str::from_utf8_unchecked(&slice[a..b]) }
     }
@@ -194,7 +193,7 @@ impl<T> GetSlice for [T] {
             slice.len()
         };
 
-        if a > b { return &[]; }
+        if a >= b { return &[]; }
 
         &slice[a..b]
     }
@@ -225,7 +224,7 @@ unsafe fn idle_loop() -> ! {
             asm!("sti");
         }
 
-        recursive_unsafe_yield();
+        context_switch(false);
     }
 }
 
@@ -236,7 +235,7 @@ unsafe fn poll_loop() -> ! {
     loop {
         session.on_poll();
 
-        recursive_unsafe_yield();
+        context_switch(false);
     }
 }
 
@@ -272,10 +271,10 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd + "\n";
+                                                *::debug_command = cmd.clone() + "\n";
                                                 scheduler::end_no_ints(reenable);
 
-                                                cmd = String::new();
+                                                cmd.clear();
                                                 debug::dl();
                                             },
                                             _ => {
@@ -311,7 +310,7 @@ unsafe fn event_loop() -> ! {
             session.redraw();
         }
 
-        recursive_unsafe_yield();
+        context_switch(false);
     }
 }
 
@@ -440,7 +439,7 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string(&("file:///schemes/".to_string() + &folder)));
+                let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -456,7 +455,7 @@ unsafe fn init(font_data: usize) {
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let package = Package::from_url(&Url::from_string(&("file:///apps/".to_string() + folder)));
+                let package = Package::from_url(&Url::from_string("file:///apps/".to_string() + folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.packages.push(package);
@@ -602,7 +601,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(regs, true);
+            context_switch(true);
         }
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4

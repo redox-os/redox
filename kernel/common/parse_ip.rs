@@ -1,13 +1,9 @@
+use ::GetSlice;
 
 /// Get the port from a string (ip)
 pub fn parse_port(string: &str) -> &str {
-    let a = match string.find(':') {
-        Some(pos) => pos + 1,
-        None => 0,
-    };
-
-    let mut b = 0;
-    for c in string.chars().skip(a) {
+    let mut b = 1;
+    for c in string.chars() {
         match c {
             '0' | '1' |
             '2' | '3' |
@@ -18,15 +14,10 @@ pub fn parse_port(string: &str) -> &str {
         }
     }
 
-    &string[a..b + 1]
+    string.get_slice(string.find(':').map(|a| a + 1), Some(b))
 }
 
 /// Get the host from a string (ip)
 pub fn parse_host(string: &str) -> &str {
-    let pos = match string.find(|c| c == ':' || c == '/') {
-        Some(pos) => pos + 1,
-        None => string.len(),
-    };
-
-    &string[..pos]
+    string.get_slice(None, string.find(|c| c == ':' || c == '/').map(|b| b + 1))
 }

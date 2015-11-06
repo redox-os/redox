@@ -8,7 +8,6 @@ pub const SYS_CLONE: usize = 120;
     pub const CLONE_VM: usize = 0x100;
     pub const CLONE_FS: usize = 0x200;
     pub const CLONE_FILES: usize = 0x400;
-    pub const CLONE_SIGHAND: usize = 0x800;
 pub const SYS_CLOCK_GETTIME: usize = 265;
     pub const CLOCK_REALTIME: usize = 0;
     pub const CLOCK_MONOTONIC: usize = 1;

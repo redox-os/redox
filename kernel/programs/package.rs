@@ -1,3 +1,5 @@
+use ::GetSlice;
+
 use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
@@ -49,33 +51,33 @@ impl Package {
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 package.id = part.clone();
-                package.binary = Url::from_string(&(url.to_string() + part + ".bin"));
+                package.binary = Url::from_string(url.to_string() + part + ".bin");
             }
         }
 
         let mut info = String::new();
 
-        if let Some(mut resource) = Url::from_string(&(url.to_string() + "_REDOX")).open() {
+        if let Some(mut resource) = Url::from_string(url.to_string() + "_REDOX").open() {
             resource.read_to_end(unsafe { info.as_mut_vec() });
         }
 
-        for line in info.lines_any() {
+        for line in info.lines() {
             if line.starts_with("name=") {
-                package.name = line[5 ..].to_string();
+                package.name = line.get_slice(Some(5), None).to_string();
             } else if line.starts_with("binary=") {
-                package.binary = Url::from_string(&(url.to_string() + &line[7 ..]));
+                package.binary = Url::from_string(url.to_string() + line.get_slice(Some(7), None));
             } else if line.starts_with("icon=") {
-                if let Some(mut resource) = Url::from_string(&line[5 ..].to_string()).open() {
+                if let Some(mut resource) = Url::from_string(line.get_slice(Some(5), None).to_string()).open() {
                     let mut vec: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut vec);
                     package.icon = BmpFile::from_data(&vec);
                 }
             } else if line.starts_with("accept=") {
-                package.accepts.push(line[7 ..].to_string());
+                package.accepts.push(line.get_slice(Some(7), None).to_string());
             } else if line.starts_with("author=") {
-                package.authors.push(line[7 ..].to_string());
+                package.authors.push(line.get_slice(Some(7), None).to_string());
             } else if line.starts_with("description=") {
-                package.descriptions.push(line[12 ..].to_string());
+                package.descriptions.push(line.get_slice(Some(12), None).to_string());
             } else {
                 debug::d("Unknown package info: ");
                 debug::d(&line);

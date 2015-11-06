@@ -441,7 +441,7 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, url_str: &str) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
         if !url.host().is_empty() && !url.port().is_empty() {
@@ -473,7 +473,7 @@ impl Scheme {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == host_port && (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_SYN {
                                 if let Some(path) = ip.path() {
-                                    let url = Url::from_string(&path);
+                                    let url = Url::from_string(path);
 
                                     let peer_addr = IPv4Addr::from_string(&url.host());
 

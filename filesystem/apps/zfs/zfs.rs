@@ -5,13 +5,13 @@ use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
 use self::block_ptr::BlockPtr;
 use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
-use self::dvaddr::DVAddr;
 use self::from_bytes::FromBytes;
 use self::nvpair::NvValue;
 use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
+pub mod zarc;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
@@ -27,33 +27,16 @@ pub mod vdev;
 pub mod xdr;
 pub mod zap;
 pub mod zil_header;
+pub mod zio;
 
 pub struct ZfsReader {
-    disk: File,
+    pub zio: zio::Reader,
+    pub arc: zarc::Arc,
 }
 
 impl ZfsReader {
-    //TODO: Error handling
-    pub fn read(&mut self, start: usize, length: usize) -> Vec<u8> {
-        let mut ret: Vec<u8> = vec![0; length*512];
-
-        self.disk.seek(SeekFrom::Start(start * 512));
-        self.disk.read(&mut ret);
-
-        return ret;
-    }
-
-    pub fn write(&mut self, block: usize, data: &[u8; 512]) {
-        self.disk.seek(SeekFrom::Start(block * 512));
-        self.disk.write(data);
-    }
-
-    pub fn read_dva(&mut self, dva: &DVAddr) -> Vec<u8> {
-        self.read(dva.sector() as usize, dva.asize() as usize)
-    }
-
     pub fn read_block(&mut self, block_ptr: &BlockPtr) -> Result<Vec<u8>, String> {
-        let data = self.read_dva(&block_ptr.dvas[0]);
+        let data = self.arc.read(&mut self.zio, &block_ptr.dvas[0]);
         match block_ptr.compression() {
             2 => {
                 // compression off
@@ -82,7 +65,7 @@ impl ZfsReader {
     pub fn uber(&mut self) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
-            if let Ok(uberblock) = Uberblock::from_bytes(&self.read(256 + i * 2, 2)) {
+            if let Ok(uberblock) = Uberblock::from_bytes(&self.zio.read(256 + i * 2, 2)) {
                 let newest =
                     match newest_uberblock {
                         Some(previous) => {
@@ -127,7 +110,7 @@ pub struct Zfs {
 
 impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
-        let mut zfs_reader = ZfsReader { disk: disk };
+        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: zarc::Arc::new() };
 
         let uberblock = try!(zfs_reader.uber());
 
@@ -373,7 +356,7 @@ pub fn main() {
                         println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
                         println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
                     } else if command == "vdev_label" {
-                        match VdevLabel::from_bytes(&zfs.reader.read(0, 256 * 2)) {
+                        match VdevLabel::from_bytes(&zfs.reader.zio.read(0, 256 * 2)) {
                             Ok(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
@@ -498,7 +481,7 @@ pub fn main() {
                                 let sector = arg.to_num();
                                 println_color!(green, "Dump sector: {}", sector);
 
-                                let data = zfs.reader.read(sector, 1);
+                                let data = zfs.reader.zio.read(sector, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);

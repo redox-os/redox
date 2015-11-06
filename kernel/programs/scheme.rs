@@ -1,13 +1,15 @@
+use ::GetSlice;
+
 use alloc::boxed::Box;
 
 use collections::string::String;
 use collections::vec::Vec;
 
-use core::{ptr, usize};
+use core::usize;
 
 use scheduler::context::ContextMemory;
 use common::debug;
-use common::elf::{self, Elf};
+use common::elf::Elf;
 use common::memory;
 use common::paging::Page;
 use scheduler::{start_no_ints, end_no_ints};
@@ -156,7 +158,7 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return Url::from_string(& unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..result])) });
+                return Url::from_string(unsafe { String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result)))) });
             }
         }
         Url::new()
@@ -328,7 +330,7 @@ impl SchemeItem {
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
-                scheme_item.binary = Url::from_string(&(url.to_string() + part + ".bin"));
+                scheme_item.binary = Url::from_string(url.to_string() + part + ".bin");
             }
         }
 
@@ -391,7 +393,7 @@ impl KScheme for SchemeItem {
         return &self.scheme;
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         if self.valid(self._open) {
             let fd;
             unsafe {
@@ -399,7 +401,7 @@ impl KScheme for SchemeItem {
 
                 let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._open;
-                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8) -> usize))(self.handle, context.translate(c_str.as_ptr()));
+                fd = (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, context.translate(c_str.as_ptr()), flags);
                 context.exit();
             }
             if fd != usize::MAX {

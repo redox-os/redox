@@ -39,29 +39,30 @@ impl Editor {
     }
 
     fn save(&mut self, window: &Window) {
-        match self.file {
-            Some(ref mut file) => {
-                file.seek(SeekFrom::Start(0));
-                file.write(&self.string.as_bytes());
-                file.set_len(self.string.len());
-                file.sync();
+        if self.file.is_none() {
+            let mut save_window = {
+                const WIDTH: usize = 400;
+                const HEIGHT: usize = 200;
+                ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
+                            (window.y() + (window.height()/2 - HEIGHT/2) as isize),
+                            WIDTH,
+                            HEIGHT,
+                            "Save As")
+            };
+            if let Some(line) = save_window.read() {
+                debugln!("Create: {}", &line);
+                self.file = File::create(&line);
             }
-            None => {
-                let mut save_window = {
-                    const WIDTH: usize = 400;
-                    const HEIGHT: usize = 200;
-                    ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
-                                (window.y() + (window.height()/2 - HEIGHT/2) as isize),
-                                WIDTH,
-                                HEIGHT,
-                                "Save As")
-                };
-                if let Some(line) = save_window.read() {
-                    save_window.print(&line, Color::WHITE);
-                    //TODO: Create a Save/Cancel button for file saving
-                    // and prompt the user for asking to save
-                }
-            }
+        }
+
+        if let Some(ref mut file) = self.file {
+            debugln!("Save: {:?}", file.path());
+            debugln!("  Seek: {:?}", file.seek(SeekFrom::Start(0)));
+            debugln!("  Write: {:?}", file.write(&self.string.as_bytes()));
+            debugln!("  Set length: {}", file.set_len(self.string.len()));
+            debugln!("  Sync: {}", file.sync());
+        }else{
+            debugln!("File not open");
         }
     }
 
@@ -223,6 +224,9 @@ impl Editor {
 
                     self.draw_content(&mut window);
                 }
+            }
+            if let EventOption::Quit(quit_event) = event.to_option() {
+                break;
             }
         }
     }

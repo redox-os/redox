@@ -1,10 +1,11 @@
+use ::GetSlice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
-use scheduler::context::{recursive_unsafe_yield, context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
+use scheduler::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
 use common::debug;
 use common::memory;
 use scheduler;
@@ -152,7 +153,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 
     scheduler::end_no_ints(reenable);
 
-    recursive_unsafe_yield();
+    context_switch(false);
 
     let mut ret = usize::MAX;
 
@@ -271,14 +272,13 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
         len += 1;
     }
 
-    let path_str = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
+    let path_string = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
 
     let reenable = scheduler::start_no_ints();
 
-    if path_str.ends_with(".bin") {
-        let path = Url::from_string(&path_str);
-        let i = path_str.rfind('/').unwrap_or(0) + 1;
-        let wd = Url::from_string(&path_str[ .. i].to_string());
+    if path_string.ends_with(".bin") {
+        let path = Url::from_string(path_string.clone());
+        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path,
                 &wd,
                 Vec::new());
@@ -287,14 +287,14 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
         for package in (*::session_ptr).packages.iter() {
             let mut accepted = false;
             for accept in package.accepts.iter() {
-                if path_str.ends_with(&accept[1 ..]) {
+                if path_string.ends_with(accept.get_slice(Some(1), None)) {
                     accepted = true;
                     break;
                 }
             }
             if accepted {
                 let mut args: Vec<String> = Vec::new();
-                args.push(path_str.clone());
+                args.push(path_string.clone());
                 execute(&package.binary, &package.url, args);
                 ret = 0;
                 break;
@@ -433,7 +433,7 @@ pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usiz
     }
 }
 
-pub unsafe fn do_sys_open(path: *const u8) -> usize {
+pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
         len += 1;
@@ -444,11 +444,11 @@ pub unsafe fn do_sys_open(path: *const u8) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(mut current) = Context::current_mut() {
-        let path_str = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+        let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
 
         scheduler::end_no_ints(reenable);
 
-        let resource_option = (*::session_ptr).open(&Url::from_string(&path_str));
+        let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
 
         scheduler::start_no_ints();
 
@@ -513,8 +513,8 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_yield(regs: &mut Regs) {
-    context_switch(regs, false);
+pub unsafe fn do_sys_yield() {
+    context_switch(false);
 }
 
 pub unsafe fn do_sys_alloc(size: usize) -> usize {
@@ -552,11 +552,11 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         //TODO: link
         SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
         SYS_NANOSLEEP => regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
-        SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8), //regs.cx as isize, regs.dx as isize),
+        SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_YIELD => do_sys_yield(regs),
+        SYS_YIELD => do_sys_yield(),
 
         // Rust Memory
         SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),

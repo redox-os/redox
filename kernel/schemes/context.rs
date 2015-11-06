@@ -12,7 +12,7 @@ impl KScheme for ContextScheme {
         "context"
     }
 
-    fn open(&mut self, _: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         let i;
         let len;
         unsafe {

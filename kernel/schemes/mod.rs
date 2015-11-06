@@ -1,9 +1,13 @@
+use ::GetSlice;
+
 use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cmp::{min, max};
+
+use syscall::common::{O_CREAT, O_RDWR, O_TRUNC};
 
 /// ARP scheme
 pub mod arp;
@@ -44,7 +48,7 @@ pub trait KScheme {
         ""
     }
 
-    fn open(&mut self, url: &Url) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         None
     }
 }
@@ -99,7 +103,7 @@ pub trait Resource {
                 Some(0) => return Some(read),
                 None => return None,
                 Some(count) => {
-                    vec.push_all(&bytes[0..count]);
+                    vec.push_all(bytes.get_slice(None, Some(count)));
                     read += count;
                 }
             }
@@ -119,13 +123,13 @@ impl Url {
     }
 
     /// Create an URL from a string literal
-    pub fn from_str(url_str: &'static str) -> Self {
-        return Url::from_string(&url_str.to_string());
+    pub fn from_str(url_str: &str) -> Self {
+        Url::from_string(url_str.to_string())
     }
 
     /// Create an URL from `String`
-    pub fn from_string(url_string: &String) -> Self {
-        Url { string: url_string.clone() }
+    pub fn from_string(url_string: String) -> Self {
+        Url { string: url_string }
     }
 
     /// Convert to string
@@ -141,23 +145,25 @@ impl Url {
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
         unsafe {
-            return (*::session_ptr).open(&self);
+            return (*::session_ptr).open(&self, O_RDWR);
+        }
+    }
+
+    /// Create this URL (returns a resource)
+    pub fn create(&self) -> Option<Box<Resource>> {
+        unsafe {
+            return (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC);
         }
     }
 
     /// Return the scheme of this url
     pub fn scheme(&self) -> &str {
-        &self.string[..self.string.find(':').unwrap_or(self.string.len())]
+        self.string.get_slice(None, self.string.find(':'))
     }
 
     /// Get the reference (after the ':') of the url
     pub fn reference(&self) -> &str {
-        &self.string[
-        match self.string.find(':') {
-            Some(pos) => pos + 1,
-            None => self.string.len(),
-        }
-        ..]
+        self.string.get_slice(self.string.find(':').map(|a| a + 1), None)
     }
 
 }

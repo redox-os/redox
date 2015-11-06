@@ -1,8 +1,10 @@
+use ::GetSlice;
+
 use collections::vec::Vec;
 
 use core::{mem, slice};
 
-use scheduler::context::recursive_unsafe_yield;
+use scheduler::context::context_switch;
 
 use network::common::*;
 
@@ -28,7 +30,7 @@ impl FromBytes for Icmp {
             unsafe {
                 return Some(Icmp {
                     header: *(bytes.as_ptr() as *const IcmpHeader),
-                    data: bytes[mem::size_of::<IcmpHeader>()..].to_vec(),
+                    data: bytes.get_slice(Some(mem::size_of::<IcmpHeader>()), None).to_vec(),
                 });
             }
         }
@@ -87,7 +89,7 @@ impl IcmpScheme {
                     break;
                 }
             }
-            unsafe { recursive_unsafe_yield() };
+            unsafe { context_switch(false) };
         }
     }
 }
