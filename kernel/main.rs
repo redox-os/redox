@@ -41,7 +41,7 @@ use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
-use common::prompt;
+//use common::prompt;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -185,7 +185,7 @@ unsafe fn event_loop() -> ! {
     let mut cmd = String::new();
     debugln!("");
     debugln!("");
-    debug!("redox => ");
+//    debug!("redox => ");
     loop {
         loop {
             let reenable = scheduler::start_no_ints();
@@ -217,8 +217,9 @@ unsafe fn event_loop() -> ! {
                                                 scheduler::end_no_ints(reenable);
 
                                                 debug::dl();
-                                                prompt::run(mem::replace(&mut cmd, String::new()));
-                                                debug!("redox => ");
+                                                cmd.clear();
+//                                                prompt::run(mem::replace(&mut cmd, String::new()));
+ //                                               debug!("redox => ");
                                             },
                                             _ => {
                                                 cmd.push(key_event.character);
