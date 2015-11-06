@@ -583,7 +583,11 @@ impl KScheme for FileScheme {
                 }
             }
 
-            Some(box VecResource::new(url.clone(), list.into_bytes()))
+            if list.len() > 0 {
+                Some(box VecResource::new(url.clone(), list.into_bytes()))
+            } else {
+                None
+            }
         } else {
             match self.fs.node(path) {
                 Some(node) => {
