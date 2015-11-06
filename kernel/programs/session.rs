@@ -41,7 +41,6 @@ impl Session {
 
     /// Open a new resource
     pub fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
-        debugln!("Open {}", url.to_string());
         if url.scheme().len() == 0 {
             let mut list = String::new();
 
