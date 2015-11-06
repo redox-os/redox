@@ -59,7 +59,7 @@ use graphics::point::Point;
 
 use programs::package::*;
 use programs::scheme::*;
-use programs::session::*;
+//use programs::session::*;
 
 use schemes::arp::*;
 use schemes::context::*;
@@ -134,7 +134,7 @@ static PIT_DURATION: Duration = Duration {
 };
 
 /// Session pointer
-static mut session_ptr: *mut Session = 0 as *mut Session;
+//static mut session_ptr: *mut Session = 0 as *mut Session;
 
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
@@ -230,10 +230,10 @@ unsafe fn idle_loop() -> ! {
 
 /// Event poll loop
 unsafe fn poll_loop() -> ! {
-    let session = &mut *session_ptr;
+    //let session = &mut *session_ptr;
 
     loop {
-        session.on_poll();
+        //session.on_poll();
 
         context_switch(false);
     }
@@ -241,7 +241,7 @@ unsafe fn poll_loop() -> ! {
 
 /// Event loop
 unsafe fn event_loop() -> ! {
-    let session = &mut *session_ptr;
+    //let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
@@ -261,7 +261,7 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = true;
+                                            //(*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
@@ -292,7 +292,7 @@ unsafe fn event_loop() -> ! {
                             ::debug_draw = true;
                             ::debug_redraw = true;
                         } else {
-                            session.event(event);
+                            //session.event(event);
                         }
                     }
                 },
@@ -307,7 +307,7 @@ unsafe fn event_loop() -> ! {
                 display.flip();
             }
         } else {
-            session.redraw();
+            //session.redraw();
         }
 
         context_switch(false);
@@ -345,7 +345,7 @@ unsafe fn init(font_data: usize) {
     context_i = 0;
     context_enabled = false;
 
-    session_ptr = 0 as *mut Session;
+    //session_ptr = 0 as *mut Session;
 
     events_ptr = 0 as *mut Queue<Event>;
 
@@ -374,30 +374,30 @@ unsafe fn init(font_data: usize) {
     contexts_ptr = Box::into_raw(box Vec::new());
     (*contexts_ptr).push(Context::root());
 
-    session_ptr = Box::into_raw(Session::new());
+    //session_ptr = Box::into_raw(Session::new());
 
     events_ptr = Box::into_raw(box Queue::new());
 
-    let session = &mut *session_ptr;
+    //let session = &mut *session_ptr;
 
-    session.items.push(Ps2::new());
-    session.items.push(Serial::new(0x3F8, 0x4));
+    //session.items.push(Ps2::new());
+    //session.items.push(Serial::new(0x3F8, 0x4));
 
-    pci_init(session);
+    //pci_init(session);
 
-    session.items.push(box ContextScheme);
-    session.items.push(box DebugScheme);
-    session.items.push(box MemoryScheme);
-    session.items.push(box RandomScheme);
-    session.items.push(box TimeScheme);
+    //session.items.push(box ContextScheme);
+    //session.items.push(box DebugScheme);
+    //session.items.push(box MemoryScheme);
+    //session.items.push(box RandomScheme);
+    //session.items.push(box TimeScheme);
 
-    session.items.push(box EthernetScheme);
-    session.items.push(box ArpScheme);
-    session.items.push(box IcmpScheme);
-    session.items.push(box IpScheme {
-        arp: Vec::new()
-    });
-    session.items.push(box DisplayScheme);
+    //session.items.push(box EthernetScheme);
+    //session.items.push(box ArpScheme);
+    //session.items.push(box IcmpScheme);
+    //session.items.push(box IpScheme {
+    //    arp: Vec::new()
+    //});
+    //session.items.push(box DisplayScheme);
 
     Context::spawn(box move || {
         poll_loop();
@@ -426,8 +426,8 @@ unsafe fn init(font_data: usize) {
         let cursor = BmpFile::from_data(&vec);
 
         let reenable = scheduler::start_no_ints();
-        session.cursor = cursor;
-        session.redraw = true;
+        //session.cursor = cursor;
+        //session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 
@@ -441,7 +441,7 @@ unsafe fn init(font_data: usize) {
                 let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
-                session.items.push(scheme_item);
+                //session.items.push(scheme_item);
                 scheduler::end_no_ints(reenable);
             }
         }
@@ -457,8 +457,8 @@ unsafe fn init(font_data: usize) {
                 let package = Package::from_url(&Url::from_string("file:///apps/".to_string() + folder));
 
                 let reenable = scheduler::start_no_ints();
-                session.packages.push(package);
-                session.redraw = true;
+                //session.packages.push(package);
+                //session.redraw = true;
                 scheduler::end_no_ints(reenable);
             }
         }
@@ -478,8 +478,8 @@ unsafe fn init(font_data: usize) {
         let background = BmpFile::from_data(&vec);
 
         let reenable = scheduler::start_no_ints();
-        session.background = background;
-        session.redraw = true;
+        //session.background = background;
+        //session.redraw = true;
         scheduler::end_no_ints(reenable);
     }
 
@@ -601,22 +601,22 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             scheduler::end_no_ints(reenable);
 
             context_switch(true);
-        }
-        0x21 => (*session_ptr).on_irq(0x1), // keyboard
-        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
-        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
-        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
-        0x26 => (*session_ptr).on_irq(0x6), //floppy
-        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
-        0x28 => (*session_ptr).on_irq(0x8), //RTC
-        0x29 => (*session_ptr).on_irq(0x9), //pci
-        0x2A => (*session_ptr).on_irq(0xA), //pci
-        0x2B => (*session_ptr).on_irq(0xB), //pci
-        0x2C => (*session_ptr).on_irq(0xC), //mouse
-        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
-        0x2E => (*session_ptr).on_irq(0xE), //disk
-        0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => syscall_handle(regs),
+        },
+//        0x21 => (*session_ptr).on_irq(0x1), // keyboard
+//        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
+//        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
+//        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
+//        0x26 => (*session_ptr).on_irq(0x6), //floppy
+//        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
+//        0x28 => (*session_ptr).on_irq(0x8), //RTC
+//        0x29 => (*session_ptr).on_irq(0x9), //pci
+//        0x2A => (*session_ptr).on_irq(0xA), //pci
+//        0x2B => (*session_ptr).on_irq(0xB), //pci
+//        0x2C => (*session_ptr).on_irq(0xC), //mouse
+//        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
+//        0x2E => (*session_ptr).on_irq(0xE), //disk
+//        0x2F => (*session_ptr).on_irq(0xF), //disk
+//        0x80 => syscall_handle(regs),
         0xFF => {
             init(regs.ax);
             idle_loop();

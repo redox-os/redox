@@ -284,22 +284,22 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
                 Vec::new());
         ret = 0;
     } else {
-        for package in (*::session_ptr).packages.iter() {
-            let mut accepted = false;
-            for accept in package.accepts.iter() {
-                if path_string.ends_with(accept.get_slice(Some(1), None)) {
-                    accepted = true;
-                    break;
-                }
-            }
-            if accepted {
-                let mut args: Vec<String> = Vec::new();
-                args.push(path_string.clone());
-                execute(&package.binary, &package.url, args);
-                ret = 0;
-                break;
-            }
-        }
+//        for package in (*::session_ptr).packages.iter() {
+//            let mut accepted = false;
+//            for accept in package.accepts.iter() {
+//                if path_string.ends_with(accept.get_slice(Some(1), None)) {
+//                    accepted = true;
+//                    break;
+//                }
+//            }
+//            if accepted {
+//                let mut args: Vec<String> = Vec::new();
+//                args.push(path_string.clone());
+//                execute(&package.binary, &package.url, args);
+//                ret = 0;
+//                break;
+//            }
+//        }
     }
 
     scheduler::end_no_ints(reenable);
@@ -443,24 +443,24 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
-        let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
-
-        scheduler::end_no_ints(reenable);
-
-        let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
-
-        scheduler::start_no_ints();
-
-        if let Some(resource) = resource_option {
-            fd = current.next_fd();
-
-            (*current.files.get()).push(ContextFile {
-                fd: fd,
-                resource: resource,
-            });
-        }
-    }
+//    if let Some(mut current) = Context::current_mut() {
+//        let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+//
+//        scheduler::end_no_ints(reenable);
+//
+//        //let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+//
+//        scheduler::start_no_ints();
+//
+//        if let Some(resource) = resource_option {
+//            fd = current.next_fd();
+//
+//            (*current.files.get()).push(ContextFile {
+//                fd: fd,
+//                resource: resource,
+//            });
+//        }
+//    }
 
     scheduler::end_no_ints(reenable);
 

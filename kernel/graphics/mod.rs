@@ -8,5 +8,5 @@ pub mod size;
 pub mod point;
 /// Display struct
 pub mod display;
-/// Window struct
-pub mod window;
+///// Window struct
+//pub mod window;
