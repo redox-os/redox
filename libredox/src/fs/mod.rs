@@ -182,7 +182,7 @@ impl Iterator for ReadDir {
 }
 
 pub fn read_dir(path: &str) -> Option<ReadDir> {
-    let file_option = if path.ends_with('/') {
+    let file_option = if path.is_empty() || path.ends_with('/') {
         File::open(path)
     } else {
         File::open(&(path.to_string() + "/"))
@@ -198,7 +198,19 @@ pub fn read_dir(path: &str) -> Option<ReadDir> {
 }
 
 pub fn change_cwd(path: &str) -> bool {
-    unsafe {
-        sys_chdir(path.as_ptr()) == 0
+    let file_option = if path.is_empty() || path.ends_with('/') {
+        File::open(path)
+    } else {
+        File::open(&(path.to_string() + "/"))
+    };
+
+    if let Some(file) = file_option {
+        if let Some(file_path) = file.path() {
+            if unsafe { sys_chdir((file_path + "\0").as_ptr()) } == 0 {
+                return true;
+            }
+        }
     }
+
+    false
 }

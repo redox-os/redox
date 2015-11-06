@@ -18,10 +18,8 @@ pub struct Session {
 impl Session {
     /// Create new session
     pub fn new() -> Box<Self> {
-        unsafe {
-            box Session {
-                items: Vec::new(),
-            }
+        box Session {
+            items: Vec::new(),
         }
     }
 

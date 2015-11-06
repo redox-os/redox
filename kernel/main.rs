@@ -35,14 +35,13 @@ use core::{mem, ptr};
 use core::slice::{self, SliceExt};
 use core::str;
 
-use scheduler::context::*;
 use common::debug;
 use common::event::{self, Event, EventOption};
+use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
 use common::prompt;
-use schemes::Url;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -56,9 +55,13 @@ pub use externs::*;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
+use programs::executor::execute;
 use programs::scheme::*;
 use programs::session::*;
 
+use scheduler::context::*;
+
+use schemes::Url;
 use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
@@ -357,13 +360,13 @@ unsafe fn init(font_data: usize) {
     scheduler::end_no_ints(true);
 
     debugln!("Loading schemes");
-    if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
+    if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
+                let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -375,6 +378,14 @@ unsafe fn init(font_data: usize) {
     debugln!("Enabling context switching");
     //debug_draw = false;
     context_enabled = true;
+
+    debugln!("Loading init");
+    {
+        let path_string = "file:/apps/terminal/terminal.bin";
+        let path = Url::from_string(path_string.to_string());
+        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
+        execute(&path, &wd, Vec::new());
+    }
 }
 
 fn dr(reg: &str, value: usize) {

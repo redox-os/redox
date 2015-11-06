@@ -259,7 +259,7 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_string("file:///".to_string() + &self.node.name)
+        Url::from_string("file:/".to_string() + &self.node.name)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -583,7 +583,11 @@ impl KScheme for FileScheme {
                 }
             }
 
-            Some(box VecResource::new(url.clone(), list.into_bytes()))
+            if list.len() > 0 {
+                Some(box VecResource::new(url.clone(), list.into_bytes()))
+            } else {
+                None
+            }
         } else {
             match self.fs.node(path) {
                 Some(node) => {

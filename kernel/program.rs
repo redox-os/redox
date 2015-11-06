@@ -18,6 +18,7 @@ use application::main;
 mod application;
 
 use redox::*;
+use redox::console::{console_init, console_destroy};
 use redox::syscall::sys_exit;
 
 #[no_mangle]
