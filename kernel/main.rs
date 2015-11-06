@@ -280,7 +280,7 @@ unsafe fn init(font_data: usize) {
     context_i = 0;
     context_enabled = false;
 
-    //session_ptr = 0 as *mut Session;
+    session_ptr = 0 as *mut Session;
 
     events_ptr = 0 as *mut Queue<Event>;
 
