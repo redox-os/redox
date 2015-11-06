@@ -4,5 +4,5 @@ pub mod executor;
 pub mod package;
 /// Schemes
 pub mod scheme;
-/// Session
-pub mod session;
+///// Session
+//pub mod session;
