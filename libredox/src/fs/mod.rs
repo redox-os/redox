@@ -6,7 +6,7 @@ use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir};
-use syscall::common::{O_RDONLY, O_WRONLY, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
 pub struct File {
@@ -24,7 +24,7 @@ impl File {
     /// Open a new file using a path
     pub fn open(path: &str) -> Option<File> {
         unsafe {
-            let fd = sys_open((path.to_string() + "\0").as_ptr(), O_RDONLY, 0);
+            let fd = sys_open((path.to_string() + "\0").as_ptr(), O_RDWR, 0);
             if fd == usize::MAX {
                 None
             } else {
@@ -38,7 +38,7 @@ impl File {
     /// Create a new file using a path
     pub fn create(path: &str) -> Option<File> {
         unsafe {
-            let fd = sys_open((path.to_string() + "\0").as_ptr(), O_WRONLY | O_CREAT | O_TRUNC, 0);
+            let fd = sys_open((path.to_string() + "\0").as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0);
             if fd == usize::MAX {
                 None
             } else {

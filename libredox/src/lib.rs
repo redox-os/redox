@@ -27,6 +27,7 @@
 #![feature(slice_concat_ext)]
 #![feature(unicode)]
 #![feature(unsafe_no_drop_flag)]
+#![feature(box_patterns)]
 #![feature(vec_push_all)]
 #![feature(wrapping)]
 #![feature(zero_one)]
@@ -163,6 +164,7 @@
     pub use __core::panicking;
 
     mod rand_old;
+    pub mod hashmap;
 
     // Some external utilities of the standard library rely on randomness (aka
     // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
