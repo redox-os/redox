@@ -207,9 +207,9 @@ impl FileSystem {
 
     /// Get node with a given filename
     pub fn node(&self, filename: &str) -> Option<Node> {
-        let path = parse_path(filename);
+        let path = parse_path(filename, Vec::new());
         for node in self.nodes.iter() {
-            if parse_path(&node.name) == path {
+            if parse_path(&node.name, Vec::new()) == path {
                 return Some(node.clone());
             }
         }
@@ -224,13 +224,13 @@ impl FileSystem {
         for node in self.nodes.iter() {
             let mut eq = true;
             for (n, i) in directory.iter().enumerate() {
-                match parse_path(&node.name).get(n) {
+                match parse_path(&node.name, Vec::new()).get(n) {
                     Some(nd) if nd == i => {},
                     _ => eq = false,
                 }
             }
             if eq {
-                ret.push(parse_path(&node.name).get_slice(Some(directory.len()), None).join("/"));
+                ret.push(parse_path(&node.name, Vec::new()).get_slice(Some(directory.len()), None).join("/"));
             }
         }
 
@@ -553,7 +553,7 @@ impl KScheme for FileScheme {
             let mut dirs: Vec<String> = Vec::new();
 
             // Hmm... no deref coercions in libcollections ;(
-            for file in self.fs.list(parse_path(&path.to_string())).iter() {
+            for file in self.fs.list(parse_path(&path.to_string(), Vec::new())).iter() {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
