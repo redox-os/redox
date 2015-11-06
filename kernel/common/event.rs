@@ -70,9 +70,6 @@ impl Event {
 //                (*::session_ptr).redraw = true;
 //            }
 //
-            if let EventOption::Key(key) = self.to_option() {
-                run(key.char);
-            }
 
             (*::events_ptr).push(event);
 
