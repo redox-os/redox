@@ -3,10 +3,7 @@ use alloc::boxed::Box;
 use string::{String, ToString};
 use vec::Vec;
 
-use event::*;
-
 use orbital::*;
-use graphics::color::Color;
 
 use rand_old::*;
 

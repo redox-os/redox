@@ -185,12 +185,6 @@
     pub use string::*;
     pub use vec::Vec;
 
-    pub use audio::wav::*;
-    pub use console::*;
-    pub use graphics::bmp::*;
-    pub use graphics::color::*;
-    pub use orbital::*;
-    pub use orbital::event::*;
     pub use url::*;
     pub use to_num::*;
 
@@ -204,19 +198,17 @@
     pub mod syscall;
 
     /// A module for audio
-    mod audio {
-        pub mod wav;
-    }
+    pub mod audio;
 
     /// A module for console functionality
     #[macro_use]
     pub mod console;
     /// Graphics support
-    mod graphics {
+    pub mod graphics {
         pub mod bmp;
         pub mod color;
     }
-    
+
     pub mod panic;
 
     /// A module for window support
