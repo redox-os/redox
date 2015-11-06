@@ -360,6 +360,7 @@ unsafe fn init(font_data: usize) {
     //Start interrupts
     scheduler::end_no_ints(true);
 
+    /*
     debugln!("Loading schemes");
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
@@ -375,11 +376,8 @@ unsafe fn init(font_data: usize) {
             }
         }
     }
-
-    debugln!("Enabling context switching");
-    //debug_draw = false;
-    context_enabled = true;
-
+    */
+    
     debugln!("Loading init");
     {
         let path_string = "file:/apps/terminal/terminal.bin";
@@ -387,6 +385,10 @@ unsafe fn init(font_data: usize) {
         let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path, &wd, Vec::new());
     }
+
+    debugln!("Enabling context switching");
+    //debug_draw = false;
+    context_enabled = true;
 }
 
 fn dr(reg: &str, value: usize) {
