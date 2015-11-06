@@ -133,6 +133,13 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "test_ht",
+            main: box |args: &Vec<String>| {
+                ::redox::hashmap::test();
+            },
+        });
+
+        commands.push(Command {
             name: "url",
             main: box |args: &Vec<String>| {
                 let path = {

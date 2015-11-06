@@ -285,15 +285,15 @@ mod tests {
 }
 
 
-#[cfg(test)]
-mod bench {
-    extern crate test;
-    use self::test::Bencher;
-    use prelude::v1::*;
-
-    #[bench]
-    fn bench_pow_function(b: &mut Bencher) {
-        let v = (0..1024).collect::<Vec<u32>>();
-        b.iter(|| {v.iter().fold(0u32, |old, new| old.pow(*new as u32));});
-    }
-}
+//#[cfg(test)]
+//mod bench {
+//    extern crate test;
+//    use self::test::Bencher;
+//    use prelude::v1::*;
+//
+//    #[bench]
+//    fn bench_pow_function(b: &mut Bencher) {
+//        let v = (0..1024).collect::<Vec<u32>>();
+//        b.iter(|| {v.iter().fold(0u32, |old, new| old.pow(*new as u32));});
+//    }
+//}
