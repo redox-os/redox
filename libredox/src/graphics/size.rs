@@ -3,6 +3,7 @@ use ops::{Add, Sub};
 
 /// A size
 #[derive(Copy, Clone)]
+#[repr(packed)]
 pub struct Size {
     pub width: usize,
     pub height: usize,

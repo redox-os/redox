@@ -32,7 +32,7 @@ pub mod random;
 /// Time scheme
 pub mod time;
 /// Window scheme
-pub mod window;
+pub mod events;
 
 #[allow(unused_variables)]
 pub trait KScheme {
