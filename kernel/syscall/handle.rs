@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 

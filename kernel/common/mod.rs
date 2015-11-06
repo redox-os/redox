@@ -5,6 +5,8 @@ pub mod debug;
 pub mod elf;
 /// Event input
 pub mod event;
+/// Get slice implementation
+pub mod get_slice;
 /// Kernel memory allocation
 pub mod memory;
 /// Kernel mutex

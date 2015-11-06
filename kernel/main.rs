@@ -34,7 +34,6 @@ use collections::vec::Vec;
 use core::{mem, ptr};
 use core::slice::{self, SliceExt};
 use core::str;
-use core::raw::Repr;
 
 use scheduler::context::*;
 use common::debug;
@@ -53,13 +52,11 @@ use drivers::serial::*;
 
 pub use externs::*;
 
-use graphics::bmp::BmpFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
-use programs::package::*;
 use programs::scheme::*;
-//use programs::session::*;
+use programs::session::*;
 
 use schemes::arp::*;
 use schemes::context::*;
@@ -68,8 +65,6 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::random::*;
-use schemes::time::*;
 use schemes::display::*;
 
 use syscall::common::Regs;
@@ -134,70 +129,10 @@ static PIT_DURATION: Duration = Duration {
 };
 
 /// Session pointer
-//static mut session_ptr: *mut Session = 0 as *mut Session;
+static mut session_ptr: *mut Session = 0 as *mut Session;
 
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
-
-/// Bounded slice abstraction
-///
-/// # Code Migration
-///
-/// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
-///
-/// `foo[a..]` => `foo.get_slice(Some(a), None)`
-///
-/// `foo[..b]` => `foo.get_slice(None, Some(b))`
-///
-pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
-
-impl GetSlice for str {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.repr().data, self.repr().len) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            slice.len()
-        };
-
-        if a >= b { return ""; }
-
-        unsafe { str::from_utf8_unchecked(&slice[a..b]) }
-    }
-}
-
-impl<T> GetSlice for [T] {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(SliceExt::as_ptr(self), SliceExt::len(self)) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            slice.len()
-        };
-
-        if a >= b { return &[]; }
-
-        &slice[a..b]
-    }
-}
 
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
@@ -230,10 +165,10 @@ unsafe fn idle_loop() -> ! {
 
 /// Event poll loop
 unsafe fn poll_loop() -> ! {
-    //let session = &mut *session_ptr;
+    let session = &mut *session_ptr;
 
     loop {
-        //session.on_poll();
+        session.on_poll();
 
         context_switch(false);
     }
@@ -374,29 +309,29 @@ unsafe fn init(font_data: usize) {
     contexts_ptr = Box::into_raw(box Vec::new());
     (*contexts_ptr).push(Context::root());
 
-    //session_ptr = Box::into_raw(Session::new());
+    session_ptr = Box::into_raw(Session::new());
 
     events_ptr = Box::into_raw(box Queue::new());
 
-    //let session = &mut *session_ptr;
+    let session = &mut *session_ptr;
 
-    //session.items.push(Ps2::new());
-    //session.items.push(Serial::new(0x3F8, 0x4));
+    session.items.push(Ps2::new());
+    session.items.push(Serial::new(0x3F8, 0x4));
 
-    //pci_init(session);
+    pci_init(session);
 
     //session.items.push(box ContextScheme);
-    //session.items.push(box DebugScheme);
-    //session.items.push(box MemoryScheme);
+    session.items.push(box DebugScheme);
+    session.items.push(box MemoryScheme);
     //session.items.push(box RandomScheme);
     //session.items.push(box TimeScheme);
 
-    //session.items.push(box EthernetScheme);
-    //session.items.push(box ArpScheme);
-    //session.items.push(box IcmpScheme);
-    //session.items.push(box IpScheme {
-    //    arp: Vec::new()
-    //});
+    session.items.push(box EthernetScheme);
+    session.items.push(box ArpScheme);
+    session.items.push(box IcmpScheme);
+    session.items.push(box IpScheme {
+        arp: Vec::new()
+    });
     //session.items.push(box DisplayScheme);
 
     Context::spawn(box move || {
@@ -417,20 +352,6 @@ unsafe fn init(font_data: usize) {
     //Start interrupts
     scheduler::end_no_ints(true);
 
-    //Load cursor before getting out of debug mode
-    debugln!("Loading cursor");
-    if let Some(mut resource) = Url::from_str("file:///ui/cursor.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        let cursor = BmpFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        //session.cursor = cursor;
-        //session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    }
-
     debugln!("Loading schemes");
     if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
@@ -441,46 +362,10 @@ unsafe fn init(font_data: usize) {
                 let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
-                //session.items.push(scheme_item);
+                session.items.push(scheme_item);
                 scheduler::end_no_ints(reenable);
             }
         }
-    }
-
-    debugln!("Loading apps");
-    if let Some(mut resource) = Url::from_str("file:///apps/").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        for folder in String::from_utf8_unchecked(vec).lines() {
-            if folder.ends_with('/') {
-                let package = Package::from_url(&Url::from_string("file:///apps/".to_string() + folder));
-
-                let reenable = scheduler::start_no_ints();
-                //session.packages.push(package);
-                //session.redraw = true;
-                scheduler::end_no_ints(reenable);
-            }
-        }
-    }
-
-    debugln!("Loading background");
-    if let Some(mut resource) = Url::from_str("file:///ui/background.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        if resource.read_to_end(&mut vec).is_some() {
-            debugln!("Read background");
-        } else {
-            debug!("Failed to read background at: ");
-            debug!("{}", Url::from_str("file:///ui/background.bmp").reference());
-            debugln!("");
-        }
-
-        let background = BmpFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        //session.background = background;
-        //session.redraw = true;
-        scheduler::end_no_ints(reenable);
     }
 
     debugln!("Enabling context switching");
@@ -602,21 +487,21 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             context_switch(true);
         },
-//        0x21 => (*session_ptr).on_irq(0x1), // keyboard
-//        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
-//        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
-//        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
-//        0x26 => (*session_ptr).on_irq(0x6), //floppy
-//        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
-//        0x28 => (*session_ptr).on_irq(0x8), //RTC
-//        0x29 => (*session_ptr).on_irq(0x9), //pci
-//        0x2A => (*session_ptr).on_irq(0xA), //pci
-//        0x2B => (*session_ptr).on_irq(0xB), //pci
-//        0x2C => (*session_ptr).on_irq(0xC), //mouse
-//        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
-//        0x2E => (*session_ptr).on_irq(0xE), //disk
-//        0x2F => (*session_ptr).on_irq(0xF), //disk
-//        0x80 => syscall_handle(regs),
+        0x21 => (*session_ptr).on_irq(0x1), // keyboard
+        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
+        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
+        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
+        0x26 => (*session_ptr).on_irq(0x6), //floppy
+        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
+        0x28 => (*session_ptr).on_irq(0x8), //RTC
+        0x29 => (*session_ptr).on_irq(0x9), //pci
+        0x2A => (*session_ptr).on_irq(0xA), //pci
+        0x2B => (*session_ptr).on_irq(0xB), //pci
+        0x2C => (*session_ptr).on_irq(0xC), //mouse
+        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
+        0x2E => (*session_ptr).on_irq(0xE), //disk
+        0x2F => (*session_ptr).on_irq(0xF), //disk
+        0x80 => syscall_handle(regs),
         0xFF => {
             init(regs.ax);
             idle_loop();
