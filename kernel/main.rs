@@ -148,47 +148,16 @@ unsafe fn sys_yield() {
 
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
-    loop {
-        asm!("cli");
-
-        let mut halt = true;
-
-        let contexts = & *contexts_ptr;
-        for i in 1..contexts.len() {
-            match contexts.get(i) {
-                Some(context) => if context.interrupted {
-                    halt = false;
-                    break;
-                },
-                None => ()
-            }
-        }
-
-        if halt {
-            asm!("sti");
-            asm!("hlt");
-        } else {
-            asm!("sti");
-        }
-
-        sys_yield();
-    }
-}
-
-/// Event loop
-unsafe fn event_loop() -> ! {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
+        asm!("cli");
+
         session.on_poll();
 
         loop {
-            let reenable = scheduler::start_no_ints();
-
             let event_option = events.pop();
-
-            scheduler::end_no_ints(reenable);
 
             match event_option {
                 Some(event) => {
@@ -208,9 +177,7 @@ unsafe fn event_loop() -> ! {
                                         _ => match key_event.character {
                                             '\0' => (),
                                             '\n' => {
-                                                let reenable = scheduler::start_no_ints();
                                                 *::debug_command = cmd.clone() + "\n";
-                                                scheduler::end_no_ints(reenable);
 
                                                 debug::dl();
                                                 cmd.clear();
@@ -244,6 +211,26 @@ unsafe fn event_loop() -> ! {
             }
         }
 
+        let mut halt = true;
+
+        let contexts = & *contexts_ptr;
+        for i in 1..contexts.len() {
+            match contexts.get(i) {
+                Some(context) => if context.interrupted {
+                    halt = false;
+                    break;
+                },
+                None => ()
+            }
+        }
+
+        if halt {
+            asm!("sti");
+            asm!("hlt");
+        } else {
+            asm!("sti");
+        }
+
         sys_yield();
     }
 }
@@ -261,7 +248,7 @@ pub unsafe fn debug_init() {
 }
 
 /// Initialize kernel
-unsafe fn init(regs: &mut Regs) {
+unsafe fn init(font_data: usize) {
     debug_display = 0 as *mut Display;
     debug_point = Point { x: 0, y: 0 };
     debug_draw = false;
@@ -288,7 +275,7 @@ unsafe fn init(regs: &mut Regs) {
     //Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    ptr::write(display::FONTS, regs.ax);
+    ptr::write(display::FONTS, font_data);
 
     debug_display = Box::into_raw(Display::root());
 
@@ -304,6 +291,7 @@ unsafe fn init(regs: &mut Regs) {
     clock_realtime = Rtc::new().time();
 
     contexts_ptr = Box::into_raw(box Vec::new());
+    (*contexts_ptr).push(Context::root());
 
     session_ptr = Box::into_raw(Session::new());
 
@@ -330,12 +318,6 @@ unsafe fn init(regs: &mut Regs) {
     });
     //session.items.push(box DisplayScheme);
 
-    Context::spawn(box move || {
-        idle_loop();
-    });
-    Context::spawn(box move || {
-        event_loop();
-    });
     /*
     Context::spawn(box move || {
         ArpScheme::reply_loop();
@@ -369,8 +351,6 @@ unsafe fn init(regs: &mut Regs) {
         let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path, &wd, Vec::new());
     }
-
-    regs.flags = regs.flags | 1 << 9; //Enable interrupts
 
     debugln!("Enabling context switching");
     //debug_draw = false;
@@ -510,7 +490,10 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => syscall_handle(regs),
-        0xFF => init(regs),
+        0xFF => {
+            init(regs.ax);
+            idle_loop();
+        },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),
         0x2 => exception!("Non-maskable interrupt"),

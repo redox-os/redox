@@ -52,7 +52,7 @@ interrupts:
 
     add esp, 8 ;Skip interrupt and reg pointer
 
-    mov eax, [esp + 44] ;Use new SS as DS
+    mov eax, gdt.user_data ;[esp + 44] ;Use new SS as DS
     mov ds, eax
     mov es, eax
     mov fs, eax

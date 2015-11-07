@@ -70,7 +70,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
             context_args.push(argc);
 
-            let mut context = Context::new(entry, &context_args, true);
+            let mut context = Context::new(entry, &context_args);
 
             //TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {

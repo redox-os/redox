@@ -45,32 +45,14 @@ protected_mode:
     mov eax, gdt.tss
     ltr ax
 
-    xchg bx, bx
-
-    mov eax, gdt.user_data | 3
-    mov ebx, esp
-    mov ecx, gdt.user_code | 3
-    mov edx, user_mode
-
-    mov ds, eax
-    mov es, eax
-    mov fs, eax
-    mov gs, eax
-
-    push eax
-    push ebx
-    pushfd
-    push ecx
-    push edx
-    iretd
-
-user_mode:
     ;rust init
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
     mov eax, kernel_file.font
     int 255
 .lp:
+    sti
+    hlt
     jmp .lp
 
 gdtr:
