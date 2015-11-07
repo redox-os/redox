@@ -377,7 +377,7 @@ unsafe fn init(font_data: usize) {
         }
     }
     */
-    
+
     debugln!("Loading init");
     {
         let path_string = "file:/apps/terminal/terminal.bin";

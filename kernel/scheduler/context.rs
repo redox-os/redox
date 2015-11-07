@@ -27,7 +27,7 @@ pub static mut context_enabled: bool = false;
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(interrupted: bool) {
+pub unsafe fn context_switch(interrupted: bool, regs: &mut Regs) {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
@@ -67,17 +67,11 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*current_ptr).interrupted = interrupted;
                     (*next_ptr).interrupted = false;
 
-                    (*current_ptr).save();
+                    (*current_ptr).save(regs);
                     (*current_ptr).stack_physical();
                     (*current_ptr).unmap();
                     (*next_ptr).map();
-                    if (*next_ptr).userspace {
-                        if ! (*next_ptr).started {
-                            (*next_ptr).started = true;
-                            (*next_ptr).enter_user();
-                        }
-                    }
-                    (*next_ptr).restore();
+                    (*next_ptr).restore(regs);
                 }
             }
         }
@@ -98,11 +92,10 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 
         ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
 
-        let mut context = box Context {
+        let contexts = &mut *contexts_ptr;
+        contexts.push(box Context {
             interrupted: parent.interrupted,
             exited: parent.exited,
-            userspace: parent.userspace,
-            started: parent.started,
 
             regs: parent.regs,
             stack: stack,
@@ -146,10 +139,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                 }
                 Rc::new(UnsafeCell::new(files))
             },
-        };
-
-        let contexts = &mut *contexts_ptr;
-        contexts.push(context);
+        });
     }
 
     scheduler::end_no_ints(reenable);
@@ -217,10 +207,6 @@ pub struct Context {
         pub interrupted: bool,
         /// Indicates that the context exited and needs to be cleaned up
         pub exited: bool,
-        /// Indicates that the context has not been started
-        pub started: bool,
-        /// Indicates that this is a ring 3 process
-        pub userspace: bool,
     /* } */
 
     /* These members control the stack and registers and are unique to each context { */
@@ -251,8 +237,6 @@ impl Context {
         box Context {
             interrupted: false,
             exited: false,
-            started: false,
-            userspace: false,
 
             regs: Regs::default(),
             stack: 0,
@@ -267,14 +251,12 @@ impl Context {
     }
 
     #[cfg(target_arch = "x86")]
-    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             interrupted: false,
             exited: false,
-            started: false,
-            userspace: false,
 
             regs: Regs::default(),
             stack: stack,
@@ -287,15 +269,21 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
+        if userspace {
+            ret.regs.cs = 0x1B;
+            ret.regs.ss = 0x23;
+        } else {
+            ret.regs.cs = 0x08;
+            ret.regs.ss = 0x10;
+        }
+
         ret.regs.ip = call;
-        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
         ret.regs.flags = 1 << 9;
+        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
 
         for arg in args.iter() {
             ret.push(*arg);
         }
-
-        ret.push(call); //We will ret into this function call
 
         ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
@@ -303,14 +291,12 @@ impl Context {
     }
 
     #[cfg(target_arch = "x86_64")]
-    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             interrupted: false,
             exited: false,
-            started: false,
-            userspace: false,
 
             regs: Regs::default(),
             stack: stack,
@@ -323,9 +309,17 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
+        if userspace {
+            ret.regs.cs = 0x1B;
+            ret.regs.ss = 0x23;
+        } else {
+            ret.regs.cs = 0x08;
+            ret.regs.ss = 0x10;
+        }
+
         ret.regs.ip = call;
-        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
         ret.regs.flags = 1 << 9;
+        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
 
         let mut args_mut = args.clone();
 
@@ -340,8 +334,6 @@ impl Context {
         ret.regs.dx = if args_mut.len() >= 3 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
         ret.regs.si = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
         ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-
-        ret.push(call); //We will ret into this function call
 
         ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
@@ -470,19 +462,8 @@ impl Context {
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86")]
-    pub unsafe fn save(&mut self) {
-        asm!("pushfd
-            pop $0"
-            : "=r"(self.regs.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!(""
-            : "={esp}"(self.regs.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
+    pub unsafe fn save(&mut self, regs: &mut Regs) {
+        self.regs = *regs;
 
         asm!("fxsave [$0]"
             :
@@ -511,7 +492,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86")]
-    pub unsafe fn restore(&mut self) {
+    pub unsafe fn restore(&mut self, regs: &mut Regs) {
         if self.fx_enabled {
             asm!("fxrstor [$0]"
                 :
@@ -520,39 +501,7 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!(""
-            :
-            : "{esp}"(self.regs.sp)
-            : "memory"
-            : "intel", "volatile");
-
-
-        asm!("push $0
-            popfd"
-            :
-            : "r"(self.regs.flags)
-            : "memory"
-            : "intel", "volatile");
-    }
-
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86")]
-    pub unsafe fn enter_user(&mut self){
-        asm!("mov ds, eax
-        mov es, eax
-        mov fs, eax
-        mov gs, eax
-        push eax
-        push ebx
-        push edi
-        push ecx
-        push edx
-        iretd"
-        :
-        : "{eax}"(0x23), "{ebx}"(self.regs.sp), "{ecx}"(0x1B), "{edx}"(self.regs.ip), "{edi}"(self.regs.flags)
-        : "memory"
-        : "intel", "volatile")
+        *regs = self.regs;
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
@@ -560,19 +509,8 @@ impl Context {
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86_64")]
-    pub unsafe fn save(&mut self) {
-        asm!("pushfq
-            pop $0"
-            : "=r"(self.regs.flags)
-            :
-            : "memory"
-            : "intel", "volatile");
-
-        asm!(""
-            : "={rsp}"(self.regs.sp)
-            :
-            : "memory"
-            : "intel", "volatile");
+    pub unsafe fn save(&mut self, regs: &mut Regs) {
+        self.regs = *regs;
 
         asm!("fxsave [$0]"
             :
@@ -601,7 +539,7 @@ impl Context {
     #[cold]
     #[inline(never)]
     #[cfg(target_arch = "x86_64")]
-    pub unsafe fn restore(&mut self) {
+    pub unsafe fn restore(&mut self, regs: &mut Regs) {
         if self.fx_enabled {
             asm!("fxrstor [$0]"
                 :
@@ -610,18 +548,7 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        asm!(""
-            :
-            : "{rsp}"(self.regs.sp)
-            : "memory"
-            : "intel", "volatile");
-
-        asm!("push $0
-            popfq"
-            :
-            : "r"(self.regs.flags)
-            : "memory"
-            : "intel", "volatile");
+        *regs = self.regs;
     }
 }
 
