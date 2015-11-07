@@ -151,7 +151,7 @@ pub struct Context {
     /* } */
 }
 
-impl Context {    
+impl Context {
     #[cfg(target_arch = "x86")]
     pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -171,8 +171,8 @@ impl Context {
         };
 
         if userspace {
-            ret.regs.cs = 0x1B;
-            ret.regs.ss = 0x23;
+            ret.regs.cs = 0x18 | 3;
+            ret.regs.ss = 0x20 | 3;
         } else {
             ret.regs.cs = 0x08;
             ret.regs.ss = 0x10;
