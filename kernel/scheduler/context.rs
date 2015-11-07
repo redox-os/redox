@@ -151,7 +151,7 @@ pub struct Context {
     /* } */
 }
 
-impl Context {
+impl Context {    
     #[cfg(target_arch = "x86")]
     pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -251,7 +251,7 @@ impl Context {
 
             let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {
-                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args, false));
+                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args, true));
             }
             scheduler::end_no_ints(reenable);
         }
