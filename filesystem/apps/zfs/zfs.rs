@@ -31,7 +31,7 @@ pub mod zio;
 
 pub struct ZfsReader {
     pub zio: zio::Reader,
-    pub arc: zarc::Arc,
+    pub arc: zarc::ArCache,
 }
 
 impl ZfsReader {
@@ -110,7 +110,7 @@ pub struct Zfs {
 
 impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
-        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: zarc::Arc::new() };
+        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: zarc::ArCache::new() };
 
         let uberblock = try!(zfs_reader.uber());
 
