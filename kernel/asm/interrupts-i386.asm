@@ -29,7 +29,8 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-    xchg bx, bx
+
+    push esp
     push ebp
     push esi
     push edi
@@ -48,8 +49,6 @@ interrupts:
 
     call [.handler]
 
-    xchg bx, bx
-
     add esp, 8 ;Skip interrupt and reg pointer
 
     mov eax, gdt.user_data ;[esp + 44] ;Use new SS as DS
@@ -65,6 +64,10 @@ interrupts:
     pop edi
     pop esi
     pop ebp
+
+    xchg bx, bx
+    pop esp
+
     iretd
 
 .handler: dd 0

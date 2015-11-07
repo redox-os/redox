@@ -14,12 +14,6 @@ use schemes::Url;
 
 /// Excecute an excecutable
 pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
-    debug::d("Execute ");
-    debug::d(&url.to_string());
-    debug::d(" in ");
-    debug::d(&wd.to_string());
-    debug::dl();
-
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;

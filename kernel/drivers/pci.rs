@@ -124,6 +124,7 @@ pub unsafe fn pci_init(session: &mut Session) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
+                    /*
                     debug::d(" * PCI ");
                     debug::dd(bus);
                     debug::d(", ");
@@ -155,6 +156,7 @@ pub unsafe fn pci_init(session: &mut Session) {
                     }
 
                     debug::dl();
+                    */
 
                     pci_device(session,
                                pci,

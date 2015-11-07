@@ -135,8 +135,8 @@ pub struct Context {
         pub stack: usize,
         /// The location used to save and load SSE and FPU registers
         pub fx: usize,
-        /// Indicates that fx can be loaded (it must be saved first)
-        pub fx_enabled: bool,
+        /// Indicates that registers can be loaded (they must be saved first)
+        pub loadable: bool,
     /* } */
 
     /* These members are cloned for threads, copied or created for processes { */
@@ -159,7 +159,7 @@ impl Context {
            regs: Regs::default(),
            stack: 0,
            fx: memory::alloc(512),
-           fx_enabled: false,
+           loadable: false,
 
            args: Rc::new(UnsafeCell::new(Vec::new())),
            cwd: Rc::new(UnsafeCell::new(String::new())),
@@ -178,7 +178,7 @@ impl Context {
             regs: Regs::default(),
             stack: stack,
             fx: stack + CONTEXT_STACK_SIZE,
-            fx_enabled: false,
+            loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
             cwd: Rc::new(UnsafeCell::new(String::new())),
@@ -186,18 +186,18 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        ret.regs.cs = 0x18 | 3;
-        ret.regs.ss = 0x20 | 3;
-
-        ret.regs.ip = call;
-        ret.regs.flags = 1 << 9;
-        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
+        ret.regs.sp_kernel = stack + CONTEXT_STACK_SIZE - 128;
 
         for arg in args.iter() {
             ret.push(*arg);
         }
 
-        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        let sp = ret.regs.sp_kernel - stack + CONTEXT_STACK_ADDR;
+        ret.push(0x20 | 3);
+        ret.push(sp);
+        ret.push(1 << 9);
+        ret.push(0x18 | 3);
+        ret.push(call);
 
         ret
     }
@@ -212,7 +212,7 @@ impl Context {
             regs: Regs::default(),
             stack: stack,
             fx: stack + CONTEXT_STACK_SIZE,
-            fx_enabled: false,
+            loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
             cwd: Rc::new(UnsafeCell::new(String::new())),
@@ -220,12 +220,7 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        ret.regs.cs = 0x18 | 3;
-        ret.regs.ss = 0x20 | 3;
-
-        ret.regs.ip = call;
-        ret.regs.flags = 1 << 9;
-        ret.regs.sp = stack + CONTEXT_STACK_SIZE;
+        ret.regs.sp_kernel = stack + CONTEXT_STACK_SIZE - 128;
 
         let mut args_mut = args.clone();
 
@@ -241,7 +236,12 @@ impl Context {
         ret.regs.si = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
         ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
 
-        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        let sp = ret.regs.sp_kernel - stack + CONTEXT_STACK_ADDR;
+        ret.push(0x20 | 3);
+        ret.push(sp);
+        ret.push(1 << 9);
+        ret.push(0x18 | 3);
+        ret.push(call);
 
         ret
     }
@@ -320,8 +320,8 @@ impl Context {
     }
 
     pub unsafe fn push(&mut self, data: usize) {
-        self.regs.sp -= mem::size_of::<usize>();
-        ptr::write(self.regs.sp as *mut usize, data);
+        self.regs.sp_kernel -= mem::size_of::<usize>();
+        ptr::write(self.regs.sp_kernel as *mut usize, data);
     }
 
     pub unsafe fn map(&mut self) {
@@ -360,20 +360,7 @@ impl Context {
             : "memory"
             : "intel", "volatile");
 
-        self.fx_enabled = true;
-    }
-
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86")]
-    pub unsafe fn stack_physical(&mut self) {
-        if self.stack > 0 {
-            asm!("add esp, $0"
-                :
-                : "r"(self.stack - CONTEXT_STACK_ADDR)
-                : "memory"
-                : "intel", "volatile");
-        }
+        self.loadable = true;
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
@@ -382,13 +369,20 @@ impl Context {
     #[inline(never)]
     #[cfg(target_arch = "x86")]
     pub unsafe fn restore(&mut self, regs: &mut Regs) {
-        if self.fx_enabled {
+        if self.loadable {
             asm!("fxrstor [$0]"
                 :
                 : "r"(self.fx)
                 : "memory"
                 : "intel", "volatile");
         }
+
+        //Save extra stuff
+        self.regs.ip = regs.ip;
+        self.regs.cs = regs.cs;
+        self.regs.flags = regs.flags;
+        self.regs.sp = regs.sp;
+        self.regs.ss = regs.ss;
 
         *regs = self.regs;
     }
@@ -407,20 +401,7 @@ impl Context {
             : "memory"
             : "intel", "volatile");
 
-        self.fx_enabled = true;
-    }
-
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86_64")]
-    pub unsafe fn stack_physical(&mut self) {
-        if self.stack > 0 {
-            asm!("add rsp, $0"
-                :
-                : "r"(self.stack - CONTEXT_STACK_ADDR)
-                : "memory"
-                : "intel", "volatile");
-        }
+        self.loadable = true;
     }
 
     //Warning: This function MUST be inspected in disassembly for correct push/pop
@@ -429,13 +410,20 @@ impl Context {
     #[inline(never)]
     #[cfg(target_arch = "x86_64")]
     pub unsafe fn restore(&mut self, regs: &mut Regs) {
-        if self.fx_enabled {
+        if self.loadable {
             asm!("fxrstor [$0]"
                 :
                 : "r"(self.fx)
                 : "memory"
                 : "intel", "volatile");
         }
+
+        //Save extra stuff
+        self.regs.ip = regs.ip;
+        self.regs.cs = regs.cs;
+        self.regs.flags = regs.flags;
+        self.regs.sp = regs.sp;
+        self.regs.ss = regs.ss;
 
         *regs = self.regs;
     }

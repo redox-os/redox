@@ -154,7 +154,7 @@ unsafe fn idle_loop() -> ! {
     loop {
         asm!("cli");
 
-        session.on_poll();
+        //session.on_poll();
 
         loop {
             let event_option = events.pop();
@@ -352,7 +352,7 @@ unsafe fn init(font_data: usize) {
         execute(&path, &wd, Vec::new());
     }
 
-    debugln!("Enabling context switching");
+    //debugln!("Enabling context switching");
     //debug_draw = false;
     context_enabled = true;
 }
@@ -381,6 +381,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             dr("FLAGS", regs.flags);
             dr("SS", regs.ss);
             dr("SP", regs.sp);
+            dr("SPK", regs.sp_kernel);
             dr("BP", regs.bp);
             dr("AX", regs.ax);
             dr("BX", regs.bx);
@@ -426,6 +427,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             dr("FLAGS", regs.sp);
             dr("SS", regs.error);
             dr("SP", regs.ss);
+            dr("SPK", regs.sp_kernel);
             dr("BP", regs.bp);
             dr("AX", regs.ax);
             dr("BX", regs.bx);

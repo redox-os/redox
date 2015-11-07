@@ -59,7 +59,7 @@ pub unsafe fn do_sys_debug(byte: u8) {
                      Color::new(255, 255, 255));
         ::debug_redraw = true;
         //If contexts disabled, probably booting up
-        if ! context_enabled && ::debug_draw && ::debug_redraw {
+        if /* ! context_enabled && */::debug_draw && ::debug_redraw {
             ::debug_redraw = false;
             display.flip();
         }
@@ -153,8 +153,8 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 
                 regs: parent.regs,
                 stack: stack,
-                fx: stack + CONTEXT_STACK_SIZE,
-                fx_enabled: parent.fx_enabled,
+                fx: stack + CONTEXT_STACK_SIZE - 128,
+                loadable: parent.loadable,
 
                 args: parent.args.clone(),
                 cwd: if flags & CLONE_FS == CLONE_FS {
