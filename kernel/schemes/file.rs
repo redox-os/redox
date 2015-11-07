@@ -21,7 +21,6 @@ use common::parse_path::*;
 use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
 use scheduler::{start_no_ints, end_no_ints};
-use scheduler::context::context_switch;
 
 use syscall::common::O_CREAT;
 use common::pwd;
@@ -360,6 +359,10 @@ impl Resource for FileResource {
                         let sectors = (extent.length as usize + 511) / 512;
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
+                            (*self.scheme).fs.disk.write(extent.block + sector as u64,
+                                      0,
+                                      data + sector * 512);
+                            /*
                             let request = Request {
                                 extent: Extent {
                                     block: extent.block + sector as u64,
@@ -375,10 +378,15 @@ impl Resource for FileResource {
                             while request.complete.load(Ordering::SeqCst) == false {
                                 context_switch(false);
                             }
+                            */
 
                             sector += 65535;
                         }
                         if sector < sectors {
+                            (*self.scheme).fs.disk.write(extent.block + sector as u64,
+                                      (sectors - sector) as u16,
+                                      data + sector * 512);
+                            /*
                             let request = Request {
                                 extent: Extent {
                                     block: extent.block + sector as u64,
@@ -394,6 +402,7 @@ impl Resource for FileResource {
                             while request.complete.load(Ordering::SeqCst) == false {
                                 context_switch(false);
                             }
+                            */
                         }
                     }
 
@@ -410,6 +419,10 @@ impl Resource for FileResource {
                         if let Some(mut node_data) = Memory::<NodeData>::new(1) {
                             node_data.write(0, self.node.data());
 
+                            (*self.scheme).fs.disk.write(self.node.block,
+                                      1,
+                                      node_data.address());
+                            /*
                             let request = Request {
                                 extent: Extent {
                                     block: self.node.block,
@@ -428,6 +441,7 @@ impl Resource for FileResource {
                             while request.complete.load(Ordering::SeqCst) == false {
                                 context_switch(false);
                             }
+                            */
 
                             debug::d("Renode\n");
 
@@ -600,6 +614,12 @@ impl KScheme for FileScheme {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
                                 while sectors - sector >= 65536 {
+                                    unsafe {
+                                        self.fs.disk.read(extent.block + sector as u64,
+                                              0,
+                                              data.address() + sector * 512);
+                                    }
+                                    /*
                                     let request = Request {
                                         extent: Extent {
                                             block: extent.block + sector as u64,
@@ -615,10 +635,17 @@ impl KScheme for FileScheme {
                                     while !request.complete.load(Ordering::SeqCst) {
                                         unsafe { context_switch(false) };
                                     }
+                                    */
 
                                     sector += 65535;
                                 }
                                 if sector < sectors {
+                                    unsafe {
+                                        self.fs.disk.read(extent.block + sector as u64,
+                                              (sectors - sector) as u16,
+                                              data.address() + sector * 512);
+                                    }
+                                    /*
                                     let request = Request {
                                         extent: Extent {
                                             block: extent.block + sector as u64,
@@ -634,6 +661,7 @@ impl KScheme for FileScheme {
                                     while !request.complete.load(Ordering::SeqCst) {
                                         unsafe { context_switch(false) };
                                     }
+                                    */
                                 }
 
                                 vec.push_all(&unsafe { slice::from_raw_parts(data.ptr, extent.length as usize) });

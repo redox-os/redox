@@ -543,7 +543,7 @@ impl Uhci {
                                         break;
                                     }
 
-                                    context::context_switch(false);
+                                    //context::context_switch(false);
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);

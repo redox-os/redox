@@ -84,7 +84,7 @@ impl Resource for NetworkResource {
                     return Some(bytes.len());
                 }
 
-                context_switch(false);
+                //context_switch(false);
             }
         }
     }

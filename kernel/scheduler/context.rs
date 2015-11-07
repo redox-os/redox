@@ -27,119 +27,33 @@ pub static mut context_enabled: bool = false;
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(interrupted: bool, regs: &mut Regs) {
+pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
     if context_enabled {
         let current_i = context_i;
         context_i += 1;
-        // The only garbage collection in Redox
-        loop {
-            if context_i >= contexts.len() {
-                context_i -= contexts.len();
-            }
-
-            let mut remove = false;
-            if let Some(next) = contexts.get(context_i) {
-                if next.exited {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                drop(contexts.remove(context_i));
-            } else {
-                break;
-            }
-        }
 
         if context_i >= contexts.len() {
             context_i -= contexts.len();
         }
 
         if context_i != current_i {
-            if let Some(current) = contexts.get(current_i) {
-                if let Some(next) = contexts.get(context_i) {
-                    let current_ptr: *mut Box<Context> = mem::transmute(current as *const Box<Context>);
-                    let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
+            if let Some(mut current) = contexts.get_mut(current_i) {
+                current.interrupted = interrupted;
 
-                    (*current_ptr).interrupted = interrupted;
-                    (*next_ptr).interrupted = false;
+                current.save(regs);
+                current.unmap();
+            }
 
-                    (*current_ptr).save(regs);
-                    (*current_ptr).stack_physical();
-                    (*current_ptr).unmap();
-                    (*next_ptr).map();
-                    (*next_ptr).restore(regs);
-                }
+            if let Some(mut next) = contexts.get_mut(context_i) {
+                next.interrupted = false;
+
+                next.map();
+                next.restore(regs);
             }
         }
-    }
-
-    scheduler::end_no_ints(reenable);
-}
-
-/// Clone context
-///
-/// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize){
-    let reenable = scheduler::start_no_ints();
-
-    let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-    if stack > 0 {
-        let parent = &*parent_ptr;
-
-        ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
-
-        let contexts = &mut *contexts_ptr;
-        contexts.push(box Context {
-            interrupted: parent.interrupted,
-            exited: parent.exited,
-
-            regs: parent.regs,
-            stack: stack,
-            fx: stack + CONTEXT_STACK_SIZE,
-            fx_enabled: parent.fx_enabled,
-
-            args: parent.args.clone(),
-            cwd: if flags & CLONE_FS == CLONE_FS {
-                parent.cwd.clone()
-            } else {
-                Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-            },
-            memory: if flags & CLONE_VM == CLONE_VM {
-                parent.memory.clone()
-            } else {
-                let mut mem: Vec<ContextMemory> = Vec::new();
-                for entry in (*parent.memory.get()).iter() {
-                    let physical_address = memory::alloc(entry.virtual_size);
-                    if physical_address > 0 {
-                        ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
-                        mem.push(ContextMemory {
-                            physical_address: physical_address,
-                            virtual_address: entry.virtual_address,
-                            virtual_size: entry.virtual_size,
-                        });
-                    }
-                }
-                Rc::new(UnsafeCell::new(mem))
-            },
-            files: if flags & CLONE_FILES == CLONE_FILES {
-                parent.files.clone()
-            }else {
-                let mut files: Vec<ContextFile> = Vec::new();
-                for file in (*parent.files.get()).iter() {
-                    if let Some(resource) = file.resource.dup() {
-                        files.push(ContextFile {
-                            fd: file.fd,
-                            resource: resource
-                        });
-                    }
-                }
-                Rc::new(UnsafeCell::new(files))
-            },
-        });
     }
 
     scheduler::end_no_ints(reenable);
@@ -149,16 +63,23 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 /// Exit context
 ///
 /// Unsafe due to interrupt disabling and raw pointers
-pub unsafe fn context_exit() {
+pub unsafe fn context_exit(regs: &mut Regs) {
     let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
-        current.exited = true;
+    let contexts = &mut *contexts_ptr;
+    if context_enabled {
+        let old_i = context_i;
+
+        context_switch(regs, false);
+
+        contexts.remove(old_i);
+
+        if old_i < context_i {
+            context_i -= 1;
+        }
     }
 
     scheduler::end_no_ints(reenable);
-
-    context_switch(false);
 }
 
 // Currently unused?
@@ -205,8 +126,6 @@ pub struct Context {
     /* These members are used for control purposes by the scheduler { */
         /// Indicates that the context was interrupted, used for prioritizing active contexts
         pub interrupted: bool,
-        /// Indicates that the context exited and needs to be cleaned up
-        pub exited: bool,
     /* } */
 
     /* These members control the stack and registers and are unique to each context { */
@@ -233,30 +152,12 @@ pub struct Context {
 }
 
 impl Context {
-    pub unsafe fn root() -> Box<Self> {
-        box Context {
-            interrupted: false,
-            exited: false,
-
-            regs: Regs::default(),
-            stack: 0,
-            fx: memory::alloc(512),
-            fx_enabled: false,
-
-            args: Rc::new(UnsafeCell::new(Vec::new())),
-            cwd: Rc::new(UnsafeCell::new(String::new())),
-            memory: Rc::new(UnsafeCell::new(Vec::new())),
-            files: Rc::new(UnsafeCell::new(Vec::new())),
-        }
-    }
-
     #[cfg(target_arch = "x86")]
     pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             interrupted: false,
-            exited: false,
 
             regs: Regs::default(),
             stack: stack,
@@ -296,7 +197,6 @@ impl Context {
 
         let mut ret = box Context {
             interrupted: false,
-            exited: false,
 
             regs: Regs::default(),
             stack: stack,
@@ -351,7 +251,7 @@ impl Context {
 
             let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {
-                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args));
+                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args, false));
             }
             scheduler::end_no_ints(reenable);
         }

@@ -1,14 +1,15 @@
-use common::get_slice::GetSlice;
+use alloc::rc::Rc;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use core::cell::UnsafeCell;
 use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
-use scheduler::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
+use common::get_slice::GetSlice;
 use common::debug;
 use common::memory;
-use scheduler;
 use common::time::Duration;
 
 use drivers::pio::*;
@@ -17,6 +18,9 @@ use programs::executor::execute;
 
 use graphics::color::Color;
 use graphics::size::Size;
+
+use scheduler;
+use scheduler::context::{context_enabled, context_exit, context_switch, contexts_ptr, Context, ContextFile, ContextMemory, CONTEXT_STACK_SIZE};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -135,42 +139,72 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
 #[cold]
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
-    let mut parent_ptr: *const Context = 0 as *const Context;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        parent_ptr = parent.deref();
+        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+        if stack > 0 {
+            ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
 
-        let mut context_clone_args: Vec<usize> = Vec::new();
-        context_clone_args.push(flags);
-        context_clone_args.push(parent_ptr as usize);
-        context_clone_args.push(context_exit as usize);
+            let mut child = box Context {
+                interrupted: parent.interrupted,
 
-        let contexts = &mut *::scheduler::context::contexts_ptr;
-        contexts.push(Context::new(context_clone as usize, &context_clone_args));
+                regs: parent.regs,
+                stack: stack,
+                fx: stack + CONTEXT_STACK_SIZE,
+                fx_enabled: parent.fx_enabled,
+
+                args: parent.args.clone(),
+                cwd: if flags & CLONE_FS == CLONE_FS {
+                    parent.cwd.clone()
+                } else {
+                    Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+                },
+                memory: if flags & CLONE_VM == CLONE_VM {
+                    parent.memory.clone()
+                } else {
+                    let mut mem: Vec<ContextMemory> = Vec::new();
+                    for entry in (*parent.memory.get()).iter() {
+                        let physical_address = memory::alloc(entry.virtual_size);
+                        if physical_address > 0 {
+                            ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
+                            mem.push(ContextMemory {
+                                physical_address: physical_address,
+                                virtual_address: entry.virtual_address,
+                                virtual_size: entry.virtual_size,
+                            });
+                        }
+                    }
+                    Rc::new(UnsafeCell::new(mem))
+                },
+                files: if flags & CLONE_FILES == CLONE_FILES {
+                    parent.files.clone()
+                }else {
+                    let mut files: Vec<ContextFile> = Vec::new();
+                    for file in (*parent.files.get()).iter() {
+                        if let Some(resource) = file.resource.dup() {
+                            files.push(ContextFile {
+                                fd: file.fd,
+                                resource: resource
+                            });
+                        }
+                    }
+                    Rc::new(UnsafeCell::new(files))
+                },
+            };
+
+            let contexts = &mut *contexts_ptr;
+
+            child.regs.ax = 0;
+            ret = contexts.len();
+
+            contexts.push(child);
+        }
     }
 
     scheduler::end_no_ints(reenable);
-
-    context_switch(false);
-
-    let mut ret = usize::MAX;
-
-    if parent_ptr as usize > 0 {
-        let reenable = scheduler::start_no_ints();
-
-        if let Some(new) = Context::current() {
-            let new_ptr: *const Context = new.deref();
-            if new_ptr == parent_ptr {
-                ret = 1;
-            }else{
-                ret = 0;
-            }
-        }
-
-        scheduler::end_no_ints(reenable);
-    }
 
     ret
 }
@@ -286,11 +320,6 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     scheduler::end_no_ints(reenable);
 
     ret
-}
-
-//TODO: Use argument
-pub unsafe fn do_sys_exit(_: isize) {
-    context_exit();
 }
 
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
@@ -494,26 +523,6 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_yield() {
-    context_switch(false);
-}
-
-pub unsafe fn do_sys_alloc(size: usize) -> usize {
-    memory::alloc(size)
-}
-
-pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
-    memory::realloc(ptr, size)
-}
-
-pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
-    memory::realloc_inplace(ptr, size)
-}
-
-pub unsafe fn do_sys_unalloc(ptr: usize) {
-    memory::unalloc(ptr)
-}
-
 pub unsafe fn syscall_handle(regs: &mut Regs) {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as u8),
@@ -525,7 +534,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
         SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
-        SYS_EXIT => do_sys_exit(regs.bx as isize),
+        SYS_EXIT => context_exit(regs),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
@@ -537,13 +546,13 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_YIELD => do_sys_yield(),
+        SYS_YIELD => context_switch(regs, false),
 
         // Rust Memory
-        SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),
-        SYS_REALLOC => regs.ax = do_sys_realloc(regs.bx, regs.cx),
-        SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
-        SYS_UNALLOC => do_sys_unalloc(regs.bx),
+        SYS_ALLOC => regs.ax = memory::alloc(regs.bx),
+        SYS_REALLOC => regs.ax = memory::realloc(regs.bx, regs.cx),
+        SYS_REALLOC_INPLACE => regs.ax = memory::realloc_inplace(regs.bx, regs.cx),
+        SYS_UNALLOC => memory::unalloc(regs.bx),
 
         _ => {
             debug::d("Unknown Syscall: ");

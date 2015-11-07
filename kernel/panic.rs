@@ -2,8 +2,6 @@ use core::{fmt, result};
 
 use common::debug;
 
-use syscall::handle::do_sys_exit;
-
 struct DebugStream;
 
 impl fmt::Write for DebugStream {
@@ -24,7 +22,6 @@ pub extern fn panic_fmt(args: fmt::Arguments, file: &'static str, line: u32) -> 
     debug::dl();
 
     unsafe {
-        do_sys_exit(-1);
         loop {
             asm!("sti");
             asm!("hlt");

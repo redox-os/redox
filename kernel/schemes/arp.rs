@@ -61,7 +61,7 @@ impl KScheme for ArpScheme {
         "arp"
     }
 }
-
+/*
 impl ArpScheme {
     pub fn reply_loop() {
         while let Some(mut link) = Url::from_str("ethernet:///806").open() {
@@ -91,3 +91,4 @@ impl ArpScheme {
         }
     }
 }
+*/

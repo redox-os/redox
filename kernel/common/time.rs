@@ -1,7 +1,6 @@
 use core::cmp::Ordering;
 use core::ops::{Add, Sub};
 
-use scheduler::context::context_switch;
 use scheduler;
 
 pub const NANOS_PER_MICRO: i32 = 1000;
@@ -66,7 +65,7 @@ impl Duration {
             if elapsed > *self {
                 break;
             } else {
-                unsafe{ context_switch(false) };
+                //unsafe{ context_switch(false) };
             }
         }
     }

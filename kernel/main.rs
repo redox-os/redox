@@ -163,30 +163,18 @@ unsafe fn idle_loop() -> ! {
             asm!("sti");
         }
 
-        context_switch(false);
-    }
-}
-
-/// Event poll loop
-unsafe fn poll_loop() -> ! {
-    let session = &mut *session_ptr;
-
-    loop {
-        session.on_poll();
-
-        context_switch(false);
+        //kernel_yield();
     }
 }
 
 /// Event loop
 unsafe fn event_loop() -> ! {
-    //let session = &mut *session_ptr;
+    let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
-    debugln!("");
-    debugln!("");
-//    debug!("redox => ");
     loop {
+        session.on_poll();
+
         loop {
             let reenable = scheduler::start_no_ints();
 
@@ -218,8 +206,6 @@ unsafe fn event_loop() -> ! {
 
                                                 debug::dl();
                                                 cmd.clear();
-//                                                prompt::run(mem::replace(&mut cmd, String::new()));
- //                                               debug!("redox => ");
                                             },
                                             _ => {
                                                 cmd.push(key_event.character);
@@ -235,7 +221,6 @@ unsafe fn event_loop() -> ! {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
                             ::debug_draw = true;
                             ::debug_redraw = true;
-                            //session.event(event);
                         }
                     }
                 },
@@ -249,11 +234,9 @@ unsafe fn event_loop() -> ! {
                 debug_redraw = false;
                 display.flip();
             }
-        } else {
-            //session.redraw();
         }
 
-        context_switch(false);
+        //kernel_yield();
     }
 }
 
@@ -270,7 +253,7 @@ pub unsafe fn debug_init() {
 }
 
 /// Initialize kernel
-unsafe fn init(font_data: usize) {
+unsafe fn init(regs: &mut Regs) {
     scheduler::start_no_ints();
 
     debug_display = 0 as *mut Display;
@@ -299,7 +282,7 @@ unsafe fn init(font_data: usize) {
     //Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    ptr::write(display::FONTS, font_data);
+    ptr::write(display::FONTS, regs.ax);
 
     debug_display = Box::into_raw(Display::root());
 
@@ -315,7 +298,6 @@ unsafe fn init(font_data: usize) {
     clock_realtime = Rtc::new().time();
 
     contexts_ptr = Box::into_raw(box Vec::new());
-    (*contexts_ptr).push(Context::root());
 
     session_ptr = Box::into_raw(Session::new());
 
@@ -343,17 +325,19 @@ unsafe fn init(font_data: usize) {
     //session.items.push(box DisplayScheme);
 
     Context::spawn(box move || {
-        poll_loop();
+        idle_loop();
     });
     Context::spawn(box move || {
         event_loop();
     });
+    /*
     Context::spawn(box move || {
         ArpScheme::reply_loop();
     });
     Context::spawn(box move || {
         IcmpScheme::reply_loop();
     });
+    */
 
     debugln!("Reenabling interrupts");
 
@@ -437,7 +421,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            do_sys_exit(-1);
+            context_exit(regs);
             loop {
                 asm!("cli");
                 asm!("hlt");
@@ -480,7 +464,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            do_sys_exit(-1);
+            context_exit(regs);
             loop {
                 asm!("cli");
                 asm!("hlt");
@@ -503,7 +487,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(true);
+            context_switch(regs, true);
         },
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
@@ -520,10 +504,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
         0x80 => syscall_handle(regs),
-        0xFF => {
-            init(regs.ax);
-            idle_loop();
-        }
+        0xFF => init(regs),
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),
         0x2 => exception!("Non-maskable interrupt"),
