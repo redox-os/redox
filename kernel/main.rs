@@ -84,6 +84,7 @@ pub mod audio;
 #[macro_use]
 pub mod common;
 /// Various drivers
+// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
 /// Externs
 pub mod externs;
@@ -364,9 +365,9 @@ unsafe fn init(font_data: usize) {
 
     debug_command = Box::into_raw(box String::new());
 
-    debug::d("Redox ");
+    debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
-    debug::d(" bits ");
+    debug!(" bits ");
     debug::dl();
 
     clock_realtime = Rtc::new().time();
@@ -413,13 +414,13 @@ unsafe fn init(font_data: usize) {
         IcmpScheme::reply_loop();
     });
 
-    debug::d("Reenabling interrupts\n");
+    debugln!("Reenabling interrupts");
 
     //Start interrupts
     scheduler::end_no_ints(true);
 
     //Load cursor before getting out of debug mode
-    debug::d("Loading cursor\n");
+    debugln!("Loading cursor");
     if let Some(mut resource) = Url::from_str("file:///ui/cursor.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -432,7 +433,7 @@ unsafe fn init(font_data: usize) {
         scheduler::end_no_ints(reenable);
     }
 
-    debug::d("Loading schemes\n");
+    debugln!("Loading schemes");
     if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -448,7 +449,7 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    debug::d("Loading apps\n");
+    debugln!("Loading apps");
     if let Some(mut resource) = Url::from_str("file:///apps/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -465,15 +466,15 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    debug::d("Loading background\n");
+    debugln!("Loading background");
     if let Some(mut resource) = Url::from_str("file:///ui/background.bmp").open() {
         let mut vec: Vec<u8> = Vec::new();
         if resource.read_to_end(&mut vec).is_some() {
-            debug::d("Read background\n");
+            debugln!("Read background");
         } else {
-            debug::d("Failed to read background at: ");
-            debug::d(Url::from_str("file:///ui/background.bmp").reference());
-            debug::d("\n");
+            debug!("Failed to read background at: ");
+            debug!("{}", Url::from_str("file:///ui/background.bmp").reference());
+            debugln!("");
         }
 
         let background = BmpFile::from_data(&vec);
@@ -484,14 +485,14 @@ unsafe fn init(font_data: usize) {
         scheduler::end_no_ints(reenable);
     }
 
-    debug::d("Enabling context switching\n");
+    debugln!("Enabling context switching");
     debug_draw = false;
     context_enabled = true;
 }
 
 fn dr(reg: &str, value: usize) {
-    debug::d(reg);
-    debug::d(": ");
+    debug!("{}", reg);
+    debug!(": ");
     debug::dh(value as usize);
     debug::dl();
 }
@@ -503,7 +504,7 @@ fn dr(reg: &str, value: usize) {
 pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception {
         ($name:expr) => ({
-            debug::d($name);
+            debug!("{}", $name);
             debug::dl();
 
             dr("INT", interrupt);
@@ -545,7 +546,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
     macro_rules! exception_error {
         ($name:expr) => ({
-            debug::d($name);
+            debug!("{}", $name);
             debug::dl();
 
             dr("INT", interrupt);

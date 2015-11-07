@@ -65,7 +65,7 @@ use alloc::heap::EMPTY;
 use core::cmp::Ordering;
 use core::fmt;
 use core::hash::{self, Hash};
-use core::intrinsics::{arith_offset, assume, drop_in_place, needs_drop};
+use core::intrinsics::{arith_offset, assume, needs_drop};
 use core::iter::FromIterator;
 use core::mem;
 use core::ops::{Index, IndexMut, Deref};
@@ -429,7 +429,7 @@ impl<T> Vec<T> {
         }
     }
 
-    /// Shorten a vector, dropping excess elements.
+    /// Shorten a vector to be `len` elements long, dropping excess elements.
     ///
     /// If `len` is greater than the vector's current length, this has no
     /// effect.
@@ -437,7 +437,7 @@ impl<T> Vec<T> {
     /// # Examples
     ///
     /// ```
-    /// let mut vec = vec![1, 2, 3, 4];
+    /// let mut vec = vec![1, 2, 3, 4, 5];
     /// vec.truncate(2);
     /// assert_eq!(vec, [1, 2]);
     /// ```
@@ -859,8 +859,9 @@ impl<T> Vec<T> {
 impl<T: Clone> Vec<T> {
     /// Resizes the `Vec` in-place so that `len()` is equal to `new_len`.
     ///
-    /// Calls either `extend()` or `truncate()` depending on whether `new_len`
-    /// is larger than the current value of `len()` or not.
+    /// If `new_len` is greater than `len()`, the `Vec` is extended by the
+    /// difference, with each additional slot filled with `value`.
+    /// If `new_len` is less than `len()`, the `Vec` is simply truncated.
     ///
     /// # Examples
     ///
@@ -1383,17 +1384,13 @@ impl<T: Ord> Ord for Vec<T> {
 impl<T> Drop for Vec<T> {
     #[unsafe_destructor_blind_to_params]
     fn drop(&mut self) {
-        // NOTE: this is currently abusing the fact that ZSTs can't impl Drop.
-        // Or rather, that impl'ing Drop makes them not zero-sized. This is
-        // OK because exactly when this stops being a valid assumption, we
-        // don't need unsafe_no_drop_flag shenanigans anymore.
         if self.buf.unsafe_no_drop_flag_needs_drop() {
             unsafe {
                 // The branch on needs_drop() is an -O1 performance optimization.
                 // Without the branch, dropping Vec<u8> takes linear time.
                 if needs_drop::<T>() {
                     for x in self.iter_mut() {
-                        drop_in_place(x);
+                        ptr::drop_in_place(x);
                     }
                 }
             }
@@ -1404,7 +1401,6 @@ impl<T> Drop for Vec<T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Default for Vec<T> {
-    #[stable(feature = "rust1", since = "1.0.0")]
     fn default() -> Vec<T> {
         Vec::new()
     }
