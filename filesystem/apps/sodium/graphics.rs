@@ -10,11 +10,10 @@ impl Editor {
         // Redraw window
         self.window.set(Color::rgb(25, 25, 25));
 
+        let w = self.window.width();
+
         pos_x += self.delta();
 
-        let h = self.window.height();
-        let w = self.window.width();
-        let mode = self.cursor().mode;
 
         if self.options.line_marker {
             self.window.rect(0, (pos_y - self.scroll_y) as isize * 16, w, 16, Color::rgb(45, 45, 45));
@@ -106,7 +105,7 @@ fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
 
     let h = editor.window.height();
     let w = editor.window.width();
-    let (x, y) = editor.pos();
+    let y = editor.y();
     let mode = editor.cursor().mode;
 
     for (n, c) in (if text.len() > w / (8 * b) {
