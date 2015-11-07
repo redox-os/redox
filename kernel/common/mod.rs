@@ -9,8 +9,6 @@ pub mod event;
 pub mod get_slice;
 /// Kernel memory allocation
 pub mod memory;
-/// Kernel mutex
-pub mod mutex;
 /// Paging (x86)
 #[cfg(target_arch = "x86")]
 #[path="paging-i386.rs"]

@@ -1,4 +1,4 @@
-use scheduler::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
+use scheduler::context::{context_enabled, context_exit, context_switch, Context, ContextFile};
 use super::parse_path::parse_path;
 use collections::Vec;
 use collections::string::String;
