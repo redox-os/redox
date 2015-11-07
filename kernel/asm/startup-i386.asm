@@ -71,7 +71,6 @@ user_mode:
     mov eax, kernel_file.font
     int 255
 .lp:
-    sti
     hlt
     jmp .lp
 
