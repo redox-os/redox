@@ -54,10 +54,6 @@ impl Editor {
         let mut n = 0;
         let mut unset = true;
 
-        let mut ctrl = false;
-        let mut alt = false;
-        let mut shift = false;
-
         let mut key = Key::Null;
         self.status_bar.cmd = String::new();
 

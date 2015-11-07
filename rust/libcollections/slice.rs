@@ -160,7 +160,6 @@ mod hack {
 /// Allocating extension methods for slices.
 #[lang = "slice"]
 #[cfg(not(test))]
-#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> [T] {
     /// Returns the number of elements in the slice.
     ///
@@ -731,6 +730,8 @@ impl<T> [T] {
     /// Sorts the slice, in place.
     ///
     /// This is equivalent to `self.sort_by(|a, b| a.cmp(b))`.
+    ///
+    /// This is a stable sort.
     ///
     /// # Examples
     ///
