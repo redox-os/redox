@@ -40,7 +40,7 @@ protected_mode:
     mov gs, eax
     mov ss, eax
     ; set up temporary stack
-    mov esp, 0x180000
+    mov esp, 0x140000
 
     mov eax, gdt.tss
     ltr ax
@@ -157,7 +157,7 @@ endstruc
 
 tss:
     istruc TSS
-        at TSS.esp0, dd 0x200000
+        at TSS.esp0, dd 0x200000 - 128
         at TSS.ss0, dd gdt.kernel_data
     iend
 .end:
