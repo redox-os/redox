@@ -71,7 +71,7 @@ use schemes::ip::*;
 use schemes::memory::*;
 use schemes::display::*;
 
-use syscall::common::Regs;
+use syscall::common::{Regs, SYS_YIELD};
 use syscall::handle::*;
 
 /// Allocation
@@ -138,6 +138,14 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
+unsafe fn sys_yield() {
+    asm!("int 0x80"
+        :
+        : "{eax}"(SYS_YIELD)
+        : "memory"
+        : "intel", "volatile");
+}
+
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
     loop {
@@ -163,7 +171,7 @@ unsafe fn idle_loop() -> ! {
             asm!("sti");
         }
 
-        //kernel_yield();
+        sys_yield();
     }
 }
 
@@ -236,7 +244,7 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        //kernel_yield();
+        sys_yield();
     }
 }
 
@@ -394,16 +402,18 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             dr("INT", interrupt);
             dr("CONTEXT", context_i);
+            dr("CS", regs.cs);
             dr("IP", regs.ip);
             dr("FLAGS", regs.flags);
+            dr("SS", regs.ss);
+            dr("SP", regs.sp);
+            dr("BP", regs.bp);
             dr("AX", regs.ax);
             dr("BX", regs.bx);
             dr("CX", regs.cx);
             dr("DX", regs.dx);
             dr("DI", regs.di);
             dr("SI", regs.si);
-            dr("BP", regs.bp);
-            dr("SP", regs.sp);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
@@ -436,17 +446,19 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             dr("INT", interrupt);
             dr("CONTEXT", context_i);
-            dr("IP", regs.flags);
-            dr("FLAGS", regs.error);
             dr("ERROR", regs.ip);
+            dr("CS", regs.flags);
+            dr("IP", regs.cs);
+            dr("FLAGS", regs.sp);
+            dr("SS", regs.error);
+            dr("SP", regs.ss);
+            dr("BP", regs.bp);
             dr("AX", regs.ax);
             dr("BX", regs.bx);
             dr("CX", regs.cx);
             dr("DX", regs.dx);
             dr("DI", regs.di);
             dr("SI", regs.si);
-            dr("BP", regs.bp);
-            dr("SP", regs.sp);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
