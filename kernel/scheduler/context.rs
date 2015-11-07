@@ -152,8 +152,24 @@ pub struct Context {
 }
 
 impl Context {
+    pub unsafe fn root() -> Box<Self> {
+        box Context {
+           interrupted: false,
+
+           regs: Regs::default(),
+           stack: 0,
+           fx: memory::alloc(512),
+           fx_enabled: false,
+
+           args: Rc::new(UnsafeCell::new(Vec::new())),
+           cwd: Rc::new(UnsafeCell::new(String::new())),
+           memory: Rc::new(UnsafeCell::new(Vec::new())),
+           files: Rc::new(UnsafeCell::new(Vec::new())),
+       }
+    }
+
     #[cfg(target_arch = "x86")]
-    pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
@@ -170,13 +186,8 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        if userspace {
-            ret.regs.cs = 0x18 | 3;
-            ret.regs.ss = 0x20 | 3;
-        } else {
-            ret.regs.cs = 0x08;
-            ret.regs.ss = 0x10;
-        }
+        ret.regs.cs = 0x18 | 3;
+        ret.regs.ss = 0x20 | 3;
 
         ret.regs.ip = call;
         ret.regs.flags = 1 << 9;
@@ -192,7 +203,7 @@ impl Context {
     }
 
     #[cfg(target_arch = "x86_64")]
-    pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
@@ -209,13 +220,8 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        if userspace {
-            ret.regs.cs = 0x1B;
-            ret.regs.ss = 0x23;
-        } else {
-            ret.regs.cs = 0x08;
-            ret.regs.ss = 0x10;
-        }
+        ret.regs.cs = 0x18 | 3;
+        ret.regs.ss = 0x20 | 3;
 
         ret.regs.ip = call;
         ret.regs.flags = 1 << 9;
@@ -238,23 +244,6 @@ impl Context {
         ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
-    }
-
-    pub fn spawn(box_fn: Box<FnBox()>) {
-        unsafe {
-            let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
-            ptr::write(box_fn_ptr, box_fn);
-
-            let mut context_box_args: Vec<usize> = Vec::new();
-            context_box_args.push(box_fn_ptr as usize);
-            context_box_args.push(context_exit as usize);
-
-            let reenable = scheduler::start_no_ints();
-            if contexts_ptr as usize > 0 {
-                (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args, true));
-            }
-            scheduler::end_no_ints(reenable);
-        }
     }
 
     pub unsafe fn current_i() -> usize {

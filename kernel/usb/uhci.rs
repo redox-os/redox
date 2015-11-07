@@ -511,7 +511,7 @@ impl Uhci {
 
                         let base = self.base as u16;
                         let frnum = base + 0x6;
-
+/*
                         Context::spawn(box move || {
                             let in_ptr = memory::alloc(in_len) as *mut u8;
                             let in_td: *mut Td = memory::alloc_type();
@@ -582,6 +582,7 @@ impl Uhci {
 
                             //memory::unalloc(in_td as usize);
                         });
+*/
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
