@@ -48,13 +48,16 @@ interrupts:
 
     call [.handler]
 
-    mov eax, gdt.user_data
+    xchg bx, bx
+
+    add esp, 8 ;Skip interrupt and reg pointer
+
+    mov eax, [esp + 44] ;Use new SS as DS
     mov ds, eax
     mov es, eax
     mov fs, eax
     mov gs, eax
 
-    add esp, 8 ;Skip interrupt and reg pointer
     pop eax
     pop ebx
     pop ecx

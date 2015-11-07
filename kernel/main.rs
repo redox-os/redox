@@ -262,8 +262,6 @@ pub unsafe fn debug_init() {
 
 /// Initialize kernel
 unsafe fn init(regs: &mut Regs) {
-    scheduler::start_no_ints();
-
     debug_display = 0 as *mut Display;
     debug_point = Point { x: 0, y: 0 };
     debug_draw = false;
@@ -347,11 +345,6 @@ unsafe fn init(regs: &mut Regs) {
     });
     */
 
-    debugln!("Reenabling interrupts");
-
-    //Start interrupts
-    scheduler::end_no_ints(true);
-
     /*
     debugln!("Loading schemes");
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
@@ -370,13 +363,14 @@ unsafe fn init(regs: &mut Regs) {
     }
     */
 
-    debugln!("Loading init");
     {
         let path_string = "file:/apps/terminal/terminal.bin";
         let path = Url::from_string(path_string.to_string());
         let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
         execute(&path, &wd, Vec::new());
     }
+
+    regs.flags = regs.flags | 1 << 9; //Enable interrupts
 
     debugln!("Enabling context switching");
     //debug_draw = false;
