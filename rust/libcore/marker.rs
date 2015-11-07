@@ -18,11 +18,12 @@
 
 use clone::Clone;
 use cmp;
+use default::Default;
 use option::Option;
 use hash::Hash;
 use hash::Hasher;
 
-/// Types able to be transferred across thread boundaries.
+/// Types that can be transferred across thread boundaries.
 #[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "send"]
 #[rustc_on_unimplemented = "`{Self}` cannot be sent between threads safely"]
@@ -256,6 +257,12 @@ macro_rules! impls{
                 $t
             }
         }
+
+        impl<T:?Sized> Default for $t<T> {
+            fn default() -> $t<T> {
+                $t
+            }
+        }
         )
 }
 
@@ -375,11 +382,12 @@ mod impls {
     unsafe impl<'a, T: Send + ?Sized> Send for &'a mut T {}
 }
 
-/// A marker trait indicates a type that can be reflected over. This
-/// trait is implemented for all types. Its purpose is to ensure that
-/// when you write a generic function that will employ reflection,
-/// that must be reflected (no pun intended) in the generic bounds of
-/// that function. Here is an example:
+/// Types that can be reflected over.
+///
+/// This trait is implemented for all types. Its purpose is to ensure
+/// that when you write a generic function that will employ
+/// reflection, that must be reflected (no pun intended) in the
+/// generic bounds of that function. Here is an example:
 ///
 /// ```
 /// #![feature(reflect_marker)]
