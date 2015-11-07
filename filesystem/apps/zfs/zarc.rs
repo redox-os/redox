@@ -4,19 +4,20 @@ use redox::collections::{BTreeMap, VecDeque};
 use super::dvaddr::DVAddr;
 use super::zio;
 
-// Our implementation of the ARC is set up to allocate its buffer on the heap rather than in a
-// private pool thing. This makes it much simpler to implement, but defers the fragmentation
-// problem to the heap allocator.
-pub struct Arc {
+// Our implementation of the Adaptive Replacement Cache (ARC) is set up to allocate
+// its buffer on the heap rather than in a private pool thing. This makes it much
+// simpler to implement, but defers the fragmentation problem to the heap allocator.
+// We named the type `ArCache` to avoid confusion with Rust's `Arc` reference type.
+pub struct ArCache {
     mru_map: BTreeMap<DVAddr, Vec<u8>>, // Most recently used cache
     mru_queue: VecDeque<DVAddr>, // Oldest paths are at the end
     mru_size: usize, // Max mru cache size in bytes
     mru_used: usize, // Used bytes in mru cache
 }
 
-impl Arc {
-    pub fn new() -> Arc {
-        Arc {
+impl ArCache {
+    pub fn new() -> Self {
+        ArCache {
             mru_map: BTreeMap::new(),
             mru_queue: VecDeque::new(),
             mru_size: 10,
@@ -32,7 +33,7 @@ impl Arc {
 
         // Block isn't cached, have to read it from disk
         let block = reader.read(dva.sector() as usize, dva.asize() as usize);
-        
+
         // If necessary, make room for the block in the cache
         if self.mru_used+block.len() > self.mru_size {
             // TODO: Evict oldest pages in mru cache until there is enough space for the
