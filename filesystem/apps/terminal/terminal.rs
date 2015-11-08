@@ -131,7 +131,6 @@ impl<'a> Command<'a> {
         commands.push(Command {
             name: "pwd",
             main: box |_: &Vec<String>| {
-                let mut err = false;
                 if let Some(file) = File::open("") {
                     if let Some(path) = file.path() {
                         println!("{}", path);
@@ -236,7 +235,7 @@ impl<'a> Command<'a> {
                 match args.get(1) {
                     Some(file_name) => if File::create(file_name).is_none() {
                         println!("Failed to create: {}", file_name);
-                    }
+                    },
                     None => println!("No name provided")
                 }
             }
