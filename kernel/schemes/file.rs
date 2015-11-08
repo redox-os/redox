@@ -16,7 +16,6 @@ use drivers::pciconfig::PciConfig;
 
 use common::debug;
 use common::memory::Memory;
-use common::parse_path::*;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
@@ -207,9 +206,8 @@ impl FileSystem {
 
     /// Get node with a given filename
     pub fn node(&self, filename: &str) -> Option<Node> {
-        let path = parse_path(filename, pwd());
         for node in self.nodes.iter() {
-            if parse_path(&node.name, pwd()) == path {
+            if node.name == filename {
                 return Some(node.clone());
             }
         }
@@ -218,19 +216,12 @@ impl FileSystem {
     }
 
     /// List nodes in a given directory
-    pub fn list(&self, directory: Vec<String>) -> Vec<String> {
-        let mut ret = Vec::<String>::new();
+    pub fn list(&self, directory: &str) -> Vec<String> {
+        let mut ret = Vec::new();
 
         for node in self.nodes.iter() {
-            let mut eq = true;
-            for (n, i) in directory.iter().enumerate() {
-                match parse_path(&node.name, Vec::new()).get(n) {
-                    Some(nd) if nd == i => {},
-                    _ => eq = false,
-                }
-            }
-            if eq {
-                ret.push(parse_path(&node.name, Vec::new()).get_slice(Some(directory.len()), None).join("/"));
+            if node.name.starts_with(directory) {
+                ret.push(node.name.get_slice(Some(directory.len()), None).to_string());
             }
         }
 
@@ -562,13 +553,16 @@ impl KScheme for FileScheme {
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
-        let path = url.reference();
+        let mut path = url.reference();
+        while path.starts_with('/') {
+            path = &path[1..];
+        }
         if path.is_empty() || path.ends_with('/') {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
             // Hmm... no deref coercions in libcollections ;(
-            for file in self.fs.list(parse_path(&path.to_string(), Vec::new())).iter() {
+            for file in self.fs.list(path).iter() {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
