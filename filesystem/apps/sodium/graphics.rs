@@ -1,5 +1,6 @@
 use super::*;
 use redox::*;
+use redox::orbital::*;
 
 impl Editor {
     /// Redraw the window

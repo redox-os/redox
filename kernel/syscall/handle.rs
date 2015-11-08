@@ -1,14 +1,14 @@
-use ::GetSlice;
+use alloc::rc::Rc;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
-use scheduler::context::{context_clone, context_enabled, context_exit, context_switch, Context, ContextFile};
+use common::get_slice::GetSlice;
 use common::debug;
 use common::memory;
-use scheduler;
 use common::time::Duration;
 
 use drivers::pio::*;
@@ -17,6 +17,9 @@ use programs::executor::execute;
 
 use graphics::color::Color;
 use graphics::size::Size;
+
+use scheduler;
+use scheduler::context::{context_enabled, context_exit, context_switch, Context, ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -55,7 +58,7 @@ pub unsafe fn do_sys_debug(byte: u8) {
                      Color::new(255, 255, 255));
         ::debug_redraw = true;
         //If contexts disabled, probably booting up
-        if ! context_enabled && ::debug_draw && ::debug_redraw {
+        if /* ! context_enabled && */::debug_draw && ::debug_redraw {
             ::debug_redraw = false;
             display.flip();
         }
@@ -135,42 +138,17 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
 #[cold]
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
-    let mut parent_ptr: *const Context = 0 as *const Context;
+    let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        parent_ptr = parent.deref();
-
-        let mut context_clone_args: Vec<usize> = Vec::new();
-        context_clone_args.push(flags);
-        context_clone_args.push(parent_ptr as usize);
-        context_clone_args.push(context_exit as usize);
-
-        let contexts = &mut *::scheduler::context::contexts_ptr;
-        contexts.push(Context::new(context_clone as usize, &context_clone_args));
+        if parent.do_clone(flags) {
+            ret = 1;
+        }
     }
 
     scheduler::end_no_ints(reenable);
-
-    context_switch(false);
-
-    let mut ret = usize::MAX;
-
-    if parent_ptr as usize > 0 {
-        let reenable = scheduler::start_no_ints();
-
-        if let Some(new) = Context::current() {
-            let new_ptr: *const Context = new.deref();
-            if new_ptr == parent_ptr {
-                ret = 1;
-            }else{
-                ret = 0;
-            }
-        }
-
-        scheduler::end_no_ints(reenable);
-    }
 
     ret
 }
@@ -262,54 +240,35 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
     ret
 }
 
-//TODO: Cleanup
-pub unsafe fn do_sys_execve(path: *const u8) -> usize {
+//TODO: Make sure this does not return (it should be called from a clone)
+pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs) -> usize {
     let mut ret = usize::MAX;
-
 
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
         len += 1;
     }
 
-    let path_string = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
-
     let reenable = scheduler::start_no_ints();
 
-    if path_string.ends_with(".bin") {
-        let path = Url::from_string(path_string.clone());
-        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
-        execute(&path,
-                &wd,
-                Vec::new());
-        ret = 0;
-    } else {
-        for package in (*::session_ptr).packages.iter() {
-            let mut accepted = false;
-            for accept in package.accepts.iter() {
-                if path_string.ends_with(accept.get_slice(Some(1), None)) {
-                    accepted = true;
-                    break;
-                }
-            }
-            if accepted {
-                let mut args: Vec<String> = Vec::new();
-                args.push(path_string.clone());
-                execute(&package.binary, &package.url, args);
-                ret = 0;
-                break;
-            }
-        }
+    if let Some(mut current) = Context::current_mut() {
+       let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+
+       let path = Url::from_string(path_string.clone());
+       let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
+       if let Some(context) = execute(&path, &wd, Vec::new()) {
+           current.save(regs);
+           current.unmap();
+           *current = context;
+           current.map();
+           current.restore(regs);
+           ret = 0;
+       }
     }
 
     scheduler::end_no_ints(reenable);
 
     ret
-}
-
-//TODO: Use argument
-pub unsafe fn do_sys_exit(_: isize) {
-    context_exit();
 }
 
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
@@ -418,7 +377,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
+pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
     if req as usize > 0 {
         Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
 
@@ -428,7 +387,7 @@ pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usiz
         }
 
         0
-    }else{
+    } else {
         usize::MAX
     }
 }
@@ -444,22 +403,22 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(mut current) = Context::current_mut() {
-        let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+       let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
 
-        scheduler::end_no_ints(reenable);
+       scheduler::end_no_ints(reenable);
 
-        let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+       let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
 
-        scheduler::start_no_ints();
+       scheduler::start_no_ints();
 
-        if let Some(resource) = resource_option {
-            fd = current.next_fd();
+       if let Some(resource) = resource_option {
+           fd = current.next_fd();
 
-            (*current.files.get()).push(ContextFile {
-                fd: fd,
-                resource: resource,
-            });
-        }
+           (*current.files.get()).push(ContextFile {
+               fd: fd,
+               resource: resource,
+           });
+       }
     }
 
     scheduler::end_no_ints(reenable);
@@ -513,26 +472,6 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_yield() {
-    context_switch(false);
-}
-
-pub unsafe fn do_sys_alloc(size: usize) -> usize {
-    memory::alloc(size)
-}
-
-pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
-    memory::realloc(ptr, size)
-}
-
-pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
-    memory::realloc_inplace(ptr, size)
-}
-
-pub unsafe fn do_sys_unalloc(ptr: usize) {
-    memory::unalloc(ptr)
-}
-
 pub unsafe fn syscall_handle(regs: &mut Regs) {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as u8),
@@ -543,8 +482,8 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
-        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
-        SYS_EXIT => do_sys_exit(regs.bx as isize),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs),
+        SYS_EXIT => context_exit(regs),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
@@ -556,13 +495,13 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_YIELD => do_sys_yield(),
+        SYS_YIELD => context_switch(regs, false),
 
         // Rust Memory
-        SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),
-        SYS_REALLOC => regs.ax = do_sys_realloc(regs.bx, regs.cx),
-        SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
-        SYS_UNALLOC => do_sys_unalloc(regs.bx),
+        SYS_ALLOC => regs.ax = memory::alloc(regs.bx),
+        SYS_REALLOC => regs.ax = memory::realloc(regs.bx, regs.cx),
+        SYS_REALLOC_INPLACE => regs.ax = memory::realloc_inplace(regs.bx, regs.cx),
+        SYS_UNALLOC => memory::unalloc(regs.bx),
 
         _ => {
             debug::d("Unknown Syscall: ");

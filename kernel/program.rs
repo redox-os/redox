@@ -18,13 +18,14 @@ use application::main;
 mod application;
 
 use redox::*;
+use redox::console::{console_init, console_destroy};
 use redox::syscall::sys_exit;
 
 #[no_mangle]
 #[inline(never)]
 pub unsafe extern fn _start_stack(stack: *const usize) {
-    let argc = ptr::read(stack);
     let mut args: Vec<&'static str> = Vec::new();
+    let argc = ptr::read(stack);
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {

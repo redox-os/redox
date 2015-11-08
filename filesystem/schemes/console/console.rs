@@ -1,6 +1,6 @@
 use redox::Box;
 use redox::cell::UnsafeCell;
-use redox::Color;
+use redox::orbital::Color;
 use redox::console::ConsoleWindow;
 use redox::io::SeekFrom;
 use redox::rc::Rc;
@@ -66,7 +66,7 @@ impl Resource {
         Some(buf.len())
     }
 
-    pub fn seek(&mut self, seek: SeekFrom) -> Option<usize> {
+    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
         None
     }
 

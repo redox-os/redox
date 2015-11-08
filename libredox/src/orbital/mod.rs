@@ -7,8 +7,8 @@ use core::slice;
 use string::{String, ToString};
 use vec::Vec;
 
-use event::*;
-use graphics::color::Color;
+pub use self::event::*;
+pub use graphics::color::Color;
 use fs::File;
 use io::*;
 

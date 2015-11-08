@@ -60,10 +60,11 @@ pub struct Regs {
     pub di: usize,
     pub si: usize,
     pub bp: usize,
-    pub sp: usize,
     pub ip: usize,
+    pub cs: usize,
     pub flags: usize,
-    pub error: usize
+    pub sp: usize,
+    pub ss: usize
 }
 
 #[cfg(target_arch = "x86_64")]
@@ -84,10 +85,11 @@ pub struct Regs {
     pub r14: usize,
     pub r15: usize,
     pub bp: usize,
-    pub sp: usize,
     pub ip: usize,
+    pub cs: usize,
     pub flags: usize,
-    pub error: usize
+    pub sp: usize,
+    pub ss: usize
 }
 
 #[repr(packed)]

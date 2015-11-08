@@ -1,5 +1,6 @@
-use redox::*;
 use super::*;
+use redox::*;
+use redox::orbital::*;
 
 /// Key state
 pub struct KeyState {
