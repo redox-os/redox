@@ -5,6 +5,7 @@ use redox::rand;
 use redox::ptr;
 use redox::slice::SliceConcatExt;
 use redox::string::*;
+use redox::syscall::sys_exit;
 use redox::thread;
 use redox::Vec;
 
@@ -16,32 +17,36 @@ pub fn main() {
             let args: Vec<String> = line.trim().split(' ').map(|arg| arg.to_string()).collect();
 
             if let Some(a_command) = args.get(0) {
-                let console_commands = ["panic",
+                let console_commands = ["exit",
+                                        "panic",
                                         "ls",
                                         "ptr_write",
                                         "box_write",
                                         "reboot",
                                         "shutdown",
                                         "clone",
-                                        "leak_test"];
+                                        "leak_test",
+                                        "test_hm"];
 
                 match &a_command[..] {
                     command if command == console_commands[0] =>
+                        unsafe { sys_exit(0); },
+                    command if command == console_commands[1] =>
                         panic!("Test panic"),
-                    command if command == console_commands[1] => {
+                    command if command == console_commands[2] => {
                         for entry in fs::read_dir("file:///").unwrap() {
                             println!("{}", entry.path());
                         }
                     }
-                    command if command == console_commands[2] => {
+                    command if command == console_commands[3] => {
                         let a_ptr = rand() as *mut u8;
                         unsafe { ptr::write(a_ptr, rand() as u8); }
                     }
-                    command if command == console_commands[3] => {
+                    command if command == console_commands[4] => {
                         let a_box = Box::new(rand() as u8);
                         unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
                     }
-                    command if command == console_commands[4] => {
+                    command if command == console_commands[5] => {
                         unsafe {
                             let mut good: u8 = 2;
                             while good & 2 == 2 {
@@ -54,7 +59,7 @@ pub fn main() {
                             }
                         }
                     }
-                    command if command == console_commands[5] => {
+                    command if command == console_commands[6] => {
                         unsafe {
                             loop {
                                 asm!("cli" : : : : "intel", "volatile");
@@ -62,7 +67,7 @@ pub fn main() {
                             }
                         }
                     }
-                    command if command == console_commands[6] => {
+                    command if command == console_commands[7] => {
                         let parent_message = "Parent Message";
                         let handle = thread::spawn(move || {
                             println!("Child after spawn: {}", parent_message);
@@ -74,11 +79,14 @@ pub fn main() {
                             None => println!("Failed to join")
                         }
                     }
-                    command if command == console_commands[7] => {
+                    command if command == console_commands[8] => {
                         let mut stack_it: Vec<Box<u8>> = Vec::new();
                         loop {
                             stack_it.push(Box::new(rand() as u8))
                         }
+                    }
+                    command if command == console_commands[9] => {
+                        ::redox::hashmap::test();
                     }
                     _ => println!("Commands: {}", console_commands.join(" ")),
                 }

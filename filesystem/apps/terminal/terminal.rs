@@ -129,6 +129,11 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "read",
+            main: box |_: &Vec<String>| {},
+        });
+
+        commands.push(Command {
             name: "run",
             main: box |args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
@@ -222,13 +227,6 @@ impl<'a> Command<'a> {
                         None => println!("Failed to read"),
                     }
                 }
-            },
-        });
-
-        commands.push(Command {
-            name: "test_ht",
-            main: box |_: &Vec<String>| {
-                ::redox::hashmap::test();
             },
         });
 
@@ -330,10 +328,9 @@ impl<'a> Application<'a> {
 
         //Show variables
         if command_string == "$" {
-            let variables = self.variables.iter()
-                .fold(String::new(),
-                      |string, variable| string + "\n" + &variable.name + "=" + &variable.value);
-            println!("{}", variables);
+            for variable in self.variables.iter() {
+                println!("{}={}", variable.name, variable.value);
+            }
             return;
         }
 
@@ -417,14 +414,23 @@ impl<'a> Application<'a> {
                 }
             }
 
+            if cmd == "read" {
+                for i in 1..args.len() {
+                    if let Some(arg_original) = args.get(i) {
+                        let arg = arg_original.trim();
+                        print!("{}=", arg);
+                        if let Some(value_original) = readln!() {
+                            let value = value_original.trim();
+                            self.set_var(arg, value);
+                        }
+                    }
+                }
+            }
+
             //Set variables
             if let Some(i) = cmd.find('=') {
-                let name = cmd[0 .. i].to_string();
-                let mut value = cmd[i + 1 .. cmd.len()].to_string();
-
-                if name.is_empty() {
-                    return;
-                }
+                let name = cmd[0 .. i].trim();
+                let mut value = cmd[i + 1 .. cmd.len()].trim().to_string();
 
                 for i in 1..args.len() {
                     if let Some(arg) = args.get(i) {
@@ -432,34 +438,7 @@ impl<'a> Application<'a> {
                     }
                 }
 
-                if value.is_empty() {
-                    let mut remove = -1;
-                    for i in 0..self.variables.len() {
-                        match self.variables.get(i) {
-                            Some(variable) => if variable.name == name {
-                                remove = i as isize;
-                                break;
-                            },
-                            None => break,
-                        }
-                    }
-
-                    if remove >= 0 {
-                        self.variables.remove(remove as usize);
-                    }
-                } else {
-                    for variable in self.variables.iter_mut() {
-                        if variable.name == name {
-                            variable.value = value;
-                            return;
-                        }
-                    }
-
-                    self.variables.push(Variable {
-                        name: name,
-                        value: value,
-                    });
-                }
+                self.set_var(name, &value);
                 return;
             }
 
@@ -472,6 +451,42 @@ impl<'a> Application<'a> {
             }
 
             println!("Unknown command: '{}'", cmd);
+        }
+    }
+
+
+    pub fn set_var(&mut self, name: &str, value: &str){
+        if name.is_empty() {
+            return;
+        }
+
+        if value.is_empty() {
+            let mut remove = -1;
+            for i in 0..self.variables.len() {
+                match self.variables.get(i) {
+                    Some(variable) => if variable.name == name {
+                        remove = i as isize;
+                        break;
+                    },
+                    None => break,
+                }
+            }
+
+            if remove >= 0 {
+                self.variables.remove(remove as usize);
+            }
+        } else {
+            for variable in self.variables.iter_mut() {
+                if variable.name == name {
+                    variable.value = value.to_string();
+                    return;
+                }
+            }
+
+            self.variables.push(Variable {
+                name: name.to_string(),
+                value: value.to_string(),
+            });
         }
     }
 
