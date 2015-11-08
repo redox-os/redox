@@ -182,6 +182,8 @@ impl Context {
             ret.push(*arg);
         }
 
+        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+
         ret
     }
 
@@ -265,7 +267,7 @@ impl Context {
                 regs: self.regs,
                 stack: ContextMemory {
                     physical_address: stack,
-                    virtual_address: CONTEXT_STACK_ADDR,
+                    virtual_address: self.stack.virtual_address,
                     virtual_size: CONTEXT_STACK_SIZE
                 },
                 fx: stack + CONTEXT_STACK_SIZE - 128,
