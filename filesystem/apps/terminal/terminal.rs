@@ -44,12 +44,10 @@ impl<'a> Command<'a> {
                 };
 
                 if let Some(mut file) = File::open(&path) {
-                    println!("URL: {:?}", file.path());
-
                     let mut string = String::new();
                     match file.read_to_string(&mut string) {
                         Some(_) => println!("{}", string),
-                        None => println!("Failed to read"),
+                        None => println!("Failed to read: {}", path),
                     }
                 } else {
                     println!("Failed to open file: {}", path);

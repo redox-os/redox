@@ -335,4 +335,4 @@ ping:
 	ping 10.85.85.2
 
 wireshark:
-	wireshark network.pcap
+	wireshark $(BUILD)/network.pcap
