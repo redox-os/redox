@@ -213,20 +213,33 @@ impl<'a> Command<'a> {
             },
         });
 
+        // Simple command to create a file, in the current directory
+        // The file has got the name given as the first argument of the command
+        // If the command have no arguments, the command don't create the file
+        commands.push(Command {
+            name: "cfile",
+            main: box |args: &Vec<String>| {
+                match args.get(1) {
+                    Some(file_name) => {
+                        File::create(file_name);
+                    }
+                    None => {
+                        println!("Could not create a file without a name");
+                    }
+                }
+            }
+        });
+
         commands.push(Command {
             name: "pwd",
             main: box |args: &Vec<String>| {
-                let mut err = false;
                 if let Some(file) = File::open("") {
                     if let Some(path) = file.path() {
                         println!("{}", path);
                     } else {
-                        err = true;
+                        println!("Could not get the path");
                     }
                 } else {
-                    err = true;
-                }
-                if err {
                     println!("Could not get the path");
                 }
             },
