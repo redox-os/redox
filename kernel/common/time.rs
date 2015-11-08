@@ -65,7 +65,10 @@ impl Duration {
             if elapsed > *self {
                 break;
             } else {
-                //unsafe{ context_switch(false) };
+                unsafe {
+                    let disable = scheduler::start_ints();
+                    scheduler::end_ints(disable);
+                }
             }
         }
     }

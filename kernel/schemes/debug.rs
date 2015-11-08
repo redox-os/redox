@@ -38,7 +38,8 @@ impl Resource for DebugResource {
 
                     scheduler::end_no_ints(reenable);
 
-                    //context_switch(false);
+                    let disable = scheduler::start_ints();
+                    scheduler::end_ints(disable);
                 }
 
                 let reenable = scheduler::start_no_ints();
