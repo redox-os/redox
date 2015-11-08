@@ -121,8 +121,6 @@ impl<'a> Command<'a> {
 
                     let mut commands = String::new();
                     if let Some(mut file) = File::open(path) {
-                        println!("URL: {:?}", file.path());
-
                         file.read_to_string(&mut commands);
                     }
 
@@ -231,8 +229,6 @@ impl<'a> Command<'a> {
                 };
 
                 if let Some(mut file) = File::open(&path) {
-                    println!("URL: {:?}", file.path());
-
                     let mut vec: Vec<u8> = Vec::new();
                     match file.read_to_end(&mut vec) {
                         Some(_) => {
@@ -475,6 +471,13 @@ impl<'a> Application<'a> {
         }
 
         loop {
+            for mode in self.modes.iter().rev() {
+                if mode.value {
+                    print!("+");
+                } else {
+                    print!("-");
+                }
+            }
             print!("# ");
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
