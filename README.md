@@ -17,10 +17,10 @@ Please make sure you use the **latest nightly** before the building.
 
 Sometimes things goes wrong when compiling. Try the following before opening an issue:
 
-1) Run `make clean`.
-2) Run `git clean -X -f -d`
-3) Make sure you got **the latest version of Rust nightly!** (you can use `multirust` for managing Rust versions).
-4) Update LLVM, GNU Make, nasm and QEMU/VirtualBox.
+1.  Run `make clean`.
+2.  Run `git clean -X -f -d`
+3.  Make sure you got **the latest version of Rust nightly!** (you can use `multirust` for managing Rust versions).
+4.  Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
 
 and then rebuild!
 
