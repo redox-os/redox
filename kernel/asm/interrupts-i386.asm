@@ -64,6 +64,8 @@ interrupts:
     pop esi
     pop ebp
 
+    xchg bx, bx
+
     iretd
 
 .handler: dd 0

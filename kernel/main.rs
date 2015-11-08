@@ -142,7 +142,7 @@ pub unsafe fn kernel_events() {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
 
-    asm!("cli");
+    //asm!("cli");
 
     session.on_poll();
 
@@ -205,12 +205,14 @@ pub unsafe fn kernel_events() {
         }
     }
 
+    /*
     if halt {
         asm!("sti");
         asm!("hlt");
     } else {
         asm!("sti");
     }
+    */
 }
 
 /// Initialize debug
@@ -263,7 +265,7 @@ unsafe fn init(font_data: usize) {
 
     debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
-    debug!(" bits ");
+    debug!(" bits");
     debug::dl();
 
     clock_realtime = Rtc::new().time();
