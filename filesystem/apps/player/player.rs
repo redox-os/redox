@@ -1,6 +1,7 @@
 use redox::*;
 use redox::audio::*;
-use redox::orbital::*;
+
+use orbital::*;
 
 pub fn main() {
     let url = match args().get(1) {

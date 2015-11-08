@@ -1,20 +1,16 @@
-use alloc::boxed::Box;
+use redox::Box;
+use redox::fs::File;
+use redox::io::*;
+use redox::mem;
+use redox::ops::DerefMut;
+use redox::slice;
+use redox::syscall::sys_yield;
+use redox::String;
+use redox::ToString;
+use redox::Vec;
 
-use core::mem;
-use core::ops::DerefMut;
-use core::slice;
-
-use string::{String, ToString};
-use vec::Vec;
-
-pub use self::event::*;
-pub use graphics::color::Color;
-use fs::File;
-use io::*;
-
-use syscall::sys_yield;
-
-pub mod event;
+use super::Event;
+use super::Color;
 
 /// A window
 pub struct Window {

@@ -10,6 +10,8 @@
 #[macro_use]
 extern crate redox;
 
+extern crate orbital;
+
 use scheme::{Resource, Scheme};
 
 #[path="SCHEME_PATH"]
