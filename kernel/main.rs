@@ -138,100 +138,78 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
-unsafe fn sys_yield() {
-    asm!("int 0x80"
-        :
-        : "{eax}"(SYS_YIELD)
-        : "memory"
-        : "intel", "volatile");
-}
-
-/// Idle loop (active while idle)
-unsafe fn idle_loop() -> ! {
+pub unsafe fn kernel_events() {
     let session = &mut *session_ptr;
     let events = &mut *events_ptr;
-    let mut cmd = String::new();
+
+    asm!("cli");
+
+    session.on_poll();
+
     loop {
-        asm!("cli");
+        let event_option = events.pop();
 
-        //session.on_poll();
+        match event_option {
+            Some(event) => {
+                if debug_draw {
+                    match event.to_option() {
+                        EventOption::Key(key_event) => {
+                            if key_event.pressed {
+                                match key_event.scancode {
+                                    event::K_BKSP => if !session.cmd.is_empty() {
+                                        debug::db(8);
+                                        session.cmd.pop();
+                                    },
+                                    _ => match key_event.character {
+                                        '\0' => (),
+                                        '\n' => {
+                                            *::debug_command = session.cmd.clone() + "\n";
 
-        loop {
-            let event_option = events.pop();
-
-            match event_option {
-                Some(event) => {
-                    if debug_draw {
-                        match event.to_option() {
-                            EventOption::Key(key_event) => {
-                                if key_event.pressed {
-                                    match key_event.scancode {
-                                        event::K_F2 => {
-                                            ::debug_draw = false;
-                                            //(*::session_ptr).redraw = true;
+                                            debug::dl();
+                                            session.cmd.clear();
                                         },
-                                        event::K_BKSP => if !cmd.is_empty() {
-                                            debug::db(8);
-                                            cmd.pop();
+                                        _ => {
+                                            session.cmd.push(key_event.character);
+                                            debug::dc(key_event.character);
                                         },
-                                        _ => match key_event.character {
-                                            '\0' => (),
-                                            '\n' => {
-                                                *::debug_command = cmd.clone() + "\n";
-
-                                                debug::dl();
-                                                cmd.clear();
-                                            },
-                                            _ => {
-                                                cmd.push(key_event.character);
-                                                debug::dc(key_event.character);
-                                            },
-                                        },
-                                    }
+                                    },
                                 }
-                            },
-                            _ => (),
-                        }
-                    } else {
-                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
-                            ::debug_draw = true;
-                            ::debug_redraw = true;
-                        }
+                            }
+                        },
+                        _ => (),
                     }
-                },
-                None => break
-            }
+                }
+            },
+            None => break
         }
+    }
 
-        if debug_draw {
-            let display = &*debug_display;
-            if debug_redraw {
-                debug_redraw = false;
-                display.flip();
-            }
+    if debug_draw {
+        let display = &*debug_display;
+        if debug_redraw {
+            debug_redraw = false;
+            display.flip();
         }
+    }
 
-        let mut halt = true;
+    let mut halt = true;
 
-        let contexts = & *contexts_ptr;
-        for i in 1..contexts.len() {
-            match contexts.get(i) {
-                Some(context) => if context.interrupted {
-                    halt = false;
-                    break;
-                },
-                None => ()
-            }
+    let contexts = & *contexts_ptr;
+    for i in 1..contexts.len() {
+        match contexts.get(i) {
+            Some(context) => if context.interrupted {
+                halt = false;
+                break;
+            },
+            None => ()
         }
+    }
 
-        if halt {
-            asm!("sti");
-            asm!("hlt");
-        } else {
-            asm!("sti");
-        }
-
-        sys_yield();
+    if halt {
+        asm!("sti");
+        asm!("hlt");
+    } else {
+        asm!("sti");
     }
 }
 
