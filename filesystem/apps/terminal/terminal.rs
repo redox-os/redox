@@ -213,9 +213,9 @@ impl<'a> Command<'a> {
             },
         });
 
-        /// Simple command to create a file, in the current directory
-        /// The file has got the name given as the first argument of the command
-        /// If the command have no arguments, the command don't create the file
+        // Simple command to create a file, in the current directory
+        // The file has got the name given as the first argument of the command
+        // If the command have no arguments, the command don't create the file
         commands.push(Command {
             name: "cfile",
             main: box |args: &Vec<String>| {
