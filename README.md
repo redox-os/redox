@@ -4,6 +4,8 @@
 
 Docs can be found [here](http://ticki.github.io/redocs/redox/).
 
+Please make sure you use the **latest nightly** before the building.
+
 ## What it looks like
 
 ![Redox](img/screenshots/Desktop.png)
