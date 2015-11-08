@@ -32,19 +32,18 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
 
     let contexts = &mut *contexts_ptr;
     if context_enabled {
-        let current_i = context_i;
+        if let Some(mut current) = contexts.get_mut(context_i) {
+            current.interrupted = interrupted;
+
+            current.save(regs);
+            current.unmap();
+        }
+
         context_i += 1;
 
         if context_i >= contexts.len() {
             context_i -= contexts.len();
             ::kernel_events();
-        }
-
-        if let Some(mut current) = contexts.get_mut(current_i) {
-            current.interrupted = interrupted;
-
-            current.save(regs);
-            current.unmap();
         }
 
         if let Some(mut next) = contexts.get_mut(context_i) {
