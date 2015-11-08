@@ -1,4 +1,5 @@
 use redox::*;
+use redox::orbital::*;
 
 #[derive(Copy, Clone, PartialEq)]
 /// A key
@@ -50,4 +51,3 @@ impl Key {
 pub struct Cmd {
     pub key: Key,
 }
-

@@ -511,7 +511,7 @@ impl Uhci {
 
                         let base = self.base as u16;
                         let frnum = base + 0x6;
-
+/*
                         Context::spawn(box move || {
                             let in_ptr = memory::alloc(in_len) as *mut u8;
                             let in_td: *mut Td = memory::alloc_type();
@@ -543,38 +543,38 @@ impl Uhci {
                                         break;
                                     }
 
-                                    context::context_switch(false);
+                                    //context::context_switch(false);
                                 }
 
                                 volatile_store(frame_list.offset(frame as isize), 1);
 
                                 if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
-                                    let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+//                                    let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+//                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+//                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+//
+//                                    let mouse_x = (x * (*::session_ptr).display.width) / 32768;
+//                                    let mouse_y = (y * (*::session_ptr).display.height) / 32768;
+//
+//                                    (*::session_ptr).mouse_point.x =
+//                                        cmp::max(0,
+//                                                 cmp::min((*::session_ptr).display.width as isize -
+//                                                          1,
+//                                                          mouse_x as isize));
+//                                    (*::session_ptr).mouse_point.y =
+//                                        cmp::max(0,
+//                                                 cmp::min((*::session_ptr).display.height as isize -
+//                                                          1,
+//                                                          mouse_y as isize));
 
-                                    let mouse_x = (x * (*::session_ptr).display.width) / 32768;
-                                    let mouse_y = (y * (*::session_ptr).display.height) / 32768;
-
-                                    (*::session_ptr).mouse_point.x =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.width as isize -
-                                                          1,
-                                                          mouse_x as isize));
-                                    (*::session_ptr).mouse_point.y =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.height as isize -
-                                                          1,
-                                                          mouse_y as isize));
-
-                                    MouseEvent {
-                                        x: 0,
-                                        y: 0,
-                                        left_button: buttons & 1 == 1,
-                                        middle_button: buttons & 4 == 4,
-                                        right_button: buttons & 2 == 2,
-                                    }
-                                        .trigger();
+//                                    MouseEvent {
+//                                        x: 0,
+//                                        y: 0,
+//                                        left_button: buttons & 1 == 1,
+//                                        middle_button: buttons & 4 == 4,
+//                                        right_button: buttons & 2 == 2,
+//                                    }
+//                                        .trigger();
                                 }
 
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
@@ -582,6 +582,7 @@ impl Uhci {
 
                             //memory::unalloc(in_td as usize);
                         });
+*/
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);

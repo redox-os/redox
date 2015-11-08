@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -27,12 +27,6 @@ pub mod icmp;
 pub mod ip;
 /// Memory scheme
 pub mod memory;
-/// Pseudo random generation scheme
-pub mod random;
-/// Time scheme
-pub mod time;
-/// Window scheme
-pub mod window;
 
 #[allow(unused_variables)]
 pub trait KScheme {
@@ -145,14 +139,14 @@ impl Url {
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
         unsafe {
-            return (*::session_ptr).open(&self, O_RDWR);
+            (*::session_ptr).open(&self, O_RDWR)
         }
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Option<Box<Resource>> {
         unsafe {
-            return (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC);
+            (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC)
         }
     }
 
