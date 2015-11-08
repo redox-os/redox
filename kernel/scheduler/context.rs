@@ -237,7 +237,7 @@ impl Context {
     }
 
     pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {
-        if context_enabled && context_i > 1 {
+        if context_enabled {
             let contexts = &mut *contexts_ptr;
             contexts.get(context_i)
         }else{
@@ -246,7 +246,7 @@ impl Context {
     }
 
     pub unsafe fn current_mut<'a>() -> Option<&'a mut Box<Context>> {
-        if context_enabled && context_i > 1 {
+        if context_enabled {
             let contexts = &mut *contexts_ptr;
             contexts.get_mut(context_i)
         }else{
