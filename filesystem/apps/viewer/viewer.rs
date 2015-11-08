@@ -1,8 +1,8 @@
 use core::cmp::max;
 
 use redox::*;
-use redox::graphics::bmp::BmpFile;
-use redox::orbital::*;
+
+use orbital::*;
 
 pub fn main() {
     let url = match args().get(1) {

@@ -161,7 +161,7 @@
     //TODO mod panicking;
     pub use __core::panicking;
 
-    mod rand_old;
+    pub mod rand_old;
     pub mod hashmap;
 
     // Some external utilities of the standard library rely on randomness (aka
@@ -200,19 +200,7 @@
     /// A module for audio
     pub mod audio;
 
-    /// A module for console functionality
-    #[macro_use]
-    pub mod console;
-    /// Graphics support
-    pub mod graphics {
-        pub mod bmp;
-        pub mod color;
-    }
-
     pub mod panic;
-
-    /// A module for window support
-    pub mod orbital;
 
     pub mod url;
 

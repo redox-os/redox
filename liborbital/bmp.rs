@@ -1,7 +1,7 @@
-use super::color::Color;
+use super::Color;
 
-use string::String;
-use vec::Vec;
+use redox::String;
+use redox::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap

@@ -1,6 +1,8 @@
 use super::*;
+
 use redox::*;
-use redox::orbital::*;
+
+use orbital::*;
 
 /// The current state of the editor, including the file, the cursor, the scrolling info, etc.
 pub struct Editor {
