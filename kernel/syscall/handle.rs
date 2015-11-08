@@ -3,7 +3,6 @@ use alloc::rc::Rc;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::cell::UnsafeCell;
 use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
@@ -20,7 +19,7 @@ use graphics::color::Color;
 use graphics::size::Size;
 
 use scheduler;
-use scheduler::context::{context_enabled, context_exit, context_switch, contexts_ptr, Context, ContextFile, ContextMemory, CONTEXT_STACK_SIZE};
+use scheduler::context::{context_enabled, context_exit, context_switch, Context, ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -144,63 +143,8 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-        if stack > 0 {
-            ::memcpy(stack as *mut u8, parent.stack as *const u8, CONTEXT_STACK_SIZE + 512);
-
-            let mut child = box Context {
-                interrupted: parent.interrupted,
-
-                regs: parent.regs,
-                stack: stack,
-                fx: stack + CONTEXT_STACK_SIZE - 128,
-                loadable: parent.loadable,
-
-                args: parent.args.clone(),
-                cwd: if flags & CLONE_FS == CLONE_FS {
-                    parent.cwd.clone()
-                } else {
-                    Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-                },
-                memory: if flags & CLONE_VM == CLONE_VM {
-                    parent.memory.clone()
-                } else {
-                    let mut mem: Vec<ContextMemory> = Vec::new();
-                    for entry in (*parent.memory.get()).iter() {
-                        let physical_address = memory::alloc(entry.virtual_size);
-                        if physical_address > 0 {
-                            ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
-                            mem.push(ContextMemory {
-                                physical_address: physical_address,
-                                virtual_address: entry.virtual_address,
-                                virtual_size: entry.virtual_size,
-                            });
-                        }
-                    }
-                    Rc::new(UnsafeCell::new(mem))
-                },
-                files: if flags & CLONE_FILES == CLONE_FILES {
-                    parent.files.clone()
-                }else {
-                    let mut files: Vec<ContextFile> = Vec::new();
-                    for file in (*parent.files.get()).iter() {
-                        if let Some(resource) = file.resource.dup() {
-                            files.push(ContextFile {
-                                fd: file.fd,
-                                resource: resource
-                            });
-                        }
-                    }
-                    Rc::new(UnsafeCell::new(files))
-                },
-            };
-
-            let contexts = &mut *contexts_ptr;
-
-            child.regs.ax = 0;
-            ret = contexts.len();
-
-            contexts.push(child);
+        if parent.do_clone(flags) {
+            ret = 1;
         }
     }
 
