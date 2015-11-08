@@ -39,8 +39,8 @@ protected_mode:
     mov fs, eax
     mov gs, eax
     mov ss, eax
-    ; set up temporary stack
-    mov esp, 0x140000
+    
+    mov esp, 0x200000 - 128
 
     mov eax, gdt.tss
     ltr ax
