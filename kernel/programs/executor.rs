@@ -78,7 +78,6 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             *context.args.get() = args;
 
             if let Some(stdin) = Url::from_str("debug://").open() {
-                debugln!("Open debug stdin");
                 (*context.files.get()).push(ContextFile {
                     fd: 0, // STDIN
                     resource: stdin,
@@ -88,7 +87,6 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
 
             if let Some(stdout) = Url::from_str("debug://").open() {
-                debugln!("Open debug stdout");
                 (*context.files.get()).push(ContextFile {
                     fd: 1, // STDOUT
                     resource: stdout,
@@ -98,7 +96,6 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
 
             if let Some(stderr) = Url::from_str("debug://").open() {
-                debugln!("Open debug stderr");
                 (*context.files.get()).push(ContextFile {
                     fd: 2, // STDERR
                     resource: stderr,
