@@ -375,8 +375,14 @@ impl<'a> Application<'a> {
                             } else {
                                 println!("Unknown comparison: {}", cmp);
                             }
+                        } else {
+                            println!("No right hand side");
                         }
+                    } else {
+                        println!("No comparison operator");
                     }
+                } else {
+                    println!("No left hand side");
                 }
 
                 self.modes.insert(0, Mode { value: value });
