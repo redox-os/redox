@@ -37,6 +37,7 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
 
         if context_i >= contexts.len() {
             context_i -= contexts.len();
+            ::kernel_events();
         }
 
         if let Some(mut current) = contexts.get_mut(current_i) {

@@ -11,14 +11,16 @@ use schemes::{Resource, Url, VecResource};
 
 /// A session
 pub struct Session {
+    pub cmd: String,
     /// The scheme items
-    pub items: Vec<Box<KScheme>>, // FIXME: Vec<Box<T>> is equiv to Vec<T>
+    pub items: Vec<Box<KScheme>>,
 }
 
 impl Session {
     /// Create new session
     pub fn new() -> Box<Self> {
         box Session {
+            cmd: String::new(),
             items: Vec::new(),
         }
     }
