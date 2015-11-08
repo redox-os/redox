@@ -80,6 +80,11 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "else",
+            main: box |_: &Vec<String>| {},
+        });
+
+        commands.push(Command {
             name: "exec",
             main: box |args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
@@ -90,8 +95,17 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "exit",
-            main: box |_: &Vec<String>| {
-            },
+            main: box |_: &Vec<String>| {},
+        });
+
+        commands.push(Command {
+            name: "fi",
+            main: box |_: &Vec<String>| {},
+        });
+
+        commands.push(Command {
+            name: "if",
+            main: box |_: &Vec<String>| {},
         });
 
         commands.push(Command {
@@ -473,9 +487,9 @@ impl<'a> Application<'a> {
         loop {
             for mode in self.modes.iter().rev() {
                 if mode.value {
-                    print!("+");
+                    print!("+ ");
                 } else {
-                    print!("-");
+                    print!("- ");
                 }
             }
             print!("# ");
