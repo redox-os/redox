@@ -40,6 +40,8 @@ interrupts:
     push esp
     push dword [0x100000]
 
+    xchg bx, bx
+
     mov eax, gdt.kernel_data
     mov ds, eax
     mov es, eax
@@ -50,7 +52,7 @@ interrupts:
 
     add esp, 8 ;Skip interrupt and reg pointer
 
-    mov eax, gdt.user_data ;[esp + 44] ;Use new SS as DS
+    mov eax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
     mov ds, eax
     mov es, eax
     mov fs, eax
