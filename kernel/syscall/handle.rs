@@ -244,22 +244,24 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     let mut ret = usize::MAX;
 
-
     let mut len = 0;
     while *path.offset(len as isize) > 0 {
         len += 1;
     }
 
-    let path_string = String::from_utf8_unchecked(slice::from_raw_parts(path, len).to_vec());
-
     let reenable = scheduler::start_no_ints();
 
-    let path = Url::from_string(path_string.clone());
-    let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
-    execute(&path,
-            &wd,
-            Vec::new());
-    ret = 0;
+    if let Some(mut current) = Context::current_mut() {
+       let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+
+       let path = Url::from_string(path_string.clone());
+       let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
+       execute(&path,
+               &wd,
+               Vec::new());
+
+       ret = 0;
+    }
 
     scheduler::end_no_ints(reenable);
 
