@@ -291,7 +291,6 @@ unsafe fn init(font_data: usize) {
     clock_realtime = Rtc::new().time();
 
     contexts_ptr = Box::into_raw(box Vec::new());
-    (*contexts_ptr).push(Context::root());
 
     session_ptr = Box::into_raw(Session::new());
 
@@ -381,7 +380,6 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             dr("FLAGS", regs.flags);
             dr("SS", regs.ss);
             dr("SP", regs.sp);
-            dr("SPK", regs.sp_kernel);
             dr("BP", regs.bp);
             dr("AX", regs.ax);
             dr("BX", regs.bx);
@@ -425,9 +423,8 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             dr("CS", regs.flags);
             dr("IP", regs.cs);
             dr("FLAGS", regs.sp);
-            dr("SS", regs.error);
+            //dr("SS", regs.error);
             dr("SP", regs.ss);
-            dr("SPK", regs.sp_kernel);
             dr("BP", regs.bp);
             dr("AX", regs.ax);
             dr("BX", regs.bx);
@@ -494,7 +491,10 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x80 => syscall_handle(regs),
         0xFF => {
             init(regs.ax);
-            idle_loop();
+            if let Some(mut next) = (*contexts_ptr).get_mut(context_i) {
+                next.map();
+                next.restore(regs);
+            }
         },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),

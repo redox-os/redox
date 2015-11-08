@@ -30,7 +30,6 @@ interrupts:
 %endrep
 .handle:
 
-    push esp
     push ebp
     push esi
     push edi
@@ -64,9 +63,6 @@ interrupts:
     pop edi
     pop esi
     pop ebp
-
-    xchg bx, bx
-    pop esp
 
     iretd
 

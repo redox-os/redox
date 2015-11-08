@@ -39,20 +39,18 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
             context_i -= contexts.len();
         }
 
-        if context_i != current_i {
-            if let Some(mut current) = contexts.get_mut(current_i) {
-                current.interrupted = interrupted;
+        if let Some(mut current) = contexts.get_mut(current_i) {
+            current.interrupted = interrupted;
 
-                current.save(regs);
-                current.unmap();
-            }
+            current.save(regs);
+            current.unmap();
+        }
 
-            if let Some(mut next) = contexts.get_mut(context_i) {
-                next.interrupted = false;
+        if let Some(mut next) = contexts.get_mut(context_i) {
+            next.interrupted = false;
 
-                next.map();
-                next.restore(regs);
-            }
+            next.map();
+            next.restore(regs);
         }
     }
 
@@ -152,22 +150,6 @@ pub struct Context {
 }
 
 impl Context {
-    pub unsafe fn root() -> Box<Self> {
-        box Context {
-           interrupted: false,
-
-           regs: Regs::default(),
-           stack: 0,
-           fx: memory::alloc(512),
-           loadable: false,
-
-           args: Rc::new(UnsafeCell::new(Vec::new())),
-           cwd: Rc::new(UnsafeCell::new(String::new())),
-           memory: Rc::new(UnsafeCell::new(Vec::new())),
-           files: Rc::new(UnsafeCell::new(Vec::new())),
-       }
-    }
-
     #[cfg(target_arch = "x86")]
     pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -186,18 +168,15 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        ret.regs.sp_kernel = stack + CONTEXT_STACK_SIZE - 128;
+        ret.regs.ip = call;
+        ret.regs.cs = 0x18 | 3;
+        ret.regs.flags = 1 << 9;
+        ret.regs.sp = stack + CONTEXT_STACK_SIZE - 128;
+        ret.regs.ss = 0x20 | 3;
 
         for arg in args.iter() {
             ret.push(*arg);
         }
-
-        let sp = ret.regs.sp_kernel - stack + CONTEXT_STACK_ADDR;
-        ret.push(0x20 | 3);
-        ret.push(sp);
-        ret.push(1 << 9);
-        ret.push(0x18 | 3);
-        ret.push(call);
 
         ret
     }
@@ -220,7 +199,11 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        ret.regs.sp_kernel = stack + CONTEXT_STACK_SIZE - 128;
+        ret.regs.ip = call;
+        ret.regs.cs = 0x18 | 3;
+        ret.regs.flags = 1 << 9;
+        ret.regs.sp = stack + CONTEXT_STACK_SIZE - 128;
+        ret.regs.ss = 0x20 | 3;
 
         let mut args_mut = args.clone();
 
@@ -236,12 +219,7 @@ impl Context {
         ret.regs.si = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
         ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
 
-        let sp = ret.regs.sp_kernel - stack + CONTEXT_STACK_ADDR;
-        ret.push(0x20 | 3);
-        ret.push(sp);
-        ret.push(1 << 9);
-        ret.push(0x18 | 3);
-        ret.push(call);
+        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
 
         ret
     }
@@ -320,8 +298,8 @@ impl Context {
     }
 
     pub unsafe fn push(&mut self, data: usize) {
-        self.regs.sp_kernel -= mem::size_of::<usize>();
-        ptr::write(self.regs.sp_kernel as *mut usize, data);
+        self.regs.sp -= mem::size_of::<usize>();
+        ptr::write(self.regs.sp as *mut usize, data);
     }
 
     pub unsafe fn map(&mut self) {
@@ -346,11 +324,6 @@ impl Context {
         }
     }
 
-    //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly no extra pushes or pops
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86")]
     pub unsafe fn save(&mut self, regs: &mut Regs) {
         self.regs = *regs;
 
@@ -363,11 +336,6 @@ impl Context {
         self.loadable = true;
     }
 
-    //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly no extra pushes or pops
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86")]
     pub unsafe fn restore(&mut self, regs: &mut Regs) {
         if self.loadable {
             asm!("fxrstor [$0]"
@@ -376,54 +344,6 @@ impl Context {
                 : "memory"
                 : "intel", "volatile");
         }
-
-        //Save extra stuff
-        self.regs.ip = regs.ip;
-        self.regs.cs = regs.cs;
-        self.regs.flags = regs.flags;
-        self.regs.sp = regs.sp;
-        self.regs.ss = regs.ss;
-
-        *regs = self.regs;
-    }
-
-    //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly no extra pushes or pops
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86_64")]
-    pub unsafe fn save(&mut self, regs: &mut Regs) {
-        self.regs = *regs;
-
-        asm!("fxsave [$0]"
-            :
-            : "r"(self.fx)
-            : "memory"
-            : "intel", "volatile");
-
-        self.loadable = true;
-    }
-
-    //Warning: This function MUST be inspected in disassembly for correct push/pop
-    //It should have exactly no extra pushes or pops
-    #[cold]
-    #[inline(never)]
-    #[cfg(target_arch = "x86_64")]
-    pub unsafe fn restore(&mut self, regs: &mut Regs) {
-        if self.loadable {
-            asm!("fxrstor [$0]"
-                :
-                : "r"(self.fx)
-                : "memory"
-                : "intel", "volatile");
-        }
-
-        //Save extra stuff
-        self.regs.ip = regs.ip;
-        self.regs.cs = regs.cs;
-        self.regs.flags = regs.flags;
-        self.regs.sp = regs.sp;
-        self.regs.ss = regs.ss;
 
         *regs = self.regs;
     }
