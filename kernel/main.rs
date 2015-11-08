@@ -328,7 +328,9 @@ unsafe fn init(font_data: usize) {
         let path_string = "file:/apps/terminal/terminal.bin";
         let path = Url::from_string(path_string.to_string());
         let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
-        execute(&path, &wd, Vec::new());
+        if let Some(context) = execute(&path, &wd, Vec::new()) {
+            (*contexts_ptr).push(context);
+        }
     }
 
     //debugln!("Enabling context switching");

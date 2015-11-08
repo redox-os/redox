@@ -241,7 +241,7 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 }
 
 //TODO: Make sure this does not return (it should be called from a clone)
-pub unsafe fn do_sys_execve(path: *const u8) -> usize {
+pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs) -> usize {
     let mut ret = usize::MAX;
 
     let mut len = 0;
@@ -256,11 +256,14 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
 
        let path = Url::from_string(path_string.clone());
        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
-       execute(&path,
-               &wd,
-               Vec::new());
-
-       ret = 0;
+       if let Some(context) = execute(&path, &wd, Vec::new()) {
+           current.save(regs);
+           current.unmap();
+           *current = context;
+           current.map();
+           current.restore(regs);
+           ret = 0;
+       }
     }
 
     scheduler::end_no_ints(reenable);
@@ -479,7 +482,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
-        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs),
         SYS_EXIT => context_exit(regs),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: fstat
