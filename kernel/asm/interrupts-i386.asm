@@ -40,8 +40,6 @@ interrupts:
     push esp
     push dword [0x100000]
 
-    xchg bx, bx
-
     mov eax, gdt.kernel_data
     mov ds, eax
     mov es, eax
@@ -65,8 +63,6 @@ interrupts:
     pop edi
     pop esi
     pop ebp
-
-    xchg bx, bx
 
     iretd
 
