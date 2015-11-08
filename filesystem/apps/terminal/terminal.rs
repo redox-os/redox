@@ -129,6 +129,22 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "pwd",
+            main: box |_: &Vec<String>| {
+                let mut err = false;
+                if let Some(file) = File::open("") {
+                    if let Some(path) = file.path() {
+                        println!("{}", path);
+                    } else {
+                        println!("Could not get the path");
+                    }
+                } else {
+                    println!("Could not open the working directory");
+                }
+            },
+        });
+
+        commands.push(Command {
             name: "read",
             main: box |_: &Vec<String>| {},
         });
@@ -146,25 +162,6 @@ impl<'a> Command<'a> {
                     for command in commands.split('\n') {
                         exec!(command);
                     }
-                }
-            },
-        });
-
-        commands.push(Command {
-            name: "pwd",
-            main: box |_: &Vec<String>| {
-                let mut err = false;
-                if let Some(file) = File::open("") {
-                    if let Some(path) = file.path() {
-                        println!("{}", path);
-                    } else {
-                        err = true;
-                    }
-                } else {
-                    err = true;
-                }
-                if err {
-                    println!("Could not get the path");
                 }
             },
         });
@@ -228,6 +225,21 @@ impl<'a> Command<'a> {
                     }
                 }
             },
+        });
+
+        // Simple command to create a file, in the current directory
+        // The file has got the name given as the first argument of the command
+        // If the command have no arguments, the command don't create the file
+        commands.push(Command {
+            name: "touch",
+            main: box |args: &Vec<String>| {
+                match args.get(1) {
+                    Some(file_name) => if File::create(file_name).is_none() {
+                        println!("Failed to create: {}", file_name);
+                    }
+                    None => println!("No name provided")
+                }
+            }
         });
 
         commands.push(Command {
