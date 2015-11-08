@@ -130,7 +130,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 
 apps: apps/editor apps/file_manager apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
 
-schemes: schemes/console schemes/tcp schemes/udp schemes/zfs #schemes/window 
+schemes: schemes/console schemes/orbital schemes/tcp schemes/udp schemes/zfs
 
 tests: tests/success tests/failure
 

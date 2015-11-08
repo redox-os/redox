@@ -8,12 +8,16 @@
 extern crate redox;
 
 pub use bmp::BmpFile;
+pub use color::Color;
 pub use event::*;
-pub use graphics::color::Color;
+pub use point::Point;
+pub use size::Size;
 pub use window::Window;
 
 pub mod bmp;
+pub mod color;
 pub mod console;
 pub mod event;
-pub mod graphics;
+pub mod point;
+pub mod size;
 pub mod window;

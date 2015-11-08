@@ -1,5 +1,4 @@
 use redox::{Box, String, ToString, Vec};
-use redox::rand_old::*;
 
 use super::*;
 

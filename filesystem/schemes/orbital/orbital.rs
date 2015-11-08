@@ -4,47 +4,51 @@ use redox::String;
 
 use core::{cmp, mem, ptr};
 
+use redox::to_num::ToNum;
+use redox::io::*;
+use redox::Url;
+
 use orbital::event::Event;
-use common::to_num::ToNum;
+use orbital::Point;
+use orbital::Size;
 
-use redox::graphics::display::Display;
-use redox::graphics::point::Point;
-use redox::graphics::size::Size;
-use redox::graphics::window::Window;
+use self::display::Display;
+use self::window::Window;
 
-use schemes::{KScheme, Resource, ResourceSeek, Url};
+pub mod display;
+pub mod window;
 
 /// A window scheme
-pub struct WindowScheme;
+pub struct Scheme;
 
 /// A window resource
-pub struct WindowResource {
+pub struct Resource {
     /// The window
     pub window: Box<Window>,
     /// Seek point
     pub seek: usize,
 }
 
-impl Resource for WindowResource {
-    fn dup(&self) -> Option<Box<Resource>> {
-        Some(box WindowResource {
+impl Resource {
+    pub fn dup(&self) -> Option<Box<Resource>> {
+        Some(box Resource {
             window: Window::new(self.window.point, self.window.size, self.window.title.clone()),
             seek: self.seek,
         })
     }
 
     /// Return the url of this resource
-    fn url(&self) -> Url {
-        Url::from_string(format!("window://{}/{}/{}/{}/{}",
-                                 self.window.point.x,
-                                 self.window.point.y,
-                                 self.window.size.width,
-                                 self.window.size.height,
-                                 self.window.title))
+    pub fn path(&self) -> Option<String> {
+        Some(format!("window://{}/{}/{}/{}/{}",
+                         self.window.point.x,
+                         self.window.point.y,
+                         self.window.size.width,
+                         self.window.size.height,
+                         self.window.title))
     }
 
     /// Read data to buffer
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         //Read events from window
         let mut i = 0;
         while buf.len() - i >= mem::size_of::<Event>() {
@@ -61,7 +65,7 @@ impl Resource for WindowResource {
     }
 
     /// Write to resource
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let content = &mut self.window.content;
 
         let size = cmp::min(content.size - self.seek, buf.len());
@@ -76,33 +80,33 @@ impl Resource for WindowResource {
     }
 
     /// Seek
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
         let end = self.window.content.size;
 
         self.seek = match pos {
-            ResourceSeek::Start(offset) => cmp::min(end, cmp::max(0, offset)),
-            ResourceSeek::Current(offset) => cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
-            ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
+            SeekFrom::Start(offset) => cmp::min(end, cmp::max(0, offset)),
+            SeekFrom::Current(offset) => cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
+            SeekFrom::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
         };
 
         return Some(self.seek);
     }
 
     /// Sync the resource, should flip
-    fn sync(&mut self) -> bool {
+    pub fn sync(&mut self) -> bool {
         self.window.redraw();
         true
     }
 }
 
-impl KScheme for WindowScheme {
-    fn scheme(&self) -> &str {
-        "window"
+impl Scheme {
+    pub fn new() -> Box<Scheme> {
+        box Scheme
     }
 
-    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
-        let url_path = parse_path(url.reference());
+        let url_path = Url::from_str(url_str).path_parts();
         let pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None => 0,
@@ -133,7 +137,7 @@ impl KScheme for WindowScheme {
         let p: Point = Point::new(pointx, pointy);
         let s: Size = Size::new(size_width, size_height);
 
-        Some(box WindowResource {
+        Some(box Resource {
             window: Window::new(p, s, title),
             seek: 0,
         })
