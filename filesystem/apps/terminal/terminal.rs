@@ -233,17 +233,13 @@ impl<'a> Command<'a> {
         commands.push(Command {
             name: "pwd",
             main: box |args: &Vec<String>| {
-                let mut err = false;
                 if let Some(file) = File::open("") {
                     if let Some(path) = file.path() {
                         println!("{}", path);
                     } else {
-                        err = true;
+                        println!("Could not get the path");
                     }
                 } else {
-                    err = true;
-                }
-                if err {
                     println!("Could not get the path");
                 }
             },
