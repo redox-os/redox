@@ -1,3 +1,5 @@
+use alloc::boxed::Box;
+
 use collections::string::String;
 use collections::vec::Vec;
 
@@ -13,7 +15,8 @@ use collections::string::ToString;
 use schemes::Url;
 
 /// Excecute an excecutable
-pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
+//TODO: Modify current context, take current stdio
+pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context>> {
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;
@@ -104,11 +107,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 debugln!("Failed to open stderr");
             }
 
-            let reenable = scheduler::start_no_ints();
-            if context::contexts_ptr as usize > 0 {
-                (*context::contexts_ptr).push(context);
-            }
-            scheduler::end_no_ints(reenable);
+            return Some(context);
         } else {
             debug::d("Invalid entry\n");
 
@@ -117,4 +116,6 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
         }
     }
+
+    None
 }
