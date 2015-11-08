@@ -77,7 +77,7 @@ impl Window {
         unsafe {
             //let reenable = scheduler::start_no_ints();
             self.content.flip();
-            //(*::session_ptr).redraw = true;
+            (*::session_ptr).redraw = true;
             //scheduler::end_no_ints(reenable);
         }
     }
