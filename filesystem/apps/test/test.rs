@@ -13,7 +13,7 @@ pub fn main() {
     loop {
         print!("# ");
         if let Some(line) = readln!() {
-            let args: Vec<String> = line.split(' ').map(|arg| arg.to_string()).collect();
+            let args: Vec<String> = line.trim().split(' ').map(|arg| arg.to_string()).collect();
 
             if let Some(a_command) = args.get(0) {
                 let console_commands = ["panic",
