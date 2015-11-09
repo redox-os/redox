@@ -227,6 +227,14 @@ pub unsafe fn debug_init() {
     Pio8::new(0x3F8 + 1).write(0x01);
 }
 
+pub unsafe extern "cdecl" fn scheme_loop() {
+    let session = &mut *session_ptr;
+
+    loop {
+
+    }
+}
+
 /// Initialize kernel
 unsafe fn init(font_data: usize) {
     debug_display = 0 as *mut Display;
@@ -306,7 +314,12 @@ unsafe fn init(font_data: usize) {
     });
     */
 
-    debugln!("Loading schemes");
+    (*contexts_ptr).push(Context::new(scheme_loop as usize, &Vec::new()));
+
+    //debugln!("Enabling context switching");
+    //debug_draw = false;
+    context_enabled = true;
+
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -330,10 +343,6 @@ unsafe fn init(font_data: usize) {
             (*contexts_ptr).push(context);
         }
     }
-
-    //debugln!("Enabling context switching");
-    //debug_draw = false;
-    context_enabled = true;
 }
 
 fn dr(reg: &str, value: usize) {

@@ -404,6 +404,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
     if let Some(mut current) = Context::current_mut() {
        let path_string = current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+       debugln!("{}", path_string);
 
        scheduler::end_no_ints(reenable);
 
