@@ -36,11 +36,11 @@ impl Window {
     /// Create a new window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
         let mut font = Vec::new();
-        if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
+        if let Some(mut font_file) = File::open("file:/ui/unifont.font") {
             font_file.read_to_end(&mut font);
         }
 
-        match File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
+        match File::open(&format!("orbital:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
             Some(file) => Some(box Window {
                 x: x,
                 y: y,
