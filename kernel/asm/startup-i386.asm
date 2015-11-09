@@ -83,7 +83,7 @@ gdt:
     dw 0xffff       ; limit 0:15
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
-    db 0b11111010 ;db 0b11111010   ; access byte - code
+    db 0b11111010   ; access byte - code
     db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
@@ -91,7 +91,7 @@ gdt:
     dw 0xffff       ; limit 0:15
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
-    db 0b11110010 ;db 0b11110010   ; access byte - data
+    db 0b11110010   ; access byte - data
     db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
