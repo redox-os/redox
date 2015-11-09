@@ -26,7 +26,8 @@ pub fn main() {
                                         "shutdown",
                                         "clone",
                                         "leak_test",
-                                        "test_hm"];
+                                        "test_hm",
+                                        "int3"];
 
                 match &a_command[..] {
                     command if command == console_commands[0] =>
@@ -87,6 +88,11 @@ pub fn main() {
                     }
                     command if command == console_commands[9] => {
                         ::redox::hashmap::test();
+                    }
+                    command if command == console_commands[10] => {
+                        unsafe {
+                            asm!("int 3" : : : : "intel", "volatile");
+                        }
                     }
                     _ => println!("Commands: {}", console_commands.join(" ")),
                 }
