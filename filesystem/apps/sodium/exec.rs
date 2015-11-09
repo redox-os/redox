@@ -222,6 +222,9 @@ impl Editor {
                         self.scroll_y = self.y() - 3;
                         self.redraw_task = RedrawTask::Full;
                     },
+                    Char('~') => {
+                        self.invert_chars(n);
+                    },
                     Char(c) => {
                         self.status_bar.msg = format!("Unknown command: {}", c);
                         self.redraw_task = RedrawTask::StatusBar;
