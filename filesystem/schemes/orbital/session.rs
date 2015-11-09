@@ -1,4 +1,4 @@
-use redox::{Box, String, ToString, Vec};
+use redox::{Box, String, ToString, Vec, Url};
 use redox::fs::File;
 use redox::io::Read;
 
@@ -66,7 +66,20 @@ impl Session {
             debugln!("Failed to read background");
         }
 
-        //TODO: Open fonts, packages
+        if let Some(mut file) = File::open("file:/apps/") {
+            let mut string = String::new();
+            file.read_to_string(&mut string);
+
+            for folder in string.lines() {
+                if folder.ends_with('/') {
+                    ret.packages.push(Package::from_url(&Url::from_string("file:/apps/".to_string() + &folder)));
+                }
+            }
+        } else {
+            debugln!("Failed to open apps")
+        }
+
+        //TODO: Open packages
         unsafe { ret.redraw() };
 
         ret
