@@ -81,10 +81,20 @@ impl Package {
     }
 
     /// Install package
-    pub fn install(&self, col: &Collection) -> Result<(), InstallError> {
+    pub fn install(&self, col: &Collection) -> Result<u64, InstallError> {
         // Install deps
+        let mut installed = 0;
         for d in self.deps {
-            d.install();
+            let pkg = d.install();
+            if let Err(n) = pkg {
+                installed += n;
+                if n > 10000 {
+                    println!("Warning: Potential infinite recursion (cyclic dependencies)");
+                }
+            } else {
+                return pkg;
+            }
+
         }
 
         // TODO install + add to local package list
@@ -152,11 +162,19 @@ pub enum PackageError {
 pub struct Id {
     pub name: String,
     pub version: Version,
+    pub dist_type: DistType,
+}
+
+/// Distribution type
+pub enum DistType {
+    Binary,
+    Source,
+    Other,
 }
 
 impl Id {
     pub fn to_string(&self) -> String {
-        format!("{}-{}", self.name, self.version)
+        format!("{}-{}-{}", self.name, self.dist_type, self.version)
     }
 }
 
