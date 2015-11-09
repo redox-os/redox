@@ -1,25 +1,28 @@
-use redox::Box;
-
-use redox::String;
-
-use core::{cmp, mem, ptr};
-
+use redox::{Box, String, Url};
+use redox::{cmp, mem, ptr};
+use redox::ops::DerefMut;
 use redox::to_num::ToNum;
 use redox::io::*;
-use redox::Url;
 
 use orbital::event::Event;
 use orbital::Point;
 use orbital::Size;
 
 use self::display::Display;
+use self::session::Session;
 use self::window::Window;
 
 pub mod display;
+pub mod package;
+pub mod session;
 pub mod window;
 
+pub static mut session_ptr: *mut Session = 0 as *mut Session;
+
 /// A window scheme
-pub struct Scheme;
+pub struct Scheme {
+    pub session: Box<Session>
+}
 
 /// A window resource
 pub struct Resource {
@@ -101,7 +104,11 @@ impl Resource {
 
 impl Scheme {
     pub fn new() -> Box<Scheme> {
-        box Scheme
+        let mut ret = box Scheme {
+            session: Session::new()
+        };
+        unsafe { session_ptr = ret.session.deref_mut() };
+        ret
     }
 
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {

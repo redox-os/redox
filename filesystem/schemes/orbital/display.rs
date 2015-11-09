@@ -343,7 +343,7 @@ impl Display {
     */
 
     /// Draw an image
-    pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
+    pub unsafe fn image(&self, point: Point, data: *const Color, size: Size) {
         let start_y = cmp::max(0, point.y) as usize;
         let end_y = cmp::min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -365,7 +365,7 @@ impl Display {
     /* } Optimized */
 
     /// Draw a image with opacity
-    pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size) {
+    pub unsafe fn image_alpha(&self, point: Point, data: *const Color, size: Size) {
         let start_y = cmp::max(0, point.y) as usize;
         let end_y = cmp::min(self.height as isize, point.y + size.height as isize) as usize;
 
