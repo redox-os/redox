@@ -188,13 +188,25 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 //Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86")]
 pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usize, sp: usize, ss: usize) {
-    asm!("iretd" : : : "memory" : "intel", "volatile");
+    asm!("xchg bx, bx
+    mov eax, [esp + 16]
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
+    iretd" : : : "memory" : "intel", "volatile");
 }
 
 //Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86_64")]
 pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usize, sp: usize, ss: usize) {
-    asm!("iretq" : : : "memory" : "intel", "volatile");
+    asm!("xchg bx, bx
+    mov rax, [esp + 32]
+    mov ds, rax
+    mov es, rax
+    mov fs, rax
+    mov gs, rax
+    iretq" : : : "memory" : "intel", "volatile");
 }
 
 /// Reads a Boxed function and executes it
@@ -291,7 +303,7 @@ impl Context {
        }
     }
 
-    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
@@ -319,12 +331,16 @@ impl Context {
             ret.push(*arg);
         }
 
-        //ret.push(0x20 | 3);
-        //ret.push(CONTEXT_STACK_ADDR + CONTEXT_STACK_SIZE - 128);
-        //ret.push(3 << 12);
-        //ret.push(0x18 | 3);
-        ret.push(call);
-        //ret.push(context_userspace as usize);
+        if userspace {
+            ret.push(0x20 | 3);
+            ret.push(CONTEXT_STACK_ADDR + CONTEXT_STACK_SIZE - 128);
+            ret.push(3 << 12);
+            ret.push(0x18 | 3);
+            ret.push(call);
+            ret.push(context_userspace as usize);
+        } else {
+            ret.push(call);
+        }
 
         ret
     }
@@ -340,7 +356,7 @@ impl Context {
 
            let reenable = scheduler::start_no_ints();
            if contexts_ptr as usize > 0 {
-               (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args));
+               (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args, false));
            }
            scheduler::end_no_ints(reenable);
        }

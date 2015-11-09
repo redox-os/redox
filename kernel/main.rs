@@ -267,18 +267,6 @@ pub unsafe fn debug_init() {
     Pio8::new(0x3F8 + 1).write(0x01);
 }
 
-pub unsafe extern "cdecl" fn scheme_loop() {
-    let session = &mut *session_ptr;
-
-    loop {
-        asm!("int 0x80"
-            :
-            : "{eax}"(::syscall::common::SYS_YIELD)
-            : "memory"
-            : "intel", "volatile");
-    }
-}
-
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
     display::fonts = font_data;
@@ -366,8 +354,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
         IcmpScheme::reply_loop();
     });
     */
-
-    (*contexts_ptr).push(Context::new(scheme_loop as usize, &Vec::new()));
 
     //debugln!("Enabling context switching");
     //debug_draw = false;
