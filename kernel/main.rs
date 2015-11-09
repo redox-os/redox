@@ -325,7 +325,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     pci_init(session);
 
-    session.items.push(box DebugScheme);
+    session.items.push(DebugScheme::new());
     session.items.push(box ContextScheme);
     session.items.push(box MemoryScheme);
     //session.items.push(box RandomScheme);
