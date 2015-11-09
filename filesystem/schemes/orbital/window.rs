@@ -84,7 +84,7 @@ impl Window {
     }
 
     /// Draw the window using a `Display`
-    pub fn draw(&mut self, display: &Display) {
+    pub fn draw(&mut self, display: &Display, font: usize) {
         if self.focused {
             self.border_color = Color::rgba(128, 128, 128, 192);
         } else {
@@ -103,7 +103,7 @@ impl Window {
             let mut cursor = Point::new(self.point.x, self.point.y - 17);
             for c in self.title.chars() {
                 if cursor.x + 8 <= self.point.x + self.size.width as isize {
-                    display.char(cursor, c, self.title_color);
+                    display.char(cursor, c, self.title_color, font);
                 }
                 cursor.x += 8;
             }
