@@ -18,9 +18,8 @@ pub struct Session {
     pub cursor: BmpFile,
     /// The background image
     pub background: BmpFile,
-    /// The mouse point
-    pub mouse_point: Point,
-    last_mouse_event: MouseEvent,
+    /// The last mouse event
+    pub last_mouse_event: MouseEvent,
     /// The packages (applications)
     pub packages: Vec<Box<Package>>,
     /// Open windows
@@ -39,7 +38,6 @@ impl Session {
             font: Vec::new(),
             cursor: BmpFile::default(),
             background: BmpFile::default(),
-            mouse_point: Point::new(0, 0),
             last_mouse_event: MouseEvent {
                 x: 0,
                 y: 0,
@@ -225,12 +223,17 @@ impl Session {
             self.windows.push(window_ptr);
         }
 
+        if mouse_event.x != self.last_mouse_event.x || mouse_event.y != self.last_mouse_event.y {
+            self.redraw = true;
+        }
+
         self.last_mouse_event = mouse_event;
     }
 
     /// Redraw screen
     pub unsafe fn redraw(&mut self) {
         if self.redraw {
+            let mouse_point = Point::new(self.last_mouse_event.x, self.last_mouse_event.y);
             self.display.set(Color::rgb(75, 163, 253));
             if !self.background.as_slice().is_empty() {
                 self.display.image(Point::new((self.display.width as isize -
@@ -261,8 +264,8 @@ impl Session {
             for package in self.packages.iter() {
                 if !package.icon.as_slice().is_empty() {
                     let y = self.display.height as isize - package.icon.height() as isize;
-                    if self.mouse_point.y >= y && self.mouse_point.x >= x &&
-                       self.mouse_point.x < x + package.icon.width() as isize {
+                    if mouse_point.y >= y && mouse_point.x >= x &&
+                       mouse_point.x < x + package.icon.width() as isize {
                         self.display.rect(Point::new(x, y),
                                           Size::new(package.icon.width(), package.icon.height()),
                                           Color::rgba(128, 128, 128, 128));
@@ -323,11 +326,11 @@ impl Session {
             }
 
             if !self.cursor.as_slice().is_empty() {
-                self.display.image_alpha(self.mouse_point,
+                self.display.image_alpha(mouse_point,
                                          self.cursor.as_slice().as_ptr(),
                                          Size::new(self.cursor.width(), self.cursor.height()));
             } else {
-                self.display.char(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9),
+                self.display.char(Point::new(mouse_point.x - 3, mouse_point.y - 9),
                                   'X',
                                   Color::rgb(255, 255, 255),
                                   self.font.as_ptr() as usize);
@@ -343,7 +346,7 @@ impl Session {
         }
     }
 
-    pub fn event(&mut self, event: Event) {
+    pub fn event(&mut self, event: &Event) {
         match event.to_option() {
             EventOption::Mouse(mouse_event) => self.on_mouse(mouse_event),
             EventOption::Key(key_event) => self.on_key(key_event),

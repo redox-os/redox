@@ -45,10 +45,6 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn poll(&mut self) -> bool {
-        false
-    }
-
     pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
         match File::open(&("example:".to_string() + path)) {
             Some(file) => Some(box Resource {

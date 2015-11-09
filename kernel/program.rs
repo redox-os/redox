@@ -17,7 +17,7 @@ extern crate orbital;
 use application::main;
 
 #[path="APPLICATION_PATH"]
-mod application;
+pub mod application;
 
 use redox::*;
 use redox::syscall::sys_exit;

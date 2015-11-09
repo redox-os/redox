@@ -1,9 +1,7 @@
 use redox::{Box, String, Url};
-use redox::{cmp, mem, ptr, slice};
-use redox::fs::File;
+use redox::{cmp, mem, ptr};
 use redox::io::*;
 use redox::ops::DerefMut;
-use redox::syscall::sys_yield;
 use redox::to_num::ToNum;
 
 use orbital::event::Event;
@@ -113,27 +111,6 @@ impl Scheme {
         ret
     }
 
-    pub fn poll(&mut self) -> bool {
-        /*
-        let mut event = box Event::new();
-        let event_ptr: *mut Event = event.deref_mut();
-        loop {
-            match events.read(&mut unsafe {
-                slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
-            }) {
-                Some(0) => {
-                    unsafe { self.session.redraw() };
-                    return true;
-                },
-                Some(_) => self.session.event(*event),
-                None => break,
-            }
-        }
-        */
-
-        false
-    }
-
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = Url::from_str(url_str).path_parts();
@@ -172,4 +149,17 @@ impl Scheme {
             seek: 0,
         })
     }
+
+    pub fn event(&mut self, event: &Event) {
+        self.session.event(event);
+        unsafe { self.session.redraw() };
+    }
+}
+
+//TODO: This is a hack and it will go away
+#[cold]
+#[inline(never)]
+#[no_mangle]
+pub unsafe extern "C" fn _event(scheme: *mut Scheme, event: *const Event) {
+    (*scheme).event(&*event);
 }

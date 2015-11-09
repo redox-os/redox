@@ -63,7 +63,7 @@ impl Display {
     pub unsafe fn root() -> Box<Self> {
         let mode_info = &*VBEMODEINFO;
 
-        let ret = box Display {
+        box Display {
             offscreen: sys_alloc(mode_info.bytesperscanline as usize *
                                  mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
@@ -72,12 +72,7 @@ impl Display {
             width: mode_info.xresolution as usize,
             height: mode_info.yresolution as usize,
             root: true,
-        };
-
-        ret.set(Color::rgb(0, 0, 0));
-        ret.flip();
-
-        ret
+        }
     }
 
     /// Create a new display
@@ -86,7 +81,7 @@ impl Display {
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
 
-            let ret = box Display {
+            box Display {
                 offscreen: sys_alloc(memory_size),
                 onscreen: sys_alloc(memory_size),
                 size: memory_size,
@@ -94,12 +89,7 @@ impl Display {
                 width: width,
                 height: height,
                 root: false,
-            };
-
-            ret.set(Color::rgb(0, 0, 0));
-            ret.flip();
-
-            ret
+            }
         }
     }
 
