@@ -12,10 +12,12 @@ use super::window::Window;
 pub struct Session {
     /// The display
     pub display: Box<Display>,
-    /// The background image
-    pub background: BmpFile,
+    /// The font
+    pub font: Vec<u8>,
     /// The cursor icon
     pub cursor: BmpFile,
+    /// The background image
+    pub background: BmpFile,
     /// The mouse point
     pub mouse_point: Point,
     last_mouse_event: MouseEvent,
@@ -34,8 +36,9 @@ impl Session {
     pub fn new() -> Box<Self> {
         let mut ret = box Session {
             display: unsafe { Display::root() },
-            background: BmpFile::default(),
+            font: Vec::new(),
             cursor: BmpFile::default(),
+            background: BmpFile::default(),
             mouse_point: Point::new(0, 0),
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -50,6 +53,14 @@ impl Session {
             redraw: true,
         };
 
+        if let Some(mut file) = File::open("file:/ui/unifont.font") {
+            let mut vec = Vec::new();
+            file.read_to_end(&mut vec);
+            ret.font = vec;
+        } else {
+            debugln!("Failed to read font");
+        }
+
         if let Some(mut file) = File::open("file:/ui/cursor.bmp") {
             let mut vec = Vec::new();
             file.read_to_end(&mut vec);
@@ -58,7 +69,6 @@ impl Session {
             debugln!("Failed to read cursor");
         }
 
-/*
         if let Some(mut file) = File::open("file:/ui/background.bmp") {
             let mut vec = Vec::new();
             file.read_to_end(&mut vec);
@@ -79,7 +89,7 @@ impl Session {
         } else {
             debugln!("Failed to open apps")
         }
-*/
+
         ret
     }
 
@@ -237,7 +247,7 @@ impl Session {
                 match self.windows.get(i) {
                     Some(window_ptr) => {
                         (**window_ptr).focused = i == self.windows.len() - 1;
-                        (**window_ptr).draw(&self.display);
+                        (**window_ptr).draw(&self.display, self.font.as_ptr() as usize);
                     }
                     None => (),
                 }
@@ -264,7 +274,7 @@ impl Session {
                         let mut c_x = x;
                         for c in package.name.chars() {
                             self.display
-                                .char(Point::new(c_x, y - 16), c, Color::rgb(255, 255, 255));
+                                .char(Point::new(c_x, y - 16), c, Color::rgb(255, 255, 255), self.font.as_ptr() as usize);
                             c_x += 8;
                         }
                     }
@@ -296,7 +306,8 @@ impl Session {
                     if c != '\0' {
                         self.display.char(Point::new(x, self.display.height as isize - 24),
                                           c,
-                                          (**window_ptr).title_color);
+                                          (**window_ptr).title_color,
+                                          self.font.as_ptr() as usize);
                     }
                     x += 8;
                     i += 1;
@@ -318,7 +329,8 @@ impl Session {
             } else {
                 self.display.char(Point::new(self.mouse_point.x - 3, self.mouse_point.y - 9),
                                   'X',
-                                  Color::rgb(255, 255, 255));
+                                  Color::rgb(255, 255, 255),
+                                  self.font.as_ptr() as usize);
             }
 
             //let reenable = scheduler::start_no_ints();
