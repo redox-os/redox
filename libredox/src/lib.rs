@@ -18,6 +18,7 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(core_simd)]
+#![feature(core_slice_ext)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -186,6 +187,7 @@
     pub use vec::Vec;
 
     pub use url::*;
+    pub use get_slice::*;
     pub use to_num::*;
 
     pub mod alloc_system;
@@ -204,5 +206,6 @@
 
     pub mod url;
 
+    pub mod get_slice;
     pub mod to_num;
 /* } Additional Stuff */

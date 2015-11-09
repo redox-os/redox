@@ -58,7 +58,7 @@ impl Window {
             ret.ptr = ret.deref_mut();
 
             if ret.ptr as usize > 0 {
-                //(*::session_ptr).add_window(ret.ptr);
+                (*super::session_ptr).add_window(ret.ptr);
             }
         }
 
@@ -77,7 +77,7 @@ impl Window {
         unsafe {
             //let reenable = scheduler::start_no_ints();
             self.content.flip();
-            (*::session_ptr).redraw = true;
+            (*super::session_ptr).redraw = true;
             //scheduler::end_no_ints(reenable);
         }
     }
@@ -122,7 +122,7 @@ impl Window {
             unsafe {
                 //let reenable = scheduler::start_no_ints();
                 display.image(self.point,
-                              self.content.onscreen as *const u32,
+                              self.content.onscreen as *const Color,
                               Size::new(self.content.width, self.content.height));
                 //scheduler::end_no_ints(reenable);
             }
@@ -226,7 +226,7 @@ impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
             if self.ptr as usize > 0 {
-                //(*::session_ptr).remove_window(self.ptr);
+                (*super::session_ptr).remove_window(self.ptr);
             }
         }
     }
