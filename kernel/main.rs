@@ -143,7 +143,7 @@ static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
     loop {
-        asm!("cli");
+        asm!("cli" : : : : "intel", "volatile");
 
         let mut halt = true;
 
@@ -159,10 +159,10 @@ unsafe fn idle_loop() -> ! {
         }
 
         if halt {
-            asm!("sti");
-            asm!("hlt");
+            asm!("sti" : : : : "intel", "volatile");
+            asm!("hlt" : : : : "intel", "volatile");
         } else {
-            asm!("sti");
+            asm!("sti" : : : : "intel", "volatile");
         }
 
         context_switch(false);
