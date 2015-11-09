@@ -58,7 +58,7 @@ pub unsafe fn do_sys_debug(byte: u8) {
                      Color::new(255, 255, 255));
         ::debug_redraw = true;
         //If contexts disabled, probably booting up
-        if /* ! context_enabled && */::debug_draw && ::debug_redraw {
+        if ! context_enabled && ::debug_draw && ::debug_redraw {
             ::debug_redraw = false;
             display.flip();
         }
