@@ -39,7 +39,7 @@ protected_mode:
     mov fs, eax
     mov gs, eax
     mov ss, eax
-    
+
     mov esp, 0x200000 - 128
 
     mov eax, gdt.tss
@@ -94,6 +94,8 @@ gdt:
     db 0b11110010 ;db 0b11110010   ; access byte - data
     db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
+
+.kernel_code_2 equ $ - gdt
 
 .tss equ $ - gdt
     dw (tss.end-tss) & 0xFFFF         ; limit 0:15

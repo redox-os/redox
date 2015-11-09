@@ -174,7 +174,7 @@ impl Context {
 
         ret.regs.ip = call;
         ret.regs.cs = 0x18 | 3;
-        ret.regs.flags = 0;//1 << 9;
+        ret.regs.flags = 3 << 12;//1 << 9;
         ret.regs.sp = stack + CONTEXT_STACK_SIZE - 128;
         ret.regs.ss = 0x20 | 3;
 
@@ -211,7 +211,7 @@ impl Context {
 
         ret.regs.ip = call;
         ret.regs.cs = 0x18 | 3;
-        ret.regs.flags = 0;//1 << 9;
+        ret.regs.flags = 3 << 12;//1 << 9;
         ret.regs.sp = stack + CONTEXT_STACK_SIZE - 128;
         ret.regs.ss = 0x20 | 3;
 
