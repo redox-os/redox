@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 
-use scheduler::context::context_switch;
+use scheduler::context::{context_switch, context_i, contexts_ptr};
 use scheduler;
 
 use schemes::{KScheme, Resource, Url};
@@ -9,18 +9,20 @@ use syscall::handle;
 
 /// A debug resource
 pub struct DebugResource {
+    pub scheme: *mut DebugScheme,
     pub line_toggle: bool,
 }
 
 impl Resource for DebugResource {
     fn dup(&self) -> Option<Box<Resource>> {
         Some(box DebugResource {
+            scheme: self.scheme,
             line_toggle: self.line_toggle
         })
     }
 
     fn url(&self) -> Url {
-        return Url::from_str("debug://");
+        return Url::from_str("debug:");
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -32,7 +34,12 @@ impl Resource for DebugResource {
                 loop {
                     let reenable = scheduler::start_no_ints();
 
-                    if !(*::debug_command).is_empty() {
+                    //Hack!
+                    if (*self.scheme).context >= (*contexts_ptr).len() || (*self.scheme).context < context_i {
+                        (*self.scheme).context = context_i;
+                    }
+
+                    if (*self.scheme).context == context_i && !(*::debug_command).is_empty() {
                         break;
                     }
 
@@ -75,7 +82,17 @@ impl Resource for DebugResource {
     }
 }
 
-pub struct DebugScheme;
+pub struct DebugScheme {
+    pub context: usize,
+}
+
+impl DebugScheme {
+    pub fn new() -> Box<Self> {
+        box DebugScheme {
+            context: 0
+        }
+    }
+}
 
 impl KScheme for DebugScheme {
     fn scheme(&self) -> &str {
@@ -84,6 +101,7 @@ impl KScheme for DebugScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box DebugResource {
+            scheme: self,
             line_toggle: false
         })
     }

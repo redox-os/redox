@@ -80,7 +80,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             *context.args.get() = args;
 
-            if let Some(stdin) = Url::from_str("debug://").open() {
+            if let Some(stdin) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 0, // STDIN
                     resource: stdin,
@@ -89,7 +89,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 debugln!("Failed to open stdin");
             }
 
-            if let Some(stdout) = Url::from_str("debug://").open() {
+            if let Some(stdout) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 1, // STDOUT
                     resource: stdout,
@@ -98,7 +98,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 debugln!("Failed to open stdout");
             }
 
-            if let Some(stderr) = Url::from_str("debug://").open() {
+            if let Some(stderr) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 2, // STDERR
                     resource: stderr,
