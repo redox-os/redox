@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::string::String;
 use collections::vec::Vec;
 
-use scheduler::context::{self, Context, ContextFile, ContextMemory};
+use scheduler::context::{self, contexts_ptr, Context, ContextFile, ContextMemory};
 use common::debug;
 use common::elf::Elf;
 use common::memory;
@@ -16,7 +16,7 @@ use schemes::Url;
 
 /// Excecute an excecutable
 //TODO: Modify current context, take current stdio
-pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context>> {
+pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;
@@ -107,7 +107,9 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
                 debugln!("Failed to open stderr");
             }
 
-            return Some(context);
+            let reenable = scheduler::start_no_ints();
+            (*contexts_ptr).push(context);
+            scheduler::end_no_ints(reenable);
         } else {
             debug::d("Invalid entry\n");
 
@@ -116,6 +118,4 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
             }
         }
     }
-
-    None
 }

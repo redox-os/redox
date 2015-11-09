@@ -27,30 +27,59 @@ pub static mut context_enabled: bool = false;
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(regs: &mut Regs, tss: &mut TSS, interrupted: bool) {
+pub unsafe fn context_switch(interrupted: bool) {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
     if context_enabled {
-        if let Some(mut current) = contexts.get_mut(context_i) {
-            current.interrupted = interrupted;
-
-            current.save(regs, tss);
-            current.unmap();
-        }
-
+        let current_i = context_i;
         context_i += 1;
+        // The only garbage collection in Redox
+        loop {
+            if context_i >= contexts.len() {
+                context_i -= contexts.len();
+            }
+
+            let mut remove = false;
+            if let Some(next) = contexts.get(context_i) {
+                if next.exited {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                drop(contexts.remove(context_i));
+            } else {
+                break;
+            }
+        }
 
         if context_i >= contexts.len() {
             context_i -= contexts.len();
-            ::kernel_events();
         }
 
-        if let Some(mut next) = contexts.get_mut(context_i) {
-            next.interrupted = false;
+        if context_i != current_i {
+            if let Some(current) = contexts.get(current_i) {
+                if let Some(next) = contexts.get(context_i) {
+                    let current_ptr: *mut Box<Context> = mem::transmute(current as *const Box<Context>);
+                    let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
 
-            next.map();
-            next.restore(regs, tss);
+                    (*current_ptr).interrupted = interrupted;
+                    (*next_ptr).interrupted = false;
+
+                    (*current_ptr).save();
+                    (*current_ptr).unmap();
+
+                    if (*next_ptr).kernel_stack > 0 {
+                        (*::tss_ptr).esp0 = ((*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128) as u32;
+                    } else {
+                        (*::tss_ptr).esp0 = 0x200000 - 128;
+                    }
+
+                    (*next_ptr).map();
+                    (*next_ptr).restore();
+                }
+            }
         }
     }
 
@@ -61,26 +90,113 @@ pub unsafe fn context_switch(regs: &mut Regs, tss: &mut TSS, interrupted: bool) 
 /// Exit context
 ///
 /// Unsafe due to interrupt disabling and raw pointers
-pub unsafe fn context_exit(regs: &mut Regs, tss: &mut TSS) {
+pub unsafe fn context_exit() {
     let reenable = scheduler::start_no_ints();
 
-    let contexts = &mut *contexts_ptr;
-    if context_enabled {
-        let old_i = context_i;
+    if let Some(mut current) = Context::current_mut() {
+        current.exited = true;
+    }
 
-        context_switch(regs, tss, false);
+    scheduler::end_no_ints(reenable);
 
-        contexts.remove(old_i);
+    context_switch(false);
+}
 
-        if old_i < context_i {
-            context_i -= 1;
-        }
+/// Clone context
+///
+/// Unsafe due to interrupt disabling, C memory handling, and raw pointers
+pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize){
+    let reenable = scheduler::start_no_ints();
+
+    let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+    if kernel_stack > 0 {
+        let parent = &*parent_ptr;
+
+        ::memcpy(kernel_stack as *mut u8, parent.kernel_stack as *const u8, CONTEXT_STACK_SIZE + 512);
+
+        let mut context = box Context {
+            interrupted: parent.interrupted,
+            exited: parent.exited,
+
+            kernel_stack: kernel_stack,
+            sp: parent.sp - parent.kernel_stack + kernel_stack,
+            flags: parent.flags,
+            fx: kernel_stack + CONTEXT_STACK_SIZE,
+            stack: if let Some(ref entry) = parent.stack {
+                let physical_address = memory::alloc(entry.virtual_size);
+                if physical_address > 0 {
+                    ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
+                    Some(ContextMemory {
+                        physical_address: physical_address,
+                        virtual_address: entry.virtual_address,
+                        virtual_size: entry.virtual_size,
+                    })
+                } else {
+                    None
+                }
+            } else {
+                None
+            },
+            loadable: parent.loadable,
+
+            args: parent.args.clone(),
+            cwd: if flags & CLONE_FS == CLONE_FS {
+                parent.cwd.clone()
+            } else {
+                Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+            },
+            memory: if flags & CLONE_VM == CLONE_VM {
+                parent.memory.clone()
+            } else {
+                let mut mem: Vec<ContextMemory> = Vec::new();
+                for entry in (*parent.memory.get()).iter() {
+                    let physical_address = memory::alloc(entry.virtual_size);
+                    if physical_address > 0 {
+                        ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
+                        mem.push(ContextMemory {
+                            physical_address: physical_address,
+                            virtual_address: entry.virtual_address,
+                            virtual_size: entry.virtual_size,
+                        });
+                    }
+                }
+                Rc::new(UnsafeCell::new(mem))
+            },
+            files: if flags & CLONE_FILES == CLONE_FILES {
+                parent.files.clone()
+            }else {
+                let mut files: Vec<ContextFile> = Vec::new();
+                for file in (*parent.files.get()).iter() {
+                    if let Some(resource) = file.resource.dup() {
+                        files.push(ContextFile {
+                            fd: file.fd,
+                            resource: resource
+                        });
+                    }
+                }
+                Rc::new(UnsafeCell::new(files))
+            },
+        };
+
+        let contexts = &mut *contexts_ptr;
+        contexts.push(context);
     }
 
     scheduler::end_no_ints(reenable);
 }
 
-// Currently unused?
+//Must have absolutely no pushes or pops
+#[cfg(target_arch = "x86")]
+pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usize, sp: usize, ss: usize) {
+    asm!("iretd" : : : "memory" : "intel", "volatile");
+}
+
+//Must have absolutely no pushes or pops
+#[cfg(target_arch = "x86_64")]
+pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usize, sp: usize, ss: usize) {
+    asm!("iretq" : : : "memory" : "intel", "volatile");
+}
+
 /// Reads a Boxed function and executes it
 ///
 /// Unsafe due to raw memory handling and FnBox
@@ -124,17 +240,21 @@ pub struct Context {
     /* These members are used for control purposes by the scheduler { */
         /// Indicates that the context was interrupted, used for prioritizing active contexts
         pub interrupted: bool,
+        /// Indicates that the context exited
+        pub exited: bool,
     /* } */
 
     /* These members control the stack and registers and are unique to each context { */
-        /// The context registers
-        pub regs: Regs,
+        /// The kernel stack
+        pub kernel_stack: usize,
+        /// The current kernel stack pointer
+        pub sp: usize,
+        /// The current kernel flags
+        pub flags: usize,
         /// The location used to save and load SSE and FPU registers
         pub fx: usize,
         /// The context stack
-        pub stack: ContextMemory,
-        /// The kernel stack
-        pub kernel_stack: ContextMemory,
+        pub stack: Option<ContextMemory>,
         /// Indicates that registers can be loaded (they must be saved first)
         pub loadable: bool,
     /* } */
@@ -152,26 +272,41 @@ pub struct Context {
 }
 
 impl Context {
-    #[cfg(target_arch = "x86")]
+    pub unsafe fn root() -> Box<Self> {
+       box Context {
+           interrupted: false,
+           exited: false,
+
+           kernel_stack: 0,
+           sp: 0,
+           flags: 0,
+           fx: memory::alloc(512),
+           stack: None,
+           loadable: false,
+
+           args: Rc::new(UnsafeCell::new(Vec::new())),
+           cwd: Rc::new(UnsafeCell::new(String::new())),
+           memory: Rc::new(UnsafeCell::new(Vec::new())),
+           files: Rc::new(UnsafeCell::new(Vec::new())),
+       }
+    }
+
     pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
-        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE);
+        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             interrupted: false,
+            exited: false,
 
-            regs: Regs::default(),
-            fx: stack + CONTEXT_STACK_SIZE,
-            stack: ContextMemory {
-                physical_address: stack,
+            kernel_stack: kernel_stack,
+            sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
+            flags: 0,
+            fx: kernel_stack + CONTEXT_STACK_SIZE,
+            stack: Some(ContextMemory {
+                physical_address: memory::alloc(CONTEXT_STACK_SIZE),
                 virtual_address: CONTEXT_STACK_ADDR,
                 virtual_size: CONTEXT_STACK_SIZE
-            },
-            kernel_stack: ContextMemory {
-                physical_address: kernel_stack,
-                virtual_address: kernel_stack,
-                virtual_size: CONTEXT_STACK_SIZE
-            },
+            }),
             loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
@@ -179,68 +314,37 @@ impl Context {
             memory: Rc::new(UnsafeCell::new(Vec::new())),
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
-
-        ret.regs.ip = call;
-        ret.regs.cs = 0x18 | 3;
-        ret.regs.flags = 3 << 12;//1 << 9;
-        ret.regs.sp = stack + CONTEXT_STACK_SIZE - 128;
-        ret.regs.ss = 0x20 | 3;
 
         for arg in args.iter() {
             ret.push(*arg);
         }
 
-        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
+        //ret.push(0x20 | 3);
+        //ret.push(CONTEXT_STACK_ADDR + CONTEXT_STACK_SIZE - 128);
+        //ret.push(3 << 12);
+        //ret.push(0x18 | 3);
+        ret.push(call);
+        //ret.push(context_userspace as usize);
 
         ret
     }
 
-    #[cfg(target_arch = "x86_64")]
-    pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
-        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+    pub fn spawn(box_fn: Box<FnBox()>) {
+       unsafe {
+           let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
+           ptr::write(box_fn_ptr, box_fn);
 
-        let mut ret = box Context {
-            interrupted: false,
+           let mut context_box_args: Vec<usize> = Vec::new();
+           context_box_args.push(box_fn_ptr as usize);
+           context_box_args.push(context_exit as usize);
 
-            regs: Regs::default(),
-            stack: ContextMemory {
-                physical_address: stack,
-                virtual_address: CONTEXT_STACK_ADDR,
-                virtual_size: CONTEXT_STACK_SIZE
-            },
-            fx: stack + CONTEXT_STACK_SIZE,
-            loadable: false,
-
-            args: Rc::new(UnsafeCell::new(Vec::new())),
-            cwd: Rc::new(UnsafeCell::new(String::new())),
-            memory: Rc::new(UnsafeCell::new(Vec::new())),
-            files: Rc::new(UnsafeCell::new(Vec::new())),
-        };
-
-        ret.regs.ip = call;
-        ret.regs.cs = 0x18 | 3;
-        ret.regs.flags = 3 << 12;//1 << 9;
-        ret.regs.sp = stack + CONTEXT_STACK_SIZE - 128;
-        ret.regs.ss = 0x20 | 3;
-
-        let mut args_mut = args.clone();
-
-        while args_mut.len() >= 7 {
-            ret.push(args_mut.remove(6));
-        }
-
-        //First six args are in regs
-        ret.regs.r9 = if args_mut.len() >= 6 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        ret.regs.r8 = if args_mut.len() >= 5 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        ret.regs.cx = if args_mut.len() >= 4 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        ret.regs.dx = if args_mut.len() >= 3 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        ret.regs.si = if args_mut.len() >= 2 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-        ret.regs.di = if args_mut.len() >= 1 { if let Some(value) = args_mut.pop() { value } else { 0 } } else { 0 };
-
-        ret.regs.sp = ret.regs.sp - stack + CONTEXT_STACK_ADDR;
-
-        ret
-    }
+           let reenable = scheduler::start_no_ints();
+           if contexts_ptr as usize > 0 {
+               (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args));
+           }
+           scheduler::end_no_ints(reenable);
+       }
+   }
 
     pub unsafe fn current_i() -> usize {
         return context_i;
@@ -261,80 +365,6 @@ impl Context {
             contexts.get_mut(context_i)
         }else{
             None
-        }
-    }
-
-    pub unsafe fn do_clone(&self, flags: usize) -> bool {
-        let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE);
-        if stack > 0 && kernel_stack > 0 {
-            ::memcpy(stack as *mut u8, self.stack.physical_address as *const u8, CONTEXT_STACK_SIZE + 512);
-
-            let mut child = box Context {
-                interrupted: self.interrupted,
-
-                regs: self.regs,
-                stack: ContextMemory {
-                    physical_address: stack,
-                    virtual_address: self.stack.virtual_address,
-                    virtual_size: CONTEXT_STACK_SIZE
-                },
-                kernel_stack: ContextMemory {
-                    physical_address: kernel_stack,
-                    virtual_address: kernel_stack,
-                    virtual_size: CONTEXT_STACK_SIZE,
-                },
-                fx: stack + CONTEXT_STACK_SIZE - 128,
-                loadable: self.loadable,
-
-                args: self.args.clone(),
-                cwd: if flags & CLONE_FS == CLONE_FS {
-                    self.cwd.clone()
-                } else {
-                    Rc::new(UnsafeCell::new((*self.cwd.get()).clone()))
-                },
-                memory: if flags & CLONE_VM == CLONE_VM {
-                    self.memory.clone()
-                } else {
-                    let mut mem: Vec<ContextMemory> = Vec::new();
-                    for entry in (*self.memory.get()).iter() {
-                        let physical_address = memory::alloc(entry.virtual_size);
-                        if physical_address > 0 {
-                            ::memcpy(physical_address as *mut u8, entry.physical_address as *const u8, entry.virtual_size);
-                            mem.push(ContextMemory {
-                                physical_address: physical_address,
-                                virtual_address: entry.virtual_address,
-                                virtual_size: entry.virtual_size,
-                            });
-                        }
-                    }
-                    Rc::new(UnsafeCell::new(mem))
-                },
-                files: if flags & CLONE_FILES == CLONE_FILES {
-                    self.files.clone()
-                }else {
-                    let mut files: Vec<ContextFile> = Vec::new();
-                    for file in (*self.files.get()).iter() {
-                        if let Some(resource) = file.resource.dup() {
-                            files.push(ContextFile {
-                                fd: file.fd,
-                                resource: resource
-                            });
-                        }
-                    }
-                    Rc::new(UnsafeCell::new(files))
-                },
-            };
-
-            let contexts = &mut *contexts_ptr;
-
-            child.regs.ax = 0;
-
-            contexts.push(child);
-
-            true
-        } else {
-            false
         }
     }
 
@@ -394,12 +424,14 @@ impl Context {
     }
 
     pub unsafe fn push(&mut self, data: usize) {
-        self.regs.sp -= mem::size_of::<usize>();
-        ptr::write(self.regs.sp as *mut usize, data);
+        self.sp -= mem::size_of::<usize>();
+        ptr::write(self.sp as *mut usize, data);
     }
 
     pub unsafe fn map(&mut self) {
-        self.stack.map();
+        if let Some(ref mut stack) = self.stack {
+            stack.map();
+        }
         for entry in (*self.memory.get()).iter_mut() {
             entry.map();
         }
@@ -409,13 +441,27 @@ impl Context {
         for entry in (*self.memory.get()).iter_mut() {
             entry.unmap();
         }
-        self.stack.unmap();
+        if let Some(ref mut stack) = self.stack {
+            stack.unmap();
+        }
     }
 
-    pub unsafe fn save(&mut self, regs: &mut Regs, tss: &mut TSS) {
-        tss.esp0 = 0x200000 - 128;
+    //This function must not push or pop
+    #[cold]
+    #[inline(never)]
+    pub unsafe fn save(&mut self) {
+        asm!("pushfd
+            pop $0"
+            : "=r"(self.flags)
+            :
+            : "memory"
+            : "intel", "volatile");
 
-        self.regs = *regs;
+        asm!(""
+            : "={esp}"(self.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
 
         asm!("fxsave [$0]"
             :
@@ -426,7 +472,10 @@ impl Context {
         self.loadable = true;
     }
 
-    pub unsafe fn restore(&mut self, regs: &mut Regs, tss: &mut TSS) {
+    //This function must not push or pop
+    #[cold]
+    #[inline(never)]
+    pub unsafe fn restore(&mut self) {
         if self.loadable {
             asm!("fxrstor [$0]"
                 :
@@ -435,8 +484,26 @@ impl Context {
                 : "intel", "volatile");
         }
 
-        *regs = self.regs;
+        asm!(""
+            :
+            : "{esp}"(self.sp)
+            : "memory"
+            : "intel", "volatile");
 
-        tss.esp0 = (self.kernel_stack.virtual_address + self.kernel_stack.virtual_size - 128) as u32;
+
+        asm!("push $0
+            popfd"
+            :
+            : "r"(self.flags)
+            : "memory"
+            : "intel", "volatile");
+    }
+}
+
+impl Drop for Context {
+    fn drop(&mut self){
+        if self.kernel_stack > 0 {
+            unsafe { memory::unalloc(self.kernel_stack) };
+        }
     }
 }
