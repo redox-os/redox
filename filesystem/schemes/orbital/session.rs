@@ -58,6 +58,7 @@ impl Session {
             debugln!("Failed to read cursor");
         }
 
+/*
         if let Some(mut file) = File::open("file:/ui/background.bmp") {
             let mut vec = Vec::new();
             file.read_to_end(&mut vec);
@@ -78,10 +79,7 @@ impl Session {
         } else {
             debugln!("Failed to open apps")
         }
-
-        //TODO: Open packages
-        unsafe { ret.redraw() };
-
+*/
         ret
     }
 

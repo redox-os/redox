@@ -18,7 +18,7 @@ use programs::executor::execute;
 use graphics::color::Color;
 use graphics::size::Size;
 
-use scheduler;
+use scheduler::{self, Regs, TSS};
 use scheduler::context::{context_enabled, context_exit, context_switch, Context, ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
@@ -241,7 +241,7 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 }
 
 //TODO: Make sure this does not return (it should be called from a clone)
-pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs) -> usize {
+pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs, tss: &mut TSS) -> usize {
     let mut ret = usize::MAX;
 
     let mut len = 0;
@@ -257,11 +257,11 @@ pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs) -> usize {
        let path = Url::from_string(path_string.clone());
        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
        if let Some(context) = execute(&path, &wd, Vec::new()) {
-           current.save(regs);
+           current.save(regs, tss);
            current.unmap();
            *current = context;
            current.map();
-           current.restore(regs);
+           current.restore(regs, tss);
            ret = 0;
        }
     }
@@ -473,7 +473,7 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn syscall_handle(regs: &mut Regs) {
+pub unsafe fn syscall_handle(regs: &mut Regs, tss: &mut TSS) {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as u8),
         // Linux
@@ -483,8 +483,8 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
-        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs),
-        SYS_EXIT => context_exit(regs),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs, tss),
+        SYS_EXIT => context_exit(regs, tss),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
@@ -496,7 +496,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_YIELD => context_switch(regs, false),
+        SYS_YIELD => context_switch(regs, tss, false),
 
         // Rust Memory
         SYS_ALLOC => regs.ax = memory::alloc(regs.bx),

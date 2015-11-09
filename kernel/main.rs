@@ -59,7 +59,8 @@ use programs::executor::execute;
 use programs::scheme::*;
 use programs::session::*;
 
-use scheduler::context::*;
+use scheduler::{Context, Regs, TSS};
+use scheduler::context::{context_enabled, context_exit, context_switch, context_i, contexts_ptr};
 
 use schemes::Url;
 use schemes::arp::*;
@@ -71,7 +72,6 @@ use schemes::ip::*;
 use schemes::memory::*;
 use schemes::display::*;
 
-use syscall::common::{Regs, SYS_YIELD};
 use syscall::handle::*;
 
 /// Allocation
@@ -102,6 +102,8 @@ pub mod scheduler;
 pub mod syscall;
 /// USB input/output
 pub mod usb;
+
+static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
 /// Default display for debugging
 static mut debug_display: *mut Display = 0 as *mut Display;
@@ -231,12 +233,19 @@ pub unsafe extern "cdecl" fn scheme_loop() {
     let session = &mut *session_ptr;
 
     loop {
-
+        asm!("int 0x80"
+            :
+            : "{eax}"(::syscall::common::SYS_YIELD)
+            : "memory"
+            : "intel", "volatile");
     }
 }
 
 /// Initialize kernel
-unsafe fn init(font_data: usize) {
+unsafe fn init(font_data: usize, tss_data: usize) {
+    display::fonts = font_data;
+    tss_ptr = tss_data as *mut TSS;
+
     debug_display = 0 as *mut Display;
     debug_point = Point { x: 0, y: 0 };
     debug_draw = false;
@@ -262,8 +271,6 @@ unsafe fn init(font_data: usize) {
     memory::cluster_init();
     //Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
-
-    ptr::write(display::FONTS, font_data);
 
     debug_display = Box::into_raw(Display::root());
 
@@ -393,7 +400,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            context_exit(regs);
+            context_exit(regs, &mut *tss_ptr);
             loop {
                 asm!("cli");
                 asm!("hlt");
@@ -438,7 +445,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            context_exit(regs);
+            context_exit(regs, &mut *tss_ptr);
             loop {
                 asm!("cli");
                 asm!("hlt");
@@ -461,7 +468,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(regs, true);
+            context_switch(regs, &mut *tss_ptr, true);
         },
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
@@ -477,12 +484,12 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => syscall_handle(regs),
+        0x80 => syscall_handle(regs, &mut *tss_ptr),
         0xFF => {
-            init(regs.ax);
+            init(regs.ax, regs.bx);
             if let Some(mut next) = (*contexts_ptr).get_mut(context_i) {
                 next.map();
-                next.restore(regs);
+                next.restore(regs, &mut *tss_ptr);
             }
         },
         0x0 => exception!("Divide by zero exception"),
