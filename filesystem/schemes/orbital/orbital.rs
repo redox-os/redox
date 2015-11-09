@@ -112,6 +112,8 @@ impl Scheme {
     }
 
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
+        unsafe { (*session_ptr).redraw() };
+
         //window://host/path/path/path is the path type we're working with.
         let url_path = Url::from_str(url_str).path_parts();
         let pointx = match url_path.get(0) {

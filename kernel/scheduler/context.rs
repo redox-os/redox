@@ -11,11 +11,11 @@ use core::{mem, ptr};
 
 use common::memory;
 use common::paging::Page;
-use scheduler;
+use scheduler::{self, Regs, TSS};
 
 use schemes::Resource;
 
-use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM, Regs};
+use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0xC0000000 - CONTEXT_STACK_SIZE;
@@ -27,7 +27,7 @@ pub static mut context_enabled: bool = false;
 /// Switch context
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
+pub unsafe fn context_switch(regs: &mut Regs, tss: &mut TSS, interrupted: bool) {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
@@ -35,7 +35,7 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
         if let Some(mut current) = contexts.get_mut(context_i) {
             current.interrupted = interrupted;
 
-            current.save(regs);
+            current.save(regs, tss);
             current.unmap();
         }
 
@@ -50,7 +50,7 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
             next.interrupted = false;
 
             next.map();
-            next.restore(regs);
+            next.restore(regs, tss);
         }
     }
 
@@ -61,14 +61,14 @@ pub unsafe fn context_switch(regs: &mut Regs, interrupted: bool) {
 /// Exit context
 ///
 /// Unsafe due to interrupt disabling and raw pointers
-pub unsafe fn context_exit(regs: &mut Regs) {
+pub unsafe fn context_exit(regs: &mut Regs, tss: &mut TSS) {
     let reenable = scheduler::start_no_ints();
 
     let contexts = &mut *contexts_ptr;
     if context_enabled {
         let old_i = context_i;
 
-        context_switch(regs, false);
+        context_switch(regs, tss, false);
 
         contexts.remove(old_i);
 
@@ -129,10 +129,12 @@ pub struct Context {
     /* These members control the stack and registers and are unique to each context { */
         /// The context registers
         pub regs: Regs,
-        /// The context stack
-        pub stack: ContextMemory,
         /// The location used to save and load SSE and FPU registers
         pub fx: usize,
+        /// The context stack
+        pub stack: ContextMemory,
+        /// The kernel stack
+        pub kernel_stack: ContextMemory,
         /// Indicates that registers can be loaded (they must be saved first)
         pub loadable: bool,
     /* } */
@@ -153,17 +155,23 @@ impl Context {
     #[cfg(target_arch = "x86")]
     pub unsafe fn new(call: usize, args: &Vec<usize>) -> Box<Self> {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE);
 
         let mut ret = box Context {
             interrupted: false,
 
             regs: Regs::default(),
+            fx: stack + CONTEXT_STACK_SIZE,
             stack: ContextMemory {
                 physical_address: stack,
                 virtual_address: CONTEXT_STACK_ADDR,
                 virtual_size: CONTEXT_STACK_SIZE
             },
-            fx: stack + CONTEXT_STACK_SIZE,
+            kernel_stack: ContextMemory {
+                physical_address: kernel_stack,
+                virtual_address: kernel_stack,
+                virtual_size: CONTEXT_STACK_SIZE
+            },
             loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
@@ -258,7 +266,8 @@ impl Context {
 
     pub unsafe fn do_clone(&self, flags: usize) -> bool {
         let stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-        if stack > 0 {
+        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE);
+        if stack > 0 && kernel_stack > 0 {
             ::memcpy(stack as *mut u8, self.stack.physical_address as *const u8, CONTEXT_STACK_SIZE + 512);
 
             let mut child = box Context {
@@ -269,6 +278,11 @@ impl Context {
                     physical_address: stack,
                     virtual_address: self.stack.virtual_address,
                     virtual_size: CONTEXT_STACK_SIZE
+                },
+                kernel_stack: ContextMemory {
+                    physical_address: kernel_stack,
+                    virtual_address: kernel_stack,
+                    virtual_size: CONTEXT_STACK_SIZE,
                 },
                 fx: stack + CONTEXT_STACK_SIZE - 128,
                 loadable: self.loadable,
@@ -398,7 +412,9 @@ impl Context {
         self.stack.unmap();
     }
 
-    pub unsafe fn save(&mut self, regs: &mut Regs) {
+    pub unsafe fn save(&mut self, regs: &mut Regs, tss: &mut TSS) {
+        tss.esp0 = 0x200000 - 128;
+
         self.regs = *regs;
 
         asm!("fxsave [$0]"
@@ -410,7 +426,7 @@ impl Context {
         self.loadable = true;
     }
 
-    pub unsafe fn restore(&mut self, regs: &mut Regs) {
+    pub unsafe fn restore(&mut self, regs: &mut Regs, tss: &mut TSS) {
         if self.loadable {
             asm!("fxrstor [$0]"
                 :
@@ -420,5 +436,7 @@ impl Context {
         }
 
         *regs = self.regs;
+
+        tss.esp0 = (self.kernel_stack.virtual_address + self.kernel_stack.virtual_size - 128) as u32;
     }
 }

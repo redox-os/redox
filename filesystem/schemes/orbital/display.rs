@@ -48,8 +48,6 @@ pub struct VBEModeInfo {
 
 const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
 
-pub const FONTS: *mut usize = 0x200008 as *mut usize;
-
 /// A display
 pub struct Display {
     pub offscreen: usize,
