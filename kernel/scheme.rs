@@ -15,7 +15,7 @@ extern crate orbital;
 use scheme::{Resource, Scheme};
 
 #[path="SCHEME_PATH"]
-mod scheme;
+pub mod scheme;
 
 use redox::Box;
 use redox::io::{Read, Write, Seek, SeekFrom};
@@ -34,18 +34,6 @@ pub unsafe extern "C" fn _start() -> *mut Scheme {
 pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
     drop(Box::from_raw(scheme));
 }
-
-#[cold]
-#[inline(never)]
-#[no_mangle]
-pub unsafe extern "C" fn _poll(scheme: *mut Scheme) -> usize {
-    if (*scheme).poll() {
-        0
-    } else {
-        usize::MAX
-    }
-}
-
 
 #[cold]
 #[inline(never)]

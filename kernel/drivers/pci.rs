@@ -61,12 +61,7 @@ pub unsafe fn pci_device(session: &mut Session,
            debug::dh(base & 0xFFFFFFF0);
            debug::dl();
        } else if interface_id == 0x00 {
-           //session.items.push(Uhci::new(pci));
-           let base = pci.read(0x10) as usize;
-
-           debug::d("UHCI Controller on ");
-           debug::dh(base & 0xFFFFFFF0);
-           debug::dl();
+           session.items.push(Uhci::new(pci));
        } else {
            debug::d("Unknown USB interface version\n");
        }

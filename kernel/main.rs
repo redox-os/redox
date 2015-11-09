@@ -233,7 +233,15 @@ unsafe fn event_loop() -> ! {
                             ::debug_draw = true;
                             ::debug_redraw = true;
                         } else {
-                            //session.event(event);
+                            //TODO: Magical orbital hack
+                            let reenable = scheduler::start_no_ints();
+                            for item in (*::session_ptr).items.iter_mut() {
+                                if item.scheme() == "orbital" {
+                                    item.event(&event);
+                                    break;
+                                }
+                            }
+                            scheduler::end_no_ints(reenable);
                         }
                     }
                 },
