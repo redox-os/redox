@@ -84,6 +84,10 @@ impl Scheme {
         box Scheme
     }
 
+    pub fn poll(&mut self) -> bool {
+        false
+    }
+
     pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
         let (scheme, mut title) = path.split_at(path.find(':').unwrap_or(path.len() - 1) + 1);
 

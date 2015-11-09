@@ -38,6 +38,18 @@ pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
+pub unsafe extern "C" fn _poll(scheme: *mut Scheme) -> usize {
+    if (*scheme).poll() {
+        0
+    } else {
+        usize::MAX
+    }
+}
+
+
+#[cold]
+#[inline(never)]
+#[no_mangle]
 pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usize) -> *mut Resource {
     let mut len = 0;
     for i in 0..4096 {

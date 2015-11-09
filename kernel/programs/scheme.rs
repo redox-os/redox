@@ -290,6 +290,7 @@ pub struct SchemeItem {
     memory: ContextMemory,
     _start: usize,
     _stop: usize,
+    _poll: usize,
     _open: usize,
     _dup: usize,
     _fpath: usize,
@@ -316,6 +317,7 @@ impl SchemeItem {
             },
             _start: 0,
             _stop: 0,
+            _poll: 0,
             _open: 0,
             _dup: 0,
             _fpath: 0,
@@ -355,6 +357,7 @@ impl SchemeItem {
 
                     scheme_item._start = executable.symbol("_start");
                     scheme_item._stop = executable.symbol("_stop");
+                    scheme_item._poll = executable.symbol("_poll");
                     scheme_item._open = executable.symbol("_open");
                     scheme_item._dup = executable.symbol("_dup");
                     scheme_item._fpath = executable.symbol("_fpath");
@@ -392,6 +395,19 @@ impl SchemeItem {
 impl KScheme for SchemeItem {
     fn scheme(&self) -> &str {
         return &self.scheme;
+    }
+
+    fn on_poll(&mut self){
+        if self.valid(self._poll) {
+            unsafe {
+                /*
+                let context = SchemeContext::enter(&self.memory);
+                let fn_ptr: *const usize = &self._poll;
+                (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle);
+                context.exit();
+                */
+            }
+        }
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {

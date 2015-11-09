@@ -56,6 +56,10 @@ impl Scheme {
         box Scheme
     }
 
+    pub fn poll(&mut self) -> bool {
+        false
+    }
+
     pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
         write!(io::stdout(), "Open {}\n", path);
         Some(box Resource {

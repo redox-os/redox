@@ -441,6 +441,10 @@ impl Scheme {
         box Scheme
     }
 
+    pub fn poll(&mut self) -> bool {
+        false
+    }
+
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
