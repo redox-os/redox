@@ -94,6 +94,11 @@ Editing:
 - d<motion> : Delete a given selection
               (given by <motion>)
 - o : Insert a new line
+- ~ : Switch the character under the cursor
+      with its counterpart (if it has one).
+      For example a -> A
+                  ( -> )
+                  / -> \
 - ; : Go to prompt mode
 
 Cursor:
