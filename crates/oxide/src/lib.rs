@@ -2,16 +2,7 @@ use redox::*;
 use common::*;
 mod crypto;
 use crypto::{Sha512, PubKey, RsaSignature};
-
-/// Version
-#[derive(Hash, Clone)]
-pub enum Version {
-    NewerThan(u64),
-    OlderThan(u64),
-    Between(u64, u64),
-    Excatly(u64),
-    Newest,
-}
+use redox::time::Duration;
 
 // TODO: Implement format
 
@@ -27,8 +18,6 @@ pub struct Developer {
 #[derive(Hash, Clone)]
 /// An installable package for Oxide
 pub struct Package {
-    /// The id of this package
-    pub id: Id,
     /// Description
     pub desc: String,
     /// The developer of the package
@@ -36,11 +25,14 @@ pub struct Package {
     /// The developer's signature of this package's content (tarball)
     pub dev_sign: RsaSignature,
     /// The signatures of this package
-    pub sign: Vec<RsaSignature>,
+    pub sign: HashSet<RsaSignature>,
     /// The files this package will create on the computer.
-    pub files: Vec<String>,
+    pub files: HashSet<String>,
     /// Dependencies of this package
-    pub deps: Vec<Id>,
+    /// Making sure the newest (compatible) version is the one used in the deps is up to the
+    /// package provider (and is thus NOT included in the signature because it's already
+    /// signed).
+    pub deps: HashSet<Id>,
 }
 
 impl Package {
@@ -81,7 +73,7 @@ impl Package {
     }
 
     /// Install package
-    pub fn install(&self, col: &Collection) -> Result<u64, InstallError> {
+    pub fn install(&self, col: &Collection) -> Result<u64, PackageError> {
         // Install deps
         let mut installed = 0;
         for d in self.deps {
@@ -96,6 +88,12 @@ impl Package {
             }
 
         }
+
+        // TODO install + add to local package list
+    }
+
+    /// Update packages
+    pub fn update(&self, col: &Collection) -> Result<u64, PackageError> {
 
         // TODO install + add to local package list
     }
@@ -161,7 +159,7 @@ pub enum PackageError {
 /// An package descriptor
 pub struct Id {
     pub name: String,
-    pub version: Version,
+    pub version: String,
     pub dist_type: DistType,
 }
 
@@ -222,17 +220,21 @@ pub struct Collection {
     /// The trusted keys
     pub keys: KeyDb,
     /// The installed packages
-    pub installed: Vec<LocalPackage>,
+    pub installed: HashMap<Id, LocalPackage>,
+    /// The root packages (packages which are not just installed as dependencies to other packages)
+    pub root: HashSet<Id>,
 }
 
 /// A package installed locally
 pub struct LocalPackage {
     /// Files it owns
-    pub owns: Vec<String>,
-    /// Is this package installed as root (i.e. isnt just installed as a dep for another package)?
-    pub root: bool,
+    pub owns: HashSet<String>,
     /// The package
     pub package: Package,
+    /// Dependency to
+    pub dep_to: HashSet<Id>,
+    /// Dependency for
+    pub dep_for: HashSet<Id>,
 }
 
 impl LocalPackage {
