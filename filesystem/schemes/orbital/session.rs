@@ -1,4 +1,6 @@
 use redox::{Box, String, ToString, Vec};
+use redox::fs::File;
+use redox::io::Read;
 
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
@@ -48,7 +50,24 @@ impl Session {
             redraw: true,
         };
 
-        //TODO: Open background, cursor, fonts, packages
+        if let Some(mut file) = File::open("file:/ui/cursor.bmp") {
+            let mut vec = Vec::new();
+            file.read_to_end(&mut vec);
+            ret.cursor = BmpFile::from_data(&vec);
+        } else {
+            debugln!("Failed to read cursor");
+        }
+
+        if let Some(mut file) = File::open("file:/ui/background.bmp") {
+            let mut vec = Vec::new();
+            file.read_to_end(&mut vec);
+            ret.background = BmpFile::from_data(&vec);
+        } else {
+            debugln!("Failed to read background");
+        }
+
+        //TODO: Open fonts, packages
+        unsafe { ret.redraw() };
 
         ret
     }

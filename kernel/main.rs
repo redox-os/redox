@@ -306,7 +306,6 @@ unsafe fn init(font_data: usize) {
     });
     */
 
-    /*
     debugln!("Loading schemes");
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
@@ -322,7 +321,6 @@ unsafe fn init(font_data: usize) {
             }
         }
     }
-    */
 
     {
         let path_string = "file:/apps/terminal/terminal.bin";
