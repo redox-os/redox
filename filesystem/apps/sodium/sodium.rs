@@ -52,6 +52,8 @@ pub use self::delete::*;
 mod exec;
 pub use self::exec::*;
 
+pub mod invert;
+
 pub fn main() {
     let editor = Editor::new();
 }
