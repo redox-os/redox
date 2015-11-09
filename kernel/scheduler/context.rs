@@ -188,8 +188,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 //Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86")]
 pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usize, sp: usize, ss: usize) {
-    asm!("xchg bx, bx
-    mov eax, [esp + 16]
+    asm!("mov eax, [esp + 16]
     mov ds, eax
     mov es, eax
     mov fs, eax
@@ -200,8 +199,7 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usiz
 //Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86_64")]
 pub unsafe extern "cdecl" fn context_userspace(ip: usize, cs: usize, flags: usize, sp: usize, ss: usize) {
-    asm!("xchg bx, bx
-    mov rax, [esp + 32]
+    asm!("mov rax, [esp + 32]
     mov ds, rax
     mov es, rax
     mov fs, rax
@@ -334,7 +332,7 @@ impl Context {
         if userspace {
             ret.push(0x20 | 3);
             ret.push(CONTEXT_STACK_ADDR + CONTEXT_STACK_SIZE - 128);
-            ret.push(3 << 12);
+            ret.push(1 << 9);
             ret.push(0x18 | 3);
             ret.push(call);
             ret.push(context_userspace as usize);
