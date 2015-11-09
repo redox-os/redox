@@ -1,8 +1,10 @@
 use redox::{Box, String, Url};
-use redox::{cmp, mem, ptr};
-use redox::ops::DerefMut;
-use redox::to_num::ToNum;
+use redox::{cmp, mem, ptr, slice};
+use redox::fs::File;
 use redox::io::*;
+use redox::ops::DerefMut;
+use redox::syscall::sys_yield;
+use redox::to_num::ToNum;
 
 use orbital::event::Event;
 use orbital::Point;
@@ -21,7 +23,7 @@ pub static mut session_ptr: *mut Session = 0 as *mut Session;
 
 /// A window scheme
 pub struct Scheme {
-    pub session: Box<Session>
+    pub session: Box<Session>,
 }
 
 /// A window resource
@@ -111,9 +113,28 @@ impl Scheme {
         ret
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
-        unsafe { (*session_ptr).redraw() };
+    pub fn poll(&mut self) -> bool {
+        /*
+        let mut event = box Event::new();
+        let event_ptr: *mut Event = event.deref_mut();
+        loop {
+            match events.read(&mut unsafe {
+                slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
+            }) {
+                Some(0) => {
+                    unsafe { self.session.redraw() };
+                    return true;
+                },
+                Some(_) => self.session.event(*event),
+                None => break,
+            }
+        }
+        */
 
+        false
+    }
+
+    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = Url::from_str(url_str).path_parts();
         let pointx = match url_path.get(0) {
