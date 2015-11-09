@@ -95,8 +95,6 @@ gdt:
     db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
-.kernel_code_2 equ $ - gdt
-
 .tss equ $ - gdt
     dw (tss.end-tss) & 0xFFFF         ; limit 0:15
     dw (tss-$$+0x7C00) & 0xFFFF             ; base 0:15
