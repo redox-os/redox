@@ -65,10 +65,18 @@ pub unsafe fn do_sys_debug(byte: u8) {
     }
 
     let serial_status = Pio8::new(0x3F8 + 5);
-    while serial_status.read() & 0x20 == 0 {}
-
     let mut serial_data = Pio8::new(0x3F8);
+
+    while serial_status.read() & 0x20 == 0 {}
     serial_data.write(byte);
+
+    if byte == 8 {
+        while serial_status.read() & 0x20 == 0 {}
+        serial_data.write(0x20);
+
+        while serial_status.read() & 0x20 == 0 {}
+        serial_data.write(8);
+    }
 
     scheduler::end_no_ints(reenable);
 }
