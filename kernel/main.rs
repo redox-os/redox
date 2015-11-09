@@ -103,7 +103,7 @@ pub mod syscall;
 /// USB input/output
 pub mod usb;
 
-static mut tss_ptr: *mut TSS = 0 as *mut TSS;
+pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
 /// Default display for debugging
 static mut debug_display: *mut Display = 0 as *mut Display;
@@ -140,81 +140,119 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
-pub unsafe fn kernel_events() {
+/// Idle loop (active while idle)
+unsafe fn idle_loop() -> ! {
+    loop {
+        asm!("cli");
+
+        let mut halt = true;
+
+        let contexts = & *contexts_ptr;
+        for i in 1..contexts.len() {
+            match contexts.get(i) {
+                Some(context) => if context.interrupted {
+                    halt = false;
+                    break;
+                },
+                None => ()
+            }
+        }
+
+        if halt {
+            asm!("sti");
+            asm!("hlt");
+        } else {
+            asm!("sti");
+        }
+
+        context_switch(false);
+    }
+}
+
+/// Event poll loop
+unsafe fn poll_loop() -> ! {
     let session = &mut *session_ptr;
-    let events = &mut *events_ptr;
-
-    //asm!("cli");
-
-    session.on_poll();
 
     loop {
-        let event_option = events.pop();
+        session.on_poll();
 
-        match event_option {
-            Some(event) => {
-                if debug_draw {
-                    match event.to_option() {
-                        EventOption::Key(key_event) => {
-                            if key_event.pressed {
-                                match key_event.scancode {
-                                    event::K_BKSP => if !session.cmd.is_empty() {
-                                        debug::db(8);
-                                        session.cmd.pop();
-                                    },
-                                    _ => match key_event.character {
-                                        '\0' => (),
-                                        '\n' => {
-                                            *::debug_command = session.cmd.clone() + "\n";
+        context_switch(false);
+    }
+}
 
-                                            debug::dl();
-                                            session.cmd.clear();
+/// Event loop
+unsafe fn event_loop() -> ! {
+    let session = &mut *session_ptr;
+    let events = &mut *events_ptr;
+    let mut cmd = String::new();
+    loop {
+        loop {
+            let reenable = scheduler::start_no_ints();
+
+            let event_option = events.pop();
+
+            scheduler::end_no_ints(reenable);
+
+            match event_option {
+                Some(event) => {
+                    if debug_draw {
+                        match event.to_option() {
+                            EventOption::Key(key_event) => {
+                                if key_event.pressed {
+                                    match key_event.scancode {
+                                        event::K_F2 => {
+                                            ::debug_draw = false;
+                                            //(*::session_ptr).redraw = true;
                                         },
-                                        _ => {
-                                            session.cmd.push(key_event.character);
-                                            debug::dc(key_event.character);
+                                        event::K_BKSP => if !cmd.is_empty() {
+                                            debug::db(8);
+                                            cmd.pop();
                                         },
-                                    },
+                                        _ => match key_event.character {
+                                            '\0' => (),
+                                            '\n' => {
+                                                let reenable = scheduler::start_no_ints();
+                                                *::debug_command = cmd.clone() + "\n";
+                                                scheduler::end_no_ints(reenable);
+
+                                                cmd.clear();
+                                                debug::dl();
+                                            },
+                                            _ => {
+                                                cmd.push(key_event.character);
+                                                debug::dc(key_event.character);
+                                            },
+                                        },
+                                    }
                                 }
-                            }
-                        },
-                        _ => (),
+                            },
+                            _ => (),
+                        }
+                    } else {
+                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
+                            ::debug_draw = true;
+                            ::debug_redraw = true;
+                        } else {
+                            //session.event(event);
+                        }
                     }
-                }
-            },
-            None => break
+                },
+                None => break
+            }
         }
-    }
 
-    if debug_draw {
-        let display = &*debug_display;
-        if debug_redraw {
-            debug_redraw = false;
-            display.flip();
+        if debug_draw {
+            let display = &*debug_display;
+            if debug_redraw {
+                debug_redraw = false;
+                display.flip();
+            }
+        } else {
+            //session.redraw();
         }
-    }
 
-    let mut halt = true;
-
-    let contexts = & *contexts_ptr;
-    for i in 1..contexts.len() {
-        match contexts.get(i) {
-            Some(context) => if context.interrupted {
-                halt = false;
-                break;
-            },
-            None => ()
-        }
+        context_switch(false);
     }
-
-    /*
-    if halt {
-        asm!("sti");
-        asm!("hlt");
-    } else {
-        asm!("sti");
-    }
-    */
 }
 
 /// Initialize debug
@@ -286,6 +324,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     clock_realtime = Rtc::new().time();
 
     contexts_ptr = Box::into_raw(box Vec::new());
+    (*contexts_ptr).push(Context::root());
 
     session_ptr = Box::into_raw(Session::new());
 
@@ -311,6 +350,13 @@ unsafe fn init(font_data: usize, tss_data: usize) {
         arp: Vec::new()
     });
     //session.items.push(box DisplayScheme);
+
+    Context::spawn(box move || {
+        poll_loop();
+    });
+    Context::spawn(box move || {
+        event_loop();
+    });
 
     /*
     Context::spawn(box move || {
@@ -346,9 +392,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
         let path_string = "file:/apps/terminal/terminal.bin";
         let path = Url::from_string(path_string.to_string());
         let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
-        if let Some(context) = execute(&path, &wd, Vec::new()) {
-            (*contexts_ptr).push(context);
-        }
+        execute(&path, &wd, Vec::new());
     }
 }
 
@@ -400,7 +444,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            context_exit(regs, &mut *tss_ptr);
+            context_exit();
             loop {
                 asm!("cli");
                 asm!("hlt");
@@ -445,7 +489,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             dr("CR4", cr4);
 
-            context_exit(regs, &mut *tss_ptr);
+            context_exit();
             loop {
                 asm!("cli");
                 asm!("hlt");
@@ -468,7 +512,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(regs, &mut *tss_ptr, true);
+            context_switch(true);
         },
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
@@ -484,13 +528,10 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => syscall_handle(regs, &mut *tss_ptr),
+        0x80 => syscall_handle(regs),
         0xFF => {
             init(regs.ax, regs.bx);
-            if let Some(mut next) = (*contexts_ptr).get_mut(context_i) {
-                next.map();
-                next.restore(regs, &mut *tss_ptr);
-            }
+            idle_loop();
         },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),

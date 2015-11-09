@@ -18,8 +18,8 @@ use programs::executor::execute;
 use graphics::color::Color;
 use graphics::size::Size;
 
-use scheduler::{self, Regs, TSS};
-use scheduler::context::{context_enabled, context_exit, context_switch, Context, ContextFile};
+use scheduler::{self, Regs};
+use scheduler::context::{context_enabled, context_clone, context_exit, context_switch, Context, ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -138,17 +138,42 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
 #[cold]
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
-    let mut ret = usize::MAX;
+    let mut parent_ptr: *const Context = 0 as *const Context;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        if parent.do_clone(flags) {
-            ret = 1;
-        }
+        parent_ptr = parent.deref();
+
+        let mut context_clone_args: Vec<usize> = Vec::new();
+        context_clone_args.push(flags);
+        context_clone_args.push(parent_ptr as usize);
+        context_clone_args.push(context_exit as usize);
+
+        let contexts = &mut *::scheduler::context::contexts_ptr;
+        contexts.push(Context::new(context_clone as usize, &context_clone_args));
     }
 
     scheduler::end_no_ints(reenable);
+
+    context_switch(false);
+
+    let mut ret = usize::MAX;
+
+    if parent_ptr as usize > 0 {
+        let reenable = scheduler::start_no_ints();
+
+        if let Some(new) = Context::current() {
+            let new_ptr: *const Context = new.deref();
+            if new_ptr == parent_ptr {
+                ret = 1;
+            }else{
+                ret = 0;
+            }
+        }
+
+        scheduler::end_no_ints(reenable);
+    }
 
     ret
 }
@@ -241,7 +266,7 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 }
 
 //TODO: Make sure this does not return (it should be called from a clone)
-pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs, tss: &mut TSS) -> usize {
+pub unsafe fn do_sys_execve(path: *const u8) -> usize {
     let mut ret = usize::MAX;
 
     let mut len = 0;
@@ -256,14 +281,7 @@ pub unsafe fn do_sys_execve(path: *const u8, regs: &mut Regs, tss: &mut TSS) -> 
 
        let path = Url::from_string(path_string.clone());
        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
-       if let Some(context) = execute(&path, &wd, Vec::new()) {
-           current.save(regs, tss);
-           current.unmap();
-           *current = context;
-           current.map();
-           current.restore(regs, tss);
-           ret = 0;
-       }
+       execute(&path, &wd, Vec::new());
     }
 
     scheduler::end_no_ints(reenable);
@@ -473,7 +491,7 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn syscall_handle(regs: &mut Regs, tss: &mut TSS) {
+pub unsafe fn syscall_handle(regs: &mut Regs) {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as u8),
         // Linux
@@ -483,8 +501,8 @@ pub unsafe fn syscall_handle(regs: &mut Regs, tss: &mut TSS) {
         SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
-        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs, tss),
-        SYS_EXIT => context_exit(regs, tss),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
+        SYS_EXIT => context_exit(),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
@@ -496,7 +514,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs, tss: &mut TSS) {
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         //TODO: unlink
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_YIELD => context_switch(regs, tss, false),
+        SYS_YIELD => context_switch(false),
 
         // Rust Memory
         SYS_ALLOC => regs.ax = memory::alloc(regs.bx),

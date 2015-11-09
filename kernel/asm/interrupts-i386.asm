@@ -29,7 +29,6 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-
     push ebp
     push esi
     push edi
