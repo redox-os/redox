@@ -14,6 +14,7 @@ use self::window::Window;
 
 pub mod display;
 pub mod package;
+pub mod scheduler;
 pub mod session;
 pub mod window;
 

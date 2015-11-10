@@ -115,6 +115,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
         ::memcpy(kernel_stack as *mut u8, parent.kernel_stack as *const u8, CONTEXT_STACK_SIZE + 512);
 
         let mut context = box Context {
+            name: parent.name.clone(),
             interrupted: parent.interrupted,
             exited: parent.exited,
 
@@ -248,6 +249,8 @@ pub struct ContextFile {
 
 pub struct Context {
     /* These members are used for control purposes by the scheduler { */
+        /// The name of the context
+        pub name: String,
         /// Indicates that the context was interrupted, used for prioritizing active contexts
         pub interrupted: bool,
         /// Indicates that the context exited
@@ -284,6 +287,7 @@ pub struct Context {
 impl Context {
     pub unsafe fn root() -> Box<Self> {
        box Context {
+           name: "kidle".to_string(),
            interrupted: false,
            exited: false,
 
@@ -301,10 +305,11 @@ impl Context {
        }
     }
 
-    pub unsafe fn new(call: usize, args: &Vec<usize>, userspace: bool) -> Box<Self> {
+    pub unsafe fn new(name: String, userspace: bool, call: usize, args: &Vec<usize>) -> Box<Self> {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
+            name: name,
             interrupted: false,
             exited: false,
 
@@ -343,7 +348,7 @@ impl Context {
         ret
     }
 
-    pub fn spawn(box_fn: Box<FnBox()>) {
+    pub fn spawn(name: String, box_fn: Box<FnBox()>) {
        unsafe {
            let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
            ptr::write(box_fn_ptr, box_fn);
@@ -354,7 +359,7 @@ impl Context {
 
            let reenable = scheduler::start_no_ints();
            if contexts_ptr as usize > 0 {
-               (*contexts_ptr).push(Context::new(context_box as usize, &context_box_args, false));
+               (*contexts_ptr).push(Context::new(name, false, context_box as usize, &context_box_args));
            }
            scheduler::end_no_ints(reenable);
        }

@@ -17,6 +17,8 @@ use schemes::Url;
 /// Excecute an excecutable
 //TODO: Modify current context, take current stdio
 pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
+    debugln!("{}", url.to_string());
+
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;
@@ -67,7 +69,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
             context_args.push(argc);
 
-            let mut context = Context::new(entry, &context_args, true);
+            let mut context = Context::new(url.to_string(), true, entry, &context_args);
 
             //TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {

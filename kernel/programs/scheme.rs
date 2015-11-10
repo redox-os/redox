@@ -306,6 +306,8 @@ pub struct SchemeItem {
 impl SchemeItem {
     /// Load scheme item from URL
     pub fn from_url(url: &Url) -> Box<SchemeItem> {
+        debugln!("{}", url.to_string());
+
         let mut scheme_item = box SchemeItem {
             url: url.clone(),
             scheme: String::new(),
