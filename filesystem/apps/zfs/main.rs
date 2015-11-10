@@ -63,25 +63,31 @@ impl ZfsReader {
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
-    pub fn uber(&mut self, uberblocks: &[Uberblock]) -> Result<Uberblock, String> {
+    pub fn uber(&mut self, uberblocks: &[u8]) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
-        for uberblock in uberblocks.iter() {
-            let newest =
-                match newest_uberblock {
-                    Some(previous) => {
-                        if uberblock.txg > previous.txg {
-                            // Found a newer uberblock
-                            true
-                        } else {
-                            false
+        for i in 0..128 {
+            /*let ub_len = 2*512;
+            let ub_start = i * ub_len;
+            let ub_end = ub_start + ub_len;
+            if let Ok(uberblock) = Uberblock::from_bytes(&uberblocks[ub_start..ub_end]) {*/
+            if let Ok(uberblock) = Uberblock::from_bytes(&self.zio.read(256 + i * 2, 2)) {
+                let newest =
+                    match newest_uberblock {
+                        Some(previous) => {
+                            if uberblock.txg > previous.txg {
+                                // Found a newer uberblock
+                                true
+                            } else {
+                                false
+                            }
                         }
-                    }
-                    // No uberblock yet, so first one we find is the newest
-                    None => true,
-                };
+                        // No uberblock yet, so first one we find is the newest
+                        None => true,
+                    };
 
-            if newest {
-                newest_uberblock = Some(*uberblock);
+                if newest {
+                    newest_uberblock = Some(uberblock);
+                }
             }
         }
 
@@ -112,9 +118,9 @@ impl Zfs {
         let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: ArCache::new() };
 
         // Read vdev label
-        let mut vdev_label = try!(VdevLabel::from_bytes(&zfs_reader.zio.read(0, 256 * 2)));
-        let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
-        let nv_list = try!(nvstream::decode_nv_list(&mut xdr).map_err(|e| format!("{:?}", e)));
+        let vdev_label = try!(VdevLabel::from_bytes(&zfs_reader.zio.read(0, 256 * 2)));
+        //let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
+        //let nv_list = try!(nvstream::decode_nv_list(&mut xdr).map_err(|e| format!("{:?}", e)));
         /*let vdev_tree =
             match nv_list.find("vdev_tree") {
                 Some(vdev_tree) => {
@@ -142,8 +148,8 @@ impl Zfs {
         // 2nd dnode in MOS points at the root dataset zap
         let dnode1: DNodePhys = try!(zfs_reader.read_type_array(&mos_block_ptr1, 1));
 
-        let thing = dnode1.get_blockptr(0);
-        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(thing));
+        let root_ds_dnode= dnode1.get_blockptr(0);
+        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(root_ds_dnode));
 
         let root_ds_dnode: DNodePhys =
             try!(zfs_reader.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize));
@@ -405,7 +411,7 @@ pub fn main() {
                                                     let sm_dnode: Result<DNodePhys, String> =
                                                         zfs.reader.read_type_array(zfs.mos.meta_dnode.get_blockptr(0), sm_id as usize);
                                                     let sm_dnode = sm_dnode.unwrap(); // TODO
-                                                    let space_map = SpaceMapPhys::from_bytes(sm_dnode.get_bonus()).unwrap(); // TODO
+                                                    let space_map_phys = SpaceMapPhys::from_bytes(sm_dnode.get_bonus()).unwrap(); // TODO
 
                                                     println!("got space map id: {:?}", sm_id);
                                                     println!("got space map dnode: {:?}", sm_dnode);
