@@ -35,8 +35,8 @@ impl Editor {
     pub fn new() -> Editor {
 
 
-        let window = Window::new((rand() % 400 + 50) as isize,
-                                 (rand() % 300 + 50) as isize,
+        let window = Window::new(-1,
+                                 -1,
                                  700,
                                  500,
                                  &"Sodium").unwrap();
