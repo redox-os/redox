@@ -160,7 +160,7 @@ SDL_Surface *ORBITAL_SetVideoMode(_THIS, SDL_Surface *current,
 	}
 
 	char path[4096];
-	snprintf(path, 4096, "window:///100/100/%d/%d/SDL", width, height);
+	snprintf(path, 4096, "orbital:///0/0/%d/%d/SDL", width, height);
 	this->hidden->fd = open(path, O_RDONLY);
 	printf("%s at %d\n", path, this->hidden->fd);
 

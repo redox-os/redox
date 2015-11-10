@@ -20,11 +20,6 @@ pub mod window;
 
 pub static mut session_ptr: *mut Session = 0 as *mut Session;
 
-/// A window scheme
-pub struct Scheme {
-    pub session: Box<Session>,
-}
-
 /// A window resource
 pub struct Resource {
     /// The window
@@ -43,7 +38,7 @@ impl Resource {
 
     /// Return the url of this resource
     pub fn path(&self) -> Option<String> {
-        Some(format!("window://{}/{}/{}/{}/{}",
+        Some(format!("orbital:///{}/{}/{}/{}/{}",
                          self.window.point.x,
                          self.window.point.y,
                          self.window.size.width,
@@ -103,13 +98,22 @@ impl Resource {
     }
 }
 
+/// A window scheme
+pub struct Scheme {
+    pub session: Box<Session>,
+    pub next_x: isize,
+    pub next_y: isize,
+}
+
 impl Scheme {
     pub fn new() -> Box<Scheme> {
         debugln!("- Starting Orbital");
         debugln!("    Console: Press F1");
         debugln!("    Desktop: Press F2");
         let mut ret = box Scheme {
-            session: Session::new()
+            session: Session::new(),
+            next_x: 0,
+            next_y: 0,
         };
         unsafe { session_ptr = ret.session.deref_mut() };
         ret
@@ -118,11 +122,11 @@ impl Scheme {
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
         let url_path = Url::from_str(url_str).path_parts();
-        let pointx = match url_path.get(0) {
+        let mut pointx = match url_path.get(0) {
             Some(x) => x.to_num_signed(),
             None => 0,
         };
-        let pointy = match url_path.get(1) {
+        let mut pointy = match url_path.get(1) {
             Some(y) => y.to_num_signed(),
             None => 0,
         };
@@ -145,8 +149,22 @@ impl Scheme {
             }
         }
 
-        let p: Point = Point::new(pointx, pointy);
-        let s: Size = Size::new(size_width, size_height);
+        if pointx <= 0 || pointy <= 0 {
+            if self.next_x > self.session.display.width as isize - size_width as isize {
+                self.next_x = 0;
+            }
+            self.next_x += 32;
+            pointx = self.next_x;
+
+            if self.next_y > self.session.display.height as isize - size_height as isize {
+                self.next_y = 0;
+            }
+            self.next_y += 32;
+            pointy = self.next_y;
+        }
+
+        let p = Point::new(pointx, pointy);
+        let s = Size::new(size_width, size_height);
 
         Some(box Resource {
             window: Window::new(p, s, title),

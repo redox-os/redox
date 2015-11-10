@@ -296,8 +296,8 @@ impl FileManager {
             }
         }
 
-        let mut window = Window::new((redox::rand() % 400 + 50) as isize,
-                                     (redox::rand() % 300 + 50) as isize,
+        let mut window = Window::new(-1,
+                                     -1,
                                      width.iter().sum(),
                                      height,
                                      &path).unwrap();

@@ -92,7 +92,7 @@ impl Scheme {
         }
 
         Some(box Resource {
-            console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(100, 100, 640, 480, title))),
+            console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(-1, -1, 640, 480, title))),
             line_end_toggle: false
         })
     }
