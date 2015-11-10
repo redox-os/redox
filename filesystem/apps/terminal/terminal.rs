@@ -21,7 +21,17 @@ macro_rules! exec {
 }
 /* } Magic Macros */
 
-/// A command
+/// Structure which represents a Terminal's command.
+/// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
+/// # Example
+/// ```
+/// let my_command = Command {
+///     name: "my_command",
+///     main: box|args: &Vec<String>| {
+///         println!("Say 'hello' to my command! :-D");
+///     }
+/// }
+/// ```
 pub struct Command<'a> {
     pub name: &'a str,
     pub main: Box<Fn(&Vec<String>)>,
