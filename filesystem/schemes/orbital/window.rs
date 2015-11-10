@@ -83,6 +83,7 @@ impl Window {
             let reenable = scheduler::start_no_ints();
             self.content.flip();
             (*super::session_ptr).redraw = true;
+            (*super::session_ptr).redraw();
             scheduler::end_no_ints(reenable);
         }
     }
