@@ -36,5 +36,8 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
      Solutions:
      - Make a struct KeyState storing info on the modifiers active. Add a method `feed` which feeds the keystate with a key, updating it. This should Option<Key>, where a key should be returned iff the key entered was not a modifier
 
+- [ ] Crashes when ~ command is used on an empty line
+- [ ] `z` command is buggy.
+
 Refactoring:
 - Organize into modules
