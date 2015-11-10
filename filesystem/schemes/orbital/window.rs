@@ -131,11 +131,11 @@ impl Window {
 
     /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
-        unsafe {
+        //unsafe {
             //let reenable = scheduler::start_no_ints();
             self.events.push_back(key_event.to_event());
             //scheduler::end_no_ints(reenable);
-        }
+        //}
     }
 
     fn on_window_decoration(&self, x: isize, y: isize) -> bool {
@@ -191,11 +191,11 @@ impl Window {
                     caught = true;
                 }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
-                    unsafe {
+                    //unsafe {
                         //let reenable = scheduler::start_no_ints();
                         self.events.push_back(QuitEvent.to_event());
                         //scheduler::end_no_ints(reenable);
-                    }
+                    //}
                 }
             }
 
@@ -211,11 +211,11 @@ impl Window {
         self.last_mouse_event = orig_mouse_event;
 
         if (caught && !self.dragging) || self.on_window_body(mouse_event.x, mouse_event.y) {
-            unsafe {
+            //unsafe {
                 //let reenable = scheduler::start_no_ints();
                 self.events.push_back(mouse_event.to_event());
                 //scheduler::end_no_ints(reenable);
-            }
+            //}
         }
 
         caught

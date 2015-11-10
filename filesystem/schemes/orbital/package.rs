@@ -38,12 +38,14 @@ impl Package {
             descriptions: Vec::new(),
         };
 
-        let path_parts = url.path_parts();
-
-        if !path_parts.is_empty() {
-            if let Some(part) = path_parts.get(path_parts.len() - 1) {
-                package.id = part.clone();
-                package.binary = Url::from_string(url.to_string() + part + ".bin");
+        {
+            for part in url.to_string().rsplit('/') {
+                if ! part.is_empty() {
+                    debugln!("{}: {}", part, url.to_string());
+                    package.id = part.to_string();
+                    package.binary = Url::from_string(url.to_string() + &part + ".bin");
+                    break;
+                }
             }
         }
 
