@@ -527,7 +527,7 @@ impl<'a> Application<'a> {
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
-            println!("user@redox:~{}# {}", self.get_current_directory(), command);
+            println!("user@redox:{}# {}", self.get_current_directory(), command);
             self.on_command(&command);
         }
 
@@ -539,7 +539,7 @@ impl<'a> Application<'a> {
                     print!("- ");
                 }
             }
-            print!("user@redox:~{}# ", self.get_current_directory());
+            print!("user@redox:{}# ", self.get_current_directory());
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {
