@@ -17,8 +17,6 @@ use schemes::Url;
 /// Excecute an excecutable
 //TODO: Modify current context, take current stdio
 pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
-    debugln!("{}", url.to_string());
-
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;
