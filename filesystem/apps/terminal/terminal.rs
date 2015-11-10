@@ -507,6 +507,21 @@ impl<'a> Application<'a> {
         }
     }
 
+    pub fn get_current_directory(&mut self) -> String {
+        //Print user directory
+        if let Some(file) = File::open("") {
+            if let Some(path) = file.path() {
+                return path
+            }
+            else {
+                return "?".to_string()
+            }
+        }
+        else {
+            return "?".to_string()
+        }
+    }
+
     /// Run the application
     pub fn main(&mut self) {
         println!("Type help for a command list");
