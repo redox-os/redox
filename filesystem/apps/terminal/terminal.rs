@@ -507,12 +507,27 @@ impl<'a> Application<'a> {
         }
     }
 
+    pub fn get_current_directory(&mut self) -> String {
+        //Print user directory
+        if let Some(file) = File::open("") {
+            if let Some(path) = file.path() {
+                return path
+            }
+            else {
+                return "?".to_string()
+            }
+        }
+        else {
+            return "?".to_string()
+        }
+    }
+
     /// Run the application
     pub fn main(&mut self) {
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
-            println!("# {}", command);
+            println!("user@redox:{}# {}", self.get_current_directory(), command);
             self.on_command(&command);
         }
 
@@ -524,7 +539,7 @@ impl<'a> Application<'a> {
                     print!("- ");
                 }
             }
-            print!("# ");
+            print!("user@redox:{}# ", self.get_current_directory());
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {
