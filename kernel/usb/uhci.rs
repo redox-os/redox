@@ -549,38 +549,26 @@ impl Uhci {
                                 volatile_store(frame_list.offset(frame as isize), 1);
 
                                 if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
-                                    let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+                                   let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                   let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                   let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                    let mouse_x = (x * (*::session_ptr).display.width) / 32768;
-                                    let mouse_y = (y * (*::session_ptr).display.height) / 32768;
+                                   let mouse_x = (x * (*::debug_display).width) / 32768;
+                                   let mouse_y = (y * (*::debug_display).height) / 32768;
 
-                                    (*::session_ptr).mouse_point.x =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.width as isize -
-                                                          1,
-                                                          mouse_x as isize));
-                                    (*::session_ptr).mouse_point.y =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.height as isize -
-                                                          1,
-                                                          mouse_y as isize));
-
-                                    MouseEvent {
-                                        x: 0,
-                                        y: 0,
-                                        left_button: buttons & 1 == 1,
-                                        middle_button: buttons & 4 == 4,
-                                        right_button: buttons & 2 == 2,
-                                    }
-                                        .trigger();
+                                   MouseEvent {
+                                       x: cmp::max(0, cmp::min((*::debug_display).width as isize - 1, mouse_x as isize)),
+                                       y: cmp::max(0, cmp::min((*::debug_display).height as isize - 1, mouse_y as isize)),
+                                       left_button: buttons & 1 == 1,
+                                       middle_button: buttons & 4 == 4,
+                                       right_button: buttons & 2 == 2,
+                                   }.trigger();
                                 }
 
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                            //memory::unalloc(in_td as usize);
+                            memory::unalloc(in_td as usize);
                         });
                     }
                     DESC_HID => {

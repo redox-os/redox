@@ -1,4 +1,5 @@
-use ::GetSlice;
+use common::event::Event;
+use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -14,6 +15,7 @@ use common::memory;
 use common::paging::Page;
 use scheduler::{start_no_ints, end_no_ints};
 use common::parse_path::parse_path;
+use common::pwd;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
 
@@ -298,6 +300,7 @@ pub struct SchemeItem {
     _fsync: usize,
     _ftruncate: usize,
     _close: usize,
+    _event: usize,
 }
 
 impl SchemeItem {
@@ -324,9 +327,10 @@ impl SchemeItem {
             _fsync: 0,
             _ftruncate: 0,
             _close: 0,
+            _event: 0,
         };
 
-        let path_parts = parse_path(url.reference());
+        let path_parts = parse_path(url.reference(), pwd());
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
@@ -363,6 +367,7 @@ impl SchemeItem {
                     scheme_item._fsync = executable.symbol("_fsync");
                     scheme_item._ftruncate = executable.symbol("_ftruncate");
                     scheme_item._close = executable.symbol("_close");
+                    scheme_item._event = executable.symbol("_event");
                 } else {
                     debug::d("Invalid ELF\n");
                 }
@@ -391,6 +396,20 @@ impl SchemeItem {
 impl KScheme for SchemeItem {
     fn scheme(&self) -> &str {
         return &self.scheme;
+    }
+
+    //TODO: Hack for orbital
+    fn event(&mut self, event: &Event){
+        if self.valid(self._event) {
+            unsafe {
+                let event_ptr: *const Event = event;
+
+                let context = SchemeContext::enter(&self.memory);
+                let fn_ptr: *const usize = &self._event;
+                (*(fn_ptr as *const extern "C" fn(usize, usize)))(self.handle, event_ptr as usize);
+                context.exit();
+            }
+        }
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {

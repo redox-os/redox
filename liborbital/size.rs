@@ -1,5 +1,5 @@
-use cmp;
-use ops::{Add, Sub};
+use redox::cmp;
+use redox::ops::{Add, Sub};
 
 /// A size
 #[derive(Copy, Clone)]

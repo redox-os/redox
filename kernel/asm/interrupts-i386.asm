@@ -4,9 +4,9 @@ struc IDTEntry
     .zero resb 1
     .attribute resb 1
         .present equ 1 << 7
-        .ring.1	equ 1 << 5
-        .ring.2 equ 1 << 6
-        .ring.3 equ 1 << 5 | 1 << 6
+        .ring1 equ 1 << 5
+        .ring2 equ 1 << 6
+        .ring3 equ 1 << 5 | 1 << 6
         .task32 equ 0x5
         .interrupt16 equ 0x6
         .trap16 equ 0x7
@@ -29,7 +29,6 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-    push esp
     push ebp
     push esi
     push edi
@@ -39,8 +38,23 @@ interrupts:
     push eax
     push esp
     push dword [0x100000]
+
+    mov eax, gdt.kernel_data
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
+
     call [.handler]
+
     add esp, 8 ;Skip interrupt and reg pointer
+
+    mov eax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
+    mov ds, eax
+    mov es, eax
+    mov fs, eax
+    mov gs, eax
+
     pop eax
     pop ebx
     pop ecx
@@ -48,7 +62,7 @@ interrupts:
     pop edi
     pop esi
     pop ebp
-    pop esp ;Pop new esp (if modified in Regs structure)
+
     iretd
 
 .handler: dd 0
@@ -62,9 +76,9 @@ idt:
 %rep 256	;fill in overrideable functions
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
-		at IDTEntry.selector, dw 0x08
+		at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
-		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
+		at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt32 ;TODO: Use ring 3 only for 0x80 and 0xFF, disable 0xFF after boot
         at IDTEntry.offseth, dw 0
 	iend
 %assign i i+1

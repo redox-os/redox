@@ -1,11 +1,12 @@
 use redox::Box;
 use redox::cell::UnsafeCell;
-use redox::Color;
-use redox::console::ConsoleWindow;
 use redox::io::SeekFrom;
 use redox::rc::Rc;
 use redox::str;
 use redox::string::{String, ToString};
+
+use orbital::Color;
+use orbital::console::ConsoleWindow;
 
 pub struct Resource {
     console_window: Rc<UnsafeCell<Box<ConsoleWindow>>>,
@@ -66,7 +67,7 @@ impl Resource {
         Some(buf.len())
     }
 
-    pub fn seek(&mut self, seek: SeekFrom) -> Option<usize> {
+    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
         None
     }
 

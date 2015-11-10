@@ -1,17 +1,10 @@
-use alloc::boxed::Box;
+use redox::{Box, String};
+use redox::collections::VecDeque;
+use redox::ops::DerefMut;
 
-use collections::string::String;
+use orbital::{Color, Point, Size, Event, KeyEvent, MouseEvent, QuitEvent};
 
-use core::ops::DerefMut;
-
-use common::event::{Event, KeyEvent, MouseEvent, QuitEvent};
-use common::queue::Queue;
-use scheduler;
-
-use super::color::Color;
 use super::display::Display;
-use super::point::Point;
-use super::size::Size;
 
 /// A window
 pub struct Window {
@@ -33,7 +26,7 @@ pub struct Window {
     pub minimized: bool,
     dragging: bool,
     last_mouse_event: MouseEvent,
-    events: Queue<Event>,
+    events: VecDeque<Event>,
     ptr: *mut Window,
 }
 
@@ -45,8 +38,8 @@ impl Window {
             size: size,
             title: title,
             content: Display::new(size.width, size.height),
-            title_color: Color::new(255, 255, 255),
-            border_color: Color::alpha(64, 64, 64, 128),
+            title_color: Color::rgb(255, 255, 255),
+            border_color: Color::rgba(64, 64, 64, 128),
             focused: false,
             minimized: false,
             dragging: false,
@@ -57,7 +50,7 @@ impl Window {
                 right_button: false,
                 middle_button: false,
             },
-            events: Queue::new(),
+            events: VecDeque::new(),
             ptr: 0 as *mut Window,
         };
 
@@ -65,7 +58,7 @@ impl Window {
             ret.ptr = ret.deref_mut();
 
             if ret.ptr as usize > 0 {
-                (*::session_ptr).add_window(ret.ptr);
+                (*super::session_ptr).add_window(ret.ptr);
             }
         }
 
@@ -74,38 +67,33 @@ impl Window {
 
     /// Poll the window (new)
     pub fn poll(&mut self) -> Option<Event> {
-        let event_option;
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            event_option = self.events.pop();
-            scheduler::end_no_ints(reenable);
-        }
-
-        return event_option;
+        //let reenable = scheduler::start_no_ints();
+        //scheduler::end_no_ints(reenable);
+        return self.events.pop_front();
     }
 
     /// Redraw the window
     pub fn redraw(&mut self) {
         unsafe {
-            let reenable = scheduler::start_no_ints();
+            //let reenable = scheduler::start_no_ints();
             self.content.flip();
-            (*::session_ptr).redraw = true;
-            scheduler::end_no_ints(reenable);
+            (*super::session_ptr).redraw = true;
+            //scheduler::end_no_ints(reenable);
         }
     }
 
     /// Draw the window using a `Display`
-    pub fn draw(&mut self, display: &Display) {
+    pub fn draw(&mut self, display: &Display, font: usize) {
         if self.focused {
-            self.border_color = Color::alpha(128, 128, 128, 192);
+            self.border_color = Color::rgba(128, 128, 128, 192);
         } else {
-            self.border_color = Color::alpha(64, 64, 64, 128);
+            self.border_color = Color::rgba(64, 64, 64, 128);
         }
 
         if self.minimized {
-            self.title_color = Color::new(0, 0, 0);
+            self.title_color = Color::rgb(0, 0, 0);
         } else {
-            self.title_color = Color::new(255, 255, 255);
+            self.title_color = Color::rgb(255, 255, 255);
 
             display.rect(Point::new(self.point.x - 2, self.point.y - 18),
                          Size::new(self.size.width + 4, 18),
@@ -114,7 +102,7 @@ impl Window {
             let mut cursor = Point::new(self.point.x, self.point.y - 17);
             for c in self.title.chars() {
                 if cursor.x + 8 <= self.point.x + self.size.width as isize {
-                    display.char(cursor, c, self.title_color);
+                    display.char(cursor, c, self.title_color, font);
                 }
                 cursor.x += 8;
             }
@@ -132,22 +120,22 @@ impl Window {
                          self.border_color);
 
             unsafe {
-                let reenable = scheduler::start_no_ints();
+                //let reenable = scheduler::start_no_ints();
                 display.image(self.point,
-                              self.content.onscreen as *const u32,
+                              self.content.onscreen as *const Color,
                               Size::new(self.content.width, self.content.height));
-                scheduler::end_no_ints(reenable);
+                //scheduler::end_no_ints(reenable);
             }
         }
     }
 
     /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.events.push(key_event.to_event());
-            scheduler::end_no_ints(reenable);
-        }
+        //unsafe {
+            //let reenable = scheduler::start_no_ints();
+            self.events.push_back(key_event.to_event());
+            //scheduler::end_no_ints(reenable);
+        //}
     }
 
     fn on_window_decoration(&self, x: isize, y: isize) -> bool {
@@ -203,11 +191,11 @@ impl Window {
                     caught = true;
                 }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
-                    unsafe {
-                        let reenable = scheduler::start_no_ints();
-                        self.events.push(QuitEvent.to_event());
-                        scheduler::end_no_ints(reenable);
-                    }
+                    //unsafe {
+                        //let reenable = scheduler::start_no_ints();
+                        self.events.push_back(QuitEvent.to_event());
+                        //scheduler::end_no_ints(reenable);
+                    //}
                 }
             }
 
@@ -223,11 +211,11 @@ impl Window {
         self.last_mouse_event = orig_mouse_event;
 
         if (caught && !self.dragging) || self.on_window_body(mouse_event.x, mouse_event.y) {
-            unsafe {
-                let reenable = scheduler::start_no_ints();
-                self.events.push(mouse_event.to_event());
-                scheduler::end_no_ints(reenable);
-            }
+            //unsafe {
+                //let reenable = scheduler::start_no_ints();
+                self.events.push_back(mouse_event.to_event());
+                //scheduler::end_no_ints(reenable);
+            //}
         }
 
         caught
@@ -238,7 +226,7 @@ impl Drop for Window {
     fn drop(&mut self) {
         unsafe {
             if self.ptr as usize > 0 {
-                (*::session_ptr).remove_window(self.ptr);
+                (*super::session_ptr).remove_window(self.ptr);
             }
         }
     }

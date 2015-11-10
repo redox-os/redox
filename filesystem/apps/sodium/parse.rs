@@ -1,5 +1,8 @@
 use super::*;
+
 use redox::*;
+
+use orbital::*;
 
 #[derive(Copy, Clone)]
 /// An instruction, i.e. a command and a numeral parameter

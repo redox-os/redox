@@ -1,12 +1,12 @@
-use redox::{self, cmp, env, BmpFile, Color};
+use redox::{self, cmp, env};
 use redox::collections::BTreeMap;
-use redox::event::{self, EventOption, MouseEvent};
 use redox::fs::{self, File};
 use redox::io::{Read, Seek, SeekFrom};
-use redox::orbital::Window;
 use redox::time::{self, Duration};
 use redox::vec::Vec;
 use redox::string::{String, ToString};
+
+use orbital::{event, BmpFile, Color, EventOption, MouseEvent, Window};
 
 pub struct FileType {
     description: String,

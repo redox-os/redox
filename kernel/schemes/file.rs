@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 use alloc::arc::Arc;
 use alloc::boxed::Box;
@@ -16,7 +16,6 @@ use drivers::pciconfig::PciConfig;
 
 use common::debug;
 use common::memory::Memory;
-use common::parse_path::*;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
@@ -24,6 +23,9 @@ use scheduler::{start_no_ints, end_no_ints};
 use scheduler::context::context_switch;
 
 use syscall::common::O_CREAT;
+use common::pwd;
+
+const PIO: bool = false;
 
 /// The header of the fs
 #[repr(packed)]
@@ -207,9 +209,8 @@ impl FileSystem {
 
     /// Get node with a given filename
     pub fn node(&self, filename: &str) -> Option<Node> {
-        let path = parse_path(filename);
         for node in self.nodes.iter() {
-            if parse_path(&node.name) == path {
+            if node.name == filename {
                 return Some(node.clone());
             }
         }
@@ -218,19 +219,12 @@ impl FileSystem {
     }
 
     /// List nodes in a given directory
-    pub fn list(&self, directory: Vec<String>) -> Vec<String> {
-        let mut ret = Vec::<String>::new();
+    pub fn list(&self, directory: &str) -> Vec<String> {
+        let mut ret = Vec::new();
 
         for node in self.nodes.iter() {
-            let mut eq = true;
-            for (n, i) in directory.iter().enumerate() {
-                match parse_path(&node.name).get(n) {
-                    Some(nd) if nd == i => {},
-                    _ => eq = false,
-                }
-            }
-            if eq {
-                ret.push(parse_path(&node.name).get_slice(Some(directory.len()), None).join("/"));
+            if node.name.starts_with(directory) {
+                ret.push(node.name.get_slice(Some(directory.len()), None).to_string());
             }
         }
 
@@ -259,7 +253,7 @@ impl Resource for FileResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_string("file:///".to_string() + &self.node.name)
+        Url::from_string("file:/".to_string() + &self.node.name)
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -359,39 +353,51 @@ impl Resource for FileResource {
                         let sectors = (extent.length as usize + 511) / 512;
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
-                            let request = Request {
-                                extent: Extent {
-                                    block: extent.block + sector as u64,
-                                    length: 65536 * 512,
-                                },
-                                mem: data + sector * 512,
-                                read: false,
-                                complete: Arc::new(AtomicBool::new(false)),
-                            };
+                            if PIO {
+                                (*self.scheme).fs.disk.write(extent.block + sector as u64,
+                                      0,
+                                      data + sector * 512);
+                            } else {
+                                let request = Request {
+                                    extent: Extent {
+                                        block: extent.block + sector as u64,
+                                        length: 65536 * 512,
+                                    },
+                                    mem: data + sector * 512,
+                                    read: false,
+                                    complete: Arc::new(AtomicBool::new(false)),
+                                };
 
-                            (*self.scheme).fs.disk.request(request.clone());
+                                (*self.scheme).fs.disk.request(request.clone());
 
-                            while request.complete.load(Ordering::SeqCst) == false {
-                                context_switch(false);
+                                while request.complete.load(Ordering::SeqCst) == false {
+                                    context_switch(false);
+                                }
                             }
 
                             sector += 65535;
                         }
                         if sector < sectors {
-                            let request = Request {
-                                extent: Extent {
-                                    block: extent.block + sector as u64,
-                                    length: (sectors - sector) as u64 * 512,
-                                },
-                                mem: data + sector * 512,
-                                read: false,
-                                complete: Arc::new(AtomicBool::new(false)),
-                            };
+                            if PIO {
+                                (*self.scheme).fs.disk.write(extent.block + sector as u64,
+                                      (sectors - sector) as u16,
+                                      data + sector * 512);
+                            } else {
+                                let request = Request {
+                                    extent: Extent {
+                                        block: extent.block + sector as u64,
+                                        length: (sectors - sector) as u64 * 512,
+                                    },
+                                    mem: data + sector * 512,
+                                    read: false,
+                                    complete: Arc::new(AtomicBool::new(false)),
+                                };
 
-                            (*self.scheme).fs.disk.request(request.clone());
+                                (*self.scheme).fs.disk.request(request.clone());
 
-                            while request.complete.load(Ordering::SeqCst) == false {
-                                context_switch(false);
+                                while request.complete.load(Ordering::SeqCst) == false {
+                                    context_switch(false);
+                                }
                             }
                         }
                     }
@@ -409,23 +415,29 @@ impl Resource for FileResource {
                         if let Some(mut node_data) = Memory::<NodeData>::new(1) {
                             node_data.write(0, self.node.data());
 
-                            let request = Request {
-                                extent: Extent {
-                                    block: self.node.block,
-                                    length: 1,
-                                },
-                                mem: node_data.address(),
-                                read: false,
-                                complete: Arc::new(AtomicBool::new(false)),
-                            };
+                            if PIO {
+                            (*self.scheme).fs.disk.write(self.node.block,
+                                      1,
+                                      node_data.address());
+                            } else {
+                                let request = Request {
+                                    extent: Extent {
+                                        block: self.node.block,
+                                        length: 1,
+                                    },
+                                    mem: node_data.address(),
+                                    read: false,
+                                    complete: Arc::new(AtomicBool::new(false)),
+                                };
 
-                            debug::d("Disk request\n");
+                                debug::d("Disk request\n");
 
-                            (*self.scheme).fs.disk.request(request.clone());
+                                (*self.scheme).fs.disk.request(request.clone());
 
-                            debug::d("Wait request\n");
-                            while request.complete.load(Ordering::SeqCst) == false {
-                                context_switch(false);
+                                debug::d("Wait request\n");
+                                while request.complete.load(Ordering::SeqCst) == false {
+                                    context_switch(false);
+                                }
                             }
 
                             debug::d("Renode\n");
@@ -547,13 +559,16 @@ impl KScheme for FileScheme {
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
-        let path = url.reference();
+        let mut path = url.reference();
+        while path.starts_with('/') {
+            path = &path[1..];
+        }
         if path.is_empty() || path.ends_with('/') {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
             // Hmm... no deref coercions in libcollections ;(
-            for file in self.fs.list(parse_path(&path.to_string())).iter() {
+            for file in self.fs.list(path).iter() {
                 let mut line = String::new();
                 match file.find('/') {
                     Some(index) => {
@@ -583,7 +598,11 @@ impl KScheme for FileScheme {
                 }
             }
 
-            Some(box VecResource::new(url.clone(), list.into_bytes()))
+            if list.len() > 0 {
+                Some(box VecResource::new(url.clone(), list.into_bytes()))
+            } else {
+                None
+            }
         } else {
             match self.fs.node(path) {
                 Some(node) => {
@@ -595,39 +614,55 @@ impl KScheme for FileScheme {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
                                 while sectors - sector >= 65536 {
-                                    let request = Request {
-                                        extent: Extent {
-                                            block: extent.block + sector as u64,
-                                            length: 65536 * 512,
-                                        },
-                                        mem: unsafe { data.address() } + sector * 512,
-                                        read: true,
-                                        complete: Arc::new(AtomicBool::new(false)),
-                                    };
+                                    if PIO {
+                                        unsafe {
+                                            self.fs.disk.read(extent.block + sector as u64,
+                                                  0,
+                                                  data.address() + sector * 512);
+                                        }
+                                    } else {
+                                        let request = Request {
+                                            extent: Extent {
+                                                block: extent.block + sector as u64,
+                                                length: 65536 * 512,
+                                            },
+                                            mem: unsafe { data.address() } + sector * 512,
+                                            read: true,
+                                            complete: Arc::new(AtomicBool::new(false)),
+                                        };
 
-                                    self.fs.disk.request(request.clone());
+                                        self.fs.disk.request(request.clone());
 
-                                    while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { context_switch(false) };
+                                        while !request.complete.load(Ordering::SeqCst) {
+                                            unsafe { context_switch(false) };
+                                        }
                                     }
 
                                     sector += 65535;
                                 }
                                 if sector < sectors {
-                                    let request = Request {
-                                        extent: Extent {
-                                            block: extent.block + sector as u64,
-                                            length: (sectors - sector) as u64 * 512,
-                                        },
-                                        mem: unsafe { data.address() } + sector * 512,
-                                        read: true,
-                                        complete: Arc::new(AtomicBool::new(false)),
-                                    };
+                                    if PIO {
+                                        unsafe {
+                                            self.fs.disk.read(extent.block + sector as u64,
+                                                  (sectors - sector) as u16,
+                                                  data.address() + sector * 512);
+                                        }
+                                    } else {
+                                        let request = Request {
+                                            extent: Extent {
+                                                block: extent.block + sector as u64,
+                                                length: (sectors - sector) as u64 * 512,
+                                            },
+                                            mem: unsafe { data.address() } + sector * 512,
+                                            read: true,
+                                            complete: Arc::new(AtomicBool::new(false)),
+                                        };
 
-                                    self.fs.disk.request(request.clone());
+                                        self.fs.disk.request(request.clone());
 
-                                    while !request.complete.load(Ordering::SeqCst) {
-                                        unsafe { context_switch(false) };
+                                        while !request.complete.load(Ordering::SeqCst) {
+                                            unsafe { context_switch(false) };
+                                        }
                                     }
                                 }
 

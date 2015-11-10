@@ -1,16 +1,8 @@
-use ::GetSlice;
+use redox::{Box, GetSlice, String, ToString, Vec, Url};
+use redox::fs::File;
+use redox::io::Read;
 
-use alloc::boxed::Box;
-
-use collections::string::{String, ToString};
-use collections::vec::Vec;
-
-use common::debug;
-use common::parse_path::parse_path;
-
-use graphics::bmp::BmpFile;
-
-use schemes::Url;
+use orbital::BmpFile;
 
 /// A package (_REDOX content serialized)
 pub struct Package {
@@ -40,25 +32,27 @@ impl Package {
             id: String::new(),
             name: String::new(),
             binary: Url::new(),
-            icon: BmpFile::new(),
+            icon: BmpFile::default(),
             accepts: Vec::new(),
             authors: Vec::new(),
             descriptions: Vec::new(),
         };
 
-        let path_parts = parse_path(url.reference());
-
-        if !path_parts.is_empty() {
-            if let Some(part) = path_parts.get(path_parts.len() - 1) {
-                package.id = part.clone();
-                package.binary = Url::from_string(url.to_string() + part + ".bin");
+        {
+            for part in url.to_string().rsplit('/') {
+                if ! part.is_empty() {
+                    debugln!("{}: {}", part, url.to_string());
+                    package.id = part.to_string();
+                    package.binary = Url::from_string(url.to_string() + &part + ".bin");
+                    break;
+                }
             }
         }
 
         let mut info = String::new();
 
-        if let Some(mut resource) = Url::from_string(url.to_string() + "_REDOX").open() {
-            resource.read_to_end(unsafe { info.as_mut_vec() });
+        if let Some(mut file) = File::open(&(url.to_string() + "_REDOX")) {
+            file.read_to_string(&mut info);
         }
 
         for line in info.lines() {
@@ -67,9 +61,9 @@ impl Package {
             } else if line.starts_with("binary=") {
                 package.binary = Url::from_string(url.to_string() + line.get_slice(Some(7), None));
             } else if line.starts_with("icon=") {
-                if let Some(mut resource) = Url::from_string(line.get_slice(Some(5), None).to_string()).open() {
+                if let Some(mut file) = File::open(line.get_slice(Some(5), None)) {
                     let mut vec: Vec<u8> = Vec::new();
-                    resource.read_to_end(&mut vec);
+                    file.read_to_end(&mut vec);
                     package.icon = BmpFile::from_data(&vec);
                 }
             } else if line.starts_with("accept=") {
@@ -79,9 +73,7 @@ impl Package {
             } else if line.starts_with("description=") {
                 package.descriptions.push(line.get_slice(Some(12), None).to_string());
             } else {
-                debug::d("Unknown package info: ");
-                debug::d(&line);
-                debug::dl();
+                debugln!("Unknown package info: {}", line);
             }
         }
 
