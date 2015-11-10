@@ -105,6 +105,9 @@ impl Resource {
 
 impl Scheme {
     pub fn new() -> Box<Scheme> {
+        debugln!("Starting Orbital");
+        debugln!("    Console: Press F1");
+        debugln!("    Desktop: Press F2");
         let mut ret = box Scheme {
             session: Session::new()
         };
