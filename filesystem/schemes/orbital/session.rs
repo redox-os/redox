@@ -162,7 +162,9 @@ impl Session {
                     if !package.icon.as_slice().is_empty() {
                         if mouse_event.x >= x &&
                            mouse_event.x < x + package.icon.width() as isize {
-                            //TODO: execute(&package.binary, &package.url, Vec::new());
+                               let binary = package.binary.to_string();
+                               debugln!("Launching {}", binary);
+                               File::exec(&binary);
                         }
                         x = x + package.icon.width() as isize;
                     }
