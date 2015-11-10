@@ -31,12 +31,15 @@ impl FromBytes for Uberblock {
         if data.len() >= mem::size_of::<Uberblock>() {
             let uberblock = unsafe { ptr::read(data.as_ptr() as *const Uberblock) };
             if uberblock.magic == Uberblock::magic_little() {
-                return Ok(uberblock);
+                Ok(uberblock)
             } else if uberblock.magic == Uberblock::magic_big() {
-                return Ok(uberblock);
+                Ok(uberblock)
+            } else {
+                Err("Error: Invalid uberblock magic number".to_string())
             }
+        } else {
+            Err(format!("Error: Need {} bytes to read uberblock, only {} in buffer",
+                        mem::size_of::<Uberblock>(), data.len()))
         }
-
-        Err("Error: cannot find Uberblock".to_string())
     }
 }
