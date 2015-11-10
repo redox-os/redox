@@ -495,7 +495,9 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => syscall_handle(regs),
+        0x80 => if ! syscall_handle(regs) {
+            exception!("Unknown Syscall");
+        },
         0xFF => {
             init(regs.ax, regs.bx);
             idle_loop();

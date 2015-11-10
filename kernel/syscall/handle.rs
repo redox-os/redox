@@ -498,7 +498,7 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn syscall_handle(regs: &mut Regs) {
+pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as u8),
         // Linux
@@ -529,18 +529,8 @@ pub unsafe fn syscall_handle(regs: &mut Regs) {
         SYS_REALLOC_INPLACE => regs.ax = memory::realloc_inplace(regs.bx, regs.cx),
         SYS_UNALLOC => memory::unalloc(regs.bx),
 
-        _ => {
-            debug::d("Unknown Syscall: ");
-            debug::dd(regs.ax as usize);
-            debug::d(", ");
-            debug::dh(regs.bx as usize);
-            debug::d(", ");
-            debug::dh(regs.cx as usize);
-            debug::d(", ");
-            debug::dh(regs.dx as usize);
-            debug::dl();
-
-            regs.ax = usize::MAX;
-        }
+        _ => return false
     }
+
+    true
 }

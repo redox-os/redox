@@ -164,7 +164,6 @@ impl Session {
                         if mouse_event.x >= x &&
                            mouse_event.x < x + package.icon.width() as isize {
                                let binary = package.binary.to_string();
-                               debugln!("Launching {}", binary);
                                File::exec(&binary);
                         }
                         x = x + package.icon.width() as isize;
