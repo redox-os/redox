@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::ToString;
+
 use core::intrinsics::{volatile_load, volatile_store};
 use core::{cmp, mem, ptr};
 
@@ -512,7 +514,7 @@ impl Uhci {
                         let base = self.base as u16;
                         let frnum = base + 0x6;
 
-                        Context::spawn(box move || {
+                        Context::spawn("kuhci_hid".to_string(), box move || {
                             let in_ptr = memory::alloc(in_len) as *mut u8;
                             let in_td: *mut Td = memory::alloc_type();
 

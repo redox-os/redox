@@ -41,7 +41,6 @@ impl Package {
         {
             for part in url.to_string().rsplit('/') {
                 if ! part.is_empty() {
-                    debugln!("{}: {}", part, url.to_string());
                     package.id = part.to_string();
                     package.binary = Url::from_string(url.to_string() + &part + ".bin");
                     break;

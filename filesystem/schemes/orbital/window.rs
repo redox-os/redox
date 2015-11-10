@@ -5,6 +5,7 @@ use redox::ops::DerefMut;
 use orbital::{Color, Point, Size, Event, KeyEvent, MouseEvent, QuitEvent};
 
 use super::display::Display;
+use super::scheduler;
 
 /// A window
 pub struct Window {
@@ -67,18 +68,22 @@ impl Window {
 
     /// Poll the window (new)
     pub fn poll(&mut self) -> Option<Event> {
-        //let reenable = scheduler::start_no_ints();
-        //scheduler::end_no_ints(reenable);
-        return self.events.pop_front();
+        let event_option;
+        unsafe {
+            let reenable = scheduler::start_no_ints();
+            event_option = self.events.pop_front();
+            scheduler::end_no_ints(reenable);
+        }
+        return event_option;
     }
 
     /// Redraw the window
     pub fn redraw(&mut self) {
         unsafe {
-            //let reenable = scheduler::start_no_ints();
+            let reenable = scheduler::start_no_ints();
             self.content.flip();
             (*super::session_ptr).redraw = true;
-            //scheduler::end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 
@@ -120,22 +125,22 @@ impl Window {
                          self.border_color);
 
             unsafe {
-                //let reenable = scheduler::start_no_ints();
+                let reenable = scheduler::start_no_ints();
                 display.image(self.point,
                               self.content.onscreen as *const Color,
                               Size::new(self.content.width, self.content.height));
-                //scheduler::end_no_ints(reenable);
+                scheduler::end_no_ints(reenable);
             }
         }
     }
 
     /// Called on key press
     pub fn on_key(&mut self, key_event: KeyEvent) {
-        //unsafe {
-            //let reenable = scheduler::start_no_ints();
+        unsafe {
+            let reenable = scheduler::start_no_ints();
             self.events.push_back(key_event.to_event());
-            //scheduler::end_no_ints(reenable);
-        //}
+            scheduler::end_no_ints(reenable);
+        }
     }
 
     fn on_window_decoration(&self, x: isize, y: isize) -> bool {
@@ -191,11 +196,11 @@ impl Window {
                     caught = true;
                 }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
-                    //unsafe {
-                        //let reenable = scheduler::start_no_ints();
+                    unsafe {
+                        let reenable = scheduler::start_no_ints();
                         self.events.push_back(QuitEvent.to_event());
-                        //scheduler::end_no_ints(reenable);
-                    //}
+                        scheduler::end_no_ints(reenable);
+                    }
                 }
             }
 
@@ -211,11 +216,11 @@ impl Window {
         self.last_mouse_event = orig_mouse_event;
 
         if (caught && !self.dragging) || self.on_window_body(mouse_event.x, mouse_event.y) {
-            //unsafe {
-                //let reenable = scheduler::start_no_ints();
+            unsafe {
+                let reenable = scheduler::start_no_ints();
                 self.events.push_back(mouse_event.to_event());
-                //scheduler::end_no_ints(reenable);
-            //}
+                scheduler::end_no_ints(reenable);
+            }
         }
 
         caught

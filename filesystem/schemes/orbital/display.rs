@@ -8,6 +8,8 @@ use orbital::Color;
 use orbital::Point;
 use orbital::Size;
 
+use super::scheduler;
+
 /// The info of the VBE mode
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -166,7 +168,7 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            //let reenable = scheduler::start_no_ints();
+            let reenable = scheduler::start_no_ints();
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
@@ -174,7 +176,7 @@ impl Display {
                 mem::swap(&mut (*self_mut).offscreen,
                      &mut (*self_mut).onscreen);
             }
-            //scheduler::end_no_ints(reenable);
+            scheduler::end_no_ints(reenable);
         }
     }
 

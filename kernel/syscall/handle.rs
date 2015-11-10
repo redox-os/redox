@@ -159,7 +159,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
         context_clone_args.push(context_exit as usize);
 
         let contexts = &mut *::scheduler::context::contexts_ptr;
-        contexts.push(Context::new(context_clone as usize, &context_clone_args, false));
+        contexts.push(Context::new(format!("kclone {}", parent.name), false, context_clone as usize, &context_clone_args));
     }
 
     scheduler::end_no_ints(reenable);

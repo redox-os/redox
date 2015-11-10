@@ -347,10 +347,10 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     });
     //session.items.push(box DisplayScheme);
 
-    Context::spawn(box move || {
+    Context::spawn("kpoll".to_string(), box move || {
         poll_loop();
     });
-    Context::spawn(box move || {
+    Context::spawn("kevent".to_string(), box move || {
         event_loop();
     });
 
@@ -390,103 +390,76 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     }
 }
 
-fn dr(reg: &str, value: usize) {
-    debug!("{}", reg);
-    debug!(": ");
-    debug::dh(value as usize);
-    debug::dl();
-}
-
 #[cold]
 #[inline(never)]
 #[no_mangle]
 /// Take regs for kernel calls and exceptions
 pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
-    macro_rules! exception {
+    macro_rules! exception_inner {
         ($name:expr) => ({
-            debug!("{}", $name);
-            debug::dl();
+            if let Some(context) = Context::current() {
+                debugln!("PID {}: {}", context_i, context.name);
+            } else {
+                debugln!("PID {}", context_i,);
+            }
 
-            dr("INT", interrupt);
-            dr("CONTEXT", context_i);
-            dr("CS", regs.cs);
-            dr("IP", regs.ip);
-            dr("FLAGS", regs.flags);
-            dr("SS", regs.ss);
-            dr("SP", regs.sp);
-            dr("BP", regs.bp);
-            dr("AX", regs.ax);
-            dr("BX", regs.bx);
-            dr("CX", regs.cx);
-            dr("DX", regs.dx);
-            dr("DI", regs.di);
-            dr("SI", regs.si);
+            debugln!("  INT {:X}: {}", interrupt, $name);
+            debugln!("    CS:    {:X}", regs.cs);
+            debugln!("    IP:    {:X}", regs.ip);
+            debugln!("    FLG:   {:X}", regs.flags);
+            debugln!("    SS:    {:X}", regs.ss);
+            debugln!("    SP:    {:X}", regs.sp);
+            debugln!("    BP:    {:X}", regs.bp);
+            debugln!("    AX:    {:X}", regs.ax);
+            debugln!("    BX:    {:X}", regs.bx);
+            debugln!("    CX:    {:X}", regs.cx);
+            debugln!("    DX:    {:X}", regs.dx);
+            debugln!("    DI:    {:X}", regs.di);
+            debugln!("    SI:    {:X}", regs.si);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            dr("CR0", cr0);
+            debugln!("    CR0:   {:X}", cr0);
 
             let cr2: usize;
             asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            dr("CR2", cr2);
+            debugln!("    CR2:   {:X}", cr2);
 
             let cr3: usize;
             asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            dr("CR3", cr3);
+            debugln!("    CR3:   {:X}", cr3);
 
             let cr4: usize;
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            dr("CR4", cr4);
+            debugln!("    CR4:   {:X}", cr4);
+        })
+    };
 
-            context_exit();
+    macro_rules! exception {
+        ($name:expr) => ({
+            exception_inner!($name);
+
             loop {
-                asm!("cli");
-                asm!("hlt");
+                context_exit();
             }
         })
     };
 
     macro_rules! exception_error {
         ($name:expr) => ({
-            debug!("{}", $name);
-            debug::dl();
+            let error = regs.ip;
+            regs.ip = regs.cs;
+            regs.cs = regs.flags;
+            regs.flags = regs.sp;
+            regs.sp = regs.ss;
+            regs.ss = 0;
+            //regs.ss = regs.error;
 
-            dr("INT", interrupt);
-            dr("CONTEXT", context_i);
-            dr("ERROR", regs.ip);
-            dr("CS", regs.flags);
-            dr("IP", regs.cs);
-            dr("FLAGS", regs.sp);
-            //dr("SS", regs.error);
-            dr("SP", regs.ss);
-            dr("BP", regs.bp);
-            dr("AX", regs.ax);
-            dr("BX", regs.bx);
-            dr("CX", regs.cx);
-            dr("DX", regs.dx);
-            dr("DI", regs.di);
-            dr("SI", regs.si);
+            exception_inner!($name);
+            debugln!("    ERR:   {:X}", error);
 
-            let cr0: usize;
-            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            dr("CR0", cr0);
-
-            let cr2: usize;
-            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            dr("CR2", cr2);
-
-            let cr3: usize;
-            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            dr("CR3", cr3);
-
-            let cr4: usize;
-            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            dr("CR4", cr4);
-
-            context_exit();
             loop {
-                asm!("cli");
-                asm!("hlt");
+                context_exit();
             }
         })
     };
