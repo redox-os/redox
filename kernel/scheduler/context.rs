@@ -217,6 +217,7 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     box_fn();
 }
 
+///TODO: Investigate for double frees
 pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
