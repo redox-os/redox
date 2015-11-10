@@ -38,6 +38,7 @@ The bug causing these two bugs, is localised to be in position.rs. It resolves b
 
 - [ ] Crashes when ~ command is used on an empty line
 - [ ] `z` command is buggy.
+- [ ] `x` is buggy (when line length differ)
 
 Refactoring:
 - Organize into modules

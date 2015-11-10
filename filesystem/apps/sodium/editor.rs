@@ -76,15 +76,15 @@ impl Editor {
     }
 
     /// Get the leading whitespaces of the current line. Used for autoindenting.
-    pub fn get_indent(&self, n: usize) -> VecDeque<char> {
-        let mut ind = VecDeque::new();
+    pub fn get_indent(&self, n: usize) -> &[char] {
         let ln = self.get_ln(n);
+        let mut len = 0;
         for &c in ln {
             match c {
-                '\t' | ' ' => ind.push_back(c),
+                '\t' | ' ' => len += 1,
                 _ => break,
             }
         }
-        ind
+        &ln[..len]
     }
 }
