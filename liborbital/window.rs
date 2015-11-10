@@ -1,20 +1,16 @@
-use alloc::boxed::Box;
+use redox::Box;
+use redox::fs::File;
+use redox::io::*;
+use redox::mem;
+use redox::ops::DerefMut;
+use redox::slice;
+use redox::syscall::sys_yield;
+use redox::String;
+use redox::ToString;
+use redox::Vec;
 
-use core::mem;
-use core::ops::DerefMut;
-use core::slice;
-
-use string::{String, ToString};
-use vec::Vec;
-
-use event::*;
-use graphics::color::Color;
-use fs::File;
-use io::*;
-
-use syscall::sys_yield;
-
-pub mod event;
+use super::Event;
+use super::Color;
 
 /// A window
 pub struct Window {
@@ -40,11 +36,11 @@ impl Window {
     /// Create a new window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
         let mut font = Vec::new();
-        if let Some(mut font_file) = File::open("file:///ui/unifont.font") {
+        if let Some(mut font_file) = File::open("file:/ui/unifont.font") {
             font_file.read_to_end(&mut font);
         }
 
-        match File::open(&format!("window:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
+        match File::open(&format!("orbital:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
             Some(file) => Some(box Window {
                 x: x,
                 y: y,

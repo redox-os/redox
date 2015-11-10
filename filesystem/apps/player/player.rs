@@ -1,4 +1,7 @@
 use redox::*;
+use redox::audio::*;
+
+use orbital::*;
 
 pub fn main() {
     let url = match args().get(1) {
@@ -11,8 +14,8 @@ pub fn main() {
         file.read_to_end(&mut vec);
     }
 
-    let mut window = Window::new((rand() % 400 + 50) as isize,
-                                 (rand() % 300 + 50) as isize,
+    let mut window = Window::new(-1,
+                                 -1,
                                  320,
                                  0,
                                  &("Player (".to_string() + &url + ")")).unwrap();

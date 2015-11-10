@@ -1,5 +1,8 @@
 use super::*;
+
 use redox::*;
+
+use orbital::*;
 
 /// The current state of the editor, including the file, the cursor, the scrolling info, etc.
 pub struct Editor {
@@ -32,8 +35,8 @@ impl Editor {
     pub fn new() -> Editor {
 
 
-        let window = Window::new((rand() % 400 + 50) as isize,
-                                 (rand() % 300 + 50) as isize,
+        let window = Window::new(-1,
+                                 -1,
                                  700,
                                  500,
                                  &"Sodium").unwrap();
@@ -85,4 +88,3 @@ impl Editor {
         &ln[..len]
     }
 }
-

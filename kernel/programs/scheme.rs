@@ -1,4 +1,5 @@
-use ::GetSlice;
+use common::event::Event;
+use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
 
@@ -7,33 +8,52 @@ use collections::vec::Vec;
 
 use core::usize;
 
-use scheduler::context::ContextMemory;
 use common::debug;
 use common::elf::Elf;
 use common::memory;
 use common::paging::Page;
 use scheduler::{start_no_ints, end_no_ints};
 use common::parse_path::parse_path;
+use common::pwd;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
+
+pub struct SchemeMemory {
+    pub physical_address: usize,
+    pub virtual_address: usize,
+    pub virtual_size: usize,
+}
+
+impl SchemeMemory {
+    pub unsafe fn map(&mut self) {
+        for i in 0..(self.virtual_size + 4095) / 4096 {
+            Page::new(self.virtual_address + i * 4096).map(self.physical_address + i * 4096);
+        }
+    }
+    pub unsafe fn unmap(&mut self) {
+        for i in 0..(self.virtual_size + 4095) / 4096 {
+            Page::new(self.virtual_address + i * 4096).map_identity();
+        }
+    }
+}
 
 /// A scheme context
 pub struct SchemeContext {
     /// Interrupted
     interrupts: bool,
     /// The old memory (before context switch)
-    old_memory: Vec<ContextMemory>,
+    old_memory: Vec<SchemeMemory>,
 }
 
 impl SchemeContext {
     /// Enter from a given context memory
-    pub unsafe fn enter(memory: &ContextMemory) -> SchemeContext {
+    pub unsafe fn enter(memory: &SchemeMemory) -> SchemeContext {
         let interrupts = start_no_ints();
-        let mut old_memory: Vec<ContextMemory> = Vec::new();
+        let mut old_memory: Vec<SchemeMemory> = Vec::new();
         for i in 0..(memory.virtual_size + 4095) / 4096 {
             let mut page = Page::new(memory.virtual_address + i * 4096);
-            //TODO: Use one contextmemory if possible
-            old_memory.push(ContextMemory {
+            //TODO: Use one SchemeMemory if possible
+            old_memory.push(SchemeMemory {
                 physical_address: page.phys_addr(),
                 virtual_address: page.virt_addr(),
                 virtual_size: 4096,
@@ -83,8 +103,8 @@ impl SchemeContext {
 pub struct SchemeResource {
     /// The handle
     handle: usize,
-    /// The context memory
-    memory: ContextMemory,
+    /// The scheme memory
+    memory: SchemeMemory,
     /// Duplicate?
     _dup: usize,
     /// Internal fpath
@@ -126,7 +146,7 @@ impl Resource for SchemeResource {
                 //TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
-                    memory: ContextMemory {
+                    memory: SchemeMemory {
                         physical_address: self.memory.physical_address,
                         virtual_address: self.memory.virtual_address,
                         virtual_size: self.memory.virtual_size,
@@ -285,8 +305,8 @@ pub struct SchemeItem {
     binary: Url,
     /// The handle
     handle: usize,
-    /// The context memory
-    memory: ContextMemory,
+    /// The scheme memory
+    memory: SchemeMemory,
     _start: usize,
     _stop: usize,
     _open: usize,
@@ -298,6 +318,7 @@ pub struct SchemeItem {
     _fsync: usize,
     _ftruncate: usize,
     _close: usize,
+    _event: usize,
 }
 
 impl SchemeItem {
@@ -308,7 +329,7 @@ impl SchemeItem {
             scheme: String::new(),
             binary: Url::new(),
             handle: 0,
-            memory: ContextMemory {
+            memory: SchemeMemory {
                 physical_address: 0,
                 virtual_address: 0,
                 virtual_size: 0,
@@ -324,9 +345,10 @@ impl SchemeItem {
             _fsync: 0,
             _ftruncate: 0,
             _close: 0,
+            _event: 0,
         };
 
-        let path_parts = parse_path(url.reference());
+        let path_parts = parse_path(url.reference(), pwd());
         if !path_parts.is_empty() {
             if let Some(part) = path_parts.get(path_parts.len() - 1) {
                 scheme_item.scheme = part.clone();
@@ -363,6 +385,7 @@ impl SchemeItem {
                     scheme_item._fsync = executable.symbol("_fsync");
                     scheme_item._ftruncate = executable.symbol("_ftruncate");
                     scheme_item._close = executable.symbol("_close");
+                    scheme_item._event = executable.symbol("_event");
                 } else {
                     debug::d("Invalid ELF\n");
                 }
@@ -393,6 +416,20 @@ impl KScheme for SchemeItem {
         return &self.scheme;
     }
 
+    //TODO: Hack for orbital
+    fn event(&mut self, event: &Event){
+        if self.valid(self._event) {
+            unsafe {
+                let event_ptr: *const Event = event;
+
+                let context = SchemeContext::enter(&self.memory);
+                let fn_ptr: *const usize = &self._event;
+                (*(fn_ptr as *const extern "C" fn(usize, usize)))(self.handle, event_ptr as usize);
+                context.exit();
+            }
+        }
+    }
+
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         if self.valid(self._open) {
             let fd;
@@ -408,7 +445,7 @@ impl KScheme for SchemeItem {
                 //TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
-                    memory: ContextMemory {
+                    memory: SchemeMemory {
                         physical_address: self.memory.physical_address,
                         virtual_address: self.memory.virtual_address,
                         virtual_size: self.memory.virtual_size,

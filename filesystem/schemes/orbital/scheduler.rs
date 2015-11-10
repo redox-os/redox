@@ -1,12 +1,3 @@
-pub use self::context::Context;
-pub use self::regs::Regs;
-pub use self::tss::TSS;
-
-/// Context
-pub mod context;
-pub mod regs;
-pub mod tss;
-
 #[cfg(target_arch = "x86")]
 pub unsafe fn start_no_ints() -> bool {
     let flags: u32;
