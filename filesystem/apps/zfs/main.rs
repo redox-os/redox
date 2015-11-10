@@ -49,7 +49,7 @@ impl ZfsReader {
                 lzjb::decompress(&data, &mut decompressed);
                 Ok(decompressed)
             },
-            _ => Err("Error: not enough bytes".to_string()),
+            u => Err(format!("Error: Unknown compression type {}", u)),
         }
     }
 
@@ -524,8 +524,13 @@ pub fn main() {
                             Some(arg) => {
                                 match File::open(arg) {
                                     Some(file) => {
-                                        println!("Open: {}", arg);
-                                        zfs_option = Zfs::new(file).ok();
+                                        let zfs = Zfs::new(file);
+                                        if let Err(ref e) = zfs {
+                                            println_color!(red, "Error: {:?}", e);
+                                        } else {
+                                            println_color!(green, "Open: {}", arg);
+                                        }
+                                        zfs_option = zfs.ok();
                                     },
                                     None => println!("File not found!"),
                                 }
