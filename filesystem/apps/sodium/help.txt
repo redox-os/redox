@@ -82,6 +82,7 @@ Scrolling:
 Cursor management:
 - b : Branch the cursor
 - B : Delete the current cursor
+- [space] : Go to the next cursor
 
 Editing:
 - i : Go to insert mode
@@ -101,8 +102,6 @@ Editing:
                   / -> \
 - ; : Go to prompt mode
 
-Cursor:
-- [space] : Go to the next cursor
 
 # Insert
 
@@ -125,6 +124,8 @@ Following commands are valid:
 - toggle <option> : Toggle <option>
 - get <option> : Get the state of 
                  <option>
+- o <filename> : Open <filename>
+- help : Open this guide.
 
 Following option exists:
 

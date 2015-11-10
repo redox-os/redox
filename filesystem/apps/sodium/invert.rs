@@ -2,9 +2,12 @@ use super::*;
 
 impl Editor {
     pub fn invert_chars(&mut self, n: usize) {
-        let (x, y) = self.pos();
         for _ in 0..n {
-            self.text[y][x] = invert::invert(self.current());
+            let (x, y) = self.pos();
+            let cur = self.current();
+            if let Some(c) = self.text[y].get_mut(x) {
+                *c = invert::invert(cur);
+            }
             if let Some(m) = self.next(1) {
                 self.goto(m);
             }
