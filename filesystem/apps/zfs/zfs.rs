@@ -1,6 +1,7 @@
 //To use this, please install zfs-fuse
 use redox::*;
 
+use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
 use self::block_ptr::BlockPtr;
 use self::dsl_dataset::DslDatasetPhys;
@@ -11,7 +12,7 @@ use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
-pub mod zarc;
+pub mod arcache;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
@@ -31,7 +32,7 @@ pub mod zio;
 
 pub struct ZfsReader {
     pub zio: zio::Reader,
-    pub arc: zarc::ArCache,
+    pub arc: ArCache,
 }
 
 impl ZfsReader {
@@ -110,7 +111,7 @@ pub struct Zfs {
 
 impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
-        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: zarc::ArCache::new() };
+        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: ArCache::new() };
 
         let uberblock = try!(zfs_reader.uber());
 
