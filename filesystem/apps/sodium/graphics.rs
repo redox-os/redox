@@ -106,7 +106,7 @@ fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
 
     let h = editor.window.height();
     let w = editor.window.width();
-    let y = editor.y();
+    //let y = editor.y();
     let mode = editor.cursor().mode;
 
     for (n, c) in (if text.len() > w / (8 * b) {
