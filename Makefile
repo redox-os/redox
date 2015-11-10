@@ -137,6 +137,9 @@ tests: tests/success tests/failure
 clean:
 	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
 
+sodium:
+	cd `git rev-parse --show-toplevel`; rm -f filesystem/apps/sodium/*bin build/i386/sodium*; make qemu; cd -;
+
 apps/%:
 	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
 
