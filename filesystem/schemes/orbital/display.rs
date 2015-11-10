@@ -1,15 +1,14 @@
-use alloc::boxed::Box;
+//use core::simd::*;
 
-use core::{cmp, mem};
-use core::simd::*;
+use redox::Box;
+use redox::{cmp, mem};
+use redox::syscall::{sys_alloc, sys_unalloc};
 
-use common::memory;
+use orbital::Color;
+use orbital::Point;
+use orbital::Size;
 
-use scheduler;
-
-use super::color::Color;
-use super::point::Point;
-use super::size::Size;
+use super::scheduler;
 
 /// The info of the VBE mode
 #[derive(Copy, Clone)]
@@ -51,8 +50,6 @@ pub struct VBEModeInfo {
 
 const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
 
-pub static mut fonts: usize = 0;
-
 /// A display
 pub struct Display {
     pub offscreen: usize,
@@ -68,8 +65,8 @@ impl Display {
     pub unsafe fn root() -> Box<Self> {
         let mode_info = &*VBEMODEINFO;
 
-        let ret = box Display {
-            offscreen: memory::alloc(mode_info.bytesperscanline as usize *
+        box Display {
+            offscreen: sys_alloc(mode_info.bytesperscanline as usize *
                                  mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
@@ -77,12 +74,7 @@ impl Display {
             width: mode_info.xresolution as usize,
             height: mode_info.yresolution as usize,
             root: true,
-        };
-
-        ret.set(Color::new(0, 0, 0));
-        ret.flip();
-
-        ret
+        }
     }
 
     /// Create a new display
@@ -91,26 +83,22 @@ impl Display {
             let bytesperrow = width * 4;
             let memory_size = bytesperrow * height;
 
-            let ret = box Display {
-                offscreen: memory::alloc(memory_size),
-                onscreen: memory::alloc(memory_size),
+            box Display {
+                offscreen: sys_alloc(memory_size),
+                onscreen: sys_alloc(memory_size),
                 size: memory_size,
                 bytesperrow: bytesperrow,
                 width: width,
                 height: height,
                 root: false,
-            };
-
-            ret.set(Color::new(0, 0, 0));
-            ret.flip();
-
-            ret
+            }
         }
     }
 
     /* Optimized { */
     pub unsafe fn set_run(data: u32, dst: usize, len: usize) {
         let mut i = 0;
+        /*
         //Only use 16 byte transfer if possible
         if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
             //Align 16
@@ -125,6 +113,7 @@ impl Display {
                 i += mem::size_of::<u32x4>();
             }
         }
+        */
         //Everything after last 16 byte transfer
         while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = data;
@@ -134,6 +123,7 @@ impl Display {
 
     pub unsafe fn copy_run(src: usize, dst: usize, len: usize) {
         let mut i = 0;
+        /*
         //Only use 16 byte transfer if possible
         if (src + i) % 16 == (dst + i) % 16 {
             //Align 16
@@ -147,6 +137,7 @@ impl Display {
                 i += mem::size_of::<u32x4>();
             }
         }
+        */
         //Everything after last 16 byte transfer
         while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = *((src + i) as *const u32);
@@ -342,7 +333,7 @@ impl Display {
     */
 
     /// Draw an image
-    pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
+    pub unsafe fn image(&self, point: Point, data: *const Color, size: Size) {
         let start_y = cmp::max(0, point.y) as usize;
         let end_y = cmp::min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -364,7 +355,7 @@ impl Display {
     /* } Optimized */
 
     /// Draw a image with opacity
-    pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size) {
+    pub unsafe fn image_alpha(&self, point: Point, data: *const Color, size: Size) {
         let start_y = cmp::max(0, point.y) as usize;
         let end_y = cmp::min(self.height as isize, point.y + size.height as isize) as usize;
 
@@ -426,9 +417,9 @@ impl Display {
     }
 
     /// Draw a char
-    pub fn char(&self, point: Point, character: char, color: Color) {
+    pub fn char(&self, point: Point, character: char, color: Color, font: usize) {
         unsafe {
-            let bitmap_location = fonts + 16 * (character as usize);
+            let bitmap_location = font + 16 * (character as usize);
             for row in 0..16 {
                 let row_data = *((bitmap_location + row) as *const u8);
                 for col in 0..8 {
@@ -447,11 +438,11 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                memory::unalloc(self.offscreen);
+                sys_unalloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                memory::unalloc(self.onscreen);
+                sys_unalloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

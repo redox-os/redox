@@ -5,10 +5,10 @@ pub mod debug;
 pub mod elf;
 /// Event input
 pub mod event;
+/// Get slice implementation
+pub mod get_slice;
 /// Kernel memory allocation
 pub mod memory;
-/// Kernel mutex
-pub mod mutex;
 /// Paging (x86)
 #[cfg(target_arch = "x86")]
 #[path="paging-i386.rs"]
@@ -29,3 +29,6 @@ pub mod to_num;
 pub mod parse_path;
 /// A module for parsing IP related string
 pub mod parse_ip;
+/// Cwd
+pub mod cwd;
+pub use self::cwd::*;

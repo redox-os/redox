@@ -1,23 +1,22 @@
+use alloc::boxed::Box;
+
 use collections::string::String;
 use collections::vec::Vec;
 
-use scheduler::context::{self, Context, ContextFile, ContextMemory};
+use scheduler::context::{self, contexts_ptr, Context, ContextFile, ContextMemory};
 use common::debug;
 use common::elf::Elf;
 use common::memory;
+use common::parse_path::parse_path;
+use common::pwd;
 use scheduler;
 use collections::string::ToString;
 
 use schemes::Url;
 
 /// Excecute an excecutable
+//TODO: Modify current context, take current stdio
 pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
-    debug::d("Execute ");
-    debug::d(&url.to_string());
-    debug::d(" in ");
-    debug::d(&wd.to_string());
-    debug::dl();
-
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;
@@ -35,14 +34,6 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 physical_address = memory::alloc(virtual_size);
 
                 if physical_address > 0 {
-                    debug::d("Progbits ");
-                    debug::dh(segment.off as usize);
-                    debug::d(" ");
-                    debug::dh(segment.file_len as usize);
-                    debug::d(" ");
-                    debug::dh(segment.mem_len as usize);
-                    debug::dl();
-
                     //Copy progbits
                     ::memcpy(physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
                     //Zero bss
@@ -54,6 +45,9 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 debug::d("Invalid ELF\n");
             }
         } else {
+            for p in parse_path(url.reference(), pwd()) {
+            debugln!("{}", p);
+            }
             debug::d("Failed to open\n");
         }
 
@@ -73,7 +67,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
             context_args.push(argc);
 
-            let mut context = Context::new(entry, &context_args);
+            let mut context = Context::new(url.to_string(), true, entry, &context_args);
 
             //TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {
@@ -86,31 +80,35 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             *context.args.get() = args;
 
-            if let Some(stdin) = Url::from_str("debug://").open() {
+            if let Some(stdin) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 0, // STDIN
                     resource: stdin,
                 });
+            } else {
+                debugln!("Failed to open stdin");
             }
 
-            if let Some(stdout) = Url::from_str("debug://").open() {
+            if let Some(stdout) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 1, // STDOUT
                     resource: stdout,
                 });
+            } else {
+                debugln!("Failed to open stdout");
             }
 
-            if let Some(stderr) = Url::from_str("debug://").open() {
+            if let Some(stderr) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 2, // STDERR
                     resource: stderr,
                 });
+            } else {
+                debugln!("Failed to open stderr");
             }
 
             let reenable = scheduler::start_no_ints();
-            if context::contexts_ptr as usize > 0 {
-                (*context::contexts_ptr).push(context);
-            }
+            (*contexts_ptr).push(context);
             scheduler::end_no_ints(reenable);
         } else {
             debug::d("Invalid entry\n");

@@ -18,6 +18,7 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(core_simd)]
+#![feature(core_slice_ext)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -92,9 +93,8 @@
 
     /* Exported macros */
 
-    #[cfg(std)]
     #[macro_use]
-    mod macros;
+    pub mod macros;
 
     // TODO mod rtdeps;
 
@@ -158,12 +158,11 @@
     //TODO #[cfg(windows)]
     //TODO #[path = "sys/windows/mod.rs"] mod sys;
 
-    #[cfg(std)]
     pub mod rt;
     //TODO mod panicking;
     pub use __core::panicking;
 
-    mod rand_old;
+    pub mod rand_old;
     pub mod hashmap;
 
     // Some external utilities of the standard library rely on randomness (aka
@@ -187,14 +186,8 @@
     pub use string::*;
     pub use vec::Vec;
 
-    pub use audio::wav::*;
-    #[cfg(not(std))]
-    pub use console::*;
-    pub use graphics::bmp::*;
-    pub use graphics::color::*;
-    pub use orbital::*;
-    pub use orbital::event::*;
     pub use url::*;
+    pub use get_slice::*;
     pub use to_num::*;
 
     pub mod alloc_system;
@@ -203,29 +196,16 @@
     #[path="../../kernel/externs.rs"]
     pub mod externs;
 
-    pub mod panic;
-
     /// A module for system calls
     pub mod syscall;
 
     /// A module for audio
-    mod audio {
-        pub mod wav;
-    }
+    pub mod audio;
 
-    /// A module for console functionality
-    #[cfg(not(std))]
-    #[macro_use]
-    pub mod console;
-    /// Graphics support
-    mod graphics {
-        pub mod bmp;
-        pub mod color;
-    }
-    /// A module for window support
-    pub mod orbital;
+    pub mod panic;
 
     pub mod url;
 
+    pub mod get_slice;
     pub mod to_num;
 /* } Additional Stuff */

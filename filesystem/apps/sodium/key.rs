@@ -1,4 +1,4 @@
-use redox::*;
+use orbital::*;
 
 #[derive(Copy, Clone, PartialEq)]
 /// A key
@@ -17,7 +17,7 @@ pub enum Key {
 }
 
 impl Key {
-    pub fn from_event(k: orbital::event::KeyEvent) -> Key {
+    pub fn from_event(k: KeyEvent) -> Key {
         match k.character {
             '\0' => match k.scancode {
                 s if k.pressed => match s {
@@ -50,4 +50,3 @@ impl Key {
 pub struct Cmd {
     pub key: Key,
 }
-
