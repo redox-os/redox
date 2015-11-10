@@ -1,6 +1,6 @@
-use redox::*;
 use super::*;
-use core::iter::FromIterator;
+use redox::prelude::v1::*;
+use redox::iter::FromIterator;
 
 #[derive(Clone, PartialEq, Copy)]
 /// The type of the insert mode
@@ -51,21 +51,21 @@ impl Editor {
                         let ln = self.text[y].clone();
                         let (slice, _) = ln.as_slices();
 
-                        let first_part = (&slice[..x + d]).clone();
-                        let second_part = (&slice[x + d..]).clone();
+                        let first_part = &slice[..x + d];
+                        let second_part = &slice[x + d..];
 
                         self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
 
-                        let ind = if self.options.autoindent {
-                            self.get_indent(y)
+                        let nl = if self.options.autoindent {
+                            VecDeque::from_iter(
+                                self.get_indent(y).iter().chain(second_part.iter()).map(|x| *x)
+                            )
                         } else {
                             VecDeque::new()
                         };
-                        let begin = ind.len();
+                        let begin = nl.len();
 
-                        self.text.insert(y + 1, VecDeque::from_iter(
-                                ind.into_iter().chain(second_part.iter().map(|x| *x))
-                        ));
+                        self.text.insert(y + 1, nl);
 
                         self.redraw_task = RedrawTask::LinesAfter(y);
                         self.goto((begin, y + 1));
