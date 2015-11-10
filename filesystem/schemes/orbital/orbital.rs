@@ -152,8 +152,15 @@ impl Scheme {
     }
 
     pub fn event(&mut self, event: &Event) {
-        self.session.event(event);
-        unsafe { self.session.redraw() };
+        unsafe {
+            let reenable = scheduler::start_no_ints();
+
+            self.session.event(event);
+
+            scheduler::end_no_ints(reenable);
+
+            self.session.redraw();
+        }
     }
 }
 

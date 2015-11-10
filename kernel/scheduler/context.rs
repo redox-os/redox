@@ -18,7 +18,7 @@ use schemes::Resource;
 use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
-pub const CONTEXT_STACK_ADDR: usize = 0xC0000000 - CONTEXT_STACK_SIZE;
+pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
