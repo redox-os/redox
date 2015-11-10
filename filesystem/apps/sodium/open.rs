@@ -11,6 +11,7 @@ pub enum OpenStatus {
 impl Editor {
     /// Open a file
     pub fn open(&mut self, path: &str) -> OpenStatus {
+        self.status_bar.file = path.to_string();
         if let Some(mut file) = File::open(path) {
             let mut con = String::new();
             file.read_to_string(&mut con);
@@ -21,5 +22,6 @@ impl Editor {
         } else {
             OpenStatus::NotFound
         }
+
     }
 }
