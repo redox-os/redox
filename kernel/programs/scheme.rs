@@ -8,7 +8,6 @@ use collections::vec::Vec;
 
 use core::usize;
 
-use scheduler::context::ContextMemory;
 use common::debug;
 use common::elf::Elf;
 use common::memory;
@@ -19,23 +18,42 @@ use common::pwd;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
 
+pub struct SchemeMemory {
+    pub physical_address: usize,
+    pub virtual_address: usize,
+    pub virtual_size: usize,
+}
+
+impl SchemeMemory {
+    pub unsafe fn map(&mut self) {
+        for i in 0..(self.virtual_size + 4095) / 4096 {
+            Page::new(self.virtual_address + i * 4096).map(self.physical_address + i * 4096);
+        }
+    }
+    pub unsafe fn unmap(&mut self) {
+        for i in 0..(self.virtual_size + 4095) / 4096 {
+            Page::new(self.virtual_address + i * 4096).map_identity();
+        }
+    }
+}
+
 /// A scheme context
 pub struct SchemeContext {
     /// Interrupted
     interrupts: bool,
     /// The old memory (before context switch)
-    old_memory: Vec<ContextMemory>,
+    old_memory: Vec<SchemeMemory>,
 }
 
 impl SchemeContext {
     /// Enter from a given context memory
-    pub unsafe fn enter(memory: &ContextMemory) -> SchemeContext {
+    pub unsafe fn enter(memory: &SchemeMemory) -> SchemeContext {
         let interrupts = start_no_ints();
-        let mut old_memory: Vec<ContextMemory> = Vec::new();
+        let mut old_memory: Vec<SchemeMemory> = Vec::new();
         for i in 0..(memory.virtual_size + 4095) / 4096 {
             let mut page = Page::new(memory.virtual_address + i * 4096);
-            //TODO: Use one contextmemory if possible
-            old_memory.push(ContextMemory {
+            //TODO: Use one SchemeMemory if possible
+            old_memory.push(SchemeMemory {
                 physical_address: page.phys_addr(),
                 virtual_address: page.virt_addr(),
                 virtual_size: 4096,
@@ -85,8 +103,8 @@ impl SchemeContext {
 pub struct SchemeResource {
     /// The handle
     handle: usize,
-    /// The context memory
-    memory: ContextMemory,
+    /// The scheme memory
+    memory: SchemeMemory,
     /// Duplicate?
     _dup: usize,
     /// Internal fpath
@@ -128,7 +146,7 @@ impl Resource for SchemeResource {
                 //TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
-                    memory: ContextMemory {
+                    memory: SchemeMemory {
                         physical_address: self.memory.physical_address,
                         virtual_address: self.memory.virtual_address,
                         virtual_size: self.memory.virtual_size,
@@ -287,8 +305,8 @@ pub struct SchemeItem {
     binary: Url,
     /// The handle
     handle: usize,
-    /// The context memory
-    memory: ContextMemory,
+    /// The scheme memory
+    memory: SchemeMemory,
     _start: usize,
     _stop: usize,
     _open: usize,
@@ -313,7 +331,7 @@ impl SchemeItem {
             scheme: String::new(),
             binary: Url::new(),
             handle: 0,
-            memory: ContextMemory {
+            memory: SchemeMemory {
                 physical_address: 0,
                 virtual_address: 0,
                 virtual_size: 0,
@@ -429,7 +447,7 @@ impl KScheme for SchemeItem {
                 //TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
-                    memory: ContextMemory {
+                    memory: SchemeMemory {
                         physical_address: self.memory.physical_address,
                         virtual_address: self.memory.virtual_address,
                         virtual_size: self.memory.virtual_size,
