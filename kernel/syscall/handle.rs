@@ -1,6 +1,4 @@
-use alloc::rc::Rc;
-
-use collections::string::{String, ToString};
+use collections::string::ToString;
 use collections::vec::Vec;
 
 use core::ops::Deref;

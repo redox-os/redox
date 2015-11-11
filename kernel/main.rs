@@ -182,7 +182,6 @@ unsafe fn poll_loop() -> ! {
 
 /// Event loop
 unsafe fn event_loop() -> ! {
-    let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
@@ -202,7 +201,6 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            //(*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
@@ -354,14 +352,12 @@ unsafe fn init(font_data: usize, tss_data: usize) {
         event_loop();
     });
 
-    /*
-    Context::spawn(box move || {
+    Context::spawn("karp".to_string(), box move || {
         ArpScheme::reply_loop();
     });
-    Context::spawn(box move || {
+    Context::spawn("kicmp".to_string(), box move || {
         IcmpScheme::reply_loop();
     });
-    */
 
     //debugln!("Enabling context switching");
     //debug_draw = false;

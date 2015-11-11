@@ -32,7 +32,7 @@ impl Resource for AC97Resource {
     }
 
     fn url(&self) -> Url {
-        Url::from_str("audio://")
+        Url::from_str("audio:")
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
