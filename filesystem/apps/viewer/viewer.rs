@@ -2,6 +2,8 @@ use core::cmp::max;
 
 use redox::*;
 
+use orbital::*;
+
 pub fn main() {
     let url = match args().get(1) {
         Some(arg) => arg.clone(),
@@ -14,8 +16,8 @@ pub fn main() {
     }
 
     let bmp = BmpFile::from_data(&vec);
-    let mut window = Window::new((rand() % 400 + 50) as isize,
-                                 (rand() % 300 + 50) as isize,
+    let mut window = Window::new(-1,
+                                 -1,
                                  max(320, bmp.width()),
                                  bmp.height(),
                                  &("Viewer (".to_string() + &url + ")")).unwrap();

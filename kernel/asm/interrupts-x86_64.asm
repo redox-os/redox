@@ -31,7 +31,6 @@ interrupts:
 %assign i i+1
 %endrep
 .handle:
-	push rsp
 	push rbp
 	push r15
 	push r14
@@ -47,14 +46,30 @@ interrupts:
 	push rcx
 	push rbx
 	push rax
+
+    mov rax, gdt.kernel_data
+    mov ds, rax
+    mov es, rax
+    mov fs, rax
+    mov gs, rax
+
 	mov rdi, qword [0x100000]
 	mov rsi, rsp
 		;Stack Align
 		mov rbp, rsp
 		and rsp, 0xFFFFFFFFFFFFFFF0
-    call qword [.handler]
+
+		call qword [.handler]
+
 		;Stack Restore
 		mov rsp, rbp
+
+	mov rax, gdt.user_data | 3 ;[esp + 44] ;Use new SS as DS
+    mov ds, rax
+    mov es, rax
+    mov fs, rax
+    mov gs, rax
+
 	pop rax
 	pop rbx
 	pop rcx
@@ -70,7 +85,6 @@ interrupts:
 	pop r14
 	pop r15
 	pop rbp
-    pop rsp ;Pop new rsp (if modified in Regs structure)
     iretq
 
 .handler: dq 0

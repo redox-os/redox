@@ -34,15 +34,14 @@ use collections::vec::Vec;
 use core::{mem, ptr};
 use core::slice::{self, SliceExt};
 use core::str;
-use core::raw::Repr;
 
-use scheduler::context::*;
 use common::debug;
 use common::event::{self, Event, EventOption};
+use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
-use schemes::Url;
+//use common::prompt;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -53,14 +52,17 @@ use drivers::serial::*;
 
 pub use externs::*;
 
-use graphics::bmp::BmpFile;
 use graphics::display::{self, Display};
 use graphics::point::Point;
 
-use programs::package::*;
+use programs::executor::execute;
 use programs::scheme::*;
 use programs::session::*;
 
+use scheduler::{Context, Regs, TSS};
+use scheduler::context::{context_enabled, context_exit, context_switch, context_i, contexts_ptr};
+
+use schemes::Url;
 use schemes::arp::*;
 use schemes::context::*;
 use schemes::debug::*;
@@ -68,12 +70,8 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::random::*;
-use schemes::time::*;
-use schemes::window::*;
 use schemes::display::*;
 
-use syscall::common::Regs;
 use syscall::handle::*;
 
 /// Allocation
@@ -104,6 +102,8 @@ pub mod scheduler;
 pub mod syscall;
 /// USB input/output
 pub mod usb;
+
+pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
 /// Default display for debugging
 static mut debug_display: *mut Display = 0 as *mut Display;
@@ -140,70 +140,10 @@ static mut session_ptr: *mut Session = 0 as *mut Session;
 /// Event pointer
 static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
-/// Bounded slice abstraction
-///
-/// # Code Migration
-///
-/// `foo[a..b]` => `foo.get_slice(Some(a), Some(b))`
-///
-/// `foo[a..]` => `foo.get_slice(Some(a), None)`
-///
-/// `foo[..b]` => `foo.get_slice(None, Some(b))`
-///
-pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self; }
-
-impl GetSlice for str {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.repr().data, self.repr().len) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            slice.len()
-        };
-
-        if a >= b { return ""; }
-
-        unsafe { str::from_utf8_unchecked(&slice[a..b]) }
-    }
-}
-
-impl<T> GetSlice for [T] {
-    fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(SliceExt::as_ptr(self), SliceExt::len(self)) };
-        let a = if let Some(tmp) = a {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            0
-        };
-        let b = if let Some(tmp) = b {
-            let len = slice.len();
-            if tmp > len { len }
-            else { tmp }
-        } else {
-            slice.len()
-        };
-
-        if a >= b { return &[]; }
-
-        &slice[a..b]
-    }
-}
-
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
     loop {
-        asm!("cli");
+        asm!("cli" : : : : "intel", "volatile");
 
         let mut halt = true;
 
@@ -219,10 +159,10 @@ unsafe fn idle_loop() -> ! {
         }
 
         if halt {
-            asm!("sti");
-            asm!("hlt");
+            asm!("sti" : : : : "intel", "volatile");
+            asm!("hlt" : : : : "intel", "volatile");
         } else {
-            asm!("sti");
+            asm!("sti" : : : : "intel", "volatile");
         }
 
         context_switch(false);
@@ -242,7 +182,6 @@ unsafe fn poll_loop() -> ! {
 
 /// Event loop
 unsafe fn event_loop() -> ! {
-    let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
@@ -262,7 +201,6 @@ unsafe fn event_loop() -> ! {
                                     match key_event.scancode {
                                         event::K_F2 => {
                                             ::debug_draw = false;
-                                            (*::session_ptr).redraw = true;
                                         },
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
@@ -293,7 +231,15 @@ unsafe fn event_loop() -> ! {
                             ::debug_draw = true;
                             ::debug_redraw = true;
                         } else {
-                            session.event(event);
+                            //TODO: Magical orbital hack
+                            let reenable = scheduler::start_no_ints();
+                            for item in (*::session_ptr).items.iter_mut() {
+                                if item.scheme() == "orbital" {
+                                    item.event(&event);
+                                    break;
+                                }
+                            }
+                            scheduler::end_no_ints(reenable);
                         }
                     }
                 },
@@ -308,7 +254,7 @@ unsafe fn event_loop() -> ! {
                 display.flip();
             }
         } else {
-            session.redraw();
+            //session.redraw();
         }
 
         context_switch(false);
@@ -328,8 +274,9 @@ pub unsafe fn debug_init() {
 }
 
 /// Initialize kernel
-unsafe fn init(font_data: usize) {
-    scheduler::start_no_ints();
+unsafe fn init(font_data: usize, tss_data: usize) {
+    display::fonts = font_data;
+    tss_ptr = tss_data as *mut TSS;
 
     debug_display = 0 as *mut Display;
     debug_point = Point { x: 0, y: 0 };
@@ -357,8 +304,6 @@ unsafe fn init(font_data: usize) {
     //Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    ptr::write(display::FONTS, font_data);
-
     debug_display = Box::into_raw(Display::root());
 
     debug_draw = true;
@@ -367,7 +312,7 @@ unsafe fn init(font_data: usize) {
 
     debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
-    debug!(" bits ");
+    debug!(" bits");
     debug::dl();
 
     clock_realtime = Rtc::new().time();
@@ -386,11 +331,11 @@ unsafe fn init(font_data: usize) {
 
     pci_init(session);
 
+    session.items.push(DebugScheme::new());
     session.items.push(box ContextScheme);
-    session.items.push(box DebugScheme);
     session.items.push(box MemoryScheme);
-    session.items.push(box RandomScheme);
-    session.items.push(box TimeScheme);
+    //session.items.push(box RandomScheme);
+    //session.items.push(box TimeScheme);
 
     session.items.push(box EthernetScheme);
     session.items.push(box ArpScheme);
@@ -398,49 +343,33 @@ unsafe fn init(font_data: usize) {
     session.items.push(box IpScheme {
         arp: Vec::new()
     });
-    session.items.push(box DisplayScheme);
-    session.items.push(box WindowScheme);
+    //session.items.push(box DisplayScheme);
 
-    Context::spawn(box move || {
+    Context::spawn("kpoll".to_string(), box move || {
         poll_loop();
     });
-    Context::spawn(box move || {
+    Context::spawn("kevent".to_string(), box move || {
         event_loop();
     });
-    Context::spawn(box move || {
+
+    Context::spawn("karp".to_string(), box move || {
         ArpScheme::reply_loop();
     });
-    Context::spawn(box move || {
+    Context::spawn("kicmp".to_string(), box move || {
         IcmpScheme::reply_loop();
     });
 
-    debugln!("Reenabling interrupts");
+    //debugln!("Enabling context switching");
+    //debug_draw = false;
+    context_enabled = true;
 
-    //Start interrupts
-    scheduler::end_no_ints(true);
-
-    //Load cursor before getting out of debug mode
-    debugln!("Loading cursor");
-    if let Some(mut resource) = Url::from_str("file:///ui/cursor.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        let cursor = BmpFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        session.cursor = cursor;
-        session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    }
-
-    debugln!("Loading schemes");
-    if let Some(mut resource) = Url::from_str("file:///schemes/").open() {
+    if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string("file:///schemes/".to_string() + &folder));
+                let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/".to_string() + &folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -449,52 +378,12 @@ unsafe fn init(font_data: usize) {
         }
     }
 
-    debugln!("Loading apps");
-    if let Some(mut resource) = Url::from_str("file:///apps/").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
-
-        for folder in String::from_utf8_unchecked(vec).lines() {
-            if folder.ends_with('/') {
-                let package = Package::from_url(&Url::from_string("file:///apps/".to_string() + folder));
-
-                let reenable = scheduler::start_no_ints();
-                session.packages.push(package);
-                session.redraw = true;
-                scheduler::end_no_ints(reenable);
-            }
-        }
+    {
+        let path_string = "file:/apps/terminal/terminal.bin";
+        let path = Url::from_string(path_string.to_string());
+        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
+        execute(&path, &wd, Vec::new());
     }
-
-    debugln!("Loading background");
-    if let Some(mut resource) = Url::from_str("file:///ui/background.bmp").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        if resource.read_to_end(&mut vec).is_some() {
-            debugln!("Read background");
-        } else {
-            debug!("Failed to read background at: ");
-            debug!("{}", Url::from_str("file:///ui/background.bmp").reference());
-            debugln!("");
-        }
-
-        let background = BmpFile::from_data(&vec);
-
-        let reenable = scheduler::start_no_ints();
-        session.background = background;
-        session.redraw = true;
-        scheduler::end_no_ints(reenable);
-    }
-
-    debugln!("Enabling context switching");
-    debug_draw = false;
-    context_enabled = true;
-}
-
-fn dr(reg: &str, value: usize) {
-    debug!("{}", reg);
-    debug!(": ");
-    debug::dh(value as usize);
-    debug::dl();
 }
 
 #[cold]
@@ -502,87 +391,71 @@ fn dr(reg: &str, value: usize) {
 #[no_mangle]
 /// Take regs for kernel calls and exceptions
 pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
-    macro_rules! exception {
+    macro_rules! exception_inner {
         ($name:expr) => ({
-            debug!("{}", $name);
-            debug::dl();
+            if let Some(context) = Context::current() {
+                debugln!("PID {}: {}", context_i, context.name);
+            } else {
+                debugln!("PID {}", context_i,);
+            }
 
-            dr("INT", interrupt);
-            dr("CONTEXT", context_i);
-            dr("IP", regs.ip);
-            dr("FLAGS", regs.flags);
-            dr("AX", regs.ax);
-            dr("BX", regs.bx);
-            dr("CX", regs.cx);
-            dr("DX", regs.dx);
-            dr("DI", regs.di);
-            dr("SI", regs.si);
-            dr("BP", regs.bp);
-            dr("SP", regs.sp);
+            debugln!("  INT {:X}: {}", interrupt, $name);
+            debugln!("    CS:    {:X}", regs.cs);
+            debugln!("    IP:    {:X}", regs.ip);
+            debugln!("    FLG:   {:X}", regs.flags);
+            debugln!("    SS:    {:X}", regs.ss);
+            debugln!("    SP:    {:X}", regs.sp);
+            debugln!("    BP:    {:X}", regs.bp);
+            debugln!("    AX:    {:X}", regs.ax);
+            debugln!("    BX:    {:X}", regs.bx);
+            debugln!("    CX:    {:X}", regs.cx);
+            debugln!("    DX:    {:X}", regs.dx);
+            debugln!("    DI:    {:X}", regs.di);
+            debugln!("    SI:    {:X}", regs.si);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            dr("CR0", cr0);
+            debugln!("    CR0:   {:X}", cr0);
 
             let cr2: usize;
             asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            dr("CR2", cr2);
+            debugln!("    CR2:   {:X}", cr2);
 
             let cr3: usize;
             asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            dr("CR3", cr3);
+            debugln!("    CR3:   {:X}", cr3);
 
             let cr4: usize;
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            dr("CR4", cr4);
+            debugln!("    CR4:   {:X}", cr4);
+        })
+    };
 
-            do_sys_exit(-1);
+    macro_rules! exception {
+        ($name:expr) => ({
+            exception_inner!($name);
+
             loop {
-                asm!("cli");
-                asm!("hlt");
+                context_exit();
             }
         })
     };
 
     macro_rules! exception_error {
         ($name:expr) => ({
-            debug!("{}", $name);
-            debug::dl();
+            let error = regs.ip;
+            regs.ip = regs.cs;
+            regs.cs = regs.flags;
+            regs.flags = regs.sp;
+            regs.sp = regs.ss;
+            regs.ss = 0;
+            //regs.ss = regs.error;
 
-            dr("INT", interrupt);
-            dr("CONTEXT", context_i);
-            dr("IP", regs.flags);
-            dr("FLAGS", regs.error);
-            dr("ERROR", regs.ip);
-            dr("AX", regs.ax);
-            dr("BX", regs.bx);
-            dr("CX", regs.cx);
-            dr("DX", regs.dx);
-            dr("DI", regs.di);
-            dr("SI", regs.si);
-            dr("BP", regs.bp);
-            dr("SP", regs.sp);
+            exception_inner!($name);
+            debugln!("    ERR:   {:X}", error);
 
-            let cr0: usize;
-            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            dr("CR0", cr0);
-
-            let cr2: usize;
-            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            dr("CR2", cr2);
-
-            let cr3: usize;
-            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            dr("CR3", cr3);
-
-            let cr4: usize;
-            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            dr("CR4", cr4);
-
-            do_sys_exit(-1);
             loop {
-                asm!("cli");
-                asm!("hlt");
+                context_exit();
             }
         })
     };
@@ -603,7 +476,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             scheduler::end_no_ints(reenable);
 
             context_switch(true);
-        }
+        },
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
@@ -618,11 +491,13 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => syscall_handle(regs),
+        0x80 => if ! syscall_handle(regs) {
+            exception!("Unknown Syscall");
+        },
         0xFF => {
-            init(regs.ax);
+            init(regs.ax, regs.bx);
             idle_loop();
-        }
+        },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),
         0x2 => exception!("Non-maskable interrupt"),

@@ -55,7 +55,7 @@ impl Resource for IntelHDAResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_str("hda://")
+        Url::from_str("audio:")
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {

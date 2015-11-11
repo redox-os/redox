@@ -1,4 +1,5 @@
-use ::GetSlice;
+use common::debug;
+use common::get_slice::GetSlice;
 
 use collections::vec::Vec;
 
@@ -64,10 +65,10 @@ impl KScheme for ArpScheme {
 
 impl ArpScheme {
     pub fn reply_loop() {
-        while let Some(mut link) = Url::from_str("ethernet:///806").open() {
+        while let Some(mut link) = Url::from_str("ethernet:/806").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
-                if let Some(_) = link.read_to_end(&mut bytes) {
+                if let Some(count) = link.read_to_end(&mut bytes) {
                     if let Some(packet) = Arp::from_bytes(bytes) {
                         if packet.header.oper.get() == 1 && packet.header.dst_ip.equals(IP_ADDR) {
                             let mut response = Arp {
@@ -87,7 +88,8 @@ impl ArpScheme {
                     break;
                 }
             }
-            unsafe { context_switch(false) }
+            unsafe { context_switch(false) };
         }
+        debug::d("ARP: Failed to open ethernet:\n");
     }
 }

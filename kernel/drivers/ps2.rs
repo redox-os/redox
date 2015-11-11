@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use core::cmp;
+
 use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
@@ -22,8 +24,12 @@ pub struct Ps2 {
     caps_lock_toggle: bool,
     /// The mouse packet
     mouse_packet: [u8; 4],
-    /// Mouse
+    /// Mouse packet index
     mouse_i: usize,
+    /// Mouse point x
+    mouse_x: isize,
+    /// Mouse point y
+    mouse_y: isize,
 }
 
 impl Ps2 {
@@ -38,6 +44,8 @@ impl Ps2 {
             caps_lock_toggle: false,
             mouse_packet: [0; 4],
             mouse_i: 0,
+            mouse_x: 0,
+            mouse_y: 0,
         };
 
         unsafe {
@@ -207,11 +215,16 @@ impl Ps2 {
                 y = 0;
             }
 
+            unsafe {
+                self.mouse_x = cmp::max(0, cmp::min((*::debug_display).width as isize, self.mouse_x + x));
+                self.mouse_y = cmp::max(0, cmp::min((*::debug_display).height as isize, self.mouse_y + y));
+            }
+
             self.mouse_i = 0;
 
             return Some(MouseEvent {
-                x: x,
-                y: y,
+                x: self.mouse_x,
+                y: self.mouse_y,
                 left_button: left_button,
                 right_button: right_button,
                 middle_button: middle_button,

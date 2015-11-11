@@ -12,10 +12,12 @@
 #[macro_use]
 extern crate redox;
 
+extern crate orbital;
+
 use application::main;
 
 #[path="APPLICATION_PATH"]
-mod application;
+pub mod application;
 
 use redox::*;
 use redox::syscall::sys_exit;
@@ -23,8 +25,8 @@ use redox::syscall::sys_exit;
 #[no_mangle]
 #[inline(never)]
 pub unsafe extern fn _start_stack(stack: *const usize) {
-    let argc = ptr::read(stack);
     let mut args: Vec<&'static str> = Vec::new();
+    let argc = ptr::read(stack);
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {
@@ -41,9 +43,7 @@ pub unsafe extern fn _start_stack(stack: *const usize) {
     }
 
     args_init(args);
-    console_init();
     main();
-    console_destroy();
     args_destroy();
     sys_exit(0);
 }

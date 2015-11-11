@@ -14,7 +14,7 @@ RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead_code -A deprecated \
-	-L $(BUILD) 
+	-L $(BUILD)
 AS=nasm
 AWK=awk
 BASENAME=basename
@@ -130,7 +130,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 
 apps: apps/editor apps/file_manager apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
 
-schemes: schemes/console schemes/tcp schemes/udp schemes/zfs
+schemes: schemes/console schemes/orbital schemes/tcp schemes/udp schemes/zfs
 
 tests: tests/success tests/failure
 
@@ -171,7 +171,10 @@ $(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liball
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name redox -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --cfg std --crate-name redox -o $@ $<
+
+$(BUILD)/liborbital.rlib: liborbital/lib.rs $(BUILD)/libredox.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
@@ -192,12 +195,12 @@ else
 	$(AS) -f elf $< -o $@
 endif
 
-filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib
+filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
 	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/crt0.o $(BUILD)/`$(BASENAME) $*`.rlib
 
-filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib
+filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
 	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
@@ -338,4 +341,4 @@ ping:
 	ping 10.85.85.2
 
 wireshark:
-	wireshark network.pcap
+	wireshark $(BUILD)/network.pcap
