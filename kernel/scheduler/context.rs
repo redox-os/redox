@@ -11,7 +11,7 @@ use core::{mem, ptr};
 
 use common::memory;
 use common::paging::Page;
-use scheduler::{self, Regs, TSS};
+use scheduler;
 
 use schemes::Resource;
 
@@ -117,7 +117,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                  parent.kernel_stack as *const u8,
                  CONTEXT_STACK_SIZE + 512);
 
-        let mut context = box Context {
+        let context = box Context {
             name: parent.name.clone(),
             interrupted: parent.interrupted,
             exited: parent.exited,
@@ -195,6 +195,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 
 // Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86")]
+#[allow(unused_variables)]
 pub unsafe extern "cdecl" fn context_userspace(ip: usize,
                                                cs: usize,
                                                flags: usize,
@@ -210,6 +211,7 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize,
 
 // Must have absolutely no pushes or pops
 #[cfg(target_arch = "x86_64")]
+#[allow(unused_variables)]
 pub unsafe extern "cdecl" fn context_userspace(ip: usize,
                                                cs: usize,
                                                flags: usize,

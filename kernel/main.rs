@@ -17,7 +17,6 @@
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
 #![feature(raw)]
-#![feature(slice_concat_ext)]
 #![no_std]
 
 #[macro_use]
@@ -31,9 +30,8 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::{mem, ptr};
-use core::slice::{self, SliceExt};
-use core::str;
+use core::mem;
+use core::slice::SliceExt;
 
 use common::debug;
 use common::event::{self, Event, EventOption};
@@ -50,10 +48,11 @@ use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
 
+use env::console::Console;
+
 pub use externs::*;
 
-use graphics::display::{self, Display};
-use graphics::point::Point;
+use graphics::display;
 
 use programs::executor::execute;
 use programs::scheme::*;
@@ -70,7 +69,7 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::display::*;
+//use schemes::display::*;
 
 use syscall::handle::*;
 
@@ -84,6 +83,8 @@ pub mod common;
 /// Various drivers
 /// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
+/// Environment
+pub mod env;
 /// Externs
 pub mod externs;
 /// Various graphical methods
@@ -105,16 +106,8 @@ pub mod usb;
 
 pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
-/// Default display for debugging
-static mut debug_display: *mut Display = 0 as *mut Display;
-/// Default point for debugging
-static mut debug_point: Point = Point { x: 0, y: 0 };
-/// Draw debug
-static mut debug_draw: bool = false;
-/// Redraw debug
-static mut debug_redraw: bool = false;
-/// Debug command
-static mut debug_command: *mut String = 0 as *mut String;
+/// Default console for debugging
+static mut console: *mut Console = 0 as *mut Console;
 
 /// Clock realtime (default)
 static mut clock_realtime: Duration = Duration {
@@ -194,13 +187,13 @@ unsafe fn event_loop() -> ! {
 
             match event_option {
                 Some(event) => {
-                    if debug_draw {
+                    if (*console).draw {
                         match event.to_option() {
                             EventOption::Key(key_event) => {
                                 if key_event.pressed {
                                     match key_event.scancode {
                                         event::K_F2 => {
-                                            ::debug_draw = false;
+                                            (*console).draw = false;
                                         }
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
@@ -210,7 +203,7 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd.clone() + "\n";
+                                                (*console).command = cmd.clone() + "\n";
                                                 scheduler::end_no_ints(reenable);
 
                                                 cmd.clear();
@@ -228,8 +221,8 @@ unsafe fn event_loop() -> ! {
                         }
                     } else {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
-                            ::debug_draw = true;
-                            ::debug_redraw = true;
+                            (*console).draw = true;
+                            (*console).redraw = true;
                         } else {
                             // TODO: Magical orbital hack
                             let reenable = scheduler::start_no_ints();
@@ -247,11 +240,10 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        if debug_draw {
-            let display = &*debug_display;
-            if debug_redraw {
-                debug_redraw = false;
-                display.flip();
+        if (*console).draw {
+            if (*console).redraw {
+                (*console).redraw = false;
+                (*console).display.flip();
             }
         } else {
             // session.redraw();
@@ -278,10 +270,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
 
-    debug_display = 0 as *mut Display;
-    debug_point = Point { x: 0, y: 0 };
-    debug_draw = false;
-    debug_redraw = false;
+    console = 0 as *mut Console;
 
     clock_realtime.secs = 0;
     clock_realtime.nanos = 0;
@@ -304,11 +293,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    debug_display = Box::into_raw(Display::root());
-
-    debug_draw = true;
-
-    debug_command = Box::into_raw(box String::new());
+    console = Box::into_raw(Console::new());
+    (*console).draw = true;
 
     debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
@@ -362,7 +348,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                    });
 
     // debugln!("Enabling context switching");
-    // debug_draw = false;
+    // (*console).draw = false;
     context_enabled = true;
 
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {

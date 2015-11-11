@@ -1,4 +1,4 @@
-use core::{char, cmp};
+use core::char;
 
 use scheduler;
 
@@ -52,12 +52,10 @@ impl Event {
 
     /// Event trigger
     pub fn trigger(&self) {
-        let mut event = *self;
-
         unsafe {
             let reenable = scheduler::start_no_ints();
 
-            (*::events_ptr).push(event);
+            (*::events_ptr).push(*self);
 
             scheduler::end_no_ints(reenable);
         }

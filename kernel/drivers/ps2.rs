@@ -217,10 +217,10 @@ impl Ps2 {
 
             unsafe {
                 self.mouse_x = cmp::max(0,
-                                        cmp::min((*::debug_display).width as isize,
+                                        cmp::min((*::console).display.width as isize,
                                                  self.mouse_x + x));
                 self.mouse_y = cmp::max(0,
-                                        cmp::min((*::debug_display).height as isize,
+                                        cmp::min((*::console).display.height as isize,
                                                  self.mouse_y + y));
             }
 

@@ -17,6 +17,10 @@ pub mod paging;
 #[cfg(target_arch = "x86_64")]
 #[path="paging-x86_64.rs"]
 pub mod paging;
+/// A module for parsing paths
+pub mod parse_path;
+/// A module for parsing IP related string
+pub mod parse_ip;
 /// A module for queues
 pub mod queue;
 /// A module for pseudorandom generator
@@ -25,10 +29,3 @@ pub mod random;
 pub mod time;
 /// String to number
 pub mod to_num;
-/// A module for parsing paths
-pub mod parse_path;
-/// A module for parsing IP related string
-pub mod parse_ip;
-/// Cwd
-pub mod cwd;
-pub use self::cwd::*;

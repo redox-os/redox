@@ -556,12 +556,12 @@ impl Uhci {
                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                   let mouse_x = (x * (*::debug_display).width) / 32768;
-                                   let mouse_y = (y * (*::debug_display).height) / 32768;
+                                   let mouse_x = (x * (*::console).display.width) / 32768;
+                                   let mouse_y = (y * (*::console).display.height) / 32768;
 
                                    MouseEvent {
-                                       x: cmp::max(0, cmp::min((*::debug_display).width as isize - 1, mouse_x as isize)),
-                                       y: cmp::max(0, cmp::min((*::debug_display).height as isize - 1, mouse_y as isize)),
+                                       x: cmp::max(0, cmp::min((*::console).display.width as isize - 1, mouse_x as isize)),
+                                       y: cmp::max(0, cmp::min((*::console).display.height as isize - 1, mouse_y as isize)),
                                        left_button: buttons & 1 == 1,
                                        middle_button: buttons & 4 == 4,
                                        right_button: buttons & 2 == 2,
@@ -571,7 +571,7 @@ impl Uhci {
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                            memory::unalloc(in_td as usize);
+                            //memory::unalloc(in_td as usize);
                         });
                     }
                     DESC_HID => {

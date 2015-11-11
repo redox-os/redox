@@ -7,8 +7,6 @@ use core::mem;
 
 use common::debug;
 use common::to_num::ToNum;
-use common::parse_ip::*;
-use common::parse_path::*;
 
 use network::common::*;
 use network::ethernet::*;
@@ -126,7 +124,7 @@ impl KScheme for EthernetScheme {
                         loop {
                             let mut bytes: Vec<u8> = Vec::new();
                             match network.read_to_end(&mut bytes) {
-                                Some(count) => {
+                                Some(_) => {
                                     if let Some(frame) = EthernetII::from_bytes(bytes) {
                                         if frame.header.ethertype.get() == ethertype &&
                                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
