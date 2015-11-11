@@ -12,7 +12,7 @@ pub struct Regs {
     pub cs: usize,
     pub flags: usize,
     pub sp: usize,
-    pub ss: usize
+    pub ss: usize,
 }
 
 #[cfg(target_arch = "x86_64")]
@@ -37,5 +37,5 @@ pub struct Regs {
     pub cs: usize,
     pub flags: usize,
     pub sp: usize,
-    pub ss: usize
+    pub ss: usize,
 }

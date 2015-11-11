@@ -36,7 +36,7 @@ impl FromBytes for Arp {
             unsafe {
                 return Some(Arp {
                     header: *(bytes.as_ptr() as *const ArpHeader),
-                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec()
+                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec(),
                 });
             }
         }
@@ -48,7 +48,8 @@ impl ToBytes for Arp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const ArpHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ArpHeader>()));
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                          mem::size_of::<ArpHeader>()));
             ret.push_all(&self.data);
             ret
         }
@@ -84,7 +85,7 @@ impl ArpScheme {
                             link.write(&response.to_bytes());
                         }
                     }
-                }else{
+                } else {
                     break;
                 }
             }

@@ -78,7 +78,7 @@ impl Ps2 {
         self.wait1();
         self.data.write(flags);
 
-        //Set Defaults
+        // Set Defaults
         self.wait1();
         self.data.write(0xF6);
         self.wait0();
@@ -95,7 +95,7 @@ impl Ps2 {
         self.wait0();
         self.data.read();
 
-        //Set Scancode Map:
+        // Set Scancode Map:
         self.wait1();
         self.data.write(0xF0);
         self.wait0();
@@ -160,7 +160,7 @@ impl Ps2 {
 
     /// Initialize mouse
     pub unsafe fn mouse_init(&mut self) {
-        //The Init Dance
+        // The Init Dance
         self.wait1();
         self.cmd.write(0xA8);
 
@@ -173,10 +173,10 @@ impl Ps2 {
         self.wait1();
         self.data.write(status);
 
-        //Set defaults
+        // Set defaults
         self.mouse_cmd(0xF6);
 
-        //Enable Streaming
+        // Enable Streaming
         self.mouse_cmd(0xF4);
     }
 
@@ -216,8 +216,12 @@ impl Ps2 {
             }
 
             unsafe {
-                self.mouse_x = cmp::max(0, cmp::min((*::debug_display).width as isize, self.mouse_x + x));
-                self.mouse_y = cmp::max(0, cmp::min((*::debug_display).height as isize, self.mouse_y + y));
+                self.mouse_x = cmp::max(0,
+                                        cmp::min((*::debug_display).width as isize,
+                                                 self.mouse_x + x));
+                self.mouse_y = cmp::max(0,
+                                        cmp::min((*::debug_display).height as isize,
+                                                 self.mouse_y + y));
             }
 
             self.mouse_i = 0;
@@ -272,61 +276,61 @@ fn char_for_scancode(scancode: u8, shift: bool) -> char {
     character
 }
 
-static SCANCODES: [[char; 2]; 58]= [['\0', '\0'],
- ['\x1B', '\x1B'],
- ['1', '!'],
- ['2', '@'],
- ['3', '#'],
- ['4', '$'],
- ['5', '%'],
- ['6', '^'],
- ['7', '&'],
- ['8', '*'],
- ['9', '('],
- ['0', ')'],
- ['-', '_'],
- ['=', '+'],
- ['\0', '\0'],
- ['\t', '\t'],
- ['q', 'Q'],
- ['w', 'W'],
- ['e', 'E'],
- ['r', 'R'],
- ['t', 'T'],
- ['y', 'Y'],
- ['u', 'U'],
- ['i', 'I'],
- ['o', 'O'],
- ['p', 'P'],
- ['[', '{'],
- [']', '}'],
- ['\n', '\n'],
- ['\0', '\0'],
- ['a', 'A'],
- ['s', 'S'],
- ['d', 'D'],
- ['f', 'F'],
- ['g', 'G'],
- ['h', 'H'],
- ['j', 'J'],
- ['k', 'K'],
- ['l', 'L'],
- [';', ':'],
- ['\'', '"'],
- ['`', '~'],
- ['\0', '\0'],
- ['\\', '|'],
- ['z', 'Z'],
- ['x', 'X'],
- ['c', 'C'],
- ['v', 'V'],
- ['b', 'B'],
- ['n', 'N'],
- ['m', 'M'],
- [',', '<'],
- ['.', '>'],
- ['/', '?'],
- ['\0', '\0'],
- ['\0', '\0'],
- ['\0', '\0'],
- [' ', ' ']];
+static SCANCODES: [[char; 2]; 58] = [['\0', '\0'],
+                                     ['\x1B', '\x1B'],
+                                     ['1', '!'],
+                                     ['2', '@'],
+                                     ['3', '#'],
+                                     ['4', '$'],
+                                     ['5', '%'],
+                                     ['6', '^'],
+                                     ['7', '&'],
+                                     ['8', '*'],
+                                     ['9', '('],
+                                     ['0', ')'],
+                                     ['-', '_'],
+                                     ['=', '+'],
+                                     ['\0', '\0'],
+                                     ['\t', '\t'],
+                                     ['q', 'Q'],
+                                     ['w', 'W'],
+                                     ['e', 'E'],
+                                     ['r', 'R'],
+                                     ['t', 'T'],
+                                     ['y', 'Y'],
+                                     ['u', 'U'],
+                                     ['i', 'I'],
+                                     ['o', 'O'],
+                                     ['p', 'P'],
+                                     ['[', '{'],
+                                     [']', '}'],
+                                     ['\n', '\n'],
+                                     ['\0', '\0'],
+                                     ['a', 'A'],
+                                     ['s', 'S'],
+                                     ['d', 'D'],
+                                     ['f', 'F'],
+                                     ['g', 'G'],
+                                     ['h', 'H'],
+                                     ['j', 'J'],
+                                     ['k', 'K'],
+                                     ['l', 'L'],
+                                     [';', ':'],
+                                     ['\'', '"'],
+                                     ['`', '~'],
+                                     ['\0', '\0'],
+                                     ['\\', '|'],
+                                     ['z', 'Z'],
+                                     ['x', 'X'],
+                                     ['c', 'C'],
+                                     ['v', 'V'],
+                                     ['b', 'B'],
+                                     ['n', 'N'],
+                                     ['m', 'M'],
+                                     [',', '<'],
+                                     ['.', '>'],
+                                     ['/', '?'],
+                                     ['\0', '\0'],
+                                     ['\0', '\0'],
+                                     ['\0', '\0'],
+                                     [' ', ' ']];

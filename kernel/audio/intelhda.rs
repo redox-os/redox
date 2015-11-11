@@ -49,9 +49,7 @@ struct IntelHDAResource {
 
 impl Resource for IntelHDAResource {
     fn dup(&self) -> Option<Box<Resource>> {
-        Some(box IntelHDAResource {
-            base: self.base
-        })
+        Some(box IntelHDAResource { base: self.base })
     }
 
     fn url(&self) -> Url {
@@ -183,15 +181,15 @@ impl Resource for IntelHDAResource {
 
             debug::d("Finished\n");
             stream.interrupt = 0;
-            /*
-            stream.control = 0;
-            stream.status = 0;
-            stream.cbl = 0;
-            stream.lvi = 0;
-            stream.bdlpl = 0;
-            memory::unalloc(bd_addr);
-            memory::unalloc(bdl as usize);
-            */
+            //
+            // stream.control = 0;
+            // stream.status = 0;
+            // stream.cbl = 0;
+            // stream.lvi = 0;
+            // stream.bdlpl = 0;
+            // memory::unalloc(bd_addr);
+            // memory::unalloc(bdl as usize);
+            //
 
             Some(buf.len())
         }
@@ -224,7 +222,7 @@ impl KScheme for IntelHDA {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //d("HDA IRQ\n");
+            // d("HDA IRQ\n");
         }
     }
 
@@ -378,13 +376,13 @@ impl IntelHDA {
             let corb_i = (ptr::read(corbwp) + 1) & 0xFF;
             let rirb_i = (ptr::read(rirbwp) + 1) & 0xFF;
 
-            /*
-            d("CORB ");
-            dd(corb_i as usize);
-            d(" RIRB ");
-            dd(rirb_i as usize);
-            dl();
-            */
+            //
+            // d("CORB ");
+            // dd(corb_i as usize);
+            // d(" RIRB ");
+            // dd(rirb_i as usize);
+            // dl();
+            //
 
             ptr::write(corb_ptr.offset(corb_i as isize), command);
             ptr::write(corbwp, corb_i);
@@ -474,21 +472,21 @@ impl IntelHDA {
                         debug::dh(cmd(w_node << 20 | 0xA0000) as usize);
                         debug::dl();
 
-                        /*
-                        debug::d("        Amplifier Gain/Mute (Before) ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        debug::d(" ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        debug::dl();
-
-                        cmd(w_node << 20 | 0x30000 | 1 << 15 | 1 << 13 | 1 << 12 | 0b111111);
-
-                        debug::d("        Amplifier Gain/Mute (After) ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        debug::d(" ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        debug::dl();
-                        */
+                        //
+                        // debug::d("        Amplifier Gain/Mute (Before) ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        // debug::d(" ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        // debug::dl();
+                        //
+                        // cmd(w_node << 20 | 0x30000 | 1 << 15 | 1 << 13 | 1 << 12 | 0b111111);
+                        //
+                        // debug::d("        Amplifier Gain/Mute (After) ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        // debug::d(" ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        // debug::dl();
+                        //
 
                         output_stream_id += 1;
                     }
@@ -518,31 +516,31 @@ impl IntelHDA {
                         debug::dh(cmd(w_node << 20 | 0xF0700) as usize);
                         debug::dl();
 
-                        /*
-                        debug::d("        Pin EAPD/BTL (Before) ");
-                        debug::dh(cmd(w_node << 20 | 0xF0C00) as usize);
-                        debug::dl();
-
-                        cmd(w_node << 20 | 0x70C00 | 1 << 1);
-
-                        debug::d("        Pin EAPD/BPL (After) ");
-                        debug::dh(cmd(w_node << 20 | 0xF0C00) as usize);
-                        debug::dl();
-
-                        debug::d("        Amplifier Gain/Mute (Before) ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        debug::d(" ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        debug::dl();
-
-                        cmd(w_node << 20 | 0x30000 | 1 << 15 | 1 << 13 | 1 << 12 | 0b111111);
-
-                        debug::d("        Amplifier Gain/Mute (After) ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
-                        debug::d(" ");
-                        debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
-                        debug::dl();
-                        */
+                        //
+                        // debug::d("        Pin EAPD/BTL (Before) ");
+                        // debug::dh(cmd(w_node << 20 | 0xF0C00) as usize);
+                        // debug::dl();
+                        //
+                        // cmd(w_node << 20 | 0x70C00 | 1 << 1);
+                        //
+                        // debug::d("        Pin EAPD/BPL (After) ");
+                        // debug::dh(cmd(w_node << 20 | 0xF0C00) as usize);
+                        // debug::dl();
+                        //
+                        // debug::d("        Amplifier Gain/Mute (Before) ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        // debug::d(" ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        // debug::dl();
+                        //
+                        // cmd(w_node << 20 | 0x30000 | 1 << 15 | 1 << 13 | 1 << 12 | 0b111111);
+                        //
+                        // debug::d("        Amplifier Gain/Mute (After) ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15 | 1 << 13) as usize);
+                        // debug::d(" ");
+                        // debug::dh(cmd(w_node << 20 | 0xB0000 | 1 << 15) as usize);
+                        // debug::dl();
+                        //
                     }
                     5 => debug::d("        Type: Power\n"),
                     6 => debug::d("        Type: Volume\n"),

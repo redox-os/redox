@@ -15,7 +15,7 @@ use collections::string::ToString;
 use schemes::Url;
 
 /// Excecute an excecutable
-//TODO: Modify current context, take current stdio
+// TODO: Modify current context, take current stdio
 pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
     unsafe {
         let mut physical_address = 0;
@@ -34,10 +34,14 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                 physical_address = memory::alloc(virtual_size);
 
                 if physical_address > 0 {
-                    //Copy progbits
-                    ::memcpy(physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
-                    //Zero bss
-                    ::memset((physical_address + segment.file_len as usize) as *mut u8, 0, segment.mem_len as usize - segment.file_len as usize);
+                    // Copy progbits
+                    ::memcpy(physical_address as *mut u8,
+                             (executable.data + segment.off as usize) as *const u8,
+                             segment.file_len as usize);
+                    // Zero bss
+                    ::memset((physical_address + segment.file_len as usize) as *mut u8,
+                             0,
+                             segment.mem_len as usize - segment.file_len as usize);
                 }
 
                 entry = executable.entry();
@@ -46,7 +50,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
         } else {
             for p in parse_path(url.reference(), pwd()) {
-            debugln!("{}", p);
+                debugln!("{}", p);
             }
             debug::d("Failed to open\n");
         }
@@ -69,7 +73,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             let mut context = Context::new(url.to_string(), true, entry, &context_args);
 
-            //TODO: Push arg c_strs as things to clean up
+            // TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {
                 physical_address: physical_address,
                 virtual_address: virtual_address,

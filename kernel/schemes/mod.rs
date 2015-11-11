@@ -43,8 +43,8 @@ pub trait KScheme {
         ""
     }
 
-    //TODO: Hack for orbital
-    fn event(&mut self, event: &Event){
+    // TODO: Hack for orbital
+    fn event(&mut self, event: &Event) {
 
     }
 
@@ -94,7 +94,7 @@ pub trait Resource {
         false
     }
 
-    //Helper functions
+    // Helper functions
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
         let mut read = 0;
         loop {
@@ -144,16 +144,12 @@ impl Url {
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
-        unsafe {
-            (*::session_ptr).open(&self, O_RDWR)
-        }
+        unsafe { (*::session_ptr).open(&self, O_RDWR) }
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Option<Box<Resource>> {
-        unsafe {
-            (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC)
-        }
+        unsafe { (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC) }
     }
 
     /// Return the scheme of this url
@@ -242,8 +238,10 @@ impl Resource for VecResource {
             ResourceSeek::Current(offset) =>
                 self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
             ResourceSeek::End(offset) =>
-                self.seek =
-                    max(0, min(self.seek as isize, self.vec.len() as isize + offset)) as usize,
+                self.seek = max(0,
+                                min(self.seek as isize,
+                                    self.vec.len() as isize +
+                                    offset)) as usize,
         }
         return Some(self.seek);
     }

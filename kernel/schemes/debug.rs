@@ -17,7 +17,7 @@ impl Resource for DebugResource {
     fn dup(&self) -> Option<Box<Resource>> {
         Some(box DebugResource {
             scheme: self.scheme,
-            line_toggle: self.line_toggle
+            line_toggle: self.line_toggle,
         })
     }
 
@@ -29,13 +29,14 @@ impl Resource for DebugResource {
         if self.line_toggle {
             self.line_toggle = false;
             Some(0)
-        }else{
+        } else {
             unsafe {
                 loop {
                     let reenable = scheduler::start_no_ints();
 
-                    //Hack!
-                    if (*self.scheme).context >= (*contexts_ptr).len() || (*self.scheme).context < context_i {
+                    // Hack!
+                    if (*self.scheme).context >= (*contexts_ptr).len() ||
+                       (*self.scheme).context < context_i {
                         (*self.scheme).context = context_i;
                     }
 
@@ -50,7 +51,7 @@ impl Resource for DebugResource {
 
                 let reenable = scheduler::start_no_ints();
 
-                //TODO: Unicode
+                // TODO: Unicode
                 let mut i = 0;
                 while i < buf.len() && !(*::debug_command).as_mut_vec().is_empty() {
                     buf[i] = (*::debug_command).as_mut_vec().remove(0);
@@ -88,9 +89,7 @@ pub struct DebugScheme {
 
 impl DebugScheme {
     pub fn new() -> Box<Self> {
-        box DebugScheme {
-            context: 0
-        }
+        box DebugScheme { context: 0 }
     }
 }
 
@@ -102,7 +101,7 @@ impl KScheme for DebugScheme {
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box DebugResource {
             scheme: self,
-            line_toggle: false
+            line_toggle: false,
         })
     }
 }
