@@ -1,12 +1,12 @@
 use redox::{self, cmp, env};
 use redox::collections::BTreeMap;
 use redox::fs::{self, File};
-use redox::graphics::bmp::BmpFile;
 use redox::io::{Read, Seek, SeekFrom};
-use redox::orbital::{event, Color, EventOption, MouseEvent, Window};
 use redox::time::{self, Duration};
 use redox::vec::Vec;
 use redox::string::{String, ToString};
+
+use orbital::{event, BmpFile, Color, EventOption, MouseEvent, Window};
 
 pub struct FileType {
     description: String,
@@ -296,8 +296,8 @@ impl FileManager {
             }
         }
 
-        let mut window = Window::new((redox::rand() % 400 + 50) as isize,
-                                     (redox::rand() % 300 + 50) as isize,
+        let mut window = Window::new(-1,
+                                     -1,
                                      width.iter().sum(),
                                      height,
                                      &path).unwrap();

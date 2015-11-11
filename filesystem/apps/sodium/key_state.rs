@@ -1,6 +1,6 @@
 use super::*;
-use redox::*;
-use redox::orbital::*;
+
+use orbital::*;
 
 /// Key state
 pub struct KeyState {
@@ -18,7 +18,7 @@ impl KeyState {
         }
     }
     /// Feed the keystate
-    pub fn feed(&mut self, k: orbital::event::KeyEvent) -> Option<Key> {
+    pub fn feed(&mut self, k: KeyEvent) -> Option<Key> {
 
         let c = k.character;
         match c {

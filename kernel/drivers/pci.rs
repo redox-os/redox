@@ -61,12 +61,7 @@ pub unsafe fn pci_device(session: &mut Session,
            debug::dh(base & 0xFFFFFFF0);
            debug::dl();
        } else if interface_id == 0x00 {
-           //session.items.push(Uhci::new(pci));
-           let base = pci.read(0x10) as usize;
-
-           debug::d("UHCI Controller on ");
-           debug::dh(base & 0xFFFFFFF0);
-           debug::dl();
+           session.items.push(Uhci::new(pci));
        } else {
            debug::d("Unknown USB interface version\n");
        }
@@ -124,7 +119,6 @@ pub unsafe fn pci_init(session: &mut Session) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
-                    /*
                     debug::d(" * PCI ");
                     debug::dd(bus);
                     debug::d(", ");
@@ -156,7 +150,6 @@ pub unsafe fn pci_init(session: &mut Session) {
                     }
 
                     debug::dl();
-                    */
 
                     pci_device(session,
                                pci,

@@ -1,3 +1,4 @@
+use common::event::Event;
 use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
@@ -40,6 +41,11 @@ pub trait KScheme {
 
     fn scheme(&self) -> &str {
         ""
+    }
+
+    //TODO: Hack for orbital
+    fn event(&mut self, event: &Event){
+
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {

@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::string::String;
 use collections::vec::Vec;
 
-use scheduler::context::{self, Context, ContextFile, ContextMemory};
+use scheduler::context::{self, contexts_ptr, Context, ContextFile, ContextMemory};
 use common::debug;
 use common::elf::Elf;
 use common::memory;
@@ -16,7 +16,7 @@ use schemes::Url;
 
 /// Excecute an excecutable
 //TODO: Modify current context, take current stdio
-pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context>> {
+pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
     unsafe {
         let mut physical_address = 0;
         let mut virtual_address = 0;
@@ -67,7 +67,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
             }
             context_args.push(argc);
 
-            let mut context = Context::new(entry, &context_args);
+            let mut context = Context::new(url.to_string(), true, entry, &context_args);
 
             //TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {
@@ -80,7 +80,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
 
             *context.args.get() = args;
 
-            if let Some(stdin) = Url::from_str("debug://").open() {
+            if let Some(stdin) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 0, // STDIN
                     resource: stdin,
@@ -89,7 +89,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
                 debugln!("Failed to open stdin");
             }
 
-            if let Some(stdout) = Url::from_str("debug://").open() {
+            if let Some(stdout) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 1, // STDOUT
                     resource: stdout,
@@ -98,7 +98,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
                 debugln!("Failed to open stdout");
             }
 
-            if let Some(stderr) = Url::from_str("debug://").open() {
+            if let Some(stderr) = Url::from_str("debug:").open() {
                 (*context.files.get()).push(ContextFile {
                     fd: 2, // STDERR
                     resource: stderr,
@@ -107,7 +107,9 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
                 debugln!("Failed to open stderr");
             }
 
-            return Some(context);
+            let reenable = scheduler::start_no_ints();
+            (*contexts_ptr).push(context);
+            scheduler::end_no_ints(reenable);
         } else {
             debug::d("Invalid entry\n");
 
@@ -116,6 +118,4 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) -> Option<Box<Context
             }
         }
     }
-
-    None
 }

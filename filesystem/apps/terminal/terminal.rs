@@ -21,7 +21,17 @@ macro_rules! exec {
 }
 /* } Magic Macros */
 
-/// A command
+/// Structure which represents a Terminal's command.
+/// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
+/// # Example
+/// ```
+/// let my_command = Command {
+///     name: "my_command",
+///     main: box|args: &Vec<String>| {
+///         println!("Say 'hello' to my command! :-D");
+///     }
+/// }
+/// ```
 pub struct Command<'a> {
     pub name: &'a str,
     pub main: Box<Fn(&Vec<String>)>,
@@ -35,7 +45,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "cat",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
                         Some(arg) => arg.clone(),
@@ -52,12 +62,12 @@ impl<'a> Command<'a> {
                 } else {
                     println!("Failed to open file: {}", path);
                 }
-            },
+            }),
         });
 
         commands.push(Command {
             name: "cd",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
                     Some(path) => {
                         if !change_cwd(&path) {
@@ -66,7 +76,7 @@ impl<'a> Command<'a> {
                     }
                     None => println!("No path given")
                 }
-            },
+            }),
         });
 
         // Simple command to create a file, in the current directory
@@ -88,46 +98,46 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "echo",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 let echo = args.iter()
                     .skip(1)
                     .fold(String::new(), |string, arg| string + " " + arg);
                 println!("{}", echo.trim());
-            },
+            }),
         });
 
         commands.push(Command {
             name: "else",
-            main: box |_: &Vec<String>| {},
+            main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "exec",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
                     File::exec(arg);
                 }
-            },
+            }),
         });
 
         commands.push(Command {
             name: "exit",
-            main: box |_: &Vec<String>| {},
+            main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "fi",
-            main: box |_: &Vec<String>| {},
+            main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "if",
-            main: box |_: &Vec<String>| {},
+            main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "ls",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
                         Some(arg) => arg.clone(),
@@ -142,17 +152,32 @@ impl<'a> Command<'a> {
                 } else {
                     println!("Failed to open directory: {}", path);
                 }
-            }
+            }),
+        });
+
+        commands.push(Command {
+            name: "pwd",
+            main: Box::new(|_: &Vec<String>| {
+                if let Some(file) = File::open("") {
+                    if let Some(path) = file.path() {
+                        println!("{}", path);
+                    } else {
+                        println!("Could not get the path");
+                    }
+                } else {
+                    println!("Could not open the working directory");
+                }
+            }),
         });
 
         commands.push(Command {
             name: "read",
-            main: box |_: &Vec<String>| {},
+            main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "run",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
                     let mut commands = String::new();
@@ -164,31 +189,12 @@ impl<'a> Command<'a> {
                         exec!(command);
                     }
                 }
-            },
-        });
-
-        commands.push(Command {
-            name: "pwd",
-            main: box |_: &Vec<String>| {
-                let mut err = false;
-                if let Some(file) = File::open("") {
-                    if let Some(path) = file.path() {
-                        println!("{}", path);
-                    } else {
-                        err = true;
-                    }
-                } else {
-                    err = true;
-                }
-                if err {
-                    println!("Could not get the path");
-                }
-            },
+            }),
         });
 
         commands.push(Command {
             name: "sleep",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 let secs = {
                     match args.get(1) {
                         Some(arg) => arg.to_num() as i64,
@@ -206,12 +212,12 @@ impl<'a> Command<'a> {
                 println!("Sleep: {} {}", secs, nanos);
                 let remaining = Duration::new(secs, nanos).sleep();
                 println!("Remaining: {} {}", remaining.secs, remaining.nanos);
-            },
+            }),
         });
 
         commands.push(Command {
             name: "send",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 if args.len() < 3 {
                     println!("Error: incorrect arguments");
                     println!("Usage: send [url] [data]");
@@ -244,12 +250,27 @@ impl<'a> Command<'a> {
                         None => println!("Failed to read"),
                     }
                 }
-            },
+            }),
+        });
+
+        // Simple command to create a file, in the current directory
+        // The file has got the name given as the first argument of the command
+        // If the command have no arguments, the command don't create the file
+        commands.push(Command {
+            name: "touch",
+            main: Box::new(|args: &Vec<String>| {
+                match args.get(1) {
+                    Some(file_name) => if File::create(file_name).is_none() {
+                        println!("Failed to create: {}", file_name);
+                    },
+                    None => println!("No name provided")
+                }
+            }),
         });
 
         commands.push(Command {
             name: "url_hex",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
                         Some(arg) => arg.clone(),
@@ -270,12 +291,12 @@ impl<'a> Command<'a> {
                         None => println!("Failed to read"),
                     }
                 }
-            },
+            }),
         });
 
         commands.push(Command {
             name: "wget",
-            main: box |args: &Vec<String>| {
+            main: Box::new(|args: &Vec<String>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
                         if let Some(mut con) = File::open(&("tcp://".to_string() + host)) {
@@ -294,16 +315,16 @@ impl<'a> Command<'a> {
                 } else {
                     println!("No url given");
                 }
-            },
+            }),
         });
 
         let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name);
 
         commands.push(Command {
             name: "help",
-            main: box move |_: &Vec<String>| {
+            main: Box::new(move |_: &Vec<String>| {
                 println!("Commands:{}", command_list);
-            },
+            }),
          });
 
         commands
@@ -513,12 +534,30 @@ impl<'a> Application<'a> {
         }
     }
 
+    /// Method to return the current directory
+    /// If the current directory canno't be find, a default string ("?") will be returned
+    pub fn get_current_directory(&mut self) -> String {
+        if let Some(file) = File::open("") {
+            if let Some(path) = file.path() {
+                // Return the current path
+                return path
+            }
+        // Return a default string if the path canno't be find
+            else {
+                return "?".to_string()
+            }
+        }
+        else {
+            return "?".to_string()
+        }
+    }
+
     /// Run the application
     pub fn main(&mut self) {
         println!("Type help for a command list");
         if let Some(arg) = args().get(1) {
             let command = "run ".to_string() + arg;
-            println!("# {}", command);
+            println!("user@redox:{}# {}", self.get_current_directory(), command);
             self.on_command(&command);
         }
 
@@ -530,7 +569,7 @@ impl<'a> Application<'a> {
                     print!("- ");
                 }
             }
-            print!("# ");
+            print!("user@redox:{}# ", self.get_current_directory());
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {
@@ -548,7 +587,7 @@ impl<'a> Application<'a> {
 
 pub fn main() {
     unsafe {
-        let mut app = box Application::new();
+        let mut app = Box::new(Application::new());
         application = app.deref_mut();
         app.main();
     }

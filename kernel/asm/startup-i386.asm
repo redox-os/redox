@@ -39,7 +39,7 @@ protected_mode:
     mov fs, eax
     mov gs, eax
     mov ss, eax
-    
+
     mov esp, 0x200000 - 128
 
     mov eax, gdt.tss
@@ -49,6 +49,7 @@ protected_mode:
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
     mov eax, kernel_file.font
+    mov ebx, tss
     int 255
 .lp:
     sti
@@ -83,7 +84,7 @@ gdt:
     dw 0xffff       ; limit 0:15
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
-    db 0b11111010 ;db 0b11111010   ; access byte - code
+    db 0b11111010   ; access byte - code
     db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
@@ -91,7 +92,7 @@ gdt:
     dw 0xffff       ; limit 0:15
     dw 0x0000       ; base 0:15
     db 0x00         ; base 16:23
-    db 0b11110010 ;db 0b11110010   ; access byte - data
+    db 0b11110010   ; access byte - data
     db 0xdf         ; flags/(limit 16:19). flag is set to 32 bit protected mode
     db 0x00         ; base 24:31
 
@@ -139,6 +140,7 @@ tss:
     istruc TSS
         at TSS.esp0, dd 0x200000 - 128
         at TSS.ss0, dd gdt.kernel_data
+        at TSS.iomap_base, dw 0xFFFF
     iend
 .end:
 

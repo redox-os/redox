@@ -16,6 +16,9 @@ pub use self::key::*;
 mod prompt;
 pub use self::prompt::*;
 
+mod open;
+pub use self::open::*;
+
 mod redraw;
 pub use self::redraw::*;
 
@@ -51,6 +54,8 @@ pub use self::delete::*;
 
 mod exec;
 pub use self::exec::*;
+
+pub mod invert;
 
 pub fn main() {
     let editor = Editor::new();

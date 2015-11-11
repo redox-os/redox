@@ -1,11 +1,12 @@
 use redox::Box;
 use redox::cell::UnsafeCell;
-use redox::orbital::Color;
-use redox::console::ConsoleWindow;
 use redox::io::SeekFrom;
 use redox::rc::Rc;
 use redox::str;
 use redox::string::{String, ToString};
+
+use orbital::Color;
+use orbital::console::ConsoleWindow;
 
 pub struct Resource {
     console_window: Rc<UnsafeCell<Box<ConsoleWindow>>>,
@@ -91,7 +92,7 @@ impl Scheme {
         }
 
         Some(box Resource {
-            console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(100, 100, 640, 480, title))),
+            console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(-1, -1, 640, 480, title))),
             line_end_toggle: false
         })
     }

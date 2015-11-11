@@ -1,5 +1,6 @@
 use super::*;
 use redox::*;
+use core::iter::FromIterator;
 
 // TODO: Move the command definitions outta here
 impl Editor {
@@ -68,7 +69,7 @@ impl Editor {
                     Char('o') => {
                         let y = self.y();
                         let ind = if self.options.autoindent {
-                            self.get_indent(y)
+                            VecDeque::from_iter(self.get_indent(y).iter().map(|x| *x))
                         } else {
                             VecDeque::new()
                         };
@@ -221,6 +222,9 @@ impl Editor {
                     Char('Z') => {
                         self.scroll_y = self.y() - 3;
                         self.redraw_task = RedrawTask::Full;
+                    },
+                    Char('~') => {
+                        self.invert_chars(n);
                     },
                     Char(c) => {
                         self.status_bar.msg = format!("Unknown command: {}", c);
