@@ -518,21 +518,12 @@ impl<'a> Application<'a> {
     }
 
     /// Method to return the current directory
-    /// If the current directory canno't be find, a default string ("?") will be returned
+    /// If the current directory cannot be found, a default string ("?") will be returned
     pub fn get_current_directory(&mut self) -> String {
-        if let Some(file) = File::open("") {
-            if let Some(path) = file.path() {
-                // Return the current path
-                return path
-            }
-        // Return a default string if the path canno't be find
-            else {
-                return "?".to_string()
-            }
-        }
-        else {
-            return "?".to_string()
-        }
+        // Return the current path
+        File::open("")
+            .and_then(|file| file.path())
+            .unwrap_or("?".to_string())
     }
 
     /// Run the application
