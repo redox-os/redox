@@ -66,7 +66,6 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             let context = Context::new(url.to_string(), true, entry, &context_args);
 
-            // TODO: Push arg c_strs as things to clean up
             (*context.memory.get()).push(ContextMemory {
                 physical_address: physical_address,
                 virtual_address: virtual_address,
