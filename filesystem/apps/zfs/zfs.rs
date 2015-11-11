@@ -1,6 +1,7 @@
 //To use this, please install zfs-fuse
 use redox::*;
 
+use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
 use self::block_ptr::BlockPtr;
 use self::dsl_dataset::DslDatasetPhys;
@@ -11,7 +12,7 @@ use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
-pub mod zarc;
+pub mod arcache;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
@@ -31,7 +32,7 @@ pub mod zio;
 
 pub struct ZfsReader {
     pub zio: zio::Reader,
-    pub arc: zarc::Arc,
+    pub arc: ArCache,
 }
 
 impl ZfsReader {
@@ -110,7 +111,7 @@ pub struct Zfs {
 
 impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
-        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: zarc::Arc::new() };
+        let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: ArCache::new() };
 
         let uberblock = try!(zfs_reader.uber());
 
@@ -322,12 +323,6 @@ impl Zfs {
 
 //TODO: Find a way to remove all the to_string's
 pub fn main() {
-    console_title("ZFS");
-
-    let red = Color::rgba(255, 127, 127, 255);
-    let green = Color::rgba(127, 255, 127, 255);
-    let blue = Color::rgba(127, 127, 255, 255);
-
     println!("Type open zfs.img to open the image file");
 
     let mut zfs_option: Option<Zfs> = None;
@@ -347,7 +342,7 @@ pub fn main() {
                     if command == "uber" {
                         let ref uberblock = zfs.uberblock;
                         //128 KB of ubers after 128 KB of other stuff
-                        println_color!(green, "Newest Uberblock {:X}", zfs.uberblock.magic);
+                        println!("Newest Uberblock {:X}", zfs.uberblock.magic);
                         println!("Version {}", uberblock.version);
                         println!("TXG {}", uberblock.txg);
                         println!("GUID {:X}", uberblock.guid_sum);
@@ -360,10 +355,10 @@ pub fn main() {
                             Ok(ref mut vdev_label) => {
                                 let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
                                 let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
-                                println_color!(green, "Got nv_list:\n{:?}", nv_list);
+                                println!("Got nv_list:\n{:?}", nv_list);
                                 match nv_list.find("vdev_tree") {
                                     Some(vdev_tree) => {
-                                        println_color!(green, "Got vdev_tree");
+                                        println!("Got vdev_tree");
 
                                         let vdev_tree =
                                             if let NvValue::NvList(ref vdev_tree) = *vdev_tree {
@@ -374,7 +369,7 @@ pub fn main() {
 
                                         match vdev_tree.unwrap().find("metaslab_array") {
                                             Some(metaslab_array) => {
-                                                println_color!(green, "Got metaslab_array");
+                                                println!("Got metaslab_array");
                                                 if let NvValue::Uint64(metaslab_array) = *metaslab_array {
                                                     // Get metaslab array dnode
                                                     let metaslab_array = metaslab_array as usize;
@@ -396,20 +391,20 @@ pub fn main() {
                                                     println!("got space map dnode: {:?}", sm_dnode);
                                                     println!("got space map: {:?}", space_map);
                                                 } else {
-                                                    println_color!(red, "Invalid metaslab_array NvValue type. Expected Uint64.");
+                                                    println!("Invalid metaslab_array NvValue type. Expected Uint64.");
                                                 }
                                             },
                                             None => {
-                                                println_color!(red, "No `metaslab_array` in vdev_tree");
+                                                println!("No `metaslab_array` in vdev_tree");
                                             },
                                         };
                                     },
                                     None => {
-                                        println_color!(red, "No `vdev_tree` in vdev_label nvpairs");
+                                        println!("No `vdev_tree` in vdev_label nvpairs");
                                     },
                                 }
                             },
-                            Err(e) => { println_color!(red, "Couldn't read vdev_label: {}", e); },
+                            Err(e) => { println!("Couldn't read vdev_label: {}", e); },
                         }
                     } else if command == "file" {
                         match args.get(1) {
@@ -419,10 +414,10 @@ pub fn main() {
                                     Some(file) => {
                                         println!("File contents: {}", str::from_utf8(&file).unwrap());
                                     },
-                                    None => println_color!(red, "Failed to read file"),
+                                    None => println!("Failed to read file"),
                                 }
                             }
-                            None => println_color!(red, "Usage: file <path>"),
+                            None => println!("Usage: file <path>"),
                         }
                     } else if command == "ls" {
                         match args.get(1) {
@@ -434,42 +429,42 @@ pub fn main() {
                                             print!("{}\t", item);
                                         }
                                     },
-                                    None => println_color!(red, "Failed to read directory"),
+                                    None => println!("Failed to read directory"),
                                 }
                             }
-                            None => println_color!(red, "Usage: ls <path>"),
+                            None => println!("Usage: ls <path>"),
                         }
                     } else if command == "mos" {
                         let ref uberblock = zfs.uberblock;
                         let mos_dva = uberblock.rootbp.dvas[0];
-                        println_color!(green, "DVA: {:?}", mos_dva);
-                        println_color!(green, "type: {:X}", uberblock.rootbp.object_type());
-                        println_color!(green, "checksum: {:X}", uberblock.rootbp.checksum());
-                        println_color!(green, "compression: {:X}", uberblock.rootbp.compression());
+                        println!("DVA: {:?}", mos_dva);
+                        println!("type: {:X}", uberblock.rootbp.object_type());
+                        println!("checksum: {:X}", uberblock.rootbp.checksum());
+                        println!("compression: {:X}", uberblock.rootbp.compression());
                         println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
                         let obj_set: Result<ObjectSetPhys, String> =
                             zfs.reader.read_type(&uberblock.rootbp);
                         if let Ok(ref obj_set) = obj_set {
-                            println_color!(green, "Got meta object set");
-                            println_color!(green, "os_type: {:X}", obj_set.os_type);
-                            println_color!(green, "meta dnode: {:?}\n", obj_set.meta_dnode);
+                            println!("Got meta object set");
+                            println!("os_type: {:X}", obj_set.os_type);
+                            println!("meta dnode: {:?}\n", obj_set.meta_dnode);
 
-                            println_color!(green, "Reading MOS...");
+                            println!("Reading MOS...");
                             let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
                             let mos_array_dva = mos_block_ptr.dvas[0];
 
-                            println_color!(green, "DVA: {:?}", mos_array_dva);
-                            println_color!(green, "type: {:X}", mos_block_ptr.object_type());
-                            println_color!(green, "checksum: {:X}", mos_block_ptr.checksum());
-                            println_color!(green, "compression: {:X}", mos_block_ptr.compression());
+                            println!("DVA: {:?}", mos_array_dva);
+                            println!("type: {:X}", mos_block_ptr.object_type());
+                            println!("checksum: {:X}", mos_block_ptr.checksum());
+                            println!("compression: {:X}", mos_block_ptr.compression());
                             println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
                             let dnode: Result<DNodePhys, String> =
                                 zfs.reader.read_type_array(&mos_block_ptr, 1);
-                            println_color!(green, "Got MOS dnode array");
-                            println_color!(green, "dnode: {:?}", dnode);
+                            println!("Got MOS dnode array");
+                            println!("dnode: {:?}", dnode);
 
                             if let Ok(ref dnode) = dnode {
-                                println_color!(green, "Reading object directory zap object...");
+                                println!("Reading object directory zap object...");
                                 let zap_obj: Result<zap::MZapWrapper, String> =
                                     zfs.reader.read_type(dnode.get_blockptr(0));
                                 println!("{:?}", zap_obj);
@@ -479,7 +474,7 @@ pub fn main() {
                         match args.get(1) {
                             Some(arg) => {
                                 let sector = arg.to_num();
-                                println_color!(green, "Dump sector: {}", sector);
+                                println!("Dump sector: {}", sector);
 
                                 let data = zfs.reader.zio.read(sector, 1);
                                 for i in 0..data.len() {
@@ -494,13 +489,13 @@ pub fn main() {
                                 }
                                 print!("\n");
                             }
-                            None => println_color!(red, "No sector specified!"),
+                            None => println!("No sector specified!"),
                         }
                     } else if command == "close" {
-                        println_color!(red, "Closing");
+                        println!("Closing");
                         close = true;
                     } else {
-                        println_color!(blue, "Commands: uber vdev_label mos file ls dump close");
+                        println!("Commands: uber vdev_label mos file ls dump close");
                     }
                 }
                 None => {
@@ -509,16 +504,16 @@ pub fn main() {
                             Some(arg) => {
                                 match File::open(arg) {
                                     Some(file) => {
-                                        println_color!(green, "Open: {}", arg);
+                                        println!("Open: {}", arg);
                                         zfs_option = Zfs::new(file).ok();
                                     },
-                                    None => println_color!(red, "File not found!"),
+                                    None => println!("File not found!"),
                                 }
                             }
-                            None => println_color!(red, "No file specified!"),
+                            None => println!("No file specified!"),
                         }
                     } else {
-                        println_color!(blue, "Commands: open");
+                        println!("Commands: open");
                     }
                 }
             }

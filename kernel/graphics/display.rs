@@ -51,7 +51,7 @@ pub struct VBEModeInfo {
 
 const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
 
-pub const FONTS: *mut usize = 0x200008 as *mut usize;
+pub static mut fonts: usize = 0;
 
 /// A display
 pub struct Display {
@@ -428,16 +428,14 @@ impl Display {
     /// Draw a char
     pub fn char(&self, point: Point, character: char, color: Color) {
         unsafe {
-            if *FONTS > 0 {
-                let bitmap_location = *FONTS + 16 * (character as usize);
-                for row in 0..16 {
-                    let row_data = *((bitmap_location + row) as *const u8);
-                    for col in 0..8 {
-                        let pixel = (row_data >> (7 - col)) & 1;
-                        if pixel > 0 {
-                            self.pixel(Point::new(point.x + col, point.y + row as isize),
-                                       color);
-                        }
+            let bitmap_location = fonts + 16 * (character as usize);
+            for row in 0..16 {
+                let row_data = *((bitmap_location + row) as *const u8);
+                for col in 0..8 {
+                    let pixel = (row_data >> (7 - col)) & 1;
+                    if pixel > 0 {
+                        self.pixel(Point::new(point.x + col, point.y + row as isize),
+                                   color);
                     }
                 }
             }
