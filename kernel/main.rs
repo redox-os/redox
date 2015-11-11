@@ -369,7 +369,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     }
 
     {
-        let path_string = "file:/apps/terminal/terminal.bin";
+        let path_string = "file:/apps/terminal/main.bin";
         let path = Url::from_string(path_string.to_string());
         let wd = Url::from_string(path_string.get_slice(None,
                                                         Some(path_string.rfind('/').unwrap_or(0) +

@@ -31,20 +31,17 @@ impl Package {
             url: url.clone(),
             id: String::new(),
             name: String::new(),
-            binary: Url::new(),
+            binary: Url::from_string(url.to_string() + "main.bin"),
             icon: BmpFile::default(),
             accepts: Vec::new(),
             authors: Vec::new(),
             descriptions: Vec::new(),
         };
 
-        {
-            for part in url.to_string().rsplit('/') {
-                if ! part.is_empty() {
-                    package.id = part.to_string();
-                    package.binary = Url::from_string(url.to_string() + &part + ".bin");
-                    break;
-                }
+        for part in url.to_string().rsplit('/') {
+            if ! part.is_empty() {
+                package.id = part.to_string();
+                break;
             }
         }
 
