@@ -335,11 +335,15 @@ impl Context {
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
             flags: 0,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
-            stack: Some(ContextMemory {
-                physical_address: memory::alloc(CONTEXT_STACK_SIZE),
-                virtual_address: CONTEXT_STACK_ADDR,
-                virtual_size: CONTEXT_STACK_SIZE,
-            }),
+            stack: if userspace {
+                Some(ContextMemory {
+                    physical_address: memory::alloc(CONTEXT_STACK_SIZE),
+                    virtual_address: CONTEXT_STACK_ADDR,
+                    virtual_size: CONTEXT_STACK_SIZE,
+                })
+            } else {
+                None
+            },
             loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
@@ -348,18 +352,29 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        for arg in args.iter() {
-            ret.push(*arg);
-        }
-
         if userspace {
+            let user_sp = if let Some(ref stack) = ret.stack {
+                let mut sp = stack.physical_address + stack.virtual_size - 128;
+                for arg in args.iter() {
+                    sp -= mem::size_of::<usize>();
+                    ptr::write(sp as *mut usize, *arg);
+                }
+                sp - stack.physical_address + stack.virtual_address
+            } else {
+                0
+            };
+
             ret.push(0x20 | 3);
-            ret.push(CONTEXT_STACK_ADDR + CONTEXT_STACK_SIZE - 128);
+            ret.push(user_sp);
             ret.push(1 << 9);
             ret.push(0x18 | 3);
             ret.push(call);
             ret.push(context_userspace as usize);
         } else {
+            for arg in args.iter() {
+                ret.push(*arg);
+            }
+
             ret.push(call);
         }
 

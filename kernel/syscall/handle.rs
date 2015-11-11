@@ -21,6 +21,33 @@ use schemes::{Resource, ResourceSeek, Url};
 
 use syscall::common::*;
 
+/// Helper function for handling C strings, please do not copy it or make it pub or change it
+unsafe fn c_string_to_slice<'a>(ptr: *const u8) -> &'a [u8]{
+    if ptr > 0 as *const u8 {
+        let mut len = 0;
+        while ptr::read(ptr.offset(len as isize)) > 0 {
+            len += 1;
+        }
+
+        slice::from_raw_parts(ptr, len)
+    } else {
+        &[]
+    }
+}
+/// Helper function for handling C strings, please do not copy it or make it pub or change it
+unsafe fn c_array_to_slice<'a>(ptr: *const *const u8) -> &'a [*const u8] {
+    if ptr > 0 as *const *const u8 {
+        let mut len = 0;
+        while ptr::read(ptr.offset(len as isize)) > 0 as *const u8 {
+            len += 1;
+        }
+
+        slice::from_raw_parts(ptr, len)
+    } else {
+        &[]
+    }
+}
+
 pub unsafe fn do_sys_debug(byte: u8) {
     let reenable = scheduler::start_no_ints();
 
@@ -88,18 +115,13 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 }
 
 pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
-    let mut len = 0;
-    while *path.offset(len as isize) > 0 {
-        len += 1;
-    }
-
     let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
         *current.cwd.get() =
-            current.canonicalize(&str::from_utf8_unchecked(&slice::from_raw_parts(path, len)));
+            current.canonicalize(&str::from_utf8_unchecked(&c_string_to_slice(path)));
         ret = 0;
     }
 
@@ -242,26 +264,29 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 }
 
 // TODO: Make sure this does not return (it should be called from a clone)
-pub unsafe fn do_sys_execve(path: *const u8) -> usize {
+pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut ret = usize::MAX;
-
-    let mut len = 0;
-    while *path.offset(len as isize) > 0 {
-        len += 1;
-    }
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
         let path_string =
-            current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         let path = Url::from_string(path_string.clone());
         let wd = Url::from_string(path_string.get_slice(None,
                                                         Some(path_string.rfind('/').unwrap_or(0) +
                                                              1))
                                              .to_string());
-        execute(&path, &wd, Vec::new());
+
+        let mut args_vec = Vec::new();
+        for arg in c_array_to_slice(args) {
+            args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
+        }
+
+        debugln!("execve {:?}", args_vec);
+
+        execute(&path, &wd, args_vec);
         ret = 0;
     }
 
@@ -393,18 +418,13 @@ pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usiz
 }
 
 pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
-    let mut len = 0;
-    while *path.offset(len as isize) > 0 {
-        len += 1;
-    }
-
     let mut fd = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
         let path_string =
-            current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         scheduler::end_no_ints(reenable);
 
@@ -483,7 +503,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
-        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
         SYS_EXIT => context_exit(),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         // TODO: fstat

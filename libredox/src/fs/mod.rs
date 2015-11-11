@@ -15,9 +15,22 @@ pub struct File {
 }
 
 impl File {
-    pub fn exec(path: &str) -> bool {
+    pub fn exec(path: &str, args: &[&str]) -> bool {
+        let path_c = path.to_string() + "\0";
+
+        let mut args_vec: Vec<String> = Vec::new();
+        for arg in args.iter() {
+            args_vec.push(arg.to_string() + "\0");
+        }
+
+        let mut args_c: Vec<*const u8> = Vec::new();
+        for arg_vec in args_vec.iter() {
+            args_c.push(arg_vec.as_ptr());
+        }
+        args_c.push(0 as *const u8);
+
         unsafe {
-            sys_execve((path.to_string() + "\0").as_ptr()) == 0
+            sys_execve(path_c.as_ptr(), args_c.as_ptr()) == 0
         }
     }
 
