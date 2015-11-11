@@ -71,9 +71,9 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*current_ptr).unmap();
 
                     if (*next_ptr).kernel_stack > 0 {
-                        (*::tss_ptr).esp0 = ((*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128) as u32;
+                        (*::tss_ptr).sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128;
                     } else {
-                        (*::tss_ptr).esp0 = 0x200000 - 128;
+                        (*::tss_ptr).sp0 = 0x200000 - 128;
                     }
 
                     (*next_ptr).map();
@@ -467,6 +467,7 @@ impl Context {
     }
 
     //This function must not push or pop
+    #[cfg(target_arch = "x86")]
     #[cold]
     #[inline(never)]
     pub unsafe fn save(&mut self) {
@@ -493,6 +494,7 @@ impl Context {
     }
 
     //This function must not push or pop
+    #[cfg(target_arch = "x86")]
     #[cold]
     #[inline(never)]
     pub unsafe fn restore(&mut self) {
@@ -513,6 +515,61 @@ impl Context {
 
         asm!("push $0
             popfd"
+            :
+            : "r"(self.flags)
+            : "memory"
+            : "intel", "volatile");
+    }
+
+    //This function must not push or pop
+    #[cfg(target_arch = "x86_64")]
+    #[cold]
+    #[inline(never)]
+    pub unsafe fn save(&mut self) {
+        asm!("pushfq
+            pop $0"
+            : "=r"(self.flags)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!(""
+            : "={rsp}"(self.sp)
+            :
+            : "memory"
+            : "intel", "volatile");
+
+        asm!("fxsave [$0]"
+            :
+            : "r"(self.fx)
+            : "memory"
+            : "intel", "volatile");
+
+        self.loadable = true;
+    }
+
+    //This function must not push or pop
+    #[cfg(target_arch = "x86_64")]
+    #[cold]
+    #[inline(never)]
+    pub unsafe fn restore(&mut self) {
+        if self.loadable {
+            asm!("fxrstor [$0]"
+                :
+                : "r"(self.fx)
+                : "memory"
+                : "intel", "volatile");
+        }
+
+        asm!(""
+            :
+            : "{rsp}"(self.sp)
+            : "memory"
+            : "intel", "volatile");
+
+
+        asm!("push $0
+            popfq"
             :
             : "r"(self.flags)
             : "memory"
