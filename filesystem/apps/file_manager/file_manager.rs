@@ -10,78 +10,78 @@ use redox::string::{String, ToString};
 use orbital::{event, BmpFile, Color, EventOption, MouseEvent, Window};
 
 struct FileType {
-    description: String,
+    description: &'static str,
     icon: BmpFile,
 }
 
 
 impl FileType {
-    fn new(desc: &str, icon: &str) -> FileType {
-        FileType { description: desc.to_string(), icon: load_icon(icon) }
+    fn new(desc: &'static str, icon: &str) -> FileType {
+        FileType { description: desc, icon: load_icon(icon) }
     }
 
 }
 
 struct FileTypesInfo {
-    file_types: BTreeMap<String, FileType>,
+    file_types: BTreeMap<&'static str, FileType>,
 }
 
 impl FileTypesInfo {
     pub fn new () -> FileTypesInfo {
-        let mut file_types = BTreeMap::<String, FileType>::new();
-        file_types.insert("/".to_string(),
+        let mut file_types = BTreeMap::<&'static str, FileType>::new();
+        file_types.insert("/",
                           FileType::new("Folder", "inode-directory"));
-        file_types.insert("wav".to_string(),
+        file_types.insert("wav",
                           FileType::new("WAV audio", "audio-x-wav"));
-        file_types.insert("bin".to_string(),
+        file_types.insert("bin",
                           FileType::new("Executable", "application-x-executable"));
-        file_types.insert("bmp".to_string(),
+        file_types.insert("bmp",
                           FileType::new("Bitmap Image", "image-x-generic"));
-        file_types.insert("rs".to_string(),
+        file_types.insert("rs",
                           FileType::new("Rust source code", "text-x-makefile"));
-        file_types.insert("crate".to_string(),
+        file_types.insert("crate",
                           FileType::new("Rust crate", "application-x-archive"));
-        file_types.insert("rlib".to_string(),
+        file_types.insert("rlib",
                           FileType::new("Static Rust library", "application-x-object"));
-        file_types.insert("asm".to_string(),
+        file_types.insert("asm",
                           FileType::new("Assembly source", "text-x-makefile"));
-        file_types.insert("list".to_string(),
+        file_types.insert("list",
                           FileType::new("Disassembly source", "text-x-makefile"));
-        file_types.insert("c".to_string(),
+        file_types.insert("c",
                           FileType::new("C source code", "text-x-csrc"));
-        file_types.insert("cpp".to_string(),
+        file_types.insert("cpp",
                           FileType::new("C++ source code", "text-x-c++src"));
-        file_types.insert("h".to_string(),
+        file_types.insert("h",
                           FileType::new("C header", "text-x-chdr"));
-        file_types.insert("sh".to_string(),
+        file_types.insert("sh",
                           FileType::new("Shell script", "text-x-script"));
-        file_types.insert("lua".to_string(),
+        file_types.insert("lua",
                           FileType::new("Lua script", "text-x-script"));
-        file_types.insert("txt".to_string(),
+        file_types.insert("txt",
                           FileType::new("Plain text document", "text-x-generic"));
-        file_types.insert("md".to_string(),
+        file_types.insert("md",
                           FileType::new("Markdown document", "text-x-generic"));
-        file_types.insert("toml".to_string(),
+        file_types.insert("toml",
                           FileType::new("TOML document", "text-x-generic"));
-        file_types.insert("json".to_string(),
+        file_types.insert("json",
                           FileType::new("JSON document", "text-x-generic"));
-        file_types.insert("REDOX".to_string(),
+        file_types.insert("REDOX",
                           FileType::new("Redox package", "text-x-generic"));
-        file_types.insert("".to_string(),
+        file_types.insert("",
                           FileType::new("Unknown file", "unknown"));
         FileTypesInfo { file_types: file_types }
     }
 
     pub fn description_for(&self, file_name: &str) -> String {
         if file_name.ends_with('/') {
-            self.file_types["/"].description.clone()
+            self.file_types["/"].description.to_string()
         } else {
             let pos = file_name.rfind('.').unwrap_or(0) + 1;
             let ext = &file_name[pos..];
             if self.file_types.contains_key(ext) {
-                self.file_types[ext].description.clone()
+                self.file_types[ext].description.to_string()
             } else {
-                self.file_types[""].description.clone()
+                self.file_types[""].description.to_string()
             }
         }
     }
@@ -310,6 +310,7 @@ impl FileManager {
                 height = self.files.len() * 32;
             }
         }
+        // TODO: HACK ALERT - should use resize whenver that gets added
         self.window = Window::new(self.window.x(),
                                   self.window.y(),
                                   width.iter().sum(),
