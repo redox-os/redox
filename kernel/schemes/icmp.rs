@@ -56,10 +56,10 @@ impl KScheme for IcmpScheme {
         "icmp"
     }
 }
-/*
+
 impl IcmpScheme {
     pub fn reply_loop() {
-        while let Some(mut ip) = Url::from_str("ip:///1").open() {
+        while let Some(mut ip) = Url::from_str("ip:/1").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
                 if let Some(_) = ip.read_to_end(&mut bytes) {
@@ -93,4 +93,3 @@ impl IcmpScheme {
         }
     }
 }
-*/

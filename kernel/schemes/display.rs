@@ -64,7 +64,7 @@ impl KScheme for DisplayScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         // TODO: ponder these things:
-        // - should display:// be the only only valid url
+        // - should display: be the only only valid url
         //      for this scheme?
         // - maybe "read" should support displays at some other location
         //      like built in screen sharing capability or something
