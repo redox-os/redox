@@ -1,5 +1,6 @@
 use redox::{Box, String, Url};
 use redox::{cmp, mem, ptr};
+use redox::fs::File;
 use redox::io::*;
 use redox::ops::DerefMut;
 use redox::to_num::ToNum;
@@ -121,55 +122,88 @@ impl Scheme {
 
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         //window://host/path/path/path is the path type we're working with.
-        let url_path = Url::from_str(url_str).path_parts();
-        let mut pointx = match url_path.get(0) {
-            Some(x) => x.to_num_signed(),
-            None => 0,
-        };
-        let mut pointy = match url_path.get(1) {
-            Some(y) => y.to_num_signed(),
-            None => 0,
-        };
-        let size_width = match url_path.get(2) {
-            Some(w) => w.to_num(),
-            None => 100,
-        };
-        let size_height = match url_path.get(3) {
-            Some(h) => h.to_num(),
-            None => 100,
-        };
+        let url = Url::from_str(url_str);
 
-        let mut title = match url_path.get(4) {
-            Some(t) => t.clone(),
-            None => String::new(),
-        };
-        for i in 5..url_path.len() {
-            if let Some(t) = url_path.get(i) {
-                title = title + "/" + t;
+        let host = url.host();
+        if host.is_empty() {
+            let path = url.path_parts();
+            let mut pointx = match path.get(0) {
+                Some(x) => x.to_num_signed(),
+                None => 0,
+            };
+            let mut pointy = match path.get(1) {
+                Some(y) => y.to_num_signed(),
+                None => 0,
+            };
+            let size_width = match path.get(2) {
+                Some(w) => w.to_num(),
+                None => 100,
+            };
+            let size_height = match path.get(3) {
+                Some(h) => h.to_num(),
+                None => 100,
+            };
+
+            let mut title = match path.get(4) {
+                Some(t) => t.clone(),
+                None => String::new(),
+            };
+            for i in 5..path.len() {
+                if let Some(t) = path.get(i) {
+                    title = title + "/" + t;
+                }
             }
+
+            if pointx <= 0 || pointy <= 0 {
+                if self.next_x > self.session.display.width as isize - size_width as isize {
+                    self.next_x = 0;
+                }
+                self.next_x += 32;
+                pointx = self.next_x;
+
+                if self.next_y > self.session.display.height as isize - size_height as isize {
+                    self.next_y = 0;
+                }
+                self.next_y += 32;
+                pointy = self.next_y;
+            }
+
+            Some(box Resource {
+                window: Window::new(Point::new(pointx, pointy), Size::new(size_width, size_height), title),
+                seek: 0,
+            })
+        } else if host == "launch" {
+            let path = url.path();
+            debugln!("Launch: {}", path);
+
+            unsafe {
+                let reenable = scheduler::start_no_ints();
+
+                for package in self.session.packages.iter() {
+                    let mut accepted = false;
+                    for accept in package.accepts.iter() {
+                        if (accept.starts_with('*') && path.ends_with(&accept[1..]))
+                        || (accept.ends_with('*') && path.starts_with(&accept[..accept.len() - 1]))
+                        {
+                            accepted = true;
+                            break;
+                        }
+                    }
+                    if accepted {
+                        debugln!("With: {}", package.binary);
+
+                        File::exec(&package.binary, &[&path]);
+                        break;
+                    }
+                }
+
+                scheduler::end_no_ints(reenable);
+            }
+
+            None
+        } else {
+            None
         }
-
-        if pointx <= 0 || pointy <= 0 {
-            if self.next_x > self.session.display.width as isize - size_width as isize {
-                self.next_x = 0;
-            }
-            self.next_x += 32;
-            pointx = self.next_x;
-
-            if self.next_y > self.session.display.height as isize - size_height as isize {
-                self.next_y = 0;
-            }
-            self.next_y += 32;
-            pointy = self.next_y;
-        }
-
-        let p = Point::new(pointx, pointy);
-        let s = Size::new(size_width, size_height);
-
-        Some(box Resource {
-            window: Window::new(p, s, title),
-            seek: 0,
-        })
     }
 
     pub fn event(&mut self, event: &Event) {

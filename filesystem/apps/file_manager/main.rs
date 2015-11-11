@@ -447,7 +447,10 @@ impl FileManager {
                         current_path = current_path + &dir;
                         self.set_path(&current_path);
                     },
-                    FileManagerCommand::Execute(cmd) => { File::exec(&(current_path.clone() + &cmd)); } ,
+                    FileManagerCommand::Execute(cmd) => {
+                        //TODO: What is the best way to request a launch?
+                        File::open(&("orbital://launch/".to_string() + &current_path + &cmd));
+                    } ,
                     FileManagerCommand::Redraw => (),
                     FileManagerCommand::Quit => break,
                 };
