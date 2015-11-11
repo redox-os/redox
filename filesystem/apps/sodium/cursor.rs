@@ -27,9 +27,12 @@ impl Cursor {
 impl Editor {
     /// Get the character under the cursor
     #[inline]
-    pub fn current(&self) -> char {
+    pub fn current(&self) -> Option<char> {
         let (x, y) = self.pos();
-        self.text[y][x]
+        match self.text[y].get(x) {
+            Some(&c) => Some(c),
+            None => None,
+        }
     }
 
     /// Get the current cursor
