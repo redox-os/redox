@@ -337,7 +337,7 @@ impl SchemeItem {
         let mut scheme_item = box SchemeItem {
             url: url.clone(),
             scheme: String::new(),
-            binary: Url::new(),
+            binary: Url::from_string(url.to_string() + "main.bin"),
             handle: 0,
             memory: SchemeMemory {
                 physical_address: 0,
@@ -361,7 +361,6 @@ impl SchemeItem {
         for part in url.reference().rsplit('/') {
             if ! part.is_empty() {
                 scheme_item.scheme = part.to_string();
-                scheme_item.binary = Url::from_string(url.to_string() + part + ".bin");
                 break;
             }
         }
