@@ -174,7 +174,6 @@ impl Scheme {
             })
         } else if host == "launch" {
             let path = url.path();
-            debugln!("Launch: {}", path);
 
             unsafe {
                 let reenable = scheduler::start_no_ints();
@@ -190,8 +189,6 @@ impl Scheme {
                         }
                     }
                     if accepted {
-                        debugln!("With: {}", package.binary);
-
                         File::exec(&package.binary, &[&path]);
                         break;
                     }
