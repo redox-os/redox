@@ -1,5 +1,5 @@
 use redox::Box;
-use redox::{self, cmp, env};
+use redox::{cmp, env};
 use redox::collections::BTreeMap;
 use redox::fs::{self, File};
 use redox::io::{Read, Seek, SeekFrom};
@@ -311,6 +311,7 @@ impl FileManager {
             }
         }
         // TODO: HACK ALERT - should use resize whenver that gets added
+        self.window.sync_path();
         self.window = Window::new(self.window.x(),
                                   self.window.y(),
                                   width.iter().sum(),
