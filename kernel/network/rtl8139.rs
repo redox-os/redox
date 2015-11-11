@@ -146,7 +146,8 @@ impl Rtl8139 {
             debug::dh(frame_len);
             debug::dl();
 
-            self.inbound.push(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
+            self.inbound
+                .push(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
@@ -217,8 +218,8 @@ impl KScheme for Rtl8139 {
                 let isr = inw(base + 0x3E);
                 outw(base + 0x3E, isr);
 
-                //dh(isr as usize);
-                //dl();
+                // dh(isr as usize);
+                // dl();
             }
 
             self.sync();

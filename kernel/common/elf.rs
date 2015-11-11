@@ -116,7 +116,10 @@ impl Elf {
             debug::dd(header.sh_str_index as usize);
             debug::dl();
 
-            let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ElfSection);
+            let sh_str_section =
+                &*((self.data + header.sh_off as usize +
+                    header.sh_str_index as usize *
+                    header.sh_ent_len as usize) as *const ElfSection);
 
             let mut sym_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
@@ -126,7 +129,10 @@ impl Elf {
             debug::dl();
 
             for i in 0..header.ph_len {
-                let segment = &*((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ElfSegment);
+                let segment =
+                    &*((self.data + header.ph_off as usize +
+                        i as usize *
+                        header.ph_ent_len as usize) as *const ElfSegment);
 
                 debug::d("    Section ");
                 debug::dd(i as usize);
@@ -171,9 +177,13 @@ impl Elf {
             debug::dl();
 
             for i in 0..header.sh_len {
-                let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ElfSection);
+                let section =
+                    &*((self.data + header.sh_off as usize +
+                        i as usize *
+                        header.sh_ent_len as usize) as *const ElfSection);
 
-                let section_name_ptr = (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
+                let section_name_ptr =
+                    (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
                 let mut section_name_len = 0;
                 for j in 0..4096 {
                     section_name_len = j;
@@ -181,7 +191,9 @@ impl Elf {
                         break;
                     }
                 }
-                let section_name = str::from_utf8_unchecked(slice::from_raw_parts(section_name_ptr, section_name_len as usize));
+                let section_name =
+                    str::from_utf8_unchecked(slice::from_raw_parts(section_name_ptr,
+                                                                   section_name_len as usize));
 
                 if section_name == ".symtab" {
                     sym_section = section;
@@ -243,7 +255,9 @@ impl Elf {
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ElfSymbol);
 
-                        let symbol_name_ptr = (self.data + str_section.off as usize + symbol.name as usize) as *const u8;
+                        let symbol_name_ptr =
+                            (self.data + str_section.off as usize +
+                             symbol.name as usize) as *const u8;
                         let mut symbol_name_len = 0;
                         for j in 0..4096 {
                             symbol_name_len = j;
@@ -320,16 +334,23 @@ impl Elf {
         if self.data > 0 {
             let header = &*(self.data as *const ElfHeader);
 
-            let sh_str_section = &*((self.data + header.sh_off as usize + header.sh_str_index as usize * header.sh_ent_len as usize) as *const ElfSection);
+            let sh_str_section =
+                &*((self.data + header.sh_off as usize +
+                    header.sh_str_index as usize *
+                    header.sh_ent_len as usize) as *const ElfSection);
 
             let mut sym_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
             let mut str_section = &*((self.data + header.sh_off as usize) as *const ElfSection);
 
             for i in 0..header.sh_len {
-                let section = &*((self.data + header.sh_off as usize + i as usize * header.sh_ent_len as usize) as *const ElfSection);
+                let section =
+                    &*((self.data + header.sh_off as usize +
+                        i as usize *
+                        header.sh_ent_len as usize) as *const ElfSection);
 
-                let section_name_ptr = (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
+                let section_name_ptr =
+                    (self.data + sh_str_section.off as usize + section.name as usize) as *const u8;
                 let mut section_name_len = 0;
                 for j in 0..4096 {
                     section_name_len = j;
@@ -337,7 +358,9 @@ impl Elf {
                         break;
                     }
                 }
-                let section_name = str::from_utf8_unchecked(slice::from_raw_parts(section_name_ptr, section_name_len as usize));
+                let section_name =
+                    str::from_utf8_unchecked(slice::from_raw_parts(section_name_ptr,
+                                                                   section_name_len as usize));
 
                 if section_name == ".symtab" {
                     sym_section = section;
@@ -352,7 +375,9 @@ impl Elf {
                     for i in 0..len {
                         let symbol = &*((self.data + sym_section.off as usize + i as usize * sym_section.ent_len as usize) as *const ElfSymbol);
 
-                        let symbol_name_ptr = (self.data + str_section.off as usize + symbol.name as usize) as *const u8;
+                        let symbol_name_ptr =
+                            (self.data + str_section.off as usize +
+                             symbol.name as usize) as *const u8;
                         let mut symbol_name_len = 0;
                         for j in 0..4096 {
                             symbol_name_len = j;

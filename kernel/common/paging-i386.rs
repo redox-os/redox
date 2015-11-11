@@ -1,12 +1,12 @@
 use core::ptr;
 
-/*
-PAGE_DIRECTORY:
-    1024 dwords pointing to page tables
-PAGE_TABLES:
-    1024 * 1024 dwords pointing to pages
-PAGE_END:
-*/
+//
+// PAGE_DIRECTORY:
+// 1024 dwords pointing to page tables
+// PAGE_TABLES:
+// 1024 * 1024 dwords pointing to pages
+// PAGE_END:
+//
 
 pub const PAGE_TABLE_SIZE: usize = 1024;
 pub const PAGE_ENTRY_SIZE: usize = 4;
@@ -27,12 +27,12 @@ impl Page {
     pub unsafe fn init() {
         for table_i in 0..PAGE_TABLE_SIZE {
             ptr::write((PAGE_DIRECTORY + table_i * PAGE_ENTRY_SIZE) as *mut u32,
-                        //TODO: Use more restrictive flags
-                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u32 | 0b11 << 1 | 1); //Allow userspace, read/write, present
+                       // TODO: Use more restrictive flags
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u32 |
+                       0b11 << 1 | 1); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
-                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE)
-                    .map_identity();
+                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE).map_identity();
             }
         }
 
@@ -82,7 +82,7 @@ impl Page {
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u32,
-                    //TODO: Use more restrictive flags
+                   // TODO: Use more restrictive flags
                    (physical_address as u32 & 0xFFFFF000) | 0b11 << 1 | 1); //Allow userspace, read/write, present
         self.flush();
     }

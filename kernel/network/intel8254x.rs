@@ -17,12 +17,12 @@ use network::scheme::*;
 use schemes::{KScheme, Resource, Url};
 
 const CTRL: u32 = 0x00;
-    const CTRL_LRST: u32 = 1 << 3;
-    const CTRL_ASDE: u32 = 1 << 5;
-    const CTRL_SLU: u32 = 1 << 6;
-    const CTRL_ILOS: u32 = 1 << 7;
-    const CTRL_VME: u32 = 1 << 30;
-    const CTRL_PHY_RST: u32 = 1 << 31;
+const CTRL_LRST: u32 = 1 << 3;
+const CTRL_ASDE: u32 = 1 << 5;
+const CTRL_SLU: u32 = 1 << 6;
+const CTRL_ILOS: u32 = 1 << 7;
+const CTRL_VME: u32 = 1 << 30;
+const CTRL_PHY_RST: u32 = 1 << 31;
 
 const STATUS: u32 = 0x08;
 
@@ -34,25 +34,25 @@ const FCTTV: u32 = 0x170;
 const ICR: u32 = 0xC0;
 
 const IMS: u32 = 0xD0;
-    const IMS_TXDW: u32 = 1;
-    const IMS_TXQE: u32 = 1 << 1;
-    const IMS_LSC: u32 = 1 << 2;
-    const IMS_RXSEQ: u32 = 1 << 3;
-    const IMS_RXDMT: u32 = 1 << 4;
-    const IMS_RX: u32 = 1 << 6;
-    const IMS_RXT: u32 = 1 << 7;
+const IMS_TXDW: u32 = 1;
+const IMS_TXQE: u32 = 1 << 1;
+const IMS_LSC: u32 = 1 << 2;
+const IMS_RXSEQ: u32 = 1 << 3;
+const IMS_RXDMT: u32 = 1 << 4;
+const IMS_RX: u32 = 1 << 6;
+const IMS_RXT: u32 = 1 << 7;
 
 const RCTL: u32 = 0x100;
-    const RCTL_EN: u32 = 1 << 1;
-    const RCTL_UPE: u32 = 1 << 3;
-    const RCTL_MPE: u32 = 1 << 4;
-    const RCTL_LPE: u32 = 1 << 5;
-    const RCTL_LBM: u32 = 1 << 6 | 1 << 7;
-    const RCTL_BAM: u32 = 1 << 15;
-    const RCTL_BSIZE1: u32 = 1 << 16;
-    const RCTL_BSIZE2: u32 = 1 << 17;
-    const RCTL_BSEX: u32 = 1 << 25;
-    const RCTL_SECRC: u32 = 1 << 26;
+const RCTL_EN: u32 = 1 << 1;
+const RCTL_UPE: u32 = 1 << 3;
+const RCTL_MPE: u32 = 1 << 4;
+const RCTL_LPE: u32 = 1 << 5;
+const RCTL_LBM: u32 = 1 << 6 | 1 << 7;
+const RCTL_BAM: u32 = 1 << 15;
+const RCTL_BSIZE1: u32 = 1 << 16;
+const RCTL_BSIZE2: u32 = 1 << 17;
+const RCTL_BSEX: u32 = 1 << 25;
+const RCTL_SECRC: u32 = 1 << 26;
 
 const RDBAL: u32 = 0x2800;
 const RDBAH: u32 = 0x2804;
@@ -72,12 +72,12 @@ struct Rd {
     error: u8,
     special: u16,
 }
-    const RD_DD: u8 = 1;
-    const RD_EOP: u8 = 1 << 1;
+const RD_DD: u8 = 1;
+const RD_EOP: u8 = 1 << 1;
 
 const TCTL: u32 = 0x400;
-    const TCTL_EN: u32 = 1 << 1;
-    const TCTL_PSP: u32 = 1 << 3;
+const TCTL_EN: u32 = 1 << 1;
+const TCTL_PSP: u32 = 1 << 3;
 
 const TDBAL: u32 = 0x3800;
 const TDBAH: u32 = 0x3804;
@@ -95,10 +95,10 @@ struct Td {
     css: u8,
     special: u16,
 }
-    const TD_CMD_EOP: u8 = 1;
-    const TD_CMD_IFCS: u8 = 1 << 1;
-    const TD_CMD_RS: u8 = 1 << 3;
-    const TD_DD: u8 = 1;
+const TD_CMD_EOP: u8 = 1;
+const TD_CMD_IFCS: u8 = 1 << 1;
+const TD_CMD_RS: u8 = 1 << 3;
+const TD_DD: u8 = 1;
 
 pub struct Intel8254x {
     pub pci: PciConfig,
@@ -211,7 +211,8 @@ impl Intel8254x {
                 debug::dh(rd.length as usize);
                 debug::dl();
 
-                self.inbound.push(Vec::from(slice::from_raw_parts(rd.buffer as *const u8, rd.length as usize)));
+                self.inbound.push(Vec::from(slice::from_raw_parts(rd.buffer as *const u8,
+                                                                  rd.length as usize)));
 
                 rd.status = 0;
             }
@@ -257,7 +258,7 @@ impl Intel8254x {
 
                         self.write(TDT, tail);
                     } else {
-                        //TODO: More than one TD
+                        // TODO: More than one TD
                         debug::dl();
                         debug::d("Intel 8254x: Frame too long for transmit: ");
                         debug::dd(bytes.len());
@@ -308,19 +309,19 @@ impl Intel8254x {
 
         self.pci.flag(4, 4, true); // Bus mastering
 
-        //Enable auto negotiate, link, clear reset, do not Invert Loss-Of Signal
+        // Enable auto negotiate, link, clear reset, do not Invert Loss-Of Signal
         self.flag(CTRL, CTRL_ASDE | CTRL_SLU, true);
         self.flag(CTRL, CTRL_LRST, false);
         self.flag(CTRL, CTRL_PHY_RST, false);
         self.flag(CTRL, CTRL_ILOS, false);
 
-        //No flow control
+        // No flow control
         self.write(FCAH, 0);
         self.write(FCAL, 0);
         self.write(FCT, 0);
         self.write(FCTTV, 0);
 
-        //Do not use VLANs
+        // Do not use VLANs
         self.flag(CTRL, CTRL_VME, false);
 
         debug::d(" CTRL ");
@@ -341,11 +342,11 @@ impl Intel8254x {
         };
         debug::d(&MAC_ADDR.to_string());
 
-        /*
-        MTA => 0;
-        */
+        //
+        // MTA => 0;
+        //
 
-        //Receive Buffer
+        // Receive Buffer
         let receive_ring_length = 1024;
         let receive_ring = memory::alloc(receive_ring_length * 16) as *mut Rd;
         for i in 0..receive_ring_length {
@@ -367,7 +368,7 @@ impl Intel8254x {
         self.write(RDH, 0);
         self.write(RDT, receive_ring_length as u32 - 1);
 
-        //Transmit Buffer
+        // Transmit Buffer
         let transmit_ring_length = 64;
         let transmit_ring = memory::alloc(transmit_ring_length * 16) as *mut Td;
         for i in 0..transmit_ring_length {
@@ -398,11 +399,11 @@ impl Intel8254x {
 
         self.flag(RCTL, RCTL_EN, true);
         self.flag(RCTL, RCTL_UPE, true);
-        //self.flag(RCTL, RCTL_MPE, true);
+        // self.flag(RCTL, RCTL_MPE, true);
         self.flag(RCTL, RCTL_LPE, true);
         self.flag(RCTL, RCTL_LBM, false);
-        /* RCTL.RDMTS = Minimum threshold size ??? */
-        /* RCTL.MO = Multicast offset */
+        // RCTL.RDMTS = Minimum threshold size ???
+        // RCTL.MO = Multicast offset
         self.flag(RCTL, RCTL_BAM, true);
         self.flag(RCTL, RCTL_BSIZE1, true);
         self.flag(RCTL, RCTL_BSIZE2, false);
@@ -414,10 +415,10 @@ impl Intel8254x {
 
         self.flag(TCTL, TCTL_EN, true);
         self.flag(TCTL, TCTL_PSP, true);
-        /* TCTL.CT = Collition threshold */
-        /* TCTL.COLD = Collision distance */
-        /* TIPG Packet Gap */
-        /* TODO ... */
+        // TCTL.CT = Collition threshold
+        // TCTL.COLD = Collision distance
+        // TIPG Packet Gap
+        // TODO ...
 
         debug::d(" TCTL ");
         debug::dh(self.read(TCTL) as usize);

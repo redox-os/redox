@@ -34,7 +34,7 @@ impl Resource for IpResource {
                 proto: self.proto,
                 id: self.id,
             }),
-            None => None
+            None => None,
         }
     }
 
@@ -78,7 +78,7 @@ impl Resource for IpResource {
         self.id += 1;
         let mut ip = Ipv4 {
             header: Ipv4Header {
-                ver_hlen: 0x40 | (mem::size_of::<Ipv4Header>()/4 & 0xF) as u8, // No Options
+                ver_hlen: 0x40 | (mem::size_of::<Ipv4Header>() / 4 & 0xF) as u8, // No Options
                 services: 0,
                 len: n16::new((mem::size_of::<Ipv4Header>() + ip_data.len()) as u16), // No Options
                 id: n16::new(self.id),
@@ -133,7 +133,7 @@ impl KScheme for IpScheme {
             if let Some(proto_string) = parts.get(1) {
                 let proto = proto_string.to_num_radix(16) as u8;
 
-                if ! host_string.is_empty() {
+                if !host_string.is_empty() {
                     let peer_addr = Ipv4Addr::from_string(&host_string.to_string());
                     let mut peer_mac = BROADCAST_MAC_ADDR;
 
@@ -145,7 +145,10 @@ impl KScheme for IpScheme {
                     }
 
                     if peer_mac.equals(BROADCAST_MAC_ADDR) {
-                        if let Some(mut link) = Url::from_string("ethernet:".to_string() + &peer_mac.to_string() + "/806").open() {
+                        if let Some(mut link) = Url::from_string("ethernet:".to_string() +
+                                                                 &peer_mac.to_string() +
+                                                                 "/806")
+                                                    .open() {
                             let arp = Arp {
                                 header: ArpHeader {
                                     htype: n16::new(1),
@@ -165,8 +168,7 @@ impl KScheme for IpScheme {
                                 Some(_) => loop {
                                     let mut bytes: Vec<u8> = Vec::new();
                                     match link.read_to_end(&mut bytes) {
-                                        Some(_) =>
-                                            if let Some(packet) = Arp::from_bytes(bytes) {
+                                        Some(_) => if let Some(packet) = Arp::from_bytes(bytes) {
                                             if packet.header.oper.get() == 2 &&
                                                packet.header.src_ip.equals(peer_addr) {
                                                 peer_mac = packet.header.src_mac;
@@ -185,7 +187,10 @@ impl KScheme for IpScheme {
                         }
                     }
 
-                    if let Some(link) = Url::from_string("ethernet:".to_string() + &peer_mac.to_string() + "/800").open() {
+                    if let Some(link) = Url::from_string("ethernet:".to_string() +
+                                                         &peer_mac.to_string() +
+                                                         "/800")
+                                            .open() {
                         return Some(box IpResource {
                             link: link,
                             data: Vec::new(),
@@ -219,7 +224,7 @@ impl KScheme for IpScheme {
             } else {
                 debug::d("IP: No protocol provided\n");
             }
-        }else{
+        } else {
             debug::d("IP: No host provided\n");
         }
 
