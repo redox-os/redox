@@ -284,8 +284,6 @@ pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
             args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
         }
 
-        debugln!("execve {:?}", args_vec);
-
         execute(&path, &wd, args_vec);
         ret = 0;
     }

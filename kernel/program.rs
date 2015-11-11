@@ -42,8 +42,6 @@ pub unsafe extern fn _start_stack(stack: *const usize) {
         }
     }
 
-    debugln!("{} {:?}", argc, args);
-
     args_init(args);
     main();
     args_destroy();
