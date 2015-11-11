@@ -6,7 +6,6 @@ use alloc::boxed::Box;
 use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
-use collections::slice::SliceConcatExt;
 
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
@@ -23,7 +22,6 @@ use scheduler::{start_no_ints, end_no_ints};
 use scheduler::context::context_switch;
 
 use syscall::common::O_CREAT;
-use common::pwd;
 
 const PIO: bool = false;
 

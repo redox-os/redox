@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
-
 use scheduler::context;
 use scheduler;
 

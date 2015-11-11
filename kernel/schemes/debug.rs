@@ -40,7 +40,7 @@ impl Resource for DebugResource {
                         (*self.scheme).context = context_i;
                     }
 
-                    if (*self.scheme).context == context_i && !(*::debug_command).is_empty() {
+                    if (*self.scheme).context == context_i && ! (*::console).command.is_empty() {
                         break;
                     }
 
@@ -53,12 +53,12 @@ impl Resource for DebugResource {
 
                 // TODO: Unicode
                 let mut i = 0;
-                while i < buf.len() && !(*::debug_command).as_mut_vec().is_empty() {
-                    buf[i] = (*::debug_command).as_mut_vec().remove(0);
+                while i < buf.len() && ! (*::console).command.as_mut_vec().is_empty() {
+                    buf[i] = (*::console).command.as_mut_vec().remove(0);
                     i += 1;
                 }
 
-                if i > 0 && (*::debug_command).is_empty() {
+                if i > 0 && (*::console).command.is_empty() {
                     self.line_toggle = true;
                 }
 

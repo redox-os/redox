@@ -13,11 +13,8 @@ use drivers::pio::*;
 
 use programs::executor::execute;
 
-use graphics::color::Color;
-use graphics::size::Size;
-
 use scheduler::{self, Regs};
-use scheduler::context::{context_enabled, context_clone, context_exit, context_switch, Context,
+use scheduler::context::{context_clone, context_exit, context_switch, Context,
                          ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
@@ -27,38 +24,8 @@ use syscall::common::*;
 pub unsafe fn do_sys_debug(byte: u8) {
     let reenable = scheduler::start_no_ints();
 
-    if ::debug_display as usize > 0 {
-        let display = &*::debug_display;
-        display.rect(::debug_point, Size::new(8, 16), Color::new(0, 0, 0));
-        if byte == 10 {
-            ::debug_point.x = 0;
-            ::debug_point.y += 16;
-        } else if byte == 8 {
-            // TODO: Fix up hack for backspace
-            ::debug_point.x -= 8;
-            if ::debug_point.x < 0 {
-                ::debug_point.x = 0
-            }
-            display.rect(::debug_point, Size::new(8, 16), Color::new(0, 0, 0));
-        } else {
-            display.char(::debug_point, byte as char, Color::new(255, 255, 255));
-            ::debug_point.x += 8;
-        }
-        if ::debug_point.x >= display.width as isize {
-            ::debug_point.x = 0;
-            ::debug_point.y += 16;
-        }
-        while ::debug_point.y + 16 > display.height as isize {
-            display.scroll(16);
-            ::debug_point.y -= 16;
-        }
-        display.rect(::debug_point, Size::new(8, 16), Color::new(255, 255, 255));
-        ::debug_redraw = true;
-        // If contexts disabled, probably booting up
-        if !context_enabled && ::debug_draw && ::debug_redraw {
-            ::debug_redraw = false;
-            display.flip();
-        }
+    if ::console as usize > 0 {
+        (*::console).write(byte);
     }
 
     let serial_status = Pio8::new(0x3F8 + 5);
@@ -192,7 +159,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
+    if let Some(current) = Context::current() {
         for i in 0..(*current.files.get()).len() {
             let mut remove = false;
             if let Some(file) = (*current.files.get()).get(i) {
@@ -255,8 +222,8 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
-        let mut new_fd = current.next_fd();
+    if let Some(current) = Context::current() {
+        let new_fd = current.next_fd();
 
         if let Some(resource) = current.get_file(fd) {
             if let Some(new_resource) = resource.dup() {
@@ -285,7 +252,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
+    if let Some(current) = Context::current() {
         let path_string =
             current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
 
@@ -295,6 +262,7 @@ pub unsafe fn do_sys_execve(path: *const u8) -> usize {
                                                              1))
                                              .to_string());
         execute(&path, &wd, Vec::new());
+        ret = 0;
     }
 
     scheduler::end_no_ints(reenable);
@@ -434,7 +402,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
     let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
+    if let Some(current) = Context::current() {
         let path_string =
             current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
 

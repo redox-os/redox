@@ -3,7 +3,7 @@ use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
 
-use collections::string::String;
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::usize;
@@ -12,9 +12,8 @@ use common::debug;
 use common::elf::Elf;
 use common::memory;
 use common::paging::Page;
+
 use scheduler::{start_no_ints, end_no_ints};
-use common::parse_path::parse_path;
-use common::pwd;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
 
@@ -359,11 +358,11 @@ impl SchemeItem {
             _event: 0,
         };
 
-        let path_parts = parse_path(url.reference(), pwd());
-        if !path_parts.is_empty() {
-            if let Some(part) = path_parts.get(path_parts.len() - 1) {
-                scheme_item.scheme = part.clone();
+        for part in url.reference().rsplit('/') {
+            if ! part.is_empty() {
+                scheme_item.scheme = part.to_string();
                 scheme_item.binary = Url::from_string(url.to_string() + part + ".bin");
+                break;
             }
         }
 

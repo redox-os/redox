@@ -10,7 +10,6 @@ use network::ipv4::*;
 
 use common::{debug, random};
 use common::to_num::ToNum;
-use common::parse_ip::*;
 
 use schemes::arp::{Arp, ArpHeader};
 use schemes::{KScheme, Resource, Url};
