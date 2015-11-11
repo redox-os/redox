@@ -36,12 +36,14 @@ impl Resource for EthernetResource {
                 peer_addr: self.peer_addr,
                 ethertype: self.ethertype,
             }),
-            None => None
+            None => None,
         }
     }
 
     fn url(&self) -> Url {
-        Url::from_string(format!("ethernet:{}/{:X}", self.peer_addr.to_string(), self.ethertype))
+        Url::from_string(format!("ethernet:{}/{:X}",
+                                 self.peer_addr.to_string(),
+                                 self.ethertype))
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -80,14 +82,15 @@ impl Resource for EthernetResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let data = Vec::from(buf);
 
-        match self.network.write(& EthernetII {
-            header: EthernetIIHeader {
-                src: unsafe { MAC_ADDR },
-                dst: self.peer_addr,
-                ethertype: n16::new(self.ethertype),
-            },
-            data: data,
-        }.to_bytes()) {
+        match self.network.write(&EthernetII {
+                                      header: EthernetIIHeader {
+                                          src: unsafe { MAC_ADDR },
+                                          dst: self.peer_addr,
+                                          ethertype: n16::new(self.ethertype),
+                                      },
+                                      data: data,
+                                  }
+                                  .to_bytes()) {
             Some(_) => Some(buf.len()),
             None => None,
         }
@@ -112,7 +115,7 @@ impl KScheme for EthernetScheme {
                 if let Some(mut network) = Url::from_str("network:").open() {
                     let ethertype = ethertype_string.to_num_radix(16) as u16;
 
-                    if ! host_string.is_empty() {
+                    if !host_string.is_empty() {
                         return Some(box EthernetResource {
                             network: network,
                             data: Vec::new(),

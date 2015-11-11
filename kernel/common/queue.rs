@@ -34,8 +34,6 @@ impl<T> Queue<T> {
 
 impl<T> Clone for Queue<T> where T: Clone {
     fn clone(&self) -> Self {
-        Queue {
-            vec: self.vec.clone()
-        }
+        Queue { vec: self.vec.clone() }
     }
 }
