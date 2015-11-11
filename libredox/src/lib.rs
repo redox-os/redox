@@ -18,6 +18,7 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(core_simd)]
+#![feature(core_slice_ext)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -161,7 +162,7 @@
     //TODO mod panicking;
     pub use __core::panicking;
 
-    mod rand_old;
+    pub mod rand_old;
     pub mod hashmap;
 
     // Some external utilities of the standard library rely on randomness (aka
@@ -186,6 +187,7 @@
     pub use vec::Vec;
 
     pub use url::*;
+    pub use get_slice::*;
     pub use to_num::*;
 
     pub mod alloc_system;
@@ -200,21 +202,10 @@
     /// A module for audio
     pub mod audio;
 
-    /// A module for console functionality
-    #[macro_use]
-    pub mod console;
-    /// Graphics support
-    pub mod graphics {
-        pub mod bmp;
-        pub mod color;
-    }
-
     pub mod panic;
-
-    /// A module for window support
-    pub mod orbital;
 
     pub mod url;
 
+    pub mod get_slice;
     pub mod to_num;
 /* } Additional Stuff */

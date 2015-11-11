@@ -34,7 +34,7 @@ impl Page {
         for l4_i in 0..PAGE_TABLE_SIZE {
             if l4_i == 0 {
                 ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64,
-                        (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
+                        (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
             } else {
                 ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
             }
@@ -43,7 +43,7 @@ impl Page {
         for dp_i in 0..PAGE_TABLE_SIZE {
             if dp_i < 4 {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64,
-                        (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
+                        (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
             } else {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
             }
@@ -51,7 +51,7 @@ impl Page {
 
         for table_i in 0..4 * PAGE_TABLE_SIZE {
             ptr::write((PAGE_DIRECTORIES + table_i * PAGE_ENTRY_SIZE) as *mut u64,
-                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
                 Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE)
@@ -105,7 +105,7 @@ impl Page {
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u64,
-                   (physical_address as u64 & 0xFFFFF000) | 1);
+                   (physical_address as u64 & 0xFFFFF000) | 0b11 << 1 | 1); //Allow userspace, read/write, present
         self.flush();
     }
 

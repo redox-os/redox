@@ -18,7 +18,7 @@ impl Editor {
                 self.text[y].remove(a);
             }
         } else {
-            let (x, y) = self.bound((x as usize, y as usize));
+            let (_, y) = self.bound((x as usize, y as usize));
             // Full line mode
             let (a, b) = if self.y() < y {
                 (self.y(), y)

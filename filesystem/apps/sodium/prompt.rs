@@ -34,6 +34,15 @@ impl Editor {
                     None => format!("Option does not exist: {}", sec_cmd),
                 }
             },
+            "o" | "open" => {
+                self.status_bar.msg = match self.open(sec_cmd) {
+                    OpenStatus::NotFound => format!("File {} could not be opened", sec_cmd),
+                    OpenStatus::Ok => format!("File {} opened", sec_cmd),
+                }
+            },
+            "help" => {
+                self.open("/apps/sodium/help.txt");
+            },
             c => {
                 self.status_bar.msg = format!("Unknown command: {}", c);
             },

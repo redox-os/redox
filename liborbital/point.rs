@@ -1,4 +1,4 @@
-use ops::{Add, Sub};
+use redox::ops::{Add, Sub};
 
 /// A point
 #[derive(Copy, Clone)]

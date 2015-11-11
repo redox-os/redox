@@ -12,13 +12,14 @@
 #[macro_use]
 extern crate redox;
 
+extern crate orbital;
+
 use application::main;
 
 #[path="APPLICATION_PATH"]
-mod application;
+pub mod application;
 
 use redox::*;
-use redox::console::{console_init, console_destroy};
 use redox::syscall::sys_exit;
 
 #[no_mangle]
@@ -42,9 +43,7 @@ pub unsafe extern fn _start_stack(stack: *const usize) {
     }
 
     args_init(args);
-    console_init();
     main();
-    console_destroy();
     args_destroy();
     sys_exit(0);
 }

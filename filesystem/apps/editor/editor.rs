@@ -1,6 +1,6 @@
 use redox::*;
-use redox::console::*;
-use redox::orbital::*;
+use orbital::console::*;
+use orbital::*;
 
 pub struct Editor {
     url: String,
@@ -149,8 +149,8 @@ impl Editor {
     }
 
     fn main(&mut self, url: &str) {
-        let mut window = Window::new((rand() % 400 + 50) as isize,
-                                     (rand() % 300 + 50) as isize,
+        let mut window = Window::new(-1,
+                                     -1,
                                      576,
                                      400,
                                      &("Editor (".to_string() + url + ")")).unwrap();
