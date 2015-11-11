@@ -331,11 +331,12 @@ impl FileManager {
                             event::K_HOME => self.selected = 0,
                             event::K_UP => if self.selected > 0 {
                                 self.selected -= 1;
-                                redraw = true
+                                redraw = true;
                             },
                             event::K_END => self.selected = self.files.len() as isize - 1,
                             event::K_DOWN => if self.selected < self.files.len() as isize - 1 {
                                 self.selected += 1;
+                                redraw = true;
                             },
                             _ => match key_event.character {
                                 '\0' => (),
@@ -372,7 +373,7 @@ impl FileManager {
                     }
                 }
                 EventOption::Mouse(mouse_event) => {
-                    let mut redraw = false;
+                    redraw = true;
                     let mut i = 0;
                     let mut row = 0;
                     for file in self.files.iter() {
@@ -423,6 +424,10 @@ impl FileManager {
                         }
                     }
                     self.last_mouse_event = mouse_event;
+
+                    if command.is_none() && redraw {
+                        command = Some(FileManagerCommand::Redraw);
+                    }
                 }
                 EventOption::Quit(quit_event) => command = Some(FileManagerCommand::Quit),
                 _ => (),
@@ -434,22 +439,19 @@ impl FileManager {
     fn main(&mut self, path: &str) {
         let mut current_path = path.to_string();
         self.set_path(path);
-        while true {
-            match self.event_loop() {
-                Some(event) => { 
-                    match event {
-                        FileManagerCommand::ChangeDir(dir) => { 
-                            current_path = current_path + &dir;
-                            self.set_path(&current_path);
-                        },
-                        FileManagerCommand::Execute(cmd) => { File::exec(&(current_path.clone() + &cmd)); } ,
-                        FileManagerCommand::Redraw => (),
-                        FileManagerCommand::Quit => break,
-                    };
-                    self.draw_content();
-                },
-                None => (),
-            };
+        loop {
+            if let Some(event) = self.event_loop() {
+                match event {
+                    FileManagerCommand::ChangeDir(dir) => {
+                        current_path = current_path + &dir;
+                        self.set_path(&current_path);
+                    },
+                    FileManagerCommand::Execute(cmd) => { File::exec(&(current_path.clone() + &cmd)); } ,
+                    FileManagerCommand::Redraw => (),
+                    FileManagerCommand::Quit => break,
+                };
+                self.draw_content();
+            }
         }
 
     }
@@ -458,6 +460,6 @@ impl FileManager {
 pub fn main() {
     match env::args().get(1) {
         Some(arg) => FileManager::new().main(arg),
-        None => FileManager::new().main("file:///"),
+        None => FileManager::new().main("file:/"),
     }
 }
