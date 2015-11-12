@@ -148,7 +148,7 @@ impl FileManager {
         let mut i = 0;
         let mut row = 0;
         let column = {
-            let mut tmp = [0, 0];
+            let mut tmp = [0; 2];
             for string in self.files.iter() {
                 if tmp[0] < string.len() {
                     tmp[0] = string.len();
@@ -256,7 +256,7 @@ impl FileManager {
     }
 
     fn set_path(&mut self, path: &str) {
-        let mut width = [48, 48, 48];
+        let mut width = [48; 3];
         let mut height = 0;
         if let Some(readdir) = fs::read_dir(path) {
             self.files.clear();
