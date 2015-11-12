@@ -5,7 +5,7 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir};
+use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir, sys_mkdir};
 use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
@@ -143,7 +143,6 @@ impl Seek for File {
     }
 }
 
-
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
@@ -160,6 +159,22 @@ impl DirEntry {
     pub fn path(&self) -> &str {
         &self.path
     }
+
+    /// Create a new directory, using a path
+    /// The default mode of the directory is 744
+    pub fn create(path: &str) -> Option<DirEntry> {
+        unsafe {
+            let dir = sys_mkdir((path.to_string() + "\0").as_ptr(), 744);
+            if dir == usize::MAX {
+                None
+            } else {
+                Some(DirEntry {
+                    path: path.to_string()
+                })
+            }
+        }
+    }
+
 }
 
 pub struct ReadDir {
