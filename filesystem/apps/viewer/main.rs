@@ -10,12 +10,7 @@ pub fn main() {
         None => "none://",
     };
 
-    let mut vec: Vec<u8> = Vec::new();
-    if let Some(mut file) = File::open(&url) {
-        file.read_to_end(&mut vec);
-    }
-
-    let bmp = BmpFile::from_data(&vec);
+    let bmp = BmpFile::from_path(url);
     let mut window = Window::new(-1,
                                  -1,
                                  max(320, bmp.width()),
