@@ -145,6 +145,18 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "mkdir",
+            main: Box::new(|args: &Vec<String>| {
+                match args.get(1) {
+                    Some(dir_name) => if DirEntry::create(dir_name).is_none() {
+                        println!("Failed to create {}", dir_name);
+                    },
+                    None => println!("No name provided")
+                }
+            }),
+        });
+
+        commands.push(Command {
             name: "pwd",
             main: Box::new(|_: &Vec<String>| {
                 if let Some(file) = File::open("") {
