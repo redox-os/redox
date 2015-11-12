@@ -14,9 +14,7 @@ use schemes::Url;
 // TODO: Modify current context, take current stdio
 pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
     unsafe {
-        let mut physical_address = 0;
-        let mut virtual_address = 0;
-        let mut virtual_size = 0;
+        let mut memory = Vec::new();
         let mut entry = 0;
 
         if let Some(mut resource) = url.open() {
@@ -24,10 +22,11 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             resource.read_to_end(&mut vec);
 
             let executable = Elf::from_data(vec.as_ptr() as usize);
-            if let Some(segment) = executable.load_segment() {
-                virtual_address = segment.vaddr as usize;
-                virtual_size = segment.mem_len as usize;
-                physical_address = memory::alloc(virtual_size);
+            entry = executable.entry();
+            for segment in executable.load_segment().iter() {
+                let virtual_address = segment.vaddr as usize;
+                let virtual_size = segment.mem_len as usize;
+                let physical_address = memory::alloc(virtual_size);
 
                 if physical_address > 0 {
                     // Copy progbits
@@ -38,18 +37,20 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                     ::memset((physical_address + segment.file_len as usize) as *mut u8,
                              0,
                              segment.mem_len as usize - segment.file_len as usize);
-                }
 
-                entry = executable.entry();
-            } else {
-                debug::d("Invalid ELF\n");
+                     memory.push(ContextMemory {
+                         physical_address: physical_address,
+                         virtual_address: virtual_address,
+                         virtual_size: virtual_size,
+                         writeable: segment.flags & 1 == 1
+                     });
+                }
             }
         } else {
             debug::d("Failed to open\n");
         }
 
-        if physical_address > 0 && virtual_address > 0 && virtual_size > 0 &&
-           entry >= virtual_address && entry < virtual_address + virtual_size {
+        if ! memory.is_empty() && entry > 0 {
             args.insert(0, url.to_string());
 
             let mut context_args: Vec<usize> = Vec::new();
@@ -66,11 +67,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             let context = Context::new(url.to_string(), true, entry, &context_args);
 
-            (*context.memory.get()).push(ContextMemory {
-                physical_address: physical_address,
-                virtual_address: virtual_address,
-                virtual_size: virtual_size,
-            });
+            (*context.memory.get()) = memory;
 
             *context.cwd.get() = wd.to_string();
 
@@ -107,11 +104,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             (*contexts_ptr).push(context);
             scheduler::end_no_ints(reenable);
         } else {
-            debug::d("Invalid entry\n");
-
-            if physical_address > 0 {
-                memory::unalloc(physical_address);
-            }
+            debug::d("Invalid memory or entry\n");
         }
     }
 }

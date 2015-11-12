@@ -15,7 +15,7 @@ use programs::executor::execute;
 
 use scheduler::{self, Regs};
 use scheduler::context::{context_clone, context_exit, context_switch, Context,
-                         ContextFile};
+                         ContextMemory, ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -491,6 +491,93 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_alloc(size: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        let physical_address = memory::alloc(size);
+        if physical_address > 0 {
+            ret = current.next_mem();
+            (*current.memory.get()).push(ContextMemory {
+                physical_address: physical_address,
+                virtual_address: ret,
+                virtual_size: size,
+                writeable: true
+            });
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        if let Some(mut mem) = current.get_mem_mut(ptr) {
+            let physical_address = memory::realloc(mem.physical_address, size);
+            if physical_address > 0 {
+                mem.physical_address = physical_address;
+                mem.virtual_size = size;
+                ret = mem.virtual_address;
+            } else {
+                mem.virtual_size = 0;
+            }
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        if let Some(mut mem) = current.get_mem_mut(ptr) {
+            mem.virtual_size = memory::realloc_inplace(mem.physical_address, size);
+            ret = mem.virtual_size;
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_unalloc(ptr: usize) {
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        if let Some(mut mem) = current.get_mem_mut(ptr) {
+            mem.virtual_size = 0;
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+}
+
 pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
     match regs.ax {
         SYS_DEBUG => do_sys_debug(regs.bx as u8),
@@ -518,10 +605,10 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_YIELD => context_switch(false),
 
         // Rust Memory
-        SYS_ALLOC => regs.ax = memory::alloc(regs.bx),
-        SYS_REALLOC => regs.ax = memory::realloc(regs.bx, regs.cx),
-        SYS_REALLOC_INPLACE => regs.ax = memory::realloc_inplace(regs.bx, regs.cx),
-        SYS_UNALLOC => memory::unalloc(regs.bx),
+        SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),
+        SYS_REALLOC => regs.ax = do_sys_realloc(regs.bx, regs.cx),
+        SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
+        SYS_UNALLOC => do_sys_unalloc(regs.bx),
 
         _ => return false,
     }
