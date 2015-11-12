@@ -1,3 +1,4 @@
+use common::debug;
 use common::get_slice::GetSlice;
 
 use collections::vec::Vec;
@@ -35,7 +36,7 @@ impl FromBytes for Arp {
             unsafe {
                 return Some(Arp {
                     header: *(bytes.as_ptr() as *const ArpHeader),
-                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec()
+                    data: bytes.get_slice(Some(mem::size_of::<ArpHeader>()), None).to_vec(),
                 });
             }
         }
@@ -47,7 +48,8 @@ impl ToBytes for Arp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const ArpHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<ArpHeader>()));
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                          mem::size_of::<ArpHeader>()));
             ret.push_all(&self.data);
             ret
         }
@@ -61,10 +63,10 @@ impl KScheme for ArpScheme {
         "arp"
     }
 }
-/*
+
 impl ArpScheme {
     pub fn reply_loop() {
-        while let Some(mut link) = Url::from_str("ethernet:///806").open() {
+        while let Some(mut link) = Url::from_str("ethernet:/806").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
                 if let Some(_) = link.read_to_end(&mut bytes) {
@@ -83,12 +85,12 @@ impl ArpScheme {
                             link.write(&response.to_bytes());
                         }
                     }
-                }else{
+                } else {
                     break;
                 }
             }
-            unsafe { context_switch(false) }
+            unsafe { context_switch(false) };
         }
+        debug::d("ARP: Failed to open ethernet:\n");
     }
 }
-*/

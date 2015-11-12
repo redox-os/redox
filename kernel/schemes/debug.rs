@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
+
 use scheduler::context::{context_switch, context_i, contexts_ptr};
 use scheduler;
 
@@ -10,6 +12,7 @@ use syscall::handle;
 /// A debug resource
 pub struct DebugResource {
     pub scheme: *mut DebugScheme,
+    pub command: String,
     pub line_toggle: bool,
 }
 
@@ -17,7 +20,8 @@ impl Resource for DebugResource {
     fn dup(&self) -> Option<Box<Resource>> {
         Some(box DebugResource {
             scheme: self.scheme,
-            line_toggle: self.line_toggle
+            command: self.command.clone(),
+            line_toggle: self.line_toggle,
         })
     }
 
@@ -28,18 +32,25 @@ impl Resource for DebugResource {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         if self.line_toggle {
             self.line_toggle = false;
-            Some(0)
-        }else{
-            unsafe {
-                loop {
+            return Some(0);
+        }
+
+        if self.command.is_empty() {
+            loop {
+                unsafe {
                     let reenable = scheduler::start_no_ints();
 
-                    //Hack!
-                    if (*self.scheme).context >= (*contexts_ptr).len() || (*self.scheme).context < context_i {
+                    // Hack!
+                    if (*self.scheme).context >= (*contexts_ptr).len() ||
+                       (*self.scheme).context < context_i {
                         (*self.scheme).context = context_i;
                     }
 
-                    if (*self.scheme).context == context_i && !(*::debug_command).is_empty() {
+                    if (*self.scheme).context == context_i && (*::console).command.is_some() {
+                        if let Some(ref command) = (*::console).command {
+                            self.command = command.clone();
+                        }
+                        (*::console).command = None;
                         break;
                     }
 
@@ -47,25 +58,21 @@ impl Resource for DebugResource {
 
                     context_switch(false);
                 }
-
-                let reenable = scheduler::start_no_ints();
-
-                //TODO: Unicode
-                let mut i = 0;
-                while i < buf.len() && !(*::debug_command).as_mut_vec().is_empty() {
-                    buf[i] = (*::debug_command).as_mut_vec().remove(0);
-                    i += 1;
-                }
-
-                if i > 0 && (*::debug_command).is_empty() {
-                    self.line_toggle = true;
-                }
-
-                scheduler::end_no_ints(reenable);
-
-                Some(i)
             }
         }
+
+        // TODO: Unicode
+        let mut i = 0;
+        while i < buf.len() && ! self.command.is_empty() {
+            buf[i] = unsafe { self.command.as_mut_vec().remove(0) };
+            i += 1;
+        }
+
+        if i > 0 && self.command.is_empty() {
+            self.line_toggle = true;
+        }
+
+        Some(i)
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
@@ -88,9 +95,7 @@ pub struct DebugScheme {
 
 impl DebugScheme {
     pub fn new() -> Box<Self> {
-        box DebugScheme {
-            context: 0
-        }
+        box DebugScheme { context: 0 }
     }
 }
 
@@ -102,7 +107,8 @@ impl KScheme for DebugScheme {
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box DebugResource {
             scheme: self,
-            line_toggle: false
+            command: String::new(),
+            line_toggle: false,
         })
     }
 }

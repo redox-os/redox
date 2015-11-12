@@ -3,7 +3,7 @@ use common::get_slice::GetSlice;
 
 use alloc::boxed::Box;
 
-use collections::string::String;
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::usize;
@@ -12,9 +12,8 @@ use common::debug;
 use common::elf::Elf;
 use common::memory;
 use common::paging::Page;
+
 use scheduler::{start_no_ints, end_no_ints};
-use common::parse_path::parse_path;
-use common::pwd;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
 
@@ -52,7 +51,7 @@ impl SchemeContext {
         let mut old_memory: Vec<SchemeMemory> = Vec::new();
         for i in 0..(memory.virtual_size + 4095) / 4096 {
             let mut page = Page::new(memory.virtual_address + i * 4096);
-            //TODO: Use one SchemeMemory if possible
+            // TODO: Use one SchemeMemory if possible
             old_memory.push(SchemeMemory {
                 physical_address: page.phys_addr(),
                 virtual_address: page.virt_addr(),
@@ -69,8 +68,10 @@ impl SchemeContext {
 
     pub fn translate<T>(&self, ptr: *const T) -> *const T {
         for memory in self.old_memory.iter() {
-            if (ptr as usize) >= memory.virtual_address && (ptr as usize) < memory.virtual_address + memory.virtual_size {
-                return ((ptr as usize) - memory.virtual_address + memory.physical_address) as *const T;
+            if (ptr as usize) >= memory.virtual_address &&
+               (ptr as usize) < memory.virtual_address + memory.virtual_size {
+                return ((ptr as usize) - memory.virtual_address +
+                        memory.physical_address) as *const T;
             }
         }
 
@@ -79,8 +80,10 @@ impl SchemeContext {
 
     pub fn translate_mut<T>(&self, ptr: *mut T) -> *mut T {
         for memory in self.old_memory.iter() {
-            if (ptr as usize) >= memory.virtual_address && (ptr as usize) < memory.virtual_address + memory.virtual_size {
-                return ((ptr as usize) - memory.virtual_address + memory.physical_address) as *mut T;
+            if (ptr as usize) >= memory.virtual_address &&
+               (ptr as usize) < memory.virtual_address + memory.virtual_size {
+                return ((ptr as usize) - memory.virtual_address +
+                        memory.physical_address) as *mut T;
             }
         }
 
@@ -126,7 +129,8 @@ pub struct SchemeResource {
 impl SchemeResource {
     /// Check validity
     fn valid(&self, addr: usize) -> bool {
-        addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
+        addr >= self.memory.virtual_address &&
+        addr < self.memory.virtual_address + self.memory.virtual_size
     }
 }
 
@@ -143,7 +147,7 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if fd != usize::MAX {
-                //TODO: Count number of handles, don't allow drop until 0
+                // TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
                     memory: SchemeMemory {
@@ -178,7 +182,9 @@ impl Resource for SchemeResource {
                 context.exit();
             }
             if result != usize::MAX {
-                return Url::from_string(unsafe { String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result)))) });
+                return Url::from_string(unsafe {
+                    String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result))))
+                });
             }
         }
         Url::new()
@@ -227,11 +233,11 @@ impl Resource for SchemeResource {
                 ResourceSeek::Start(off) => {
                     whence = 0;
                     offset = off as isize;
-                },
+                }
                 ResourceSeek::Current(off) => {
                     whence = 1;
                     offset = off;
-                },
+                }
                 ResourceSeek::End(off) => {
                     whence = 2;
                     offset = off;
@@ -242,7 +248,10 @@ impl Resource for SchemeResource {
             unsafe {
                 let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._lseek;
-                result = (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(self.handle, offset, whence);
+                result =
+                    (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(self.handle,
+                                                                                      offset,
+                                                                                      whence);
                 context.exit();
             }
             if result != usize::MAX {
@@ -273,7 +282,8 @@ impl Resource for SchemeResource {
             unsafe {
                 let context = SchemeContext::enter(&self.memory);
                 let fn_ptr: *const usize = &self._ftruncate;
-                result = (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle, len);
+                result = (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle,
+                                                                                    len);
                 context.exit();
             }
             return result == 0;
@@ -283,7 +293,7 @@ impl Resource for SchemeResource {
 }
 
 impl Drop for SchemeResource {
-    fn drop(&mut self){
+    fn drop(&mut self) {
         if self.valid(self._close) {
             unsafe {
                 let context = SchemeContext::enter(&self.memory);
@@ -327,7 +337,7 @@ impl SchemeItem {
         let mut scheme_item = box SchemeItem {
             url: url.clone(),
             scheme: String::new(),
-            binary: Url::new(),
+            binary: Url::from_string(url.to_string() + "main.bin"),
             handle: 0,
             memory: SchemeMemory {
                 physical_address: 0,
@@ -348,11 +358,10 @@ impl SchemeItem {
             _event: 0,
         };
 
-        let path_parts = parse_path(url.reference(), pwd());
-        if !path_parts.is_empty() {
-            if let Some(part) = path_parts.get(path_parts.len() - 1) {
-                scheme_item.scheme = part.clone();
-                scheme_item.binary = Url::from_string(url.to_string() + part + ".bin");
+        for part in url.reference().rsplit('/') {
+            if ! part.is_empty() {
+                scheme_item.scheme = part.to_string();
+                break;
             }
         }
 
@@ -365,12 +374,15 @@ impl SchemeItem {
                 if let Some(segment) = executable.load_segment() {
                     scheme_item.memory.virtual_address = segment.vaddr as usize;
                     scheme_item.memory.virtual_size = segment.mem_len as usize;
-                    scheme_item.memory.physical_address = memory::alloc(scheme_item.memory.virtual_size);
+                    scheme_item.memory.physical_address = memory::alloc(scheme_item.memory
+                                                                                   .virtual_size);
 
                     if scheme_item.memory.physical_address > 0 {
-                        //Copy progbits
-                        ::memcpy(scheme_item.memory.physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
-                        //Zero bss
+                        // Copy progbits
+                        ::memcpy(scheme_item.memory.physical_address as *mut u8,
+                                 (executable.data + segment.off as usize) as *const u8,
+                                 segment.file_len as usize);
+                        // Zero bss
                         ::memset((scheme_item.memory.physical_address + segment.file_len as usize) as *mut u8, 0, segment.mem_len as usize - segment.file_len as usize);
                     }
 
@@ -393,7 +405,7 @@ impl SchemeItem {
         }
 
         if scheme_item.valid(scheme_item._start) {
-            //TODO: Allow schemes to be called inside of other schemes
+            // TODO: Allow schemes to be called inside of other schemes
             unsafe {
                 let context = SchemeContext::enter(&scheme_item.memory);
                 let fn_ptr: *const usize = &scheme_item._start;
@@ -407,7 +419,8 @@ impl SchemeItem {
 
     /// Check validity
     fn valid(&self, addr: usize) -> bool {
-        addr >= self.memory.virtual_address && addr < self.memory.virtual_address + self.memory.virtual_size
+        addr >= self.memory.virtual_address &&
+        addr < self.memory.virtual_address + self.memory.virtual_size
     }
 }
 
@@ -416,8 +429,8 @@ impl KScheme for SchemeItem {
         return &self.scheme;
     }
 
-    //TODO: Hack for orbital
-    fn event(&mut self, event: &Event){
+    // TODO: Hack for orbital
+    fn event(&mut self, event: &Event) {
         if self.valid(self._event) {
             unsafe {
                 let event_ptr: *const Event = event;
@@ -442,7 +455,7 @@ impl KScheme for SchemeItem {
                 context.exit();
             }
             if fd != usize::MAX {
-                //TODO: Count number of handles, don't allow drop until 0
+                // TODO: Count number of handles, don't allow drop until 0
                 return Some(box SchemeResource {
                     handle: fd,
                     memory: SchemeMemory {

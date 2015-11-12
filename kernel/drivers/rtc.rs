@@ -19,7 +19,7 @@ impl Rtc {
         return Rtc {
             addr: Pio8::new(0x70),
             data: Pio8::new(0x71),
-        }
+        };
     }
 
     /// Read
@@ -69,10 +69,10 @@ impl Rtc {
             hour = ((hour & 0x7F) + 12) % 24;
         }
 
-        //TODO: Century Register
+        // TODO: Century Register
         year += 2000;
 
-        //Unix time from clock
+        // Unix time from clock
         let mut secs: i64 = (year as i64 - 1970) * 31536000;
 
         let mut leap_days = (year as i64 - 1972) / 4 + 1;

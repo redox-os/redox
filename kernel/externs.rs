@@ -55,7 +55,7 @@ pub unsafe extern "C" fn memset(dst: *mut u8, c: i32, len: usize) {
 /// 64 bit remainder on 32 bit arch
 pub extern "C" fn __umoddi3(mut a: u64, mut b: u64) -> u64 {
     let mut hig = a >> 32; // The first 32 bits of a
-    let mut d   = 1;
+    let mut d = 1;
 
     if hig >= b {
         hig /= b;
@@ -88,7 +88,7 @@ pub extern "C" fn __umoddi3(mut a: u64, mut b: u64) -> u64 {
 pub extern "C" fn __udivdi3(mut a: u64, mut b: u64) -> u64 {
     let mut res = 0;
     let mut hig = a >> 32; // The first 32 bits of a
-    let mut d   = 1;
+    let mut d = 1;
 
     if hig >= b {
         hig /= b;
@@ -123,7 +123,7 @@ pub extern "C" fn __udivdi3(mut a: u64, mut b: u64) -> u64 {
 pub extern "C" fn __udivremi3(mut a: u64, mut b: u64) -> (u64, u64) {
     let mut res = 0;
     let mut hig = a >> 32; // The first 32 bits of a
-    let mut d   = 1;
+    let mut d = 1;
 
     if hig >= b {
         hig /= b;

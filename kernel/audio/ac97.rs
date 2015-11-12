@@ -32,7 +32,7 @@ impl Resource for AC97Resource {
     }
 
     fn url(&self) -> Url {
-        Url::from_str("audio://")
+        Url::from_str("audio:")
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -190,7 +190,7 @@ impl KScheme for AC97 {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //d("AC97 IRQ\n");
+            // d("AC97 IRQ\n");
         }
     }
 

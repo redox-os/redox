@@ -24,74 +24,54 @@ impl Editor {
     /// Get position after a given position, i.e. a generalisation of .next()
     #[inline]
     pub fn after(&self, n: usize, (x, y): (usize, usize)) -> Option<(usize, usize)> {
-        // FIXME: Bound?
-        // TODO: Return enum
 
-       if x + n < self.text[y].len() {
+        if x + n < self.text[y].len() {
 
-         //  debugln!("IF1 x: {}, n: {}, len: {}", x, n, self.text[y].len());
-           Some((x + n, y))
-       } else {
-        //   debugln!("ELSE x: {}, n: {}, len: {}", x, n, self.text[y].len());
-           if y + 1 >= self.text.len() {
-       //        debugln!("RETURN NONE (IF2) x: {}, n: {}, len: {}", x, n, self.text[y].len());
-               None
-           } else {
-      //         debugln!("ELSE2 x: {}, n: {}, len: {}", x, n, self.text[y].len());
-               let mut mv = n + x - self.text[y].len();
-               let mut ry = y + 1;
-     //          debugln!("ELSE2 mv: {}, ry: {}", mv, ry);
+            Some((x + n, y))
+        } else {
+            if y + 1 >= self.text.len() {
+                None
+            } else {
+                let mut mv = n + x - self.text[y].len();
+                let mut ry = y + 1;
 
-               loop {
-                   if mv < self.text[ry].len() {
-    //                   debugln!("LOOP:IF1 mv: {}, ry: {}", mv, ry);
-                       return Some((mv, ry));
-                   } else {
-   //                    debugln!("LOOP:ELSE1 mv: {}, ry: {}", mv, ry);
-                       if ry + 1 < self.text.len() {
-  //                         debugln!("LOOP:IF2 mv: {}, ry: {}", mv, ry);
-                           mv -= self.text[ry].len();
-                           ry += 1;
-                       } else {
- //                          debugln!("LOOP:ELSE2 mv: {}, ry: {}", mv, ry);
-                           return None;
-                       }
-                   }
-               }
+                loop {
+                    if mv < self.text[ry].len() {
+                        return Some((mv, ry));
+                    } else {
+                        if ry + 1 < self.text.len() {
+                            mv -= self.text[ry].len();
+                            ry += 1;
+                        } else {
+                            return None;
+                        }
+                    }
+                }
 
-           }
-       }
+            }
+        }
     }
 
     /// Get the position before a given position, i.e. a generalisation .before()
     #[inline]
     pub fn before(&self, n: usize, (x, y): (usize, usize)) -> Option<(usize, usize)> {
         if x >= n {
-//            debugln!("IF1 x: {}, n: {}, len: {}", x, n, self.text[y].len());
             Some((x - n, y))
         } else {
-//            debugln!("ELSE x: {}, n: {}, len: {}", x, n, self.text[y].len());
             if y == 0 {
-//                debugln!("RETURN NONE (IF2) x: {}, n: {}, len: {}", x, n, self.text[y].len());
                 None
             } else {
-//                debugln!("ELSE2 x: {}, n: {}, len: {}", x, n, self.text[y].len());
                 let mut mv = n - x;
                 let mut ry = y - 1;
-//                debugln!("ELSE2 mv: {}, ry: {}", mv, ry);
 
                 loop {
                     if mv <= self.text[ry].len() {
-//                        debugln!("LOOP:IF1 mv: {}, ry: {}", mv, ry);
                         return Some((self.text[ry].len() - mv, ry));
                     } else {
-//                        debugln!("LOOP:ELSE1 mv: {}, ry: {}", mv, ry);
                         if ry > 0 && mv >= self.text[ry].len() {
- //                           debugln!("LOOP:IF2 mv: {}, ry: {}", mv, ry);
                             mv -= self.text[ry].len();
                             ry -= 1;
                         } else if ry == 0 {
-//                            debugln!("LOOP:ELSE2 mv: {}, ry: {}", mv, ry);
                             return None;
 
                         }

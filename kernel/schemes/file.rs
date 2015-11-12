@@ -6,7 +6,6 @@ use alloc::boxed::Box;
 use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
-use collections::slice::SliceConcatExt;
 
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
@@ -23,7 +22,6 @@ use scheduler::{start_no_ints, end_no_ints};
 use scheduler::context::context_switch;
 
 use syscall::common::O_CREAT;
-use common::pwd;
 
 const PIO: bool = false;
 
@@ -83,7 +81,7 @@ impl Node {
         }
         NodeData {
             name: name,
-            extents: self.extents
+            extents: self.extents,
         }
     }
 }
@@ -117,22 +115,21 @@ impl FileSystem {
                 let header = header_ptr.read(0);
                 drop(header_ptr);
 
-                if header.signature[0] == 'R' as u8 &&
-                   header.signature[1] == 'E' as u8 &&
+                if header.signature[0] == 'R' as u8 && header.signature[1] == 'E' as u8 &&
                    header.signature[2] == 'D' as u8 &&
                    header.signature[3] == 'O' as u8 &&
                    header.signature[4] == 'X' as u8 &&
                    header.signature[5] == 'F' as u8 &&
                    header.signature[6] == 'S' as u8 &&
-                   header.signature[7] == '\0' as u8 &&
-                   header.version == 1 {
+                   header.signature[7] == '\0' as u8 && header.version == 1 {
 
                     debug::d(" Redox Filesystem\n");
 
                     let mut nodes = Vec::new();
                     for extent in &header.extents {
                         if extent.block > 0 && extent.length > 0 {
-                            if let Some(data) = Memory::<NodeData>::new(extent.length as usize /
+                            if let Some(data) =
+                                   Memory::<NodeData>::new(extent.length as usize /
                                                            mem::size_of::<NodeData>()) {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
@@ -141,23 +138,23 @@ impl FileSystem {
                                               0,
                                               data.address() + sector * 512);
 
-                                    /*
-                                    let request = Request {
-                                        extent: Extent {
-                                            block: extent.block + sector as u64,
-                                            length: 65536 * 512,
-                                        },
-                                        mem: data.address() + sector * 512,
-                                        read: true,
-                                        complete: Arc::new(AtomicBool::new(false)),
-                                    };
-
-                                    disk.request(request.clone());
-
-                                    while request.complete.load(Ordering::SeqCst) == false {
-                                        disk.on_poll();
-                                    }
-                                    */
+                                    //
+                                    // let request = Request {
+                                    // extent: Extent {
+                                    // block: extent.block + sector as u64,
+                                    // length: 65536 * 512,
+                                    // },
+                                    // mem: data.address() + sector * 512,
+                                    // read: true,
+                                    // complete: Arc::new(AtomicBool::new(false)),
+                                    // };
+                                    //
+                                    // disk.request(request.clone());
+                                    //
+                                    // while request.complete.load(Ordering::SeqCst) == false {
+                                    // disk.on_poll();
+                                    // }
+                                    //
 
                                     sector += 65535;
                                 }
@@ -165,23 +162,23 @@ impl FileSystem {
                                     disk.read(extent.block + sector as u64,
                                               (sectors - sector) as u16,
                                               data.address() + sector * 512);
-                                    /*
-                                    let request = Request {
-                                        extent: Extent {
-                                            block: extent.block + sector as u64,
-                                            length: (sectors - sector) as u64 * 512,
-                                        },
-                                        mem: data.address() + sector * 512,
-                                        read: true,
-                                        complete: Arc::new(AtomicBool::new(false)),
-                                    };
-
-                                    disk.request(request.clone());
-
-                                    while request.complete.load(Ordering::SeqCst) == false {
-                                        disk.on_poll();
-                                    }
-                                    */
+                                    //
+                                    // let request = Request {
+                                    // extent: Extent {
+                                    // block: extent.block + sector as u64,
+                                    // length: (sectors - sector) as u64 * 512,
+                                    // },
+                                    // mem: data.address() + sector * 512,
+                                    // read: true,
+                                    // complete: Arc::new(AtomicBool::new(false)),
+                                    // };
+                                    //
+                                    // disk.request(request.clone());
+                                    //
+                                    // while request.complete.load(Ordering::SeqCst) == false {
+                                    // disk.on_poll();
+                                    // }
+                                    //
                                 }
 
                                 for i in 0..extent.length as usize / mem::size_of::<NodeData>() {
@@ -320,12 +317,22 @@ impl Resource for FileResource {
                     unsafe {
                         let reenable = start_no_ints();
 
-                        let sectors = ((remaining + 511)/512) as u64;
+                        let sectors = ((remaining + 511) / 512) as u64;
                         if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
                             extent.block = (*self.scheme).fs.header.free_space.block;
                             extent.length = remaining as u64;
-                            (*self.scheme).fs.header.free_space.block = (*self.scheme).fs.header.free_space.block +  sectors;
-                            (*self.scheme).fs.header.free_space.length = (*self.scheme).fs.header.free_space.length - sectors * 512;
+                            (*self.scheme).fs.header.free_space.block = (*self.scheme)
+                                                                            .fs
+                                                                            .header
+                                                                            .free_space
+                                                                            .block +
+                                                                        sectors;
+                            (*self.scheme).fs.header.free_space.length = (*self.scheme)
+                                                                             .fs
+                                                                             .header
+                                                                             .free_space
+                                                                             .length -
+                                                                         sectors * 512;
 
                             node_dirty = true;
                         }
@@ -334,8 +341,8 @@ impl Resource for FileResource {
                     }
                 }
 
-                //Make sure it is a valid extent
-                if ! extent.empty() {
+                // Make sure it is a valid extent
+                if !extent.empty() {
                     let current_sectors = (extent.length as usize + block_size - 1) / block_size;
                     let max_size = current_sectors * 512;
 
@@ -348,15 +355,16 @@ impl Resource for FileResource {
 
                     unsafe {
                         let data = self.vec.as_ptr().offset(pos) as usize;
-                        //TODO: Make sure data is copied safely into an zeroed area of the right size!
+                        // TODO: Make sure data is copied safely into an zeroed area of the right size!
 
                         let sectors = (extent.length as usize + 511) / 512;
                         let mut sector: usize = 0;
                         while sectors - sector >= 65536 {
                             if PIO {
-                                (*self.scheme).fs.disk.write(extent.block + sector as u64,
-                                      0,
-                                      data + sector * 512);
+                                (*self.scheme)
+                                    .fs
+                                    .disk
+                                    .write(extent.block + sector as u64, 0, data + sector * 512);
                             } else {
                                 let request = Request {
                                     extent: Extent {
@@ -380,8 +388,8 @@ impl Resource for FileResource {
                         if sector < sectors {
                             if PIO {
                                 (*self.scheme).fs.disk.write(extent.block + sector as u64,
-                                      (sectors - sector) as u16,
-                                      data + sector * 512);
+                                                             (sectors - sector) as u16,
+                                                             data + sector * 512);
                             } else {
                                 let request = Request {
                                     extent: Extent {
@@ -416,9 +424,10 @@ impl Resource for FileResource {
                             node_data.write(0, self.node.data());
 
                             if PIO {
-                            (*self.scheme).fs.disk.write(self.node.block,
-                                      1,
-                                      node_data.address());
+                                (*self.scheme)
+                                    .fs
+                                    .disk
+                                    .write(self.node.block, 1, node_data.address());
                             } else {
                                 let request = Request {
                                     extent: Extent {
@@ -453,7 +462,7 @@ impl Resource for FileResource {
                             end_no_ints(reenable);
                         }
                     }
-                }else{
+                } else {
                     debug::d("Need to place Node block\n");
                 }
             }
@@ -507,34 +516,22 @@ impl FileScheme {
 
         debug::d("Primary Master:");
         if let Some(fs) = FileSystem::from_disk(Disk::primary_master(base)) {
-            return Some(box FileScheme {
-                pci: pci,
-                fs: fs,
-            });
+            return Some(box FileScheme { pci: pci, fs: fs });
         }
 
         debug::d("Primary Slave:");
         if let Some(fs) = FileSystem::from_disk(Disk::primary_slave(base)) {
-            return Some(box FileScheme {
-                pci: pci,
-                fs: fs,
-            });
+            return Some(box FileScheme { pci: pci, fs: fs });
         }
 
         debug::d("Secondary Master:");
         if let Some(fs) = FileSystem::from_disk(Disk::secondary_master(base)) {
-            return Some(box FileScheme {
-                pci: pci,
-                fs: fs,
-            });
+            return Some(box FileScheme { pci: pci, fs: fs });
         }
 
         debug::d("Secondary Slave:");
         if let Some(fs) = FileSystem::from_disk(Disk::secondary_slave(base)) {
-            return Some(box FileScheme {
-                pci: pci,
-                fs: fs,
-            });
+            return Some(box FileScheme { pci: pci, fs: fs });
         }
 
         None
@@ -607,7 +604,7 @@ impl KScheme for FileScheme {
             match self.fs.node(path) {
                 Some(node) => {
                     let mut vec: Vec<u8> = Vec::new();
-                    //TODO: Handle more extents
+                    // TODO: Handle more extents
                     for extent in &node.extents {
                         if extent.block > 0 && extent.length > 0 {
                             if let Some(data) = Memory::<u8>::new(extent.length as usize) {
@@ -617,8 +614,8 @@ impl KScheme for FileScheme {
                                     if PIO {
                                         unsafe {
                                             self.fs.disk.read(extent.block + sector as u64,
-                                                  0,
-                                                  data.address() + sector * 512);
+                                                              0,
+                                                              data.address() + sector * 512);
                                         }
                                     } else {
                                         let request = Request {
@@ -644,8 +641,8 @@ impl KScheme for FileScheme {
                                     if PIO {
                                         unsafe {
                                             self.fs.disk.read(extent.block + sector as u64,
-                                                  (sectors - sector) as u16,
-                                                  data.address() + sector * 512);
+                                                              (sectors - sector) as u16,
+                                                              data.address() + sector * 512);
                                         }
                                     } else {
                                         let request = Request {
@@ -666,7 +663,9 @@ impl KScheme for FileScheme {
                                     }
                                 }
 
-                                vec.push_all(&unsafe { slice::from_raw_parts(data.ptr, extent.length as usize) });
+                                vec.push_all(&unsafe {
+                                    slice::from_raw_parts(data.ptr, extent.length as usize)
+                                });
                             }
                         }
                     }
@@ -678,23 +677,24 @@ impl KScheme for FileScheme {
                         seek: 0,
                         dirty: false,
                     })
-                },
+                }
                 None => {
                     if flags & O_CREAT == O_CREAT {
-                        //TODO: Create file
+                        // TODO: Create file
                         let mut node = Node {
                             block: 0,
                             name: path.to_string(),
                             extents: [Extent {
                                 block: 0,
-                                length: 0
-                            }; 16]
+                                length: 0,
+                            }; 16],
                         };
 
                         if self.fs.header.free_space.length >= 512 {
                             node.block = self.fs.header.free_space.block;
-                            self.fs.header.free_space.block = self.fs.header.free_space.block +  1;
-                            self.fs.header.free_space.length = self.fs.header.free_space.length - 512;
+                            self.fs.header.free_space.block = self.fs.header.free_space.block + 1;
+                            self.fs.header.free_space.length = self.fs.header.free_space.length -
+                                                               512;
                         }
 
                         self.fs.nodes.push(node.clone());
@@ -706,10 +706,10 @@ impl KScheme for FileScheme {
                             seek: 0,
                             dirty: false,
                         })
-                    }else{
+                    } else {
                         None
                     }
-                },
+                }
             }
         }
     }

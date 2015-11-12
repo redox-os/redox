@@ -1,4 +1,4 @@
-use core::{char, cmp};
+use core::char;
 
 use scheduler;
 
@@ -52,12 +52,10 @@ impl Event {
 
     /// Event trigger
     pub fn trigger(&self) {
-        let mut event = *self;
-
         unsafe {
             let reenable = scheduler::start_no_ints();
 
-            (*::events_ptr).push(event);
+            (*::events_ptr).push(*self);
 
             scheduler::end_no_ints(reenable);
         }
@@ -86,7 +84,8 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: (self.left_button as isize) | (self.middle_button as isize) << 1 | (self.right_button as isize) << 2,
+            c: (self.left_button as isize) | (self.middle_button as isize) << 1 |
+               (self.right_button as isize) << 2,
         }
     }
 
