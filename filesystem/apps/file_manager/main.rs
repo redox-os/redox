@@ -119,11 +119,8 @@ pub struct FileManager {
 }
 
 fn load_icon(path: &str) -> BmpFile {
-    let mut vec: Vec<u8> = Vec::new();
-    if let Some(mut file) = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp")) {
-        file.read_to_end(&mut vec);
-    }
-    BmpFile::from_data(&vec)
+    let full_path = "file:///ui/mimetypes/".to_string() + path + ".bmp";
+    BmpFile::from_path(&full_path)
 }
 
 impl FileManager {

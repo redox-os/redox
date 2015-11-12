@@ -60,19 +60,14 @@ impl Session {
             debugln!("Failed to read font");
         }
 
-        if let Some(mut file) = File::open("file:/ui/cursor.bmp") {
-            let mut vec = Vec::new();
-            file.read_to_end(&mut vec);
-            ret.cursor = BmpFile::from_data(&vec);
-        } else {
+        ret.cursor = BmpFile::from_path("file:/ui/cursor.bmp");
+        if !ret.cursor.has_data() {
             debugln!("Failed to read cursor");
         }
 
-        if let Some(mut file) = File::open("file:/ui/background.bmp") {
-            let mut vec = Vec::new();
-            file.read_to_end(&mut vec);
-            ret.background = BmpFile::from_data(&vec);
-        } else {
+
+        ret.background = BmpFile::from_path("file:/ui/background.bmp");
+        if !ret.background.has_data() {
             debugln!("Failed to read background");
         }
 
@@ -237,7 +232,7 @@ impl Session {
         if self.redraw {
             let mouse_point = Point::new(self.last_mouse_event.x, self.last_mouse_event.y);
             self.display.set(Color::rgb(75, 163, 253));
-            if !self.background.as_slice().is_empty() {
+            if self.background.has_data() {
                 self.display.image(Point::new((self.display.width as isize -
                                                  self.background.width() as isize) /
                                                 2,
@@ -327,7 +322,7 @@ impl Session {
                 x += 8;
             }
 
-            if !self.cursor.as_slice().is_empty() {
+            if self.cursor.has_data() {
                 self.display.image_alpha(mouse_point,
                                          self.cursor.as_slice().as_ptr(),
                                          Size::new(self.cursor.width(), self.cursor.height()));
