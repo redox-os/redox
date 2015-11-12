@@ -87,6 +87,10 @@ pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd, offset as usize, whence)
 }
 
+pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> usize{
+    syscall(SYS_MKDIR, path, mode)
+}
+
 pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
     syscall(SYS_NANOSLEEP, req as usize, rem as usize, 0)
 }
