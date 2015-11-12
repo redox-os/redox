@@ -528,7 +528,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
             regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
-        // TODO: unlink
+        SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *mut u8),
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_YIELD => context_switch(false),
 
