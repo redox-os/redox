@@ -475,7 +475,13 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     ret
 }
 
-// TODO: unlink
+pub unsafe fn do_sys_unlink(path: *const u8) {
+    let mut ret = usize::MAX;
+
+    // Implement body of do_sys_mkdir
+
+    ret
+}
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let mut ret = usize::MAX;
