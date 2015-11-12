@@ -203,7 +203,7 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                (*console).command = cmd.clone() + "\n";
+                                                (*console).command = Some(cmd.clone());
                                                 scheduler::end_no_ints(reenable);
 
                                                 cmd.clear();
