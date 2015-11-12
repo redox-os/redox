@@ -26,6 +26,7 @@ use redox::syscall::sys_exit;
 #[inline(never)]
 pub unsafe extern fn _start_stack(stack: *const usize) {
     let mut args: Vec<&'static str> = Vec::new();
+    //TODO: Fix issue with stack not being in context VM space
     let argc = ptr::read(stack);
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;

@@ -347,10 +347,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                        IcmpScheme::reply_loop();
                    });
 
-    // debugln!("Enabling context switching");
-    // (*console).draw = false;
     context_enabled = true;
 
+    //TODO: Run schemes in contexts
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -393,34 +392,23 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
 
             debugln!("  INT {:X}: {}", interrupt, $name);
-            debugln!("    CS:    {:X}", regs.cs);
-            debugln!("    IP:    {:X}", regs.ip);
-            debugln!("    FLG:   {:X}", regs.flags);
-            debugln!("    SS:    {:X}", regs.ss);
-            debugln!("    SP:    {:X}", regs.sp);
-            debugln!("    BP:    {:X}", regs.bp);
-            debugln!("    AX:    {:X}", regs.ax);
-            debugln!("    BX:    {:X}", regs.bx);
-            debugln!("    CX:    {:X}", regs.cx);
-            debugln!("    DX:    {:X}", regs.dx);
-            debugln!("    DI:    {:X}", regs.di);
-            debugln!("    SI:    {:X}", regs.si);
+            debugln!("    CS:  {:08X}    IP:  {:08X}    FLG: {:08X}", regs.cs, regs.ip, regs.flags);
+            debugln!("    SS:  {:08X}    SP:  {:08X}    BP:  {:08X}", regs.ss, regs.sp, regs.bp);
+            debugln!("    AX:  {:08X}    BX:  {:08X}    CX:  {:08X}    DX:  {:08X}", regs.ax, regs.bx, regs.cx, regs.dx);
+            debugln!("    DI:  {:08X}    SI:  {:08X}", regs.di, regs.di);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            debugln!("    CR0:   {:X}", cr0);
 
             let cr2: usize;
             asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            debugln!("    CR2:   {:X}", cr2);
 
             let cr3: usize;
             asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            debugln!("    CR3:   {:X}", cr3);
 
             let cr4: usize;
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            debugln!("    CR4:   {:X}", cr4);
+            debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
         })
     };
 
@@ -445,7 +433,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             //regs.ss = regs.error;
 
             exception_inner!($name);
-            debugln!("    ERR:   {:X}", error);
+            debugln!("    ERR: {:08X}", error);
 
             loop {
                 context_exit();
