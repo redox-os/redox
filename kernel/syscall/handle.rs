@@ -400,6 +400,14 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_mkdir(path: *const u8, mode: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    // Implement body of do_sys_mkdir
+
+    ret
+}
+
 pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
     if req as usize > 0 {
         Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
