@@ -232,7 +232,7 @@ impl Session {
         if self.redraw {
             let mouse_point = Point::new(self.last_mouse_event.x, self.last_mouse_event.y);
             self.display.set(Color::rgb(75, 163, 253));
-            if !self.background.as_slice().is_empty() {
+            if self.background.has_data() {
                 self.display.image(Point::new((self.display.width as isize -
                                                  self.background.width() as isize) /
                                                 2,
@@ -322,7 +322,7 @@ impl Session {
                 x += 8;
             }
 
-            if !self.cursor.as_slice().is_empty() {
+            if self.cursor.has_data() {
                 self.display.image_alpha(mouse_point,
                                          self.cursor.as_slice().as_ptr(),
                                          Size::new(self.cursor.width(), self.cursor.height()));
