@@ -60,19 +60,14 @@ impl Session {
             debugln!("Failed to read font");
         }
 
-        if let Some(mut file) = File::open("file:/ui/cursor.bmp") {
-            let mut vec = Vec::new();
-            file.read_to_end(&mut vec);
-            ret.cursor = BmpFile::from_data(&vec);
-        } else {
+        ret.cursor = BmpFile::from_path("file:/ui/cursor.bmp");
+        if !ret.cursor.has_data() {
             debugln!("Failed to read cursor");
         }
 
-        if let Some(mut file) = File::open("file:/ui/background.bmp") {
-            let mut vec = Vec::new();
-            file.read_to_end(&mut vec);
-            ret.background = BmpFile::from_data(&vec);
-        } else {
+
+        ret.background = BmpFile::from_path("file:/ui/background.bmp");
+        if !ret.background.has_data() {
             debugln!("Failed to read background");
         }
 

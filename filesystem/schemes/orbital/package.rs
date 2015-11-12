@@ -57,11 +57,7 @@ impl Package {
             } else if line.starts_with("binary=") {
                 package.binary = url.to_string() + line.get_slice(Some(7), None);
             } else if line.starts_with("icon=") {
-                if let Some(mut file) = File::open(line.get_slice(Some(5), None)) {
-                    let mut vec: Vec<u8> = Vec::new();
-                    file.read_to_end(&mut vec);
-                    package.icon = BmpFile::from_data(&vec);
-                }
+                package.icon = BmpFile::from_path(line.get_slice(Some(5), None));
             } else if line.starts_with("accept=") {
                 package.accepts.push(line.get_slice(Some(7), None).to_string());
             } else if line.starts_with("author=") {
