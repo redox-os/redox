@@ -12,7 +12,7 @@ pub struct Console {
     pub point: Point,
     pub draw: bool,
     pub redraw: bool,
-    pub command: String
+    pub command: Option<String>
 }
 
 impl Console {
@@ -22,7 +22,7 @@ impl Console {
             point: Point::new(0, 0),
             draw: false,
             redraw: true,
-            command: String::new()
+            command: None
         }
     }
 
