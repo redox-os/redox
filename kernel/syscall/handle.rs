@@ -523,12 +523,12 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_FTRUNCATE => regs.ax = do_sys_ftruncate(regs.bx, regs.cx),
         // TODO: link
         SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
-        SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *mut u8, regs.cx),
+        SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
         SYS_NANOSLEEP =>
             regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
-        SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *mut u8),
+        SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *const u8),
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_YIELD => context_switch(false),
 
