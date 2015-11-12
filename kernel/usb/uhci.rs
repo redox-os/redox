@@ -25,7 +25,7 @@ pub struct Uhci {
 impl KScheme for Uhci {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //d("UHCI IRQ\n");
+            // d("UHCI IRQ\n");
         }
     }
 
@@ -477,7 +477,7 @@ impl Uhci {
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        //(*desc_dev).d();
+        // (*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -493,7 +493,7 @@ impl Uhci {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            //desc_cfg.d();
+            // desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
@@ -501,12 +501,13 @@ impl Uhci {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        //let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        //desc_int.d();
+                        // let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        // desc_int.d();
                     }
                     DESC_END => {
-                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        //desc_end.d();
+                        let desc_end =
+                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        // desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -555,12 +556,12 @@ impl Uhci {
                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                   let mouse_x = (x * (*::debug_display).width) / 32768;
-                                   let mouse_y = (y * (*::debug_display).height) / 32768;
+                                   let mouse_x = (x * (*::console).display.width) / 32768;
+                                   let mouse_y = (y * (*::console).display.height) / 32768;
 
                                    MouseEvent {
-                                       x: cmp::max(0, cmp::min((*::debug_display).width as isize - 1, mouse_x as isize)),
-                                       y: cmp::max(0, cmp::min((*::debug_display).height as isize - 1, mouse_y as isize)),
+                                       x: cmp::max(0, cmp::min((*::console).display.width as isize - 1, mouse_x as isize)),
+                                       y: cmp::max(0, cmp::min((*::console).display.height as isize - 1, mouse_y as isize)),
                                        left_button: buttons & 1 == 1,
                                        middle_button: buttons & 4 == 4,
                                        right_button: buttons & 2 == 2,
@@ -570,7 +571,7 @@ impl Uhci {
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                            memory::unalloc(in_td as usize);
+                            //memory::unalloc(in_td as usize);
                         });
                     }
                     DESC_HID => {

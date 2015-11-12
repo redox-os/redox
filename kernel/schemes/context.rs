@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
-
 use scheduler::context;
 use scheduler;
 
@@ -35,7 +33,11 @@ impl KScheme for ContextScheme {
                     format!("{} B", memory)
                 };
 
-                let line = format!("{:<6}{:<8}{:<6}{}", i, memory_string, (*context.files.get()).len(), context.name);
+                let line = format!("{:<6}{:<8}{:<6}{}",
+                                   i,
+                                   memory_string,
+                                   (*context.files.get()).len(),
+                                   context.name);
 
                 string = string + "\n" + &line;
                 i += 1;

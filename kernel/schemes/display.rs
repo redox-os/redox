@@ -31,9 +31,7 @@ impl Resource for DisplayResource {
 
         let size = cmp::min(display.size - self.seek, buf.len());
         unsafe {
-            Display::copy_run(buf.as_ptr() as usize,
-                              display.offscreen + self.seek,
-                              size);
+            Display::copy_run(buf.as_ptr() as usize, display.offscreen + self.seek, size);
         }
         self.seek += size;
         return Some(size);
@@ -44,7 +42,8 @@ impl Resource for DisplayResource {
 
         self.seek = match pos {
             ResourceSeek::Start(offset) => cmp::min(end, cmp::max(0, offset)),
-            ResourceSeek::Current(offset) => cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
+            ResourceSeek::Current(offset) =>
+                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
             ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
         };
 
@@ -64,14 +63,14 @@ impl KScheme for DisplayScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         // TODO: ponder these things:
-        // - should display:// be the only only valid url
+        // - should display: be the only only valid url
         //      for this scheme?
         // - maybe "read" should support displays at some other location
         //      like built in screen sharing capability or something
         unsafe {
             return Some(box DisplayResource {
-                        display: Display::root(),
-                       seek: 0,
+                display: Display::root(),
+                seek: 0,
             });
         }
     }

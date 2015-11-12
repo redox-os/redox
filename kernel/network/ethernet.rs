@@ -38,7 +38,8 @@ impl ToBytes for EthernetII {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const EthernetIIHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<EthernetIIHeader>()));
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                          mem::size_of::<EthernetIIHeader>()));
             ret.push_all(&self.data);
             ret
         }

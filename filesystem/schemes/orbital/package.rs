@@ -13,7 +13,7 @@ pub struct Package {
     /// The name of the package
     pub name: String,
     /// The binary for the package
-    pub binary: Url,
+    pub binary: String,
     /// The icon for the package
     pub icon: BmpFile,
     /// The accepted extensions
@@ -31,20 +31,17 @@ impl Package {
             url: url.clone(),
             id: String::new(),
             name: String::new(),
-            binary: Url::new(),
+            binary: url.to_string() + "main.bin",
             icon: BmpFile::default(),
             accepts: Vec::new(),
             authors: Vec::new(),
             descriptions: Vec::new(),
         };
 
-        {
-            for part in url.to_string().rsplit('/') {
-                if ! part.is_empty() {
-                    package.id = part.to_string();
-                    package.binary = Url::from_string(url.to_string() + &part + ".bin");
-                    break;
-                }
+        for part in url.to_string().rsplit('/') {
+            if ! part.is_empty() {
+                package.id = part.to_string();
+                break;
             }
         }
 
@@ -58,7 +55,7 @@ impl Package {
             if line.starts_with("name=") {
                 package.name = line.get_slice(Some(5), None).to_string();
             } else if line.starts_with("binary=") {
-                package.binary = Url::from_string(url.to_string() + line.get_slice(Some(7), None));
+                package.binary = url.to_string() + line.get_slice(Some(7), None);
             } else if line.starts_with("icon=") {
                 if let Some(mut file) = File::open(line.get_slice(Some(5), None)) {
                     let mut vec: Vec<u8> = Vec::new();

@@ -3,7 +3,6 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use common::event::{Event, EventOption, KeyEvent, MouseEvent};
 use scheduler;
 
 use schemes::KScheme;
@@ -11,7 +10,6 @@ use schemes::{Resource, Url, VecResource};
 
 /// A session
 pub struct Session {
-    pub cmd: String,
     /// The scheme items
     pub items: Vec<Box<KScheme>>,
 }
@@ -20,7 +18,6 @@ impl Session {
     /// Create new session
     pub fn new() -> Box<Self> {
         box Session {
-            cmd: String::new(),
             items: Vec::new(),
         }
     }

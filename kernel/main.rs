@@ -17,7 +17,6 @@
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
 #![feature(raw)]
-#![feature(slice_concat_ext)]
 #![no_std]
 
 #[macro_use]
@@ -31,9 +30,8 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::{mem, ptr};
-use core::slice::{self, SliceExt};
-use core::str;
+use core::mem;
+use core::slice::SliceExt;
 
 use common::debug;
 use common::event::{self, Event, EventOption};
@@ -41,7 +39,7 @@ use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
-//use common::prompt;
+// use common::prompt;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -50,10 +48,11 @@ use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
 
+use env::console::Console;
+
 pub use externs::*;
 
-use graphics::display::{self, Display};
-use graphics::point::Point;
+use graphics::display;
 
 use programs::executor::execute;
 use programs::scheme::*;
@@ -70,7 +69,7 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-use schemes::display::*;
+//use schemes::display::*;
 
 use syscall::handle::*;
 
@@ -82,8 +81,10 @@ pub mod audio;
 #[macro_use]
 pub mod common;
 /// Various drivers
-// TODO: Move out of kernel space (like other microkernels)
+/// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
+/// Environment
+pub mod env;
 /// Externs
 pub mod externs;
 /// Various graphical methods
@@ -105,33 +106,25 @@ pub mod usb;
 
 pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
-/// Default display for debugging
-static mut debug_display: *mut Display = 0 as *mut Display;
-/// Default point for debugging
-static mut debug_point: Point = Point { x: 0, y: 0 };
-/// Draw debug
-static mut debug_draw: bool = false;
-/// Redraw debug
-static mut debug_redraw: bool = false;
-/// Debug command
-static mut debug_command: *mut String = 0 as *mut String;
+/// Default console for debugging
+static mut console: *mut Console = 0 as *mut Console;
 
 /// Clock realtime (default)
 static mut clock_realtime: Duration = Duration {
     secs: 0,
-    nanos: 0
+    nanos: 0,
 };
 
 /// Monotonic clock
 static mut clock_monotonic: Duration = Duration {
     secs: 0,
-    nanos: 0
+    nanos: 0,
 };
 
 /// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
-    nanos: 2250286
+    nanos: 2250286,
 };
 
 /// Session pointer
@@ -147,14 +140,14 @@ unsafe fn idle_loop() -> ! {
 
         let mut halt = true;
 
-        let contexts = & *contexts_ptr;
+        let contexts = &*contexts_ptr;
         for i in 1..contexts.len() {
             match contexts.get(i) {
                 Some(context) => if context.interrupted {
                     halt = false;
                     break;
                 },
-                None => ()
+                None => (),
             }
         }
 
@@ -182,7 +175,6 @@ unsafe fn poll_loop() -> ! {
 
 /// Event loop
 unsafe fn event_loop() -> ! {
-    let session = &mut *session_ptr;
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
@@ -195,15 +187,14 @@ unsafe fn event_loop() -> ! {
 
             match event_option {
                 Some(event) => {
-                    if debug_draw {
+                    if (*console).draw {
                         match event.to_option() {
                             EventOption::Key(key_event) => {
                                 if key_event.pressed {
                                     match key_event.scancode {
                                         event::K_F2 => {
-                                            ::debug_draw = false;
-                                            //(*::session_ptr).redraw = true;
-                                        },
+                                            (*console).draw = false;
+                                        }
                                         event::K_BKSP => if !cmd.is_empty() {
                                             debug::db(8);
                                             cmd.pop();
@@ -212,28 +203,28 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                *::debug_command = cmd.clone() + "\n";
+                                                (*console).command = Some(cmd.clone());
                                                 scheduler::end_no_ints(reenable);
 
                                                 cmd.clear();
                                                 debug::dl();
-                                            },
+                                            }
                                             _ => {
                                                 cmd.push(key_event.character);
                                                 debug::dc(key_event.character);
-                                            },
+                                            }
                                         },
                                     }
                                 }
-                            },
+                            }
                             _ => (),
                         }
                     } else {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
-                            ::debug_draw = true;
-                            ::debug_redraw = true;
+                            (*console).draw = true;
+                            (*console).redraw = true;
                         } else {
-                            //TODO: Magical orbital hack
+                            // TODO: Magical orbital hack
                             let reenable = scheduler::start_no_ints();
                             for item in (*::session_ptr).items.iter_mut() {
                                 if item.scheme() == "orbital" {
@@ -244,19 +235,18 @@ unsafe fn event_loop() -> ! {
                             scheduler::end_no_ints(reenable);
                         }
                     }
-                },
-                None => break
+                }
+                None => break,
             }
         }
 
-        if debug_draw {
-            let display = &*debug_display;
-            if debug_redraw {
-                debug_redraw = false;
-                display.flip();
+        if (*console).draw {
+            if (*console).redraw {
+                (*console).redraw = false;
+                (*console).display.flip();
             }
         } else {
-            //session.redraw();
+            // session.redraw();
         }
 
         context_switch(false);
@@ -280,10 +270,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
 
-    debug_display = 0 as *mut Display;
-    debug_point = Point { x: 0, y: 0 };
-    debug_draw = false;
-    debug_redraw = false;
+    console = 0 as *mut Console;
 
     clock_realtime.secs = 0;
     clock_realtime.nanos = 0;
@@ -303,14 +290,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     Page::init();
     memory::cluster_init();
-    //Unmap first page to catch null pointer errors (after reading memory map)
+    // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    debug_display = Box::into_raw(Display::root());
-
-    debug_draw = true;
-
-    debug_command = Box::into_raw(box String::new());
+    console = Box::into_raw(Console::new());
+    (*console).draw = true;
 
     debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
@@ -336,35 +320,35 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     session.items.push(DebugScheme::new());
     session.items.push(box ContextScheme);
     session.items.push(box MemoryScheme);
-    //session.items.push(box RandomScheme);
-    //session.items.push(box TimeScheme);
+    // session.items.push(box RandomScheme);
+    // session.items.push(box TimeScheme);
 
     session.items.push(box EthernetScheme);
     session.items.push(box ArpScheme);
     session.items.push(box IcmpScheme);
-    session.items.push(box IpScheme {
-        arp: Vec::new()
-    });
-    //session.items.push(box DisplayScheme);
+    session.items.push(box IpScheme { arp: Vec::new() });
+    // session.items.push(box DisplayScheme);
 
-    Context::spawn("kpoll".to_string(), box move || {
-        poll_loop();
-    });
-    Context::spawn("kevent".to_string(), box move || {
-        event_loop();
-    });
+    Context::spawn("kpoll".to_string(),
+                   box move || {
+                       poll_loop();
+                   });
+    Context::spawn("kevent".to_string(),
+                   box move || {
+                       event_loop();
+                   });
 
-    /*
-    Context::spawn(box move || {
-        ArpScheme::reply_loop();
-    });
-    Context::spawn(box move || {
-        IcmpScheme::reply_loop();
-    });
-    */
+    Context::spawn("karp".to_string(),
+                   box move || {
+                       ArpScheme::reply_loop();
+                   });
+    Context::spawn("kicmp".to_string(),
+                   box move || {
+                       IcmpScheme::reply_loop();
+                   });
 
-    //debugln!("Enabling context switching");
-    //debug_draw = false;
+    // debugln!("Enabling context switching");
+    // (*console).draw = false;
     context_enabled = true;
 
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
@@ -373,7 +357,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
         for folder in String::from_utf8_unchecked(vec).lines() {
             if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/".to_string() + &folder));
+                let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/"
+                                                                             .to_string() +
+                                                                         &folder));
 
                 let reenable = scheduler::start_no_ints();
                 session.items.push(scheme_item);
@@ -383,9 +369,12 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     }
 
     {
-        let path_string = "file:/apps/terminal/terminal.bin";
+        let path_string = "file:/apps/terminal/main.bin";
         let path = Url::from_string(path_string.to_string());
-        let wd = Url::from_string(path_string.get_slice(None, Some(path_string.rfind('/').unwrap_or(0) + 1)).to_string());
+        let wd = Url::from_string(path_string.get_slice(None,
+                                                        Some(path_string.rfind('/').unwrap_or(0) +
+                                                             1))
+                                             .to_string());
         execute(&path, &wd, Vec::new());
     }
 }
@@ -480,7 +469,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             scheduler::end_no_ints(reenable);
 
             context_switch(true);
-        },
+        }
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
         0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
@@ -495,13 +484,13 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => (*session_ptr).on_irq(0xD), //coprocessor
         0x2E => (*session_ptr).on_irq(0xE), //disk
         0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => if ! syscall_handle(regs) {
+        0x80 => if !syscall_handle(regs) {
             exception!("Unknown Syscall");
         },
         0xFF => {
             init(regs.ax, regs.bx);
             idle_loop();
-        },
+        }
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),
         0x2 => exception!("Non-maskable interrupt"),

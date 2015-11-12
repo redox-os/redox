@@ -2,20 +2,20 @@ use core::str::StrExt;
 
 use syscall::handle::do_sys_debug;
 
-/// Debug new line to console
-#[macro_export]
-macro_rules! debugln {
-    ($($arg:tt)*) => ({
-        debug!($($arg)*);
-        debug!("\n");
-    });
-}
-
 /// Debug to console
 #[macro_export]
 macro_rules! debug {
     ($($arg:tt)*) => ({
         $crate::common::debug::debug(format!($($arg)*));
+    });
+}
+
+/// Debug new line to console
+#[macro_export]
+macro_rules! debugln {
+    ($($arg:tt)*) => ({
+        debug!($($arg)*);
+        $crate::common::debug::dl();
     });
 }
 

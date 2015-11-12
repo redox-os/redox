@@ -57,8 +57,8 @@ pub unsafe fn sys_dup(fd: usize) -> usize {
     syscall(SYS_DUP, fd, 0, 0)
 }
 
-pub unsafe fn sys_execve(path: *const u8) -> usize {
-    syscall(SYS_EXECVE, path as usize, 0, 0)
+pub unsafe fn sys_execve(path: *const u8, args: *const *const u8) -> usize {
+    syscall(SYS_EXECVE, path as usize, args as usize, 0)
 }
 
 pub unsafe fn sys_exit(status: isize) {

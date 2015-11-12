@@ -62,7 +62,7 @@ impl Resource for NetworkResource {
     }
 
     fn url(&self) -> Url {
-        Url::from_str("network://")
+        Url::from_str("network:")
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
