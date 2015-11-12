@@ -475,7 +475,7 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_unlink(path: *const u8) {
+pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
     let mut ret = usize::MAX;
 
     // Implement body of do_sys_mkdir
