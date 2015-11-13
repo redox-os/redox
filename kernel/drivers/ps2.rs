@@ -31,6 +31,7 @@ pub struct Ps2 {
     /// Mouse point y
     mouse_y: isize,
     /// Layout for keyboard
+    /// Currently : 0 = EN / 1 = FR
     layout: usize,
 }
 
