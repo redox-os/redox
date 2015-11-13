@@ -22,7 +22,7 @@ impl<'a> NodeTable<'a> {
     }
 
     /// Get the entry given an key and a probe (in this case the key should is the node name)
-    pub fn get(&self, key: &[u8], probe: &mut u64) -> Option<DataPtr> {
+    pub fn get(&self, key: &str, probe: &mut u64) -> Option<DataPtr> {
         let mut hasher = Djb2::new();
         key.hash(&mut hasher);
 

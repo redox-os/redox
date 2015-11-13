@@ -1,5 +1,7 @@
+use redox::prelude::v1::*;
 use header::GlobalHeader;
 use table::NodeTable;
+use data::Data;
 
 /// An Osmium archive
 pub struct Archive<'a> {
@@ -26,6 +28,23 @@ impl<'a> Archive<'a> {
             root_table: root_table,
             directories: directories,
             files: files,
+        }
+    }
+
+    /// Get a given file from a table
+    pub fn get(&self, query: &str, table: NodeTable<'a>) -> Option<Data> {
+        let mut probe = 0;
+
+        loop {
+            match table.get(query, &mut probe) {
+                Some(ref ptr) => {
+                    let dat = ptr.deref(self);
+                    if dat.name() == query {
+                        return Some(dat);
+                    }
+                },
+                None => return None,
+            }
         }
     }
 }

@@ -9,6 +9,15 @@ pub enum Data {
     Dir(Dir),
 }
 
+impl Data {
+    pub fn name(&self) -> &str {
+        match self {
+            &Data::File(ref f) => &f.name,
+            &Data::Dir(ref d) => &d.name,
+        }
+    }
+}
+
 /// A file
 pub struct File {
     /// The name of the file
