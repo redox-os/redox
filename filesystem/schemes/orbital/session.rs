@@ -155,7 +155,7 @@ impl Session {
             if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
                 for package in self.packages.iter() {
-                    if !package.icon.as_slice().is_empty() {
+                    if !(&package.icon).is_empty() {
                         if mouse_event.x >= x &&
                            mouse_event.x < x + package.icon.width() as isize {
                                let binary = package.binary.to_string();
@@ -239,7 +239,7 @@ impl Session {
                                                 (self.display.height as isize -
                                                  self.background.height() as isize) /
                                                 2),
-                                    self.background.as_slice().as_ptr(),
+                                    (&self.background).as_ptr(),
                                     Size::new(self.background.width(), self.background.height()));
             }
 
@@ -259,7 +259,7 @@ impl Session {
 
             let mut x = 0;
             for package in self.packages.iter() {
-                if !package.icon.as_slice().is_empty() {
+                if !(&package.icon).is_empty() {
                     let y = self.display.height as isize - package.icon.height() as isize;
                     if mouse_point.y >= y && mouse_point.x >= x &&
                        mouse_point.x < x + package.icon.width() as isize {
@@ -280,7 +280,7 @@ impl Session {
                     }
 
                     self.display.image_alpha(Point::new(x, y),
-                                             package.icon.as_slice().as_ptr(),
+                                             (&package.icon).as_ptr(),
                                              Size::new(package.icon.width(), package.icon.height()));
                     x = x + package.icon.width() as isize;
                 }
@@ -324,7 +324,7 @@ impl Session {
 
             if self.cursor.has_data() {
                 self.display.image_alpha(mouse_point,
-                                         self.cursor.as_slice().as_ptr(),
+                                         (&self.cursor).as_ptr(),
                                          Size::new(self.cursor.width(), self.cursor.height()));
             } else {
                 self.display.char(Point::new(mouse_point.x - 3, mouse_point.y - 9),
