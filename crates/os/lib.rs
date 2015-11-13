@@ -1,13 +1,5 @@
-#![feature(no_std)]
-#[no_std]
-
-mod archive;
+mod table;
 mod djb2;
 mod ptr;
-mod table;
+mod archive;
 mod data;
-mod file;
-mod dir;
-mod extract;
-
-

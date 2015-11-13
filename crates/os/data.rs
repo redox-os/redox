@@ -1,32 +1,47 @@
-use file::File;
-use dir::Dir;
-
-pub enum DataType {
-    File = 102,
-    Dir  = 100,
-    None = 0,
+pub enum Data {
+    File(File),
+    Dir(Dir),
 }
 
-impl DataType {
-    pub fn from_byte(b: u8) -> Self {
-        match b {
-            102 => DataType::File,
-            100 => DataType::Dir,
-            _   => DataType::None,
+pub struct File {
+    name: String,
+    data: Vec<u8>,
+}
+
+impl File {
+    pub fn from_bytes(b: &[u8]) -> Self {
+        let name = unsafe {
+            String::from_utf8_unchecked(b[0..64].to_vec())
+        };
+        let data = b[257..].to_vec();
+
+        File {
+            name: name,
+            data: data,
         }
     }
 }
 
-pub enum Data<'a> {
-    File(File<'a>),
-    Dir(Dir<'a>),
+pub struct Dir {
+    name: String,
+    data: Vec<u8>,
 }
 
-impl<'a> Data<'a> {
-    pub fn name(&self) -> &[u8] {
-        match self {
-            &File(ref f) => f.name,
-            &Dir(ref d) => d.name,
+impl Dir {
+    pub fn from_bytes(b: &[u8]) -> Self {
+        let name = unsafe {
+            String::from_utf8_unchecked(b[0..64].to_vec())
+        };
+        let mut n = 0;
+        while let Some(35) = b.get(n + 256 - 1) {
+            n += 256;
+        }
+
+        let data = b[n..].to_vec();
+
+        Dir {
+            name: name,
+            data: data,
         }
     }
 }
