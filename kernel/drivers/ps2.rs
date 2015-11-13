@@ -278,7 +278,7 @@ fn char_for_scancode(scancode: u8, shift: bool, layout: usize) -> char {
     if scancode >= 58 {
         '\x00'
     }
-    let character =
+    let characters =
         match layout {
             0 => SCANCODES_EN[scancode as usize],
             1 => SCANCODES_FR[scancode as usize],
