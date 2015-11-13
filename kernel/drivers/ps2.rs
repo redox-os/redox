@@ -240,6 +240,12 @@ impl Ps2 {
 
         return None;
     }
+
+    /// Function to change the layout of the keyboard
+    pub fn change_layout(&mut self, layout: usize) {
+        self.layout = layout;
+    }
+
 }
 
 impl KScheme for Ps2 {
