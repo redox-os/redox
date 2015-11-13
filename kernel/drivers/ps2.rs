@@ -246,9 +246,13 @@ impl Ps2 {
 
     /// Function to change the layout of the keyboard
     pub fn change_layout(&mut self, layout: usize) {
-        self.layout = layout;
+        self.layout =
+            match layout {
+                0 => layouts::Layout::ENGLISH,
+                1 => layouts::Layout::FRENCH,
+                _ => layouts::Layout::ENGLISH
+            }
     }
-
 }
 
 impl KScheme for Ps2 {
