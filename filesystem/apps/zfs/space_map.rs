@@ -1,3 +1,5 @@
+use redox::*;
+
 use super::from_bytes::FromBytes;
 
 const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
@@ -25,6 +27,10 @@ pub struct SpaceMapPhys {
 
 impl FromBytes for SpaceMapPhys { }
 
+pub struct SpaceMap {
+    pub size: usize,
+}
+
 pub enum MapType {
     Alloc = 0,
     Free = 1,
@@ -32,6 +38,8 @@ pub enum MapType {
 
 #[derive(Copy, Clone, Debug)]
 struct Entry(u64);
+
+impl FromBytes for Entry { }
 
 impl Entry {
     fn size(&self) -> u64 {
@@ -48,5 +56,13 @@ impl Entry {
 
     fn debug(&self) -> u64 {
         (self.0 >> 63) & 0x1 // 1 bit long
+    }
+}
+
+pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
+    for i in 0..sm.size {
+        let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
+        println!("size:0x{:X}:map_type:0x{:X}:offset:0x{:X}:debug:0x{:X}",
+                 entry.size(), entry.map_type(), entry.offset(), entry.debug());
     }
 }
