@@ -8,6 +8,8 @@ use drivers::pio::*;
 
 use schemes::KScheme;
 
+use drivers::kb_layouts::layouts;
+
 /// PS2
 pub struct Ps2 {
     /// The data
