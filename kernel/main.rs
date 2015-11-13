@@ -4,6 +4,7 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
+#![feature(const_fn)]
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_str_ext)]
