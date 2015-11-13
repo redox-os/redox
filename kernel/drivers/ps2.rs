@@ -290,7 +290,7 @@ fn char_for_scancode(scancode: u8, shift: bool, layout: usize) -> char {
     }
 }
 
-static SCANCODES: [[char; 2]; 58] = [['\0', '\0'],
+static SCANCODES_EN: [[char; 2]; 58] = [['\0', '\0'],
                                      ['\x1B', '\x1B'],
                                      ['1', '!'],
                                      ['2', '@'],
