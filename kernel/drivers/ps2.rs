@@ -275,19 +275,21 @@ impl KScheme for Ps2 {
 
 /// Function to return the character associated with the scancode, and the layout
 fn char_for_scancode(scancode: u8, shift: bool, layout: usize) -> char {
-    if scancode >= 58 {
-        '\x00'
+    let mut character = '\x00';
+    if scancode < 58 {
+        let characters: [char; 2] =
+            match layout {
+                0 => SCANCODES_EN[scancode as usize],
+                1 => SCANCODES_FR[scancode as usize],
+                _ => SCANCODES_EN[scancode as usize],
+            };
+        if shift {
+            character = characters[1]
+        }
+        //Else...
+        character = characters[0]
     }
-    let characters =
-        match layout {
-            0 => SCANCODES_EN[scancode as usize],
-            1 => SCANCODES_FR[scancode as usize],
-        };
-    if shift {
-        characters[1]
-    }
-    //Else...
-    characters[0]
+    character
 }
 
 static SCANCODES_EN: [[char; 2]; 58] = [['\0', '\0'],
