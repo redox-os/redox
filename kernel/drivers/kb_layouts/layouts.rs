@@ -29,10 +29,11 @@ pub fn char_for_scancode(scancode: u8, shift: bool, layout: &Layout) -> char {
     if scancode < 58 {
         let characters: [char; 2] = get_scancode_from_layout(layout, scancode);
         if shift {
-            character = characters[1]
+            character = characters[1];
         }
-        //Else...
-        character = characters[0]
+        else {//Else...
+            character = characters[0];
+        }
     }
     character
 }
