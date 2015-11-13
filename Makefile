@@ -147,7 +147,7 @@ schemes/%:
 	@$(MAKE) --no-print-directory filesystem/schemes/$*/$*.bin
 
 osmium:
-	@$(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
+	$(RM) -f build/i386/osmium*; make qemu; $(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
 
 FORCE:
 
