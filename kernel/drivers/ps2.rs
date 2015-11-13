@@ -284,10 +284,10 @@ fn char_for_scancode(scancode: u8, shift: bool, layout: usize) -> char {
             1 => SCANCODES_FR[scancode as usize],
         };
     if shift {
-        character = characters[1]
-    } else {
-        character = characters[scancode as usize][0]
+        characters[1]
     }
+    //Else...
+    characters[0]
 }
 
 static SCANCODES_EN: [[char; 2]; 58] = [['\0', '\0'],
