@@ -1,3 +1,9 @@
+use redox::hash::Hasher;
+
+pub struct Djb2 {
+    state: u64,
+}
+
 impl Djb2 {
     /// Create new DJB2 hasher
     pub fn new() -> Self {

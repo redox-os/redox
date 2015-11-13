@@ -1,3 +1,6 @@
+use redox::prelude::v1::*;
+use table::NodeTable;
+
 /// A data node (file/dir)
 pub enum Data {
     /// File
@@ -44,7 +47,7 @@ impl Dir {
             String::from_utf8_unchecked(b[0..64].to_vec())
         };
         let mut n = 0;
-        while let Some(35) = b.get(n + 256 - 1) {
+        while let Some(&35) = b.get(n + 256 - 1) {
             n += 256;
         }
 
@@ -57,7 +60,7 @@ impl Dir {
     }
 
     /// Get the table represented by this directory
-    pub fn get_table(&'a self) -> NodeTable<'a> {
-        NodeTable::new(&self.data[..])
+    pub fn get_table<'a>(&'a self) -> NodeTable<'a> {
+        NodeTable::from_bytes(&self.data[..])
     }
 }
