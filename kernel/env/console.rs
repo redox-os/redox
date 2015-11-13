@@ -26,32 +26,34 @@ impl Console {
         }
     }
 
-    pub fn write(&mut self, byte: u8){
-        self.display.rect(self.point, Size::new(8, 16), Color::new(0, 0, 0));
-        if byte == 10 {
-            self.point.x = 0;
-            self.point.y += 16;
-        } else if byte == 8 {
-            // TODO: Fix up hack for backspace
-            self.point.x -= 8;
-            if self.point.x < 0 {
-                self.point.x = 0
-            }
+    pub fn write(&mut self, bytes: &[u8]){
+        for byte in bytes.iter() {
             self.display.rect(self.point, Size::new(8, 16), Color::new(0, 0, 0));
-        } else {
-            self.display.char(self.point, byte as char, Color::new(255, 255, 255));
-            self.point.x += 8;
+            if *byte == 10 {
+                self.point.x = 0;
+                self.point.y += 16;
+            } else if *byte == 8 {
+                // TODO: Fix up hack for backspace
+                self.point.x -= 8;
+                if self.point.x < 0 {
+                    self.point.x = 0
+                }
+                self.display.rect(self.point, Size::new(8, 16), Color::new(0, 0, 0));
+            } else {
+                self.display.char(self.point, *byte as char, Color::new(255, 255, 255));
+                self.point.x += 8;
+            }
+            if self.point.x >= self.display.width as isize {
+                self.point.x = 0;
+                self.point.y += 16;
+            }
+            while self.point.y + 16 > self.display.height as isize {
+                self.display.scroll(16);
+                self.point.y -= 16;
+            }
+            self.display.rect(self.point, Size::new(8, 16), Color::new(255, 255, 255));
+            self.redraw = true;
         }
-        if self.point.x >= self.display.width as isize {
-            self.point.x = 0;
-            self.point.y += 16;
-        }
-        while self.point.y + 16 > self.display.height as isize {
-            self.display.scroll(16);
-            self.point.y -= 16;
-        }
-        self.display.rect(self.point, Size::new(8, 16), Color::new(255, 255, 255));
-        self.redraw = true;
         // If contexts disabled, probably booting up
         if ! unsafe { ::scheduler::context::context_enabled } && self.draw && self.redraw {
             self.redraw = false;

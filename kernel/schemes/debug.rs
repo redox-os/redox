@@ -76,10 +76,8 @@ impl Resource for DebugResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        for byte in buf {
-            unsafe {
-                handle::do_sys_debug(*byte);
-            }
+        unsafe {
+            handle::do_sys_debug(buf.as_ptr(), buf.len());
         }
         return Some(buf.len());
     }

@@ -7,8 +7,8 @@ pub struct DebugStream;
 
 impl Write for DebugStream {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        for b in s.bytes() {
-            unsafe { sys_debug(b) };
+        unsafe {
+            sys_debug(s.as_ptr(), s.len());
         }
 
         result::Result::Ok(())
