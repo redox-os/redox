@@ -8,11 +8,14 @@ use graphics::display::Display;
 use graphics::point::Point;
 use graphics::size::Size;
 
-pub enum Escape {
-    None,
-    Char,
-    List
-}
+const BLACK: Color = Color::new(0, 0, 0);
+const RED: Color = Color::new(194, 54, 33);
+const GREEN: Color = Color::new(37, 188, 36);
+const YELLOW: Color = Color::new(173, 173, 39);
+const BLUE: Color = Color::new(73, 46, 225);
+const MAGENTA: Color = Color::new(211, 56, 211);
+const CYAN: Color = Color::new(51, 187, 200);
+const WHITE: Color = Color::new(203, 204, 205);
 
 pub struct Console {
     pub display: Box<Display>,
@@ -32,8 +35,8 @@ impl Console {
         box Console {
             display: unsafe { Display::root() },
             point: Point::new(0, 0),
-            foreground: Color::new(224, 224, 224),
-            background: Color::new(0, 0, 0),
+            foreground: WHITE,
+            background: BLACK,
             draw: false,
             redraw: true,
             command: None,
@@ -58,50 +61,40 @@ impl Console {
                 for value in self.sequence.iter() {
                     if value == "0" {
                         //Reset all
-                        self.foreground = Color::new(224, 224, 224);
-                        self.background = Color::new(0, 0, 0);
+                        self.foreground = WHITE;
+                        self.background = BLACK;
                     }else if value == "30" {
-                        //Black foreground
-                        self.foreground = Color::new(0, 0, 0);
+                        self.foreground = BLACK;
                     } else if value == "31" {
-                        //Red foreground
-                        self.foreground = Color::new(255, 127, 127);
+                        self.foreground = RED;
                     } else if value == "32" {
-                        //Green foreground
-                        self.foreground = Color::new(127, 255, 127);
+                        self.foreground = GREEN;
                     } else if value == "33" {
-                        //Yellow foreground
+                        self.foreground = YELLOW;
                     } else if value == "34" {
-                        //Blue foreground
-                        self.foreground = Color::new(127, 127, 255);
+                        self.foreground = BLUE;
                     } else if value == "35" {
-                        //Magenta foreground
+                        self.foreground = MAGENTA;
                     } else if value == "36" {
-                        //Cyan foreground
+                        self.foreground = CYAN;
                     } else if value == "37" {
-                        //White foreground
-                        self.foreground = Color::new(224, 224, 224);
+                        self.foreground = WHITE;
                     }else if value == "40" {
-                        //Black background
-                        self.background = Color::new(0, 0, 0);
+                        self.background = BLACK;
                     } else if value == "41" {
-                        //Red background
-                        self.background = Color::new(255, 127, 127);
+                        self.background = RED;
                     } else if value == "42" {
-                        //Green background
-                        self.background = Color::new(127, 255, 127);
+                        self.background = GREEN;
                     } else if value == "43" {
-                        //Yellow background
+                        self.background = YELLOW;
                     } else if value == "44" {
-                        //Blue background
-                        self.background = Color::new(127, 127, 255);
+                        self.background = BLUE;
                     } else if value == "45" {
-                        //Magenta background
+                        self.background = MAGENTA;
                     } else if value == "46" {
-                        //Cyan background
+                        self.background = CYAN;
                     } else if value == "47" {
-                        //White background
-                        self.background = Color::new(224, 224, 224);
+                        self.background = WHITE;
                     }
                 }
 
@@ -123,8 +116,8 @@ impl Console {
             //Reset
             self.point.x = 0;
             self.point.y = 0;
-            self.foreground = Color::new(224, 224, 224);
-            self.background = Color::new(0, 0, 0);
+            self.foreground = WHITE;
+            self.background = BLACK;
             self.display.set(self.background);
             self.redraw = true;
 
