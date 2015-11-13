@@ -177,7 +177,7 @@ impl FileManager {
                               32 * row as isize,
                               icon.width(),
                               icon.height(),
-                              icon.as_slice());
+                              &icon);
 
             let mut col = 0;
             for c in file_name.chars() {

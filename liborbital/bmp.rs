@@ -2,6 +2,7 @@ use super::Color;
 
 use redox::fs::File;
 use redox::io::Read;
+use redox::ops::Deref;
 use redox::String;
 use redox::Vec;
 
@@ -135,16 +136,20 @@ impl BmpFile {
         !self.data.is_empty()
     }
 
-    /// Convert to slice for drawing
-    pub fn as_slice(&self) -> &[Color] {
-        &self.data
-    }
-
     pub fn width(&self) -> usize {
         self.w
     }
 
     pub fn height(&self) -> usize {
         self.h
+    }
+}
+
+impl Deref for BmpFile {
+    type Target = [Color];
+
+    /// Convert to slice for drawing
+    fn deref(&self) -> &Self::Target {
+        &self.data
     }
 }
