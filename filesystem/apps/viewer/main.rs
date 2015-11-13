@@ -17,7 +17,7 @@ pub fn main() {
                                  bmp.height(),
                                  &("Viewer (".to_string() + &url + ")")).unwrap();
     window.set(Color::BLACK);
-    window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
+    window.image(0, 0, bmp.width(), bmp.height(), &bmp);
     window.sync();
 
     while let Some(event) = window.poll() {
