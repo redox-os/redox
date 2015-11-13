@@ -73,13 +73,13 @@ use schemes::memory::*;
 
 use syscall::handle::*;
 
+/// Common std-like functionality
+#[macro_use]
+pub mod common;
 /// Allocation
 pub mod alloc_system;
 /// Audio
 pub mod audio;
-/// Common std-like functionality
-#[macro_use]
-pub mod common;
 /// Various drivers
 /// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
