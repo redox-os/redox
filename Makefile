@@ -75,6 +75,7 @@ else
 endif
 
 .PHONY: help all docs apps schemes tests clean \
+	bochs \
 	qemu qemu_bare qemu_no_kvm qemu_tap \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
