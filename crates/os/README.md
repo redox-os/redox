@@ -3,7 +3,7 @@ Osmium, an archive format
 
 Note: This document is outdated.
 
-This document will descripe Osmium an *archive* format.
+This document will describe Osmium an *archive* format.
 Note that Osmium intends to be an archive format and
 not an compression, encryption, or anything else format.
 
