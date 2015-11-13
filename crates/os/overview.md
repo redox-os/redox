@@ -13,7 +13,7 @@ Root table
     - 1 byte : Type identifier
       * 'd' :
         - 8 bytes : position where the table starts in the table segment
-        - 8 bytes : Length of the directory table
+        - 8 bytes : Length of the directory table (bucket number)
         - 64 bytes : name (can be extended in the directory headeer)
       * 'f' :
         - 8 bytes : position where the file starts in the file segment
@@ -32,7 +32,7 @@ The file header (256 bytes)
 - 32 bytes of name extension
 - (TODO: Add more info)
 - 1 byte which can be either:
-  - '#' : indicating that the header is extended ie there are 128 more bytes.
+  - '#' : indicating that the header is extended ie there are 256 more bytes.
   - '\0' : End of header
 
 After the headers the actual data starts
