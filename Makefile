@@ -11,7 +11,7 @@ BUILD=build/$(ARCH)
 
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
-	-C no-prepopulate-passes -C no-vectorize-loops -C no-vectorize-slp -C no-stack-check -C opt-level=2 \
+	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
 	-Z no-landing-pads \
 	-A dead_code -A deprecated \
 	-L $(BUILD)
@@ -146,6 +146,9 @@ apps/%:
 schemes/%:
 	@$(MAKE) --no-print-directory filesystem/schemes/$*/$*.bin
 
+osmium:
+	@$(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
+
 FORCE:
 
 tests/%: FORCE
@@ -153,6 +156,9 @@ tests/%: FORCE
 
 $(BUILD)/libcore.rlib: rust/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/osmium.rlib: crates/os/lib.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: rust/liballoc_system/lib.rs $(BUILD)/libcore.rlib
