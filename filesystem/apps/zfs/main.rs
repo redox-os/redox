@@ -418,7 +418,9 @@ pub fn main() {
                                                     println!("got space map id: {:?}", sm_id);
                                                     println!("got space map dnode: {:?}", sm_dnode);
                                                     println!("got space map phys: {:?}", space_map_phys);
-                                                    println!("got space map: {:?}", &space_map.unwrap()[0..64]);
+                                                    //println!("got space map: {:?}", &space_map.unwrap()[0..64]);
+
+                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 15 }, &space_map.unwrap());
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue type. Expected Uint64.");
                                                 }
