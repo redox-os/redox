@@ -412,10 +412,13 @@ pub fn main() {
                                                         zfs.reader.read_type_array(zfs.mos.meta_dnode.get_blockptr(0), sm_id as usize);
                                                     let sm_dnode = sm_dnode.unwrap(); // TODO
                                                     let space_map_phys = SpaceMapPhys::from_bytes(sm_dnode.get_bonus()).unwrap(); // TODO
+                                                    let space_map: Result<Vec<u8>, String> = zfs.reader
+                                                                                                .read_block(sm_dnode.get_blockptr(0));
 
                                                     println!("got space map id: {:?}", sm_id);
                                                     println!("got space map dnode: {:?}", sm_dnode);
-                                                    println!("got space map: {:?}", space_map);
+                                                    println!("got space map phys: {:?}", space_map_phys);
+                                                    println!("got space map: {:?}", &space_map.unwrap()[0..64]);
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue type. Expected Uint64.");
                                                 }

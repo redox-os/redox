@@ -24,3 +24,23 @@ pub struct SpaceMapPhys {
 }
 
 impl FromBytes for SpaceMapPhys { }
+
+struct Entry(u64);
+
+impl Entry {
+    pub fn size(&self) -> u64 {
+        self.0 & 0x7F // 15 bits long
+    }
+
+    pub fn type(&self) -> u64 {
+        (self.0 >> 15) & 0x1 // 1 bit long
+    }
+
+    pub fn offset(&self) -> u64 {
+        (self.0 >> 16) & 0x7F // 47 bytes long
+    }
+
+    pub fn debug(&self) -> u64 {
+        (self.0 >> 63) & 0x1 // 1 bit long
+    }
+}
