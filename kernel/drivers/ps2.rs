@@ -51,7 +51,7 @@ impl Ps2 {
             mouse_i: 0,
             mouse_x: 0,
             mouse_y: 0,
-            layout: layouts::Layout::FRENCH,
+            layout: layouts::Layout::ENGLISH,
         };
 
         unsafe {
