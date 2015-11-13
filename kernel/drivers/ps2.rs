@@ -30,6 +30,8 @@ pub struct Ps2 {
     mouse_x: isize,
     /// Mouse point y
     mouse_y: isize,
+    /// Layout for keyboard
+    layout: usize,
 }
 
 impl Ps2 {
