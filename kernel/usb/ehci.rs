@@ -1,6 +1,6 @@
 use core::ptr::{read, write};
 
-use common::debug;
+//use common::debug;
 
 use drivers::pciconfig::PciConfig;
 
@@ -72,17 +72,7 @@ impl KScheme for Ehci {
 impl Ehci {
     #[allow(non_snake_case)]
     pub unsafe fn init(&mut self) {
-        debug::d("EHCI on: ");
-        debug::dh(self.base);
-        if self.memory_mapped {
-            debug::d(" memory mapped");
-        } else {
-            debug::d(" port mapped");
-        }
-        debug::d(" IRQ: ");
-        debug::dbh(self.irq);
-
-        debug::dl();
+        debug!("EHCI on: {:X}, IRQ {:X}\n", self.base, self.irq);
         return;
 
         //
