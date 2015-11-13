@@ -3,3 +3,5 @@ mod djb2;
 mod ptr;
 mod archive;
 mod data;
+mod header;
+

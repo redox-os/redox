@@ -1,11 +1,17 @@
+/// An Osmium archive
 pub struct Archive<'a> {
+    /// Header
     pub header: GlobalHeader<'a>,
+    /// Root table
     pub root_table: NodeTable<'a>,
+    /// Directory tables
     pub directories: &'a [u8],
+    /// File segment
     pub files: &'a [u8],
 }
 
 impl<'a> Archive<'a> {
+    /// Create an archive from bytes
     pub fn from_bytes(b: &[u8]) -> Self {
         let header = GlobalHeader::from_bytes(&b[..257]);
         let root_table = NodeTable::from_bytes(&b[256..256 + header.root_buckets * 16]);
