@@ -33,8 +33,8 @@ pub struct Ps2 {
     /// Mouse point y
     mouse_y: isize,
     /// Layout for keyboard
-    /// Currently : 0 = EN / 1 = FR
-    layout: usize,
+    /// Default: English
+    layout: layouts::Layout,
 }
 
 impl Ps2 {
@@ -51,7 +51,7 @@ impl Ps2 {
             mouse_i: 0,
             mouse_x: 0,
             mouse_y: 0,
-            layout: 0,
+            layout: layouts::Layout::FRENCH,
         };
 
         unsafe {
