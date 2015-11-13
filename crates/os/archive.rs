@@ -1,3 +1,6 @@
+use header::GlobalHeader;
+use table::NodeTable;
+
 /// An Osmium archive
 pub struct Archive<'a> {
     /// Header
@@ -12,16 +15,16 @@ pub struct Archive<'a> {
 
 impl<'a> Archive<'a> {
     /// Create an archive from bytes
-    pub fn from_bytes(b: &[u8]) -> Self {
+    pub fn from_bytes(b: &'a [u8]) -> Self {
         let header = GlobalHeader::from_bytes(&b[..257]);
-        let root_table = NodeTable::from_bytes(&b[256..256 + header.root_buckets * 16]);
-        let directories = &b[256 + header.root_buckets * 16..256 + header.root_buckets * 16 + header.dir_size * 16];
-        let files = &b[256 + header.root_buckets * 16 + header.dir_size * 16..];
+        let root_table = NodeTable::from_bytes(&b[256..256 + header.root_buckets as usize * 16]);
+        let directories = &b[256 + header.root_buckets as usize * 16..256 + (header.root_buckets * 16 + header.dir_size * 16) as usize];
+        let files = &b[256 + header.root_buckets as usize * 16 + header.dir_size as usize * 16..];
 
         Archive {
             header: header,
             root_table: root_table,
-            diretories: directories,
+            directories: directories,
             files: files,
         }
     }

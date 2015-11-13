@@ -1,4 +1,5 @@
 use archive::Archive;
+use data::{Data, File, Dir};
 
 /// An data pointer
 pub enum DataPtr {
@@ -43,8 +44,8 @@ impl DataPtr {
     /// Deref this pointer to a data from the archive
     pub fn deref(&self, ar: &Archive) -> Data {
         match self {
-            File(fptr) => fptr.deref(ar),
-            Dir(dptr) => dptr.deref(ar),
+            &DataPtr::File(ref fptr) => fptr.deref(ar),
+            &DataPtr::Dir(ref dptr) => dptr.deref(ar),
         }
     }
 }
@@ -60,7 +61,7 @@ pub struct FilePtr {
 impl FilePtr {
     /// Deref this pointer to a block of data from the archive
     pub fn deref(&self, ar: &Archive) -> Data {
-        Data::File(File::from_bytes(&ar.files[self.pos..self.pos + self.len]))
+        Data::File(File::from_bytes(&ar.files[self.pos as usize..(self.pos + self.len) as usize]))
     }
 }
 
@@ -75,6 +76,6 @@ pub struct DirPtr {
 impl DirPtr {
     /// Deref this pointer to a block of data from the archive
     pub fn deref(&self, ar: &Archive) -> Data {
-        Data::Dir(Dir::from_bytes(&ar.files[self.pos..self.pos + self.len]))
+        Data::Dir(Dir::from_bytes(&ar.files[self.pos as usize..(self.pos + self.len) as usize]))
     }
 }
