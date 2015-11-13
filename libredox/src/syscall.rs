@@ -29,8 +29,8 @@ pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
     a
 }
 
-pub unsafe fn sys_debug(byte: u8) {
-    syscall(SYS_DEBUG, byte as usize, 0, 0);
+pub unsafe fn sys_debug(ptr: *const u8, len: usize) {
+    syscall(SYS_DEBUG, ptr as usize, len, 0);
 }
 
 pub unsafe fn sys_brk(addr: usize) -> usize {

@@ -48,25 +48,29 @@ unsafe fn c_array_to_slice<'a>(ptr: *const *const u8) -> &'a [*const u8] {
     }
 }
 
-pub unsafe fn do_sys_debug(byte: u8) {
+pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
+    let bytes = slice::from_raw_parts(ptr, len);
+
     let reenable = scheduler::start_no_ints();
 
     if ::console as usize > 0 {
-        (*::console).write(byte);
+        (*::console).write(bytes);
     }
 
     let serial_status = Pio8::new(0x3F8 + 5);
     let mut serial_data = Pio8::new(0x3F8);
 
-    while serial_status.read() & 0x20 == 0 {}
-    serial_data.write(byte);
-
-    if byte == 8 {
+    for byte in bytes.iter() {
         while serial_status.read() & 0x20 == 0 {}
-        serial_data.write(0x20);
+        serial_data.write(*byte);
 
-        while serial_status.read() & 0x20 == 0 {}
-        serial_data.write(8);
+        if *byte == 8 {
+            while serial_status.read() & 0x20 == 0 {}
+            serial_data.write(0x20);
+
+            while serial_status.read() & 0x20 == 0 {}
+            serial_data.write(8);
+        }
     }
 
     scheduler::end_no_ints(reenable);
@@ -594,7 +598,7 @@ pub unsafe fn do_sys_unalloc(ptr: usize) {
 
 pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
     match regs.ax {
-        SYS_DEBUG => do_sys_debug(regs.bx as u8),
+        SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
         // Linux
         SYS_BRK => regs.ax = do_sys_brk(regs.bx),
         SYS_CHDIR => regs.ax = do_sys_chdir(regs.bx as *const u8),
