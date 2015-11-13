@@ -145,7 +145,7 @@ impl Ps2 {
         }
 
         return Some(KeyEvent {
-            character: char_for_scancode(scancode & 0x7F, shift),
+            character: char_for_scancode(scancode & 0x7F, shift, self.layout),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
         });
