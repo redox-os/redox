@@ -344,6 +344,28 @@ impl<'a> Command<'a> {
         for c in commands.iter() {
             command_helper.insert(c.name.clone().to_string(), c.help.clone().to_string());
         }
+
+        commands.push(Command {
+            name: "man",
+            help: "Display a little helper for a given command\n    man ls",
+            main: Box::new(move |args: &Vec<String>| {
+                if let Some(command) = args.get(1) {
+                    if command_helper.contains_key(&command) {
+                        match command_helper.get(&command) {
+                            Some(help) => println!("{}", help),
+                            None => println!("Command helper not found [run 'help']...")
+                        }
+                    }
+                    else {
+                        println!("Command helper not found [run 'help']...");
+                    }
+                }
+                else {
+                    println!("Please to specify a command!");
+                }
+            }),
+        });
+
         let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name);
 
         commands.push(Command {
