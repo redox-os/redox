@@ -13,14 +13,12 @@ macro_rules! debugln {
 #[macro_export]
 macro_rules! debug {
     ($($arg:tt)*) => ({
-        $crate::debug::debug(format!($($arg)*));
+        $crate::debug::debug(&format!($($arg)*));
     });
 }
 
-pub fn debug<T: AsRef<str>>(msg: T) {
-    for b in msg.as_ref().bytes() {
-        unsafe {
-            sys_debug(b);
-        }
+pub fn debug(msg: &str) {
+    unsafe {
+        sys_debug(msg.as_ptr(), msg.len());
     }
 }

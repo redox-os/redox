@@ -1,3 +1,4 @@
+use redox::get_slice::GetSlice;
 use redox::ops::DerefMut;
 use redox::string::*;
 use redox::vec::Vec;
@@ -98,7 +99,12 @@ impl<'a> Command<'a> {
             name: "exec",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
-                    File::exec(arg);
+                    let mut args_str: Vec<&str> = Vec::new();
+                    for arg in args.get_slice(Some(2), None) {
+                        args_str.push(arg);
+                    }
+
+                    File::exec(arg, &args_str);
                 }
             }),
         });
@@ -134,6 +140,18 @@ impl<'a> Command<'a> {
                     }
                 } else {
                     println!("Failed to open directory: {}", path);
+                }
+            }),
+        });
+
+        commands.push(Command {
+            name: "mkdir",
+            main: Box::new(|args: &Vec<String>| {
+                match args.get(1) {
+                    Some(dir_name) => if DirEntry::create(dir_name).is_none() {
+                        println!("Failed to create {}", dir_name);
+                    },
+                    None => println!("No name provided")
                 }
             }),
         });

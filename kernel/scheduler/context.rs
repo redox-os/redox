@@ -136,6 +136,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                         physical_address: physical_address,
                         virtual_address: entry.virtual_address,
                         virtual_size: entry.virtual_size,
+                        writeable: true
                     })
                 } else {
                     None
@@ -165,6 +166,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                             physical_address: physical_address,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
+                            writeable: entry.writeable
                         });
                     }
                 }
@@ -239,12 +241,17 @@ pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
     pub virtual_size: usize,
+    pub writeable: bool
 }
 
 impl ContextMemory {
     pub unsafe fn map(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
-            Page::new(self.virtual_address + i * 4096).map(self.physical_address + i * 4096);
+            if self.writeable {
+                Page::new(self.virtual_address + i * 4096).map_user_write(self.physical_address + i * 4096);
+            } else {
+                Page::new(self.virtual_address + i * 4096).map_user_read(self.physical_address + i * 4096);
+            }
         }
     }
     pub unsafe fn unmap(&mut self) {
@@ -335,11 +342,16 @@ impl Context {
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
             flags: 0,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
-            stack: Some(ContextMemory {
-                physical_address: memory::alloc(CONTEXT_STACK_SIZE),
-                virtual_address: CONTEXT_STACK_ADDR,
-                virtual_size: CONTEXT_STACK_SIZE,
-            }),
+            stack: if userspace {
+                Some(ContextMemory {
+                    physical_address: memory::alloc(CONTEXT_STACK_SIZE),
+                    virtual_address: CONTEXT_STACK_ADDR,
+                    virtual_size: CONTEXT_STACK_SIZE,
+                    writeable: true
+                })
+            } else {
+                None
+            },
             loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
@@ -348,18 +360,29 @@ impl Context {
             files: Rc::new(UnsafeCell::new(Vec::new())),
         };
 
-        for arg in args.iter() {
-            ret.push(*arg);
-        }
-
         if userspace {
+            let user_sp = if let Some(ref stack) = ret.stack {
+                let mut sp = stack.physical_address + stack.virtual_size - 128;
+                for arg in args.iter() {
+                    sp -= mem::size_of::<usize>();
+                    ptr::write(sp as *mut usize, *arg);
+                }
+                sp - stack.physical_address + stack.virtual_address
+            } else {
+                0
+            };
+
             ret.push(0x20 | 3);
-            ret.push(CONTEXT_STACK_ADDR + CONTEXT_STACK_SIZE - 128);
+            ret.push(user_sp);
             ret.push(1 << 9);
             ret.push(0x18 | 3);
             ret.push(call);
             ret.push(context_userspace as usize);
         } else {
+            for arg in args.iter() {
+                ret.push(*arg);
+            }
+
             ret.push(call);
         }
 
@@ -427,26 +450,74 @@ impl Context {
         }
     }
 
-    pub unsafe fn get_file<'a>(&self, fd: usize) -> Option<&'a Box<Resource>> {
-        for file in (*self.files.get()).iter() {
-            if file.fd == fd {
-                return Some(&file.resource);
+    /// Get the next available memory map address
+    pub unsafe fn next_mem(&self) -> usize {
+        let mut next_mem = 0;
+
+        for mem in (*self.memory.get()).iter() {
+            let pages = (mem.virtual_size + 4095)/4096;
+            let end = mem.virtual_address + pages * 4096;
+            if next_mem < end {
+                next_mem = end;
+            }
+        }
+
+        return next_mem;
+    }
+
+    /// Translate to physical if a ptr is inside of the mapped memory
+    pub unsafe fn translate(&self, ptr: usize) -> Option<usize> {
+        for mem in (*self.memory.get()).iter() {
+            if ptr >= mem.virtual_address && ptr < mem.virtual_address + mem.virtual_size {
+                return Some(ptr - mem.virtual_address + mem.physical_address);
             }
         }
 
         None
     }
 
-    pub unsafe fn get_file_mut<'a>(&mut self, fd: usize) -> Option<&'a mut Box<Resource>> {
-        for file in (*self.files.get()).iter_mut() {
-            if file.fd == fd {
-                return Some(&mut file.resource);
+    /// Get a memory map from a pointer
+    pub unsafe fn get_mem<'a>(&self, ptr: usize) -> Option<&'a ContextMemory> {
+        for mem in (*self.memory.get()).iter() {
+            if mem.virtual_address == ptr {
+                return Some(mem);
             }
         }
 
         None
     }
 
+    /// Get a mutable memory map from a pointer
+    pub unsafe fn get_mem_mut<'a>(&mut self, ptr: usize) -> Option<&'a mut ContextMemory> {
+        for mem in (*self.memory.get()).iter_mut() {
+            if mem.virtual_address == ptr {
+                return Some(mem);
+            }
+        }
+
+        None
+    }
+
+    /// Cleanup empty memory
+    pub unsafe fn clean_mem(&mut self) {
+        let mut i = 0;
+        while i < (*self.memory.get()).len() {
+            let mut remove = false;
+            if let Some(mem) = (*self.memory.get()).get(i) {
+                if mem.virtual_size == 0 {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                drop((*self.memory.get()).remove(i));
+            } else {
+                i += 1;
+            }
+        }
+    }
+
+    /// Get the next available file descriptor
     pub unsafe fn next_fd(&self) -> usize {
         let mut next_fd = 0;
 
@@ -463,6 +534,28 @@ impl Context {
         }
 
         return next_fd;
+    }
+
+    /// Get a resource from a file descriptor
+    pub unsafe fn get_file<'a>(&self, fd: usize) -> Option<&'a Box<Resource>> {
+        for file in (*self.files.get()).iter() {
+            if file.fd == fd {
+                return Some(&file.resource);
+            }
+        }
+
+        None
+    }
+
+    /// Get a mutable resource from a file descriptor
+    pub unsafe fn get_file_mut<'a>(&mut self, fd: usize) -> Option<&'a mut Box<Resource>> {
+        for file in (*self.files.get()).iter_mut() {
+            if file.fd == fd {
+                return Some(&mut file.resource);
+            }
+        }
+
+        None
     }
 
     pub unsafe fn push(&mut self, data: usize) {

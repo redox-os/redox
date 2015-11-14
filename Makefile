@@ -1,8 +1,3 @@
-.PHONY: help all docs apps schemes tests clean \
-	qemu qemu_bare qemu_no_kvm qemu_tap \
-	virtualbox virtualbox_tap \
-	arping ping wireshark
-
 #Modify fo different target support
 ARCH?=i386
 #ARCH?=x86_64
@@ -79,6 +74,12 @@ else
 	endif
 endif
 
+.PHONY: help all docs apps schemes tests clean \
+	bochs \
+	qemu qemu_bare qemu_no_kvm qemu_tap \
+	virtualbox virtualbox_tap \
+	arping ping wireshark
+
 help:
 	@echo ".########..########.########...#######..##.....##"
 	@echo ".##.....##.##.......##.....##.##.....##..##...##."
@@ -128,9 +129,20 @@ all: $(BUILD)/harddrive.bin
 docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
 
-apps: apps/editor apps/file_manager apps/player apps/sodium apps/terminal apps/test apps/viewer apps/zfs
+apps: filesystem/apps/editor/main.bin \
+	  filesystem/apps/file_manager/main.bin \
+	  filesystem/apps/player/main.bin \
+	  filesystem/apps/sodium/main.bin \
+	  filesystem/apps/terminal/main.bin \
+	  filesystem/apps/test/main.bin \
+	  filesystem/apps/viewer/main.bin \
+	  filesystem/apps/zfs/main.bin
 
-schemes: schemes/console schemes/orbital schemes/tcp schemes/udp schemes/zfs
+schemes: filesystem/schemes/console/main.bin \
+  		 filesystem/schemes/orbital/main.bin \
+  	  	 filesystem/schemes/tcp/main.bin \
+	  	 filesystem/schemes/udp/main.bin \
+		 filesystem/schemes/zfs/main.bin
 
 tests: tests/success tests/failure
 
@@ -176,13 +188,13 @@ $(BUILD)/libcollections.rlib: rust/libcollections/lib.rs $(BUILD)/libcore.rlib $
 $(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libredox.rlib: libredox/src/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+$(BUILD)/libredox.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg std --crate-name redox -o $@ $<
 
-$(BUILD)/liborbital.rlib: liborbital/lib.rs $(BUILD)/libredox.rlib
+$(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libredox.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.ir: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
@@ -201,15 +213,15 @@ else
 	$(AS) -f elf $< -o $@
 endif
 
-filesystem/apps/%.bin: filesystem/apps/%.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
-	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/`$(BASENAME) $*`.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/crt0.o $(BUILD)/`$(BASENAME) $*`.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
+	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/apps_$*.gen
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/apps_$*.rlib $(BUILD)/apps_$*.gen
+	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
-filesystem/schemes/%.bin: filesystem/schemes/%.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
-	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/`$(BASENAME) $*`.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/`$(BASENAME) $*`.gen
-	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/`$(BASENAME) $*`.rlib $(BUILD)/libredox.rlib
+filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
+	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
+	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/schemes_$*.rlib $(BUILD)/libredox.rlib
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -D $< > $@

@@ -1,4 +1,4 @@
 name=Test
-icon=file:///ui/actions/debug-step-into.bmp
+icon=file:/ui/actions/debug-step-into.bmp
 author=Jeremy Soller
 description=A Testing Application

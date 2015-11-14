@@ -1,5 +1,7 @@
 //! ELF executables
 
+use collections::vec::Vec;
+
 use core::{ptr, str, slice};
 
 use common::{debug, memory};
@@ -301,7 +303,9 @@ impl Elf {
         }
     }
 
-    pub unsafe fn load_segment(&self) -> Option<ElfSegment> {
+    pub unsafe fn load_segment(&self) -> Vec<ElfSegment> {
+        let mut segments = Vec::new();
+
         if self.data > 0 {
             let header = &*(self.data as *const ElfHeader);
 
@@ -309,12 +313,12 @@ impl Elf {
                 let segment = ptr::read((self.data + header.ph_off as usize + i as usize * header.ph_ent_len as usize) as *const ElfSegment);
 
                 if segment._type == 1 {
-                    return Some(segment);
+                    segments.push(segment);
                 }
             }
         }
 
-        None
+        segments
     }
 
     /// Get the entry field of the header

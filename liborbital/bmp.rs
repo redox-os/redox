@@ -1,5 +1,8 @@
 use super::Color;
 
+use redox::fs::File;
+use redox::io::Read;
+use redox::ops::Deref;
 use redox::String;
 use redox::Vec;
 
@@ -28,6 +31,15 @@ impl BmpFile {
     /// Create a new empty bitmap
     pub fn default() -> Self {
         Self::new(0, 0)
+    }
+
+    /// Load bitmap from given path
+    pub fn from_path(path: &str) -> Self {
+        let mut data: Vec<u8> = Vec::new();
+        if let Some(mut file) = File::open(path) {
+            file.read_to_end(&mut data);
+        }
+        Self::from_data(&data)
     }
 
     /// Create a bitmap from some data
@@ -119,9 +131,9 @@ impl BmpFile {
         ret
     }
 
-    /// Convert to slice for drawing
-    pub fn as_slice(&self) -> &[Color] {
-        &self.data
+    /// Indicate if data exists
+    pub fn has_data(&self) -> bool {
+        !self.data.is_empty()
     }
 
     pub fn width(&self) -> usize {
@@ -130,5 +142,14 @@ impl BmpFile {
 
     pub fn height(&self) -> usize {
         self.h
+    }
+}
+
+impl Deref for BmpFile {
+    type Target = [Color];
+
+    /// Convert to slice for drawing
+    fn deref(&self) -> &Self::Target {
+        &self.data
     }
 }
