@@ -68,21 +68,17 @@ impl<K: PartialEq<K> + Clone + Debug + Display, V: Clone> Entry<K, V> {
             cur = match cur {
                 Some(x) => match *x {
                     LinkedList::Elem((ref k, ref v), ref l) => {
-                        debugln!("Check key against: {}", k);
                         if key == k {
                             return Some(v);
                         } else {
-                            debugln!("Follow link");
                             l.follow()
                         }
                     },
                     LinkedList::Nil => {
-                        debugln!("None 1");
                         return None;
                     },
                 },
                 None => {
-                    debugln!("None 2");
                     return None;
                 },
             }
@@ -99,21 +95,17 @@ impl<K: PartialEq<K> + Clone + Debug + Display, V: Clone> Entry<K, V> {
             cur = match cur {
                 Some(x) => match *x {
                     LinkedList::Elem((ref k, ref mut v), ref mut l) => {
-                        debugln!("Check key against: {}", k);
                         if key == k {
                             return Some(v);
                         } else {
-                            debugln!("Follow link");
                             l.follow_mut()
                         }
                     },
                     LinkedList::Nil => {
-                        debugln!("None 1");
                         return None;
                     },
                 },
                 None => {
-                    debugln!("None 2");
                     return None;
                 },
             }
@@ -148,7 +140,6 @@ impl<K: Hash + PartialEq + Clone + Debug + Display, V: Clone + Debug> HashMap<K,
         let mut s = Djb2::new();
         key.hash(&mut s);
         let res = (s.finish() % BUCKETS as u64) as usize;
-        debugln!("Res is: {}", res);
         res
     }
 
@@ -166,9 +157,6 @@ impl<K: Hash + PartialEq + Clone + Debug + Display, V: Clone + Debug> HashMap<K,
     pub fn insert(&mut self, key: K, val: V) -> Option<V> {
         match self.get_mut(&key) {
             Some(r) => {
-                debugln!("Key inserted: {:?}", key);
-                debugln!("Old val: {:?}", r);
-                debugln!("New val: {:?}", val);
                 return Some(mem::replace(r, val));
             },
             _ => {}
