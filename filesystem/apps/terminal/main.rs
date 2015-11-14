@@ -35,6 +35,7 @@ macro_rules! exec {
 /// ```
 pub struct Command<'a> {
     pub name: &'a str,
+    pub help: &'a str,
     pub main: Box<Fn(&Vec<String>)>,
 }
 
