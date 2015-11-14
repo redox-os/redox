@@ -4,8 +4,8 @@ Global header
 
 - 256 bytes
   - 8 bytes : name and version
-  - 8 bytes : base 256 root table bucket number (per 32)
-  - 8 bytes : base 256 size of the segment of directory tables
+  - 8 bytes : base 256 root table bucket number (per 16)
+  - 8 bytes : base 256 size of the segment of directory tables (per 16)
 
 Root table
 - Size given in global header

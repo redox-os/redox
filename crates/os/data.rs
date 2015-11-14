@@ -32,7 +32,7 @@ impl File {
         let name = unsafe {
             String::from_utf8_unchecked(b[0..64].to_vec())
         };
-        let data = b[257..].to_vec();
+        let data = b[256..].to_vec();
 
         File {
             name: name,
