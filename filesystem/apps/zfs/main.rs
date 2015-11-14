@@ -13,6 +13,7 @@ use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
 pub mod arcache;
+pub mod avl;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
