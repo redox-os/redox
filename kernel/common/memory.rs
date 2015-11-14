@@ -205,6 +205,9 @@ pub unsafe fn alloc(size: usize) -> usize {
         }
         if count * CLUSTER_SIZE > size {
             let address = cluster_to_address(number);
+
+            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+
             for i in number..number + count {
                 set_cluster(i, address);
             }
@@ -243,6 +246,9 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
         }
         if count * CLUSTER_SIZE > size {
             let address = cluster_to_address(number);
+
+            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+
             for i in number..number + count {
                 set_cluster(i, address);
             }
