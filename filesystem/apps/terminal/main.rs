@@ -339,6 +339,11 @@ impl<'a> Command<'a> {
             }),
         });
 
+        let mut command_helper : HashMap<String, String> = HashMap::new();
+
+        for c in commands.iter() {
+            command_helper.insert(c.name.clone().to_string(), c.help.clone().to_string());
+        }
         let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name);
 
         commands.push(Command {
