@@ -41,12 +41,16 @@ impl ZfsReader {
         match block_ptr.compression() {
             2 => {
                 // compression off
-                Ok(data)
+                data
             },
             1 | 3 => {
                 // lzjb compression
                 let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
-                lzjb::decompress(&data, &mut decompressed);
+                lzjb::decompress(& match data {
+                                     Ok(data) => data,
+                                     Err(e) => return Err(e),
+                                 },
+                                 &mut decompressed);
                 Ok(decompressed)
             },
             _ => Err("Error: not enough bytes".to_string()),
