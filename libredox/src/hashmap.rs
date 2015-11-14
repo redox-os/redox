@@ -135,6 +135,14 @@ impl<K: Hash + PartialEq + Clone + Debug + Display, V: Clone + Debug> HashMap<K,
         }
     }
 
+    /// Is the key exists?
+    pub fn contains_key(&self, key: &K) -> bool {
+        match self.data[Self::get_entry(key)].get(key) {
+            Some(_) => true,
+            None => false
+        }
+    }
+
     /// Get entry num
     fn get_entry(key: &K) -> usize {
         let mut s = Djb2::new();
@@ -200,16 +208,4 @@ pub fn test() {
     assert!(ht.insert(288, 666).is_some());
     assert_eq!(ht.get(&288), Some(&666));
     assert_eq!(ht.get(&1), Some(&42));
-
-
-//    for i in 1..300 {
-//        debugln!("Set {}", i);
-//        ht.insert(i, i);
-//    }
-//
-//    for i in 1..300 {
-//        debugln!("Get {}", i);
-//        assert_eq!(ht.get(&i), Some(&i));
-//    }
-
 }

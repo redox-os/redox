@@ -8,6 +8,7 @@ use redox::io::*;
 use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
+use redox::hashmap::HashMap;
 
 /* Magic Macros { */
 static mut application: *mut Application<'static> = 0 as *mut Application;
@@ -35,6 +36,7 @@ macro_rules! exec {
 /// ```
 pub struct Command<'a> {
     pub name: &'a str,
+    pub help: &'a str,
     pub main: Box<Fn(&Vec<String>)>,
 }
 
@@ -46,6 +48,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "cat",
+            help: "To display a file in the output\n    cat <your_file>",
             main: Box::new(|args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
@@ -68,6 +71,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "cd",
+            help: "To change the current directory\n    cd <your_destination>",
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
                     Some(path) => {
@@ -82,6 +86,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "echo",
+            help: "To display some text in the output\n    echo Hello world!",
             main: Box::new(|args: &Vec<String>| {
                 let echo = args.iter()
                     .skip(1)
@@ -92,11 +97,13 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "else",
+            help: "",
             main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "exec",
+            help: "To execute a binary in the output\n    exec <my_binary>",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(arg) = args.get(1) {
                     let mut args_str: Vec<&str> = Vec::new();
@@ -111,21 +118,25 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "exit",
+            help: "To exit the curent session",
             main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "fi",
+            help: "",
             main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "if",
+            help: "",
             main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "ls",
+            help: "To list the content of the current directory\n    ls",
             main: Box::new(|args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
@@ -146,6 +157,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "mkdir",
+            help: "To create a directory in the current directory\n    mkdir <my_new_directory>",
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
                     Some(dir_name) => if DirEntry::create(dir_name).is_none() {
@@ -158,6 +170,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "pwd",
+            help: "To output the path of the current directory\n    pwd",
             main: Box::new(|_: &Vec<String>| {
                 if let Some(file) = File::open("") {
                     if let Some(path) = file.path() {
@@ -173,11 +186,13 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "read",
+            help: "",
             main: Box::new(|_: &Vec<String>| {}),
         });
 
         commands.push(Command {
             name: "run",
+            help: "",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
@@ -195,6 +210,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "sleep",
+            help: "Make a sleep in the current session\n    sleep <number_of_seconds>",
             main: Box::new(|args: &Vec<String>| {
                 let secs = {
                     match args.get(1) {
@@ -218,10 +234,11 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "send",
+            help: "To send data, via an URL\n    send <url> <data>",
             main: Box::new(|args: &Vec<String>| {
                 if args.len() < 3 {
                     println!("Error: incorrect arguments");
-                    println!("Usage: send [url] [data]");
+                    println!("Usage: send <url> <data>");
                     return;
                 }
 
@@ -259,6 +276,7 @@ impl<'a> Command<'a> {
         // If the command have no arguments, the command don't create the file
         commands.push(Command {
             name: "touch",
+            help: "To create a file, in the current directory\n    touch <my_file>",
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
                     Some(file_name) => if File::create(file_name).is_none() {
@@ -271,6 +289,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "url_hex",
+            help: "",
             main: Box::new(|args: &Vec<String>| {
                 let path = {
                     match args.get(1) {
@@ -297,6 +316,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "wget",
+            help: "To make some requests at a given host, using TCP protocol\n    wget <host> <request>",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
@@ -319,10 +339,38 @@ impl<'a> Command<'a> {
             }),
         });
 
+        let mut command_helper : HashMap<String, String> = HashMap::new();
+
+        for c in commands.iter() {
+            command_helper.insert(c.name.clone().to_string(), c.help.clone().to_string());
+        }
+
+        commands.push(Command {
+            name: "man",
+            help: "Display a little helper for a given command\n    man ls",
+            main: Box::new(move |args: &Vec<String>| {
+                if let Some(command) = args.get(1) {
+                    if command_helper.contains_key(&command) {
+                        match command_helper.get(&command) {
+                            Some(help) => println!("{}", help),
+                            None => println!("Command helper not found [run 'help']...")
+                        }
+                    }
+                    else {
+                        println!("Command helper not found [run 'help']...");
+                    }
+                }
+                else {
+                    println!("Please to specify a command!");
+                }
+            }),
+        });
+
         let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name);
 
         commands.push(Command {
             name: "help",
+            help: "Print current commands to call",
             main: Box::new(move |_: &Vec<String>| {
                 println!("Commands:{}", command_list);
             }),
