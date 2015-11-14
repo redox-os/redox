@@ -1,13 +1,16 @@
+#![crate_type="lib"]
 #![feature(no_std)]
-#[no_std]
+#![feature(braced_empty_structs)]
+#![no_std]
 
-mod archive;
+extern crate redox;
+
+mod table;
 mod djb2;
 mod ptr;
-mod table;
+mod archive;
 mod data;
-mod file;
-mod dir;
-mod extract;
+mod header;
+//mod extract;
 
 
