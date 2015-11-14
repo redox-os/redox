@@ -1,16 +1,19 @@
-const NEXT: *mut u64 = 0x200010 as *mut u64;
+static mut seed: u64 = 19940046431; //259261034506304368955239; //1706322144714608529217229883707268827757977089;
 
 /// Generate pseudo random number
 pub fn rand() -> usize {
     unsafe {
-        (*NEXT) = (*NEXT) * 1103515245 + 12345;
-        ((*NEXT) / 65536) as usize
+        seed ^= seed << 12;
+        seed ^= seed << 25;
+        seed ^= seed << 27;
+        seed = seed * 82724793451 + 12345;
+        seed as usize % ::core::usize::MAX
     }
 }
 
-/// Generate pseudo random number via seed
-pub fn srand(seed: usize) {
+/// Set the seed
+pub fn srand(s: usize) {
     unsafe {
-        (*NEXT) = seed as u64;
+        seed = s as u64;
     }
 }

@@ -126,6 +126,7 @@ struct MemoryMapEntry {
 
 const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
 
+/// Get the data (address) of a given cluster
 pub unsafe fn cluster(number: usize) -> usize {
     if number < CLUSTER_COUNT {
         ptr::read((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *const usize)
@@ -134,6 +135,7 @@ pub unsafe fn cluster(number: usize) -> usize {
     }
 }
 
+/// Set the address of a cluster
 pub unsafe fn set_cluster(number: usize, address: usize) {
     if number < CLUSTER_COUNT {
         ptr::write((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *mut usize,
@@ -141,6 +143,7 @@ pub unsafe fn set_cluster(number: usize, address: usize) {
     }
 }
 
+/// Convert an adress to the cluster number
 pub unsafe fn address_to_cluster(address: usize) -> usize {
     if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() {
         (address - CLUSTER_ADDRESS - CLUSTER_COUNT * mem::size_of::<usize>()) / CLUSTER_SIZE
@@ -153,6 +156,7 @@ pub unsafe fn cluster_to_address(number: usize) -> usize {
     CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() + number * CLUSTER_SIZE
 }
 
+/// Initialize clusters
 pub unsafe fn cluster_init() {
     // First, set all clusters to the not present value
     for cluster in 0..CLUSTER_COUNT {
@@ -201,7 +205,9 @@ pub unsafe fn alloc(size: usize) -> usize {
         }
         if count * CLUSTER_SIZE > size {
             let address = cluster_to_address(number);
+
             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+
             for i in number..number + count {
                 set_cluster(i, address);
             }
@@ -240,7 +246,9 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
         }
         if count * CLUSTER_SIZE > size {
             let address = cluster_to_address(number);
+
             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+
             for i in number..number + count {
                 set_cluster(i, address);
             }
