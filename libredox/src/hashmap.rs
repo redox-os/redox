@@ -143,6 +143,14 @@ impl<K: Hash + PartialEq + Clone + Debug + Display, V: Clone + Debug> HashMap<K,
         }
     }
 
+    /// Is the key exists?
+    pub fn contains_key(&self, key: &K) -> bool {
+        match self.data[Self::get_entry(key)].get(key) {
+            Some(_) => true,
+            None => false
+        }
+    }
+
     /// Get entry num
     fn get_entry(key: &K) -> usize {
         let mut s = Djb2::new();
