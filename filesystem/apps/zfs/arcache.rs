@@ -1,4 +1,4 @@
-use redox::Vec;
+use redox::{Vec, String, ToString};
 use redox::collections::{BTreeMap, VecDeque};
 
 use super::dvaddr::DVAddr;
@@ -25,25 +25,30 @@ impl ArCache {
         }
     }
 
-    pub fn read(&mut self, reader: &mut zio::Reader, dva: &DVAddr) -> Vec<u8> {
+    pub fn read(&mut self, reader: &mut zio::Reader, dva: &DVAddr) -> Result<Vec<u8>, String> {
         if let Some(block) = self.mru_map.get(dva) {
             // Block is cached
-            return block.clone();
+            return Ok(block.clone());
         }
 
         // Block isn't cached, have to read it from disk
         let block = reader.read(dva.sector() as usize, dva.asize() as usize);
 
         // If necessary, make room for the block in the cache
-        if self.mru_used+block.len() > self.mru_size {
-            // TODO: Evict oldest pages in mru cache until there is enough space for the
-            // new block (IOW until `mru_used+block.len() <= mru_size`).
+        while self.mru_used + block.len() > self.mru_size {
+            let last_dva = match self.mru_queue.pop_back()
+            {
+                Some(dva) => dva,
+                None => return Err("No more ARC MRU items to free".to_string()),
+            };
+            self.mru_map.remove(&last_dva);
+            self.mru_used -= last_dva.asize() as usize;
         }
 
         // Add the block to the cache
         self.mru_used += block.len();
         self.mru_map.insert(*dva, block);
         self.mru_queue.push_front(*dva);
-        return self.mru_map.get(dva).unwrap().clone();
+        Ok(self.mru_map.get(dva).unwrap().clone())
     }
 }
