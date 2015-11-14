@@ -14,3 +14,5 @@ pub mod ps2;
 pub mod rtc;
 /// Serial
 pub mod serial;
+/// Layouts
+pub mod kb_layouts;

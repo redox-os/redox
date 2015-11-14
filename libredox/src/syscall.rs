@@ -29,8 +29,8 @@ pub unsafe fn syscall(mut a: usize, b: usize, c: usize, d: usize) -> usize {
     a
 }
 
-pub unsafe fn sys_debug(byte: u8) {
-    syscall(SYS_DEBUG, byte as usize, 0, 0);
+pub unsafe fn sys_debug(ptr: *const u8, len: usize) {
+    syscall(SYS_DEBUG, ptr as usize, len, 0);
 }
 
 pub unsafe fn sys_brk(addr: usize) -> usize {
@@ -57,8 +57,8 @@ pub unsafe fn sys_dup(fd: usize) -> usize {
     syscall(SYS_DUP, fd, 0, 0)
 }
 
-pub unsafe fn sys_execve(path: *const u8) -> usize {
-    syscall(SYS_EXECVE, path as usize, 0, 0)
+pub unsafe fn sys_execve(path: *const u8, args: *const *const u8) -> usize {
+    syscall(SYS_EXECVE, path as usize, args as usize, 0)
 }
 
 pub unsafe fn sys_exit(status: isize) {
@@ -85,6 +85,10 @@ pub unsafe fn sys_link(old: *const u8, new: *const u8) -> usize {
 
 pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd, offset as usize, whence)
+}
+
+pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> usize{
+    syscall(SYS_MKDIR, path as usize, 0, mode)
 }
 
 pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{

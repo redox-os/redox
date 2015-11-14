@@ -15,31 +15,62 @@ use programs::executor::execute;
 
 use scheduler::{self, Regs};
 use scheduler::context::{context_clone, context_exit, context_switch, Context,
-                         ContextFile};
+                         ContextMemory, ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
 
 use syscall::common::*;
 
-pub unsafe fn do_sys_debug(byte: u8) {
+/// Helper function for handling C strings, please do not copy it or make it pub or change it
+unsafe fn c_string_to_slice<'a>(ptr: *const u8) -> &'a [u8]{
+    if ptr > 0 as *const u8 {
+        let mut len = 0;
+        while ptr::read(ptr.offset(len as isize)) > 0 {
+            len += 1;
+        }
+
+        slice::from_raw_parts(ptr, len)
+    } else {
+        &[]
+    }
+}
+/// Helper function for handling C strings, please do not copy it or make it pub or change it
+unsafe fn c_array_to_slice<'a>(ptr: *const *const u8) -> &'a [*const u8] {
+    if ptr > 0 as *const *const u8 {
+        let mut len = 0;
+        while ptr::read(ptr.offset(len as isize)) > 0 as *const u8 {
+            len += 1;
+        }
+
+        slice::from_raw_parts(ptr, len)
+    } else {
+        &[]
+    }
+}
+
+pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
+    let bytes = slice::from_raw_parts(ptr, len);
+
     let reenable = scheduler::start_no_ints();
 
     if ::console as usize > 0 {
-        (*::console).write(byte);
+        (*::console).write(bytes);
     }
 
     let serial_status = Pio8::new(0x3F8 + 5);
     let mut serial_data = Pio8::new(0x3F8);
 
-    while serial_status.read() & 0x20 == 0 {}
-    serial_data.write(byte);
-
-    if byte == 8 {
+    for byte in bytes.iter() {
         while serial_status.read() & 0x20 == 0 {}
-        serial_data.write(0x20);
+        serial_data.write(*byte);
 
-        while serial_status.read() & 0x20 == 0 {}
-        serial_data.write(8);
+        if *byte == 8 {
+            while serial_status.read() & 0x20 == 0 {}
+            serial_data.write(0x20);
+
+            while serial_status.read() & 0x20 == 0 {}
+            serial_data.write(8);
+        }
     }
 
     scheduler::end_no_ints(reenable);
@@ -88,18 +119,13 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 }
 
 pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
-    let mut len = 0;
-    while *path.offset(len as isize) > 0 {
-        len += 1;
-    }
-
     let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
         *current.cwd.get() =
-            current.canonicalize(&str::from_utf8_unchecked(&slice::from_raw_parts(path, len)));
+            current.canonicalize(&str::from_utf8_unchecked(&c_string_to_slice(path)));
         ret = 0;
     }
 
@@ -242,26 +268,27 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
 }
 
 // TODO: Make sure this does not return (it should be called from a clone)
-pub unsafe fn do_sys_execve(path: *const u8) -> usize {
+pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut ret = usize::MAX;
-
-    let mut len = 0;
-    while *path.offset(len as isize) > 0 {
-        len += 1;
-    }
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
         let path_string =
-            current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         let path = Url::from_string(path_string.clone());
         let wd = Url::from_string(path_string.get_slice(None,
                                                         Some(path_string.rfind('/').unwrap_or(0) +
                                                              1))
                                              .to_string());
-        execute(&path, &wd, Vec::new());
+
+        let mut args_vec = Vec::new();
+        for arg in c_array_to_slice(args) {
+            args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
+        }
+
+        execute(&path, &wd, args_vec);
         ret = 0;
     }
 
@@ -377,6 +404,14 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_mkdir(path: *const u8, mode: usize) -> usize {
+    let mut ret = usize::MAX;
+
+    // Implement body of do_sys_mkdir
+
+    ret
+}
+
 pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
     if req as usize > 0 {
         Duration::new((*req).tv_sec, (*req).tv_nsec).sleep();
@@ -393,18 +428,13 @@ pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usiz
 }
 
 pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
-    let mut len = 0;
-    while *path.offset(len as isize) > 0 {
-        len += 1;
-    }
-
     let mut fd = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
         let path_string =
-            current.canonicalize(str::from_utf8_unchecked(slice::from_raw_parts(path, len)));
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         scheduler::end_no_ints(reenable);
 
@@ -449,7 +479,13 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     ret
 }
 
-// TODO: unlink
+pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
+    let mut ret = usize::MAX;
+
+    // Implement body of do_sys_mkdir
+
+    ret
+}
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let mut ret = usize::MAX;
@@ -473,9 +509,96 @@ pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_alloc(size: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        let physical_address = memory::alloc(size);
+        if physical_address > 0 {
+            ret = current.next_mem();
+            (*current.memory.get()).push(ContextMemory {
+                physical_address: physical_address,
+                virtual_address: ret,
+                virtual_size: size,
+                writeable: true
+            });
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        if let Some(mut mem) = current.get_mem_mut(ptr) {
+            let physical_address = memory::realloc(mem.physical_address, size);
+            if physical_address > 0 {
+                mem.physical_address = physical_address;
+                mem.virtual_size = size;
+                ret = mem.virtual_address;
+            } else {
+                mem.virtual_size = 0;
+            }
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
+    let mut ret = 0;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        if let Some(mut mem) = current.get_mem_mut(ptr) {
+            mem.virtual_size = memory::realloc_inplace(mem.physical_address, size);
+            ret = mem.virtual_size;
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_unalloc(ptr: usize) {
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        current.unmap();
+        if let Some(mut mem) = current.get_mem_mut(ptr) {
+            mem.virtual_size = 0;
+        }
+        current.clean_mem();
+        current.map();
+    }
+
+    scheduler::end_no_ints(reenable);
+}
+
 pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
     match regs.ax {
-        SYS_DEBUG => do_sys_debug(regs.bx as u8),
+        SYS_DEBUG => do_sys_debug(regs.bx as *const u8, regs.cx),
         // Linux
         SYS_BRK => regs.ax = do_sys_brk(regs.bx),
         SYS_CHDIR => regs.ax = do_sys_chdir(regs.bx as *const u8),
@@ -483,7 +606,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
-        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8),
+        SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
         SYS_EXIT => context_exit(),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         // TODO: fstat
@@ -491,19 +614,20 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_FTRUNCATE => regs.ax = do_sys_ftruncate(regs.bx, regs.cx),
         // TODO: link
         SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
+        SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
         SYS_NANOSLEEP =>
             regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
-        // TODO: unlink
+        SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *const u8),
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_YIELD => context_switch(false),
 
         // Rust Memory
-        SYS_ALLOC => regs.ax = memory::alloc(regs.bx),
-        SYS_REALLOC => regs.ax = memory::realloc(regs.bx, regs.cx),
-        SYS_REALLOC_INPLACE => regs.ax = memory::realloc_inplace(regs.bx, regs.cx),
-        SYS_UNALLOC => memory::unalloc(regs.bx),
+        SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),
+        SYS_REALLOC => regs.ax = do_sys_realloc(regs.bx, regs.cx),
+        SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
+        SYS_UNALLOC => do_sys_unalloc(regs.bx),
 
         _ => return false,
     }

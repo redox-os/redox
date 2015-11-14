@@ -7,6 +7,8 @@ pub enum Data {
     File(File),
     /// Directory
     Dir(Dir),
+    /// Nothing
+    Nil,
 }
 
 impl Data {
@@ -14,6 +16,7 @@ impl Data {
         match self {
             &Data::File(ref f) => &f.name,
             &Data::Dir(ref d) => &d.name,
+            &Data::Nil => "\0",
         }
     }
 }
@@ -46,7 +49,7 @@ pub struct Dir {
     /// The name of the directory
     name: String,
     /// The table of the directory
-    data: Vec<u8>,
+    nodes: Vec<DataPtr>,
 }
 
 impl Dir {
@@ -60,11 +63,11 @@ impl Dir {
             n += 256;
         }
 
-        let data = b[n..].to_vec();
+        let nodes = b[n..].to_vec().iter().splitn(16).map(|x| DataPtr::from_bytes(x)).collect();
 
         Dir {
             name: name,
-            data: data,
+            nodes: nodes,
         }
     }
 

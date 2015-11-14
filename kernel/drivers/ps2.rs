@@ -8,6 +8,8 @@ use drivers::pio::*;
 
 use schemes::KScheme;
 
+use drivers::kb_layouts::layouts;
+
 /// PS2
 pub struct Ps2 {
     /// The data
@@ -30,6 +32,9 @@ pub struct Ps2 {
     mouse_x: isize,
     /// Mouse point y
     mouse_y: isize,
+    /// Layout for keyboard
+    /// Default: English
+    layout: layouts::Layout,
 }
 
 impl Ps2 {
@@ -46,6 +51,7 @@ impl Ps2 {
             mouse_i: 0,
             mouse_x: 0,
             mouse_y: 0,
+            layout: layouts::Layout::ENGLISH,
         };
 
         unsafe {
@@ -142,7 +148,7 @@ impl Ps2 {
         }
 
         return Some(KeyEvent {
-            character: char_for_scancode(scancode & 0x7F, shift),
+            character: layouts::char_for_scancode(scancode & 0x7F, shift, &self.layout),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
         });
@@ -237,6 +243,16 @@ impl Ps2 {
 
         return None;
     }
+
+    /// Function to change the layout of the keyboard
+    pub fn change_layout(&mut self, layout: usize) {
+        self.layout =
+            match layout {
+                0 => layouts::Layout::ENGLISH,
+                1 => layouts::Layout::FRENCH,
+                _ => layouts::Layout::ENGLISH
+            }
+    }
 }
 
 impl KScheme for Ps2 {
@@ -263,74 +279,3 @@ impl KScheme for Ps2 {
         }
     }
 }
-
-fn char_for_scancode(scancode: u8, shift: bool) -> char {
-    let mut character = '\x00';
-    if scancode < 58 {
-        if shift {
-            character = SCANCODES[scancode as usize][1];
-        } else {
-            character = SCANCODES[scancode as usize][0];
-        }
-    }
-    character
-}
-
-static SCANCODES: [[char; 2]; 58] = [['\0', '\0'],
-                                     ['\x1B', '\x1B'],
-                                     ['1', '!'],
-                                     ['2', '@'],
-                                     ['3', '#'],
-                                     ['4', '$'],
-                                     ['5', '%'],
-                                     ['6', '^'],
-                                     ['7', '&'],
-                                     ['8', '*'],
-                                     ['9', '('],
-                                     ['0', ')'],
-                                     ['-', '_'],
-                                     ['=', '+'],
-                                     ['\0', '\0'],
-                                     ['\t', '\t'],
-                                     ['q', 'Q'],
-                                     ['w', 'W'],
-                                     ['e', 'E'],
-                                     ['r', 'R'],
-                                     ['t', 'T'],
-                                     ['y', 'Y'],
-                                     ['u', 'U'],
-                                     ['i', 'I'],
-                                     ['o', 'O'],
-                                     ['p', 'P'],
-                                     ['[', '{'],
-                                     [']', '}'],
-                                     ['\n', '\n'],
-                                     ['\0', '\0'],
-                                     ['a', 'A'],
-                                     ['s', 'S'],
-                                     ['d', 'D'],
-                                     ['f', 'F'],
-                                     ['g', 'G'],
-                                     ['h', 'H'],
-                                     ['j', 'J'],
-                                     ['k', 'K'],
-                                     ['l', 'L'],
-                                     [';', ':'],
-                                     ['\'', '"'],
-                                     ['`', '~'],
-                                     ['\0', '\0'],
-                                     ['\\', '|'],
-                                     ['z', 'Z'],
-                                     ['x', 'X'],
-                                     ['c', 'C'],
-                                     ['v', 'V'],
-                                     ['b', 'B'],
-                                     ['n', 'N'],
-                                     ['m', 'M'],
-                                     [',', '<'],
-                                     ['.', '>'],
-                                     ['/', '?'],
-                                     ['\0', '\0'],
-                                     ['\0', '\0'],
-                                     ['\0', '\0'],
-                                     [' ', ' ']];

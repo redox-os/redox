@@ -4,6 +4,7 @@
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
+#![feature(const_fn)]
 #![feature(core_intrinsics)]
 #![feature(core_simd)]
 #![feature(core_str_ext)]
@@ -73,13 +74,13 @@ use schemes::memory::*;
 
 use syscall::handle::*;
 
+/// Common std-like functionality
+#[macro_use]
+pub mod common;
 /// Allocation
 pub mod alloc_system;
 /// Audio
 pub mod audio;
-/// Common std-like functionality
-#[macro_use]
-pub mod common;
 /// Various drivers
 /// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
@@ -203,7 +204,7 @@ unsafe fn event_loop() -> ! {
                                             '\0' => (),
                                             '\n' => {
                                                 let reenable = scheduler::start_no_ints();
-                                                (*console).command = cmd.clone() + "\n";
+                                                (*console).command = Some(cmd.clone());
                                                 scheduler::end_no_ints(reenable);
 
                                                 cmd.clear();
@@ -347,10 +348,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                        IcmpScheme::reply_loop();
                    });
 
-    // debugln!("Enabling context switching");
-    // (*console).draw = false;
     context_enabled = true;
 
+    //TODO: Run schemes in contexts
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -369,7 +369,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     }
 
     {
-        let path_string = "file:/apps/terminal/terminal.bin";
+        let path_string = "file:/apps/terminal/main.bin";
         let path = Url::from_string(path_string.to_string());
         let wd = Url::from_string(path_string.get_slice(None,
                                                         Some(path_string.rfind('/').unwrap_or(0) +
@@ -393,34 +393,23 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
 
             debugln!("  INT {:X}: {}", interrupt, $name);
-            debugln!("    CS:    {:X}", regs.cs);
-            debugln!("    IP:    {:X}", regs.ip);
-            debugln!("    FLG:   {:X}", regs.flags);
-            debugln!("    SS:    {:X}", regs.ss);
-            debugln!("    SP:    {:X}", regs.sp);
-            debugln!("    BP:    {:X}", regs.bp);
-            debugln!("    AX:    {:X}", regs.ax);
-            debugln!("    BX:    {:X}", regs.bx);
-            debugln!("    CX:    {:X}", regs.cx);
-            debugln!("    DX:    {:X}", regs.dx);
-            debugln!("    DI:    {:X}", regs.di);
-            debugln!("    SI:    {:X}", regs.si);
+            debugln!("    CS:  {:08X}    IP:  {:08X}    FLG: {:08X}", regs.cs, regs.ip, regs.flags);
+            debugln!("    SS:  {:08X}    SP:  {:08X}    BP:  {:08X}", regs.ss, regs.sp, regs.bp);
+            debugln!("    AX:  {:08X}    BX:  {:08X}    CX:  {:08X}    DX:  {:08X}", regs.ax, regs.bx, regs.cx, regs.dx);
+            debugln!("    DI:  {:08X}    SI:  {:08X}", regs.di, regs.di);
 
             let cr0: usize;
             asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-            debugln!("    CR0:   {:X}", cr0);
 
             let cr2: usize;
             asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-            debugln!("    CR2:   {:X}", cr2);
 
             let cr3: usize;
             asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-            debugln!("    CR3:   {:X}", cr3);
 
             let cr4: usize;
             asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
-            debugln!("    CR4:   {:X}", cr4);
+            debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
         })
     };
 
@@ -445,7 +434,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             //regs.ss = regs.error;
 
             exception_inner!($name);
-            debugln!("    ERR:   {:X}", error);
+            debugln!("    ERR: {:08X}", error);
 
             loop {
                 context_exit();

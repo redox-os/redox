@@ -10,19 +10,14 @@ pub fn main() {
         None => "none://",
     };
 
-    let mut vec: Vec<u8> = Vec::new();
-    if let Some(mut file) = File::open(&url) {
-        file.read_to_end(&mut vec);
-    }
-
-    let bmp = BmpFile::from_data(&vec);
+    let bmp = BmpFile::from_path(url);
     let mut window = Window::new(-1,
                                  -1,
                                  max(320, bmp.width()),
                                  bmp.height(),
                                  &("Viewer (".to_string() + &url + ")")).unwrap();
     window.set(Color::BLACK);
-    window.image(0, 0, bmp.width(), bmp.height(), bmp.as_slice());
+    window.image(0, 0, bmp.width(), bmp.height(), &bmp);
     window.sync();
 
     while let Some(event) = window.poll() {

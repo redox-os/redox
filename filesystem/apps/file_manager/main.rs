@@ -119,11 +119,8 @@ pub struct FileManager {
 }
 
 fn load_icon(path: &str) -> BmpFile {
-    let mut vec: Vec<u8> = Vec::new();
-    if let Some(mut file) = File::open(&("file:///ui/mimetypes/".to_string() + path + ".bmp")) {
-        file.read_to_end(&mut vec);
-    }
-    BmpFile::from_data(&vec)
+    let full_path = "file:///ui/mimetypes/".to_string() + path + ".bmp";
+    BmpFile::from_path(&full_path)
 }
 
 impl FileManager {
@@ -151,7 +148,7 @@ impl FileManager {
         let mut i = 0;
         let mut row = 0;
         let column = {
-            let mut tmp = [0, 0];
+            let mut tmp = [0; 2];
             for string in self.files.iter() {
                 if tmp[0] < string.len() {
                     tmp[0] = string.len();
@@ -180,7 +177,7 @@ impl FileManager {
                               32 * row as isize,
                               icon.width(),
                               icon.height(),
-                              icon.as_slice());
+                              &icon);
 
             let mut col = 0;
             for c in file_name.chars() {
@@ -258,28 +255,46 @@ impl FileManager {
         self.window.sync();
     }
 
+    // TODO: would this make more sense in the fs module?
+    fn get_parent_directory() -> Option<String> {
+        match File::open("../") {
+            Some(parent_dir) => parent_dir.path(),
+            None => None,
+        }
+    }
+
+    fn get_num_entries(path: &str) -> String {
+        let count = match fs::read_dir(path) {
+            Some(entry_readdir) => entry_readdir.count(),
+            None => 0,
+        };
+        if count == 1 {
+            "1 entry".to_string()
+        } else {
+            format!("{} entries", count)
+        }
+    }
+
     fn set_path(&mut self, path: &str) {
-        let mut width = [48, 48, 48];
+        let mut width = [48; 3];
         let mut height = 0;
+        fs::change_cwd(path);
         if let Some(readdir) = fs::read_dir(path) {
             self.files.clear();
+            self.file_sizes.clear();
+            // check to see if parent directory exists
+            if let Some(parent_dir) = FileManager::get_parent_directory() {
+                self.files.push("../".to_string());
+                self.file_sizes.push(FileManager::get_num_entries(&parent_dir));
+            }
             for entry in readdir {
                 self.files.push(entry.path().to_string());
                 self.file_sizes.push(
                     // When the entry is a folder
                     if entry.path().ends_with('/') {
-                        let count = match fs::read_dir(&(path.to_string() + entry.path())) {
-                            Some(entry_readdir) => entry_readdir.count(),
-                            None => 0
-                        };
-
-                        if count == 1 {
-                            "1 entry".to_string()
-                        } else {
-                            format!("{} entries", count)
-                        }
+                        FileManager::get_num_entries(&(path.to_string() + entry.path()))
                     } else {
-                        match File::open(&(path.to_string() + entry.path())) {
+                        match File::open(&entry.path()) {
                             Some(mut file) => match file.seek(SeekFrom::End(0)) {
                                 Some(size) => {
                                     if size >= 1_000_000_000 {
@@ -444,10 +459,19 @@ impl FileManager {
             if let Some(event) = self.event_loop() {
                 match event {
                     FileManagerCommand::ChangeDir(dir) => {
-                        current_path = current_path + &dir;
+                        if dir == "../" {
+                            if let Some(parent_dir) = FileManager::get_parent_directory() {
+                                current_path = parent_dir;
+                            }
+                        } else {
+                            current_path = current_path + &dir;
+                        }
                         self.set_path(&current_path);
                     },
-                    FileManagerCommand::Execute(cmd) => { File::exec(&(current_path.clone() + &cmd)); } ,
+                    FileManagerCommand::Execute(cmd) => {
+                        //TODO: What is the best way to request a launch?
+                        File::open(&("orbital://launch/".to_string() + &current_path + &cmd));
+                    } ,
                     FileManagerCommand::Redraw => (),
                     FileManagerCommand::Quit => break,
                 };

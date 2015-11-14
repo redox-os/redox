@@ -6,7 +6,7 @@ use syscall::handle::do_sys_debug;
 #[macro_export]
 macro_rules! debug {
     ($($arg:tt)*) => ({
-        $crate::common::debug::debug(format!($($arg)*));
+        $crate::common::debug::d(&format!($($arg)*));
     });
 }
 
@@ -19,18 +19,15 @@ macro_rules! debugln {
     });
 }
 
-pub fn debug<T: AsRef<str>>(msg: T) {
-    for b in msg.as_ref().bytes() {
-        unsafe {
-            do_sys_debug(b);
-        }
+pub fn d(msg: &str) {
+    unsafe {
+        do_sys_debug(msg.as_ptr(), msg.len());
     }
 }
 
-/// Set debug level
 pub fn db(byte: u8) {
     unsafe {
-        do_sys_debug(byte);
+        do_sys_debug(&byte, 1);
     }
 }
 
@@ -85,10 +82,4 @@ pub fn dc(character: char) {
 
 pub fn dl() {
     dc('\n');
-}
-
-pub fn d(text: &str) {
-    for character in text.chars() {
-        dc(character);
-    }
 }

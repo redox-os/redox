@@ -110,7 +110,7 @@ fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
     let mode = editor.cursor().mode;
 
     for (n, c) in (if text.len() > w / (8 * b) {
-        text.chars().take(w / (8 * b) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
+        text.chars().take(w / (8 * b) - 5).chain(vec!['.'; 3]).collect::<Vec<_>>()
     } else {
         text.chars().collect()
     }).into_iter().enumerate() {

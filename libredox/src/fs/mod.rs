@@ -5,7 +5,7 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir};
+use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir, sys_mkdir};
 use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
@@ -15,9 +15,22 @@ pub struct File {
 }
 
 impl File {
-    pub fn exec(path: &str) -> bool {
+    pub fn exec(path: &str, args: &[&str]) -> bool {
+        let path_c = path.to_string() + "\0";
+
+        let mut args_vec: Vec<String> = Vec::new();
+        for arg in args.iter() {
+            args_vec.push(arg.to_string() + "\0");
+        }
+
+        let mut args_c: Vec<*const u8> = Vec::new();
+        for arg_vec in args_vec.iter() {
+            args_c.push(arg_vec.as_ptr());
+        }
+        args_c.push(0 as *const u8);
+
         unsafe {
-            sys_execve((path.to_string() + "\0").as_ptr()) == 0
+            sys_execve(path_c.as_ptr(), args_c.as_ptr()) == 0
         }
     }
 
@@ -130,7 +143,6 @@ impl Seek for File {
     }
 }
 
-
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
@@ -147,6 +159,22 @@ impl DirEntry {
     pub fn path(&self) -> &str {
         &self.path
     }
+
+    /// Create a new directory, using a path
+    /// The default mode of the directory is 744
+    pub fn create(path: &str) -> Option<DirEntry> {
+        unsafe {
+            let dir = sys_mkdir((path.to_string() + "\0").as_ptr(), 744);
+            if dir == usize::MAX {
+                None
+            } else {
+                Some(DirEntry {
+                    path: path.to_string()
+                })
+            }
+        }
+    }
+
 }
 
 pub struct ReadDir {
