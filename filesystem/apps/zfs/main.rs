@@ -13,6 +13,7 @@ use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
 
 pub mod arcache;
+pub mod avl;
 pub mod block_ptr;
 pub mod dnode;
 pub mod dsl_dataset;
@@ -41,15 +42,19 @@ impl ZfsReader {
         match block_ptr.compression() {
             2 => {
                 // compression off
-                Ok(data)
+                data
             },
             1 | 3 => {
                 // lzjb compression
                 let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
-                lzjb::decompress(&data, &mut decompressed);
+                lzjb::decompress(& match data {
+                                     Ok(data) => data,
+                                     Err(e) => return Err(e),
+                                 },
+                                 &mut decompressed);
                 Ok(decompressed)
             },
-            _ => Err("Error: not enough bytes".to_string()),
+            u => Err(format!("Error: Unknown compression type {}", u)),
         }
     }
 
@@ -63,9 +68,13 @@ impl ZfsReader {
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
-    pub fn uber(&mut self) -> Result<Uberblock, String> {
+    pub fn uber(&mut self, uberblocks: &[u8]) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
+            /*let ub_len = 2*512;
+            let ub_start = i * ub_len;
+            let ub_end = ub_start + ub_len;
+            if let Ok(uberblock) = Uberblock::from_bytes(&uberblocks[ub_start..ub_end]) {*/
             if let Ok(uberblock) = Uberblock::from_bytes(&self.zio.read(256 + i * 2, 2)) {
                 let newest =
                     match newest_uberblock {
@@ -113,7 +122,29 @@ impl Zfs {
     pub fn new(disk: File) -> Result<Self, String> {
         let mut zfs_reader = ZfsReader { zio: zio::Reader { disk: disk }, arc: ArCache::new() };
 
-        let uberblock = try!(zfs_reader.uber());
+        // Read vdev label
+        let vdev_label = try!(VdevLabel::from_bytes(&zfs_reader.zio.read(0, 256 * 2)));
+        //let mut xdr = xdr::MemOps::new(&mut vdev_label.nv_pairs);
+        //let nv_list = try!(nvstream::decode_nv_list(&mut xdr).map_err(|e| format!("{:?}", e)));
+        /*let vdev_tree =
+            match nv_list.find("vdev_tree") {
+                Some(vdev_tree) => {
+                    vdev_tree
+                },
+                None => {
+                    return Err("No vdev_tree in vdev label nvpairs".to_string());
+                },
+            };
+
+        let vdev_tree =
+            if let NvValue::NvList(ref vdev_tree) = *vdev_tree {
+                vdev_tree
+            } else {
+                return Err("vdev_tree is not NvValue::NvList".to_string());
+            };*/
+
+        // Get the active uberblock
+        let uberblock = try!(zfs_reader.uber(&vdev_label.uberblocks));
 
         //let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = try!(zfs_reader.read_type(&uberblock.rootbp));
@@ -122,8 +153,8 @@ impl Zfs {
         // 2nd dnode in MOS points at the root dataset zap
         let dnode1: DNodePhys = try!(zfs_reader.read_type_array(&mos_block_ptr1, 1));
 
-        let thing = dnode1.get_blockptr(0);
-        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(thing));
+        let root_ds_dnode= dnode1.get_blockptr(0);
+        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(root_ds_dnode));
 
         let root_ds_dnode: DNodePhys =
             try!(zfs_reader.read_type_array(&mos_block_ptr1, root_ds.chunks[0].value as usize));
@@ -385,11 +416,16 @@ pub fn main() {
                                                     let sm_dnode: Result<DNodePhys, String> =
                                                         zfs.reader.read_type_array(zfs.mos.meta_dnode.get_blockptr(0), sm_id as usize);
                                                     let sm_dnode = sm_dnode.unwrap(); // TODO
-                                                    let space_map = SpaceMapPhys::from_bytes(sm_dnode.get_bonus()).unwrap(); // TODO
+                                                    let space_map_phys = SpaceMapPhys::from_bytes(sm_dnode.get_bonus()).unwrap(); // TODO
+                                                    let space_map: Result<Vec<u8>, String> = zfs.reader
+                                                                                                .read_block(sm_dnode.get_blockptr(0));
 
                                                     println!("got space map id: {:?}", sm_id);
                                                     println!("got space map dnode: {:?}", sm_dnode);
-                                                    println!("got space map: {:?}", space_map);
+                                                    println!("got space map phys: {:?}", space_map_phys);
+                                                    //println!("got space map: {:?}", &space_map.unwrap()[0..64]);
+
+                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 15 }, &space_map.unwrap());
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue type. Expected Uint64.");
                                                 }
@@ -504,8 +540,13 @@ pub fn main() {
                             Some(arg) => {
                                 match File::open(arg) {
                                     Some(file) => {
-                                        println!("Open: {}", arg);
-                                        zfs_option = Zfs::new(file).ok();
+                                        let zfs = Zfs::new(file);
+                                        if let Err(ref e) = zfs {
+                                            println!("Error: {:?}", e);
+                                        } else {
+                                            println!("Open: {}", arg);
+                                        }
+                                        zfs_option = zfs.ok();
                                     },
                                     None => println!("File not found!"),
                                 }
