@@ -2,14 +2,18 @@ static mut seed: u64 = 19940046431; //259261034506304368955239; //17063221447146
 
 /// Generate pseudo random number
 pub fn rand() -> usize {
-    seed ^= seed << 12;
-    seed ^= seed << 25;
-    seed ^= seed << 27;
-    seed = seed * 82724793451 + 12345;
-    seed as usize % ::core::usize::MAX
+    unsafe {
+        seed ^= seed << 12;
+        seed ^= seed << 25;
+        seed ^= seed << 27;
+        seed = seed * 82724793451 + 12345;
+        seed as usize % ::core::usize::MAX
+    }
 }
 
-/// Generate pseudo random number via seed
+/// Set the seed
 pub fn srand(s: usize) {
-    seed = s as u64;
+    unsafe {
+        seed = s as u64;
+    }
 }
