@@ -538,9 +538,9 @@ pub fn main() {
                                     Some(file) => {
                                         let zfs = Zfs::new(file);
                                         if let Err(ref e) = zfs {
-                                            println_color!(red, "Error: {:?}", e);
+                                            println!("Error: {:?}", e);
                                         } else {
-                                            println_color!(green, "Open: {}", arg);
+                                            println!("Open: {}", arg);
                                         }
                                         zfs_option = zfs.ok();
                                     },

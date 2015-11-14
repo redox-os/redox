@@ -1,5 +1,3 @@
-use redox::*;
-
 use super::from_bytes::FromBytes;
 
 const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
