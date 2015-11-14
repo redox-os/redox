@@ -8,6 +8,7 @@ use redox::io::*;
 use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
+use redox::hashmap::HashMap;
 
 /* Magic Macros { */
 static mut application: *mut Application<'static> = 0 as *mut Application;
