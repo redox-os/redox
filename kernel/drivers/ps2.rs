@@ -1,10 +1,14 @@
 use alloc::boxed::Box;
 
+use core::cmp;
+
 use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
 
 use schemes::KScheme;
+
+use drivers::kb_layouts::layouts;
 
 /// PS2
 pub struct Ps2 {
@@ -22,8 +26,15 @@ pub struct Ps2 {
     caps_lock_toggle: bool,
     /// The mouse packet
     mouse_packet: [u8; 4],
-    /// Mouse
+    /// Mouse packet index
     mouse_i: usize,
+    /// Mouse point x
+    mouse_x: isize,
+    /// Mouse point y
+    mouse_y: isize,
+    /// Layout for keyboard
+    /// Default: English
+    layout: layouts::Layout,
 }
 
 impl Ps2 {
@@ -38,6 +49,9 @@ impl Ps2 {
             caps_lock_toggle: false,
             mouse_packet: [0; 4],
             mouse_i: 0,
+            mouse_x: 0,
+            mouse_y: 0,
+            layout: layouts::Layout::ENGLISH,
         };
 
         unsafe {
@@ -70,7 +84,7 @@ impl Ps2 {
         self.wait1();
         self.data.write(flags);
 
-        //Set Defaults
+        // Set Defaults
         self.wait1();
         self.data.write(0xF6);
         self.wait0();
@@ -87,7 +101,7 @@ impl Ps2 {
         self.wait0();
         self.data.read();
 
-        //Set Scancode Map:
+        // Set Scancode Map:
         self.wait1();
         self.data.write(0xF0);
         self.wait0();
@@ -134,7 +148,7 @@ impl Ps2 {
         }
 
         return Some(KeyEvent {
-            character: char_for_scancode(scancode & 0x7F, shift),
+            character: layouts::char_for_scancode(scancode & 0x7F, shift, &self.layout),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
         });
@@ -152,7 +166,7 @@ impl Ps2 {
 
     /// Initialize mouse
     pub unsafe fn mouse_init(&mut self) {
-        //The Init Dance
+        // The Init Dance
         self.wait1();
         self.cmd.write(0xA8);
 
@@ -165,10 +179,10 @@ impl Ps2 {
         self.wait1();
         self.data.write(status);
 
-        //Set defaults
+        // Set defaults
         self.mouse_cmd(0xF6);
 
-        //Enable Streaming
+        // Enable Streaming
         self.mouse_cmd(0xF4);
     }
 
@@ -207,11 +221,20 @@ impl Ps2 {
                 y = 0;
             }
 
+            unsafe {
+                self.mouse_x = cmp::max(0,
+                                        cmp::min((*::console).display.width as isize,
+                                                 self.mouse_x + x));
+                self.mouse_y = cmp::max(0,
+                                        cmp::min((*::console).display.height as isize,
+                                                 self.mouse_y + y));
+            }
+
             self.mouse_i = 0;
 
             return Some(MouseEvent {
-                x: x,
-                y: y,
+                x: self.mouse_x,
+                y: self.mouse_y,
                 left_button: left_button,
                 right_button: right_button,
                 middle_button: middle_button,
@@ -219,6 +242,16 @@ impl Ps2 {
         }
 
         return None;
+    }
+
+    /// Function to change the layout of the keyboard
+    pub fn change_layout(&mut self, layout: usize) {
+        self.layout =
+            match layout {
+                0 => layouts::Layout::ENGLISH,
+                1 => layouts::Layout::FRENCH,
+                _ => layouts::Layout::ENGLISH
+            }
     }
 }
 
@@ -246,74 +279,3 @@ impl KScheme for Ps2 {
         }
     }
 }
-
-fn char_for_scancode(scancode: u8, shift: bool) -> char {
-    let mut character = '\x00';
-    if scancode < 58 {
-        if shift {
-            character = SCANCODES[scancode as usize][1];
-        } else {
-            character = SCANCODES[scancode as usize][0];
-        }
-    }
-    character
-}
-
-static SCANCODES: [[char; 2]; 58]= [['\0', '\0'],
- ['\x1B', '\x1B'],
- ['1', '!'],
- ['2', '@'],
- ['3', '#'],
- ['4', '$'],
- ['5', '%'],
- ['6', '^'],
- ['7', '&'],
- ['8', '*'],
- ['9', '('],
- ['0', ')'],
- ['-', '_'],
- ['=', '+'],
- ['\0', '\0'],
- ['\t', '\t'],
- ['q', 'Q'],
- ['w', 'W'],
- ['e', 'E'],
- ['r', 'R'],
- ['t', 'T'],
- ['y', 'Y'],
- ['u', 'U'],
- ['i', 'I'],
- ['o', 'O'],
- ['p', 'P'],
- ['[', '{'],
- [']', '}'],
- ['\n', '\n'],
- ['\0', '\0'],
- ['a', 'A'],
- ['s', 'S'],
- ['d', 'D'],
- ['f', 'F'],
- ['g', 'G'],
- ['h', 'H'],
- ['j', 'J'],
- ['k', 'K'],
- ['l', 'L'],
- [';', ':'],
- ['\'', '"'],
- ['`', '~'],
- ['\0', '\0'],
- ['\\', '|'],
- ['z', 'Z'],
- ['x', 'X'],
- ['c', 'C'],
- ['v', 'V'],
- ['b', 'B'],
- ['n', 'N'],
- ['m', 'M'],
- [',', '<'],
- ['.', '>'],
- ['/', '?'],
- ['\0', '\0'],
- ['\0', '\0'],
- ['\0', '\0'],
- [' ', ' ']];

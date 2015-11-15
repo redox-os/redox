@@ -1,6 +1,6 @@
 pub const SYS_DEBUG: usize = 0;
 
-//Linux compatible
+// Linux compatible
 pub const SYS_BRK: usize = 45;
 pub const SYS_CHDIR: usize = 12;
 pub const SYS_CLOSE: usize = 6;
@@ -23,6 +23,7 @@ pub const SYS_LSEEK: usize = 19;
     pub const SEEK_SET: usize = 0;
     pub const SEEK_CUR: usize = 1;
     pub const SEEK_END: usize = 2;
+pub const SYS_MKDIR: usize = 39;
 pub const SYS_NANOSLEEP: usize = 162;
 pub const SYS_OPEN: usize = 5;
     pub const O_RDONLY: usize = 0;
@@ -42,53 +43,13 @@ pub const SYS_UNLINK: usize = 10;
 pub const SYS_WRITE: usize = 4;
 pub const SYS_YIELD: usize = 158;
 
-//Rust Memory
+// Rust Memory
 pub const SYS_ALLOC: usize = 1000;
 pub const SYS_REALLOC: usize = 1001;
 pub const SYS_REALLOC_INPLACE: usize = 1002;
 pub const SYS_UNALLOC: usize = 1003;
 
-//Structures
-
-#[cfg(target_arch = "x86")]
-#[derive(Copy, Clone, Default)]
-pub struct Regs {
-    pub ax: usize,
-    pub bx: usize,
-    pub cx: usize,
-    pub dx: usize,
-    pub di: usize,
-    pub si: usize,
-    pub bp: usize,
-    pub sp: usize,
-    pub ip: usize,
-    pub flags: usize,
-    pub error: usize
-}
-
-#[cfg(target_arch = "x86_64")]
-#[derive(Copy, Clone, Default)]
-pub struct Regs {
-    pub ax: usize,
-    pub bx: usize,
-    pub cx: usize,
-    pub dx: usize,
-    pub di: usize,
-    pub si: usize,
-    pub r8: usize,
-    pub r9: usize,
-    pub r10: usize,
-    pub r11: usize,
-    pub r12: usize,
-    pub r13: usize,
-    pub r14: usize,
-    pub r15: usize,
-    pub bp: usize,
-    pub sp: usize,
-    pub ip: usize,
-    pub flags: usize,
-    pub error: usize
-}
+// Structures
 
 #[repr(packed)]
 pub struct TimeSpec {

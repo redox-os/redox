@@ -1,16 +1,16 @@
 use core::ptr;
 
-/*
-PAGE_LEVEL_4:
-    512 qwords pointing to page directory pointers
-PAGE_DIR_PTRS:
-    512 qwords pointing to page directories
-PAGE_DIRECTORIES:
-    512 qwords pointing to page tables
-PAGE_TABLES:
-    512 * 512 qwords pointing to pages
-PAGE_END:
-*/
+//
+// PAGE_LEVEL_4:
+// 512 qwords pointing to page directory pointers
+// PAGE_DIR_PTRS:
+// 512 qwords pointing to page directories
+// PAGE_DIRECTORIES:
+// 512 qwords pointing to page tables
+// PAGE_TABLES:
+// 512 * 512 qwords pointing to pages
+// PAGE_END:
+//
 
 pub const PAGE_TABLE_SIZE: usize = 512;
 pub const PAGE_ENTRY_SIZE: usize = 8;
@@ -34,7 +34,8 @@ impl Page {
         for l4_i in 0..PAGE_TABLE_SIZE {
             if l4_i == 0 {
                 ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64,
-                        (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
+                           (PAGE_DIR_PTRS + l4_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 |
+                           1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
             } else {
                 ptr::write((PAGE_LEVEL_4 + l4_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
             }
@@ -43,7 +44,9 @@ impl Page {
         for dp_i in 0..PAGE_TABLE_SIZE {
             if dp_i < 4 {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64,
-                        (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
+                           (PAGE_DIRECTORIES + dp_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 |
+                           1 << 2 |
+                           0b11 << 1 | 1); //Allow userspace, read/write, present
             } else {
                 ptr::write((PAGE_DIR_PTRS + dp_i * PAGE_ENTRY_SIZE) as *mut u64, 0);
             }
@@ -51,11 +54,11 @@ impl Page {
 
         for table_i in 0..4 * PAGE_TABLE_SIZE {
             ptr::write((PAGE_DIRECTORIES + table_i * PAGE_ENTRY_SIZE) as *mut u64,
-                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 | 1 << 2 | 1);
+                       (PAGE_TABLES + table_i * PAGE_TABLE_SIZE * PAGE_ENTRY_SIZE) as u64 |
+                       1 << 2 | 0b11 << 1 | 1); //Allow userspace, read/write, present
 
             for entry_i in 0..PAGE_TABLE_SIZE {
-                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE)
-                    .map_identity();
+                Page::new((table_i * PAGE_TABLE_SIZE + entry_i) * PAGE_SIZE).map_identity();
             }
         }
 
@@ -94,18 +97,32 @@ impl Page {
 
     /// Get the current physical address
     pub fn phys_addr(&self) -> usize {
-        unsafe { (ptr::read(self.entry_address() as *mut u64) & 0xFFFFF000) as usize }
+        unsafe { (ptr::read(self.entry_address() as *mut u64) & 0xFFFFFFFFFFFFF000) as usize }
     }
 
     /// Get the current virtual address
     pub fn virt_addr(&self) -> usize {
-        self.virtual_address & 0xFFFFF000
+        self.virtual_address & 0xFFFFFFFFFFFFF000
     }
 
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u64,
-                   (physical_address as u64 & 0xFFFFF000) | 1);
+                   (physical_address as u64 & 0xFFFFFFFFFFFFF000) | 1); //present
+        self.flush();
+    }
+
+    /// Map the memory page to a given physical memory address and allow userspace read access
+    pub unsafe fn map_user_read(&mut self, physical_address: usize) {
+        ptr::write(self.entry_address() as *mut u64,
+                   (physical_address as u64 & 0xFFFFFFFFFFFFF000) | 1 << 2 | 1); //Allow userspace, present
+        self.flush();
+    }
+
+    /// Map the memory page to a given physical memory address and allow userspace read/write access
+    pub unsafe fn map_user_write(&mut self, physical_address: usize) {
+        ptr::write(self.entry_address() as *mut u64,
+                   (physical_address as u64 & 0xFFFFFFFFFFFFF000) | 1 << 2 | 1 << 1 | 1); //Allow userspace, read/write, present
         self.flush();
     }
 

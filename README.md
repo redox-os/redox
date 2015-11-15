@@ -4,12 +4,26 @@
 
 Docs can be found [here](http://ticki.github.io/redocs/redox/).
 
+Please make sure you use the **latest nightly** before the building.
+
 ## What it looks like
 
 ![Redox](img/screenshots/Desktop.png)
 ![Redox](img/screenshots/Fancy_opacity.png)
 ![Redox](img/screenshots/File_manager.png)
 ![Redox](img/screenshots/Boot.png)
+
+## Help! Redox won't compile!
+
+Sometimes things goes wrong when compiling. Try the following before opening an issue:
+
+1.  Run `make clean`.
+2.  Run `git clean -X -f -d`
+3.  Make sure you got **the latest version of Rust nightly!** (you can use `multirust` for managing Rust versions).
+4.  Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
+5.  Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
+
+and then rebuild!
 
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)

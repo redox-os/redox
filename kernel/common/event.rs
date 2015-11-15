@@ -1,4 +1,4 @@
-use core::{char, cmp};
+use core::char;
 
 use scheduler;
 
@@ -52,25 +52,10 @@ impl Event {
 
     /// Event trigger
     pub fn trigger(&self) {
-        let mut event = *self;
-
         unsafe {
             let reenable = scheduler::start_no_ints();
 
-            if event.code == 'm' {
-                event.a = cmp::max(0,
-                                   cmp::min((*::session_ptr).display.width as isize - 1,
-                                            (*::session_ptr).mouse_point.x + event.a));
-                event.b = cmp::max(0,
-                                   cmp::min((*::session_ptr).display.height as isize - 1,
-                                            (*::session_ptr).mouse_point.y + event.b));
-                (*::session_ptr).mouse_point.x = event.a;
-                (*::session_ptr).mouse_point.y = event.b;
-                (*::session_ptr).redraw = true;
-            }
-
-            //TODO: Dispatch to appropriate window
-            (*::events_ptr).push(event);
+            (*::events_ptr).push(*self);
 
             scheduler::end_no_ints(reenable);
         }
@@ -99,7 +84,8 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: (self.left_button as isize) | (self.middle_button as isize) << 1 | (self.right_button as isize) << 2,
+            c: (self.left_button as isize) | (self.middle_button as isize) << 1 |
+               (self.right_button as isize) << 2,
         }
     }
 

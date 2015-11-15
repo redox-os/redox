@@ -2,7 +2,6 @@ use alloc::boxed::Box;
 
 use core::{cmp, ptr, mem};
 
-use common::debug;
 use common::memory;
 use schemes::{Resource, ResourceSeek, Url};
 use common::time::{self, Duration};
@@ -32,7 +31,7 @@ impl Resource for AC97Resource {
     }
 
     fn url(&self) -> Url {
-        Url::from_str("audio://")
+        Url::from_str("audio:")
     }
 
     fn read(&mut self, _: &mut [u8]) -> Option<usize> {
@@ -103,14 +102,7 @@ impl Resource for AC97Resource {
                     Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                 }
 
-                debug::dd(po_civ.read() as usize);
-                debug::d(" / ");
-                debug::dd(lvi as usize);
-                debug::d(": ");
-                debug::dd(position);
-                debug::d(" / ");
-                debug::dd(buf.len());
-                debug::dl();
+                debug!("{} / {}: {} / {}\n", po_civ.read(), lvi as usize, position, buf.len());
 
                 let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
@@ -151,11 +143,7 @@ impl Resource for AC97Resource {
                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
             }
 
-            debug::d("Finished ");
-            debug::dd(po_civ.read() as usize);
-            debug::d(" / ");
-            debug::dd(lvi as usize);
-            debug::dl();
+            debug!("Finished {} / {}\n", po_civ.read(), lvi);
         }
 
         Some(buf.len())
@@ -190,7 +178,7 @@ impl KScheme for AC97 {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //d("AC97 IRQ\n");
+            // d("AC97 IRQ\n");
         }
     }
 
@@ -208,14 +196,7 @@ impl AC97 {
             irq: pci.read(0x3C) as u8 & 0xF,
         };
 
-        debug::d("AC97 on: ");
-        debug::dh(module.audio);
-        debug::d(", ");
-        debug::dh(module.bus_master);
-        debug::d(", IRQ: ");
-        debug::dbh(module.irq);
-
-        debug::dl();
+        debug!("AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);
 
         module
     }

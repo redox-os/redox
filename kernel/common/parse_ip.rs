@@ -1,15 +1,20 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 /// Get the port from a string (ip)
 pub fn parse_port(string: &str) -> &str {
     let mut b = 1;
     for c in string.chars() {
         match c {
-            '0' | '1' |
-            '2' | '3' |
-            '4' | '5' |
-            '6' | '7' |
-            '8' | '9' => b += 1,
+            '0' |
+            '1' |
+            '2' |
+            '3' |
+            '4' |
+            '5' |
+            '6' |
+            '7' |
+            '8' |
+            '9' => b += 1,
             _ => break,
         }
     }

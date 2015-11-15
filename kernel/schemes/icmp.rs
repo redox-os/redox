@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 use collections::vec::Vec;
 
@@ -42,7 +42,8 @@ impl ToBytes for Icmp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const IcmpHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<IcmpHeader>()));
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                          mem::size_of::<IcmpHeader>()));
             ret.push_all(&self.data);
             ret
         }
@@ -59,7 +60,7 @@ impl KScheme for IcmpScheme {
 
 impl IcmpScheme {
     pub fn reply_loop() {
-        while let Some(mut ip) = Url::from_str("ip:///1").open() {
+        while let Some(mut ip) = Url::from_str("ip:/1").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
                 if let Some(_) = ip.read_to_end(&mut bytes) {

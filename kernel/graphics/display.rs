@@ -51,7 +51,7 @@ pub struct VBEModeInfo {
 
 const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
 
-pub const FONTS: *mut usize = 0x200008 as *mut usize;
+pub static mut fonts: usize = 0;
 
 /// A display
 pub struct Display {
@@ -70,7 +70,7 @@ impl Display {
 
         let ret = box Display {
             offscreen: memory::alloc(mode_info.bytesperscanline as usize *
-                                 mode_info.yresolution as usize),
+                                     mode_info.yresolution as usize),
             onscreen: mode_info.physbaseptr as usize,
             size: mode_info.bytesperscanline as usize * mode_info.yresolution as usize,
             bytesperrow: mode_info.bytesperscanline as usize,
@@ -108,24 +108,24 @@ impl Display {
         }
     }
 
-    /* Optimized { */
+    // Optimized {
     pub unsafe fn set_run(data: u32, dst: usize, len: usize) {
         let mut i = 0;
-        //Only use 16 byte transfer if possible
+        // Only use 16 byte transfer if possible
         if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
-            //Align 16
+            // Align 16
             while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
                 *((dst + i) as *mut u32) = data;
                 i += mem::size_of::<u32>();
             }
-            //While 16 byte transfers
+            // While 16 byte transfers
             let simd: u32x4 = u32x4(data, data, data, data);
             while len - i >= mem::size_of::<u32x4>() {
                 *((dst + i) as *mut u32x4) = simd;
                 i += mem::size_of::<u32x4>();
             }
         }
-        //Everything after last 16 byte transfer
+        // Everything after last 16 byte transfer
         while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = data;
             i += mem::size_of::<u32>();
@@ -134,20 +134,20 @@ impl Display {
 
     pub unsafe fn copy_run(src: usize, dst: usize, len: usize) {
         let mut i = 0;
-        //Only use 16 byte transfer if possible
+        // Only use 16 byte transfer if possible
         if (src + i) % 16 == (dst + i) % 16 {
-            //Align 16
+            // Align 16
             while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
                 *((dst + i) as *mut u32) = *((src + i) as *const u32);
                 i += mem::size_of::<u32>();
             }
-            //While 16 byte transfers
+            // While 16 byte transfers
             while len - i >= mem::size_of::<u32x4>() {
                 *((dst + i) as *mut u32x4) = *((src + i) as *const u32x4);
                 i += mem::size_of::<u32x4>();
             }
         }
-        //Everything after last 16 byte transfer
+        // Everything after last 16 byte transfer
         while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = *((src + i) as *const u32);
             i += mem::size_of::<u32>();
@@ -166,9 +166,7 @@ impl Display {
         if rows > 0 && rows < self.height {
             let offset = rows * self.bytesperrow;
             unsafe {
-                Display::copy_run(self.offscreen + offset,
-                                  self.offscreen,
-                                  self.size - offset);
+                Display::copy_run(self.offscreen + offset, self.offscreen, self.size - offset);
                 Display::set_run(0, self.offscreen + self.size - offset, offset);
             }
         }
@@ -182,8 +180,7 @@ impl Display {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {
                 let self_mut: *mut Self = mem::transmute(self);
-                mem::swap(&mut (*self_mut).offscreen,
-                     &mut (*self_mut).onscreen);
+                mem::swap(&mut (*self_mut).offscreen, &mut (*self_mut).onscreen);
             }
             scheduler::end_no_ints(reenable);
         }
@@ -196,12 +193,17 @@ impl Display {
 
         if alpha > 0 {
             let start_y = cmp::max(0, cmp::min(self.height as isize - 1, point.y)) as usize;
-            let end_y =
-                cmp::max(0, cmp::min(self.height as isize - 1, point.y + size.height as isize)) as usize;
+            let end_y = cmp::max(0,
+                                 cmp::min(self.height as isize - 1,
+                                          point.y +
+                                          size.height as isize)) as usize;
 
             let start_x = cmp::max(0, cmp::min(self.width as isize - 1, point.x)) as usize * 4;
-            let len = cmp::max(0, cmp::min(self.width as isize - 1, point.x + size.width as isize)) as usize *
-                      4 - start_x;
+            let len = cmp::max(0,
+                               cmp::min(self.width as isize - 1,
+                                        point.x +
+                                        size.width as isize)) as usize * 4 -
+                      start_x;
 
             if alpha >= 255 {
                 for y in start_y..end_y {
@@ -234,7 +236,8 @@ impl Display {
         unsafe {
             if point.x >= 0 && point.x < self.width as isize && point.y >= 0 &&
                point.y < self.height as isize {
-                *((self.offscreen + point.y as usize * self.bytesperrow + point.x as usize * 4) as *mut u32) = color.data;
+                *((self.offscreen + point.y as usize * self.bytesperrow +
+                   point.x as usize * 4) as *mut u32) = color.data;
             }
         }
     }
@@ -247,7 +250,8 @@ impl Display {
         // Calculate delta
         let delta = point_b - point_a;
 
-        if delta.x == 0 { // Handle case where delta x = 0
+        if delta.x == 0 {
+            // Handle case where delta x = 0
             // Set offset
             let mut y = point_a.y;
 
@@ -300,46 +304,46 @@ impl Display {
     // TODO: Antialiased lines
     // TODO: Lines with other width
 
-    /* Commented because std::f64 is required
-    fn line_aa(&self, mut point_a: Point, mut point_b: Point, color: RgbColor) {
-        // TODO: Xiaolin Wu line drawing
-        use core::mem::swap;
-
-        let steep = (point_b.y - point_a.y).abs() > (point_b.x - point_a.x);
-
-        if steep {
-            // Swap the x and y
-            swap(&mut point_a.x, &mut point_a.y);
-            swap(&mut point_b.x, &mut point_b.y);
-        }
-
-        if point_a.x > point_b.x {
-            // Swap point_a and point_b
-            swap(&mut point_a.x, &mut point_b.x);
-            swap(&mut point_a.y, &mut point_b.y);
-        }
-
-        // Calculate delta
-        let dx = point_b.x - point_a.x;
-        let dy = point_b.y - point_a.y;
-        // Calculate gradient
-        let gradient = (dy as f64) / (dx as f64);
-
-        // First endpoint
-        let x_end = point_b.x.round();
-        let y_end = point_b.y + gradient * (x_end - point_b.x);
-
-        let x_pxl2 = x_end;
-        let y_pxl2 = y_end.floor();
-
-        if steep {
-            self
-        } else {
-            self
-        };
-
-    }
-    */
+    // Commented because std::f64 is required
+    // fn line_aa(&self, mut point_a: Point, mut point_b: Point, color: RgbColor) {
+    // TODO: Xiaolin Wu line drawing
+    // use core::mem::swap;
+    //
+    // let steep = (point_b.y - point_a.y).abs() > (point_b.x - point_a.x);
+    //
+    // if steep {
+    // Swap the x and y
+    // swap(&mut point_a.x, &mut point_a.y);
+    // swap(&mut point_b.x, &mut point_b.y);
+    // }
+    //
+    // if point_a.x > point_b.x {
+    // Swap point_a and point_b
+    // swap(&mut point_a.x, &mut point_b.x);
+    // swap(&mut point_a.y, &mut point_b.y);
+    // }
+    //
+    // Calculate delta
+    // let dx = point_b.x - point_a.x;
+    // let dy = point_b.y - point_a.y;
+    // Calculate gradient
+    // let gradient = (dy as f64) / (dx as f64);
+    //
+    // First endpoint
+    // let x_end = point_b.x.round();
+    // let y_end = point_b.y + gradient * (x_end - point_b.x);
+    //
+    // let x_pxl2 = x_end;
+    // let y_pxl2 = y_end.floor();
+    //
+    // if steep {
+    // self
+    // } else {
+    // self
+    // };
+    //
+    // }
+    //
 
     /// Draw an image
     pub unsafe fn image(&self, point: Point, data: *const u32, size: Size) {
@@ -361,7 +365,7 @@ impl Display {
                               len);
         }
     }
-    /* } Optimized */
+    // } Optimized
 
     /// Draw a image with opacity
     pub unsafe fn image_alpha(&self, point: Point, data: *const u32, size: Size) {
@@ -384,7 +388,7 @@ impl Display {
         }
     }
 
-    //TODO: SIMD to optimize
+    // TODO: SIMD to optimize
     pub unsafe fn set_run_alpha(premul: u32, n_alpha: u32, dst: usize, len: usize) {
         let mut i = 0;
         while len - i >= mem::size_of::<u32>() {
@@ -397,7 +401,7 @@ impl Display {
         }
     }
 
-    //TODO: SIMD to optimize
+    // TODO: SIMD to optimize
     pub unsafe fn copy_run_alpha(src: usize, dst: usize, len: usize) {
         let mut i = 0;
         while len - i >= mem::size_of::<u32>() {
@@ -428,16 +432,13 @@ impl Display {
     /// Draw a char
     pub fn char(&self, point: Point, character: char, color: Color) {
         unsafe {
-            if *FONTS > 0 {
-                let bitmap_location = *FONTS + 16 * (character as usize);
-                for row in 0..16 {
-                    let row_data = *((bitmap_location + row) as *const u8);
-                    for col in 0..8 {
-                        let pixel = (row_data >> (7 - col)) & 1;
-                        if pixel > 0 {
-                            self.pixel(Point::new(point.x + col, point.y + row as isize),
-                                       color);
-                        }
+            let bitmap_location = fonts + 16 * (character as usize);
+            for row in 0..16 {
+                let row_data = *((bitmap_location + row) as *const u8);
+                for col in 0..8 {
+                    let pixel = (row_data >> (7 - col)) & 1;
+                    if pixel > 0 {
+                        self.pixel(Point::new(point.x + col, point.y + row as isize), color);
                     }
                 }
             }

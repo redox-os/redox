@@ -1,8 +1,6 @@
 /// Execution
 pub mod executor;
-/// Packages
-pub mod package;
 /// Schemes
 pub mod scheme;
-/// Session
+/// // Session
 pub mod session;

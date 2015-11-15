@@ -1,6 +1,8 @@
 use super::*;
 use redox::*;
 
+use orbital::*;
+
 impl Editor {
     /// Redraw the window
     pub fn redraw(&mut self) {
@@ -104,11 +106,11 @@ fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
 
     let h = editor.window.height();
     let w = editor.window.width();
-    let y = editor.y();
+    //let y = editor.y();
     let mode = editor.cursor().mode;
 
     for (n, c) in (if text.len() > w / (8 * b) {
-        text.chars().take(w / (8 * b) - 5).chain(vec!['.', '.', '.']).collect::<Vec<_>>()
+        text.chars().take(w / (8 * b) - 5).chain(vec!['.'; 3]).collect::<Vec<_>>()
     } else {
         text.chars().collect()
     }).into_iter().enumerate() {

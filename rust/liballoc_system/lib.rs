@@ -23,6 +23,7 @@
 #![feature(no_std)]
 #![feature(staged_api)]
 
+
 // The minimum alignment guaranteed by the architecture. This value is used to
 // add fast paths for low alignment values. In practice, the alignment is a
 // constant at the call site and the branch will be optimized out.
@@ -43,5 +44,4 @@ extern {
     fn __rust_reallocate(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> *mut u8;
     fn __rust_reallocate_inplace(ptr: *mut u8, old_size: usize, size: usize, align: usize) -> usize;
     fn __rust_usable_size(size: usize, align: usize) -> usize;
-}
-
+ }

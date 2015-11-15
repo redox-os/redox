@@ -57,13 +57,11 @@ pub unsafe fn pci_device(session: &mut Session,
         } else if interface_id == 0x10 {
             let base = pci.read(0x10) as usize;
 
-            debug::d("OHCI Controller on ");
-            debug::dh(base & 0xFFFFFFF0);
-            debug::dl();
+            debug!("OHCI Controller on {}\n", base & 0xFFFFFFF0);
         } else if interface_id == 0x00 {
             session.items.push(Uhci::new(pci));
         } else {
-            debug::d("Unknown USB interface version\n");
+            debug!("Unknown USB interface version\n");
         }
     } else {
         match vendor_code {
@@ -119,32 +117,19 @@ pub unsafe fn pci_init(session: &mut Session) {
                 if (id & 0xFFFF) != 0xFFFF {
                     let class_id = pci.read(8);
 
-                    debug::d(" * PCI ");
-                    debug::dd(bus);
-                    debug::d(", ");
-                    debug::dd(slot);
-                    debug::d(", ");
-                    debug::dd(func);
-                    debug::d(": ID ");
-                    debug::dh(id as usize);
-                    debug::d(" CL ");
-                    debug::dh(class_id as usize);
+                    debug!(" * PCI {}, {}, {}: ID {:X} CL {:X}", bus, slot, func, id, class_id);
 
                     for i in 0..6 {
                         let bar = pci.read(i * 4 + 0x10);
                         if bar > 0 {
-                            debug::d(" BAR");
-                            debug::dd(i as usize);
-                            debug::d(": ");
-                            debug::dh(bar as usize);
+                            debug!(" BAR{}: {:X}", i, bar);
 
                             pci.write(i * 4 + 0x10, 0xFFFFFFFF);
                             let size = (0xFFFFFFFF - (pci.read(i * 4 + 0x10) & 0xFFFFFFF0)) + 1;
                             pci.write(i * 4 + 0x10, bar);
 
                             if size > 0 {
-                                debug::d(" ");
-                                debug::dd(size as usize);
+                                debug!(" {}", size);
                             }
                         }
                     }

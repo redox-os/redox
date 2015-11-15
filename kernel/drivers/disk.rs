@@ -3,7 +3,6 @@ use alloc::arc::Arc;
 use core::ptr;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use common::debug;
 use common::queue::Queue;
 use common::memory::Memory;
 use scheduler;
@@ -92,7 +91,7 @@ impl Drop for Prdt {
     }
 }
 
-//Status port bits
+// Status port bits
 const ATA_SR_BSY: u8 = 0x80;
 const ATA_SR_DRDY: u8 = 0x40;
 const ATA_SR_DF: u8 = 0x20;
@@ -102,7 +101,7 @@ const ATA_SR_CORR: u8 = 0x04;
 const ATA_SR_IDX: u8 = 0x02;
 const ATA_SR_ERR: u8 = 0x01;
 
-//Error port bits
+// Error port bits
 const ATA_ER_BBK: u8 = 0x80;
 const ATA_ER_UNC: u8 = 0x40;
 const ATA_ER_MC: u8 = 0x20;
@@ -112,7 +111,7 @@ const ATA_ER_ABRT: u8 = 0x04;
 const ATA_ER_TK0NF: u8 = 0x02;
 const ATA_ER_AMNF: u8 = 0x01;
 
-//Commands
+// Commands
 const ATA_CMD_READ_PIO: u8 = 0x20;
 const ATA_CMD_READ_PIO_EXT: u8 = 0x24;
 const ATA_CMD_READ_DMA: u8 = 0xC8;
@@ -127,7 +126,7 @@ const ATA_CMD_PACKET: u8 = 0xA0;
 const ATA_CMD_IDENTIFY_PACKET: u8 = 0xA1;
 const ATA_CMD_IDENTIFY: u8 = 0xEC;
 
-//Identification
+// Identification
 const ATA_IDENT_DEVICETYPE: u8 = 0;
 const ATA_IDENT_CYLINDERS: u8 = 2;
 const ATA_IDENT_HEADS: u8 = 6;
@@ -140,16 +139,16 @@ const ATA_IDENT_MAX_LBA: u8 = 120;
 const ATA_IDENT_COMMANDSETS: u8 = 164;
 const ATA_IDENT_MAX_LBA_EXT: u8 = 200;
 
-//Selection
+// Selection
 const ATA_MASTER: u8 = 0x00;
 const ATA_SLAVE: u8 = 0x01;
 
 
-//Types
+// Types
 const IDE_ATA: u8 = 0x00;
 const IDE_ATAPI: u8 = 0x01;
 
-//Registers
+// Registers
 const ATA_REG_DATA: u16 = 0x00;
 const ATA_REG_ERROR: u16 = 0x01;
 const ATA_REG_FEATURES: u16 = 0x01;
@@ -295,7 +294,7 @@ impl Disk {
     /// Identify
     pub unsafe fn identify(&self) -> bool {
         if self.ide_read(ATA_REG_STATUS) == 0xFF {
-            debug::d(" Floating Bus");
+            debug!(" Floating Bus");
 
             return false;
         }
@@ -318,8 +317,7 @@ impl Disk {
         self.ide_write(ATA_REG_COMMAND, ATA_CMD_IDENTIFY);
 
         let status = self.ide_read(ATA_REG_STATUS);
-        debug::d(" Status: ");
-        debug::dbh(status);
+        debug!(" Status: {:X}", status);
 
         if status == 0 {
             return false;
@@ -327,8 +325,7 @@ impl Disk {
 
         let err = self.ide_poll(true);
         if err > 0 {
-            debug::d(" Error: ");
-            debug::dbh(err);
+            debug!(" Error: {:X}", err);
 
             return false;
         }
@@ -339,18 +336,16 @@ impl Disk {
             destination.write(word, data.read());
         }
 
-        debug::d(" Size: ");
         let sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
                       ((destination.read(102) as u64) << 32) |
                       ((destination.read(103) as u64) << 48);
-        debug::dd((sectors / 2048) as usize);
-        debug::d(" MB");
+        debug!("Size: {} MB", (sectors / 2048) as usize);
 
         true
     }
 
     /// Read from the disk
-    //TODO: Make sure count is not zero!
+    // TODO: Make sure count is not zero!
     pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8 {
         if destination > 0 {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
@@ -381,7 +376,7 @@ impl Disk {
                 }
 
                 for word in 0..256 {
-                    ptr::write((destination + sector*512 + word*2) as *mut u16,
+                    ptr::write((destination + sector * 512 + word * 2) as *mut u16,
                                inw(self.base + ATA_REG_DATA));
                 }
             }
@@ -391,7 +386,7 @@ impl Disk {
     }
 
     /// Write to the disk
-    //TODO: Fix and make sure count is not zero!
+    // TODO: Fix and make sure count is not zero!
     pub unsafe fn write(&self, lba: u64, count: u16, source: usize) -> u8 {
         if source > 0 {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
@@ -424,7 +419,7 @@ impl Disk {
 
                 for word in 0..256 {
                     outw(self.base + ATA_REG_DATA,
-                         ptr::read((source + sector*512 + word*2) as *const u16));
+                         ptr::read((source + sector * 512 + word * 2) as *const u16));
                 }
 
                 self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
@@ -516,15 +511,13 @@ impl Disk {
                             prdt.reg.write(prdt.mem.ptr as u32);
                             prdt_set = true;
                         } else {
-                            debug::d("IDE Request too large: ");
-                            debug::dd(size as usize);
-                            debug::d(" remaining\n");
+                            debug!("IDE Request too large: {} remaining\n", size);
                         }
                     } else {
-                        debug::d("IDE Request size is 0\n");
+                        debug!("IDE Request size is 0\n");
                     }
                 } else {
-                    debug::d("PRDT not allocated\n");
+                    debug!("PRDT not allocated\n");
                 }
 
                 if prdt_set {
@@ -540,18 +533,14 @@ impl Disk {
                         }
 
                         self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA3,
-                                       ((req.extent.block >> 24) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA4,
-                                       ((req.extent.block >> 32) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA5,
-                                       ((req.extent.block >> 40) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
 
                         self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA2,
-                                       ((req.extent.block >> 16) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
                         self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
 
                         self.cmd.write(CMD_ACT | CMD_DIR);
@@ -567,25 +556,21 @@ impl Disk {
                         }
 
                         self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA3,
-                                       ((req.extent.block >> 24) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA4,
-                                       ((req.extent.block >> 32) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA5,
-                                       ((req.extent.block >> 40) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
 
                         self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
                         self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA2,
-                                       ((req.extent.block >> 16) & 0xFF) as u8);
+                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
                         self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
 
                         self.cmd.write(CMD_ACT);
                     }
                 }
             } else {
-                debug::d("IDE Request mem is 0\n");
+                debug!("IDE Request mem is 0\n");
             }
         }
 

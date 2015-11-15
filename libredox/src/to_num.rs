@@ -1,6 +1,6 @@
 //! Types convertable to integers
 
-use string::{String, ToString};
+use get_slice::GetSlice;
 
 /// Parse the string to a integer using a given radix
 pub trait ToNum {
@@ -10,7 +10,7 @@ pub trait ToNum {
     fn to_num_signed(&self) -> isize;
 }
 
-impl ToNum for String {
+impl ToNum for str {
     fn to_num_radix(&self, radix: usize) -> usize {
         if radix == 0 {
             return 0;
@@ -43,7 +43,7 @@ impl ToNum for String {
     /// Parse the string as a signed integer using a given radix
     fn to_num_radix_signed(&self, radix: usize) -> isize {
         if self.starts_with('-') {
-            -(self[1 .. self.len()].to_string().to_num_radix(radix) as isize)
+            -(self.get_slice(Some(1), None).to_num_radix(radix) as isize)
         } else {
             self.to_num_radix(radix) as isize
         }

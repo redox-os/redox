@@ -1,5 +1,5 @@
 name=Sodium
-icon=file:///ui/apps/sodium.bmp
+icon=file:/ui/apps/sodium.bmp
 accept=*_REDOX
 accept=*.md
 accept=*.asm

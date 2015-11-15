@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::ToString;
+
 use core::intrinsics::{volatile_load, volatile_store};
 use core::{cmp, mem, ptr};
 
@@ -23,7 +25,7 @@ pub struct Uhci {
 impl KScheme for Uhci {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            //d("UHCI IRQ\n");
+            // d("UHCI IRQ\n");
         }
     }
 
@@ -475,7 +477,7 @@ impl Uhci {
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        //(*desc_dev).d();
+        // (*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -491,7 +493,7 @@ impl Uhci {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            //desc_cfg.d();
+            // desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
@@ -499,12 +501,13 @@ impl Uhci {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        //let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        //desc_int.d();
+                        // let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        // desc_int.d();
                     }
                     DESC_END => {
-                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        //desc_end.d();
+                        let desc_end =
+                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        // desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -512,7 +515,7 @@ impl Uhci {
                         let base = self.base as u16;
                         let frnum = base + 0x6;
 
-                        Context::spawn(box move || {
+                        Context::spawn("kuhci_hid".to_string(), box move || {
                             let in_ptr = memory::alloc(in_len) as *mut u8;
                             let in_td: *mut Td = memory::alloc_type();
 
@@ -549,32 +552,20 @@ impl Uhci {
                                 volatile_store(frame_list.offset(frame as isize), 1);
 
                                 if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
-                                    let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+                                   let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                   let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                   let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                    let mouse_x = (x * (*::session_ptr).display.width) / 32768;
-                                    let mouse_y = (y * (*::session_ptr).display.height) / 32768;
+                                   let mouse_x = (x * (*::console).display.width) / 32768;
+                                   let mouse_y = (y * (*::console).display.height) / 32768;
 
-                                    (*::session_ptr).mouse_point.x =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.width as isize -
-                                                          1,
-                                                          mouse_x as isize));
-                                    (*::session_ptr).mouse_point.y =
-                                        cmp::max(0,
-                                                 cmp::min((*::session_ptr).display.height as isize -
-                                                          1,
-                                                          mouse_y as isize));
-
-                                    MouseEvent {
-                                        x: 0,
-                                        y: 0,
-                                        left_button: buttons & 1 == 1,
-                                        middle_button: buttons & 4 == 4,
-                                        right_button: buttons & 2 == 2,
-                                    }
-                                        .trigger();
+                                   MouseEvent {
+                                       x: cmp::max(0, cmp::min((*::console).display.width as isize - 1, mouse_x as isize)),
+                                       y: cmp::max(0, cmp::min((*::console).display.height as isize - 1, mouse_y as isize)),
+                                       left_button: buttons & 1 == 1,
+                                       middle_button: buttons & 4 == 4,
+                                       right_button: buttons & 2 == 2,
+                                   }.trigger();
                                 }
 
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();

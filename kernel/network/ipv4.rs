@@ -1,4 +1,4 @@
-use ::GetSlice;
+use common::get_slice::GetSlice;
 
 use collections::slice;
 use collections::vec::Vec;
@@ -37,7 +37,8 @@ impl FromBytes for Ipv4 {
 
                 return Some(Ipv4 {
                     header: header,
-                    options: bytes.get_slice(Some(mem::size_of::<Ipv4Header>()), Some(header_len)).to_vec(),
+                    options: bytes.get_slice(Some(mem::size_of::<Ipv4Header>()), Some(header_len))
+                                  .to_vec(),
                     data: bytes.get_slice(Some(header_len), None).to_vec(),
                 });
             }
@@ -50,7 +51,8 @@ impl ToBytes for Ipv4 {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const Ipv4Header = &self.header;
-            let mut ret = Vec::<u8>::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<Ipv4Header>()));
+            let mut ret = Vec::<u8>::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                                mem::size_of::<Ipv4Header>()));
             ret.push_all(&self.options);
             ret.push_all(&self.data);
             ret
