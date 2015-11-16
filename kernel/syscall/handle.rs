@@ -5,7 +5,6 @@ use core::ops::Deref;
 use core::{ptr, slice, str, usize};
 
 use common::get_slice::GetSlice;
-use common::debug;
 use common::memory;
 use common::time::Duration;
 
@@ -84,33 +83,32 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     if let Some(mut current) = Context::current_mut() {
         current.unmap();
 
-        if let Some(mut entry) = (*current.memory.get()).get_mut(0) {
-            ret = entry.virtual_address + entry.virtual_size;
+        ret = current.next_mem();
 
-            if addr == 0 {
-                // Get current break
-            } else if addr >= entry.virtual_address {
-                let request_size = addr - entry.virtual_address;
-                let new_address = memory::realloc(entry.physical_address, request_size);
-                if new_address > 0 {
-                    ret = addr;
-
-                    let new_size = memory::alloc_size(new_address);
-                    entry.physical_address = new_address;
-                    entry.virtual_size = new_size;
-                } else {
-                    debug::d("BRK: Realloc Failed\n");
+        //TODO: Make this smarter, currently it attempt to resize the entire data segment
+        if let Some(mut mem) = (*current.memory.get()).last_mut() {
+            if /*mem.writeable && */ true {
+                if addr >= mem.virtual_address {
+                    let size = addr - mem.virtual_address;
+                    let physical_address = memory::realloc(mem.physical_address, size);
+                    if physical_address > 0 {
+                        mem.physical_address = physical_address;
+                        mem.virtual_size = size;
+                        ret = mem.virtual_address + mem.virtual_size;
+                    } else {
+                        mem.virtual_size = 0;
+                        debug!("BRK: Realloc failed {:X}, {}\n", mem.virtual_address, size);
+                    }
                 }
             } else {
-                debug::d("BRK: Address not in correct space\n");
+                debug!("BRK: End segment not writeable\n");
             }
-        } else {
-            debug::d("BRK: Memory not found\n");
         }
 
+        current.clean_mem();
         current.map();
     } else {
-        debug::d("BRK: Context not found\n");
+        debug!("BRK: Context not found\n");
     }
 
     scheduler::end_no_ints(reenable);
