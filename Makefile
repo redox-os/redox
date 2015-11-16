@@ -132,15 +132,16 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/player/main.bin \
+	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/test/main.bin \
 	  filesystem/apps/viewer/main.bin \
 	  filesystem/apps/zfs/main.bin
 
-schemes: filesystem/schemes/console/main.bin \
-  		 filesystem/schemes/orbital/main.bin \
+schemes: filesystem/schemes/orbital/main.bin \
   	  	 filesystem/schemes/tcp/main.bin \
+                 filesystem/schemes/terminal/main.bin \
 	  	 filesystem/schemes/udp/main.bin \
 		 filesystem/schemes/zfs/main.bin
 

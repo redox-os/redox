@@ -1,6 +1,6 @@
 use redox::{Box, String, ToString, Vec};
 
-use super::*;
+use orbital::*;
 
 /// A console char
 pub struct ConsoleChar {
@@ -118,6 +118,8 @@ impl ConsoleWindow {
                                 while self.history.len() > 1000 {
                                     self.history.pop();
                                 }
+                                self.print(&command, Color::WHITE);
+                                self.print("\n", Color::WHITE);
                                 return Some(command);
                             }
                             '\x1B' => break,
@@ -167,16 +169,6 @@ impl ConsoleWindow {
                     }
                     col += 1;
                 }
-            }
-
-            if col > -scroll_x {
-                col = -scroll_x;
-                row += 1;
-            }
-
-            if col >= 0 && col < cols && row >= 0 && row < rows {
-                self.window.char(8 * col, 16 * row, '#', Color::WHITE);
-                col += 2;
             }
 
             let mut i = 0;

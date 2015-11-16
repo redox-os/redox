@@ -6,7 +6,9 @@ use redox::str;
 use redox::string::{String, ToString};
 
 use orbital::Color;
-use orbital::console::ConsoleWindow;
+use self::window::ConsoleWindow;
+
+pub mod window;
 
 pub struct Resource {
     console_window: Rc<UnsafeCell<Box<ConsoleWindow>>>,
@@ -30,7 +32,7 @@ impl Resource {
     }
 
     pub fn path(&self) -> Option<String> {
-        Some("console:".to_string() + &self.inner().window.title())
+        Some("terminal:".to_string() + &self.inner().window.title())
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -86,10 +88,6 @@ impl Scheme {
 
     pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
         let (scheme, mut title) = path.split_at(path.find(':').unwrap_or(path.len() - 1) + 1);
-
-        if title.len() == 0 {
-            title = "Console";
-        }
 
         Some(box Resource {
             console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(-1, -1, 640, 480, title))),
