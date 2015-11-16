@@ -16,7 +16,6 @@ pub use window::Window;
 
 pub mod bmp;
 pub mod color;
-pub mod console;
 pub mod event;
 pub mod point;
 pub mod size;
