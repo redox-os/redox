@@ -42,7 +42,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                          physical_address: physical_address,
                          virtual_address: virtual_address,
                          virtual_size: virtual_size,
-                         writeable: segment.flags & 1 == 1
+                         writeable: segment.flags & 2 == 2
                      });
                 }
             }
@@ -73,31 +73,71 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             *context.args.get() = args;
 
-            if let Some(stdin) = Url::from_str("debug:").open() {
-                (*context.files.get()).push(ContextFile {
-                    fd: 0, // STDIN
-                    resource: stdin,
-                });
-            } else {
-                debugln!("Failed to open stdin");
+            //TODO: Do this the right way
+            let mut create = [true; 3];
+            if let Some(current) = Context::current() {
+                if let Some(stdin) = current.get_file(0) {
+                    if let Some(stdin_dup) = stdin.dup() {
+                        (*context.files.get()).push(ContextFile {
+                            fd: 0, // STDIN
+                            resource: stdin_dup,
+                        });
+                        create[0] = false;
+                    }
+                }
+
+                if let Some(stdout) = current.get_file(1) {
+                    if let Some(stdout_dup) = stdout.dup() {
+                        (*context.files.get()).push(ContextFile {
+                            fd: 1, // STDOUT
+                            resource: stdout_dup,
+                        });
+                        create[1] = false;
+                    }
+                }
+
+                if let Some(stderr) = current.get_file(2) {
+                    if let Some(stderr_dup) = stderr.dup() {
+                        (*context.files.get()).push(ContextFile {
+                            fd: 2, // STDERR
+                            resource: stderr_dup,
+                        });
+                        create[2] = false;
+                    }
+                }
             }
 
-            if let Some(stdout) = Url::from_str("debug:").open() {
-                (*context.files.get()).push(ContextFile {
-                    fd: 1, // STDOUT
-                    resource: stdout,
-                });
-            } else {
-                debugln!("Failed to open stdout");
+            if create[0] {
+                if let Some(stdin) = Url::from_str("debug:").open() {
+                    (*context.files.get()).push(ContextFile {
+                        fd: 0, // STDIN
+                        resource: stdin,
+                    });
+                } else {
+                    debugln!("Failed to open stdin");
+                }
             }
 
-            if let Some(stderr) = Url::from_str("debug:").open() {
-                (*context.files.get()).push(ContextFile {
-                    fd: 2, // STDERR
-                    resource: stderr,
-                });
-            } else {
-                debugln!("Failed to open stderr");
+            if create[1] {
+                if let Some(stdout) = Url::from_str("debug:").open() {
+                    (*context.files.get()).push(ContextFile {
+                        fd: 1, // STDOUT
+                        resource: stdout,
+                    });
+                } else {
+                    debugln!("Failed to open stdout");
+                }
+            }
+
+            if create[2] {
+                if let Some(stderr) = Url::from_str("debug:").open() {
+                    (*context.files.get()).push(ContextFile {
+                        fd: 2, // STDERR
+                        resource: stderr,
+                    });
+                } else {
+                    debugln!("Failed to open stderr");
+                }
             }
 
             let reenable = scheduler::start_no_ints();

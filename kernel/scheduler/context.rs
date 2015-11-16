@@ -467,6 +467,12 @@ impl Context {
 
     /// Translate to physical if a ptr is inside of the mapped memory
     pub unsafe fn translate(&self, ptr: usize) -> Option<usize> {
+        if let Some(ref stack) = self.stack {
+            if ptr >= stack.virtual_address && ptr < stack.virtual_address + stack.virtual_size {
+                return Some(ptr - stack.virtual_address + stack.physical_address);
+            }
+        }
+
         for mem in (*self.memory.get()).iter() {
             if ptr >= mem.virtual_address && ptr < mem.virtual_address + mem.virtual_size {
                 return Some(ptr - mem.virtual_address + mem.physical_address);

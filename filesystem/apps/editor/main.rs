@@ -1,5 +1,4 @@
 use redox::*;
-use orbital::console::*;
 use orbital::*;
 
 pub struct Editor {
@@ -42,6 +41,7 @@ impl Editor {
 
     fn save(&mut self, window: &Window) {
         if self.file.is_none() {
+            /*
             let mut save_window = {
                 const WIDTH: usize = 400;
                 const HEIGHT: usize = 200;
@@ -55,6 +55,7 @@ impl Editor {
                 debugln!("Create: {}", &line);
                 self.file = File::create(&line);
             }
+            */
         }
 
         if let Some(ref mut file) = self.file {

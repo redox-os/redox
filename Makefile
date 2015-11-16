@@ -132,15 +132,16 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/player/main.bin \
+	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
 	  filesystem/apps/terminal/main.bin \
 	  filesystem/apps/test/main.bin \
 	  filesystem/apps/viewer/main.bin \
 	  filesystem/apps/zfs/main.bin
 
-schemes: filesystem/schemes/console/main.bin \
-  		 filesystem/schemes/orbital/main.bin \
+schemes: filesystem/schemes/orbital/main.bin \
   	  	 filesystem/schemes/tcp/main.bin \
+                 filesystem/schemes/terminal/main.bin \
 	  	 filesystem/schemes/udp/main.bin \
 		 filesystem/schemes/zfs/main.bin
 
@@ -148,15 +149,6 @@ tests: tests/success tests/failure
 
 clean:
 	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
-
-sodium:
-	cd `git rev-parse --show-toplevel`; $(RM) -f filesystem/apps/sodium/*bin build/i386/sodium*; make qemu; cd -;
-
-apps/%:
-	@$(MAKE) --no-print-directory filesystem/apps/$*/$*.bin
-
-schemes/%:
-	@$(MAKE) --no-print-directory filesystem/schemes/$*/$*.bin
 
 osmium:
 	$(RM) -f build/i386/osmium*; make qemu; $(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
@@ -283,17 +275,17 @@ qemu: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 \
+			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_bare: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net none -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
+	-qemu-system-$(ARCH) -net none -vga std -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_no_kvm: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 \
+			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -hda $<
 
 qemu_tap: $(BUILD)/harddrive.bin
@@ -302,7 +294,7 @@ qemu_tap: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 \
+			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
@@ -313,7 +305,7 @@ qemu_tap_8254x: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 \
+			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
 	sudo tunctl -d tap_redox
