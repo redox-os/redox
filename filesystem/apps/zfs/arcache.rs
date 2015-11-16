@@ -20,9 +20,8 @@ pub struct ArCache {
     // TODO: Keep track of use counts. So mfu_map becomes (use_count: u64, Vec<u8>). Reset the use
     // count every once in a while. For instance, every 1000 reads. This will probably end up being
     // a knob for the user.
+    // TODO: Keep track of minimum frequency and corresponding DVA
     mfu_map: BTreeMap<DVAddr, Vec<u8>>, // Most frequently used cache
-    // TODO: Keep track of minimum frequency.
-    mfu_min_freq: u64,
     mfu_size: usize, // Max mfu cache size in bytes
     mfu_used: usize, // Used bytes in mfu cache
 }
@@ -57,10 +56,12 @@ impl ArCache {
 
         // Block isn't cached, have to read it from disk
         let block = reader.read(dva.sector() as usize, dva.asize() as usize);
-        self.cache_block(block);
+
+        // Blocks start in MRU cache
+        self.mru_cache_block(dva, block)
     }
 
-    fn mru_cache_block(&mut self, block: Vec<u8>) {
+    fn mru_cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String>{
         // If necessary, make room for the block in the cache
         while self.mru_used + block.len() > self.mru_size {
             let last_dva = match self.mru_queue.pop_back()
@@ -79,5 +80,5 @@ impl ArCache {
         Ok(self.mru_map.get(dva).unwrap().clone())
     }
 
-    // TODO: mfu_cache_block
+    // TODO: mfu_cache_block. Remove the DVA with the lowest frequency
 }
