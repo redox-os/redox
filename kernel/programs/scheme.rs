@@ -287,7 +287,7 @@ impl SchemeItem {
                             physical_address: physical_address,
                             virtual_address: virtual_address,
                             virtual_size: virtual_size,
-                            writeable: segment.flags & 1 == 1
+                            writeable: segment.flags & 2 == 2
                         });
                     }
                 }

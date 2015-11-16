@@ -250,8 +250,7 @@ impl ContextMemory {
             if self.writeable {
                 Page::new(self.virtual_address + i * 4096).map_user_write(self.physical_address + i * 4096);
             } else {
-                //TODO: Make user read
-                Page::new(self.virtual_address + i * 4096).map_user_write(self.physical_address + i * 4096);
+                Page::new(self.virtual_address + i * 4096).map_user_read(self.physical_address + i * 4096);
             }
         }
     }

@@ -87,7 +87,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
         //TODO: Make this smarter, currently it attempt to resize the entire data segment
         if let Some(mut mem) = (*current.memory.get()).last_mut() {
-            if /*mem.writeable && */ true {
+            if mem.writeable {
                 if addr >= mem.virtual_address {
                     let size = addr - mem.virtual_address;
                     let physical_address = memory::realloc(mem.physical_address, size);
