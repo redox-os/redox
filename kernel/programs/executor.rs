@@ -1,12 +1,14 @@
-use collections::string::String;
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use scheduler::context::{contexts_ptr, Context, ContextFile, ContextMemory};
+use core::{mem, ptr};
+
 use common::debug;
 use common::elf::Elf;
 use common::memory;
+
 use scheduler;
-use collections::string::ToString;
+use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_userspace, contexts_ptr, Context, ContextFile, ContextMemory};
 
 use schemes::Url;
 
@@ -65,83 +67,47 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
             }
             context_args.push(argc);
 
-            let context = Context::new(url.to_string(), true, entry, &context_args);
-
-            (*context.memory.get()) = memory;
-
-            *context.cwd.get() = wd.to_string();
-
-            *context.args.get() = args;
-
-            //TODO: Do this the right way
-            let mut create = [true; 3];
-            if let Some(current) = Context::current() {
-                if let Some(stdin) = current.get_file(0) {
-                    if let Some(stdin_dup) = stdin.dup() {
-                        (*context.files.get()).push(ContextFile {
-                            fd: 0, // STDIN
-                            resource: stdin_dup,
-                        });
-                        create[0] = false;
-                    }
-                }
-
-                if let Some(stdout) = current.get_file(1) {
-                    if let Some(stdout_dup) = stdout.dup() {
-                        (*context.files.get()).push(ContextFile {
-                            fd: 1, // STDOUT
-                            resource: stdout_dup,
-                        });
-                        create[1] = false;
-                    }
-                }
-
-                if let Some(stderr) = current.get_file(2) {
-                    if let Some(stderr_dup) = stderr.dup() {
-                        (*context.files.get()).push(ContextFile {
-                            fd: 2, // STDERR
-                            resource: stderr_dup,
-                        });
-                        create[2] = false;
-                    }
-                }
-            }
-
-            if create[0] {
-                if let Some(stdin) = Url::from_str("debug:").open() {
-                    (*context.files.get()).push(ContextFile {
-                        fd: 0, // STDIN
-                        resource: stdin,
-                    });
-                } else {
-                    debugln!("Failed to open stdin");
-                }
-            }
-
-            if create[1] {
-                if let Some(stdout) = Url::from_str("debug:").open() {
-                    (*context.files.get()).push(ContextFile {
-                        fd: 1, // STDOUT
-                        resource: stdout,
-                    });
-                } else {
-                    debugln!("Failed to open stdout");
-                }
-            }
-
-            if create[2] {
-                if let Some(stderr) = Url::from_str("debug:").open() {
-                    (*context.files.get()).push(ContextFile {
-                        fd: 2, // STDERR
-                        resource: stderr,
-                    });
-                } else {
-                    debugln!("Failed to open stderr");
-                }
-            }
-
             let reenable = scheduler::start_no_ints();
-            (*contexts_ptr).push(context);
+
+            if let Some(mut current) = Context::current_mut() {
+                current.save();
+                current.unmap();
+
+                current.sp = current.kernel_stack + CONTEXT_STACK_SIZE - 128;
+
+                current.stack = Some(ContextMemory {
+                    physical_address: memory::alloc(CONTEXT_STACK_SIZE),
+                    virtual_address: CONTEXT_STACK_ADDR,
+                    virtual_size: CONTEXT_STACK_SIZE,
+                    writeable: true
+                });
+
+                *current.args.get() = args;
+                *current.cwd.get() = wd.to_string();
+                *current.memory.get() = memory;
+
+                let user_sp = if let Some(ref stack) = current.stack {
+                    let mut sp = stack.physical_address + stack.virtual_size - 128;
+                    for arg in context_args.iter() {
+                        sp -= mem::size_of::<usize>();
+                        ptr::write(sp as *mut usize, *arg);
+                    }
+                    sp - stack.physical_address + stack.virtual_address
+                } else {
+                    0
+                };
+
+                current.push(0x20 | 3);
+                current.push(user_sp);
+                current.push(1 << 9);
+                current.push(0x18 | 3);
+                current.push(entry);
+                current.push(context_userspace as usize);
+
+                current.map();
+                current.restore();
+            }
+
             scheduler::end_no_ints(reenable);
         } else {
             debug::d("Invalid memory or entry\n");

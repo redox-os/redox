@@ -195,7 +195,8 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize,
                                                flags: usize,
                                                sp: usize,
                                                ss: usize) {
-    asm!("mov eax, [esp + 16]
+    asm!("xchg bx, bx
+    mov eax, [esp + 16]
     mov ds, eax
     mov es, eax
     mov fs, eax
@@ -366,7 +367,7 @@ impl Context {
         }
     }
 
-    pub unsafe fn new(name: String, userspace: bool, call: usize, args: &Vec<usize>) -> Box<Self> {
+    pub unsafe fn new(name: String, call: usize, args: &Vec<usize>) -> Box<Self> {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
@@ -380,16 +381,7 @@ impl Context {
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
             flags: 0,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
-            stack: if userspace {
-                Some(ContextMemory {
-                    physical_address: memory::alloc(CONTEXT_STACK_SIZE),
-                    virtual_address: CONTEXT_STACK_ADDR,
-                    virtual_size: CONTEXT_STACK_SIZE,
-                    writeable: true
-                })
-            } else {
-                None
-            },
+            stack: None,
             loadable: false,
 
             args: Rc::new(UnsafeCell::new(Vec::new())),
@@ -400,31 +392,11 @@ impl Context {
             statuses: Vec::new(),
         };
 
-        if userspace {
-            let user_sp = if let Some(ref stack) = ret.stack {
-                let mut sp = stack.physical_address + stack.virtual_size - 128;
-                for arg in args.iter() {
-                    sp -= mem::size_of::<usize>();
-                    ptr::write(sp as *mut usize, *arg);
-                }
-                sp - stack.physical_address + stack.virtual_address
-            } else {
-                0
-            };
-
-            ret.push(0x20 | 3);
-            ret.push(user_sp);
-            ret.push(1 << 9);
-            ret.push(0x18 | 3);
-            ret.push(call);
-            ret.push(context_userspace as usize);
-        } else {
-            for arg in args.iter() {
-                ret.push(*arg);
-            }
-
-            ret.push(call);
+        for arg in args.iter() {
+            ret.push(*arg);
         }
+
+        ret.push(call);
 
         ret
     }
@@ -441,7 +413,7 @@ impl Context {
             let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {
                 (*contexts_ptr)
-                    .push(Context::new(name, false, context_box as usize, &context_box_args));
+                    .push(Context::new(name, context_box as usize, &context_box_args));
             }
             scheduler::end_no_ints(reenable);
         }
