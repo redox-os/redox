@@ -1,7 +1,6 @@
 use redox::{Box, String, ToString, Vec, Url};
 use redox::fs::File;
 use redox::io::Read;
-use redox::thread;
 
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
@@ -159,10 +158,8 @@ impl Session {
                     if !(&package.icon).is_empty() {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
                            let binary = package.binary.to_string();
-                           thread::spawn(move || {
-                               println!("Exec {}", binary);
-                               //File::exec(&binary, &[]);
-                           });
+                           println!("Exec {}", binary);
+                           //File::exec(&binary, &[]);
                         }
                         x = x + package.icon.width() as isize;
                     }
