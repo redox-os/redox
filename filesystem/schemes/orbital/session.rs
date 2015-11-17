@@ -159,8 +159,7 @@ impl Session {
                     if !(&package.icon).is_empty() {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
                            let binary = package.binary.to_string();
-                           let pid = unsafe { sys_clone(0) };
-                           if pid == 0 {
+                           if unsafe { sys_clone(0) } == 0 {
                                File::exec(&binary, &[]);
                            }
                         }
