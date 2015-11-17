@@ -111,6 +111,10 @@ pub unsafe fn sys_unlink(path: *const u8) -> usize {
     syscall(SYS_UNLINK, path as usize, 0, 0)
 }
 
+pub unsafe fn sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
+    syscall(SYS_WAITPID, pid as usize, status as usize, options)
+}
+
 pub unsafe fn sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     syscall(SYS_WRITE, fd, buf as usize, count)
 }

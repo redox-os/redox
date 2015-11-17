@@ -9,19 +9,11 @@ use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
 use redox::hashmap::HashMap;
+use redox::syscall::{sys_clone, sys_waitpid};
 
-/* Magic Macros { */
+/* Magic { */
 static mut application: *mut Application<'static> = 0 as *mut Application;
-
-/// Execute a command
-macro_rules! exec {
-    ($cmd:expr) => ({
-        unsafe {
-            (*application).on_command(&$cmd.to_string());
-        }
-    })
-}
-/* } Magic Macros */
+/* } Magic */
 
 /// Structure which represents a Terminal's command.
 /// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
@@ -111,7 +103,14 @@ impl<'a> Command<'a> {
                         args_str.push(arg);
                     }
 
-                    File::exec(arg, &args_str);
+                    let pid = unsafe { sys_clone(0) } as isize;
+                    if pid == 0 {
+                        File::exec(arg, &args_str);
+                    } else {
+                        let mut status: usize = 0;
+                        unsafe { sys_waitpid(pid, &mut status, 0) };
+                        unsafe{ (*application).set_var("?", &format!("{}", status)) };
+                    }
                 }
             }),
         });
@@ -202,7 +201,9 @@ impl<'a> Command<'a> {
                     }
 
                     for command in commands.split('\n') {
-                        exec!(command);
+                        unsafe {
+                            (*application).on_command(&command);
+                        }
                     }
                 }
             }),

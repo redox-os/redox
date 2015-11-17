@@ -50,5 +50,5 @@ int main(int argc, char ** argv){
     } else {
         printf("clock_gettime Failed\n");
     }
-    return 0;
+    return 234;
 }

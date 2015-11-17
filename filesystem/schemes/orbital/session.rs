@@ -1,6 +1,7 @@
 use redox::{Box, String, ToString, Vec, Url};
 use redox::fs::File;
 use redox::io::Read;
+use redox::syscall::sys_clone;
 
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
@@ -156,10 +157,12 @@ impl Session {
                 let mut x = 0;
                 for package in self.packages.iter() {
                     if !(&package.icon).is_empty() {
-                        if mouse_event.x >= x &&
-                           mouse_event.x < x + package.icon.width() as isize {
-                               let binary = package.binary.to_string();
+                        if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
+                           let binary = package.binary.to_string();
+                           let pid = unsafe { sys_clone(0) };
+                           if pid == 0 {
                                File::exec(&binary, &[]);
+                           }
                         }
                         x = x + package.icon.width() as isize;
                     }

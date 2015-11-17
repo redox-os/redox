@@ -264,17 +264,13 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
     ret
 }
 
-// TODO: Make sure this does not return (it should be called from a clone)
 pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
-        let path_string =
-            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
-
-        let path = Url::from_string(path_string.clone());
+        let path = Url::from_string(current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path))));
 
         let mut args_vec = Vec::new();
         for arg in c_array_to_slice(args) {

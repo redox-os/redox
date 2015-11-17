@@ -1,6 +1,9 @@
+use alloc::rc::Rc;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
+use core::cell::UnsafeCell;
 use core::ops::DerefMut;
 use core::{mem, ptr};
 
@@ -29,15 +32,13 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
         if context_ptr as usize > 0 {
             Context::spawn("kexec ".to_string() + &url.string, box move || {
-                let mut memory = Vec::new();
-                let mut entry = 0;
-
                 if let Some(mut resource) = url.open() {
                     let mut vec: Vec<u8> = Vec::new();
                     resource.read_to_end(&mut vec);
 
                     let executable = Elf::from_data(vec.as_ptr() as usize);
-                    entry = executable.entry();
+                    let entry = executable.entry();
+                    let mut memory = Vec::new();
                     for segment in executable.load_segment().iter() {
                         let virtual_address = segment.vaddr as usize;
                         let virtual_size = segment.mem_len as usize;
@@ -61,64 +62,76 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                              });
                         }
                     }
-                } else {
-                    debug::d("Failed to open\n");
-                }
 
-                if ! memory.is_empty() && entry > 0 {
-                    args.insert(0, url.to_string());
+                    if entry > 0 && ! memory.is_empty() {
+                        args.insert(0, url.to_string());
 
-                    let mut context_args: Vec<usize> = Vec::new();
-                    context_args.push(0); // ENVP
-                    context_args.push(0); // ARGV NULL
-                    let mut argc = 0;
-                    for i in 0..args.len() {
-                        if let Some(arg) = args.get(args.len() - i - 1) {
-                            context_args.push(arg.as_ptr() as usize);
-                            argc += 1;
+                        let mut context_args: Vec<usize> = Vec::new();
+                        context_args.push(0); // ENVP
+                        context_args.push(0); // ARGV NULL
+                        let mut argc = 0;
+                        for i in 0..args.len() {
+                            if let Some(arg) = args.get(args.len() - i - 1) {
+                                context_args.push(arg.as_ptr() as usize);
+                                argc += 1;
+                            }
                         }
-                    }
-                    context_args.push(argc);
+                        context_args.push(argc);
 
-                    let reenable = scheduler::start_no_ints();
+                        let reenable = scheduler::start_no_ints();
 
-                    let context = &mut * context_ptr;
+                        let context = &mut * context_ptr;
 
-                    context.name = url.to_string();
-
-                    context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
-
-                    context.stack = Some(ContextMemory {
-                        physical_address: memory::alloc(CONTEXT_STACK_SIZE),
-                        virtual_address: CONTEXT_STACK_ADDR,
-                        virtual_size: CONTEXT_STACK_SIZE,
-                        writeable: true
-                    });
-
-                    *context.args.get() = args;
-                    *context.memory.get() = memory;
-
-                    let user_sp = if let Some(ref stack) = context.stack {
-                        let mut sp = stack.physical_address + stack.virtual_size - 128;
-                        for arg in context_args.iter() {
-                            sp -= mem::size_of::<usize>();
-                            ptr::write(sp as *mut usize, *arg);
+                        let mut files: Vec<ContextFile> = Vec::new();
+                        for file in (*context.files.get()).iter() {
+                            if let Some(resource) = file.resource.dup() {
+                                files.push(ContextFile {
+                                    fd: file.fd,
+                                    resource: resource,
+                                });
+                            }
                         }
-                        sp - stack.physical_address + stack.virtual_address
+
+                        context.name = url.to_string();
+
+                        context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
+
+                        context.stack = Some(ContextMemory {
+                            physical_address: memory::alloc(CONTEXT_STACK_SIZE),
+                            virtual_address: CONTEXT_STACK_ADDR,
+                            virtual_size: CONTEXT_STACK_SIZE,
+                            writeable: true
+                        });
+
+                        context.args = Rc::new(UnsafeCell::new(args));
+                        context.cwd = Rc::new(UnsafeCell::new((*context.cwd.get()).clone()));
+                        context.memory = Rc::new(UnsafeCell::new(memory));
+                        context.files = Rc::new(UnsafeCell::new(files));
+
+                        let user_sp = if let Some(ref stack) = context.stack {
+                            let mut sp = stack.physical_address + stack.virtual_size - 128;
+                            for arg in context_args.iter() {
+                                sp -= mem::size_of::<usize>();
+                                ptr::write(sp as *mut usize, *arg);
+                            }
+                            sp - stack.physical_address + stack.virtual_address
+                        } else {
+                            0
+                        };
+
+                        context.push(0x20 | 3);
+                        context.push(user_sp);
+                        context.push(1 << 9);
+                        context.push(0x18 | 3);
+                        context.push(entry);
+                        context.push(context_userspace as usize);
+
+                        scheduler::end_no_ints(reenable);
                     } else {
-                        0
-                    };
-
-                    context.push(0x20 | 3);
-                    context.push(user_sp);
-                    context.push(1 << 9);
-                    context.push(0x18 | 3);
-                    context.push(entry);
-                    context.push(context_userspace as usize);
-
-                    scheduler::end_no_ints(reenable);
+                        debug!("{}: Invalid memory or entry\n", url.string);
+                    }
                 } else {
-                    debug::d("Invalid memory or entry\n");
+                    debug!("{}: Failed to open\n", url.string);
                 }
             });
 
