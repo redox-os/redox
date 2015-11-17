@@ -5,6 +5,7 @@ use redox::get_slice::GetSlice;
 use redox::io::*;
 use redox::ops::DerefMut;
 use redox::to_num::ToNum;
+use redox::syscall::sys_clone;
 
 use orbital::event::Event;
 use orbital::Point;
@@ -190,7 +191,9 @@ impl Scheme {
                         }
                     }
                     if accepted {
-                        File::exec(&package.binary, &[&path]);
+                        if unsafe { sys_clone(0) } == 0 {
+                            File::exec(&package.binary, &[&path]);
+                        }
                         break;
                     }
                 }
