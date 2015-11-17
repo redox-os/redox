@@ -241,6 +241,10 @@ impl IntelHDA {
         }
         debug::d(", IRQ: ");
         debug::dbh(self.irq);
+        debug::dl();
+
+        return;
+        /*
 
         let pci = &mut self.pci;
 
@@ -551,5 +555,6 @@ impl IntelHDA {
                 }
             }
         }
+        */
     }
 }
