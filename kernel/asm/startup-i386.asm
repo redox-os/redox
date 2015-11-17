@@ -46,6 +46,8 @@ protected_mode:
     ltr ax
 
     ;rust init
+    xor eax, eax
+    mov [0x100000], eax
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], eax
     mov eax, kernel_file.font
