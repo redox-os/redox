@@ -117,11 +117,3 @@ mode_t umask(mode_t mask) {
 int utime(const char * filename, const struct utimbuf * times) {
     UNIMPL(EACCES);
 }
-
-pid_t wait(int * status) {
-    UNIMPL(ECHILD);
-}
-
-pid_t waitpid(pid_t pid, int * status, int options) {
-    UNIMPL(ECHILD);
-}

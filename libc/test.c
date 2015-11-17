@@ -29,8 +29,12 @@ int main(int argc, char ** argv){
         	    pid_t pid = fork();
                 if(pid > 0){
                     printf("Fork Parent %d = %d\n", getpid(), pid);
+                    int status = 0;
+                    waitpid(pid, &status, 0);
+                    printf("Child returned %d\n", status);
                 }else if(pid == 0){
                     printf("Fork Child %d = %d\n", getpid(), pid);
+                    _exit(123);
                 } else {
                     printf("Fork Failed %d = %d\n", getpid(), pid);
                 }
