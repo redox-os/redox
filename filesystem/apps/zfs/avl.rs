@@ -60,71 +60,76 @@ impl<T> Avl<T> {
     }
 
     // Performs a left rotation on a tree/subtree.
-    fn rotate_left(&mut self, node: &mut AvlNodeId) {
+    // Returns the replace the specified node with
+    fn rotate_left(&mut self, node: AvlNodeId) -> AvlNodeId {
         // Keep track of the original node positions
         // For a rotate left, the right child node must exist
-        let mut original = *node;
         let r = node.get(self).unwrap().right.unwrap();
         let rl = r.get(self).unwrap().left;
 
-        *node = r; 
-        original.get_mut(self).unwrap().right = rl;
-        node.get_mut(self).unwrap().left = Some(original);
+        let ret = r; 
+        node.get_mut(self).unwrap().right = rl;
+        ret.get_mut(self).unwrap().left = Some(node);
+
+        ret
     }
 
     // Performs a right rotation on a tree/subtree.
-    fn rotate_right(&mut self, node: &mut AvlNodeId) {
+    // Returns the replace the specified node with
+    fn rotate_right(&mut self, node: AvlNodeId) -> AvlNodeId {
         // Keep track of the original node positions
         // For a rotate right, the left child node must exist
-        let mut original = *node;
-        let l = original.get(self).unwrap().left.unwrap();
+        let l = node.get(self).unwrap().left.unwrap();
         let lr = l.get(self).unwrap().right;
 
-        *node = l;
-        original.get_mut(self).unwrap().left = lr;
-        node.get_mut(self).unwrap().right = Some(original);
+        let ret = l;
+        node.get_mut(self).unwrap().left = lr;
+        ret.get_mut(self).unwrap().right = Some(node);
+
+        ret
     }
 
     // performs a left-right double rotation on a tree/subtree.
-    fn rotate_leftright(&mut self, node: &mut AvlNodeId) {
-        self.rotate_left(node.get_mut(self).unwrap().left.as_mut().unwrap()); // Left node needs to exist
-        self.rotate_right(node);
+    fn rotate_leftright(&mut self, node: AvlNodeId) -> AvlNodeId {
+        let l = node.get(self).unwrap().left.unwrap();
+        let new_l = self.rotate_left(l); // Left node needs to exist
+        node.get_mut(self).unwrap().left = Some(new_l);
+        self.rotate_right(node)
     }
 
     // performs a right-left double rotation on a tree/subtree.
-    fn rotate_rightleft(&mut self, node: &mut AvlNodeId) {
-        self.rotate_right(node.get_mut(self).unwrap().right.as_mut().unwrap()); // Right node needs to exist
-        self.rotate_left(node);
+    fn rotate_rightleft(&mut self, node: AvlNodeId) -> AvlNodeId {
+        let r = node.get(self).unwrap().right.unwrap();
+        let new_r = self.rotate_right(r); // Right node needs to exist
+        node.get_mut(self).unwrap().right = Some(new_r);
+        self.rotate_left(node)
     }
 
     // _ins is the implementation of the binary tree insert function. Lesser values will be stored on
     // the left, while greater values will be stored on the right. No duplicates are allowed.
-    /*fn _ins(int n, Node*& node) {
-        if (!node) {
-            // The node doesn't exist, create it here.
-
-            node = new Node;
-            node->val = n;
-            node->left = 0;
-            node->right = 0;
-        }
-        else
-        {
-            // Node exists, check which way to branch.
-
-            if (n == node->val)
-                return;
-            else if (n < node->val)
-                _ins(n, node->left);
-            else if (n > node->val)
-                _ins(n, node->right);
-        }
+    /*fn _ins(&mut self, node_index: Option<AvlNodeId>, value: T) -> AvlNodeId {
+        let node =
+            match node_index {
+                Some(node) => {
+                    // Node exists, check which way to branch.
+                    if n == node->val {
+                        return node;
+                    else if (n < node->val)
+                        _ins(n, node->left);
+                    else if (n > node->val)
+                        _ins(n, node->right);
+                },
+                None => {
+                    // The node doesn't exist, create it here.
+                    self.allocate_node(value)
+                },
+            };
 
         rebalance(node);
-    }
+    }*/
 
     // _rebalance rebalances the provided node
-    fn rebalance(Node*& node) {
+    /*fn rebalance(Node*& node) {
         if (!node)
         {
             return;
