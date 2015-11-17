@@ -418,11 +418,9 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
 }
 
 pub unsafe fn do_sys_mkdir(path: *const u8, mode: usize) -> usize {
-    let mut ret = usize::MAX;
-
     // Implement body of do_sys_mkdir
 
-    ret
+    usize::MAX
 }
 
 pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
@@ -493,11 +491,26 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 }
 
 pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
-    let mut ret = usize::MAX;
-
     // Implement body of do_sys_mkdir
 
-    ret
+    usize::MAX
+}
+
+pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
+    if pid > 0 {
+        //Specific child
+        if status as usize > 0 {
+
+        }
+    } else if pid == 0 {
+        //Any child whose PGID is equal to this process
+    } else if pid == -1 {
+        //Any child
+    } else {
+        //Any child whose PGID is equal to abs(pid)
+    }
+
+    usize::MAX
 }
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
@@ -616,7 +629,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_BRK => regs.ax = do_sys_brk(regs.bx),
         SYS_CHDIR => regs.ax = do_sys_chdir(regs.bx as *const u8),
         SYS_CLONE => regs.ax = do_sys_clone(regs.bx),
-        SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
+        SYS_CLOSE => regs.ax = do_sys_close(regs.bx),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
         SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
@@ -627,13 +640,14 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_FTRUNCATE => regs.ax = do_sys_ftruncate(regs.bx, regs.cx),
         SYS_GETPID => regs.ax = do_sys_getpid(),
         // TODO: link
-        SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
+        SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx),
         SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
         SYS_NANOSLEEP =>
             regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *const u8),
+        SYS_WAITPID => regs.ax = do_sys_waitpid(regs.bx as isize, regs.cx as *mut usize, regs.dx),
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_YIELD => context_switch(false),
 

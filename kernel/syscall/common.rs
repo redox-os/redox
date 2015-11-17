@@ -41,6 +41,7 @@ pub const SYS_OPEN: usize = 5;
     pub const O_EXCL: usize = 0x800;
 pub const SYS_READ: usize = 3;
 pub const SYS_UNLINK: usize = 10;
+pub const SYS_WAITPID: usize = 7;
 pub const SYS_WRITE: usize = 4;
 pub const SYS_YIELD: usize = 158;
 

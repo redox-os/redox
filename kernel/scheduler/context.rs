@@ -120,6 +120,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
 
         let context = box Context {
             pid: clone_pid,
+            ppid: parent.pid,
             name: parent.name.clone(),
             interrupted: parent.interrupted,
             exited: parent.exited,
@@ -278,6 +279,8 @@ pub struct Context {
 // These members are used for control purposes by the scheduler {
     /// The PID of the context
     pub pid: usize,
+    /// The PID of the parent
+    pub ppid: usize,
     /// The name of the context
     pub name: String,
     /// Indicates that the context was interrupted, used for prioritizing active contexts
@@ -340,6 +343,7 @@ impl Context {
     pub unsafe fn root() -> Box<Self> {
         box Context {
             pid: Context::next_pid(),
+            ppid: 0,
             name: "kernel".to_string(),
             interrupted: false,
             exited: false,
@@ -359,10 +363,19 @@ impl Context {
     }
 
     pub unsafe fn new(name: String, userspace: bool, call: usize, args: &Vec<usize>) -> Box<Self> {
+        let reenable = scheduler::start_no_ints();
+        let ppid = if let Some(current) = Context::current() {
+            current.pid
+        } else {
+            0
+        };
+        scheduler::end_no_ints(reenable);
+
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             pid: Context::next_pid(),
+            ppid: ppid,
             name: name,
             interrupted: false,
             exited: false,
