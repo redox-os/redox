@@ -2,7 +2,7 @@ use collections::string::ToString;
 use collections::vec::Vec;
 
 use core::ops::Deref;
-use core::{ptr, slice, str, usize};
+use core::{mem, ptr, slice, str, usize};
 
 use common::get_slice::GetSlice;
 use common::memory;
@@ -13,8 +13,7 @@ use drivers::pio::*;
 use programs::executor::execute;
 
 use scheduler::{self, Regs};
-use scheduler::context::{context_clone, context_exit, context_switch, Context,
-                         ContextMemory, ContextFile};
+use scheduler::context::{context_clone, context_switch, contexts_ptr, Context, ContextMemory, ContextFile, ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -147,7 +146,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
         context_clone_args.push(clone_pid);
         context_clone_args.push(flags);
         context_clone_args.push(parent_ptr as usize);
-        context_clone_args.push(context_exit as usize);
+        context_clone_args.push(0); //Return address, 0 catches bad code
 
         let contexts = &mut *::scheduler::context::contexts_ptr;
         contexts.push(Context::new(format!("kclone {}", parent.name),
@@ -294,6 +293,47 @@ pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     scheduler::end_no_ints(reenable);
 
     ret
+}
+
+/// Exit context
+///
+/// Unsafe due to interrupt disabling and raw pointers
+pub unsafe fn do_sys_exit(status: usize){
+    let reenable = scheduler::start_no_ints();
+
+    let mut statuses = Vec::new();
+    let (pid, ppid) = if let Some(mut current) = Context::current_mut() {
+        current.exited = true;
+        mem::swap(&mut statuses, &mut current.statuses);
+        (current.pid, current.ppid)
+    } else {
+        (0, 0)
+    };
+
+    for context in (*contexts_ptr).iter_mut() {
+        //Add exit status to parent
+        if context.pid == ppid {
+            context.statuses.push(ContextStatus {
+                pid: pid,
+                status: status
+            });
+            for status in statuses.iter() {
+                context.statuses.push(ContextStatus {
+                    pid: status.pid,
+                    status: status.status
+                });
+            }
+        }
+
+        //Move children to parent
+        if context.ppid == pid {
+            context.ppid = ppid;
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    context_switch(false);
 }
 
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
@@ -497,20 +537,45 @@ pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
 }
 
 pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
-    if pid > 0 {
-        //Specific child
-        if status as usize > 0 {
+    let mut ret = usize::MAX;
 
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(mut current) = Context::current_mut() {
+        let mut i = 0;
+        while i < current.statuses.len() {
+            let mut found = false;
+            if let Some(current_status) = current.statuses.get(i) {
+                if pid > 0 && pid as usize == current_status.pid {
+                    //Specific child
+                    found = true;
+                } else if pid == 0 {
+                    //TODO Any child whose PGID is equal to this process
+                } else if pid == -1 {
+                    //Any child
+                    found = true;
+                } else {
+                    //TODO Any child whose PGID is equal to abs(pid)
+                }
+            }
+            if found {
+                let current_status = current.statuses.remove(i);
+
+                ret = current_status.pid;
+                if status as usize > 0 {
+                    ptr::write(status, current_status.status);
+                }
+
+                break;
+            } else {
+                i += 1;
+            }
         }
-    } else if pid == 0 {
-        //Any child whose PGID is equal to this process
-    } else if pid == -1 {
-        //Any child
-    } else {
-        //Any child whose PGID is equal to abs(pid)
     }
 
-    usize::MAX
+    scheduler::end_no_ints(reenable);
+
+    ret
 }
 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
@@ -633,7 +698,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
         SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
-        SYS_EXIT => context_exit(),
+        SYS_EXIT => do_sys_exit(regs.bx),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         // TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),

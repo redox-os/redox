@@ -7,7 +7,7 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
-use core::{mem, ptr};
+use core::{mem, ptr, usize};
 
 use common::memory;
 use common::paging::Page;
@@ -16,6 +16,7 @@ use scheduler;
 use schemes::Resource;
 
 use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
+use syscall::handle::do_sys_exit;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
@@ -86,22 +87,6 @@ pub unsafe fn context_switch(interrupted: bool) {
     }
 
     scheduler::end_no_ints(reenable);
-}
-
-// TODO: To clean up memory leak, current must be destroyed!
-/// Exit context
-///
-/// Unsafe due to interrupt disabling and raw pointers
-pub unsafe fn context_exit() {
-    let reenable = scheduler::start_no_ints();
-
-    if let Some(mut current) = Context::current_mut() {
-        current.exited = true;
-    }
-
-    scheduler::end_no_ints(reenable);
-
-    context_switch(false);
 }
 
 /// Clone context
@@ -189,6 +174,8 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                 }
                 Rc::new(UnsafeCell::new(files))
             },
+
+            statuses: Vec::new(),
         };
 
         let contexts = &mut *contexts_ptr;
@@ -196,6 +183,8 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
     }
 
     scheduler::end_no_ints(reenable);
+
+    do_sys_exit(0);
 }
 
 // Must have absolutely no pushes or pops
@@ -237,6 +226,7 @@ pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
     memory::unalloc(box_fn_ptr);
     box_fn();
+    do_sys_exit(0);
 }
 
 ///TODO: Investigate for double frees
@@ -273,6 +263,11 @@ impl Drop for ContextMemory {
 pub struct ContextFile {
     pub fd: usize,
     pub resource: Box<Resource>,
+}
+
+pub struct ContextStatus {
+    pub pid: usize,
+    pub status: usize,
 }
 
 pub struct Context {
@@ -314,6 +309,9 @@ pub struct Context {
     /// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Rc<UnsafeCell<Vec<ContextFile>>>,
 // }
+
+    /// Exit statuses of children
+    pub statuses: Vec<ContextStatus>,
 }
 
 impl Context {
@@ -334,6 +332,10 @@ impl Context {
 
         let ret = context_pid;
         context_pid += 1;
+
+        if context_pid >= 65536 {
+            context_pid = 1;
+        }
 
         scheduler::end_no_ints(reenable);
 
@@ -359,23 +361,17 @@ impl Context {
             cwd: Rc::new(UnsafeCell::new(String::new())),
             memory: Rc::new(UnsafeCell::new(Vec::new())),
             files: Rc::new(UnsafeCell::new(Vec::new())),
+
+            statuses: Vec::new(),
         }
     }
 
     pub unsafe fn new(name: String, userspace: bool, call: usize, args: &Vec<usize>) -> Box<Self> {
-        let reenable = scheduler::start_no_ints();
-        let ppid = if let Some(current) = Context::current() {
-            current.pid
-        } else {
-            0
-        };
-        scheduler::end_no_ints(reenable);
-
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
             pid: Context::next_pid(),
-            ppid: ppid,
+            ppid: 0,
             name: name,
             interrupted: false,
             exited: false,
@@ -400,6 +396,8 @@ impl Context {
             cwd: Rc::new(UnsafeCell::new(String::new())),
             memory: Rc::new(UnsafeCell::new(Vec::new())),
             files: Rc::new(UnsafeCell::new(Vec::new())),
+
+            statuses: Vec::new(),
         };
 
         if userspace {
@@ -438,7 +436,7 @@ impl Context {
 
             let mut context_box_args: Vec<usize> = Vec::new();
             context_box_args.push(box_fn_ptr as usize);
-            context_box_args.push(context_exit as usize);
+            context_box_args.push(0); //Return address, 0 catches bad code
 
             let reenable = scheduler::start_no_ints();
             if contexts_ptr as usize > 0 {

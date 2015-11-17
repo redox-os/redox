@@ -30,7 +30,7 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::mem;
+use core::{mem, usize};
 use core::slice::SliceExt;
 
 use common::debug;
@@ -58,7 +58,7 @@ use programs::scheme::*;
 use programs::session::*;
 
 use scheduler::{Context, Regs, TSS};
-use scheduler::context::{context_enabled, context_exit, context_switch, context_i, context_pid, contexts_ptr};
+use scheduler::context::{context_enabled, context_switch, context_i, context_pid, contexts_ptr};
 
 use schemes::Url;
 use schemes::arp::*;
@@ -394,7 +394,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             exception_inner!($name);
 
             loop {
-                context_exit();
+                do_sys_exit(usize::MAX);
             }
         })
     };
@@ -413,7 +413,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    ERR: {:08X}", error);
 
             loop {
-                context_exit();
+                do_sys_exit(usize::MAX);
             }
         })
     };
