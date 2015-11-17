@@ -16,6 +16,10 @@ int _execve(const char *name, const char **argv, const char **env) {
     return (int)syscall(SYS_EXECVE, (uint)name, (uint)argv, (uint)env);
 }
 
+int fork() {
+    return (int)syscall(SYS_CLONE, 0, 0, 0);
+}
+
 char * getcwd(char * buf, size_t size) {
     char * cwd = NULL;
 
@@ -44,8 +48,9 @@ char * getcwd(char * buf, size_t size) {
     return cwd;
 }
 
-int fork() {
-    return (int)syscall(SYS_CLONE, 0, 0, 0);
+
+pid_t getpid() {
+    return (int)syscall(SYS_GETPID, 0, 0, 0);
 }
 
 void * sbrk(ptrdiff_t increment){

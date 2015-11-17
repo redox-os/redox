@@ -58,7 +58,7 @@ use programs::scheme::*;
 use programs::session::*;
 
 use scheduler::{Context, Regs, TSS};
-use scheduler::context::{context_enabled, context_exit, context_switch, context_i, contexts_ptr};
+use scheduler::context::{context_enabled, context_exit, context_switch, context_i, context_pid, contexts_ptr};
 
 use schemes::Url;
 use schemes::arp::*;
@@ -277,10 +277,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     clock_monotonic.secs = 0;
     clock_monotonic.nanos = 0;
 
-    contexts_ptr = Box::into_raw(box Vec::new());
-    (*contexts_ptr).push(Context::root());
+    context_pid = 0;
     context_i = 0;
     context_enabled = false;
+    contexts_ptr = Box::into_raw(box Vec::new());
+    (*contexts_ptr).push(Context::root());
 
     session_ptr = Box::into_raw(Session::new());
 

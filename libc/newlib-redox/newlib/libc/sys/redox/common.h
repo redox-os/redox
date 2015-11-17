@@ -26,6 +26,7 @@ extern int errno;
 #define SYS_FSTAT 28
 #define SYS_FSYNC 118
 #define SYS_FTRUNCATE 93
+#define SYS_GETPID 20
 #define SYS_LINK 9
 #define SYS_LSEEK 19
 #define SYS_NANOSLEEP 162

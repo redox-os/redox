@@ -79,6 +79,10 @@ pub unsafe fn sys_ftruncate(fd: usize, len: usize) -> usize {
     syscall(SYS_FTRUNCATE, fd, len, 0)
 }
 
+pub unsafe fn sys_getpid() -> usize {
+    syscall(SYS_GETPID, 0, 0, 0)
+}
+
 pub unsafe fn sys_link(old: *const u8, new: *const u8) -> usize {
     syscall(SYS_LINK, old as usize, new as usize, 0)
 }

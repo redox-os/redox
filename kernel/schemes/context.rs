@@ -34,7 +34,7 @@ impl KScheme for ContextScheme {
                 };
 
                 let line = format!("{:<6}{:<8}{:<6}{}",
-                                   i,
+                                   context.pid,
                                    memory_string,
                                    (*context.files.get()).len(),
                                    context.name);

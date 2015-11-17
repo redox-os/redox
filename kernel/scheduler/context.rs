@@ -23,6 +23,7 @@ pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
+pub static mut context_pid: usize = 0;
 
 /// Switch context
 ///
@@ -106,7 +107,7 @@ pub unsafe fn context_exit() {
 /// Clone context
 ///
 /// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize) {
+pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize, clone_pid: usize) {
     let reenable = scheduler::start_no_ints();
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -118,6 +119,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                  CONTEXT_STACK_SIZE + 512);
 
         let context = box Context {
+            pid: clone_pid,
             name: parent.name.clone(),
             interrupted: parent.interrupted,
             exited: parent.exited,
@@ -274,45 +276,71 @@ pub struct ContextFile {
 
 pub struct Context {
 // These members are used for control purposes by the scheduler {
-// The name of the context
-        pub name: String,
-/// Indicates that the context was interrupted, used for prioritizing active contexts
-        pub interrupted: bool,
-/// Indicates that the context exited
-        pub exited: bool,
+    /// The PID of the context
+    pub pid: usize,
+    /// The name of the context
+    pub name: String,
+    /// Indicates that the context was interrupted, used for prioritizing active contexts
+    pub interrupted: bool,
+    /// Indicates that the context exited
+    pub exited: bool,
 // }
 
 // These members control the stack and registers and are unique to each context {
-// The kernel stack
-        pub kernel_stack: usize,
-/// The current kernel stack pointer
-        pub sp: usize,
-/// The current kernel flags
-        pub flags: usize,
-/// The location used to save and load SSE and FPU registers
-        pub fx: usize,
-/// The context stack
-        pub stack: Option<ContextMemory>,
-/// Indicates that registers can be loaded (they must be saved first)
-        pub loadable: bool,
+    /// The kernel stack
+    pub kernel_stack: usize,
+    /// The current kernel stack pointer
+    pub sp: usize,
+    /// The current kernel flags
+    pub flags: usize,
+    /// The location used to save and load SSE and FPU registers
+    pub fx: usize,
+    /// The context stack
+    pub stack: Option<ContextMemory>,
+    /// Indicates that registers can be loaded (they must be saved first)
+    pub loadable: bool,
 // }
 
 // These members are cloned for threads, copied or created for processes {
-// Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
-        pub args: Rc<UnsafeCell<Vec<String>>>,
-/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
-        pub cwd: Rc<UnsafeCell<String>>,
-/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
-        pub memory: Rc<UnsafeCell<Vec<ContextMemory>>>,
-/// Program files, cloned for threads, copied or created for processes. Modified by file operations
-        pub files: Rc<UnsafeCell<Vec<ContextFile>>>,
+    // Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
+    pub args: Rc<UnsafeCell<Vec<String>>>,
+    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+    pub cwd: Rc<UnsafeCell<String>>,
+    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+    pub memory: Rc<UnsafeCell<Vec<ContextMemory>>>,
+    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
+    pub files: Rc<UnsafeCell<Vec<ContextFile>>>,
 // }
 }
 
 impl Context {
+    pub unsafe fn next_pid() -> usize {
+        let reenable = scheduler::start_no_ints();
+
+        let mut collision = true;
+        while collision {
+            collision = false;
+            for context in (*contexts_ptr).iter() {
+                if context_pid == context.pid {
+                    context_pid += 1;
+                    collision = true;
+                    break;
+                }
+            }
+        }
+
+        let ret = context_pid;
+        context_pid += 1;
+
+        scheduler::end_no_ints(reenable);
+
+        ret
+    }
+
     pub unsafe fn root() -> Box<Self> {
         box Context {
-            name: "kidle".to_string(),
+            pid: Context::next_pid(),
+            name: "kernel".to_string(),
             interrupted: false,
             exited: false,
 
@@ -334,6 +362,7 @@ impl Context {
         let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
 
         let mut ret = box Context {
+            pid: Context::next_pid(),
             name: name,
             interrupted: false,
             exited: false,

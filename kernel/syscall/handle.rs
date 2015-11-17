@@ -135,14 +135,16 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
 #[cold]
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
-    let mut parent_ptr: *const Context = 0 as *const Context;
+    let mut clone_pid = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        parent_ptr = parent.deref();
+        clone_pid = Context::next_pid();
+        let parent_ptr: *const Context = parent.deref();
 
         let mut context_clone_args: Vec<usize> = Vec::new();
+        context_clone_args.push(clone_pid);
         context_clone_args.push(flags);
         context_clone_args.push(parent_ptr as usize);
         context_clone_args.push(context_exit as usize);
@@ -160,15 +162,14 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 
     let mut ret = usize::MAX;
 
-    if parent_ptr as usize > 0 {
+    if clone_pid != usize::MAX {
         let reenable = scheduler::start_no_ints();
 
-        if let Some(new) = Context::current() {
-            let new_ptr: *const Context = new.deref();
-            if new_ptr == parent_ptr {
-                ret = 1;
-            } else {
+        if let Some(current) = Context::current() {
+            if current.pid == clone_pid {
                 ret = 0;
+            } else {
+                ret = clone_pid;
             }
         }
 
@@ -361,6 +362,20 @@ pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
 
             scheduler::start_no_ints();
         }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
+pub unsafe fn do_sys_getpid() -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(current) = Context::current() {
+        ret = current.pid;
     }
 
     scheduler::end_no_ints(reenable);
@@ -610,6 +625,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         // TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
         SYS_FTRUNCATE => regs.ax = do_sys_ftruncate(regs.bx, regs.cx),
+        SYS_GETPID => regs.ax = do_sys_getpid(),
         // TODO: link
         SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
         SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
