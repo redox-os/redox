@@ -275,17 +275,13 @@ pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
             current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         let path = Url::from_string(path_string.clone());
-        let wd = Url::from_string(path_string.get_slice(None,
-                                                        Some(path_string.rfind('/').unwrap_or(0) +
-                                                             1))
-                                             .to_string());
 
         let mut args_vec = Vec::new();
         for arg in c_array_to_slice(args) {
             args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
         }
 
-        execute(&path, &wd, args_vec);
+        execute(path, args_vec);
         ret = 0;
     }
 
