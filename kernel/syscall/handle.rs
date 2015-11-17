@@ -539,41 +539,50 @@ pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
 pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
     let mut ret = usize::MAX;
 
-    let reenable = scheduler::start_no_ints();
+    loop {
+        let reenable = scheduler::start_no_ints();
 
-    if let Some(mut current) = Context::current_mut() {
-        let mut i = 0;
-        while i < current.statuses.len() {
+        if let Some(mut current) = Context::current_mut() {
             let mut found = false;
-            if let Some(current_status) = current.statuses.get(i) {
-                if pid > 0 && pid as usize == current_status.pid {
-                    //Specific child
-                    found = true;
-                } else if pid == 0 {
-                    //TODO Any child whose PGID is equal to this process
-                } else if pid == -1 {
-                    //Any child
-                    found = true;
+            let mut i = 0;
+            while i < current.statuses.len() {
+                if let Some(current_status) = current.statuses.get(i) {
+                    if pid > 0 && pid as usize == current_status.pid {
+                        //Specific child
+                        found = true;
+                    } else if pid == 0 {
+                        //TODO Any child whose PGID is equal to this process
+                    } else if pid == -1 {
+                        //Any child
+                        found = true;
+                    } else {
+                        //TODO Any child whose PGID is equal to abs(pid)
+                    }
+                }
+                if found {
+                    let current_status = current.statuses.remove(i);
+
+                    ret = current_status.pid;
+                    if status as usize > 0 {
+                        ptr::write(status, current_status.status);
+                    }
+
+                    break;
                 } else {
-                    //TODO Any child whose PGID is equal to abs(pid)
+                    i += 1;
                 }
             }
-            if found {
-                let current_status = current.statuses.remove(i);
-
-                ret = current_status.pid;
-                if status as usize > 0 {
-                    ptr::write(status, current_status.status);
-                }
-
+            if(found){
                 break;
-            } else {
-                i += 1;
             }
+        } else {
+            break;
         }
-    }
 
-    scheduler::end_no_ints(reenable);
+        scheduler::end_no_ints(reenable);
+
+        context_switch(false);
+    }
 
     ret
 }

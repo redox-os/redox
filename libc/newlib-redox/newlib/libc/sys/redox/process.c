@@ -65,3 +65,11 @@ void * sbrk(ptrdiff_t increment){
 int sched_yield() {
     return (int)syscall(SYS_YIELD, 0, 0, 0);
 }
+
+pid_t wait(int * status) {
+    return waitpid(-1, status, 0);
+}
+
+pid_t waitpid(pid_t pid, int * status, int options) {
+    return (pid_t)syscall(SYS_WAITPID, (uint)pid, (uint)status, (uint)options);
+}
