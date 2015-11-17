@@ -255,28 +255,23 @@ unsafe fn event_loop() -> ! {
 
 /// Init processes
 unsafe fn init_loop() {
-    let pid = do_sys_clone(CLONE_VM) as isize;
-    if pid == 0 {
-        let stdin = Url::from_str("debug:").open();
-        let stdout = Url::from_str("debug:").open();
-        let stderr = Url::from_str("debug:").open();
+    let wd_c = "file:/\0";
+    do_sys_chdir(wd_c.as_ptr());
 
-        let path_string = "file:/apps/shell/main.bin";
-        let path = Url::from_string(path_string.to_string());
-        let wd = Url::from_string(path_string.get_slice(None,
-                                                     Some(path_string.rfind('/').unwrap_or(0) +
-                                                          1))
-                                          .to_string());
-        execute(&path, &wd, Vec::new());
-    } else if pid > 0 {
-        debug!("INIT: {} started\n", pid);
+    let stdio_c = "debug:\0";
+    do_sys_open(stdio_c.as_ptr(), 0);
+    do_sys_open(stdio_c.as_ptr(), 0);
+    do_sys_open(stdio_c.as_ptr(), 0);
 
-        let mut status: usize = 0;
-        do_sys_waitpid(pid, &mut status, 0);
+    let path_string = "file:/apps/shell/main.bin";
+    let path = Url::from_str(path_string);
 
-        debug!("INIT: {} exited with {}\n", pid, status);
-    } else {
-        debug!("INIT failed to spawn\n");
+    debug!("INIT: Executing {}\n", path_string);
+    execute(path, Vec::new());
+    debug!("INIT: Failed to execute\n");
+
+    loop {
+        context_switch(false);
     }
 }
 
