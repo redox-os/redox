@@ -30,8 +30,11 @@ int main(int argc, char ** argv){
                 if(pid > 0){
                     printf("Fork Parent %d = %d\n", getpid(), pid);
                     int status = 0;
-                    waitpid(pid, &status, 0);
-                    printf("Child returned %d\n", status);
+                    if(waitpid(pid, &status, 0) >= 0){
+                        printf("waitpid status %d\n", status);
+                    }else{
+                        printf("waitpid failed\n");
+                    }
                 }else if(pid == 0){
                     printf("Fork Child %d = %d\n", getpid(), pid);
                     _exit(123);
