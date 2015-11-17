@@ -37,10 +37,6 @@ int getdtablesize() {
     return 65536;
 }
 
-pid_t getpid() {
-    return 1;
-}
-
 struct group * getgrnam(const char * name){
     return (struct group *) NULL;
 }
