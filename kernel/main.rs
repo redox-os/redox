@@ -375,9 +375,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception_inner {
         ($name:expr) => ({
             if let Some(context) = Context::current() {
-                debugln!("PID {}: {}", context_i, context.name);
-            } else {
-                debugln!("PID {}", context_i,);
+                debugln!("PID {}: {}", context.pid, context.name);
             }
 
             debugln!("  INT {:X}: {}", interrupt, $name);
