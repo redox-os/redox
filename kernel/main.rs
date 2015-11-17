@@ -254,48 +254,20 @@ unsafe fn event_loop() -> ! {
     }
 }
 
-/// Initialize debug
-pub unsafe fn debug_init() {
-    Pio8::new(0x3F8 + 1).write(0x00);
-    Pio8::new(0x3F8 + 3).write(0x80);
-    Pio8::new(0x3F8 + 0).write(0x03);
-    Pio8::new(0x3F8 + 1).write(0x00);
-    Pio8::new(0x3F8 + 3).write(0x03);
-    Pio8::new(0x3F8 + 2).write(0xC7);
-    Pio8::new(0x3F8 + 4).write(0x0B);
-    Pio8::new(0x3F8 + 1).write(0x01);
-}
-
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
-    display::fonts = font_data;
-    tss_ptr = tss_data as *mut TSS;
-
-    console = 0 as *mut Console;
-
-    clock_realtime.secs = 0;
-    clock_realtime.nanos = 0;
-
-    clock_monotonic.secs = 0;
-    clock_monotonic.nanos = 0;
-
-    contexts_ptr = 0 as *mut Vec<Box<Context>>;
-    context_i = 0;
-    context_enabled = false;
-
-    session_ptr = 0 as *mut Session;
-
-    events_ptr = 0 as *mut Queue<Event>;
-
-    debug_init();
-
     Page::init();
     memory::cluster_init();
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
+    display::fonts = font_data;
+    tss_ptr = tss_data as *mut TSS;
+
     console = Box::into_raw(Console::new());
     (*console).draw = true;
+
+    //debug_init();
 
     debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
@@ -304,8 +276,13 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     clock_realtime = Rtc::new().time();
 
+    clock_monotonic.secs = 0;
+    clock_monotonic.nanos = 0;
+
     contexts_ptr = Box::into_raw(box Vec::new());
     (*contexts_ptr).push(Context::root());
+    context_i = 0;
+    context_enabled = false;
 
     session_ptr = Box::into_raw(Session::new());
 
@@ -314,7 +291,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     let session = &mut *session_ptr;
 
     session.items.push(Ps2::new());
-    session.items.push(Serial::new(0x3F8, 0x4));
+    //session.items.push(Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
