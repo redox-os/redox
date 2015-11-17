@@ -378,14 +378,12 @@ impl Context {
             ret.push(0x18 | 3);
             ret.push(call);
             ret.push(context_userspace as usize);
-            ret.push(context_exit as usize);
         } else {
             for arg in args.iter() {
                 ret.push(*arg);
             }
 
             ret.push(call);
-            ret.push(context_exit as usize);
         }
 
         ret
