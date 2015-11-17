@@ -14,7 +14,9 @@ vesa:
 	cmp dword [.required], 0	;if both required x and required y are set, forget this
 	jne near .findmode
 	mov ax, 0x4F15
-	mov bl, 1
+	mov bx, 1
+	xor cx, cx
+	xor dx, dx
 	mov di, VBEEDID
 	int 0x10
 	cmp ax, 0x4F
@@ -102,7 +104,6 @@ vesa:
 	jmp .findmode
 .getmodeinfo:
 	push esi
-	;or cx, 1 << 14
 	mov [.currentmode], cx
 	mov ax, 0x4F01
 	mov di, VBEModeInfo
@@ -142,6 +143,9 @@ vesa:
 	mov cx, [.currentmode]
 	mov [.goodmode], cx
 	push esi
+	call decshowrm
+	mov al, ':'
+	call charrm
 	mov cx, [VBEModeInfo.xresolution]
 	call decshowrm
 	mov al, 'x'
@@ -176,8 +180,8 @@ vesa:
 	xor eax, eax
 	ret
 
-.minx dw 1024
-.miny dw 768
+.minx dw 640
+.miny dw 480
 .required:
 .requiredx dw 0	;USE THESE WITH CAUTION
 .requiredy dw 0
