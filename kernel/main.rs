@@ -253,28 +253,6 @@ unsafe fn event_loop() -> ! {
     }
 }
 
-/// Init processes
-unsafe fn init_loop() {
-    let wd_c = "file:/\0";
-    do_sys_chdir(wd_c.as_ptr());
-
-    let stdio_c = "debug:\0";
-    do_sys_open(stdio_c.as_ptr(), 0);
-    do_sys_open(stdio_c.as_ptr(), 0);
-    do_sys_open(stdio_c.as_ptr(), 0);
-
-    let path_string = "file:/apps/shell/main.bin";
-    let path = Url::from_str(path_string);
-
-    debug!("INIT: Executing {}\n", path_string);
-    execute(path, Vec::new());
-    debug!("INIT: Failed to execute\n");
-
-    loop {
-        context_switch(false);
-    }
-}
-
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
     Page::init();
@@ -338,11 +316,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                        event_loop();
                    });
 
-    Context::spawn("kinit".to_string(),
-                    box move || {
-                        init_loop();
-                    });
-
     Context::spawn("karp".to_string(),
                    box move || {
                        ArpScheme::reply_loop();
@@ -371,6 +344,27 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             }
         }
     }
+
+    Context::spawn("kinit".to_string(), box move || {
+        let wd_c = "file:/\0";
+        do_sys_chdir(wd_c.as_ptr());
+
+        let stdio_c = "debug:\0";
+        do_sys_open(stdio_c.as_ptr(), 0);
+        do_sys_open(stdio_c.as_ptr(), 0);
+        do_sys_open(stdio_c.as_ptr(), 0);
+
+        let path_string = "file:/apps/shell/main.bin";
+        let path = Url::from_str(path_string);
+
+        debug!("INIT: Executing {}\n", path_string);
+        execute(path, Vec::new());
+        debug!("INIT: Failed to execute\n");
+
+        loop {
+            context_switch(false);
+        }
+    });
 }
 
 #[cold]

@@ -29,8 +29,6 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
         if context_ptr as usize > 0 {
             Context::spawn("kexec ".to_string() + &url.string, box move || {
-                debug!("Start kexec\n");
-
                 let mut memory = Vec::new();
                 let mut entry = 0;
 
@@ -86,6 +84,8 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
                     let context = &mut * context_ptr;
 
+                    context.name = url.to_string();
+
                     context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
                     context.stack = Some(ContextMemory {
@@ -120,8 +120,6 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                 } else {
                     debug::d("Invalid memory or entry\n");
                 }
-
-                debug!("Finish kexec\n");
             });
 
             loop {
