@@ -277,7 +277,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     clock_monotonic.secs = 0;
     clock_monotonic.nanos = 0;
 
-    context_pid = 0;
+    context_pid = 1;
     context_i = 0;
     context_enabled = false;
     contexts_ptr = Box::into_raw(box Vec::new());
