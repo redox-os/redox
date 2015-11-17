@@ -5,7 +5,7 @@ use redox::get_slice::GetSlice;
 use redox::io::*;
 use redox::ops::DerefMut;
 use redox::to_num::ToNum;
-use redox::thread;
+use redox::syscall::sys_clone;
 
 use orbital::event::Event;
 use orbital::Point;
@@ -192,9 +192,8 @@ impl Scheme {
                     }
                     if accepted {
                         let binary = package.binary.clone();
-                        thread::spawn(move || {
-                            File::exec(&binary, &[&path]);
-                        });
+                        println!("Exec {} {}", binary, path);
+                        //File::exec(&binary, &[&path]);
                         break;
                     }
                 }
