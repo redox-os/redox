@@ -150,7 +150,6 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 
         let contexts = &mut *::scheduler::context::contexts_ptr;
         contexts.push(Context::new(format!("kclone {}", parent.name),
-                                   false,
                                    context_clone as usize,
                                    &context_clone_args));
     }
@@ -572,7 +571,7 @@ pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> 
                     i += 1;
                 }
             }
-            if(found){
+            if found {
                 break;
             }
         } else {

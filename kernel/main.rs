@@ -70,6 +70,7 @@ use schemes::ip::*;
 use schemes::memory::*;
 //use schemes::display::*;
 
+use syscall::common::CLONE_VM;
 use syscall::handle::*;
 
 /// Common std-like functionality
@@ -252,6 +253,33 @@ unsafe fn event_loop() -> ! {
     }
 }
 
+/// Init processes
+unsafe fn init_loop() {
+    let pid = do_sys_clone(CLONE_VM) as isize;
+    if pid == 0 {
+        let stdin = Url::from_str("debug:").open();
+        let stdout = Url::from_str("debug:").open();
+        let stderr = Url::from_str("debug:").open();
+
+        let path_string = "file:/apps/shell/main.bin";
+        let path = Url::from_string(path_string.to_string());
+        let wd = Url::from_string(path_string.get_slice(None,
+                                                     Some(path_string.rfind('/').unwrap_or(0) +
+                                                          1))
+                                          .to_string());
+        execute(&path, &wd, Vec::new());
+    } else if pid > 0 {
+        debug!("INIT: {} started\n", pid);
+
+        let mut status: usize = 0;
+        do_sys_waitpid(pid, &mut status, 0);
+
+        debug!("INIT: {} exited with {}\n", pid, status);
+    } else {
+        debug!("INIT failed to spawn\n");
+    }
+}
+
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
     Page::init();
@@ -315,6 +343,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                        event_loop();
                    });
 
+    Context::spawn("kinit".to_string(),
+                    box move || {
+                        init_loop();
+                    });
+
     Context::spawn("karp".to_string(),
                    box move || {
                        ArpScheme::reply_loop();
@@ -342,16 +375,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 scheduler::end_no_ints(reenable);
             }
         }
-    }
-
-    {
-        let path_string = "file:/apps/shell/main.bin";
-        let path = Url::from_string(path_string.to_string());
-        let wd = Url::from_string(path_string.get_slice(None,
-                                                        Some(path_string.rfind('/').unwrap_or(0) +
-                                                             1))
-                                             .to_string());
-        execute(&path, &wd, Vec::new());
     }
 }
 
