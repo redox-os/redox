@@ -23,7 +23,7 @@ use scheduler::context::context_switch;
 
 use syscall::common::O_CREAT;
 
-const PIO: bool = false;
+const PIO: bool = true;
 
 /// The header of the fs
 #[repr(packed)]

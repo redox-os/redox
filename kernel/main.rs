@@ -6,7 +6,6 @@
 #![feature(collections)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
-#![feature(core_simd)]
 #![feature(core_str_ext)]
 #![feature(core_slice_ext)]
 #![feature(fnbox)]
@@ -40,7 +39,6 @@ use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
-// use common::prompt;
 use common::time::Duration;
 
 use drivers::pci::*;
