@@ -6,8 +6,7 @@ use super::zio;
 
 /// MRU - Most Recently Used cache
 struct Mru {
-    // TODO: keep track of use counts. So mru_map becomes (use_count: u64, Vec<u8>)
-    map: BTreeMap<DVAddr, (u64, Vec<u8>)>,
+    map: BTreeMap<DVAddr, Vec<u8>>,
     queue: VecDeque<DVAddr>, // Oldest DVAddrs are at the end
     size: usize, // Max mru cache size in bytes
     used: usize, // Used bytes in mru cache
@@ -36,9 +35,9 @@ impl Mru {
 
         // Add the block to the cache
         self.used += block.len();
-        self.map.insert(*dva, (0, block));
+        self.map.insert(*dva, block);
         self.queue.push_front(*dva);
-        Ok(self.map.get(dva).unwrap().1.clone())
+        Ok(self.map.get(dva).unwrap().clone())
     }
 }
 
@@ -87,20 +86,19 @@ impl ArCache {
     }
 
     pub fn read(&mut self, reader: &mut zio::Reader, dva: &DVAddr) -> Result<Vec<u8>, String> {
-        if let Some(block) = self.mru.map.get_mut(dva) {
-            // TODO: Keep track of MRU DVA use count. If it gets used a second time, move the block into
-            // the MFU cache.
-
-            block.0 += 1;
+        if let Some(block) = self.mru.map.remove(dva) {
+            self.mfu.map.insert(*dva, (0, block.clone()));
 
             // Block is cached
-            return Ok(block.1.clone());
+            return Ok(block);
         }
         if let Some(block) = self.mfu.map.get_mut(dva) {
-            // TODO: keep track of DVA use count
             // Block is cached
-
-            block.0 += 1;
+            if block.0 > 1000 {
+                block.0 = 0;
+            } else {
+                block.0 += 1;
+            }
 
             return Ok(block.1.clone());
         }
