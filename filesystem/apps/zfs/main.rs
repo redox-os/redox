@@ -471,42 +471,6 @@ pub fn main() {
                             }
                             None => println!("Usage: ls <path>"),
                         }
-                    } else if command == "mos" {
-                        let ref uberblock = zfs.uberblock;
-                        let mos_dva = uberblock.rootbp.dvas[0];
-                        println!("DVA: {:?}", mos_dva);
-                        println!("type: {:X}", uberblock.rootbp.object_type());
-                        println!("checksum: {:X}", uberblock.rootbp.checksum());
-                        println!("compression: {:X}", uberblock.rootbp.compression());
-                        println!("Reading {} sectors starting at {}", mos_dva.asize(), mos_dva.sector());
-                        let obj_set: Result<ObjectSetPhys, String> =
-                            zfs.reader.read_type(&uberblock.rootbp);
-                        if let Ok(ref obj_set) = obj_set {
-                            println!("Got meta object set");
-                            println!("os_type: {:X}", obj_set.os_type);
-                            println!("meta dnode: {:?}\n", obj_set.meta_dnode);
-
-                            println!("Reading MOS...");
-                            let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
-                            let mos_array_dva = mos_block_ptr.dvas[0];
-
-                            println!("DVA: {:?}", mos_array_dva);
-                            println!("type: {:X}", mos_block_ptr.object_type());
-                            println!("checksum: {:X}", mos_block_ptr.checksum());
-                            println!("compression: {:X}", mos_block_ptr.compression());
-                            println!("Reading {} sectors starting at {}", mos_array_dva.asize(), mos_array_dva.sector());
-                            let dnode: Result<DNodePhys, String> =
-                                zfs.reader.read_type_array(&mos_block_ptr, 1);
-                            println!("Got MOS dnode array");
-                            println!("dnode: {:?}", dnode);
-
-                            if let Ok(ref dnode) = dnode {
-                                println!("Reading object directory zap object...");
-                                let zap_obj: Result<zap::MZapWrapper, String> =
-                                    zfs.reader.read_type(dnode.get_blockptr(0));
-                                println!("{:?}", zap_obj);
-                            }
-                        }
                     } else if command == "dump" {
                         match args.get(1) {
                             Some(arg) => {
@@ -532,7 +496,7 @@ pub fn main() {
                         println!("Closing");
                         close = true;
                     } else {
-                        println!("Commands: uber vdev_label mos file ls dump close");
+                        println!("Commands: uber vdev_label file ls dump close");
                     }
                 }
                 None => {
