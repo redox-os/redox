@@ -316,7 +316,7 @@ impl SchemeItem {
                 }
                 end_no_ints(reenable);
 
-                (*scheme_item_ptr).run()
+                (*scheme_item_ptr).run();
             }
         });
 
