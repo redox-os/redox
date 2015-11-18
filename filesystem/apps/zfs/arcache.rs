@@ -13,8 +13,8 @@ pub struct ArCache {
     // TODO: keep track of use counts. So mru_map becomes (use_count: u64, Vec<u8>)
     mru_map: BTreeMap<DVAddr, Vec<u8>>, // Most recently used cache
     mru_queue: VecDeque<DVAddr>, // Oldest DVAddrs are at the end
-    mru_size: usize, // Max mru cache size in bytes
-    mru_used: usize, // Used bytes in mru cache
+    mru_size: usize, // Max mru cache size in blocks 
+    mru_used: usize, // Number of used blocks in mru cache
 
     // MFU
     // TODO: Keep track of use counts. So mfu_map becomes (use_count: u64, Vec<u8>). Reset the use
@@ -22,8 +22,8 @@ pub struct ArCache {
     // a knob for the user.
     // TODO: Keep track of minimum frequency and corresponding DVA
     mfu_map: BTreeMap<DVAddr, Vec<u8>>, // Most frequently used cache
-    mfu_size: usize, // Max mfu cache size in bytes
-    mfu_used: usize, // Used bytes in mfu cache
+    mfu_size: usize, // Max mfu cache size in blocks
+    mfu_used: usize, // Number of used bytes in mfu cache
 }
 
 impl ArCache {
@@ -31,11 +31,11 @@ impl ArCache {
         ArCache {
             mru_map: BTreeMap::new(),
             mru_queue: VecDeque::new(),
-            mru_size: 10,
+            mru_size: 1000,
             mru_used: 0,
 
             mfu_map: BTreeMap::new(),
-            mfu_size: 10,
+            mfu_size: 1000,
             mfu_used: 0,
         }
     }
@@ -63,18 +63,19 @@ impl ArCache {
 
     fn mru_cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String>{
         // If necessary, make room for the block in the cache
-        while self.mru_used + block.len() > self.mru_size {
-            let last_dva = match self.mru_queue.pop_back()
-            {
-                Some(dva) => dva,
-                None => return Err("No more ARC MRU items to free".to_string()),
-            };
+        while self.mru_used + (dva.asize() as usize) > self.mru_size {
+            let last_dva =
+                match self.mru_queue.pop_back()
+                {
+                    Some(dva) => dva,
+                    None => return Err("No more ARC MRU items to free".to_string()),
+                };
             self.mru_map.remove(&last_dva);
             self.mru_used -= last_dva.asize() as usize;
         }
 
         // Add the block to the cache
-        self.mru_used += block.len();
+        self.mru_used += dva.asize() as usize;
         self.mru_map.insert(*dva, block);
         self.mru_queue.push_front(*dva);
         Ok(self.mru_map.get(dva).unwrap().clone())
