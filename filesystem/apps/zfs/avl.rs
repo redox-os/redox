@@ -13,7 +13,16 @@ pub struct AvlNodeId {
 }
 
 impl AvlNodeId {
-    pub fn get<'a, T>(&self, avl: &'a Avl<T>) -> Option<&'a AvlNode<T>> {
+    pub fn get<'a, T>(&self, avl: &'a Avl<T>) -> &'a AvlNode<T> {
+        let ref slot = avl.nodes[self.index];
+        if slot.time_stamp == self.time_stamp {
+            slot.node.as_ref().unwrap()
+        } else {
+            panic!("AvlNodeId had invalid time_stamp");
+        }
+    }
+
+    pub fn try_get<'a, T>(&self, avl: &'a Avl<T>) -> Option<&'a AvlNode<T>> {
         avl.nodes
            .get(self.index)
            .and_then(|slot| {
@@ -25,7 +34,16 @@ impl AvlNodeId {
            })
     }
 
-    pub fn get_mut<'a, T>(&self, avl: &'a mut Avl<T>) -> Option<&'a mut AvlNode<T>> {
+    pub fn get_mut<'a, T>(&self, avl: &'a mut Avl<T>) -> &'a mut AvlNode<T> {
+        let ref mut slot = avl.nodes[self.index];
+        if slot.time_stamp == self.time_stamp {
+            slot.node.as_mut().unwrap()
+        } else {
+            panic!("AvlNodeId had invalid time_stamp");
+        }
+    }
+
+    pub fn try_get_mut<'a, T>(&self, avl: &'a mut Avl<T>) -> Option<&'a mut AvlNode<T>> {
         avl.nodes
            .get_mut(self.index)
            .and_then(|slot| {
@@ -64,12 +82,12 @@ impl<T> Avl<T> {
     fn rotate_left(&mut self, node: AvlNodeId) -> AvlNodeId {
         // Keep track of the original node positions
         // For a rotate left, the right child node must exist
-        let r = node.get(self).unwrap().right.unwrap();
-        let rl = r.get(self).unwrap().left;
+        let r = node.get(self).right.unwrap();
+        let rl = r.get(self).left;
 
         let ret = r; 
-        node.get_mut(self).unwrap().right = rl;
-        ret.get_mut(self).unwrap().left = Some(node);
+        node.get_mut(self).right = rl;
+        ret.get_mut(self).left = Some(node);
 
         ret
     }
@@ -79,29 +97,29 @@ impl<T> Avl<T> {
     fn rotate_right(&mut self, node: AvlNodeId) -> AvlNodeId {
         // Keep track of the original node positions
         // For a rotate right, the left child node must exist
-        let l = node.get(self).unwrap().left.unwrap();
-        let lr = l.get(self).unwrap().right;
+        let l = node.get(self).left.unwrap();
+        let lr = l.get(self).right;
 
         let ret = l;
-        node.get_mut(self).unwrap().left = lr;
-        ret.get_mut(self).unwrap().right = Some(node);
+        node.get_mut(self).left = lr;
+        ret.get_mut(self).right = Some(node);
 
         ret
     }
 
     // performs a left-right double rotation on a tree/subtree.
     fn rotate_leftright(&mut self, node: AvlNodeId) -> AvlNodeId {
-        let l = node.get(self).unwrap().left.unwrap();
+        let l = node.get(self).left.unwrap();
         let new_l = self.rotate_left(l); // Left node needs to exist
-        node.get_mut(self).unwrap().left = Some(new_l);
+        node.get_mut(self).left = Some(new_l);
         self.rotate_right(node)
     }
 
     // performs a right-left double rotation on a tree/subtree.
     fn rotate_rightleft(&mut self, node: AvlNodeId) -> AvlNodeId {
-        let r = node.get(self).unwrap().right.unwrap();
+        let r = node.get(self).right.unwrap();
         let new_r = self.rotate_right(r); // Right node needs to exist
-        node.get_mut(self).unwrap().right = Some(new_r);
+        node.get_mut(self).right = Some(new_r);
         self.rotate_left(node)
     }
 
@@ -129,34 +147,25 @@ impl<T> Avl<T> {
     }*/
 
     // _rebalance rebalances the provided node
-    /*fn rebalance(Node*& node) {
-        if (!node)
-        {
+    /*fn rebalance(node: AvlNodeId) {
+        if !node {
             return;
         }
 
-        int balance = _height(node->left) - _height(node->right);
-        if (balance == 2) // left
-        {
-            int lbalance = _height(node->left->left) - _height(node->left->right);
-            if (lbalance == 0 || lbalance == 1) // left left - need to rotate right
-            {
+        let balance = self.height(node.get(self).left) - self.height(node.right);
+        if balance == 2 { // left
+            let lbalance = self.height(node.left.left) - self.height(node.left.right);
+            if lbalance == 0 || lbalance == 1 { // left left - need to rotate right
                 rotate_right(node);
-            }
-            else if (lbalance == -1) // left right
-            {
+            } else if lbalance == -1 { // left right
                 rotate_leftright(node); // function name is just a coincidence
             }
         }
-        else if (balance == -2) // right
-        {
-            int rbalance = _height(node->right->left) - _height(node->right->right);
-            if (rbalance == 1) // right left
-            {
+        else if balance == -2 { // right
+            let rbalance = _height(node->right->left) - _height(node->right->right);
+            if rbalance == 1 { // right left
                 rotate_rightleft(node); // function name is just a coincidence
-            }
-            else if (rbalance == 0 || rbalance == -1) // right right - need to rotate left
-            {
+            } else if (rbalance == 0 || rbalance == -1) { // right right - need to rotate left
                 rotate_left(node);
             }
         }
@@ -166,8 +175,8 @@ impl<T> Avl<T> {
     fn height(&self, node: Option<AvlNodeId>) -> i64 {
         match node {
             Some(node) => {
-                let left_height = self.height(node.get(self).unwrap().left);
-                let right_height = self.height(node.get(self).unwrap().right);
+                let left_height = self.height(node.get(self).left);
+                let right_height = self.height(node.get(self).right);
 
                 if left_height > right_height {
                     left_height+1
