@@ -36,7 +36,7 @@ impl Mru {
 
         // Add the block to the cache
         self.used += block.len();
-        self.map.insert(*dva, (1337, block));
+        self.map.insert(*dva, (0, block));
         self.queue.push_front(*dva);
         Ok(self.map.get(dva).unwrap().1.clone())
     }
@@ -63,8 +63,10 @@ impl Mfu {
     }
 
     // TODO: cache_block. Remove the DVA with the lowest frequency
+    /*
     fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
     }
+    */
 }
 
 // Our implementation of the Adaptive Replacement Cache (ARC) is set up to allocate
@@ -85,16 +87,21 @@ impl ArCache {
     }
 
     pub fn read(&mut self, reader: &mut zio::Reader, dva: &DVAddr) -> Result<Vec<u8>, String> {
-        if let Some(block) = self.mru.map.get(dva) {
+        if let Some(block) = self.mru.map.get_mut(dva) {
             // TODO: Keep track of MRU DVA use count. If it gets used a second time, move the block into
             // the MFU cache.
+
+            block.0 += 1;
 
             // Block is cached
             return Ok(block.1.clone());
         }
-        if let Some(block) = self.mfu.map.get(dva) {
+        if let Some(block) = self.mfu.map.get_mut(dva) {
             // TODO: keep track of DVA use count
             // Block is cached
+
+            block.0 += 1;
+
             return Ok(block.1.clone());
         }
 
