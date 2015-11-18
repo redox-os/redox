@@ -160,21 +160,24 @@ impl<T> Avl<T> {
                 rotate_left(node);
             }
         }
-    }
-
-    // _height gets the height of a tree or subtree
-    fn _height(node: AvlNodeId) -> usize {
-        if (!node)
-            return -1;
-
-        int left_height = _height(node->left);
-        int right_height = _height(node->right);
-
-        if (left_height > right_height)
-            return left_height+1;
-        else
-            return right_height+1;
     }*/
+
+    // height gets the height of a tree or subtree
+    fn height(&self, node: Option<AvlNodeId>) -> i64 {
+        match node {
+            Some(node) => {
+                let left_height = self.height(node.get(self).unwrap().left);
+                let right_height = self.height(node.get(self).unwrap().right);
+
+                if left_height > right_height {
+                    left_height+1
+                } else {
+                    right_height+1
+                }
+            },
+            None => { -1 },
+        }
+    }
 
     fn allocate_node(&mut self, value: T) -> AvlNodeId {
         match self.free_list.pop() {
