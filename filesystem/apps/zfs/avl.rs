@@ -13,7 +13,7 @@ pub struct AvlNodeId {
 }
 
 impl AvlNodeId {
-    pub fn get<'a, T>(&self, avl: &'a Avl<T>) -> &'a AvlNode<T> {
+    pub fn get<'a, T: PartialOrd>(&self, avl: &'a Avl<T>) -> &'a AvlNode<T> {
         let ref slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_ref().unwrap()
@@ -22,7 +22,7 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get<'a, T>(&self, avl: &'a Avl<T>) -> Option<&'a AvlNode<T>> {
+    pub fn try_get<'a, T: PartialOrd>(&self, avl: &'a Avl<T>) -> Option<&'a AvlNode<T>> {
         avl.nodes
            .get(self.index)
            .and_then(|slot| {
@@ -34,7 +34,7 @@ impl AvlNodeId {
            })
     }
 
-    pub fn get_mut<'a, T>(&self, avl: &'a mut Avl<T>) -> &'a mut AvlNode<T> {
+    pub fn get_mut<'a, T: PartialOrd>(&self, avl: &'a mut Avl<T>) -> &'a mut AvlNode<T> {
         let ref mut slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_mut().unwrap()
@@ -43,7 +43,7 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get_mut<'a, T>(&self, avl: &'a mut Avl<T>) -> Option<&'a mut AvlNode<T>> {
+    pub fn try_get_mut<'a, T: PartialOrd>(&self, avl: &'a mut Avl<T>) -> Option<&'a mut AvlNode<T>> {
         avl.nodes
            .get_mut(self.index)
            .and_then(|slot| {
@@ -56,13 +56,13 @@ impl AvlNodeId {
     }
 }
 
-pub struct Avl<T> {
+pub struct Avl<T: PartialOrd> {
     root: usize, // Index of the root node
     nodes: Vec<AvlSlot<T>>,
     free_list: Vec<usize>,
 }
 
-impl<T> Avl<T> {
+impl<T: PartialOrd> Avl<T> {
     pub fn new() -> Self {
         Avl {
             root: 0,
@@ -71,11 +71,34 @@ impl<T> Avl<T> {
         }
     }
 
-    pub fn insert(&mut self, value: T) -> AvlNodeId {
-        // TODO this is just a placeholder, we need to deal with all the fancy rotation stuff that
-        // AVL trees do
-        self.allocate_node(value)
+    // Inserts a value into the tree, keeping it balanced. Lesser values will be stored on
+    // the left, while greater values will be stored on the right. No duplicates are allowed.
+    fn insert(&mut self, value: T, node_index: Option<AvlNodeId>) -> AvlNodeId {
+        let node =
+            match node_index {
+                Some(node) => {
+                    // Node exists, check which way to branch.
+                    if value == node.get(self).value {
+                        return node;
+                    } else if value < node.get(self).value {
+                        let l = node.get(self).left;
+                        node.get_mut(self).left = Some(self.insert(value, l));
+                    } else if value > node.get(self).value {
+                        let r = node.get(self).right;
+                        node.get_mut(self).right = Some(self.insert(value, r));
+                    }
+
+                    node
+                },
+                None => {
+                    // The node doesn't exist, create it here.
+                    self.allocate_node(value)
+                },
+            };
+
+        self.rebalance(node)
     }
+
 
     // Performs a left rotation on a tree/subtree.
     // Returns the replace the specified node with
@@ -122,29 +145,6 @@ impl<T> Avl<T> {
         node.get_mut(self).right = Some(new_r);
         self.rotate_left(node)
     }
-
-    // _ins is the implementation of the binary tree insert function. Lesser values will be stored on
-    // the left, while greater values will be stored on the right. No duplicates are allowed.
-    /*fn _ins(&mut self, node_index: Option<AvlNodeId>, value: T) -> AvlNodeId {
-        let node =
-            match node_index {
-                Some(node) => {
-                    // Node exists, check which way to branch.
-                    if n == node->val {
-                        return node;
-                    else if (n < node->val)
-                        _ins(n, node->left);
-                    else if (n > node->val)
-                        _ins(n, node->right);
-                },
-                None => {
-                    // The node doesn't exist, create it here.
-                    self.allocate_node(value)
-                },
-            };
-
-        rebalance(node)
-    }*/
 
     // _rebalance rebalances the provided node
     fn rebalance(&mut self, node: AvlNodeId) -> AvlNodeId {
