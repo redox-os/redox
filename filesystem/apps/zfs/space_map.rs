@@ -1,3 +1,4 @@
+use super::avl;
 use super::from_bytes::FromBytes;
 
 const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
@@ -58,6 +59,7 @@ impl Entry {
 }
 
 pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
+    let avl_tree: avl::AvlTree<u64> = avl::AvlTree::new();
     for i in 0..sm.size {
         let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
         println!("size:0x{:X}:map_type:0x{:X}:offset:0x{:X}:debug:0x{:X}",
