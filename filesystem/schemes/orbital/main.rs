@@ -1,8 +1,8 @@
 use redox::{Box, String, Url};
 use redox::{cmp, mem, ptr};
-use redox::fs::File;
 use redox::get_slice::GetSlice;
 use redox::io::*;
+use redox::process::Command;
 use redox::ops::DerefMut;
 use redox::to_num::ToNum;
 
@@ -190,9 +190,19 @@ impl Scheme {
                         }
                     }
                     if accepted {
-                        let binary = package.binary.clone();
-                        println!("Exec {} {}", binary, path);
-                        //File::exec(&binary, &[&path]);
+                        if let Some(mut child) = Command::new(&package.binary).arg(&path).spawn() {
+                            if let Some(status) = child.wait() {
+                                if let Some(code) = status.code() {
+                                    debugln!("{}: Child exited with exit code: {}", package.binary, code);
+                                } else {
+                                    debugln!("{}: No child exit code", package.binary);
+                                }
+                            } else {
+                                debugln!("{}: Failed to wait", package.binary);
+                            }
+                        } else {
+                            debugln!("{}: Failed to execute", package.binary);
+                        }
                         break;
                     }
                 }
