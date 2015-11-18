@@ -143,33 +143,32 @@ impl<T> Avl<T> {
                 },
             };
 
-        rebalance(node);
+        rebalance(node)
     }*/
 
     // _rebalance rebalances the provided node
-    /*fn rebalance(node: AvlNodeId) {
-        if !node {
-            return;
+    fn rebalance(&mut self, node: AvlNodeId) -> AvlNodeId {
+        let balance = self.height(node.get(self).left) - self.height(node.get(self).right);
+        if balance == 2 { // left
+            let lbalance = self.height(node.get(self).left.unwrap().get(self).left) -
+                           self.height(node.get(self).left.unwrap().get(self).right);
+            if lbalance == 0 || lbalance == 1 { // left left - need to rotate right
+                return self.rotate_right(node);
+            } else if lbalance == -1 { // left right
+                return self.rotate_leftright(node); // function name is just a coincidence
+            }
+        } else if balance == -2 { // right
+            let rbalance = self.height(node.get(self).right.unwrap().get(self).left) -
+                           self.height(node.get(self).right.unwrap().get(self).right);
+            if rbalance == 1 { // right left
+                return self.rotate_rightleft(node); // function name is just a coincidence
+            } else if rbalance == 0 || rbalance == -1 { // right right - need to rotate left
+                return self.rotate_left(node);
+            }
         }
 
-        let balance = self.height(node.get(self).left) - self.height(node.right);
-        if balance == 2 { // left
-            let lbalance = self.height(node.left.left) - self.height(node.left.right);
-            if lbalance == 0 || lbalance == 1 { // left left - need to rotate right
-                rotate_right(node);
-            } else if lbalance == -1 { // left right
-                rotate_leftright(node); // function name is just a coincidence
-            }
-        }
-        else if balance == -2 { // right
-            let rbalance = _height(node->right->left) - _height(node->right->right);
-            if rbalance == 1 { // right left
-                rotate_rightleft(node); // function name is just a coincidence
-            } else if (rbalance == 0 || rbalance == -1) { // right right - need to rotate left
-                rotate_left(node);
-            }
-        }
-    }*/
+        node
+    }
 
     // height gets the height of a tree or subtree
     fn height(&self, node: Option<AvlNodeId>) -> i64 {
