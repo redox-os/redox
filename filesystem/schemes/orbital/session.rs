@@ -1,6 +1,7 @@
 use redox::{Box, String, ToString, Vec, Url};
 use redox::fs::File;
 use redox::io::Read;
+use redox::process::Command;
 
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
@@ -157,9 +158,19 @@ impl Session {
                 for package in self.packages.iter() {
                     if !(&package.icon).is_empty() {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
-                           let binary = package.binary.to_string();
-                           println!("Exec {}", binary);
-                           //File::exec(&binary, &[]);
+                            if let Some(mut child) = Command::new(&package.binary).spawn() {
+                                if let Some(status) = child.wait() {
+                                    if let Some(code) = status.code() {
+                                        debugln!("{}: Child exited with exit code: {}", package.binary, code);
+                                    } else {
+                                        debugln!("{}: No child exit code", package.binary);
+                                    }
+                                } else {
+                                    debugln!("{}: Failed to wait", package.binary);
+                                }
+                            } else {
+                                debugln!("{}: Failed to execute", package.binary);
+                            }
                         }
                         x = x + package.icon.width() as isize;
                     }
