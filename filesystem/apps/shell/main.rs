@@ -9,7 +9,7 @@ use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
 use redox::hashmap::HashMap;
-use redox::syscall::{sys_clone, sys_waitpid};
+use redox::process;
 
 /* Magic { */
 static mut application: *mut Application<'static> = 0 as *mut Application;
@@ -97,19 +97,24 @@ impl<'a> Command<'a> {
             name: "exec",
             help: "To execute a binary in the output\n    exec <my_binary>",
             main: Box::new(|args: &Vec<String>| {
-                if let Some(arg) = args.get(1) {
-                    let mut args_str: Vec<&str> = Vec::new();
+                if let Some(path) = args.get(1) {
+                    let mut command = process::Command::new(path);
                     for arg in args.get_slice(Some(2), None) {
-                        args_str.push(arg);
+                        command.arg(arg);
                     }
 
-                    let pid = unsafe { sys_clone(0) } as isize;
-                    if pid == 0 {
-                        File::exec(arg, &args_str);
+                    if let Some(mut child) = command.spawn() {
+                        if let Some(status) = child.wait() {
+                            if let Some(code) = status.code() {
+                                unsafe { (*application).set_var("?", &format!("{}", code)) };
+                            } else {
+                                println!("{}: No child exit code", path);
+                            }
+                        } else {
+                            println!("{}: Failed to wait", path);
+                        }
                     } else {
-                        let mut status: usize = 0;
-                        unsafe { sys_waitpid(pid, &mut status, 0) };
-                        unsafe{ (*application).set_var("?", &format!("{}", status)) };
+                        println!("{}: Failed to execute", path);
                     }
                 }
             }),
