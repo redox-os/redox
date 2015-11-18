@@ -4,6 +4,47 @@ use redox::collections::{BTreeMap, VecDeque};
 use super::dvaddr::DVAddr;
 use super::zio;
 
+/// MRU - Most Recently Used cache
+struct Mru {
+    // TODO: keep track of use counts. So mru_map becomes (use_count: u64, Vec<u8>)
+    map: BTreeMap<DVAddr, (u64, Vec<u8>)>,
+    queue: VecDeque<DVAddr>, // Oldest DVAddrs are at the end
+    size: usize, // Max mru cache size in bytes
+    used: usize, // Used bytes in mru cache
+}
+
+impl Mru {
+    pub fn new() -> Self {
+        Mru {
+            map: BTreeMap::new(),
+            queue: VecDeque::new(),
+            size: 10,
+            used: 0,
+        }
+    }
+}
+
+/// MFU - Most Frequently Used cache
+struct Mfu {
+    // TODO: Keep track of use counts. So mfu_map becomes (use_count: u64, Vec<u8>). Reset the use
+    // count every once in a while. For instance, every 1000 reads. This will probably end up being
+    // a knob for the user.
+    // TODO: Keep track of minimum frequency and corresponding DVA
+    map: BTreeMap<DVAddr, (u64, Vec<u8>)>,
+    size: usize, // Max mfu cache size in bytes
+    used: usize, // Used bytes in mfu cache
+}
+
+impl Mfu {
+    pub fn new() -> Self {
+        Mfu {
+            map: BTreeMap::new(),
+            size: 10,
+            used: 0,
+        }
+    }
+}
+
 // Our implementation of the Adaptive Replacement Cache (ARC) is set up to allocate
 // its buffer on the heap rather than in a private pool thing. This makes it much
 // simpler to implement, but defers the fragmentation problem to the heap allocator.
