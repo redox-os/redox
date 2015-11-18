@@ -13,7 +13,7 @@ pub struct AvlNodeId {
 }
 
 impl AvlNodeId {
-    pub fn get<'a, T: PartialOrd>(&self, avl: &'a Avl<T>) -> &'a AvlNode<T> {
+    pub fn get<'a, T: PartialOrd>(&self, avl: &'a AvlTree<T>) -> &'a AvlNode<T> {
         let ref slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_ref().unwrap()
@@ -22,7 +22,7 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get<'a, T: PartialOrd>(&self, avl: &'a Avl<T>) -> Option<&'a AvlNode<T>> {
+    pub fn try_get<'a, T: PartialOrd>(&self, avl: &'a AvlTree<T>) -> Option<&'a AvlNode<T>> {
         avl.nodes
            .get(self.index)
            .and_then(|slot| {
@@ -34,7 +34,7 @@ impl AvlNodeId {
            })
     }
 
-    pub fn get_mut<'a, T: PartialOrd>(&self, avl: &'a mut Avl<T>) -> &'a mut AvlNode<T> {
+    pub fn get_mut<'a, T: PartialOrd>(&self, avl: &'a mut AvlTree<T>) -> &'a mut AvlNode<T> {
         let ref mut slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_mut().unwrap()
@@ -43,7 +43,7 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get_mut<'a, T: PartialOrd>(&self, avl: &'a mut Avl<T>) -> Option<&'a mut AvlNode<T>> {
+    pub fn try_get_mut<'a, T: PartialOrd>(&self, avl: &'a mut AvlTree<T>) -> Option<&'a mut AvlNode<T>> {
         avl.nodes
            .get_mut(self.index)
            .and_then(|slot| {
@@ -56,16 +56,16 @@ impl AvlNodeId {
     }
 }
 
-pub struct Avl<T: PartialOrd> {
-    root: usize, // Index of the root node
+pub struct AvlTree<T: PartialOrd> {
+    root: Option<AvlNodeId>, // Index of the root node
     nodes: Vec<AvlSlot<T>>,
     free_list: Vec<usize>,
 }
 
-impl<T: PartialOrd> Avl<T> {
+impl<T: PartialOrd> AvlTree<T> {
     pub fn new() -> Self {
-        Avl {
-            root: 0,
+        AvlTree {
+            root: None,
             nodes: Vec::new(),
             free_list: Vec::new(),
         }
@@ -73,7 +73,19 @@ impl<T: PartialOrd> Avl<T> {
 
     // Inserts a value into the tree, keeping it balanced. Lesser values will be stored on
     // the left, while greater values will be stored on the right. No duplicates are allowed.
-    fn insert(&mut self, value: T, node_index: Option<AvlNodeId>) -> AvlNodeId {
+    pub fn insert(&mut self, value: T) {
+        let root = self.root;
+        self.root = Some(self._insert(value, root));
+    }
+
+    pub fn in_order<F: Fn(&AvlNode<T>)>(&self, f: &F) {
+        if let Some(root) = self.root {
+            self._in_order(f, root);
+        }
+    }
+
+    // Implementation of insert
+    fn _insert(&mut self, value: T, node_index: Option<AvlNodeId>) -> AvlNodeId {
         let node =
             match node_index {
                 Some(node) => {
@@ -82,10 +94,10 @@ impl<T: PartialOrd> Avl<T> {
                         return node;
                     } else if value < node.get(self).value {
                         let l = node.get(self).left;
-                        node.get_mut(self).left = Some(self.insert(value, l));
+                        node.get_mut(self).left = Some(self._insert(value, l));
                     } else if value > node.get(self).value {
                         let r = node.get(self).right;
-                        node.get_mut(self).right = Some(self.insert(value, r));
+                        node.get_mut(self).right = Some(self._insert(value, r));
                     }
 
                     node
@@ -99,6 +111,15 @@ impl<T: PartialOrd> Avl<T> {
         self.rebalance(node)
     }
 
+    pub fn _in_order<F: Fn(&AvlNode<T>)>(&self, f: &F, node: AvlNodeId) {
+        if let Some(l) = node.get(self).left {
+            self._in_order(f, l);
+        }
+        f(node.get(self));
+        if let Some(r) = node.get(self).right {
+            self._in_order(f, r);
+        }
+    }
 
     // Performs a left rotation on a tree/subtree.
     // Returns the replace the specified node with
