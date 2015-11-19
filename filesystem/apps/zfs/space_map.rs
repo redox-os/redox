@@ -59,7 +59,15 @@ impl Entry {
 }
 
 pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
-    let avl_tree: avl::AvlTree<u64> = avl::AvlTree::new();
+    let mut avl_tree: avl::AvlTree<u64> = avl::AvlTree::new();
+    avl_tree.insert(1);
+    avl_tree.insert(10);
+    avl_tree.insert(6);
+    avl_tree.insert(4);
+    avl_tree.insert(8);
+    avl_tree.insert(9);
+    avl_tree.insert(3);
+    avl_tree.in_order(|node| { println!("{}", node.value()); });
     for i in 0..sm.size {
         let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
         println!("size:0x{:X}:map_type:0x{:X}:offset:0x{:X}:debug:0x{:X}",
