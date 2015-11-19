@@ -8,8 +8,8 @@ use super::zio;
 struct Mru {
     map: BTreeMap<DVAddr, Vec<u8>>,
     queue: VecDeque<DVAddr>, // Oldest DVAddrs are at the end
-    size: usize, // Max mru cache size in bytes
-    used: usize, // Used bytes in mru cache
+    size: usize, // Max mru cache size in blocks
+    used: usize, // Number of used blocks in mru cache
 }
 
 impl Mru {
@@ -24,7 +24,7 @@ impl Mru {
 
     fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
         // If necessary, make room for the block in the cache
-        while self.used + block.len() > self.size {
+        while self.used + (dva.asize() as usize) > self.size {
             let last_dva = match self.queue.pop_back() {
                 Some(dva) => dva,
                 None => return Err("No more ARC MRU items to free".to_string()),
@@ -34,7 +34,7 @@ impl Mru {
         }
 
         // Add the block to the cache
-        self.used += block.len();
+        self.used += dva.asize() as usize;
         self.map.insert(*dva, block);
         self.queue.push_front(*dva);
         Ok(self.map.get(dva).unwrap().clone())
@@ -48,8 +48,8 @@ struct Mfu {
     // a knob for the user.
     // TODO: Keep track of minimum frequency and corresponding DVA
     map: BTreeMap<DVAddr, (u64, Vec<u8>)>,
-    size: usize, // Max mfu cache size in bytes
-    used: usize, // Used bytes in mfu cache
+    size: usize, // Max mfu cache size in blocks
+    used: usize, // Number of used bytes in mfu cache
 }
 
 impl Mfu {
