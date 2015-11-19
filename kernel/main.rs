@@ -291,7 +291,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     let session = &mut *session_ptr;
 
     session.items.push(Ps2::new());
-    //session.items.push(Serial::new(0x3F8, 0x4));
+    session.items.push(Serial::new(0x3F8, 0x4));
 
     pci_init(session);
 
