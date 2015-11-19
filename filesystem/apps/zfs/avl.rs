@@ -1,38 +1,40 @@
-use redox::Vec;
+use redox::{Box, Vec};
 
-pub struct AvlNode<T> {
+pub struct Node<T> {
     value: T,
     left: Option<usize>, // ID for left node
     right: Option<usize>, // ID for right node
 }
 
-impl<T> AvlNode<T> {
+impl<T> Node<T> {
     pub fn value(&self) -> &T { &self.value }
-    pub fn left<K>(&self, tree: &AvlTree<T, K>) -> Option<AvlNodeId> {
-        self.left.map(|l| AvlNodeId { index: l, time_stamp: tree.nodes[l].time_stamp })
+    pub fn left<K>(&self, tree: &Tree<T, K>) -> Option<NodeId> {
+        self.left.map(|l| NodeId { index: l, time_stamp: tree.nodes[l].time_stamp })
     }
-    pub fn right<K>(&self, tree: &AvlTree<T, K>) -> Option<AvlNodeId> {
-        self.right.map(|r| AvlNodeId { index: r, time_stamp: tree.nodes[r].time_stamp })
+    pub fn right<K>(&self, tree: &Tree<T, K>) -> Option<NodeId> {
+        self.right.map(|r| NodeId { index: r, time_stamp: tree.nodes[r].time_stamp })
     }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #[derive(Copy, Clone)]
-pub struct AvlNodeId {
+pub struct NodeId {
     index: usize,
     time_stamp: u64,
 }
 
-impl AvlNodeId {
-    pub fn get<'a, T, K>(&self, avl: &'a AvlTree<T, K>) -> &'a AvlNode<T> {
+impl NodeId {
+    pub fn get<'a, T, K>(&self, avl: &'a Tree<T, K>) -> &'a Node<T> {
         let ref slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_ref().unwrap()
         } else {
-            panic!("AvlNodeId had invalid time_stamp");
+            panic!("NodeId had invalid time_stamp");
         }
     }
 
-    pub fn try_get<'a, T, K>(&self, avl: &'a AvlTree<T, K>) -> Option<&'a AvlNode<T>> {
+    pub fn try_get<'a, T, K>(&self, avl: &'a Tree<T, K>) -> Option<&'a Node<T>> {
         avl.nodes
            .get(self.index)
            .and_then(|slot| {
@@ -44,16 +46,16 @@ impl AvlNodeId {
            })
     }
 
-    pub fn get_mut<'a, T, K>(&self, avl: &'a mut AvlTree<T, K>) -> &'a mut AvlNode<T> {
+    pub fn get_mut<'a, T, K>(&self, avl: &'a mut Tree<T, K>) -> &'a mut Node<T> {
         let ref mut slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_mut().unwrap()
         } else {
-            panic!("AvlNodeId had invalid time_stamp");
+            panic!("NodeId had invalid time_stamp");
         }
     }
 
-    pub fn try_get_mut<'a, T, K>(&self, avl: &'a mut AvlTree<T, K>) -> Option<&'a mut AvlNode<T>> {
+    pub fn try_get_mut<'a, T, K>(&self, avl: &'a mut Tree<T, K>) -> Option<&'a mut Node<T>> {
         avl.nodes
            .get_mut(self.index)
            .and_then(|slot| {
@@ -66,16 +68,18 @@ impl AvlNodeId {
     }
 }
 
-pub struct AvlTree<T, K> {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+pub struct Tree<T, K> {
     root: Option<usize>, // Index of the root node
-    nodes: Vec<AvlSlot<T>>,
+    nodes: Vec<Slot<T>>,
     free_list: Vec<usize>,
-    key: K,
+    key: Box<Fn(&T) -> K>,
 }
 
-impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
-    pub fn new(key: K) -> Self {
-        AvlTree {
+impl<T, K: PartialOrd> Tree<T, K> {
+    pub fn new(key: Box<Fn(&T) -> K>) -> Self {
+        Tree {
             root: None,
             nodes: Vec::new(),
             free_list: Vec::new(),
@@ -90,7 +94,7 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
         self.root = Some(self._insert(value, root));
     }
 
-    pub fn in_order<F: Fn(&AvlNode<T>)>(&self, f: F) {
+    pub fn in_order<F: Fn(&Node<T>)>(&self, f: F) {
         if let Some(root) = self.root {
             self._in_order(&f, root);
         }
@@ -102,12 +106,12 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
             match node{
                 Some(node) => {
                     // Node exists, check which way to branch.
-                    if *(self.key)(&value) == *(self.key)(&self.node(node).value) {
+                    if (self.key)(&value) == (self.key)(&self.node(node).value) {
                         return node;
-                    } else if *(self.key)(&value) < *(self.key)(&self.node(node).value) {
+                    } else if (self.key)(&value) < (self.key)(&self.node(node).value) {
                         let l = self.node(node).left;
                         self.node_mut(node).left = Some(self._insert(value, l));
-                    } else if *(self.key)(&value) > *(self.key)(&self.node(node).value) {
+                    } else if (self.key)(&value) > (self.key)(&self.node(node).value) {
                         let r = self.node(node).right;
                         self.node_mut(node).right = Some(self._insert(value, r));
                     }
@@ -123,7 +127,7 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
         self.rebalance(node)
     }
 
-    pub fn _in_order<F: Fn(&AvlNode<T>)>(&self, f: &F, node: usize) {
+    pub fn _in_order<F: Fn(&Node<T>)>(&self, f: &F, node: usize) {
         if let Some(l) = self.node(node).left {
             self._in_order(f, l);
         }
@@ -163,7 +167,7 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
         ret
     }
 
-    // performs a left-right double rotation on a tree/subtree.
+    // Performs a left-right double rotation on a tree/subtree.
     fn rotate_leftright(&mut self, node: usize) -> usize {
         let l = self.node(node).left.unwrap();
         let new_l = self.rotate_left(l); // Left node needs to exist
@@ -171,7 +175,7 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
         self.rotate_right(node)
     }
 
-    // performs a right-left double rotation on a tree/subtree.
+    // Performs a right-left double rotation on a tree/subtree.
     fn rotate_rightleft(&mut self, node: usize) -> usize {
         let r = self.node(node).right.unwrap();
         let new_r = self.rotate_right(r); // Right node needs to exist
@@ -179,7 +183,8 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
         self.rotate_left(node)
     }
 
-    // _rebalance rebalances the provided node
+    // Rebalances the provided node and returns the node to replace it with if rotations
+    // occur
     fn rebalance(&mut self, node: usize) -> usize {
         let balance = self.height(self.node(node).left) - self.height(self.node(node).right);
         if balance == 2 { // left
@@ -229,31 +234,33 @@ impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
             None => {
                 // No free slots, create a new one
                 let index = self.nodes.len();
-                self.nodes.push(AvlSlot { time_stamp: 0,
-                                          node: Some(AvlNode { value: value, left: None, right: None }) });
+                self.nodes.push(Slot { time_stamp: 0,
+                                          node: Some(Node { value: value, left: None, right: None }) });
                 index
             },
         }
     }
 
-    fn free_node(&mut self, index: usize) -> AvlNode<T> {
+    fn free_node(&mut self, index: usize) -> Node<T> {
         self.free_list.push(index);
         
         // NOTE: We unwrap here, because we trust that `id` points to a valid node, because
-        // only we can create and free AvlNodes and their AvlNodeIds
+        // only we can create and free Nodes and their NodeIds
         self.nodes[index].node.take().unwrap()
     }
 
-    fn node(&self, index: usize) -> &AvlNode<T> {
+    fn node(&self, index: usize) -> &Node<T> {
         self.nodes[index].node.as_ref().unwrap()
     }
 
-    fn node_mut(&mut self, index: usize) -> &mut AvlNode<T> {
+    fn node_mut(&mut self, index: usize) -> &mut Node<T> {
         self.nodes[index].node.as_mut().unwrap()
     }
 }
 
-struct AvlSlot<T> {
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct Slot<T> {
     time_stamp: u64,
-    node: Option<AvlNode<T>>,
+    node: Option<Node<T>>,
 }
