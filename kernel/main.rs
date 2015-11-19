@@ -446,6 +446,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
             let switch = if let Some(mut context) = Context::current_mut() {
                 context.slices -= 1;
+                context.slice_total += 1;
                 context.slices == 0
             } else {
                 false

@@ -116,6 +116,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
             interrupted: parent.interrupted,
             exited: parent.exited,
             slices: CONTEXT_SLICES,
+            slice_total: 0,
 
             kernel_stack: kernel_stack,
             sp: parent.sp - parent.kernel_stack + kernel_stack,
@@ -292,6 +293,8 @@ pub struct Context {
     pub exited: bool,
     /// The number of time slices left
     pub slices: usize,
+    /// The total of all used slices
+    pub slice_total: usize,
 // }
 
 // These members control the stack and registers and are unique to each context {
@@ -356,10 +359,11 @@ impl Context {
         box Context {
             pid: Context::next_pid(),
             ppid: 0,
-            name: "kernel".to_string(),
+            name: "kidle".to_string(),
             interrupted: false,
             exited: false,
             slices: CONTEXT_SLICES,
+            slice_total: 0,
 
             kernel_stack: 0,
             sp: 0,
@@ -387,6 +391,7 @@ impl Context {
             interrupted: false,
             exited: false,
             slices: CONTEXT_SLICES,
+            slice_total: 0,
 
             kernel_stack: kernel_stack,
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
