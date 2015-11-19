@@ -15,7 +15,7 @@ impl KScheme for ContextScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        let mut string = format!("{:<6}{:<6}{:<8}{:<6}{:<6}{}", "PID", "PPID", "MEM", "FDS", "FLG", "NAME");
+        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}", "PID", "PPID", "TIME", "MEM", "FDS", "FLG", "NAME");
         unsafe {
             let reenable = scheduler::start_no_ints();
             let mut i = 0;
@@ -53,11 +53,11 @@ impl KScheme for ContextScheme {
                 if context.exited {
                     flags_string.push('E');
                 }
-                flags_string.push_str(&format!("{}", context.slices));
 
-                let line = format!("{:<6}{:<6}{:<8}{:<6}{:<6}{}",
+                let line = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
                                    context.pid,
                                    context.ppid,
+                                   context.slice_total,
                                    memory_string,
                                    (*context.files.get()).len(),
                                    flags_string,

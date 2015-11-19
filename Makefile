@@ -293,8 +293,6 @@ qemu_no_kvm: $(BUILD)/harddrive.bin
 
 qemu_no_vga: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 -vga none -nographic \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
