@@ -6,12 +6,12 @@ pub struct AvlNode<T> {
     right: Option<usize>, // ID for right node
 }
 
-impl<T: PartialOrd> AvlNode<T> {
+impl<T> AvlNode<T> {
     pub fn value(&self) -> &T { &self.value }
-    pub fn left(&self, tree: &AvlTree<T>) -> Option<AvlNodeId> {
+    pub fn left<K>(&self, tree: &AvlTree<T, K>) -> Option<AvlNodeId> {
         self.left.map(|l| AvlNodeId { index: l, time_stamp: tree.nodes[l].time_stamp })
     }
-    pub fn right(&self, tree: &AvlTree<T>) -> Option<AvlNodeId> {
+    pub fn right<K>(&self, tree: &AvlTree<T, K>) -> Option<AvlNodeId> {
         self.right.map(|r| AvlNodeId { index: r, time_stamp: tree.nodes[r].time_stamp })
     }
 }
@@ -23,7 +23,7 @@ pub struct AvlNodeId {
 }
 
 impl AvlNodeId {
-    pub fn get<'a, T: PartialOrd>(&self, avl: &'a AvlTree<T>) -> &'a AvlNode<T> {
+    pub fn get<'a, T, K>(&self, avl: &'a AvlTree<T, K>) -> &'a AvlNode<T> {
         let ref slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_ref().unwrap()
@@ -32,7 +32,7 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get<'a, T: PartialOrd>(&self, avl: &'a AvlTree<T>) -> Option<&'a AvlNode<T>> {
+    pub fn try_get<'a, T, K>(&self, avl: &'a AvlTree<T, K>) -> Option<&'a AvlNode<T>> {
         avl.nodes
            .get(self.index)
            .and_then(|slot| {
@@ -44,7 +44,7 @@ impl AvlNodeId {
            })
     }
 
-    pub fn get_mut<'a, T: PartialOrd>(&self, avl: &'a mut AvlTree<T>) -> &'a mut AvlNode<T> {
+    pub fn get_mut<'a, T, K>(&self, avl: &'a mut AvlTree<T, K>) -> &'a mut AvlNode<T> {
         let ref mut slot = avl.nodes[self.index];
         if slot.time_stamp == self.time_stamp {
             slot.node.as_mut().unwrap()
@@ -53,7 +53,7 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get_mut<'a, T: PartialOrd>(&self, avl: &'a mut AvlTree<T>) -> Option<&'a mut AvlNode<T>> {
+    pub fn try_get_mut<'a, T, K>(&self, avl: &'a mut AvlTree<T, K>) -> Option<&'a mut AvlNode<T>> {
         avl.nodes
            .get_mut(self.index)
            .and_then(|slot| {
@@ -66,18 +66,20 @@ impl AvlNodeId {
     }
 }
 
-pub struct AvlTree<T: PartialOrd> {
+pub struct AvlTree<T, K> {
     root: Option<usize>, // Index of the root node
     nodes: Vec<AvlSlot<T>>,
     free_list: Vec<usize>,
+    key: K,
 }
 
-impl<T: PartialOrd> AvlTree<T> {
-    pub fn new() -> Self {
+impl<T, K: Fn(&T) -> &V, V: PartialOrd> AvlTree<T, K> {
+    pub fn new(key: K) -> Self {
         AvlTree {
             root: None,
             nodes: Vec::new(),
             free_list: Vec::new(),
+            key: key,
         }
     }
 
@@ -100,12 +102,12 @@ impl<T: PartialOrd> AvlTree<T> {
             match node{
                 Some(node) => {
                     // Node exists, check which way to branch.
-                    if value == self.node(node).value {
+                    if *(self.key)(&value) == *(self.key)(&self.node(node).value) {
                         return node;
-                    } else if value < self.node(node).value {
+                    } else if *(self.key)(&value) < *(self.key)(&self.node(node).value) {
                         let l = self.node(node).left;
                         self.node_mut(node).left = Some(self._insert(value, l));
-                    } else if value > self.node(node).value {
+                    } else if *(self.key)(&value) > *(self.key)(&self.node(node).value) {
                         let r = self.node(node).right;
                         self.node_mut(node).right = Some(self._insert(value, r));
                     }
@@ -234,12 +236,12 @@ impl<T: PartialOrd> AvlTree<T> {
         }
     }
 
-    fn free_node(&mut self, id: AvlNodeId) -> AvlNode<T> {
-        self.free_list.push(id.index);
+    fn free_node(&mut self, index: usize) -> AvlNode<T> {
+        self.free_list.push(index);
         
         // NOTE: We unwrap here, because we trust that `id` points to a valid node, because
         // only we can create and free AvlNodes and their AvlNodeIds
-        self.nodes[id.index].node.take().unwrap()
+        self.nodes[index].node.take().unwrap()
     }
 
     fn node(&self, index: usize) -> &AvlNode<T> {
