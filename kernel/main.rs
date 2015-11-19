@@ -241,12 +241,12 @@ unsafe fn event_loop() -> ! {
         }
 
         if (*console).draw {
+            let reenable = scheduler::start_no_ints();
             if (*console).redraw {
                 (*console).redraw = false;
                 (*console).display.flip();
             }
-        } else {
-            // session.redraw();
+            scheduler::end_no_ints(reenable);
         }
 
         context_switch(false);
@@ -311,6 +311,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                    box move || {
                        poll_loop();
                    });
+
     Context::spawn("kevent".to_string(),
                    box move || {
                        event_loop();
@@ -320,6 +321,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                    box move || {
                        ArpScheme::reply_loop();
                    });
+
     Context::spawn("kicmp".to_string(),
                    box move || {
                        IcmpScheme::reply_loop();
@@ -327,7 +329,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     context_enabled = true;
 
-    //TODO: Run schemes in contexts
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);

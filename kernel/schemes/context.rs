@@ -1,5 +1,7 @@
 use alloc::boxed::Box;
 
+use collections::string::String;
+
 use scheduler::context;
 use scheduler;
 
@@ -13,7 +15,7 @@ impl KScheme for ContextScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        let mut string = format!("{:<6}{:<6}{:<8}{:<6}{}", "PID", "PPID", "MEM", "FDS", "NAME");
+        let mut string = format!("{:<6}{:<6}{:<8}{:<6}{:<6}{}", "PID", "PPID", "MEM", "FDS", "FLG", "NAME");
         unsafe {
             let reenable = scheduler::start_no_ints();
             let mut i = 0;
@@ -39,11 +41,25 @@ impl KScheme for ContextScheme {
                     format!("{} B", memory)
                 };
 
-                let line = format!("{:<6}{:<6}{:<8}{:<6}{}",
+                let mut flags_string = String::new();
+                if context.stack.is_some() {
+                    flags_string.push('U')
+                } else {
+                    flags_string.push('K');
+                }
+                if context.interrupted {
+                    flags_string.push('I');
+                }
+                if context.exited {
+                    flags_string.push('E');
+                }
+
+                let line = format!("{:<6}{:<6}{:<8}{:<6}{:<6}{}",
                                    context.pid,
                                    context.ppid,
                                    memory_string,
                                    (*context.files.get()).len(),
+                                   flags_string,
                                    context.name);
 
                 string = string + "\n" + &line;

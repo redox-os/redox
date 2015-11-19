@@ -461,7 +461,7 @@ impl SchemeItem {
 
                 (*response_ptr).set(ret);
             }else{
-                context_switch(true);
+                context_switch(false);
             }
         }
     }
