@@ -44,16 +44,16 @@ initialize:
 	out 0x40, al
 	rol ax, 8
 	out 0x40, al
-	;enable rtc interrupt
-	mov al, 0xB
-	out 0x70, al
-	rol ax, 8
-	in al, 0x71
-	rol ax, 8
-	out 0x70, al
-	rol ax, 8
-	or al, 0x40
-	out 0x71, al
+	;DISABLED ;enable rtc interrupt
+	;mov al, 0xB
+	;out 0x70, al
+	;rol ax, 8
+	;in al, 0x71
+	;rol ax, 8
+	;out 0x70, al
+	;rol ax, 8
+	;or al, 0x40
+	;out 0x71, al
 	ret
 
 .pic:	;sets up IRQs at int 20-2F
