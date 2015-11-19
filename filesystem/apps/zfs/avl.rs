@@ -88,9 +88,9 @@ impl<T: PartialOrd> AvlTree<T> {
         self.root = Some(self._insert(value, root));
     }
 
-    pub fn in_order<F: Fn(&AvlNode<T>)>(&self, f: &F) {
+    pub fn in_order<F: Fn(&AvlNode<T>)>(&self, f: F) {
         if let Some(root) = self.root {
-            self._in_order(f, root);
+            self._in_order(&f, root);
         }
     }
 
