@@ -290,7 +290,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     debug_init();
 
     Page::init();
-    memory::cluster_init();
+    memory::memory_init();
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
