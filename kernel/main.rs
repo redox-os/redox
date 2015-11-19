@@ -268,7 +268,7 @@ pub unsafe fn debug_init() {
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
-    debugln!("INITIALIZING...");
+    //debug::d("INITIALIZING...");
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
 
@@ -291,9 +291,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     debug_init();
 
     Page::init();
-    debugln!("Initializing memory");
+    //debug::d("Initializing memory");
     memory::memory_init();
-    debugln!("Memory initialized");
+    //debug::d("Memory initialized");
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
