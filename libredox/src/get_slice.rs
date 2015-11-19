@@ -1,4 +1,3 @@
-use core::raw::Repr;
 use core::slice;
 use core::str;
 
@@ -16,7 +15,7 @@ pub trait GetSlice { fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> 
 
 impl GetSlice for str {
     fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(self.repr().data, self.repr().len) };
+        let slice = unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) };
         let a = if let Some(tmp) = a {
             let len = slice.len();
             if tmp > len { len }
@@ -40,7 +39,7 @@ impl GetSlice for str {
 
 impl<T> GetSlice for [T] {
     fn get_slice(&self, a: Option<usize>, b: Option<usize>) -> &Self {
-        let slice = unsafe { slice::from_raw_parts(SliceExt::as_ptr(self), SliceExt::len(self)) };
+        let slice = unsafe { slice::from_raw_parts(self.as_ptr(), self.len()) };
         let a = if let Some(tmp) = a {
             let len = slice.len();
             if tmp > len { len }
