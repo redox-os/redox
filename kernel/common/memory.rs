@@ -95,7 +95,7 @@ impl StateArray {
     }
 
     /// Set the nth memory state (where n is a path in the tree)
-    pub unsafe fn set(&mut self, n: usize, val: MemoryState) {
+    pub unsafe fn set(&self, n: usize, val: MemoryState) {
         let byte = n / 4;
         let bit = n % 8;
 
@@ -122,7 +122,7 @@ impl StateTree {
     }
 
     /// Set the value of a node
-    pub unsafe fn set(&mut self, block: Block, state: MemoryState) {
+    pub unsafe fn set(&self, block: Block, state: MemoryState) {
         self.arr.set(block.pos(), state);
     }
 
@@ -192,7 +192,7 @@ impl Block {
     }
 
     /// Convert a block to a pointer
-    pub fn to_ptr(&mut self) -> usize {
+    pub fn to_ptr(&self) -> usize {
         HEAP_START + self.pos() * MT_ATOM
     }
 }
@@ -206,7 +206,7 @@ pub struct MemoryTree {
 
 impl MemoryTree {
     /// Split a block
-    pub unsafe fn split(&mut self, block: Block) -> Block {
+    pub unsafe fn split(&self, block: Block) -> Block {
         self.tree.set(block, MemoryState::Split);
         Block {
             idx: block.idx * 2,
@@ -215,7 +215,7 @@ impl MemoryTree {
     }
 
     /// Allocate of minimum size, size
-    pub unsafe fn alloc(&mut self, mut size: usize) -> Option<Block> {
+    pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
         let mut level = 0;
 
         // TODO: Unroll this
@@ -260,7 +260,7 @@ impl MemoryTree {
     }
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
-    pub unsafe fn realloc(&mut self, block: Block, mut size: usize) -> Option<Block> {
+    pub unsafe fn realloc(&self, block: Block, mut size: usize) -> Option<Block> {
         let mut level = 0;
 
         // TODO: Unroll this
