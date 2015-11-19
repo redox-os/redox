@@ -53,6 +53,7 @@ impl KScheme for ContextScheme {
                 if context.exited {
                     flags_string.push('E');
                 }
+                flags_string.push_str(&format!("{}", context.slices));
 
                 let line = format!("{:<6}{:<6}{:<8}{:<6}{:<6}{}",
                                    context.pid,

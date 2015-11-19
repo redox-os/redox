@@ -20,6 +20,7 @@ use syscall::handle::do_sys_exit;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
+pub const CONTEXT_SLICES: usize = 4;
 
 pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
@@ -69,6 +70,11 @@ pub unsafe fn context_switch(interrupted: bool) {
 
                     (*current_ptr).interrupted = interrupted;
                     (*next_ptr).interrupted = false;
+                    (*next_ptr).slices = if interrupted {
+                        CONTEXT_SLICES
+                    } else {
+                        CONTEXT_SLICES + 1
+                    };
 
                     (*current_ptr).save();
                     (*current_ptr).unmap();
@@ -109,6 +115,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
             name: parent.name.clone(),
             interrupted: parent.interrupted,
             exited: parent.exited,
+            slices: CONTEXT_SLICES,
 
             kernel_stack: kernel_stack,
             sp: parent.sp - parent.kernel_stack + kernel_stack,
@@ -283,6 +290,8 @@ pub struct Context {
     pub interrupted: bool,
     /// Indicates that the context exited
     pub exited: bool,
+    /// The number of time slices left
+    pub slices: usize,
 // }
 
 // These members control the stack and registers and are unique to each context {
@@ -350,6 +359,7 @@ impl Context {
             name: "kernel".to_string(),
             interrupted: false,
             exited: false,
+            slices: CONTEXT_SLICES,
 
             kernel_stack: 0,
             sp: 0,
@@ -376,6 +386,7 @@ impl Context {
             name: name,
             interrupted: false,
             exited: false,
+            slices: CONTEXT_SLICES,
 
             kernel_stack: kernel_stack,
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
