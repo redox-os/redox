@@ -2,6 +2,7 @@ use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{sys_clone, sys_execve, sys_exit, sys_waitpid};
+use syscall::common::{CLONE_VM, CLONE_VFORK};
 
 pub struct ExitStatus {
     status: usize
@@ -70,7 +71,7 @@ impl Command {
         }
         args_c.push(0 as *const u8);
 
-        let pid = unsafe { sys_clone(0) } as isize;
+        let pid = unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } as isize;
         if pid == 0 {
             unsafe {
                 sys_execve(path_c.as_ptr(), args_c.as_ptr());
