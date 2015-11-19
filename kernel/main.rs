@@ -444,7 +444,16 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             clock_monotonic = clock_monotonic + PIT_DURATION;
             scheduler::end_no_ints(reenable);
 
-            context_switch(true);
+            let switch = if let Some(mut context) = Context::current_mut() {
+                context.slices -= 1;
+                context.slices == 0
+            } else {
+                false
+            };
+
+            if switch {
+                context_switch(true);
+            }
         }
         0x21 => (*session_ptr).on_irq(0x1), // keyboard
         0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
