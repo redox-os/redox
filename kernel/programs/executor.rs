@@ -82,16 +82,6 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
                         let context = &mut * context_ptr;
 
-                        let mut files: Vec<ContextFile> = Vec::new();
-                        for file in (*context.files.get()).iter() {
-                            if let Some(resource) = file.resource.dup() {
-                                files.push(ContextFile {
-                                    fd: file.fd,
-                                    resource: resource,
-                                });
-                            }
-                        }
-
                         context.name = url.to_string();
 
                         context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
@@ -106,7 +96,6 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                         context.args = Rc::new(UnsafeCell::new(args));
                         context.cwd = Rc::new(UnsafeCell::new((*context.cwd.get()).clone()));
                         context.memory = Rc::new(UnsafeCell::new(memory));
-                        context.files = Rc::new(UnsafeCell::new(files));
 
                         let user_sp = if let Some(ref stack) = context.stack {
                             let mut sp = stack.physical_address + stack.virtual_size - 128;
