@@ -75,8 +75,8 @@ impl Entry {
 }
 
 pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
-    let mut avl_tree: avl::AvlTree<u64> = avl::AvlTree::new();
-    avl_tree.insert(1);
+    let mut avl_tree = avl::AvlTree::new(|x| x);
+    avl_tree.insert(1u64);
     avl_tree.insert(10);
     avl_tree.insert(6);
     avl_tree.insert(4);
