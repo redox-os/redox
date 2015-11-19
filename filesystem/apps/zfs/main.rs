@@ -21,6 +21,7 @@ pub mod dsl_dir;
 pub mod dvaddr;
 pub mod from_bytes;
 pub mod lzjb;
+pub mod metaslab;
 pub mod nvpair;
 pub mod nvstream;
 pub mod space_map;

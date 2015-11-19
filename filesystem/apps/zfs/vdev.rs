@@ -1,4 +1,7 @@
+use redox::Vec;
+
 use super::from_bytes::FromBytes;
+use super::metaslab::{Metaslab, MetaslabGroup};
 
 #[repr(packed)]
 pub struct VdevLabel {
@@ -23,7 +26,9 @@ pub struct Vdev {
     ashift: u64, // block alignment shift
 
     // Top level only
-    ms_array: u64,
+    ms_array_object: u64,
+    ms_group: MetaslabGroup,
+    metaslabs: Vec<Metaslab>,
 
     // Leaf only
 }

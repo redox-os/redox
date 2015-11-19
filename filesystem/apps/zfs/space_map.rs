@@ -1,3 +1,5 @@
+use redox::Box;
+
 use super::avl;
 use super::from_bytes::FromBytes;
 
@@ -36,7 +38,7 @@ pub enum MapType {
 }
 
 #[derive(Copy, Clone, Debug)]
-struct Entry(u64);
+pub struct Entry(u64);
 
 impl FromBytes for Entry { }
 
@@ -75,7 +77,7 @@ impl Entry {
 }
 
 pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
-    let mut avl_tree = avl::AvlTree::new(|x| x);
+    let mut avl_tree = avl::Tree::new(Box::new(|x| *x));
     avl_tree.insert(1u64);
     avl_tree.insert(10);
     avl_tree.insert(6);
