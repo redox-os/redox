@@ -619,13 +619,12 @@ impl<'a> Application<'a> {
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {
-                    println!("Exit temporarily blocked (due to using terminal as init)")
-                    //break;
+                    break;
                 } else if !command.is_empty() {
                     self.on_command(&command);
                 }
             } else {
-                println!("Failed to read from stdin");
+                break;
             }
         }
     }
