@@ -26,18 +26,18 @@ pub const MT_NODES: usize = MT_LEAFS * 2 - 1;
 /// The size of the memory map in bytes
 pub const MT_BYTES: usize = MT_NODES / 4;
 /// Empty memory tree
-pub const MT_EMPTY: MemoryTree = MemoryTree {
+pub const MT: MemoryTree = MemoryTree {
     tree: StateTree {
         arr: StateArray {
-            bytes: [0; MT_BYTES],
+            ptr: MT_PTR, //[0; MT_BYTES],
         },
     },
 };
 /// Where the heap starts
-pub const HEAP_START: usize = PAGE_END;
+pub const HEAP_START: usize = PAGE_END + MT_BYTES;
 
 /// The memory tree
-static mut MT: MemoryTree = MT_EMPTY;
+pub const MT_PTR: usize = PAGE_END;
 
 /// Ceil log 2
 fn ceil_log2(n: usize) -> usize {
@@ -80,26 +80,29 @@ impl MemoryState {
 //#[derive(Clone, Copy)]
 /// The memory tree
 pub struct StateArray {
-    /// The byte buffer of the state array
-    bytes: [u8; MT_BYTES],
+    /// The ptr to byte buffer of the state array
+    ptr: usize,
+    //bytes: [u8; MT_BYTES],
 }
 
 impl StateArray {
     /// Get the nth memory state (where n is a path in the tree)
-    pub fn get(&self, n: usize) -> MemoryState {
+    pub unsafe fn get(&self, n: usize) -> MemoryState {
         let byte = n / 4;
         let bit = n % 8;
 
-        MemoryState::from_u8(((self.bytes[byte] >> bit) & 3))
+        MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 3))
     }
 
     /// Set the nth memory state (where n is a path in the tree)
-    pub fn set(&mut self, n: usize, val: MemoryState) {
+    pub unsafe fn set(&mut self, n: usize, val: MemoryState) {
         let byte = n / 4;
         let bit = n % 8;
 
-        self.bytes[byte] &= !((3 << 6) >> bit);
-        self.bytes[byte] ^= (val as u8) << (8 - bit);
+        let ptr = (self.ptr + byte) as *mut u8;
+        let b = ptr::read(ptr);
+
+        ptr::write(ptr, (b & !((3 << 6) >> bit)) ^ ((val as u8) << (8 - bit)));
     }
 }
 
@@ -119,12 +122,12 @@ impl StateTree {
     }
 
     /// Set the value of a node
-    pub fn set(&mut self, block: Block, state: MemoryState) {
+    pub unsafe fn set(&mut self, block: Block, state: MemoryState) {
         self.arr.set(block.pos(), state);
     }
 
     /// Get the value of a node
-    pub fn get(&self, block: Block) -> MemoryState {
+    pub unsafe fn get(&self, block: Block) -> MemoryState {
         self.arr.get(block.pos())
     }
 }
@@ -203,7 +206,7 @@ pub struct MemoryTree {
 
 impl MemoryTree {
     /// Split a block
-    pub fn split(&mut self, block: Block) -> Block {
+    pub unsafe fn split(&mut self, block: Block) -> Block {
         self.tree.set(block, MemoryState::Split);
         Block {
             idx: block.idx * 2,
@@ -212,7 +215,7 @@ impl MemoryTree {
     }
 
     /// Allocate of minimum size, size
-    pub fn alloc(&mut self, mut size: usize) -> Option<Block> {
+    pub unsafe fn alloc(&mut self, mut size: usize) -> Option<Block> {
         let mut level = 0;
 
         // TODO: Unroll this
@@ -257,7 +260,7 @@ impl MemoryTree {
     }
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
-    pub fn realloc(&mut self, block: Block, mut size: usize) -> Option<Block> {
+    pub unsafe fn realloc(&mut self, block: Block, mut size: usize) -> Option<Block> {
         let mut level = 0;
 
         // TODO: Unroll this
@@ -301,7 +304,7 @@ impl MemoryTree {
     }
 
     /// Deallocate a block
-    pub fn dealloc(&mut self, block: Block) {
+    pub unsafe fn dealloc(&mut self, block: Block) {
         self.tree.set(block, MemoryState::Free);
         if let MemoryState::Free = self.tree.get(block.get_buddy()) {
             self.tree.set(block.parrent(), MemoryState::Free);
@@ -442,7 +445,11 @@ pub unsafe fn unalloc(ptr: usize) {
 //             }
 //         }
 //     }
-    MT.dealloc(Block::from_ptr(ptr));
+    let b = Block::from_ptr(ptr);
+    MT.dealloc(b);
+    for i in 0..b.size() {
+        ptr::write((ptr + i) as *mut u8, 0);
+    }
 
     // Memory allocation must be atomic
     scheduler::end_no_ints(reenable);
