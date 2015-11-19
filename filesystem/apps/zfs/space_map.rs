@@ -41,8 +41,14 @@ struct Entry(u64);
 impl FromBytes for Entry { }
 
 impl Entry {
+    fn debug(&self) -> u64 {
+        (self.0 >> 63) & 0x1 // 1 bit long
+    }
+
+    // Non-debug entries
+
     fn size(&self) -> u64 {
-        self.0 & 0x7F // 15 bits long
+        self.0 & 0x7FFF // 15 bits long
     }
 
     fn map_type(&self) -> u64 {
@@ -50,11 +56,21 @@ impl Entry {
     }
 
     fn offset(&self) -> u64 {
-        (self.0 >> 16) & 0x7F // 47 bytes long
+        (self.0 >> 16) & 0x7FFFFFFFFFFF // 47 bytes long
     }
 
-    fn debug(&self) -> u64 {
-        (self.0 >> 63) & 0x1 // 1 bit long
+    // Debug entries
+
+    fn action(&self) -> u64 {
+        (self.0 >> 60) & 0x7 // 3 bits long
+    }
+
+    fn sync_pass(&self) -> u64 {
+        (self.0 >> 50) & 0x3FF // 10 bits long
+    }
+
+    fn txg(&self) -> u64 {
+        self.0 & 0x3FFFFFFFFFFFF // 50 bytes long
     }
 }
 
@@ -70,7 +86,12 @@ pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
     avl_tree.in_order(|node| { println!("{}", node.value()); });
     for i in 0..sm.size {
         let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
-        println!("size:0x{:X}:map_type:0x{:X}:offset:0x{:X}:debug:0x{:X}",
-                 entry.size(), entry.map_type(), entry.offset(), entry.debug());
+        if entry.debug() == 1 {
+            println!("DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
+                     entry.action(), entry.sync_pass(), entry.txg());
+        } else {
+            println!("ENTRY: size:0x{:X}  map_type:0x{:X}  offset:0x{:X}",
+                     entry.size(), entry.map_type(), entry.offset());
+        }
     }
 }
