@@ -41,7 +41,7 @@ impl Duration {
         let ret;
         unsafe {
             let reenable = scheduler::start_no_ints();
-            ret = ::clock_monotonic;
+            ret = ::env().clock_monotonic;
             scheduler::end_no_ints(reenable);
         }
         ret
@@ -52,7 +52,7 @@ impl Duration {
         let ret;
         unsafe {
             let reenable = scheduler::start_no_ints();
-            ret = ::clock_realtime;
+            ret = ::env().clock_realtime;
             scheduler::end_no_ints(reenable);
         }
         ret

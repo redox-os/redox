@@ -139,7 +139,6 @@ impl Console {
             self.point.x = 0;
             self.point.y += 16;
         } else if c == '\x08' {
-            // TODO: Fix up hack for backspace
             self.point.x -= 8;
             if self.point.x < 0 {
                 self.point.x = 0

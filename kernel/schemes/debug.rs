@@ -35,7 +35,7 @@ impl Resource for DebugResource {
         if self.command.is_empty() {
             loop {
                 {
-                    let mut console = unsafe { &mut *::console_ptr }.lock();
+                    let mut console = ::env().console.lock();
 
                     if console.command.is_some() {
                         if let Some(ref command) = console.command {
@@ -65,9 +65,7 @@ impl Resource for DebugResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe {
-            handle::do_sys_debug(buf.as_ptr(), buf.len());
-        }
+        ::env().console.lock().write(buf);
         return Some(buf.len());
     }
 

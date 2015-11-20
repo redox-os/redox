@@ -50,9 +50,8 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
 
     let reenable = scheduler::start_no_ints();
 
-    if ::console_ptr as usize > 0 {
-        let mut console = unsafe { &mut *::console_ptr }.lock();
-        console.write(bytes);
+    if ::env_ptr as usize > 0 {
+        ::env().console.lock().write(bytes);
     } else {
         let serial_status = Pio8::new(0x3F8 + 5);
         let mut serial_data = Pio8::new(0x3F8);
@@ -220,15 +219,16 @@ pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if tp as usize > 0 {
+        let env = ::env();
         match clock {
             CLOCK_REALTIME => {
-                (*tp).tv_sec = ::clock_realtime.secs;
-                (*tp).tv_nsec = ::clock_realtime.nanos;
+                (*tp).tv_sec = env.clock_realtime.secs;
+                (*tp).tv_nsec = env.clock_realtime.nanos;
                 ret = 0;
             }
             CLOCK_MONOTONIC => {
-                (*tp).tv_sec = ::clock_monotonic.secs;
-                (*tp).tv_nsec = ::clock_monotonic.nanos;
+                (*tp).tv_sec = env.clock_monotonic.secs;
+                (*tp).tv_nsec = env.clock_monotonic.nanos;
                 ret = 0;
             }
             _ => (),
@@ -480,7 +480,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
         scheduler::end_no_ints(reenable);
 
-        let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+        let resource_option = (::env()).open(&Url::from_string(path_string), flags);
 
         scheduler::start_no_ints();
 

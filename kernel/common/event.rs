@@ -52,7 +52,7 @@ impl Event {
 
     /// Event trigger
     pub fn trigger(&self) {
-        let mut events = unsafe{ &mut *::events_ptr }.lock();
+        let mut events = ::env().events.lock();
         events.push_back(*self);
     }
 }
