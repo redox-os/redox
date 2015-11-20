@@ -79,11 +79,15 @@ use core::cmp::Ordering;
 use core::mem::{align_of_val, size_of_val};
 use core::intrinsics::abort;
 use core::mem;
-use core::ops::{Deref, CoerceUnsized};
+use core::ops::Deref;
+#[cfg(not(stage0))]
+use core::ops::CoerceUnsized;
 use core::ptr::{self, Shared};
+#[cfg(not(stage0))]
 use core::marker::Unsize;
 use core::hash::{Hash, Hasher};
 use core::{usize, isize};
+use core::convert::From;
 use heap::deallocate;
 
 const MAX_REFCOUNT: usize = (isize::MAX) as usize;
@@ -126,10 +130,13 @@ pub struct Arc<T: ?Sized> {
     _ptr: Shared<ArcInner<T>>,
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Send for Arc<T> { }
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Sync for Arc<T> { }
 
 #[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<Arc<U>> for Arc<T> {}
 
 /// A weak pointer to an `Arc`.
@@ -144,10 +151,13 @@ pub struct Weak<T: ?Sized> {
     _ptr: Shared<ArcInner<T>>,
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Send for Weak<T> { }
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Sync for Weak<T> { }
 
 #[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<Weak<U>> for Weak<T> {}
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -893,6 +903,13 @@ impl<T: ?Sized + Hash> Hash for Arc<T> {
     }
 }
 
+#[stable(feature = "from_for_ptrs", since = "1.6.0")]
+impl<T> From<T> for Arc<T> {
+    fn from(t: T) -> Self {
+        Arc::new(t)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::clone::Clone;
@@ -907,6 +924,7 @@ mod tests {
     use std::vec::Vec;
     use super::{Arc, Weak};
     use std::sync::Mutex;
+    use std::convert::From;
 
     struct Canary(*mut atomic::AtomicUsize);
 
@@ -1136,8 +1154,16 @@ mod tests {
         drop(x);
         assert!(y.upgrade().is_none());
     }
+
+    #[test]
+    fn test_from_owned() {
+        let foo = 123;
+        let foo_arc = Arc::from(foo);
+        assert!(123 == *foo_arc);
+    }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> borrow::Borrow<T> for Arc<T> {
     fn borrow(&self) -> &T {
         &**self

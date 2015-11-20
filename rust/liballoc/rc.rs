@@ -161,10 +161,15 @@ use core::cmp::Ordering;
 use core::fmt;
 use core::hash::{Hasher, Hash};
 use core::intrinsics::{assume, abort};
-use core::marker::{self, Unsize};
+use core::marker;
+#[cfg(not(stage0))]
+use core::marker::Unsize;
 use core::mem::{self, align_of_val, size_of_val, forget};
-use core::ops::{CoerceUnsized, Deref};
+use core::ops::Deref;
+#[cfg(not(stage0))]
+use core::ops::CoerceUnsized;
 use core::ptr::{self, Shared};
+use core::convert::From;
 
 use heap::deallocate;
 
@@ -186,10 +191,13 @@ pub struct Rc<T: ?Sized> {
     _ptr: Shared<RcBox<T>>,
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> !marker::Send for Rc<T> {}
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> !marker::Sync for Rc<T> {}
 
 #[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized+Unsize<U>, U: ?Sized> CoerceUnsized<Rc<U>> for Rc<T> {}
 
 impl<T> Rc<T> {
@@ -697,6 +705,13 @@ impl<T> fmt::Pointer for Rc<T> {
     }
 }
 
+#[stable(feature = "from_for_ptrs", since = "1.6.0")]
+impl<T> From<T> for Rc<T> {
+    fn from(t: T) -> Self {
+        Rc::new(t)
+    }
+}
+
 /// A weak version of `Rc<T>`.
 ///
 /// Weak references do not count when determining if the inner value should be
@@ -711,10 +726,13 @@ pub struct Weak<T: ?Sized> {
     _ptr: Shared<RcBox<T>>,
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> !marker::Send for Weak<T> {}
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> !marker::Sync for Weak<T> {}
 
 #[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized+Unsize<U>, U: ?Sized> CoerceUnsized<Weak<U>> for Weak<T> {}
 
 impl<T: ?Sized> Weak<T> {
@@ -902,6 +920,7 @@ mod tests {
     use std::result::Result::{Err, Ok};
     use std::mem::drop;
     use std::clone::Clone;
+    use std::convert::From;
 
     #[test]
     fn test_clone() {
@@ -1104,8 +1123,16 @@ mod tests {
         let foo: Rc<[i32]> = Rc::new([1, 2, 3]);
         assert_eq!(foo, foo.clone());
     }
+
+    #[test]
+    fn test_from_owned() {
+        let foo = 123;
+        let foo_rc = Rc::from(foo);
+        assert!(123 == *foo_rc);
+    }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> borrow::Borrow<T> for Rc<T> {
     fn borrow(&self) -> &T {
         &**self

@@ -67,6 +67,7 @@ use core::ops::{CoerceUnsized, Deref, DerefMut};
 use core::ops::{Placer, Boxed, Place, InPlace, BoxPlace};
 use core::ptr::{self, Unique};
 use core::raw::TraitObject;
+use core::convert::From;
 
 /// A value that represents the heap. This is the default place that the `box`
 /// keyword allocates into when no place is supplied.
@@ -135,6 +136,9 @@ pub struct IntermediateBox<T: ?Sized> {
     marker: marker::PhantomData<*mut T>,
 }
 
+#[unstable(feature = "placement_in",
+           reason = "placement box design is still being worked out.",
+           issue = "27779")]
 impl<T> Place<T> for IntermediateBox<T> {
     fn pointer(&mut self) -> *mut T {
         self.ptr as *mut T
@@ -169,12 +173,18 @@ fn make_place<T>() -> IntermediateBox<T> {
     }
 }
 
+#[unstable(feature = "placement_in",
+           reason = "placement box design is still being worked out.",
+           issue = "27779")]
 impl<T> BoxPlace<T> for IntermediateBox<T> {
     fn make_place() -> IntermediateBox<T> {
         make_place()
     }
 }
 
+#[unstable(feature = "placement_in",
+           reason = "placement box design is still being worked out.",
+           issue = "27779")]
 impl<T> InPlace<T> for IntermediateBox<T> {
     type Owner = Box<T>;
     unsafe fn finalize(self) -> Box<T> {
@@ -182,6 +192,7 @@ impl<T> InPlace<T> for IntermediateBox<T> {
     }
 }
 
+#[unstable(feature = "placement_new_protocol", issue = "27779")]
 impl<T> Boxed for Box<T> {
     type Data = T;
     type Place = IntermediateBox<T>;
@@ -190,6 +201,9 @@ impl<T> Boxed for Box<T> {
     }
 }
 
+#[unstable(feature = "placement_in",
+           reason = "placement box design is still being worked out.",
+           issue = "27779")]
 impl<T> Placer<T> for ExchangeHeapSingleton {
     type Place = IntermediateBox<T>;
 
@@ -198,6 +212,9 @@ impl<T> Placer<T> for ExchangeHeapSingleton {
     }
 }
 
+#[unstable(feature = "placement_in",
+           reason = "placement box design is still being worked out.",
+           issue = "27779")]
 impl<T: ?Sized> Drop for IntermediateBox<T> {
     fn drop(&mut self) {
         if self.size > 0 {
@@ -373,6 +390,13 @@ impl<T: ?Sized + Hash> Hash for Box<T> {
     }
 }
 
+#[stable(feature = "from_for_ptrs", since = "1.6.0")]
+impl<T> From<T> for Box<T> {
+    fn from(t: T) -> Self {
+        Box::new(t)
+    }
+}
+
 impl Box<Any> {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -510,6 +534,7 @@ pub trait FnBox<A> {
     fn call_box(self: Box<Self>, args: A) -> Self::Output;
 }
 
+#[unstable(feature = "fnbox", reason = "Newly introduced", issue = "0")]
 impl<A,F> FnBox<A> for F
     where F: FnOnce<A>
 {
@@ -520,6 +545,7 @@ impl<A,F> FnBox<A> for F
     }
 }
 
+#[unstable(feature = "fnbox", reason = "Newly introduced", issue = "0")]
 impl<'a,A,R> FnOnce<A> for Box<FnBox<A,Output=R>+'a> {
     type Output = R;
 
@@ -528,6 +554,7 @@ impl<'a,A,R> FnOnce<A> for Box<FnBox<A,Output=R>+'a> {
     }
 }
 
+#[unstable(feature = "fnbox", reason = "Newly introduced", issue = "0")]
 impl<'a,A,R> FnOnce<A> for Box<FnBox<A,Output=R>+Send+'a> {
     type Output = R;
 
@@ -536,6 +563,7 @@ impl<'a,A,R> FnOnce<A> for Box<FnBox<A,Output=R>+Send+'a> {
     }
 }
 
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized+Unsize<U>, U: ?Sized> CoerceUnsized<Box<U>> for Box<T> {}
 
 #[stable(feature = "box_slice_clone", since = "1.3.0")]
@@ -589,12 +617,14 @@ impl<T: Clone> Clone for Box<[T]> {
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> borrow::Borrow<T> for Box<T> {
     fn borrow(&self) -> &T {
         &**self
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> borrow::BorrowMut<T> for Box<T> {
     fn borrow_mut(&mut self) -> &mut T {
         &mut **self

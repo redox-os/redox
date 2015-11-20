@@ -150,6 +150,7 @@
 //! implement a method of the signature:
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! # use std::fmt;
 //! # struct Foo; // our custom type
 //! # impl fmt::Display for Foo {
@@ -174,7 +175,6 @@
 //! like:
 //!
 //! ```
-//! #![feature(fmt_flags)]
 //! use std::fmt;
 //!
 //! #[derive(Debug)]
@@ -288,6 +288,7 @@
 //! off, some example usage is:
 //!
 //! ```
+//! # #![allow(unused_must_use)]
 //! use std::fmt;
 //! use std::io::{self, Write};
 //!
@@ -474,13 +475,23 @@
 
 #![stable(feature = "rust1", since = "1.0.0")]
 
-pub use core::fmt::{Formatter, Result, Write, rt};
+#[unstable(feature = "fmt_internals", issue = "0")]
+pub use core::fmt::rt;
+#[stable(feature = "rust1", since = "1.0.0")]
+pub use core::fmt::{Formatter, Result, Write};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::{Octal, Binary};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::{Display, Debug};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::{LowerHex, UpperHex, Pointer};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::{LowerExp, UpperExp};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::Error;
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::{ArgumentV1, Arguments, write, radix, Radix, RadixFmt};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::fmt::{DebugList, DebugMap, DebugSet, DebugStruct, DebugTuple};
 
 use string;

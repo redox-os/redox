@@ -16,6 +16,7 @@
 //! and containing an error value.
 //!
 //! ```
+//! # #[allow(dead_code)]
 //! enum Result<T, E> {
 //!    Ok(T),
 //!    Err(E)
@@ -104,6 +105,7 @@
 //! something like this:
 //!
 //! ```no_run
+//! # #![allow(unused_must_use)] // \o/
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
@@ -143,6 +145,7 @@
 //! # use std::fs::File;
 //! # use std::io::prelude::*;
 //! # use std::io;
+//! # #[allow(dead_code)]
 //! fn write_message() -> io::Result<()> {
 //!     let mut file = try!(File::create("valuable_data.txt"));
 //!     try!(file.write_all(b"important message"));
@@ -160,6 +163,7 @@
 //! It replaces this:
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //! use std::io;
@@ -189,6 +193,7 @@
 //! With this:
 //!
 //! ```
+//! # #![allow(dead_code)]
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //! use std::io;
@@ -422,6 +427,7 @@ impl<T, E> Result<T, E> {
     ///
     /// ```
     /// #![feature(as_slice)]
+    /// # #![allow(deprecated)]
     ///
     /// let mut x: Result<&str, u32> = Ok("Gold");
     /// {
@@ -456,7 +462,7 @@ impl<T, E> Result<T, E> {
     // Transforming contained values
     /////////////////////////////////////////////////////////////////////////
 
-    /// Maps a `Result<T, E>` to `Result<U, E>` by applying a function to an
+    /// Maps a `Result<T, E>` to `Result<U, E>` by applying a function to a
     /// contained `Ok` value, leaving an `Err` value untouched.
     ///
     /// This function can be used to compose the results of two functions.
@@ -484,7 +490,7 @@ impl<T, E> Result<T, E> {
         }
     }
 
-    /// Maps a `Result<T, E>` to `Result<T, F>` by applying a function to an
+    /// Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a
     /// contained `Err` value, leaving an `Ok` value untouched.
     ///
     /// This function can be used to pass through a successful result while handling
@@ -864,6 +870,7 @@ impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> Clone for Iter<'a, T> {
     fn clone(&self) -> Iter<'a, T> { Iter { inner: self.inner } }
 }
