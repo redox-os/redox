@@ -247,6 +247,7 @@ impl MemoryTree {
                               idx: n,
                           },
                           MemoryState::Used);
+
             Some(Block {
                 idx: n,
                 level: level,
@@ -256,7 +257,7 @@ impl MemoryTree {
                 None
             } else {
                 // Kernel panic on OOM
-                Some(if let Some(m) = self.alloc(size - 1) {
+                Some(if let Some(m) = self.alloc(size * 2) {
                     self.split(m)
                 } else {
                     return None;
