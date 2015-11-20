@@ -1,4 +1,5 @@
 use redox::Box;
+use redox::fmt;
 
 use super::avl;
 use super::from_bytes::FromBytes;
@@ -37,63 +38,69 @@ pub enum MapType {
     Free = 1,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone)]
 pub struct Entry(u64);
 
 impl FromBytes for Entry { }
 
 impl Entry {
-    fn debug(&self) -> u64 {
+    pub fn debug(&self) -> u64 {
         (self.0 >> 63) & 0x1 // 1 bit long
     }
 
     // Non-debug entries
 
-    fn size(&self) -> u64 {
+    pub fn size(&self) -> u64 {
         self.0 & 0x7FFF // 15 bits long
     }
 
-    fn map_type(&self) -> u64 {
+    pub fn map_type(&self) -> u64 {
         (self.0 >> 15) & 0x1 // 1 bit long
     }
 
-    fn offset(&self) -> u64 {
+    pub fn offset(&self) -> u64 {
         (self.0 >> 16) & 0x7FFFFFFFFFFF // 47 bytes long
     }
 
     // Debug entries
 
-    fn action(&self) -> u64 {
+    pub fn action(&self) -> u64 {
         (self.0 >> 60) & 0x7 // 3 bits long
     }
 
-    fn sync_pass(&self) -> u64 {
+    pub fn sync_pass(&self) -> u64 {
         (self.0 >> 50) & 0x3FF // 10 bits long
     }
 
-    fn txg(&self) -> u64 {
+    pub fn txg(&self) -> u64 {
         self.0 & 0x3FFFFFFFFFFFF // 50 bytes long
     }
 }
 
-pub fn load_space_map_avl(sm: &SpaceMap, bytes: &[u8]) {
-    let mut avl_tree = avl::Tree::new(Box::new(|x| *x));
-    avl_tree.insert(1u64);
-    avl_tree.insert(10);
-    avl_tree.insert(6);
-    avl_tree.insert(4);
-    avl_tree.insert(8);
-    avl_tree.insert(9);
-    avl_tree.insert(3);
-    avl_tree.in_order(|node| { println!("{}", node.value()); });
+impl fmt::Debug for Entry {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.debug() == 1 {
+            write!(f, "DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
+                   self.action(), self.sync_pass(), self.txg());
+        } else {
+            write!(f, "ENTRY: size:0x{:X}  map_type:0x{:X}  offset:0x{:X}",
+                   self.size(), self.map_type(), self.offset());
+        }
+        Ok(())
+    }
+}
+
+pub fn load_space_map_avl(sm: &SpaceMap,
+                          tree: &mut avl::Tree<Entry, u64>,
+                          bytes: &[u8],
+                          map_type: MapType) {
     for i in 0..sm.size {
         let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
-        if entry.debug() == 1 {
-            println!("DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
-                     entry.action(), entry.sync_pass(), entry.txg());
-        } else {
-            println!("ENTRY: size:0x{:X}  map_type:0x{:X}  offset:0x{:X}",
-                     entry.size(), entry.map_type(), entry.offset());
+        if entry.debug() != 1 {
+            // it's not a debug entry, add it to the tree
+            tree.insert(entry);
         }
+        println!("{:?}", entry);
     }
+    tree.in_order(|node| { println!("{:?}", node.value()); });
 }

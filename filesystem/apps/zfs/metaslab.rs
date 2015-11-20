@@ -15,6 +15,58 @@ const MAX_LBAS: usize = 64;
 const TXG_SIZE: usize = 4;
 const TXG_DEFER_SIZE: usize = 2;
 
+/*
+ * Each metaslab maintains a set of in-core trees to track metaslab operations.
+ * The in-core free tree (ms_tree) contains the current list of free segments.
+ * As blocks are allocated, the allocated segment are removed from the ms_tree
+ * and added to a per txg allocation tree (ms_alloctree). As blocks are freed,
+ * they are added to the per txg free tree (ms_freetree). These per txg
+ * trees allow us to process all allocations and frees in syncing context
+ * where it is safe to update the on-disk space maps. One additional in-core
+ * tree is maintained to track deferred frees (ms_defertree). Once a block
+ * is freed it will move from the ms_freetree to the ms_defertree. A deferred
+ * free means that a block has been freed but cannot be used by the pool
+ * until TXG_DEFER_SIZE transactions groups later. For example, a block
+ * that is freed in txg 50 will not be available for reallocation until
+ * txg 52 (50 + TXG_DEFER_SIZE).  This provides a safety net for uberblock
+ * rollback. A pool could be safely rolled back TXG_DEFERS_SIZE
+ * transactions groups and ensure that no block has been reallocated.
+ *
+ * The simplified transition diagram looks like this:
+ *
+ *
+ *      ALLOCATE
+ *         |
+ *         V
+ *    free segment (ms_tree) --------> ms_alloctree ----> (write to space map)
+ *         ^
+ *         |
+ *         |                           ms_freetree <--- FREE
+ *         |                                 |
+ *         |                                 |
+ *         |                                 |
+ *         +----------- ms_defertree <-------+---------> (write to space map)
+ *
+ *
+ * Each metaslab's space is tracked in a single space map in the MOS,
+ * which is only updated in syncing context. Each time we sync a txg,
+ * we append the allocs and frees from that txg to the space map.
+ * The pool space is only updated once all metaslabs have finished syncing.
+ *
+ * To load the in-core free tree we read the space map from disk.
+ * This object contains a series of alloc and free records that are
+ * combined to make up the list of all free segments in this metaslab. These
+ * segments are represented in-core by the ms_tree and are stored in an
+ * AVL tree.
+ *
+ * As the space map grows (as a result of the appends) it will
+ * eventually become space-inefficient. When the metaslab's in-core free tree
+ * is zfs_condense_pct/100 times the size of the minimal on-disk
+ * representation, we rewrite it in its minimized form. If a metaslab
+ * needs to condense then we must set the ms_condensing flag to ensure
+ * that allocations are not performed on the metaslab that is being written.
+ */
+
 pub struct Metaslab {
     /*lock: kmutex_t,
     load_cv: kcondvar_t,
