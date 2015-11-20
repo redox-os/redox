@@ -9,6 +9,8 @@ pub mod event;
 pub mod get_slice;
 /// Kernel memory allocation
 pub mod memory;
+/// Kernel mutual exclusion
+pub mod mutex;
 /// Paging (x86)
 #[cfg(target_arch = "x86")]
 #[path="paging-i386.rs"]
@@ -21,8 +23,6 @@ pub mod paging;
 pub mod parse_path;
 /// A module for parsing IP related string
 pub mod parse_ip;
-/// A module for queues
-pub mod queue;
 /// A module for pseudorandom generator
 pub mod random;
 /// A module for time

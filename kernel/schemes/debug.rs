@@ -11,7 +11,6 @@ use syscall::handle;
 
 /// A debug resource
 pub struct DebugResource {
-    pub scheme: *mut DebugScheme,
     pub command: String,
     pub line_toggle: bool,
 }
@@ -19,7 +18,6 @@ pub struct DebugResource {
 impl Resource for DebugResource {
     fn dup(&self) -> Option<Box<Resource>> {
         Some(box DebugResource {
-            scheme: self.scheme,
             command: self.command.clone(),
             line_toggle: self.line_toggle,
         })
@@ -40,13 +38,7 @@ impl Resource for DebugResource {
                 unsafe {
                     let reenable = scheduler::start_no_ints();
 
-                    // Hack!
-                    if (*self.scheme).context >= (*contexts_ptr).len() ||
-                       (*self.scheme).context < context_i {
-                        (*self.scheme).context = context_i;
-                    }
-
-                    if (*self.scheme).context == context_i && (*::console).command.is_some() {
+                    if (*::console).command.is_some() {
                         if let Some(ref command) = (*::console).command {
                             self.command = command.clone();
                         }
@@ -87,13 +79,11 @@ impl Resource for DebugResource {
     }
 }
 
-pub struct DebugScheme {
-    pub context: usize,
-}
+pub struct DebugScheme;
 
 impl DebugScheme {
     pub fn new() -> Box<Self> {
-        box DebugScheme { context: 0 }
+        box DebugScheme
     }
 }
 
@@ -104,7 +94,6 @@ impl KScheme for DebugScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box DebugResource {
-            scheme: self,
             command: String::new(),
             line_toggle: false,
         })

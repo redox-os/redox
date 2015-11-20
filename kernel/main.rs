@@ -29,6 +29,7 @@ use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
 
 use core::{mem, usize};
 use core::slice::SliceExt;
@@ -38,7 +39,6 @@ use common::event::{self, Event, EventOption};
 use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
-use common::queue::Queue;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -131,7 +131,7 @@ static PIT_DURATION: Duration = Duration {
 static mut session_ptr: *mut Session = 0 as *mut Session;
 
 /// Event pointer
-static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
+static mut events_ptr: *mut VecDeque<Event> = 0 as *mut VecDeque<Event>;
 
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
@@ -181,7 +181,7 @@ unsafe fn event_loop() -> ! {
         loop {
             let reenable = scheduler::start_no_ints();
 
-            let event_option = events.pop();
+            let event_option = events.pop_front();
 
             scheduler::end_no_ints(reenable);
 
@@ -286,7 +286,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     session_ptr = Box::into_raw(Session::new());
 
-    events_ptr = Box::into_raw(box Queue::new());
+    events_ptr = Box::into_raw(box VecDeque::new());
 
     let session = &mut *session_ptr;
 
