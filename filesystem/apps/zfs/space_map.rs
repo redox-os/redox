@@ -100,7 +100,6 @@ pub fn load_space_map_avl(sm: &SpaceMap,
             // it's not a debug entry, add it to the tree
             tree.insert(entry);
         }
-        println!("{:?}", entry);
     }
     tree.in_order(|node| { println!("{:?}", node.value()); });
 }
