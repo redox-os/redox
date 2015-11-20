@@ -31,8 +31,9 @@ impl Editor {
         match self.cursor().mode {
             _ if x > self.text[y].len() => {
                 0
-            },
-            Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) if x == self.text[y].len() => 0,
+            }
+            Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append }))
+                if x == self.text[y].len() => 0,
 
             Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append })) => 1,
             _ => 0,
@@ -57,9 +58,10 @@ impl Editor {
                         self.text[y] = VecDeque::from_iter(first_part.iter().map(|x| *x));
 
                         let nl = if self.options.autoindent {
-                            VecDeque::from_iter(
-                                self.get_indent(y).iter().chain(second_part.iter()).map(|x| *x)
-                            )
+                            VecDeque::from_iter(self.get_indent(y)
+                                                    .iter()
+                                                    .chain(second_part.iter())
+                                                    .map(|x| *x))
                         } else {
                             VecDeque::new()
                         };
@@ -69,12 +71,16 @@ impl Editor {
 
                         self.redraw_task = RedrawTask::LinesAfter(y);
                         self.goto((begin, y + 1));
-                    },
-                    Key::Backspace => { // Backspace
+                    }
+                    Key::Backspace => {
+                        // Backspace
                         let del = if self.text[y].len() == 0 {
                             1
                         } else if d == 0 && x == 0 {
-                            self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(InsertOptions { mode: InsertMode::Append }));
+                            self.cursor_mut().mode =
+                                Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
+                                    mode: InsertMode::Append,
+                                }));
                             1
 
                         } else {
@@ -82,31 +88,33 @@ impl Editor {
                         };
                         let prev = self.previous(del);
                         if let Some((x, y)) = prev {
-                            //if self.x() != 0 || self.y() != 0 {
+                            // if self.x() != 0 || self.y() != 0 {
                             self.goto((x + d, y));
                             self.delete();
-                            //}
+                            // }
                         }
-                    },
+                    }
                     Key::Char(c) => {
                         self.text[y].insert(x + d, c);
 
                         // TODO: Are there a better way than switching?
                         match mode {
-                            InsertMode::Insert if x + 1 == self.text[y].len() => {                                self.cursor_mut().mode = Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
-                                    mode: InsertMode::Append,
-                                }));
-                            },
-                            _ => {},
+                            InsertMode::Insert if x + 1 == self.text[y].len() => {
+                                self.cursor_mut().mode =
+                                    Mode::Primitive(PrimitiveMode::Insert(InsertOptions {
+                                        mode: InsertMode::Append,
+                                    }));
+                            }
+                            _ => {}
                         }
 
                         self.redraw_task = RedrawTask::Lines(y..y + 1);
                         let right = self.right(1);
                         self.goto(right);
                     }
-                    _ => {},
+                    _ => {}
                 }
-            },
+            }
             InsertMode::Replace => match k {
                 Key::Char(c) => {
                     if x == self.text[y].len() {
@@ -133,8 +141,8 @@ impl Editor {
                         self.goto(p);
                     }
                     self.redraw_task = RedrawTask::Lines(y..y + 1);
-                },
-                _ => {},
+                }
+                _ => {}
             },
         }
     }

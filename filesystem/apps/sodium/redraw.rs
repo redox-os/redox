@@ -9,4 +9,3 @@ pub enum RedrawTask {
     StatusBar,
     Cursor((usize, usize), (usize, usize)),
 }
-

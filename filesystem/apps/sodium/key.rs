@@ -40,7 +40,7 @@ impl Key {
     pub fn to_char(self) -> char {
         match self {
             Key::Char(c) => c,
-            _ => '\0'
+            _ => '\0',
         }
     }
 }

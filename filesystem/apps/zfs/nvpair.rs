@@ -4,10 +4,10 @@ use redox::*;
 pub const NV_VERSION: i32 = 0;
 
 // nvlist header
-//#[derive(Debug)]
+// #[derive(Debug)]
 pub struct NvList {
     pub version: i32,
-    pub nvflag:  u32, // persistent flags
+    pub nvflag: u32, // persistent flags
     pub pairs: Vec<(String, NvValue)>,
 }
 
@@ -41,9 +41,14 @@ impl NvList {
 
 impl fmt::Debug for NvList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "NvList {{ version: {:X}, nvflag: {:X}, pairs: [\n", self.version, self.nvflag));
+        try!(write!(f,
+                    "NvList {{ version: {:X}, nvflag: {:X}, pairs: [\n",
+                    self.version,
+                    self.nvflag));
         for &(ref name, ref value) in &self.pairs {
-            if name.is_empty() { break; }
+            if name.is_empty() {
+                break;
+            }
             try!(write!(f, "{} : {:?}\n", name, value));
         }
         try!(write!(f, "] }}\n"));
@@ -52,7 +57,7 @@ impl fmt::Debug for NvList {
 }
 
 // TODO Auto implement Debug. format! currently crashes with big u32 values
-//#[derive(Debug)]
+// #[derive(Debug)]
 pub enum NvValue {
     Unknown,
     Boolean,
@@ -161,8 +166,10 @@ impl fmt::Debug for NvValue {
                     try!(write!(f, "NvList({:?})", **nv_list));
                 }
                 write!(f, "])")
-            },
-            NvValue::String(ref v) => { write!(f, "String({})", v) },
+            }
+            NvValue::String(ref v) => {
+                write!(f, "String({})", v)
+            }
             _ => write!(f, "{:?}", self),
         }
     }

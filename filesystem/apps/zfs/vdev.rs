@@ -10,7 +10,7 @@ pub struct VdevLabel {
 
 impl FromBytes for VdevLabel { }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub struct Vdev {
     id: u64, // child number in vdev parent
@@ -23,7 +23,5 @@ pub struct Vdev {
     ashift: u64, // block alignment shift
 
     // Top level only
-    ms_array: u64,
-
-    // Leaf only
+    ms_array: u64, // Leaf only
 }

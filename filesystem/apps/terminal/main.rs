@@ -1,4 +1,4 @@
-use redox::{String,Vec};
+use redox::{String, Vec};
 use redox::fs::File;
 use redox::io::Read;
 use redox::syscall::sys_close;

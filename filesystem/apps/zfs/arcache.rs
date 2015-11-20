@@ -61,11 +61,12 @@ impl Mfu {
         }
     }
 
-    // TODO: cache_block. Remove the DVA with the lowest frequency
-    /*
-    fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
-    }
-    */
+// TODO: cache_block. Remove the DVA with the lowest frequency
+//
+// fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
+// }
+//
+
 }
 
 // Our implementation of the Adaptive Replacement Cache (ARC) is set up to allocate

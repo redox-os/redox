@@ -15,7 +15,7 @@ impl Color {
         Color { data: ((a as u32) << 24) | ((r as u32) << 16) | ((g as u32) << 8) | (b as u32) }
     }
 
-    // Why are these consts inside an impl?
+// Why are these consts inside an impl?
     pub const BLACK: Color = Color { data: 0xFF000000 };
     pub const BLUE:  Color = Color { data: 0xFF0000FF };
     pub const GREEN: Color = Color { data: 0xFF00FF00 };

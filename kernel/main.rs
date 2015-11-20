@@ -70,7 +70,7 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-//use schemes::display::*;
+// use schemes::display::*;
 
 use syscall::handle::*;
 
@@ -353,7 +353,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     context_enabled = true;
 
-    //TODO: Run schemes in contexts
+    // TODO: Run schemes in contexts
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);

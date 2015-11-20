@@ -50,7 +50,7 @@ impl WavFile {
         let mut i = 0;
         let root_type = gets(i, 4);
         i += 4;
-        //let root_size = getd(i);
+        // let root_size = getd(i);
         i += 4;
 
         if root_type == "RIFF" {
@@ -75,7 +75,7 @@ impl WavFile {
                     }
 
                     if chunk_type == "data" {
-                        ret.data = file_data[i .. chunk_size as usize].to_vec();
+                        ret.data = file_data[i..chunk_size as usize].to_vec();
                     }
 
                     i += chunk_size as usize;

@@ -6,7 +6,9 @@ pub trait FromBytes: Sized {
             let s = unsafe { ptr::read(data.as_ptr() as *const Self) };
             Ok(s)
         } else {
-            Err(format!("Error: bytes length of {} not long enough for the byte size of {}", data.len(), mem::size_of::<Self>()))
+            Err(format!("Error: bytes length of {} not long enough for the byte size of {}",
+                        data.len(),
+                        mem::size_of::<Self>()))
         }
     }
 }

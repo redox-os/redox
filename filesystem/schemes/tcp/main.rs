@@ -57,7 +57,8 @@ impl ToBytes for Tcp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const TcpHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<TcpHeader>()));
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                          mem::size_of::<TcpHeader>()));
             ret.push_all(&self.options);
             ret.push_all(&self.data);
             ret
@@ -86,12 +87,15 @@ impl Resource {
                 sequence: self.sequence,
                 acknowledge: self.acknowledge,
             }),
-            None => None
+            None => None,
         }
     }
 
     pub fn path(&self) -> Option<String> {
-        Some(format!("tcp://{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port as usize))
+        Some(format!("tcp://{}:{}/{}",
+                     self.peer_addr.to_string(),
+                     self.peer_port,
+                     self.host_port as usize))
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -104,7 +108,7 @@ impl Resource {
                            (TCP_PSH | TCP_ACK) &&
                            segment.header.dst.get() == self.host_port &&
                            segment.header.src.get() == self.peer_port {
-                            //Send ACK
+                            // Send ACK
                             self.sequence = segment.header.ack_num.get();
                             self.acknowledge = segment.header.sequence.get() +
                                                segment.data.len() as u32;
@@ -141,7 +145,7 @@ impl Resource {
 
                             self.ip.write(&tcp.to_bytes());
 
-                            //TODO: Support broken packets (one packet in two buffers)
+                            // TODO: Support broken packets (one packet in two buffers)
                             let mut i = 0;
                             while i < buf.len() && i < segment.data.len() {
                                 buf[i] = segment.data[i];
@@ -194,7 +198,8 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Some(size) => loop { // Wait for ACK
+            Some(size) => loop {
+                // Wait for ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
                     Some(_) => {
@@ -247,8 +252,9 @@ impl Resource {
 
         unsafe {
             let proto = n16::new(0x06);
-            let segment_len =
-                n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+            let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() +
+                                        tcp.data
+                                           .len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
@@ -265,7 +271,8 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Some(_) => loop { // Wait for SYN-ACK
+            Some(_) => loop {
+                // Wait for SYN-ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
                     Some(_) => {
@@ -327,7 +334,7 @@ impl Resource {
 
     /// Try to establish a server connection
     pub fn server_establish(&mut self, syn: Tcp) -> bool {
-        //Send SYN-ACK
+        // Send SYN-ACK
         self.acknowledge += 1;
         let mut tcp = Tcp {
             header: TcpHeader {
@@ -347,8 +354,9 @@ impl Resource {
 
         unsafe {
             let proto = n16::new(0x06);
-            let segment_len =
-                n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+            let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() +
+                                        tcp.data
+                                           .len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
@@ -365,7 +373,8 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Some(_) => loop { // Wait for ACK
+            Some(_) => loop {
+                // Wait for ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
                     Some(_) => {
@@ -393,7 +402,7 @@ impl Resource {
 
 impl Drop for Resource {
     fn drop(&mut self) {
-        //Send FIN-ACK
+        // Send FIN-ACK
         let mut tcp = Tcp {
             header: TcpHeader {
                 src: n16::new(self.host_port),
@@ -412,8 +421,9 @@ impl Drop for Resource {
 
         unsafe {
             let proto = n16::new(0x06);
-            let segment_len =
-                n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+            let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() +
+                                        tcp.data
+                                           .len()) as u16);
             tcp.header.checksum.data =
                 Checksum::compile(Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize,
                                                 mem::size_of::<IPv4Addr>()) +
@@ -471,7 +481,9 @@ impl Scheme {
                 match ip.read_to_end(&mut bytes) {
                     Some(_) => {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
-                            if segment.header.dst.get() == host_port && (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) == TCP_SYN {
+                            if segment.header.dst.get() == host_port &&
+                               (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                               TCP_SYN {
                                 if let Some(path) = ip.path() {
                                     let url = Url::from_string(path);
 

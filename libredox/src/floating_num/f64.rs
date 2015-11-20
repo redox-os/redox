@@ -101,7 +101,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_nan(self) -> bool { num::Float::is_nan(self) }
+    pub fn is_nan(self) -> bool {
+        num::Float::is_nan(self)
+    }
 
     /// Returns `true` if this value is positive infinity or negative infinity and
     /// false otherwise.
@@ -122,7 +124,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_infinite(self) -> bool { num::Float::is_infinite(self) }
+    pub fn is_infinite(self) -> bool {
+        num::Float::is_infinite(self)
+    }
 
     /// Returns `true` if this number is neither infinite nor `NaN`.
     ///
@@ -142,7 +146,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_finite(self) -> bool { num::Float::is_finite(self) }
+    pub fn is_finite(self) -> bool {
+        num::Float::is_finite(self)
+    }
 
     /// Returns `true` if the number is neither zero, infinite,
     /// [subnormal][subnormal], or `NaN`.
@@ -167,7 +173,9 @@ impl f64 {
     /// [subnormal]: http://en.wikipedia.org/wiki/Denormal_number
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_normal(self) -> bool { num::Float::is_normal(self) }
+    pub fn is_normal(self) -> bool {
+        num::Float::is_normal(self)
+    }
 
     /// Returns the floating point category of the number. If only one property
     /// is going to be tested, it is generally faster to use the specific
@@ -185,7 +193,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn classify(self) -> FpCategory { num::Float::classify(self) }
+    pub fn classify(self) -> FpCategory {
+        num::Float::classify(self)
+    }
 
     /// Returns the mantissa, base 2 exponent, and sign as integers, respectively.
     /// The original number can be recovered by `sign * mantissa * 2 ^ exponent`.
@@ -211,7 +221,9 @@ impl f64 {
     #[unstable(feature = "float_extras", reason = "signature is undecided",
                issue = "27752")]
     #[inline]
-    pub fn integer_decode(self) -> (u64, i16, i8) { num::Float::integer_decode(self) }
+    pub fn integer_decode(self) -> (u64, i16, i8) {
+        num::Float::integer_decode(self)
+    }
 
     /// Returns the largest integer less than or equal to a number.
     ///
@@ -287,7 +299,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn fract(self) -> f64 { self - self.trunc() }
+    pub fn fract(self) -> f64 {
+        self - self.trunc()
+    }
 
     /// Computes the absolute value of `self`. Returns `NAN` if the
     /// number is `NAN`.
@@ -308,7 +322,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn abs(self) -> f64 { num::Float::abs(self) }
+    pub fn abs(self) -> f64 {
+        num::Float::abs(self)
+    }
 
     /// Returns a number that represents the sign of `self`.
     ///
@@ -328,7 +344,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn signum(self) -> f64 { num::Float::signum(self) }
+    pub fn signum(self) -> f64 {
+        num::Float::signum(self)
+    }
 
     /// Returns `true` if `self`'s sign bit is positive, including
     /// `+0.0` and `INFINITY`.
@@ -348,12 +366,16 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_sign_positive(self) -> bool { num::Float::is_positive(self) }
+    pub fn is_sign_positive(self) -> bool {
+        num::Float::is_positive(self)
+    }
 
     #[stable(feature = "rust1", since = "1.0.0")]
     #[deprecated(since = "1.0.0", reason = "renamed to is_sign_positive")]
     #[inline]
-    pub fn is_positive(self) -> bool { num::Float::is_positive(self) }
+    pub fn is_positive(self) -> bool {
+        num::Float::is_positive(self)
+    }
 
     /// Returns `true` if `self`'s sign is negative, including `-0.0`
     /// and `NEG_INFINITY`.
@@ -373,12 +395,16 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_sign_negative(self) -> bool { num::Float::is_negative(self) }
+    pub fn is_sign_negative(self) -> bool {
+        num::Float::is_negative(self)
+    }
 
     #[stable(feature = "rust1", since = "1.0.0")]
     #[deprecated(since = "1.0.0", reason = "renamed to is_sign_negative")]
     #[inline]
-    pub fn is_negative(self) -> bool { num::Float::is_negative(self) }
+    pub fn is_negative(self) -> bool {
+        num::Float::is_negative(self)
+    }
 
     /// Fused multiply-add. Computes `(self * a) + b` with only one rounding
     /// error. This produces a more accurate result with better performance than
@@ -410,7 +436,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn recip(self) -> f64 { num::Float::recip(self) }
+    pub fn recip(self) -> f64 {
+        num::Float::recip(self)
+    }
 
     /// Raises a number to an integer power.
     ///
@@ -424,7 +452,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn powi(self, n: i32) -> f64 { num::Float::powi(self, n) }
+    pub fn powi(self, n: i32) -> f64 {
+        num::Float::powi(self, n)
+    }
 
     /// Raises a number to a floating point power.
     ///
@@ -532,7 +562,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn log(self, base: f64) -> f64 { self.ln() / base.ln() }
+    pub fn log(self, base: f64) -> f64 {
+        self.ln() / base.ln()
+    }
 
     /// Returns the base 2 logarithm of the number.
     ///
@@ -579,7 +611,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn to_degrees(self) -> f64 { num::Float::to_degrees(self) }
+    pub fn to_degrees(self) -> f64 {
+        num::Float::to_degrees(self)
+    }
 
     /// Converts degrees to radians.
     ///
@@ -594,7 +628,9 @@ impl f64 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn to_radians(self) -> f64 { num::Float::to_radians(self) }
+    pub fn to_radians(self) -> f64 {
+        num::Float::to_radians(self)
+    }
 
     /// Constructs a floating point number of `x*2^exp`.
     ///
@@ -1241,8 +1277,10 @@ mod tests {
 
     #[test]
     fn test_integer_decode() {
-        assert_eq!(3.14159265359f64.integer_decode(), (7074237752028906, -51, 1));
-        assert_eq!((-8573.5918555f64).integer_decode(), (4713381968463931, -39, -1));
+        assert_eq!(3.14159265359f64.integer_decode(),
+                   (7074237752028906, -51, 1));
+        assert_eq!((-8573.5918555f64).integer_decode(),
+                   (4713381968463931, -39, -1));
         assert_eq!(2f64.powf(100.0).integer_decode(), (4503599627370496, 48, 1));
         assert_eq!(0f64.integer_decode(), (0, -1075, 1));
         assert_eq!((-0f64).integer_decode(), (0, -1075, -1));
@@ -1329,7 +1367,7 @@ mod tests {
         assert_eq!((-0f64).abs(), 0f64);
         assert_eq!((-1f64).abs(), 1f64);
         assert_eq!(NEG_INFINITY.abs(), INFINITY);
-        assert_eq!((1f64/NEG_INFINITY).abs(), 0f64);
+        assert_eq!((1f64 / NEG_INFINITY).abs(), 0f64);
         assert!(NAN.abs().is_nan());
     }
 
@@ -1341,7 +1379,7 @@ mod tests {
         assert_eq!((-0f64).signum(), -1f64);
         assert_eq!((-1f64).signum(), -1f64);
         assert_eq!(NEG_INFINITY.signum(), -1f64);
-        assert_eq!((1f64/NEG_INFINITY).signum(), -1f64);
+        assert_eq!((1f64 / NEG_INFINITY).signum(), -1f64);
         assert!(NAN.signum().is_nan());
     }
 
@@ -1353,7 +1391,7 @@ mod tests {
         assert!(!(-0f64).is_sign_positive());
         assert!(!(-1f64).is_sign_positive());
         assert!(!NEG_INFINITY.is_sign_positive());
-        assert!(!(1f64/NEG_INFINITY).is_sign_positive());
+        assert!(!(1f64 / NEG_INFINITY).is_sign_positive());
         assert!(!NAN.is_sign_positive());
     }
 
@@ -1365,7 +1403,7 @@ mod tests {
         assert!((-0f64).is_sign_negative());
         assert!((-1f64).is_sign_negative());
         assert!(NEG_INFINITY.is_sign_negative());
-        assert!((1f64/NEG_INFINITY).is_sign_negative());
+        assert!((1f64 / NEG_INFINITY).is_sign_negative());
         assert!(!NAN.is_sign_negative());
     }
 
@@ -1605,14 +1643,23 @@ mod tests {
         assert_eq!((-0f64).frexp(), (-0f64, 0));
     }
 
-    #[test] #[cfg_attr(windows, ignore)] // FIXME #8755
+    #[test]
+    #[cfg_attr(windows, ignore)] // FIXME #8755
     fn test_frexp_nowin() {
         let inf: f64 = INFINITY;
         let neg_inf: f64 = NEG_INFINITY;
         let nan: f64 = NAN;
-        assert_eq!(match inf.frexp() { (x, _) => x }, inf);
-        assert_eq!(match neg_inf.frexp() { (x, _) => x }, neg_inf);
-        assert!(match nan.frexp() { (x, _) => x.is_nan() })
+        assert_eq!(match inf.frexp() {
+                       (x, _) => x,
+                   },
+                   inf);
+        assert_eq!(match neg_inf.frexp() {
+                       (x, _) => x,
+                   },
+                   neg_inf);
+        assert!(match nan.frexp() {
+            (x, _) => x.is_nan(),
+        })
     }
 
     #[test]

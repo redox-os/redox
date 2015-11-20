@@ -17,9 +17,7 @@ pub struct Session {
 impl Session {
     /// Create new session
     pub fn new() -> Box<Self> {
-        box Session {
-            items: Vec::new(),
-        }
+        box Session { items: Vec::new() }
     }
 
     pub unsafe fn on_irq(&mut self, irq: u8) {

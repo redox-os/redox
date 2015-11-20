@@ -144,7 +144,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_nan(self) -> bool { num::Float::is_nan(self) }
+    pub fn is_nan(self) -> bool {
+        num::Float::is_nan(self)
+    }
 
     /// Returns `true` if this value is positive infinity or negative infinity and
     /// false otherwise.
@@ -165,7 +167,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_infinite(self) -> bool { num::Float::is_infinite(self) }
+    pub fn is_infinite(self) -> bool {
+        num::Float::is_infinite(self)
+    }
 
     /// Returns `true` if this number is neither infinite nor `NaN`.
     ///
@@ -185,7 +189,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_finite(self) -> bool { num::Float::is_finite(self) }
+    pub fn is_finite(self) -> bool {
+        num::Float::is_finite(self)
+    }
 
     /// Returns `true` if the number is neither zero, infinite,
     /// [subnormal][subnormal], or `NaN`.
@@ -210,7 +216,9 @@ impl f32 {
     /// [subnormal]: http://en.wikipedia.org/wiki/Denormal_number
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_normal(self) -> bool { num::Float::is_normal(self) }
+    pub fn is_normal(self) -> bool {
+        num::Float::is_normal(self)
+    }
 
     /// Returns the floating point category of the number. If only one property
     /// is going to be tested, it is generally faster to use the specific
@@ -228,7 +236,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn classify(self) -> FpCategory { num::Float::classify(self) }
+    pub fn classify(self) -> FpCategory {
+        num::Float::classify(self)
+    }
 
     /// Returns the mantissa, base 2 exponent, and sign as integers, respectively.
     /// The original number can be recovered by `sign * mantissa * 2 ^ exponent`.
@@ -288,9 +298,13 @@ impl f32 {
         // redirect to this comment, so `floorf` is just one case of a missing
         // function on MSVC, but there are many others elsewhere.
         #[cfg(target_env = "msvc")]
-        fn floorf(f: f32) -> f32 { (f as f64).floor() as f32 }
+        fn floorf(f: f32) -> f32 {
+            (f as f64).floor() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn floorf(f: f32) -> f32 { unsafe { intrinsics::floorf32(f) } }
+        fn floorf(f: f32) -> f32 {
+            unsafe { intrinsics::floorf32(f) }
+        }
     }
 
     /// Returns the smallest integer greater than or equal to a number.
@@ -309,9 +323,13 @@ impl f32 {
 
         // see notes above in `floor`
         #[cfg(target_env = "msvc")]
-        fn ceilf(f: f32) -> f32 { (f as f64).ceil() as f32 }
+        fn ceilf(f: f32) -> f32 {
+            (f as f64).ceil() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn ceilf(f: f32) -> f32 { unsafe { intrinsics::ceilf32(f) } }
+        fn ceilf(f: f32) -> f32 {
+            unsafe { intrinsics::ceilf32(f) }
+        }
     }
 
     /// Returns the nearest integer to a number. Round half-way cases away from
@@ -360,7 +378,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn fract(self) -> f32 { self - self.trunc() }
+    pub fn fract(self) -> f32 {
+        self - self.trunc()
+    }
 
     /// Computes the absolute value of `self`. Returns `NAN` if the
     /// number is `NAN`.
@@ -381,7 +401,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn abs(self) -> f32 { num::Float::abs(self) }
+    pub fn abs(self) -> f32 {
+        num::Float::abs(self)
+    }
 
     /// Returns a number that represents the sign of `self`.
     ///
@@ -401,7 +423,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn signum(self) -> f32 { num::Float::signum(self) }
+    pub fn signum(self) -> f32 {
+        num::Float::signum(self)
+    }
 
     /// Returns `true` if `self`'s sign bit is positive, including
     /// `+0.0` and `INFINITY`.
@@ -420,7 +444,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_sign_positive(self) -> bool { num::Float::is_positive(self) }
+    pub fn is_sign_positive(self) -> bool {
+        num::Float::is_positive(self)
+    }
 
     /// Returns `true` if `self`'s sign is negative, including `-0.0`
     /// and `NEG_INFINITY`.
@@ -439,7 +465,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_sign_negative(self) -> bool { num::Float::is_negative(self) }
+    pub fn is_sign_negative(self) -> bool {
+        num::Float::is_negative(self)
+    }
 
     /// Fused multiply-add. Computes `(self * a) + b` with only one rounding
     /// error. This produces a more accurate result with better performance than
@@ -475,7 +503,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn recip(self) -> f32 { num::Float::recip(self) }
+    pub fn recip(self) -> f32 {
+        num::Float::recip(self)
+    }
 
     /// Raises a number to an integer power.
     ///
@@ -491,7 +521,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn powi(self, n: i32) -> f32 { num::Float::powi(self, n) }
+    pub fn powi(self, n: i32) -> f32 {
+        num::Float::powi(self, n)
+    }
 
     /// Raises a number to a floating point power.
     ///
@@ -510,9 +542,13 @@ impl f32 {
 
         // see notes above in `floor`
         #[cfg(target_env = "msvc")]
-        fn powf(f: f32, n: f32) -> f32 { (f as f64).powf(n as f64) as f32 }
+        fn powf(f: f32, n: f32) -> f32 {
+            (f as f64).powf(n as f64) as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn powf(f: f32, n: f32) -> f32 { unsafe { intrinsics::powf32(f, n) } }
+        fn powf(f: f32, n: f32) -> f32 {
+            unsafe { intrinsics::powf32(f, n) }
+        }
     }
 
     /// Takes the square root of a number.
@@ -561,9 +597,13 @@ impl f32 {
 
         // see notes above in `floor`
         #[cfg(target_env = "msvc")]
-        fn expf(f: f32) -> f32 { (f as f64).exp() as f32 }
+        fn expf(f: f32) -> f32 {
+            (f as f64).exp() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn expf(f: f32) -> f32 { unsafe { intrinsics::expf32(f) } }
+        fn expf(f: f32) -> f32 {
+            unsafe { intrinsics::expf32(f) }
+        }
     }
 
     /// Returns `2^(self)`.
@@ -605,9 +645,13 @@ impl f32 {
 
         // see notes above in `floor`
         #[cfg(target_env = "msvc")]
-        fn logf(f: f32) -> f32 { (f as f64).ln() as f32 }
+        fn logf(f: f32) -> f32 {
+            (f as f64).ln() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn logf(f: f32) -> f32 { unsafe { intrinsics::logf32(f) } }
+        fn logf(f: f32) -> f32 {
+            unsafe { intrinsics::logf32(f) }
+        }
     }
 
     /// Returns the logarithm of the number with respect to an arbitrary base.
@@ -629,7 +673,9 @@ impl f32 {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn log(self, base: f32) -> f32 { self.ln() / base.ln() }
+    pub fn log(self, base: f32) -> f32 {
+        self.ln() / base.ln()
+    }
 
     /// Returns the base 2 logarithm of the number.
     ///
@@ -668,9 +714,13 @@ impl f32 {
 
         // see notes above in `floor`
         #[cfg(target_env = "msvc")]
-        fn log10f(f: f32) -> f32 { (f as f64).log10() as f32 }
+        fn log10f(f: f32) -> f32 {
+            (f as f64).log10() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn log10f(f: f32) -> f32 { unsafe { intrinsics::log10f32(f) } }
+        fn log10f(f: f32) -> f32 {
+            unsafe { intrinsics::log10f32(f) }
+        }
     }
 
     /// Converts radians to degrees.
@@ -689,7 +739,9 @@ impl f32 {
     #[unstable(feature = "float_extras", reason = "desirability is unclear",
                issue = "27752")]
     #[inline]
-    pub fn to_degrees(self) -> f32 { num::Float::to_degrees(self) }
+    pub fn to_degrees(self) -> f32 {
+        num::Float::to_degrees(self)
+    }
 
     /// Converts degrees to radians.
     ///
@@ -707,7 +759,9 @@ impl f32 {
     #[unstable(feature = "float_extras", reason = "desirability is unclear",
                issue = "27752")]
     #[inline]
-    pub fn to_radians(self) -> f32 { num::Float::to_radians(self) }
+    pub fn to_radians(self) -> f32 {
+        num::Float::to_radians(self)
+    }
 
     /// Constructs a floating point number of `x*2^exp`.
     ///
@@ -894,9 +948,13 @@ impl f32 {
 
         // see notes in `core::f32::Float::floor`
         #[cfg(target_env = "msvc")]
-        fn sinf(f: f32) -> f32 { (f as f64).sin() as f32 }
+        fn sinf(f: f32) -> f32 {
+            (f as f64).sin() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn sinf(f: f32) -> f32 { unsafe { intrinsics::sinf32(f) } }
+        fn sinf(f: f32) -> f32 {
+            unsafe { intrinsics::sinf32(f) }
+        }
     }
 
     /// Computes the cosine of a number (in radians).
@@ -917,9 +975,13 @@ impl f32 {
 
         // see notes in `core::f32::Float::floor`
         #[cfg(target_env = "msvc")]
-        fn cosf(f: f32) -> f32 { (f as f64).cos() as f32 }
+        fn cosf(f: f32) -> f32 {
+            (f as f64).cos() as f32
+        }
         #[cfg(not(target_env = "msvc"))]
-        fn cosf(f: f32) -> f32 { unsafe { intrinsics::cosf32(f) } }
+        fn cosf(f: f32) -> f32 {
+            unsafe { intrinsics::cosf32(f) }
+        }
     }
 
     /// Computes the tangent of a number (in radians).
@@ -1472,7 +1534,7 @@ mod tests {
         assert_eq!((-0f32).abs(), 0f32);
         assert_eq!((-1f32).abs(), 1f32);
         assert_eq!(NEG_INFINITY.abs(), INFINITY);
-        assert_eq!((1f32/NEG_INFINITY).abs(), 0f32);
+        assert_eq!((1f32 / NEG_INFINITY).abs(), 0f32);
         assert!(NAN.abs().is_nan());
     }
 
@@ -1484,7 +1546,7 @@ mod tests {
         assert_eq!((-0f32).signum(), -1f32);
         assert_eq!((-1f32).signum(), -1f32);
         assert_eq!(NEG_INFINITY.signum(), -1f32);
-        assert_eq!((1f32/NEG_INFINITY).signum(), -1f32);
+        assert_eq!((1f32 / NEG_INFINITY).signum(), -1f32);
         assert!(NAN.signum().is_nan());
     }
 
@@ -1496,7 +1558,7 @@ mod tests {
         assert!(!(-0f32).is_sign_positive());
         assert!(!(-1f32).is_sign_positive());
         assert!(!NEG_INFINITY.is_sign_positive());
-        assert!(!(1f32/NEG_INFINITY).is_sign_positive());
+        assert!(!(1f32 / NEG_INFINITY).is_sign_positive());
         assert!(!NAN.is_sign_positive());
     }
 
@@ -1508,7 +1570,7 @@ mod tests {
         assert!((-0f32).is_sign_negative());
         assert!((-1f32).is_sign_negative());
         assert!(NEG_INFINITY.is_sign_negative());
-        assert!((1f32/NEG_INFINITY).is_sign_negative());
+        assert!((1f32 / NEG_INFINITY).is_sign_negative());
         assert!(!NAN.is_sign_negative());
     }
 
@@ -1748,14 +1810,23 @@ mod tests {
         assert_eq!((-0f32).frexp(), (-0f32, 0));
     }
 
-    #[test] #[cfg_attr(windows, ignore)] // FIXME #8755
+    #[test]
+    #[cfg_attr(windows, ignore)] // FIXME #8755
     fn test_frexp_nowin() {
         let inf: f32 = f32::INFINITY;
         let neg_inf: f32 = f32::NEG_INFINITY;
         let nan: f32 = f32::NAN;
-        assert_eq!(match inf.frexp() { (x, _) => x }, inf);
-        assert_eq!(match neg_inf.frexp() { (x, _) => x }, neg_inf);
-        assert!(match nan.frexp() { (x, _) => x.is_nan() })
+        assert_eq!(match inf.frexp() {
+                       (x, _) => x,
+                   },
+                   inf);
+        assert_eq!(match neg_inf.frexp() {
+                       (x, _) => x,
+                   },
+                   neg_inf);
+        assert!(match nan.frexp() {
+            (x, _) => x.is_nan(),
+        })
     }
 
     #[test]

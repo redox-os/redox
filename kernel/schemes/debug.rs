@@ -63,7 +63,7 @@ impl Resource for DebugResource {
 
         // TODO: Unicode
         let mut i = 0;
-        while i < buf.len() && ! self.command.is_empty() {
+        while i < buf.len() && !self.command.is_empty() {
             buf[i] = unsafe { self.command.as_mut_vec().remove(0) };
             i += 1;
         }

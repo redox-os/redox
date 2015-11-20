@@ -7,9 +7,7 @@ pub struct Djb2 {
 impl Djb2 {
     /// Create new DJB2 hasher
     pub fn new() -> Self {
-        Djb2 {
-            state: 5381,
-        }
+        Djb2 { state: 5381 }
     }
 }
 

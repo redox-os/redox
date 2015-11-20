@@ -13,15 +13,15 @@ use drivers::pio::*;
 use programs::executor::execute;
 
 use scheduler::{self, Regs};
-use scheduler::context::{context_clone, context_exit, context_switch, Context,
-                         ContextMemory, ContextFile};
+use scheduler::context::{context_clone, context_exit, context_switch, Context, ContextMemory,
+                         ContextFile};
 
 use schemes::{Resource, ResourceSeek, Url};
 
 use syscall::common::*;
 
 /// Helper function for handling C strings, please do not copy it or make it pub or change it
-unsafe fn c_string_to_slice<'a>(ptr: *const u8) -> &'a [u8]{
+unsafe fn c_string_to_slice<'a>(ptr: *const u8) -> &'a [u8] {
     if ptr > 0 as *const u8 {
         let mut len = 0;
         while ptr::read(ptr.offset(len as isize)) > 0 {
@@ -85,7 +85,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 
         ret = current.next_mem();
 
-        //TODO: Make this smarter, currently it attempt to resize the entire data segment
+        // TODO: Make this smarter, currently it attempt to resize the entire data segment
         if let Some(mut mem) = (*current.memory.get()).last_mut() {
             if mem.writeable {
                 if addr >= mem.virtual_address {
@@ -272,8 +272,7 @@ pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
-        let path_string =
-            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
+        let path_string = current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         let path = Url::from_string(path_string.clone());
         let wd = Url::from_string(path_string.get_slice(None,
@@ -431,8 +430,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
-        let path_string =
-            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
+        let path_string = current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         scheduler::end_no_ints(reenable);
 
@@ -521,7 +519,7 @@ pub unsafe fn do_sys_alloc(size: usize) -> usize {
                 physical_address: physical_address,
                 virtual_address: ret,
                 virtual_size: size,
-                writeable: true
+                writeable: true,
             });
         }
         current.clean_mem();

@@ -33,7 +33,9 @@ pub struct Resource {
 impl Resource {
     pub fn dup(&self) -> Option<Box<Resource>> {
         Some(box Resource {
-            window: Window::new(self.window.point, self.window.size, self.window.title.clone()),
+            window: Window::new(self.window.point,
+                                self.window.size,
+                                self.window.title.clone()),
             seek: self.seek,
         })
     }
@@ -41,16 +43,16 @@ impl Resource {
     /// Return the url of this resource
     pub fn path(&self) -> Option<String> {
         Some(format!("orbital:///{}/{}/{}/{}/{}",
-                         self.window.point.x,
-                         self.window.point.y,
-                         self.window.size.width,
-                         self.window.size.height,
-                         self.window.title))
+                     self.window.point.x,
+                     self.window.point.y,
+                     self.window.size.width,
+                     self.window.size.height,
+                     self.window.title))
     }
 
     /// Read data to buffer
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        //Read events from window
+        // Read events from window
         let mut i = 0;
         while buf.len() - i >= mem::size_of::<Event>() {
             match self.window.poll() {
@@ -71,9 +73,7 @@ impl Resource {
 
         let size = cmp::min(content.size - self.seek, buf.len());
         unsafe {
-            Display::copy_run(buf.as_ptr() as usize,
-                              content.offscreen + self.seek,
-                              size);
+            Display::copy_run(buf.as_ptr() as usize, content.offscreen + self.seek, size);
         }
         self.seek += size;
 
@@ -86,7 +86,8 @@ impl Resource {
 
         self.seek = match pos {
             SeekFrom::Start(offset) => cmp::min(end, cmp::max(0, offset)),
-            SeekFrom::Current(offset) => cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
+            SeekFrom::Current(offset) =>
+                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
             SeekFrom::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
         };
 
@@ -122,7 +123,7 @@ impl Scheme {
     }
 
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
-        //window://host/path/path/path is the path type we're working with.
+        // window://host/path/path/path is the path type we're working with.
         let url = Url::from_str(url_str);
 
         let host = url.host();
@@ -170,7 +171,9 @@ impl Scheme {
             }
 
             Some(box Resource {
-                window: Window::new(Point::new(pointx, pointy), Size::new(size_width, size_height), title),
+                window: Window::new(Point::new(pointx, pointy),
+                                    Size::new(size_width, size_height),
+                                    title),
                 seek: 0,
             })
         } else if host == "launch" {
@@ -182,9 +185,10 @@ impl Scheme {
                 for package in self.session.packages.iter() {
                     let mut accepted = false;
                     for accept in package.accepts.iter() {
-                        if (accept.starts_with('*') && path.ends_with(&accept.get_slice(Some(1), None)))
-                        || (accept.ends_with('*') && path.starts_with(&accept.get_slice(None, Some(accept.len() - 1))))
-                        {
+                        if (accept.starts_with('*') &&
+                            path.ends_with(&accept.get_slice(Some(1), None))) ||
+                           (accept.ends_with('*') &&
+                            path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
                             accepted = true;
                             break;
                         }
@@ -217,7 +221,7 @@ impl Scheme {
     }
 }
 
-//TODO: This is a hack and it will go away
+// TODO: This is a hack and it will go away
 #[cold]
 #[inline(never)]
 #[no_mangle]

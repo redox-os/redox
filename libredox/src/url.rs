@@ -4,15 +4,15 @@ use core::mem;
 use string::{String, ToString};
 use vec::Vec;
 
-//URL Parsing:
-//Split by /
-//scheme://user:password@host:port/path/path/path?query#fragment
-//First part is scheme, second is empty, third is user, password, host, and port, later parts are path, last part is path, query, and fragment
-    //Split third part by @, the last part is the host and port, if there is a first part it is the user and password
-        //Split these parts each by :, first part splits into user and password, the second part is split into domain and port
-    //Split the last part by ?, the first part is a path element, the last part is the query and fragment
-        //Split the last part by #, the first is the query, the second is the fragment
-            //Split the query by &
+// URL Parsing:
+// Split by /
+// scheme://user:password@host:port/path/path/path?query#fragment
+// First part is scheme, second is empty, third is user, password, host, and port, later parts are path, last part is path, query, and fragment
+// Split third part by @, the last part is the host and port, if there is a first part it is the user and password
+// Split these parts each by :, first part splits into user and password, the second part is split into domain and port
+// Split the last part by ?, the first part is a path element, the last part is the query and fragment
+// Split the last part by #, the first is the query, the second is the fragment
+// Split the query by &
 
 /// An URL, see wiki
 pub struct Url {
@@ -240,7 +240,7 @@ impl Url {
             part_i += 1;
         }
 
-        //Hack for folders
+        // Hack for folders
         if part_i > 3 && self.string.ends_with('/') {
             path = path + "/";
         }
