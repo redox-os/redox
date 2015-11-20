@@ -1,4 +1,0 @@
-name=Reentrant
-author=Jeremy Soller
-provide=reent:*
-description=Reentrant Scheme
