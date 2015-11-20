@@ -1,5 +1,4 @@
 // TODO: Doc the rest
-
 pub use common::heap::Memory;
 
 use core::ops::{Index, IndexMut};
@@ -150,6 +149,14 @@ impl Block {
         (1 + self.idx - (MT_LEAFS >> self.level)) << self.level
     }
 
+    /// Get sibling side
+    pub fn sibl(&self) -> Sibling {
+        match self.idx & 1 {
+            0 => Sibling::Left,
+            _ => Sibling::Right,
+        }
+    }
+
     /// Get this blocks buddy
     pub fn get_buddy(&self) -> Block {
         Block {
@@ -204,26 +211,28 @@ impl MemoryTree {
     /// Split a block
     pub unsafe fn split(&self, block: Block) -> Block {
         self.tree.set(block, MemoryState::Split);
-        Block {
+        self.tree.set(Block {
+            idx: block.idx * 2 + 1,
+            level: block.level + 1,
+        }, MemoryState::Free);
+
+        let res = Block {
             idx: block.idx * 2,
             level: block.level + 1,
-        }
+        };
+        self.tree.set(res, MemoryState::Used);
+
+        res
     }
 
     /// Allocate of minimum size, size
     pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
-        let mut level = 0;
-
-        // TODO: Unroll this
-        loop {
-            if size & !(size & (size - 1)) == 1 {
-                break;
-            }
-            level += 1;
-        }
+        let order = ceil_log2(size / MT_ATOM);
+        size = (1 << order) * MT_ATOM;
+        let level = MT_DEPTH - order;
 
         let mut free = None;
-        for i in 0..(1 << level) {
+        for i in 0..size {
             if let MemoryState::Free = self.tree.get(Block {
                 level: level,
                 idx: i,
@@ -237,17 +246,18 @@ impl MemoryTree {
                               level: level,
                               idx: n,
                           },
-                          MemoryState::Free);
+                          MemoryState::Used);
+
             Some(Block {
                 idx: n,
                 level: level,
             })
         } else {
-            if level == 1 {
+            if level == 0 {
                 None
             } else {
                 // Kernel panic on OOM
-                Some(if let Some(m) = self.alloc(size - 1) {
+                Some(if let Some(m) = self.alloc(size << 1) {
                     self.split(m)
                 } else {
                     return None;
@@ -257,45 +267,46 @@ impl MemoryTree {
     }
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
-    pub unsafe fn realloc(&self, block: Block, mut size: usize) -> Option<Block> {
-        let mut level = 0;
+    pub unsafe fn realloc(&self, mut block: Block, mut size: usize) -> Option<Block> {
+        if let Sibling::Left = block.sibl() {
+            let mut level = 0;
 
-        // TODO: Unroll this
-        loop {
-            if size & !(size & (size - 1)) == 1 {
-                break;
-            }
-            level += 1;
-        }
+            let order = ceil_log2(size / MT_ATOM);
+            size = (1 << order) * MT_ATOM;
+            let level = MT_DEPTH - order;
 
-        let delta: isize = level as isize - block.level as isize;
+            let delta = level as isize - block.level as isize;
 
-        if delta < 0 {
-            for i in 1..(-delta as usize) {
-                self.split(block);
-            }
-
-            Some(self.split(block))
-        } else {
-            let mut buddy = block.get_buddy();
-
-            for i in 1..delta {
-
-                if let MemoryState::Free = self.tree.get(buddy) {
-                } else {
-                    return None;
+            if delta < 0 {
+                for i in 1..(-delta as usize) {
+                    block = self.split(block);
                 }
 
-                buddy = block.parrent().get_buddy();
-            }
-            if let MemoryState::Free = self.tree.get(buddy) {
-                let parrent = buddy.parrent();
-                self.tree.set(parrent, MemoryState::Free);
-                Some(parrent)
+                Some(self.split(block))
             } else {
-                None
-            }
+                let mut buddy = block.get_buddy();
 
+                for i in 1..delta {
+
+                    if let MemoryState::Free = self.tree.get(buddy) {
+                    } else {
+                        return None;
+                    }
+
+                    buddy = block.parrent().get_buddy();
+                }
+
+                if let MemoryState::Free = self.tree.get(buddy) {
+                    let parrent = buddy.parrent();
+                    self.tree.set(parrent, MemoryState::Used);
+                    Some(parrent)
+                } else {
+                    None
+                }
+
+            }
+        } else {
+            None
         }
 
     }
