@@ -215,10 +215,14 @@ impl MemoryTree {
             idx: block.idx * 2 + 1,
             level: block.level + 1,
         }, MemoryState::Free);
-        Block {
+
+        let res = Block {
             idx: block.idx * 2,
             level: block.level + 1,
-        }
+        };
+        self.tree.set(res, MemoryState::Used);
+
+        res
     }
 
     /// Allocate of minimum size, size
