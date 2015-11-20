@@ -77,10 +77,16 @@ pub trait One: Sized {
 
 macro_rules! zero_one_impl {
     ($($t:ty)*) => ($(
+        #[unstable(feature = "zero_one",
+                   reason = "unsure of placement, wants to use associated constants",
+                   issue = "27739")]
         impl Zero for $t {
             #[inline]
             fn zero() -> Self { 0 }
         }
+        #[unstable(feature = "zero_one",
+                   reason = "unsure of placement, wants to use associated constants",
+                   issue = "27739")]
         impl One for $t {
             #[inline]
             fn one() -> Self { 1 }
@@ -91,10 +97,16 @@ zero_one_impl! { u8 u16 u32 u64 usize i8 i16 i32 i64 isize }
 
 macro_rules! zero_one_impl_float {
     ($($t:ty)*) => ($(
+        #[unstable(feature = "zero_one",
+                   reason = "unsure of placement, wants to use associated constants",
+                   issue = "27739")]
         impl Zero for $t {
             #[inline]
             fn zero() -> Self { 0.0 }
         }
+        #[unstable(feature = "zero_one",
+                   reason = "unsure of placement, wants to use associated constants",
+                   issue = "27739")]
         impl One for $t {
             #[inline]
             fn one() -> Self { 1.0 }
@@ -124,15 +136,15 @@ macro_rules! int_impl {
         /// Returns the smallest value that can be represented by this integer type.
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
-        pub fn min_value() -> Self {
+        pub const fn min_value() -> Self {
             (-1 as Self) << ($BITS - 1)
         }
 
         /// Returns the largest value that can be represented by this integer type.
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
-        pub fn max_value() -> Self {
-            let min = Self::min_value(); !min
+        pub const fn max_value() -> Self {
+            !Self::min_value()
         }
 
         /// Converts a string slice in a given base to an integer.
@@ -140,6 +152,8 @@ macro_rules! int_impl {
         /// Leading and trailing whitespace represent an error.
         ///
         /// # Examples
+        ///
+        /// Basic usage:
         ///
         /// ```
         /// assert_eq!(u32::from_str_radix("A", 16), Ok(10));
@@ -153,7 +167,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b01001100u8;
         ///
         /// assert_eq!(n.count_ones(), 3);
@@ -166,7 +182,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b01001100u8;
         ///
         /// assert_eq!(n.count_zeros(), 5);
@@ -182,7 +200,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b0101000u16;
         ///
         /// assert_eq!(n.leading_zeros(), 10);
@@ -198,7 +218,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b0101000u16;
         ///
         /// assert_eq!(n.trailing_zeros(), 3);
@@ -214,7 +236,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         /// let m = 0x3456789ABCDEF012u64;
         ///
@@ -232,7 +256,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         /// let m = 0xDEF0123456789ABCu64;
         ///
@@ -248,7 +274,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         /// let m = 0xEFCDAB8967452301u64;
         ///
@@ -267,7 +295,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "big") {
@@ -289,7 +319,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "little") {
@@ -311,7 +343,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "big") {
@@ -333,7 +367,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "little") {
@@ -353,7 +389,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!(5u16.checked_add(65530), Some(65535));
         /// assert_eq!(6u16.checked_add(65530), None);
         /// ```
@@ -368,7 +406,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!((-127i8).checked_sub(1), Some(-128));
         /// assert_eq!((-128i8).checked_sub(1), None);
         /// ```
@@ -383,7 +423,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!(5u8.checked_mul(51), Some(255));
         /// assert_eq!(5u8.checked_mul(52), None);
         /// ```
@@ -398,7 +440,9 @@ macro_rules! int_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!((-127i8).checked_div(-1), Some(127));
         /// assert_eq!((-128i8).checked_div(-1), None);
         /// assert_eq!((1i8).checked_div(0), None);
@@ -416,6 +460,15 @@ macro_rules! int_impl {
 
         /// Saturating integer addition. Computes `self + other`, saturating at
         /// the numeric bounds instead of overflowing.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.saturating_add(1), 101);
+        /// assert_eq!(100i8.saturating_add(127), 127);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn saturating_add(self, other: Self) -> Self {
@@ -428,6 +481,15 @@ macro_rules! int_impl {
 
         /// Saturating integer subtraction. Computes `self - other`, saturating
         /// at the numeric bounds instead of overflowing.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.saturating_sub(127), -27);
+        /// assert_eq!((-100i8).saturating_sub(127), -128);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn saturating_sub(self, other: Self) -> Self {
@@ -440,6 +502,15 @@ macro_rules! int_impl {
 
         /// Wrapping (modular) addition. Computes `self + other`,
         /// wrapping around at the boundary of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.wrapping_add(27), 127);
+        /// assert_eq!(100i8.wrapping_add(127), -29);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn wrapping_add(self, rhs: Self) -> Self {
@@ -450,6 +521,15 @@ macro_rules! int_impl {
 
         /// Wrapping (modular) subtraction. Computes `self - other`,
         /// wrapping around at the boundary of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(0i8.wrapping_sub(127), -127);
+        /// assert_eq!((-2i8).wrapping_sub(127), 127);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn wrapping_sub(self, rhs: Self) -> Self {
@@ -460,6 +540,15 @@ macro_rules! int_impl {
 
         /// Wrapping (modular) multiplication. Computes `self *
         /// other`, wrapping around at the boundary of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(10i8.wrapping_mul(12), 120);
+        /// assert_eq!(11i8.wrapping_mul(12), -124);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn wrapping_mul(self, rhs: Self) -> Self {
@@ -477,6 +566,15 @@ macro_rules! int_impl {
         /// to `-MIN`, a positive value that is too large to represent
         /// in the type. In such a case, this function returns `MIN`
         /// itself.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100u8.wrapping_div(10), 10);
+        /// assert_eq!((-128i8).wrapping_div(-1), -128);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_div(self, rhs: Self) -> Self {
@@ -490,6 +588,15 @@ macro_rules! int_impl {
         /// implementation artifacts make `x % y` invalid for `MIN /
         /// -1` on a signed type (where `MIN` is the negative
         /// minimal value). In such a case, this function returns `0`.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.wrapping_rem(10), 0);
+        /// assert_eq!((-128i8).wrapping_rem(-1), 0);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_rem(self, rhs: Self) -> Self {
@@ -504,6 +611,15 @@ macro_rules! int_impl {
         /// negative minimal value for the type); this is a positive
         /// value that is too large to represent in the type. In such
         /// a case, this function returns `MIN` itself.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.wrapping_neg(), -100);
+        /// assert_eq!((-128i8).wrapping_neg(), -128);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_neg(self) -> Self {
@@ -513,6 +629,15 @@ macro_rules! int_impl {
         /// Panic-free bitwise shift-left; yields `self << mask(rhs)`,
         /// where `mask` removes any high-order bits of `rhs` that
         /// would cause the shift to exceed the bitwidth of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(1u8.wrapping_shl(7), 128);
+        /// assert_eq!(1u8.wrapping_shl(8), 1);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_shl(self, rhs: u32) -> Self {
@@ -522,6 +647,15 @@ macro_rules! int_impl {
         /// Panic-free bitwise shift-left; yields `self >> mask(rhs)`,
         /// where `mask` removes any high-order bits of `rhs` that
         /// would cause the shift to exceed the bitwidth of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(128u8.wrapping_shr(7), 1);
+        /// assert_eq!(128u8.wrapping_shr(8), 128);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_shr(self, rhs: u32) -> Self {
@@ -531,6 +665,8 @@ macro_rules! int_impl {
         /// Raises self to the power of `exp`, using exponentiation by squaring.
         ///
         /// # Examples
+        ///
+        /// Basic usage:
         ///
         /// ```
         /// let x: i32 = 2; // or any other integer type
@@ -569,6 +705,15 @@ macro_rules! int_impl {
         /// `i32`, and attempting to calculate it will cause an overflow. This
         /// means that code in debug mode will trigger a panic on this case and
         /// optimized code will return `i32::min_value()` without a panic.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(10i8.abs(), 10);
+        /// assert_eq!((-10i8).abs(), 10);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn abs(self) -> Self {
@@ -587,6 +732,16 @@ macro_rules! int_impl {
         /// - `0` if the number is zero
         /// - `1` if the number is positive
         /// - `-1` if the number is negative
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(10i8.signum(), 1);
+        /// assert_eq!(0i8.signum(), 0);
+        /// assert_eq!((-10i8).signum(), -1);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn signum(self) -> Self {
@@ -599,12 +754,30 @@ macro_rules! int_impl {
 
         /// Returns `true` if `self` is positive and `false` if the number
         /// is zero or negative.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert!(10i8.is_positive());
+        /// assert!(!(-10i8).is_positive());
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn is_positive(self) -> bool { self > 0 }
 
         /// Returns `true` if `self` is negative and `false` if the number
         /// is zero or positive.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert!((-10i8).is_negative());
+        /// assert!(!10i8.is_negative());
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn is_negative(self) -> bool { self < 0 }
@@ -730,12 +903,12 @@ macro_rules! uint_impl {
         /// Returns the smallest value that can be represented by this integer type.
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
-        pub fn min_value() -> Self { 0 }
+        pub const fn min_value() -> Self { 0 }
 
         /// Returns the largest value that can be represented by this integer type.
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
-        pub fn max_value() -> Self { !0 }
+        pub const fn max_value() -> Self { !0 }
 
         /// Converts a string slice in a given base to an integer.
         ///
@@ -759,7 +932,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b01001100u8;
         ///
         /// assert_eq!(n.count_ones(), 3);
@@ -774,7 +949,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b01001100u8;
         ///
         /// assert_eq!(n.count_zeros(), 5);
@@ -790,7 +967,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b0101000u16;
         ///
         /// assert_eq!(n.leading_zeros(), 10);
@@ -825,7 +1004,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0b0101000u16;
         ///
         /// assert_eq!(n.trailing_zeros(), 3);
@@ -855,7 +1036,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         /// let m = 0x3456789ABCDEF012u64;
         ///
@@ -875,7 +1058,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         /// let m = 0xDEF0123456789ABCu64;
         ///
@@ -893,7 +1078,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         /// let m = 0xEFCDAB8967452301u64;
         ///
@@ -912,7 +1099,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "big") {
@@ -934,7 +1123,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "little") {
@@ -956,7 +1147,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "big") {
@@ -978,7 +1171,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// let n = 0x0123456789ABCDEFu64;
         ///
         /// if cfg!(target_endian = "little") {
@@ -998,7 +1193,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!(5u16.checked_add(65530), Some(65535));
         /// assert_eq!(6u16.checked_add(65530), None);
         /// ```
@@ -1013,7 +1210,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!((-127i8).checked_sub(1), Some(-128));
         /// assert_eq!((-128i8).checked_sub(1), None);
         /// ```
@@ -1028,7 +1227,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!(5u8.checked_mul(51), Some(255));
         /// assert_eq!(5u8.checked_mul(52), None);
         /// ```
@@ -1043,7 +1244,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!((-127i8).checked_div(-1), Some(127));
         /// assert_eq!((-128i8).checked_div(-1), None);
         /// assert_eq!((1i8).checked_div(0), None);
@@ -1059,6 +1262,15 @@ macro_rules! uint_impl {
 
         /// Saturating integer addition. Computes `self + other`, saturating at
         /// the numeric bounds instead of overflowing.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.saturating_add(1), 101);
+        /// assert_eq!(100i8.saturating_add(127), 127);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn saturating_add(self, other: Self) -> Self {
@@ -1071,6 +1283,15 @@ macro_rules! uint_impl {
 
         /// Saturating integer subtraction. Computes `self - other`, saturating
         /// at the numeric bounds instead of overflowing.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.saturating_sub(127), -27);
+        /// assert_eq!((-100i8).saturating_sub(127), -128);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn saturating_sub(self, other: Self) -> Self {
@@ -1083,6 +1304,15 @@ macro_rules! uint_impl {
 
         /// Wrapping (modular) addition. Computes `self + other`,
         /// wrapping around at the boundary of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.wrapping_add(27), 127);
+        /// assert_eq!(100i8.wrapping_add(127), -29);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn wrapping_add(self, rhs: Self) -> Self {
@@ -1093,6 +1323,15 @@ macro_rules! uint_impl {
 
         /// Wrapping (modular) subtraction. Computes `self - other`,
         /// wrapping around at the boundary of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(0i8.wrapping_sub(127), -127);
+        /// assert_eq!((-2i8).wrapping_sub(127), 127);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn wrapping_sub(self, rhs: Self) -> Self {
@@ -1103,6 +1342,15 @@ macro_rules! uint_impl {
 
         /// Wrapping (modular) multiplication. Computes `self *
         /// other`, wrapping around at the boundary of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(10i8.wrapping_mul(12), 120);
+        /// assert_eq!(11i8.wrapping_mul(12), -124);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn wrapping_mul(self, rhs: Self) -> Self {
@@ -1120,6 +1368,15 @@ macro_rules! uint_impl {
         /// to `-MIN`, a positive value that is too large to represent
         /// in the type. In such a case, this function returns `MIN`
         /// itself.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100u8.wrapping_div(10), 10);
+        /// assert_eq!((-128i8).wrapping_div(-1), -128);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_div(self, rhs: Self) -> Self {
@@ -1133,6 +1390,15 @@ macro_rules! uint_impl {
         /// implementation artifacts make `x % y` invalid for `MIN /
         /// -1` on a signed type (where `MIN` is the negative
         /// minimal value). In such a case, this function returns `0`.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.wrapping_rem(10), 0);
+        /// assert_eq!((-128i8).wrapping_rem(-1), 0);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_rem(self, rhs: Self) -> Self {
@@ -1147,6 +1413,15 @@ macro_rules! uint_impl {
         /// negative minimal value for the type); this is a positive
         /// value that is too large to represent in the type. In such
         /// a case, this function returns `MIN` itself.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(100i8.wrapping_neg(), -100);
+        /// assert_eq!((-128i8).wrapping_neg(), -128);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_neg(self) -> Self {
@@ -1156,6 +1431,15 @@ macro_rules! uint_impl {
         /// Panic-free bitwise shift-left; yields `self << mask(rhs)`,
         /// where `mask` removes any high-order bits of `rhs` that
         /// would cause the shift to exceed the bitwidth of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(1u8.wrapping_shl(7), 128);
+        /// assert_eq!(1u8.wrapping_shl(8), 1);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_shl(self, rhs: u32) -> Self {
@@ -1165,6 +1449,15 @@ macro_rules! uint_impl {
         /// Panic-free bitwise shift-left; yields `self >> mask(rhs)`,
         /// where `mask` removes any high-order bits of `rhs` that
         /// would cause the shift to exceed the bitwidth of the type.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(128u8.wrapping_shr(7), 1);
+        /// assert_eq!(128u8.wrapping_shr(8), 128);
+        /// ```
         #[stable(feature = "num_wrapping", since = "1.2.0")]
         #[inline(always)]
         pub fn wrapping_shr(self, rhs: u32) -> Self {
@@ -1175,7 +1468,9 @@ macro_rules! uint_impl {
         ///
         /// # Examples
         ///
-        /// ```rust
+        /// Basic usage:
+        ///
+        /// ```
         /// assert_eq!(2i32.pow(4), 16);
         /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
@@ -1207,6 +1502,15 @@ macro_rules! uint_impl {
         }
 
         /// Returns `true` if and only if `self == 2^k` for some `k`.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert!(16u8.is_power_of_two());
+        /// assert!(!10u8.is_power_of_two());
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn is_power_of_two(self) -> bool {
@@ -1216,6 +1520,15 @@ macro_rules! uint_impl {
 
         /// Returns the smallest power of two greater than or equal to `self`.
         /// Unspecified behavior on overflow.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(2u8.next_power_of_two(), 2);
+        /// assert_eq!(3u8.next_power_of_two(), 4);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         #[inline]
         pub fn next_power_of_two(self) -> Self {
@@ -1227,6 +1540,16 @@ macro_rules! uint_impl {
         /// Returns the smallest power of two greater than or equal to `n`. If
         /// the next power of two is greater than the type's maximum value,
         /// `None` is returned, otherwise the power of two is wrapped in `Some`.
+        ///
+        /// # Examples
+        ///
+        /// Basic usage:
+        ///
+        /// ```
+        /// assert_eq!(2u8.checked_next_power_of_two(), Some(2));
+        /// assert_eq!(3u8.checked_next_power_of_two(), Some(4));
+        /// assert_eq!(200u8.checked_next_power_of_two(), None);
+        /// ```
         #[stable(feature = "rust1", since = "1.0.0")]
         pub fn checked_next_power_of_two(self) -> Option<Self> {
             let npot = self.next_power_of_two();
@@ -1627,6 +1950,7 @@ impl fmt::Display for ParseIntError {
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use num::dec2flt::ParseFloatError;
 
 // Conversion traits for primitive integer and float types

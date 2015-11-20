@@ -52,6 +52,7 @@ pub struct VecDeque<T> {
     // to where data should be written.
     // If tail == head the buffer is empty. The length of the ringbuffer
     // is defined as the distance between the two.
+
     tail: usize,
     head: usize,
     buf: RawVec<T>,
@@ -76,9 +77,7 @@ impl<T> Drop for VecDeque<T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Default for VecDeque<T> {
     #[inline]
-    fn default() -> VecDeque<T> {
-        VecDeque::new()
-    }
+    fn default() -> VecDeque<T> { VecDeque::new() }
 }
 
 impl<T> VecDeque<T> {
@@ -125,16 +124,12 @@ impl<T> VecDeque<T> {
 
     /// Returns true if and only if the buffer is at capacity
     #[inline]
-    fn is_full(&self) -> bool {
-        self.cap() - self.len() == 1
-    }
+    fn is_full(&self) -> bool { self.cap() - self.len() == 1 }
 
     /// Returns the index in the underlying buffer for a given logical element
     /// index.
     #[inline]
-    fn wrap_index(&self, idx: usize) -> usize {
-        wrap_index(idx, self.cap())
-    }
+    fn wrap_index(&self, idx: usize) -> usize { wrap_index(idx, self.cap()) }
 
     /// Returns the index in the underlying buffer for a given logical element
     /// index + addend.
@@ -153,41 +148,27 @@ impl<T> VecDeque<T> {
     /// Copies a contiguous block of memory len long from src to dst
     #[inline]
     unsafe fn copy(&self, dst: usize, src: usize, len: usize) {
-        debug_assert!(dst + len <= self.cap(),
-                      "cpy dst={} src={} len={} cap={}",
-                      dst,
-                      src,
-                      len,
+        debug_assert!(dst + len <= self.cap(), "cpy dst={} src={} len={} cap={}", dst, src, len,
                       self.cap());
-        debug_assert!(src + len <= self.cap(),
-                      "cpy dst={} src={} len={} cap={}",
-                      dst,
-                      src,
-                      len,
+        debug_assert!(src + len <= self.cap(), "cpy dst={} src={} len={} cap={}", dst, src, len,
                       self.cap());
-        ptr::copy(self.ptr().offset(src as isize),
-                  self.ptr().offset(dst as isize),
-                  len);
+        ptr::copy(
+            self.ptr().offset(src as isize),
+            self.ptr().offset(dst as isize),
+            len);
     }
 
     /// Copies a contiguous block of memory len long from src to dst
     #[inline]
     unsafe fn copy_nonoverlapping(&self, dst: usize, src: usize, len: usize) {
-        debug_assert!(dst + len <= self.cap(),
-                      "cno dst={} src={} len={} cap={}",
-                      dst,
-                      src,
-                      len,
+        debug_assert!(dst + len <= self.cap(), "cno dst={} src={} len={} cap={}", dst, src, len,
                       self.cap());
-        debug_assert!(src + len <= self.cap(),
-                      "cno dst={} src={} len={} cap={}",
-                      dst,
-                      src,
-                      len,
+        debug_assert!(src + len <= self.cap(), "cno dst={} src={} len={} cap={}", dst, src, len,
                       self.cap());
-        ptr::copy_nonoverlapping(self.ptr().offset(src as isize),
-                                 self.ptr().offset(dst as isize),
-                                 len);
+        ptr::copy_nonoverlapping(
+            self.ptr().offset(src as isize),
+            self.ptr().offset(dst as isize),
+            len);
     }
 
     /// Copies a potentially wrapping block of memory len long from src to dest.
@@ -195,23 +176,12 @@ impl<T> VecDeque<T> {
     /// most one continuous overlapping region between src and dest).
     unsafe fn wrap_copy(&self, dst: usize, src: usize, len: usize) {
         #[allow(dead_code)]
-        fn diff(a: usize, b: usize) -> usize {
-            if a <= b {
-                b - a
-            } else {
-                a - b
-            }
-        }
-        debug_assert!(cmp::min(diff(dst, src), self.cap() - diff(dst, src)) + len <= self.cap(),
-                      "wrc dst={} src={} len={} cap={}",
-                      dst,
-                      src,
-                      len,
-                      self.cap());
+        fn diff(a: usize, b: usize) -> usize {if a <= b {b - a} else {a - b}}
+        debug_assert!(cmp::min(diff(dst, src),
+                               self.cap() - diff(dst, src)) + len <= self.cap(),
+                      "wrc dst={} src={} len={} cap={}", dst, src, len, self.cap());
 
-        if src == dst || len == 0 {
-            return;
-        }
+        if src == dst || len == 0 { return }
 
         let dst_after_src = self.wrap_sub(dst, src) < len;
 
@@ -334,16 +304,13 @@ impl<T> VecDeque<T> {
         //              H                 T
         // C [o o o o o . . . . . . . . . o o ]
 
-        if self.tail <= self.head {
-            // A
+        if self.tail <= self.head { // A
             // Nop
-        } else if self.head < old_cap - self.tail {
-            // B
+        } else if self.head < old_cap - self.tail { // B
             self.copy_nonoverlapping(old_cap, 0, self.head);
             self.head += old_cap;
             debug_assert!(self.head > self.tail);
-        } else {
-            // C
+        } else { // C
             let new_tail = new_cap - (old_cap - self.tail);
             self.copy_nonoverlapping(new_tail, self.tail, old_cap - self.tail);
             self.tail = new_tail;
@@ -452,8 +419,7 @@ impl<T> VecDeque<T> {
         let ri = self.wrap_add(self.tail, i);
         let rj = self.wrap_add(self.tail, j);
         unsafe {
-            ptr::swap(self.ptr().offset(ri as isize),
-                      self.ptr().offset(rj as isize))
+            ptr::swap(self.ptr().offset(ri as isize), self.ptr().offset(rj as isize))
         }
     }
 
@@ -470,9 +436,7 @@ impl<T> VecDeque<T> {
     /// ```
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn capacity(&self) -> usize {
-        self.cap() - 1
-    }
+    pub fn capacity(&self) -> usize { self.cap() - 1 }
 
     /// Reserves the minimum capacity for exactly `additional` more elements to be inserted in the
     /// given `VecDeque`. Does nothing if the capacity is already sufficient.
@@ -519,15 +483,14 @@ impl<T> VecDeque<T> {
     pub fn reserve(&mut self, additional: usize) {
         let old_cap = self.cap();
         let used_cap = self.len() + 1;
-        let new_cap = used_cap.checked_add(additional)
-                              .and_then(|needed_cap| needed_cap.checked_next_power_of_two())
-                              .expect("capacity overflow");
+        let new_cap = used_cap
+            .checked_add(additional)
+            .and_then(|needed_cap| needed_cap.checked_next_power_of_two())
+            .expect("capacity overflow");
 
         if new_cap > self.capacity() {
             self.buf.reserve_exact(used_cap, new_cap - used_cap);
-            unsafe {
-                self.handle_cap_increase(old_cap);
-            }
+            unsafe { self.handle_cap_increase(old_cap); }
         }
     }
 
@@ -656,7 +619,7 @@ impl<T> VecDeque<T> {
         Iter {
             tail: self.tail,
             head: self.head,
-            ring: unsafe { self.buffer_as_slice() },
+            ring: unsafe { self.buffer_as_slice() }
         }
     }
 
@@ -718,7 +681,7 @@ impl<T> VecDeque<T> {
 
             if contiguous {
                 let (empty, buf) = buf.split_at_mut(0);
-                (&mut buf[tail..head], empty)
+                (&mut buf[tail .. head], empty)
             } else {
                 let (mid, right) = buf.split_at_mut(tail);
                 let (left, _) = mid.split_at_mut(head);
@@ -741,9 +704,7 @@ impl<T> VecDeque<T> {
     /// assert_eq!(v.len(), 1);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn len(&self) -> usize {
-        count(self.tail, self.head, self.cap())
-    }
+    pub fn len(&self) -> usize { count(self.tail, self.head, self.cap()) }
 
     /// Returns true if the buffer contains no elements
     ///
@@ -758,9 +719,7 @@ impl<T> VecDeque<T> {
     /// assert!(!v.is_empty());
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Create a draining iterator that removes the specified range in the
     /// `VecDeque` and yields the removed items from start to end. The element
@@ -792,9 +751,7 @@ impl<T> VecDeque<T> {
     #[unstable(feature = "drain",
                reason = "matches collection reform specification, waiting for dust to settle",
                issue = "27711")]
-    pub fn drain<R>(&mut self, range: R) -> Drain<T>
-        where R: RangeArgument<usize>
-    {
+    pub fn drain<R>(&mut self, range: R) -> Drain<T> where R: RangeArgument<usize> {
         // Memory safety
         //
         // When the Drain is first created, the source deque is shortened to
@@ -882,11 +839,7 @@ impl<T> VecDeque<T> {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn front(&self) -> Option<&T> {
-        if !self.is_empty() {
-            Some(&self[0])
-        } else {
-            None
-        }
+        if !self.is_empty() { Some(&self[0]) } else { None }
     }
 
     /// Provides a mutable reference to the front element, or `None` if the
@@ -910,11 +863,7 @@ impl<T> VecDeque<T> {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn front_mut(&mut self) -> Option<&mut T> {
-        if !self.is_empty() {
-            Some(&mut self[0])
-        } else {
-            None
-        }
+        if !self.is_empty() { Some(&mut self[0]) } else { None }
     }
 
     /// Provides a reference to the back element, or `None` if the sequence is
@@ -934,11 +883,7 @@ impl<T> VecDeque<T> {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn back(&self) -> Option<&T> {
-        if !self.is_empty() {
-            Some(&self[self.len() - 1])
-        } else {
-            None
-        }
+        if !self.is_empty() { Some(&self[self.len() - 1]) } else { None }
     }
 
     /// Provides a mutable reference to the back element, or `None` if the
@@ -963,11 +908,7 @@ impl<T> VecDeque<T> {
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn back_mut(&mut self) -> Option<&mut T> {
         let len = self.len();
-        if !self.is_empty() {
-            Some(&mut self[len - 1])
-        } else {
-            None
-        }
+        if !self.is_empty() { Some(&mut self[len - 1]) } else { None }
     }
 
     /// Removes the first element and returns it, or `None` if the sequence is
@@ -1014,17 +955,13 @@ impl<T> VecDeque<T> {
         if self.is_full() {
             let old_cap = self.cap();
             self.buf.double();
-            unsafe {
-                self.handle_cap_increase(old_cap);
-            }
+            unsafe { self.handle_cap_increase(old_cap); }
             debug_assert!(!self.is_full());
         }
 
         self.tail = self.wrap_sub(self.tail, 1);
         let tail = self.tail;
-        unsafe {
-            self.buffer_write(tail, value);
-        }
+        unsafe { self.buffer_write(tail, value); }
     }
 
     /// Appends an element to the back of a buffer
@@ -1044,9 +981,7 @@ impl<T> VecDeque<T> {
         if self.is_full() {
             let old_cap = self.cap();
             self.buf.double();
-            unsafe {
-                self.handle_cap_increase(old_cap);
-            }
+            unsafe { self.handle_cap_increase(old_cap); }
             debug_assert!(!self.is_full());
         }
 
@@ -1195,9 +1130,7 @@ impl<T> VecDeque<T> {
         if self.is_full() {
             let old_cap = self.cap();
             self.buf.double();
-            unsafe {
-                self.handle_cap_increase(old_cap);
-            }
+            unsafe { self.handle_cap_increase(old_cap); }
             debug_assert!(!self.is_full());
         }
 
@@ -1230,9 +1163,7 @@ impl<T> VecDeque<T> {
 
         let contiguous = self.is_contiguous();
 
-        match (contiguous,
-               distance_to_tail <= distance_to_head,
-               idx >= self.tail) {
+        match (contiguous, distance_to_tail <= distance_to_head, idx >= self.tail) {
             (true, true, _) if index == 0 => {
                 // push_front
                 //
@@ -1245,7 +1176,7 @@ impl<T> VecDeque<T> {
                 //
 
                 self.tail = self.wrap_sub(self.tail, 1);
-            }
+            },
             (true, true, _) => unsafe {
                 // contiguous, insert closer to tail:
                 //
@@ -1373,7 +1304,7 @@ impl<T> VecDeque<T> {
 
                 self.copy(idx + 1, idx, self.head - idx);
                 self.head += 1;
-            },
+            }
         }
 
         // tail might've been changed so we need to recalculate
@@ -1426,16 +1357,16 @@ impl<T> VecDeque<T> {
 
         let idx = self.wrap_add(self.tail, index);
 
-        let elem = unsafe { Some(self.buffer_read(idx)) };
+        let elem = unsafe {
+            Some(self.buffer_read(idx))
+        };
 
         let distance_to_tail = index;
         let distance_to_head = self.len() - index;
 
         let contiguous = self.is_contiguous();
 
-        match (contiguous,
-               distance_to_tail <= distance_to_head,
-               idx >= self.tail) {
+        match (contiguous, distance_to_tail <= distance_to_head, idx >= self.tail) {
             (true, true, _) => unsafe {
                 // contiguous, remove closer to tail:
                 //
@@ -1541,7 +1472,7 @@ impl<T> VecDeque<T> {
                 self.copy(self.tail + 1, self.tail, self.cap() - self.tail - 1);
 
                 self.tail = self.wrap_add(self.tail, 1);
-            },
+            }
         }
 
         return elem;
@@ -1656,16 +1587,14 @@ impl<T> VecDeque<T> {
     /// assert_eq!(&v[..], &[2, 4]);
     /// ```
     #[stable(feature = "vec_deque_retain", since = "1.4.0")]
-    pub fn retain<F>(&mut self, mut f: F)
-        where F: FnMut(&T) -> bool
-    {
+    pub fn retain<F>(&mut self, mut f: F) where F: FnMut(&T) -> bool {
         let len = self.len();
         let mut del = 0;
         for i in 0..len {
             if !f(&self[i]) {
                 del += 1;
             } else if del > 0 {
-                self.swap(i - del, i);
+                self.swap(i-del, i);
             }
         }
         if del > 0 {
@@ -1726,19 +1655,20 @@ fn count(tail: usize, head: usize, size: usize) -> usize {
 
 /// `VecDeque` iterator.
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct Iter<'a, T: 'a> {
+pub struct Iter<'a, T:'a> {
     ring: &'a [T],
     tail: usize,
-    head: usize,
+    head: usize
 }
 
 // FIXME(#19839) Remove in favor of `#[derive(Clone)]`
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> Clone for Iter<'a, T> {
     fn clone(&self) -> Iter<'a, T> {
         Iter {
             ring: self.ring,
             tail: self.tail,
-            head: self.head,
+            head: self.head
         }
     }
 }
@@ -1781,7 +1711,7 @@ impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
 
 /// `VecDeque` mutable iterator.
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct IterMut<'a, T: 'a> {
+pub struct IterMut<'a, T:'a> {
     ring: &'a mut [T],
     tail: usize,
     head: usize,
@@ -1876,7 +1806,9 @@ pub struct Drain<'a, T: 'a> {
     deque: *mut VecDeque<T>,
 }
 
+#[unstable(feature = "drain", issue = "27711")]
 unsafe impl<'a, T: Sync> Sync for Drain<'a, T> {}
+#[unstable(feature = "drain", issue = "27711")]
 unsafe impl<'a, T: Send> Send for Drain<'a, T> {}
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -1921,7 +1853,7 @@ impl<'a, T: 'a> Drop for Drain<'a, T> {
                     source_deque.head = source_deque.wrap_add(drain_tail, head_len);
                     source_deque.wrap_copy(drain_tail, drain_head, head_len);
                 }
-            },
+            }
         }
     }
 }
@@ -1932,7 +1864,11 @@ impl<'a, T: 'a> Iterator for Drain<'a, T> {
 
     #[inline]
     fn next(&mut self) -> Option<T> {
-        self.iter.next().map(|elt| unsafe { ptr::read(elt) })
+        self.iter.next().map(|elt|
+            unsafe {
+                ptr::read(elt)
+            }
+        )
     }
 
     #[inline]
@@ -1945,7 +1881,11 @@ impl<'a, T: 'a> Iterator for Drain<'a, T> {
 impl<'a, T: 'a> DoubleEndedIterator for Drain<'a, T> {
     #[inline]
     fn next_back(&mut self) -> Option<T> {
-        self.iter.next_back().map(|elt| unsafe { ptr::read(elt) })
+        self.iter.next_back().map(|elt|
+            unsafe {
+                ptr::read(elt)
+            }
+        )
     }
 }
 
@@ -1955,7 +1895,8 @@ impl<'a, T: 'a> ExactSizeIterator for Drain<'a, T> {}
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A: PartialEq> PartialEq for VecDeque<A> {
     fn eq(&self, other: &VecDeque<A>) -> bool {
-        self.len() == other.len() && self.iter().zip(other).all(|(a, b)| a.eq(b))
+        self.len() == other.len() &&
+            self.iter().zip(other).all(|(a, b)| a.eq(b))
     }
 }
 
@@ -2007,7 +1948,7 @@ impl<A> IndexMut<usize> for VecDeque<A> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A> FromIterator<A> for VecDeque<A> {
-    fn from_iter<T: IntoIterator<Item = A>>(iterable: T) -> VecDeque<A> {
+    fn from_iter<T: IntoIterator<Item=A>>(iterable: T) -> VecDeque<A> {
         let iterator = iterable.into_iter();
         let (lower, _) = iterator.size_hint();
         let mut deq = VecDeque::with_capacity(lower);
@@ -2024,7 +1965,9 @@ impl<T> IntoIterator for VecDeque<T> {
     /// Consumes the list into a front-to-back iterator yielding elements by
     /// value.
     fn into_iter(self) -> IntoIter<T> {
-        IntoIter { inner: self }
+        IntoIter {
+            inner: self,
+        }
     }
 }
 
@@ -2050,7 +1993,7 @@ impl<'a, T> IntoIterator for &'a mut VecDeque<T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A> Extend<A> for VecDeque<A> {
-    fn extend<T: IntoIterator<Item = A>>(&mut self, iter: T) {
+    fn extend<T: IntoIterator<Item=A>>(&mut self, iter: T) {
         for elt in iter {
             self.push_back(elt);
         }
@@ -2059,7 +2002,7 @@ impl<A> Extend<A> for VecDeque<A> {
 
 #[stable(feature = "extend_ref", since = "1.2.0")]
 impl<'a, T: 'a + Copy> Extend<&'a T> for VecDeque<T> {
-    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item=&'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
     }
 }
@@ -2106,7 +2049,7 @@ mod tests {
 
     #[bench]
     fn bench_pop_back_100(b: &mut test::Bencher) {
-        let mut deq = VecDeque::<i32>::with_capacity(101);
+        let mut deq= VecDeque::<i32>::with_capacity(101);
 
         b.iter(|| {
             deq.head = 100;
@@ -2261,8 +2204,10 @@ mod tests {
                         }
 
                         // Check that we drain the correct values
-                        let drained: VecDeque<_> = tester.drain(drain_start..drain_end).collect();
-                        let drained_expected: VecDeque<_> = (drain_start..drain_end).collect();
+                        let drained: VecDeque<_> =
+                            tester.drain(drain_start..drain_end).collect();
+                        let drained_expected: VecDeque<_> =
+                            (drain_start..drain_end).collect();
                         assert_eq!(drained, drained_expected);
 
                         // We shouldn't have changed the capacity or made the
@@ -2272,9 +2217,8 @@ mod tests {
                         assert!(tester.head < tester.cap());
 
                         // We should see the correct values in the VecDeque
-                        let expected: VecDeque<_> = (0..drain_start)
-                                                        .chain(drain_end..len)
-                                                        .collect();
+                        let expected: VecDeque<_> =
+                            (0..drain_start).chain(drain_end..len).collect();
                         assert_eq!(expected, tester);
                     }
                 }

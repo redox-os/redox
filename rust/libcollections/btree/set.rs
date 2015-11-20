@@ -34,51 +34,51 @@ use Bound;
 /// normally only possible through `Cell`, `RefCell`, global state, I/O, or unsafe code.
 #[derive(Clone, Hash, PartialEq, Eq, Ord, PartialOrd)]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct BTreeSet<T> {
+pub struct BTreeSet<T>{
     map: BTreeMap<T, ()>,
 }
 
 /// An iterator over a BTreeSet's items.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct Iter<'a, T: 'a> {
-    iter: Keys<'a, T, ()>,
+    iter: Keys<'a, T, ()>
 }
 
 /// An owning iterator over a BTreeSet's items.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct IntoIter<T> {
-    iter: Map<::btree_map::IntoIter<T, ()>, fn((T, ())) -> T>,
+    iter: Map<::btree_map::IntoIter<T, ()>, fn((T, ())) -> T>
 }
 
 /// An iterator over a sub-range of BTreeSet's items.
 pub struct Range<'a, T: 'a> {
-    iter: Map<::btree_map::Range<'a, T, ()>, fn((&'a T, &'a ())) -> &'a T>,
+    iter: Map<::btree_map::Range<'a, T, ()>, fn((&'a T, &'a ())) -> &'a T>
 }
 
 /// A lazy iterator producing elements in the set difference (in-order).
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct Difference<'a, T: 'a> {
+pub struct Difference<'a, T:'a> {
     a: Peekable<Iter<'a, T>>,
     b: Peekable<Iter<'a, T>>,
 }
 
 /// A lazy iterator producing elements in the set symmetric difference (in-order).
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct SymmetricDifference<'a, T: 'a> {
+pub struct SymmetricDifference<'a, T:'a> {
     a: Peekable<Iter<'a, T>>,
     b: Peekable<Iter<'a, T>>,
 }
 
 /// A lazy iterator producing elements in the set intersection (in-order).
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct Intersection<'a, T: 'a> {
+pub struct Intersection<'a, T:'a> {
     a: Peekable<Iter<'a, T>>,
     b: Peekable<Iter<'a, T>>,
 }
 
 /// A lazy iterator producing elements in the set union (in-order).
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct Union<'a, T: 'a> {
+pub struct Union<'a, T:'a> {
     a: Peekable<Iter<'a, T>>,
     b: Peekable<Iter<'a, T>>,
 }
@@ -89,6 +89,7 @@ impl<T: Ord> BTreeSet<T> {
     /// # Examples
     ///
     /// ```
+    /// # #![allow(unused_mut)]
     /// use std::collections::BTreeSet;
     ///
     /// let mut set: BTreeSet<i32> = BTreeSet::new();
@@ -160,15 +161,12 @@ impl<T: Ord> BTreeSet<T> {
     #[unstable(feature = "btree_range",
                reason = "matches collection reform specification, waiting for dust to settle",
                issue = "27787")]
-    pub fn range<'a, Min: ?Sized + Ord = T, Max: ?Sized + Ord = T>(&'a self,
-                                                                   min: Bound<&Min>,
+    pub fn range<'a, Min: ?Sized + Ord = T, Max: ?Sized + Ord = T>(&'a self, min: Bound<&Min>,
                                                                    max: Bound<&Max>)
-                                                                   -> Range<'a, T>
-        where T: Borrow<Min> + Borrow<Max>
+        -> Range<'a, T> where
+        T: Borrow<Min> + Borrow<Max>,
     {
-        fn first<A, B>((a, _): (A, B)) -> A {
-            a
-        }
+        fn first<A, B>((a, _): (A, B)) -> A { a }
         let first: fn((&'a T, &'a ())) -> &'a T = first; // coerce to fn pointer
 
         Range { iter: self.map.range(min, max).map(first) }
@@ -196,10 +194,7 @@ impl<T: Ord> BTreeSet<T> {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn difference<'a>(&'a self, other: &'a BTreeSet<T>) -> Difference<'a, T> {
-        Difference {
-            a: self.iter().peekable(),
-            b: other.iter().peekable(),
-        }
+        Difference{a: self.iter().peekable(), b: other.iter().peekable()}
     }
 
     /// Visits the values representing the symmetric difference, in ascending order.
@@ -221,13 +216,9 @@ impl<T: Ord> BTreeSet<T> {
     /// assert_eq!(sym_diff, [1, 3]);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn symmetric_difference<'a>(&'a self,
-                                    other: &'a BTreeSet<T>)
-                                    -> SymmetricDifference<'a, T> {
-        SymmetricDifference {
-            a: self.iter().peekable(),
-            b: other.iter().peekable(),
-        }
+    pub fn symmetric_difference<'a>(&'a self, other: &'a BTreeSet<T>)
+        -> SymmetricDifference<'a, T> {
+        SymmetricDifference{a: self.iter().peekable(), b: other.iter().peekable()}
     }
 
     /// Visits the values representing the intersection, in ascending order.
@@ -249,11 +240,9 @@ impl<T: Ord> BTreeSet<T> {
     /// assert_eq!(intersection, [2]);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn intersection<'a>(&'a self, other: &'a BTreeSet<T>) -> Intersection<'a, T> {
-        Intersection {
-            a: self.iter().peekable(),
-            b: other.iter().peekable(),
-        }
+    pub fn intersection<'a>(&'a self, other: &'a BTreeSet<T>)
+        -> Intersection<'a, T> {
+        Intersection{a: self.iter().peekable(), b: other.iter().peekable()}
     }
 
     /// Visits the values representing the union, in ascending order.
@@ -274,10 +263,7 @@ impl<T: Ord> BTreeSet<T> {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn union<'a>(&'a self, other: &'a BTreeSet<T>) -> Union<'a, T> {
-        Union {
-            a: self.iter().peekable(),
-            b: other.iter().peekable(),
-        }
+        Union{a: self.iter().peekable(), b: other.iter().peekable()}
     }
 
     /// Returns the number of elements in the set.
@@ -293,9 +279,7 @@ impl<T: Ord> BTreeSet<T> {
     /// assert_eq!(v.len(), 1);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn len(&self) -> usize {
-        self.map.len()
-    }
+    pub fn len(&self) -> usize { self.map.len() }
 
     /// Returns true if the set contains no elements.
     ///
@@ -310,9 +294,7 @@ impl<T: Ord> BTreeSet<T> {
     /// assert!(!v.is_empty());
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Clears the set, removing all values.
     ///
@@ -347,10 +329,7 @@ impl<T: Ord> BTreeSet<T> {
     /// assert_eq!(set.contains(&4), false);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool
-        where T: Borrow<Q>,
-              Q: Ord
-    {
+    pub fn contains<Q: ?Sized>(&self, value: &Q) -> bool where T: Borrow<Q>, Q: Ord {
         self.map.contains_key(value)
     }
 
@@ -360,10 +339,7 @@ impl<T: Ord> BTreeSet<T> {
     /// but the ordering on the borrowed form *must* match the
     /// ordering on the value type.
     #[unstable(feature = "set_recovery", issue = "28050")]
-    pub fn get<Q: ?Sized>(&self, value: &Q) -> Option<&T>
-        where T: Borrow<Q>,
-              Q: Ord
-    {
+    pub fn get<Q: ?Sized>(&self, value: &Q) -> Option<&T> where T: Borrow<Q>, Q: Ord {
         Recover::get(&self.map, value)
     }
 
@@ -506,10 +482,7 @@ impl<T: Ord> BTreeSet<T> {
     /// assert_eq!(set.remove(&2), false);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn remove<Q: ?Sized>(&mut self, value: &Q) -> bool
-        where T: Borrow<Q>,
-              Q: Ord
-    {
+    pub fn remove<Q: ?Sized>(&mut self, value: &Q) -> bool where T: Borrow<Q>, Q: Ord {
         self.map.remove(value).is_some()
     }
 
@@ -519,17 +492,14 @@ impl<T: Ord> BTreeSet<T> {
     /// but the ordering on the borrowed form *must* match the
     /// ordering on the value type.
     #[unstable(feature = "set_recovery", issue = "28050")]
-    pub fn take<Q: ?Sized>(&mut self, value: &Q) -> Option<T>
-        where T: Borrow<Q>,
-              Q: Ord
-    {
+    pub fn take<Q: ?Sized>(&mut self, value: &Q) -> Option<T> where T: Borrow<Q>, Q: Ord {
         Recover::take(&mut self.map, value)
     }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> FromIterator<T> for BTreeSet<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> BTreeSet<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(iter: I) -> BTreeSet<T> {
         let mut set = BTreeSet::new();
         set.extend(iter);
         set
@@ -554,9 +524,7 @@ impl<T> IntoIterator for BTreeSet<T> {
     /// assert_eq!(v, [1, 2, 3, 4]);
     /// ```
     fn into_iter(self) -> IntoIter<T> {
-        fn first<A, B>((a, _): (A, B)) -> A {
-            a
-        }
+        fn first<A, B>((a, _): (A, B)) -> A { a }
         let first: fn((T, ())) -> T = first; // coerce to fn pointer
 
         IntoIter { iter: self.map.into_iter().map(first) }
@@ -576,7 +544,7 @@ impl<'a, T> IntoIterator for &'a BTreeSet<T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> Extend<T> for BTreeSet<T> {
     #[inline]
-    fn extend<Iter: IntoIterator<Item = T>>(&mut self, iter: Iter) {
+    fn extend<Iter: IntoIterator<Item=T>>(&mut self, iter: Iter) {
         for elem in iter {
             self.insert(elem);
         }
@@ -585,7 +553,7 @@ impl<T: Ord> Extend<T> for BTreeSet<T> {
 
 #[stable(feature = "extend_ref", since = "1.2.0")]
 impl<'a, T: 'a + Ord + Copy> Extend<&'a T> for BTreeSet<T> {
-    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item=&'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
     }
 }
@@ -697,26 +665,18 @@ impl<T: Debug> Debug for BTreeSet<T> {
 }
 
 impl<'a, T> Clone for Iter<'a, T> {
-    fn clone(&self) -> Iter<'a, T> {
-        Iter { iter: self.iter.clone() }
-    }
+    fn clone(&self) -> Iter<'a, T> { Iter { iter: self.iter.clone() } }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a T> {
-        self.iter.next()
-    }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
-    }
+    fn next(&mut self) -> Option<&'a T> { self.iter.next() }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
-    fn next_back(&mut self) -> Option<&'a T> {
-        self.iter.next_back()
-    }
+    fn next_back(&mut self) -> Option<&'a T> { self.iter.next_back() }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
@@ -726,56 +686,42 @@ impl<'a, T> ExactSizeIterator for Iter<'a, T> {}
 impl<T> Iterator for IntoIter<T> {
     type Item = T;
 
-    fn next(&mut self) -> Option<T> {
-        self.iter.next()
-    }
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
-    }
+    fn next(&mut self) -> Option<T> { self.iter.next() }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> DoubleEndedIterator for IntoIter<T> {
-    fn next_back(&mut self) -> Option<T> {
-        self.iter.next_back()
-    }
+    fn next_back(&mut self) -> Option<T> { self.iter.next_back() }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> ExactSizeIterator for IntoIter<T> {}
 
 
 impl<'a, T> Clone for Range<'a, T> {
-    fn clone(&self) -> Range<'a, T> {
-        Range { iter: self.iter.clone() }
-    }
+    fn clone(&self) -> Range<'a, T> { Range { iter: self.iter.clone() } }
 }
 impl<'a, T> Iterator for Range<'a, T> {
     type Item = &'a T;
 
-    fn next(&mut self) -> Option<&'a T> {
-        self.iter.next()
-    }
+    fn next(&mut self) -> Option<&'a T> { self.iter.next() }
 }
 impl<'a, T> DoubleEndedIterator for Range<'a, T> {
-    fn next_back(&mut self) -> Option<&'a T> {
-        self.iter.next_back()
-    }
+    fn next_back(&mut self) -> Option<&'a T> { self.iter.next_back() }
 }
 
 /// Compare `x` and `y`, but return `short` if x is None and `long` if y is None
-fn cmp_opt<T: Ord>(x: Option<&T>, y: Option<&T>, short: Ordering, long: Ordering) -> Ordering {
+fn cmp_opt<T: Ord>(x: Option<&T>, y: Option<&T>,
+                        short: Ordering, long: Ordering) -> Ordering {
     match (x, y) {
-        (None, _) => short,
-        (_, None) => long,
+        (None    , _       ) => short,
+        (_       , None    ) => long,
         (Some(x1), Some(y1)) => x1.cmp(y1),
     }
 }
 
 impl<'a, T> Clone for Difference<'a, T> {
     fn clone(&self) -> Difference<'a, T> {
-        Difference {
-            a: self.a.clone(),
-            b: self.b.clone(),
-        }
+        Difference { a: self.a.clone(), b: self.b.clone() }
     }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -785,14 +731,9 @@ impl<'a, T: Ord> Iterator for Difference<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         loop {
             match cmp_opt(self.a.peek(), self.b.peek(), Less, Less) {
-                Less => return self.a.next(),
-                Equal => {
-                    self.a.next();
-                    self.b.next();
-                }
-                Greater => {
-                    self.b.next();
-                }
+                Less    => return self.a.next(),
+                Equal   => { self.a.next(); self.b.next(); }
+                Greater => { self.b.next(); }
             }
         }
     }
@@ -800,10 +741,7 @@ impl<'a, T: Ord> Iterator for Difference<'a, T> {
 
 impl<'a, T> Clone for SymmetricDifference<'a, T> {
     fn clone(&self) -> SymmetricDifference<'a, T> {
-        SymmetricDifference {
-            a: self.a.clone(),
-            b: self.b.clone(),
-        }
+        SymmetricDifference { a: self.a.clone(), b: self.b.clone() }
     }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -813,11 +751,8 @@ impl<'a, T: Ord> Iterator for SymmetricDifference<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         loop {
             match cmp_opt(self.a.peek(), self.b.peek(), Greater, Less) {
-                Less => return self.a.next(),
-                Equal => {
-                    self.a.next();
-                    self.b.next();
-                }
+                Less    => return self.a.next(),
+                Equal   => { self.a.next(); self.b.next(); }
                 Greater => return self.b.next(),
             }
         }
@@ -826,10 +761,7 @@ impl<'a, T: Ord> Iterator for SymmetricDifference<'a, T> {
 
 impl<'a, T> Clone for Intersection<'a, T> {
     fn clone(&self) -> Intersection<'a, T> {
-        Intersection {
-            a: self.a.clone(),
-            b: self.b.clone(),
-        }
+        Intersection { a: self.a.clone(), b: self.b.clone() }
     }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -839,22 +771,15 @@ impl<'a, T: Ord> Iterator for Intersection<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         loop {
             let o_cmp = match (self.a.peek(), self.b.peek()) {
-                (None, _) => None,
-                (_, None) => None,
+                (None    , _       ) => None,
+                (_       , None    ) => None,
                 (Some(a1), Some(b1)) => Some(a1.cmp(b1)),
             };
             match o_cmp {
-                None => return None,
-                Some(Less) => {
-                    self.a.next();
-                }
-                Some(Equal) => {
-                    self.b.next();
-                    return self.a.next();
-                }
-                Some(Greater) => {
-                    self.b.next();
-                }
+                None          => return None,
+                Some(Less)    => { self.a.next(); }
+                Some(Equal)   => { self.b.next(); return self.a.next() }
+                Some(Greater) => { self.b.next(); }
             }
         }
     }
@@ -862,10 +787,7 @@ impl<'a, T: Ord> Iterator for Intersection<'a, T> {
 
 impl<'a, T> Clone for Union<'a, T> {
     fn clone(&self) -> Union<'a, T> {
-        Union {
-            a: self.a.clone(),
-            b: self.b.clone(),
-        }
+        Union { a: self.a.clone(), b: self.b.clone() }
     }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -875,11 +797,8 @@ impl<'a, T: Ord> Iterator for Union<'a, T> {
     fn next(&mut self) -> Option<&'a T> {
         loop {
             match cmp_opt(self.a.peek(), self.b.peek(), Greater, Less) {
-                Less => return self.a.next(),
-                Equal => {
-                    self.b.next();
-                    return self.a.next();
-                }
+                Less    => return self.a.next(),
+                Equal   => { self.b.next(); return self.a.next() }
                 Greater => return self.b.next(),
             }
         }

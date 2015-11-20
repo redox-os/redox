@@ -199,6 +199,7 @@ mod ziggurat_tables;
 /// * `pdf`: the probability density function
 /// * `zero_case`: manual sampling from the tail when we chose the
 ///    bottom box (i.e. i == 0)
+
 // the perf improvement (25-50%) is definitely worth the extra code
 // size from force-inlining.
 #[inline(always)]
@@ -297,10 +298,10 @@ mod tests {
     #[test]
     #[rustfmt_skip]
     fn test_weighted_choice() {
-    // this makes assumptions about the internal implementation of
-    // WeightedChoice, specifically: it doesn't reorder the items,
-    // it doesn't do weird things to the RNG (so 0 maps to 0, 1 to
-    // 1, internally; modulo a modulo operation).
+        // this makes assumptions about the internal implementation of
+        // WeightedChoice, specifically: it doesn't reorder the items,
+        // it doesn't do weird things to the RNG (so 0 maps to 0, 1 to
+        // 1, internally; modulo a modulo operation).
 
         macro_rules! t {
             ($items:expr, $expected:expr) => {{
@@ -319,21 +320,21 @@ mod tests {
         t!(vec!(Weighted { weight: 1, item: 10 }),
            [10]);
 
-    // skip some
+        // skip some
         t!(vec!(Weighted { weight: 0, item: 20 },
                 Weighted { weight: 2, item: 21 },
                 Weighted { weight: 0, item: 22 },
                 Weighted { weight: 1, item: 23 }),
            [21, 21, 23]);
 
-    // different weights
+        // different weights
         t!(vec!(Weighted { weight: 4, item: 30 },
                 Weighted { weight: 3, item: 31 }),
            [30, 30, 30, 30, 31, 31, 31]);
 
-    // check that we're binary searching
-    // correctly with some vectors of odd
-    // length.
+        // check that we're binary searching
+        // correctly with some vectors of odd
+        // length.
         t!(vec!(Weighted { weight: 1, item: 40 },
                 Weighted { weight: 1, item: 41 },
                 Weighted { weight: 1, item: 42 },

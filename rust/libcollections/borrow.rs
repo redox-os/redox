@@ -24,6 +24,7 @@ use fmt;
 
 use self::Cow::*;
 
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::borrow::{Borrow, BorrowMut};
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -52,9 +53,7 @@ pub trait ToOwned {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> ToOwned for T where T: Clone {
     type Owned = T;
-    fn to_owned(&self) -> T {
-        self.clone()
-    }
+    fn to_owned(&self) -> T { self.clone() }
 }
 
 /// A clone-on-write smart pointer.
@@ -74,6 +73,7 @@ impl<T> ToOwned for T where T: Clone {
 /// ```
 /// use std::borrow::Cow;
 ///
+/// # #[allow(dead_code)]
 /// fn abs_all(input: &mut Cow<[i32]>) {
 ///     for i in 0..input.len() {
 ///         let v = input[i];
@@ -85,16 +85,14 @@ impl<T> ToOwned for T where T: Clone {
 /// }
 /// ```
 #[stable(feature = "rust1", since = "1.0.0")]
-pub enum Cow<'a, B: ?Sized + 'a>
-    where B: ToOwned
-{
+pub enum Cow<'a, B: ?Sized + 'a> where B: ToOwned {
     /// Borrowed data.
     #[stable(feature = "rust1", since = "1.0.0")]
     Borrowed(&'a B),
 
     /// Owned data.
     #[stable(feature = "rust1", since = "1.0.0")]
-    Owned(<B as ToOwned>::Owned),
+    Owned(<B as ToOwned>::Owned)
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -105,7 +103,7 @@ impl<'a, B: ?Sized> Clone for Cow<'a, B> where B: ToOwned {
             Owned(ref o) => {
                 let b: &B = o.borrow();
                 Owned(b.to_owned())
-            }
+            },
         }
     }
 }
@@ -133,7 +131,7 @@ impl<'a, B: ?Sized> Cow<'a, B> where B: ToOwned {
                 *self = Owned(borrowed.to_owned());
                 self.to_mut()
             }
-            Owned(ref mut owned) => owned,
+            Owned(ref mut owned) => owned
         }
     }
 
@@ -156,7 +154,7 @@ impl<'a, B: ?Sized> Cow<'a, B> where B: ToOwned {
     pub fn into_owned(self) -> <B as ToOwned>::Owned {
         match self {
             Borrowed(borrowed) => borrowed.to_owned(),
-            Owned(owned) => owned,
+            Owned(owned) => owned
         }
     }
 }
@@ -168,7 +166,7 @@ impl<'a, B: ?Sized> Deref for Cow<'a, B> where B: ToOwned {
     fn deref(&self) -> &B {
         match *self {
             Borrowed(borrowed) => borrowed,
-            Owned(ref owned) => owned.borrow(),
+            Owned(ref owned) => owned.borrow()
         }
     }
 }

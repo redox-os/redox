@@ -151,7 +151,7 @@
 #![allow(missing_docs)]
 #![stable(feature = "rust1", since = "1.0.0")]
 
-use core::iter::FromIterator;
+use core::iter::{FromIterator};
 use core::mem::swap;
 use core::ptr;
 use core::fmt;
@@ -186,9 +186,7 @@ impl<T: Clone> Clone for BinaryHeap<T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> Default for BinaryHeap<T> {
     #[inline]
-    fn default() -> BinaryHeap<T> {
-        BinaryHeap::new()
-    }
+    fn default() -> BinaryHeap<T> { BinaryHeap::new() }
 }
 
 #[stable(feature = "binaryheap_debug", since = "1.4.0")]
@@ -209,9 +207,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// heap.push(4);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn new() -> BinaryHeap<T> {
-        BinaryHeap { data: vec![] }
-    }
+    pub fn new() -> BinaryHeap<T> { BinaryHeap { data: vec![] } }
 
     /// Creates an empty `BinaryHeap` with a specific capacity.
     /// This preallocates enough memory for `capacity` elements,
@@ -237,6 +233,7 @@ impl<T: Ord> BinaryHeap<T> {
     ///
     /// ```
     /// #![feature(binary_heap_extras)]
+    /// # #![allow(deprecated)]
     ///
     /// use std::collections::BinaryHeap;
     /// let heap = BinaryHeap::from_vec(vec![9, 1, 2, 7, 3, 2]);
@@ -299,9 +296,7 @@ impl<T: Ord> BinaryHeap<T> {
     /// heap.push(4);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn capacity(&self) -> usize {
-        self.data.capacity()
-    }
+    pub fn capacity(&self) -> usize { self.data.capacity() }
 
     /// Reserves the minimum capacity for exactly `additional` more elements to be inserted in the
     /// given `BinaryHeap`. Does nothing if the capacity is already sufficient.
@@ -527,31 +522,30 @@ impl<T: Ord> BinaryHeap<T> {
 
             while hole.pos() > start {
                 let parent = (hole.pos() - 1) / 2;
-                if hole.removed() <= hole.get(parent) {
-                    break;
-                }
+                if hole.element() <= hole.get(parent) { break; }
                 hole.move_to(parent);
             }
         }
     }
 
-    fn sift_down_range(&mut self, mut pos: usize, end: usize) {
-        let start = pos;
+    /// Take an element at `pos` and move it down the heap,
+    /// while its children are larger.
+    fn sift_down_range(&mut self, pos: usize, end: usize) {
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
             let mut child = 2 * pos + 1;
             while child < end {
                 let right = child + 1;
+                // compare with the greater of the two children
                 if right < end && !(hole.get(child) > hole.get(right)) {
                     child = right;
                 }
+                // if we are already in order, stop.
+                if hole.element() >= hole.get(child) { break; }
                 hole.move_to(child);
                 child = 2 * hole.pos() + 1;
             }
-
-            pos = hole.pos;
         }
-        self.sift_up(start, pos);
     }
 
     fn sift_down(&mut self, pos: usize) {
@@ -561,15 +555,11 @@ impl<T: Ord> BinaryHeap<T> {
 
     /// Returns the length of the binary heap.
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn len(&self) -> usize {
-        self.data.len()
-    }
+    pub fn len(&self) -> usize { self.data.len() }
 
     /// Checks if the binary heap is empty.
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn is_empty(&self) -> bool {
-        self.len() == 0
-    }
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Clears the binary heap, returning an iterator over the removed elements.
     ///
@@ -585,9 +575,7 @@ impl<T: Ord> BinaryHeap<T> {
 
     /// Drops all items from the binary heap.
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn clear(&mut self) {
-        self.drain();
-    }
+    pub fn clear(&mut self) { self.drain(); }
 }
 
 /// Hole represents a hole in a slice i.e. an index without valid value
@@ -615,13 +603,11 @@ impl<'a, T> Hole<'a, T> {
     }
 
     #[inline(always)]
-    fn pos(&self) -> usize {
-        self.pos
-    }
+    fn pos(&self) -> usize { self.pos }
 
     /// Return a reference to the element removed
     #[inline(always)]
-    fn removed(&self) -> &T {
+    fn element(&self) -> &T {
         self.elt.as_ref().unwrap()
     }
 
@@ -661,7 +647,7 @@ impl<'a, T> Drop for Hole<'a, T> {
 
 /// `BinaryHeap` iterator.
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct Iter<'a, T: 'a> {
+pub struct Iter <'a, T: 'a> {
     iter: slice::Iter<'a, T>,
 }
 
@@ -678,22 +664,16 @@ impl<'a, T> Iterator for Iter<'a, T> {
     type Item = &'a T;
 
     #[inline]
-    fn next(&mut self) -> Option<&'a T> {
-        self.iter.next()
-    }
+    fn next(&mut self) -> Option<&'a T> { self.iter.next() }
 
     #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
     #[inline]
-    fn next_back(&mut self) -> Option<&'a T> {
-        self.iter.next_back()
-    }
+    fn next_back(&mut self) -> Option<&'a T> { self.iter.next_back() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -710,22 +690,16 @@ impl<T> Iterator for IntoIter<T> {
     type Item = T;
 
     #[inline]
-    fn next(&mut self) -> Option<T> {
-        self.iter.next()
-    }
+    fn next(&mut self) -> Option<T> { self.iter.next() }
 
     #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> DoubleEndedIterator for IntoIter<T> {
     #[inline]
-    fn next_back(&mut self) -> Option<T> {
-        self.iter.next_back()
-    }
+    fn next_back(&mut self) -> Option<T> { self.iter.next_back() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -742,27 +716,22 @@ impl<'a, T: 'a> Iterator for Drain<'a, T> {
     type Item = T;
 
     #[inline]
-    fn next(&mut self) -> Option<T> {
-        self.iter.next()
-    }
+    fn next(&mut self) -> Option<T> { self.iter.next() }
 
     #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.iter.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: 'a> DoubleEndedIterator for Drain<'a, T> {
     #[inline]
-    fn next_back(&mut self) -> Option<T> {
-        self.iter.next_back()
-    }
+    fn next_back(&mut self) -> Option<T> { self.iter.next_back() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: 'a> ExactSizeIterator for Drain<'a, T> {}
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> From<Vec<T>> for BinaryHeap<T> {
     fn from(vec: Vec<T>) -> BinaryHeap<T> {
         let mut heap = BinaryHeap { data: vec };
@@ -775,6 +744,7 @@ impl<T: Ord> From<Vec<T>> for BinaryHeap<T> {
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> From<BinaryHeap<T>> for Vec<T> {
     fn from(heap: BinaryHeap<T>) -> Vec<T> {
         heap.data
@@ -783,7 +753,7 @@ impl<T> From<BinaryHeap<T>> for Vec<T> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> FromIterator<T> for BinaryHeap<T> {
-    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> BinaryHeap<T> {
+    fn from_iter<I: IntoIterator<Item=T>>(iter: I) -> BinaryHeap<T> {
         BinaryHeap::from(iter.into_iter().collect::<Vec<_>>())
     }
 }
@@ -826,7 +796,7 @@ impl<'a, T> IntoIterator for &'a BinaryHeap<T> where T: Ord {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> Extend<T> for BinaryHeap<T> {
-    fn extend<I: IntoIterator<Item = T>>(&mut self, iterable: I) {
+    fn extend<I: IntoIterator<Item=T>>(&mut self, iterable: I) {
         let iter = iterable.into_iter();
         let (lower, _) = iter.size_hint();
 
@@ -840,7 +810,7 @@ impl<T: Ord> Extend<T> for BinaryHeap<T> {
 
 #[stable(feature = "extend_ref", since = "1.2.0")]
 impl<'a, T: 'a + Ord + Copy> Extend<&'a T> for BinaryHeap<T> {
-    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+    fn extend<I: IntoIterator<Item=&'a T>>(&mut self, iter: I) {
         self.extend(iter.into_iter().cloned());
     }
 }

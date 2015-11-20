@@ -12,8 +12,8 @@
 
 use {Rng, SeedableRng, Rand};
 
-const KEY_WORDS: usize = 8; // 8 words for the 256-bit key
-const STATE_WORDS: usize = 16;
+const KEY_WORDS    : usize =  8; // 8 words for the 256-bit key
+const STATE_WORDS  : usize = 16;
 const CHACHA_ROUNDS: usize = 20; // Cryptographically secure from 8 upwards as of this writing
 
 /// A random number generator that uses the ChaCha20 algorithm [1].
@@ -247,8 +247,8 @@ mod tests {
     #[test]
     #[rustfmt_skip]
     fn test_rng_true_values() {
-    // Test vectors 1 and 2 from
-    // http://tools.ietf.org/html/draft-nir-cfrg-chacha20-poly1305-04
+        // Test vectors 1 and 2 from
+        // http://tools.ietf.org/html/draft-nir-cfrg-chacha20-poly1305-04
         let seed: &[_] = &[0; 8];
         let mut ra: ChaChaRng = SeedableRng::from_seed(seed);
 
@@ -270,8 +270,8 @@ mod tests {
         let seed: &[_] = &[0, 1, 2, 3, 4, 5, 6, 7];
         let mut ra: ChaChaRng = SeedableRng::from_seed(seed);
 
-    // Store the 17*i-th 32-bit word,
-    // i.e., the i-th word of the i-th 16-word block
+        // Store the 17*i-th 32-bit word,
+        // i.e., the i-th word of the i-th 16-word block
         let mut v: Vec<u32> = Vec::new();
         for _ in 0..16 {
             v.push(ra.next_u32());

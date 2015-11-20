@@ -79,11 +79,15 @@ use core::cmp::Ordering;
 use core::mem::{align_of_val, size_of_val};
 use core::intrinsics::abort;
 use core::mem;
-use core::ops::{Deref, CoerceUnsized};
+use core::ops::Deref;
+#[cfg(not(stage0))]
+use core::ops::CoerceUnsized;
 use core::ptr::{self, Shared};
+#[cfg(not(stage0))]
 use core::marker::Unsize;
 use core::hash::{Hash, Hasher};
 use core::{usize, isize};
+use core::convert::From;
 use heap::deallocate;
 
 const MAX_REFCOUNT: usize = (isize::MAX) as usize;
@@ -126,10 +130,13 @@ pub struct Arc<T: ?Sized> {
     _ptr: Shared<ArcInner<T>>,
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Send for Arc<T> { }
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Sync for Arc<T> { }
 
 #[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<Arc<U>> for Arc<T> {}
 
 /// A weak pointer to an `Arc`.
@@ -144,10 +151,13 @@ pub struct Weak<T: ?Sized> {
     _ptr: Shared<ArcInner<T>>,
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Send for Weak<T> { }
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: ?Sized + Sync + Send> Sync for Weak<T> { }
 
 #[cfg(not(stage0))] // remove cfg after new snapshot
+#[unstable(feature = "coerce_unsized", issue = "27732")]
 impl<T: ?Sized + Unsize<U>, U: ?Sized> CoerceUnsized<Weak<U>> for Weak<T> {}
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -216,7 +226,7 @@ impl<T> Arc<T> {
     pub fn try_unwrap(this: Self) -> Result<T, Self> {
         // See `drop` for why all these atomics are like this
         if this.inner().strong.compare_and_swap(1, 0, Release) != 1 {
-            return Err(this);
+            return Err(this)
         }
 
         atomic::fence(Acquire);
@@ -255,7 +265,7 @@ impl<T: ?Sized> Arc<T> {
 
             // check if the weak counter is currently "locked"; if so, spin.
             if cur == usize::MAX {
-                continue;
+                continue
             }
 
             // NOTE: this code currently ignores the possibility of overflow
@@ -266,7 +276,7 @@ impl<T: ?Sized> Arc<T> {
             // synchronize with the write coming from `is_unique`, so that the
             // events prior to that write happen before this read.
             if this.inner().weak.compare_and_swap(cur, cur + 1, Acquire) == cur {
-                return Weak { _ptr: this._ptr };
+                return Weak { _ptr: this._ptr }
             }
         }
     }
@@ -558,14 +568,14 @@ impl<T: ?Sized> Drop for Arc<T> {
         let ptr = *self._ptr;
         // if ptr.is_null() { return }
         if ptr as *mut u8 as usize == 0 || ptr as *mut u8 as usize == mem::POST_DROP_USIZE {
-            return;
+            return
         }
 
         // Because `fetch_sub` is already atomic, we do not need to synchronize
         // with other threads unless we are going to delete the object. This
         // same logic applies to the below `fetch_sub` to the `weak` count.
         if self.inner().strong.fetch_sub(1, Release) != 1 {
-            return;
+            return
         }
 
         // This fence is needed to prevent reordering of use of the data and
@@ -624,13 +634,13 @@ impl<T: ?Sized> Weak<T> {
             // confirmed via the CAS below.
             let n = inner.strong.load(Relaxed);
             if n == 0 {
-                return None;
+                return None
             }
 
             // Relaxed is valid for the same reason it is on Arc's Clone impl
             let old = inner.strong.compare_and_swap(n, n + 1, Relaxed);
             if old == n {
-                return Some(Arc { _ptr: self._ptr });
+                return Some(Arc { _ptr: self._ptr })
             }
         }
     }
@@ -672,7 +682,7 @@ impl<T: ?Sized> Clone for Weak<T> {
             }
         }
 
-        return Weak { _ptr: self._ptr };
+        return Weak { _ptr: self._ptr }
     }
 }
 
@@ -708,7 +718,7 @@ impl<T: ?Sized> Drop for Weak<T> {
 
         // see comments above for why this check is here
         if ptr as *mut u8 as usize == 0 || ptr as *mut u8 as usize == mem::POST_DROP_USIZE {
-            return;
+            return
         }
 
         // If we find out that we were the last weak pointer, then its time to
@@ -893,6 +903,13 @@ impl<T: ?Sized + Hash> Hash for Arc<T> {
     }
 }
 
+#[stable(feature = "from_for_ptrs", since = "1.6.0")]
+impl<T> From<T> for Arc<T> {
+    fn from(t: T) -> Self {
+        Arc::new(t)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::clone::Clone;
@@ -907,6 +924,7 @@ mod tests {
     use std::vec::Vec;
     use super::{Arc, Weak};
     use std::sync::Mutex;
+    use std::convert::From;
 
     struct Canary(*mut atomic::AtomicUsize);
 
@@ -925,7 +943,7 @@ mod tests {
 
     #[test]
     fn manually_share_arc() {
-        let v = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let v = vec!(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         let arc_v = Arc::new(v);
 
         let (tx, rx) = channel();
@@ -1136,8 +1154,16 @@ mod tests {
         drop(x);
         assert!(y.upgrade().is_none());
     }
+
+    #[test]
+    fn test_from_owned() {
+        let foo = 123;
+        let foo_arc = Arc::from(foo);
+        assert!(123 == *foo_arc);
+    }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> borrow::Borrow<T> for Arc<T> {
     fn borrow(&self) -> &T {
         &**self

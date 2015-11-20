@@ -27,7 +27,7 @@
        html_root_url = "https://doc.rust-lang.org/nightly/",
        html_playground_url = "https://play.rust-lang.org/",
        issue_tracker_base_url = "https://github.com/rust-lang/rust/issues/",
-       test(no_crate_inject))]
+       test(no_crate_inject, attr(allow(unused_variables), deny(warnings))))]
 
 #![allow(trivial_casts)]
 #![cfg_attr(test, allow(deprecated))] // rand
@@ -74,11 +74,8 @@
 extern crate rustc_unicode;
 extern crate alloc;
 
-#[cfg(test)]
-#[macro_use]
-extern crate std;
-#[cfg(test)]
-extern crate test;
+#[cfg(test)] #[macro_use] extern crate std;
+#[cfg(test)] extern crate test;
 
 pub use binary_heap::BinaryHeap;
 pub use btree_map::BTreeMap;
@@ -110,11 +107,13 @@ pub mod vec_deque;
 
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod btree_map {
+    #[stable(feature = "rust1", since = "1.0.0")]
     pub use btree::map::*;
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 pub mod btree_set {
+    #[stable(feature = "rust1", since = "1.0.0")]
     pub use btree::set::*;
 }
 
