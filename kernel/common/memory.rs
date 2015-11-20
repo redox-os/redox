@@ -267,7 +267,7 @@ impl MemoryTree {
     }
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
-    pub unsafe fn realloc(&self, block: Block, mut size: usize) -> Option<Block> {
+    pub unsafe fn realloc(&self, mut block: Block, mut size: usize) -> Option<Block> {
         if let Sibling::Left = block.sibl() {
             let mut level = 0;
 
@@ -275,11 +275,11 @@ impl MemoryTree {
             size = (1 << order) * MT_ATOM;
             let level = MT_DEPTH - order;
 
-            let delta: isize = level as isize - block.level as isize;
+            let delta = level as isize - block.level as isize;
 
             if delta < 0 {
                 for i in 1..(-delta as usize) {
-                    self.split(block);
+                    block = self.split(block);
                 }
 
                 Some(self.split(block))
@@ -295,6 +295,7 @@ impl MemoryTree {
 
                     buddy = block.parrent().get_buddy();
                 }
+
                 if let MemoryState::Free = self.tree.get(buddy) {
                     let parrent = buddy.parrent();
                     self.tree.set(parrent, MemoryState::Used);
