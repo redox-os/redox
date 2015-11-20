@@ -257,7 +257,7 @@ impl MemoryTree {
                 None
             } else {
                 // Kernel panic on OOM
-                Some(if let Some(m) = self.alloc(size * 2) {
+                Some(if let Some(m) = self.alloc(size << 1) {
                     self.split(m)
                 } else {
                     return None;
@@ -271,13 +271,9 @@ impl MemoryTree {
         if let Sibling::Left = block.sibl() {
             let mut level = 0;
 
-            // TODO: Unroll this
-            loop {
-                if size & !(size & (size - 1)) == 1 {
-                    break;
-                }
-                level += 1;
-            }
+            let order = ceil_log2(size / MT_ATOM);
+            size = (1 << order) * MT_ATOM;
+            let level = MT_DEPTH - order;
 
             let delta: isize = level as isize - block.level as isize;
 
