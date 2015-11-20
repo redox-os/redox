@@ -58,16 +58,27 @@ argh!();
 #[repr(simd)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct i8x16(pub i8, pub i8, pub i8, pub i8,
-                 pub i8, pub i8, pub i8, pub i8,
-                 pub i8, pub i8, pub i8, pub i8,
-                 pub i8, pub i8, pub i8, pub i8);
+pub struct i8x16(pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8,
+                 pub i8);
 
 #[repr(simd)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct i16x8(pub i16, pub i16, pub i16, pub i16,
-                 pub i16, pub i16, pub i16, pub i16);
+pub struct i16x8(pub i16, pub i16, pub i16, pub i16, pub i16, pub i16, pub i16, pub i16);
 
 #[repr(simd)]
 #[derive(Copy, Clone, Debug)]
@@ -82,16 +93,27 @@ pub struct i64x2(pub i64, pub i64);
 #[repr(simd)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct u8x16(pub u8, pub u8, pub u8, pub u8,
-                 pub u8, pub u8, pub u8, pub u8,
-                 pub u8, pub u8, pub u8, pub u8,
-                 pub u8, pub u8, pub u8, pub u8);
+pub struct u8x16(pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8,
+                 pub u8);
 
 #[repr(simd)]
 #[derive(Copy, Clone, Debug)]
 #[repr(C)]
-pub struct u16x8(pub u16, pub u16, pub u16, pub u16,
-                 pub u16, pub u16, pub u16, pub u16);
+pub struct u16x8(pub u16, pub u16, pub u16, pub u16, pub u16, pub u16, pub u16, pub u16);
 
 #[repr(simd)]
 #[derive(Copy, Clone, Debug)]

@@ -38,19 +38,19 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
                              0,
                              segment.mem_len as usize - segment.file_len as usize);
 
-                     memory.push(ContextMemory {
-                         physical_address: physical_address,
-                         virtual_address: virtual_address,
-                         virtual_size: virtual_size,
-                         writeable: segment.flags & 2 == 2
-                     });
+                    memory.push(ContextMemory {
+                        physical_address: physical_address,
+                        virtual_address: virtual_address,
+                        virtual_size: virtual_size,
+                        writeable: segment.flags & 2 == 2,
+                    });
                 }
             }
         } else {
             debug::d("Failed to open\n");
         }
 
-        if ! memory.is_empty() && entry > 0 {
+        if !memory.is_empty() && entry > 0 {
             args.insert(0, url.to_string());
 
             let mut context_args: Vec<usize> = Vec::new();
@@ -73,7 +73,7 @@ pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
 
             *context.args.get() = args;
 
-            //TODO: Do this the right way
+            // TODO: Do this the right way
             let mut create = [true; 3];
             if let Some(current) = Context::current() {
                 if let Some(stdin) = current.get_file(0) {

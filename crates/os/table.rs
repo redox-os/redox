@@ -11,9 +11,7 @@ pub struct NodeTable<'a> {
 impl<'a> NodeTable<'a> {
     /// Create a new node table from a slice of bytes
     pub fn from_bytes(b: &'a [u8]) -> Self {
-        NodeTable {
-            table: b,
-        }
+        NodeTable { table: b }
     }
 
     /// Get the n'th entry of the table
@@ -26,9 +24,7 @@ impl<'a> NodeTable<'a> {
         let mut hasher = Djb2::new();
         key.hash(&mut hasher);
 
-        let res = self.get_entry(
-            (hasher.finish() + *probe) as usize
-        );
+        let res = self.get_entry((hasher.finish() + *probe) as usize);
 
         let len = self.table.len() as u64;
 

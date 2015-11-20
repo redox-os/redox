@@ -571,7 +571,7 @@ impl Uhci {
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                            //memory::unalloc(in_td as usize);
+                        // memory::unalloc(in_td as usize);
                         });
                     }
                     DESC_HID => {

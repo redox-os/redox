@@ -25,7 +25,7 @@ pub struct Complex<T> {
     /// Real portion of the complex number
     pub re: T,
     /// Imaginary portion of the complex number
-    pub im: T
+    pub im: T,
 }
 
 pub type Complex32 = Complex<f32>;
@@ -148,7 +148,7 @@ macro_rules! forward_all_binop {
     };
 }
 
-/* arithmetic */
+// arithmetic
 forward_all_binop!(impl Add, add);
 
 // (a + i b) + (c + i d) == (a + c) + i (b + d)
@@ -198,8 +198,10 @@ impl<'a, 'b, T: Clone + Num> Div<&'b Complex<T>> for &'a Complex<T> {
     #[inline]
     fn div(self, other: &Complex<T>) -> Complex<T> {
         let norm_sqr = other.norm_sqr();
-        Complex::new((self.re.clone() * other.re.clone() + self.im.clone() * other.im.clone()) / norm_sqr.clone(),
-                     (self.im.clone() * other.re.clone() - self.re.clone() * other.im.clone()) / norm_sqr)
+        Complex::new((self.re.clone() * other.re.clone() + self.im.clone() * other.im.clone()) /
+                     norm_sqr.clone(),
+                     (self.im.clone() * other.re.clone() - self.re.clone() * other.im.clone()) /
+                     norm_sqr)
     }
 }
 
@@ -207,7 +209,9 @@ impl<T: Clone + Num + Neg<Output = T>> Neg for Complex<T> {
     type Output = Complex<T>;
 
     #[inline]
-    fn neg(self) -> Complex<T> { -&self }
+    fn neg(self) -> Complex<T> {
+        -&self
+    }
 }
 
 impl<'a, T: Clone + Num + Neg<Output = T>> Neg for &'a Complex<T> {
@@ -219,7 +223,7 @@ impl<'a, T: Clone + Num + Neg<Output = T>> Neg for &'a Complex<T> {
     }
 }
 
-/* constants */
+// constants
 impl<T: Clone + Num> Zero for Complex<T> {
     #[inline]
     fn zero() -> Complex<T> {
@@ -239,7 +243,7 @@ impl<T: Clone + Num> One for Complex<T> {
     }
 }
 
-/* string conversions */
+// string conversions
 impl<T> fmt::Display for Complex<T> where
     T: fmt::Display + Num + PartialOrd + Clone
 {

@@ -103,7 +103,7 @@ pub trait Write {
         // This Adapter is needed to allow `self` (of type `&mut
         // Self`) to be cast to a Write (below) without
         // requiring a `Sized` bound.
-        struct Adapter<'a,T: ?Sized +'a>(&'a mut T);
+        struct Adapter<'a, T: ?Sized + 'a>(&'a mut T);
 
         impl<'a, T: ?Sized> Write for Adapter<'a, T>
             where T: Write
@@ -147,7 +147,7 @@ pub struct Formatter<'a> {
     width: Option<usize>,
     precision: Option<usize>,
 
-    buf: &'a mut (Write+'a),
+    buf: &'a mut (Write + 'a),
     curarg: slice::Iter<'a, ArgumentV1<'a>>,
     args: &'a [ArgumentV1<'a>],
 }
@@ -185,12 +185,11 @@ impl<'a> ArgumentV1<'a> {
     #[doc(hidden)]
     #[unstable(feature = "fmt_internals", reason = "internal to format_args!",
                issue = "0")]
-    pub fn new<'b, T>(x: &'b T,
-                      f: fn(&T, &mut Formatter) -> Result) -> ArgumentV1<'b> {
+    pub fn new<'b, T>(x: &'b T, f: fn(&T, &mut Formatter) -> Result) -> ArgumentV1<'b> {
         unsafe {
             ArgumentV1 {
                 formatter: mem::transmute(f),
-                value: mem::transmute(x)
+                value: mem::transmute(x),
             }
         }
     }
@@ -214,20 +213,25 @@ impl<'a> ArgumentV1<'a> {
 // flags available in the v1 format of format_args
 #[derive(Copy, Clone)]
 #[allow(dead_code)] // SignMinus isn't currently used
-enum FlagV1 { SignPlus, SignMinus, Alternate, SignAwareZeroPad, }
+enum FlagV1 {
+    SignPlus,
+    SignMinus,
+    Alternate,
+    SignAwareZeroPad,
+}
 
 impl<'a> Arguments<'a> {
     /// When using the format_args!() macro, this function is used to generate the
     /// Arguments structure.
-    #[doc(hidden)] #[inline]
+    #[doc(hidden)]
+    #[inline]
     #[unstable(feature = "fmt_internals", reason = "internal to format_args!",
                issue = "0")]
-    pub fn new_v1(pieces: &'a [&'a str],
-                  args: &'a [ArgumentV1<'a>]) -> Arguments<'a> {
+    pub fn new_v1(pieces: &'a [&'a str], args: &'a [ArgumentV1<'a>]) -> Arguments<'a> {
         Arguments {
             pieces: pieces,
             fmt: None,
-            args: args
+            args: args,
         }
     }
 
@@ -237,16 +241,18 @@ impl<'a> Arguments<'a> {
     /// `CountIsParam` or `CountIsNextParam` has to point to an argument
     /// created with `argumentusize`. However, failing to do so doesn't cause
     /// unsafety, but will ignore invalid .
-    #[doc(hidden)] #[inline]
+    #[doc(hidden)]
+    #[inline]
     #[unstable(feature = "fmt_internals", reason = "internal to format_args!",
                issue = "0")]
     pub fn new_v1_formatted(pieces: &'a [&'a str],
                             args: &'a [ArgumentV1<'a>],
-                            fmt: &'a [rt::v1::Argument]) -> Arguments<'a> {
+                            fmt: &'a [rt::v1::Argument])
+                            -> Arguments<'a> {
         Arguments {
             pieces: pieces,
             fmt: Some(fmt),
-            args: args
+            args: args,
         }
     }
 }
@@ -815,7 +821,9 @@ impl<'a> Formatter<'a> {
 
         // Extract the correct argument
         let value = match arg.position {
-            rt::v1::Position::Next => { *self.curarg.next().unwrap() }
+            rt::v1::Position::Next => {
+                *self.curarg.next().unwrap()
+            }
             rt::v1::Position::At(i) => self.args[i],
         };
 
@@ -853,25 +861,24 @@ impl<'a> Formatter<'a> {
     /// This function will correctly account for the flags provided as well as
     /// the minimum width. It will not take precision into account.
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn pad_integral(&mut self,
-                        is_positive: bool,
-                        prefix: &str,
-                        buf: &str)
-                        -> Result {
+    pub fn pad_integral(&mut self, is_positive: bool, prefix: &str, buf: &str) -> Result {
         use char::CharExt;
 
         let mut width = buf.len();
 
         let mut sign = None;
         if !is_positive {
-            sign = Some('-'); width += 1;
+            sign = Some('-');
+            width += 1;
         } else if self.sign_plus() {
-            sign = Some('+'); width += 1;
+            sign = Some('+');
+            width += 1;
         }
 
         let mut prefixed = false;
         if self.alternate() {
-            prefixed = true; width += prefix.char_len();
+            prefixed = true;
+            width += prefix.char_len();
         }
 
         // Writes the sign if it exists, and then the prefix if it was requested
@@ -882,8 +889,11 @@ impl<'a> Formatter<'a> {
                 let b = unsafe { str::from_utf8_unchecked(&b[..n]) };
                 try!(f.buf.write_str(b));
             }
-            if prefixed { f.buf.write_str(prefix) }
-            else { Ok(()) }
+            if prefixed {
+                f.buf.write_str(prefix)
+            } else {
+                Ok(())
+            }
         };
 
         // The `width` field is more of a `min-width` parameter at this point.
@@ -891,26 +901,27 @@ impl<'a> Formatter<'a> {
             // If there's no minimum length requirements then we can just
             // write the bytes.
             None => {
-                try!(write_prefix(self)); self.buf.write_str(buf)
+                try!(write_prefix(self));
+                self.buf.write_str(buf)
             }
             // Check if we're over the minimum width, if so then we can also
             // just write the bytes.
             Some(min) if width >= min => {
-                try!(write_prefix(self)); self.buf.write_str(buf)
+                try!(write_prefix(self));
+                self.buf.write_str(buf)
             }
             // The sign and prefix goes before the padding if the fill character
             // is zero
             Some(min) if self.sign_aware_zero_pad() => {
                 self.fill = '0';
                 try!(write_prefix(self));
-                self.with_padding(min - width, Alignment::Right, |f| {
-                    f.buf.write_str(buf)
-                })
+                self.with_padding(min - width, Alignment::Right, |f| f.buf.write_str(buf))
             }
             // Otherwise, the sign and prefix goes after the padding
             Some(min) => {
                 self.with_padding(min - width, Alignment::Right, |f| {
-                    try!(write_prefix(f)); f.buf.write_str(buf)
+                    try!(write_prefix(f));
+                    f.buf.write_str(buf)
                 })
             }
         }
@@ -961,23 +972,22 @@ impl<'a> Formatter<'a> {
             // If we're under both the maximum and the minimum width, then fill
             // up the minimum width with the specified string + some alignment.
             Some(width) => {
-                self.with_padding(width - s.char_len(), Alignment::Left, |me| {
-                    me.buf.write_str(s)
-                })
+                self.with_padding(width - s.char_len(),
+                                  Alignment::Left,
+                                  |me| me.buf.write_str(s))
             }
         }
     }
 
     /// Runs a callback, emitting the correct padding either before or
     /// afterwards depending on whether right or left alignment is requested.
-    fn with_padding<F>(&mut self, padding: usize, default: Alignment,
-                       f: F) -> Result
-        where F: FnOnce(&mut Formatter) -> Result,
+    fn with_padding<F>(&mut self, padding: usize, default: Alignment, f: F) -> Result
+        where F: FnOnce(&mut Formatter) -> Result
     {
         use char::CharExt;
         let align = match self.align {
             Alignment::Unknown => default,
-            _ => self.align
+            _ => self.align,
         };
 
         let (pre_pad, post_pad) = match align {
@@ -1020,19 +1030,22 @@ impl<'a> Formatter<'a> {
 
                 // remove the sign from the formatted parts
                 formatted.sign = b"";
-                width = if width < sign.len() { 0 } else { width - sign.len() };
+                width = if width < sign.len() {
+                    0
+                } else {
+                    width - sign.len()
+                };
                 align = Alignment::Right;
                 self.fill = '0';
             }
 
             // remaining parts go through the ordinary padding process.
             let len = formatted.len();
-            let ret = if width <= len { // no padding
+            let ret = if width <= len {
+                // no padding
                 self.write_formatted_parts(&formatted)
             } else {
-                self.with_padding(width - len, align, |f| {
-                    f.write_formatted_parts(&formatted)
-                })
+                self.with_padding(width - len, align, |f| f.write_formatted_parts(&formatted))
             };
             self.fill = old_fill;
             ret
@@ -1053,8 +1066,8 @@ impl<'a> Formatter<'a> {
         for part in formatted.parts {
             match *part {
                 flt2dec::Part::Zero(mut nzeroes) => {
-                    const ZEROES: &'static str = // 64 zeroes
-                        "0000000000000000000000000000000000000000000000000000000000000000";
+                    const ZEROES: &'static str = "000000000000000000000000000000000000000000000000\
+                                                  0000000000000000";
                     while nzeroes > ZEROES.len() {
                         try!(self.buf.write_str(ZEROES));
                         nzeroes -= ZEROES.len();
@@ -1095,36 +1108,52 @@ impl<'a> Formatter<'a> {
 
     /// Flags for formatting (packed version of rt::Flag)
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn flags(&self) -> u32 { self.flags }
+    pub fn flags(&self) -> u32 {
+        self.flags
+    }
 
     /// Character used as 'fill' whenever there is alignment
     #[stable(feature = "fmt_flags", since = "1.5.0")]
-    pub fn fill(&self) -> char { self.fill }
+    pub fn fill(&self) -> char {
+        self.fill
+    }
 
     /// Flag indicating what form of alignment was requested
     #[unstable(feature = "fmt_flags_align", reason = "method was just created",
                issue = "27726")]
-    pub fn align(&self) -> Alignment { self.align }
+    pub fn align(&self) -> Alignment {
+        self.align
+    }
 
     /// Optionally specified integer width that the output should be
     #[stable(feature = "fmt_flags", since = "1.5.0")]
-    pub fn width(&self) -> Option<usize> { self.width }
+    pub fn width(&self) -> Option<usize> {
+        self.width
+    }
 
     /// Optionally specified precision for numeric types
     #[stable(feature = "fmt_flags", since = "1.5.0")]
-    pub fn precision(&self) -> Option<usize> { self.precision }
+    pub fn precision(&self) -> Option<usize> {
+        self.precision
+    }
 
     /// Determines if the `+` flag was specified.
     #[stable(feature = "fmt_flags", since = "1.5.0")]
-    pub fn sign_plus(&self) -> bool { self.flags & (1 << FlagV1::SignPlus as u32) != 0 }
+    pub fn sign_plus(&self) -> bool {
+        self.flags & (1 << FlagV1::SignPlus as u32) != 0
+    }
 
     /// Determines if the `-` flag was specified.
     #[stable(feature = "fmt_flags", since = "1.5.0")]
-    pub fn sign_minus(&self) -> bool { self.flags & (1 << FlagV1::SignMinus as u32) != 0 }
+    pub fn sign_minus(&self) -> bool {
+        self.flags & (1 << FlagV1::SignMinus as u32) != 0
+    }
 
     /// Determines if the `#` flag was specified.
     #[stable(feature = "fmt_flags", since = "1.5.0")]
-    pub fn alternate(&self) -> bool { self.flags & (1 << FlagV1::Alternate as u32) != 0 }
+    pub fn alternate(&self) -> bool {
+        self.flags & (1 << FlagV1::Alternate as u32) != 0
+    }
 
     /// Determines if the `0` flag was specified.
     #[stable(feature = "fmt_flags", since = "1.5.0")]
@@ -1318,7 +1347,12 @@ impl Debug for bool {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl Display for bool {
     fn fmt(&self, f: &mut Formatter) -> Result {
-        Display::fmt(if *self { "true" } else { "false" }, f)
+        Display::fmt(if *self {
+                         "true"
+                     } else {
+                         "false"
+                     },
+                     f)
     }
 }
 
@@ -1389,7 +1423,7 @@ impl<T> Pointer for *const T {
             f.flags |= 1 << (FlagV1::SignAwareZeroPad as u32);
 
             if let None = f.width {
-                f.width = Some((::usize::BITS/4) + 2);
+                f.width = Some((::usize::BITS / 4) + 2);
             }
         }
         f.flags |= 1 << (FlagV1::Alternate as u32);
@@ -1437,19 +1471,29 @@ fn float_to_decimal_common<T>(fmt: &mut Formatter, num: &T, negative_zero: bool)
     let force_sign = fmt.sign_plus();
     let sign = match (force_sign, negative_zero) {
         (false, false) => flt2dec::Sign::Minus,
-        (false, true)  => flt2dec::Sign::MinusRaw,
-        (true,  false) => flt2dec::Sign::MinusPlus,
-        (true,  true)  => flt2dec::Sign::MinusPlusRaw,
+        (false, true) => flt2dec::Sign::MinusRaw,
+        (true, false) => flt2dec::Sign::MinusPlus,
+        (true, true) => flt2dec::Sign::MinusPlusRaw,
     };
 
     let mut buf = [0; 1024]; // enough for f32 and f64
     let mut parts = [flt2dec::Part::Zero(0); 16];
     let formatted = if let Some(precision) = fmt.precision {
-        flt2dec::to_exact_fixed_str(flt2dec::strategy::grisu::format_exact, *num, sign,
-                                    precision, false, &mut buf, &mut parts)
+        flt2dec::to_exact_fixed_str(flt2dec::strategy::grisu::format_exact,
+                                    *num,
+                                    sign,
+                                    precision,
+                                    false,
+                                    &mut buf,
+                                    &mut parts)
     } else {
-        flt2dec::to_shortest_str(flt2dec::strategy::grisu::format_shortest, *num, sign,
-                                 0, false, &mut buf, &mut parts)
+        flt2dec::to_shortest_str(flt2dec::strategy::grisu::format_shortest,
+                                 *num,
+                                 sign,
+                                 0,
+                                 false,
+                                 &mut buf,
+                                 &mut parts)
     };
     fmt.pad_formatted_parts(&formatted)
 }
@@ -1461,18 +1505,28 @@ fn float_to_exponential_common<T>(fmt: &mut Formatter, num: &T, upper: bool) -> 
     let force_sign = fmt.sign_plus();
     let sign = match force_sign {
         false => flt2dec::Sign::Minus,
-        true  => flt2dec::Sign::MinusPlus,
+        true => flt2dec::Sign::MinusPlus,
     };
 
     let mut buf = [0; 1024]; // enough for f32 and f64
     let mut parts = [flt2dec::Part::Zero(0); 16];
     let formatted = if let Some(precision) = fmt.precision {
         // 1 integral digit + `precision` fractional digits = `precision + 1` total digits
-        flt2dec::to_exact_exp_str(flt2dec::strategy::grisu::format_exact, *num, sign,
-                                  precision + 1, upper, &mut buf, &mut parts)
+        flt2dec::to_exact_exp_str(flt2dec::strategy::grisu::format_exact,
+                                  *num,
+                                  sign,
+                                  precision + 1,
+                                  upper,
+                                  &mut buf,
+                                  &mut parts)
     } else {
-        flt2dec::to_shortest_exp_str(flt2dec::strategy::grisu::format_shortest, *num, sign,
-                                     (0, 0), upper, &mut buf, &mut parts)
+        flt2dec::to_shortest_exp_str(flt2dec::strategy::grisu::format_shortest,
+                                     *num,
+                                     sign,
+                                     (0, 0),
+                                     upper,
+                                     &mut buf,
+                                     &mut parts)
     };
     fmt.pad_formatted_parts(&formatted)
 }
@@ -1514,11 +1568,15 @@ floating! { f64 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Debug for *const T {
-    fn fmt(&self, f: &mut Formatter) -> Result { Pointer::fmt(self, f) }
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        Pointer::fmt(self, f)
+    }
 }
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Debug for *mut T {
-    fn fmt(&self, f: &mut Formatter) -> Result { Pointer::fmt(self, f) }
+    fn fmt(&self, f: &mut Formatter) -> Result {
+        Pointer::fmt(self, f)
+    }
 }
 
 macro_rules! peel {

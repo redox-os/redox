@@ -87,8 +87,7 @@ use core::raw::TraitObject;
 #[unstable(feature = "box_heap",
            reason = "may be renamed; uncertain about custom allocator design",
            issue = "27779")]
-pub const HEAP: ExchangeHeapSingleton =
-    ExchangeHeapSingleton { _force_singleton: () };
+pub const HEAP: ExchangeHeapSingleton = ExchangeHeapSingleton { _force_singleton: () };
 
 /// This the singleton type used solely for `boxed::HEAP`.
 #[unstable(feature = "box_heap",

@@ -28,7 +28,7 @@ use hash::Hasher;
 #[lang = "send"]
 #[rustc_on_unimplemented = "`{Self}` cannot be sent between threads safely"]
 pub unsafe trait Send {
-    // empty.
+// empty.
 }
 
 unsafe impl Send for .. { }
@@ -53,14 +53,14 @@ impl<T> !Send for *mut T { }
 #[rustc_on_unimplemented = "`{Self}` does not have a constant size known at compile-time"]
 #[fundamental] // for Default, for example, which requires that `[T]: !Default` be evaluatable
 pub trait Sized {
-    // Empty.
+// Empty.
 }
 
 /// Types that can be "unsized" to a dynamically sized type.
 #[unstable(feature = "unsize", issue = "27732")]
 #[lang="unsize"]
 pub trait Unsize<T: ?Sized> {
-    // Empty.
+// Empty.
 }
 
 /// Types that can be copied by simply copying bits (i.e. `memcpy`).
@@ -165,7 +165,7 @@ pub trait Unsize<T: ?Sized> {
 #[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "copy"]
 pub trait Copy : Clone {
-    // Empty.
+// Empty.
 }
 
 /// Types that can be safely shared between threads when aliased.
@@ -213,7 +213,7 @@ pub trait Copy : Clone {
 #[lang = "sync"]
 #[rustc_on_unimplemented = "`{Self}` cannot be shared between threads safely"]
 pub unsafe trait Sync {
-    // Empty
+// Empty
 }
 
 unsafe impl Sync for .. { }
@@ -371,7 +371,7 @@ macro_rules! impls{
 /// as not to indicate ownership.
 #[lang = "phantom_data"]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct PhantomData<T:?Sized>;
+pub struct PhantomData;
 
 impls! { PhantomData }
 

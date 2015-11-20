@@ -54,7 +54,9 @@ pub trait PartialEq<Rhs: ?Sized = Self> {
     /// This method tests for `!=`.
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
-    fn ne(&self, other: &Rhs) -> bool { !self.eq(other) }
+    fn ne(&self, other: &Rhs) -> bool {
+        !self.eq(other)
+    }
 }
 
 /// Trait for equality comparisons which are [equivalence relations](
@@ -81,7 +83,8 @@ pub trait Eq: PartialEq<Self> {
     #[doc(hidden)]
     #[inline(always)]
     #[stable(feature = "rust1", since = "1.0.0")]
-    fn assert_receiver_is_total_eq(&self) {}
+    fn assert_receiver_is_total_eq(&self) {
+    }
 }
 
 /// An `Ordering` is the result of a comparison between two values.
@@ -358,7 +361,11 @@ pub trait PartialOrd<Rhs: ?Sized = Self>: PartialEq<Rhs> {
 #[inline]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub fn min<T: Ord>(v1: T, v2: T) -> T {
-    if v1 <= v2 { v1 } else { v2 }
+    if v1 <= v2 {
+        v1
+    } else {
+        v2
+    }
 }
 
 /// Compare and return the maximum of two values.
@@ -376,7 +383,11 @@ pub fn min<T: Ord>(v1: T, v2: T) -> T {
 #[inline]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub fn max<T: Ord>(v1: T, v2: T) -> T {
-    if v2 >= v1 { v2 } else { v1 }
+    if v2 >= v1 {
+        v2
+    } else {
+        v1
+    }
 }
 
 // Implementation of PartialEq, Eq, PartialOrd and Ord for primitive types
@@ -402,9 +413,13 @@ mod impls {
     #[stable(feature = "rust1", since = "1.0.0")]
     impl PartialEq for () {
         #[inline]
-        fn eq(&self, _other: &()) -> bool { true }
+        fn eq(&self, _other: &()) -> bool {
+            true
+        }
         #[inline]
-        fn ne(&self, _other: &()) -> bool { false }
+        fn ne(&self, _other: &()) -> bool {
+            false
+        }
     }
 
     partial_eq_impl! {
@@ -496,7 +511,9 @@ mod impls {
     #[stable(feature = "rust1", since = "1.0.0")]
     impl Ord for () {
         #[inline]
-        fn cmp(&self, _other: &()) -> Ordering { Equal }
+        fn cmp(&self, _other: &()) -> Ordering {
+            Equal
+        }
     }
 
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -514,9 +531,13 @@ mod impls {
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, 'b, A: ?Sized, B: ?Sized> PartialEq<&'b B> for &'a A where A: PartialEq<B> {
         #[inline]
-        fn eq(&self, other: & &'b B) -> bool { PartialEq::eq(*self, *other) }
+        fn eq(&self, other: &&'b B) -> bool {
+            PartialEq::eq(*self, *other)
+        }
         #[inline]
-        fn ne(&self, other: & &'b B) -> bool { PartialEq::ne(*self, *other) }
+        fn ne(&self, other: &&'b B) -> bool {
+            PartialEq::ne(*self, *other)
+        }
     }
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, 'b, A: ?Sized, B: ?Sized> PartialOrd<&'b B> for &'a A where A: PartialOrd<B> {
@@ -525,18 +546,28 @@ mod impls {
             PartialOrd::partial_cmp(*self, *other)
         }
         #[inline]
-        fn lt(&self, other: & &'b B) -> bool { PartialOrd::lt(*self, *other) }
+        fn lt(&self, other: &&'b B) -> bool {
+            PartialOrd::lt(*self, *other)
+        }
         #[inline]
-        fn le(&self, other: & &'b B) -> bool { PartialOrd::le(*self, *other) }
+        fn le(&self, other: &&'b B) -> bool {
+            PartialOrd::le(*self, *other)
+        }
         #[inline]
-        fn ge(&self, other: & &'b B) -> bool { PartialOrd::ge(*self, *other) }
+        fn ge(&self, other: &&'b B) -> bool {
+            PartialOrd::ge(*self, *other)
+        }
         #[inline]
-        fn gt(&self, other: & &'b B) -> bool { PartialOrd::gt(*self, *other) }
+        fn gt(&self, other: &&'b B) -> bool {
+            PartialOrd::gt(*self, *other)
+        }
     }
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, A: ?Sized> Ord for &'a A where A: Ord {
         #[inline]
-        fn cmp(&self, other: & &'a A) -> Ordering { Ord::cmp(*self, *other) }
+        fn cmp(&self, other: &&'a A) -> Ordering {
+            Ord::cmp(*self, *other)
+        }
     }
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, A: ?Sized> Eq for &'a A where A: Eq {}
@@ -546,9 +577,13 @@ mod impls {
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, 'b, A: ?Sized, B: ?Sized> PartialEq<&'b mut B> for &'a mut A where A: PartialEq<B> {
         #[inline]
-        fn eq(&self, other: &&'b mut B) -> bool { PartialEq::eq(*self, *other) }
+        fn eq(&self, other: &&'b mut B) -> bool {
+            PartialEq::eq(*self, *other)
+        }
         #[inline]
-        fn ne(&self, other: &&'b mut B) -> bool { PartialEq::ne(*self, *other) }
+        fn ne(&self, other: &&'b mut B) -> bool {
+            PartialEq::ne(*self, *other)
+        }
     }
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, 'b, A: ?Sized, B: ?Sized> PartialOrd<&'b mut B> for &'a mut A where A: PartialOrd<B> {
@@ -557,18 +592,28 @@ mod impls {
             PartialOrd::partial_cmp(*self, *other)
         }
         #[inline]
-        fn lt(&self, other: &&'b mut B) -> bool { PartialOrd::lt(*self, *other) }
+        fn lt(&self, other: &&'b mut B) -> bool {
+            PartialOrd::lt(*self, *other)
+        }
         #[inline]
-        fn le(&self, other: &&'b mut B) -> bool { PartialOrd::le(*self, *other) }
+        fn le(&self, other: &&'b mut B) -> bool {
+            PartialOrd::le(*self, *other)
+        }
         #[inline]
-        fn ge(&self, other: &&'b mut B) -> bool { PartialOrd::ge(*self, *other) }
+        fn ge(&self, other: &&'b mut B) -> bool {
+            PartialOrd::ge(*self, *other)
+        }
         #[inline]
-        fn gt(&self, other: &&'b mut B) -> bool { PartialOrd::gt(*self, *other) }
+        fn gt(&self, other: &&'b mut B) -> bool {
+            PartialOrd::gt(*self, *other)
+        }
     }
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, A: ?Sized> Ord for &'a mut A where A: Ord {
         #[inline]
-        fn cmp(&self, other: &&'a mut A) -> Ordering { Ord::cmp(*self, *other) }
+        fn cmp(&self, other: &&'a mut A) -> Ordering {
+            Ord::cmp(*self, *other)
+        }
     }
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, A: ?Sized> Eq for &'a mut A where A: Eq {}
@@ -576,16 +621,24 @@ mod impls {
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, 'b, A: ?Sized, B: ?Sized> PartialEq<&'b mut B> for &'a A where A: PartialEq<B> {
         #[inline]
-        fn eq(&self, other: &&'b mut B) -> bool { PartialEq::eq(*self, *other) }
+        fn eq(&self, other: &&'b mut B) -> bool {
+            PartialEq::eq(*self, *other)
+        }
         #[inline]
-        fn ne(&self, other: &&'b mut B) -> bool { PartialEq::ne(*self, *other) }
+        fn ne(&self, other: &&'b mut B) -> bool {
+            PartialEq::ne(*self, *other)
+        }
     }
 
     #[stable(feature = "rust1", since = "1.0.0")]
     impl<'a, 'b, A: ?Sized, B: ?Sized> PartialEq<&'b B> for &'a mut A where A: PartialEq<B> {
         #[inline]
-        fn eq(&self, other: &&'b B) -> bool { PartialEq::eq(*self, *other) }
+        fn eq(&self, other: &&'b B) -> bool {
+            PartialEq::eq(*self, *other)
+        }
         #[inline]
-        fn ne(&self, other: &&'b B) -> bool { PartialEq::ne(*self, *other) }
+        fn ne(&self, other: &&'b B) -> bool {
+            PartialEq::ne(*self, *other)
+        }
     }
 }

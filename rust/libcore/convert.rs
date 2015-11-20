@@ -101,15 +101,15 @@ pub trait From<T>: Sized {
     fn from(T) -> Self;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// GENERIC IMPLS
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
+/// GENERIC IMPLS
+/// /////////////////////////////////////////////////////////////////////////////
 
 // As lifts over &
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized, U: ?Sized> AsRef<U> for &'a T where T: AsRef<U> {
     fn as_ref(&self) -> &U {
-        <T as AsRef<U>>::as_ref(*self)
+        <T as AsRef::<U>>::as_ref(*self)
     }
 }
 
@@ -117,7 +117,7 @@ impl<'a, T: ?Sized, U: ?Sized> AsRef<U> for &'a T where T: AsRef<U> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized, U: ?Sized> AsRef<U> for &'a mut T where T: AsRef<U> {
     fn as_ref(&self) -> &U {
-        <T as AsRef<U>>::as_ref(*self)
+        <T as AsRef::<U>>::as_ref(*self)
     }
 }
 
@@ -156,12 +156,14 @@ impl<T, U> Into<U> for T where U: From<T> {
 // From (and thus Into) is reflexive
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> From<T> for T {
-    fn from(t: T) -> T { t }
+    fn from(t: T) -> T {
+        t
+    }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// CONCRETE IMPLS
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
+/// CONCRETE IMPLS
+/// /////////////////////////////////////////////////////////////////////////////
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> AsRef<[T]> for [T] {

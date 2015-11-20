@@ -305,8 +305,7 @@ impl<'a, R: Rng> Iterator for AsciiGenerator<'a, R> {
     type Item = char;
 
     fn next(&mut self) -> Option<char> {
-        const GEN_ASCII_STR_CHARSET: &'static [u8] =
-            b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+        const GEN_ASCII_STR_CHARSET: &'static [u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
               abcdefghijklmnopqrstuvwxyz\
               0123456789";
         Some(*self.rng.choose(GEN_ASCII_STR_CHARSET).unwrap() as char)

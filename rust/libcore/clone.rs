@@ -54,7 +54,9 @@ pub trait Clone : Sized {
 impl<'a, T: ?Sized> Clone for &'a T {
     /// Returns a shallow copy of the reference.
     #[inline]
-    fn clone(&self) -> &'a T { *self }
+    fn clone(&self) -> &'a T {
+        *self
+    }
 }
 
 macro_rules! clone_impl {

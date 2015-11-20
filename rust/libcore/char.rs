@@ -22,46 +22,46 @@ use option::Option;
 use slice::SliceExt;
 
 // UTF-8 ranges and tags for encoding characters
-const TAG_CONT: u8    = 0b1000_0000;
-const TAG_TWO_B: u8   = 0b1100_0000;
+const TAG_CONT: u8 = 0b1000_0000;
+const TAG_TWO_B: u8 = 0b1100_0000;
 const TAG_THREE_B: u8 = 0b1110_0000;
-const TAG_FOUR_B: u8  = 0b1111_0000;
-const MAX_ONE_B: u32   =     0x80;
-const MAX_TWO_B: u32   =    0x800;
-const MAX_THREE_B: u32 =  0x10000;
+const TAG_FOUR_B: u8 = 0b1111_0000;
+const MAX_ONE_B: u32 = 0x80;
+const MAX_TWO_B: u32 = 0x800;
+const MAX_THREE_B: u32 = 0x10000;
 
-/*
-    Lu  Uppercase_Letter        an uppercase letter
-    Ll  Lowercase_Letter        a lowercase letter
-    Lt  Titlecase_Letter        a digraphic character, with first part uppercase
-    Lm  Modifier_Letter         a modifier letter
-    Lo  Other_Letter            other letters, including syllables and ideographs
-    Mn  Nonspacing_Mark         a nonspacing combining mark (zero advance width)
-    Mc  Spacing_Mark            a spacing combining mark (positive advance width)
-    Me  Enclosing_Mark          an enclosing combining mark
-    Nd  Decimal_Number          a decimal digit
-    Nl  Letter_Number           a letterlike numeric character
-    No  Other_Number            a numeric character of other type
-    Pc  Connector_Punctuation   a connecting punctuation mark, like a tie
-    Pd  Dash_Punctuation        a dash or hyphen punctuation mark
-    Ps  Open_Punctuation        an opening punctuation mark (of a pair)
-    Pe  Close_Punctuation       a closing punctuation mark (of a pair)
-    Pi  Initial_Punctuation     an initial quotation mark
-    Pf  Final_Punctuation       a final quotation mark
-    Po  Other_Punctuation       a punctuation mark of other type
-    Sm  Math_Symbol             a symbol of primarily mathematical use
-    Sc  Currency_Symbol         a currency sign
-    Sk  Modifier_Symbol         a non-letterlike modifier symbol
-    So  Other_Symbol            a symbol of other type
-    Zs  Space_Separator         a space character (of various non-zero widths)
-    Zl  Line_Separator          U+2028 LINE SEPARATOR only
-    Zp  Paragraph_Separator     U+2029 PARAGRAPH SEPARATOR only
-    Cc  Control                 a C0 or C1 control code
-    Cf  Format                  a format control character
-    Cs  Surrogate               a surrogate code point
-    Co  Private_Use             a private-use character
-    Cn  Unassigned              a reserved unassigned code point or a noncharacter
-*/
+//
+// Lu  Uppercase_Letter        an uppercase letter
+// Ll  Lowercase_Letter        a lowercase letter
+// Lt  Titlecase_Letter        a digraphic character, with first part uppercase
+// Lm  Modifier_Letter         a modifier letter
+// Lo  Other_Letter            other letters, including syllables and ideographs
+// Mn  Nonspacing_Mark         a nonspacing combining mark (zero advance width)
+// Mc  Spacing_Mark            a spacing combining mark (positive advance width)
+// Me  Enclosing_Mark          an enclosing combining mark
+// Nd  Decimal_Number          a decimal digit
+// Nl  Letter_Number           a letterlike numeric character
+// No  Other_Number            a numeric character of other type
+// Pc  Connector_Punctuation   a connecting punctuation mark, like a tie
+// Pd  Dash_Punctuation        a dash or hyphen punctuation mark
+// Ps  Open_Punctuation        an opening punctuation mark (of a pair)
+// Pe  Close_Punctuation       a closing punctuation mark (of a pair)
+// Pi  Initial_Punctuation     an initial quotation mark
+// Pf  Final_Punctuation       a final quotation mark
+// Po  Other_Punctuation       a punctuation mark of other type
+// Sm  Math_Symbol             a symbol of primarily mathematical use
+// Sc  Currency_Symbol         a currency sign
+// Sk  Modifier_Symbol         a non-letterlike modifier symbol
+// So  Other_Symbol            a symbol of other type
+// Zs  Space_Separator         a space character (of various non-zero widths)
+// Zl  Line_Separator          U+2028 LINE SEPARATOR only
+// Zp  Paragraph_Separator     U+2029 PARAGRAPH SEPARATOR only
+// Cc  Control                 a C0 or C1 control code
+// Cf  Format                  a format control character
+// Cs  Surrogate               a surrogate code point
+// Co  Private_Use             a private-use character
+// Cn  Unassigned              a reserved unassigned code point or a noncharacter
+//
 
 /// The highest valid code point
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -136,7 +136,8 @@ pub fn from_digit(num: u32, radix: u32) -> Option<char> {
 
 // NB: the stabilization and documentation for this trait is in
 // unicode/char.rs, not here
-#[allow(missing_docs)] // docs in libunicode/u_char.rs
+#[allow(missing_docs)]
+// docs in libunicode/u_char.rs
 #[doc(hidden)]
 #[unstable(feature = "core_char_ext",
            reason = "the stable interface is `impl char` in later crate",
@@ -164,18 +165,24 @@ impl CharExt for char {
             panic!("to_digit: radix is too high (maximum 36)");
         }
         let val = match self {
-          '0' ... '9' => self as u32 - '0' as u32,
-          'a' ... 'z' => self as u32 - 'a' as u32 + 10,
-          'A' ... 'Z' => self as u32 - 'A' as u32 + 10,
-          _ => return None,
+            '0'...'9' => self as u32 - '0' as u32,
+            'a'...'z' => self as u32 - 'a' as u32 + 10,
+            'A'...'Z' => self as u32 - 'A' as u32 + 10,
+            _ => return None,
         };
-        if val < radix { Some(val) }
-        else { None }
+        if val < radix {
+            Some(val)
+        } else {
+            None
+        }
     }
 
     #[inline]
     fn escape_unicode(self) -> EscapeUnicode {
-        EscapeUnicode { c: self, state: EscapeUnicodeState::Backslash }
+        EscapeUnicode {
+            c: self,
+            state: EscapeUnicodeState::Backslash,
+        }
     }
 
     #[inline]
@@ -185,8 +192,8 @@ impl CharExt for char {
             '\r' => EscapeDefaultState::Backslash('r'),
             '\n' => EscapeDefaultState::Backslash('n'),
             '\\' | '\'' | '"' => EscapeDefaultState::Backslash(self),
-            '\x20' ... '\x7e' => EscapeDefaultState::Char(self),
-            _ => EscapeDefaultState::Unicode(self.escape_unicode())
+            '\x20'...'\x7e' => EscapeDefaultState::Char(self),
+            _ => EscapeDefaultState::Unicode(self.escape_unicode()),
         };
         EscapeDefault { state: init_state }
     }
@@ -208,7 +215,11 @@ impl CharExt for char {
     #[inline]
     fn len_utf16(self) -> usize {
         let ch = self as u32;
-        if (ch & 0xFFFF) == ch { 1 } else { 2 }
+        if (ch & 0xFFFF) == ch {
+            1
+        } else {
+            2
+        }
     }
 
     #[inline]
@@ -241,15 +252,15 @@ pub fn encode_utf8_raw(code: u32, dst: &mut [u8]) -> Option<usize> {
         dst[0] = (code >> 6 & 0x1F) as u8 | TAG_TWO_B;
         dst[1] = (code & 0x3F) as u8 | TAG_CONT;
         Some(2)
-    } else if code < MAX_THREE_B && dst.len() >= 3  {
+    } else if code < MAX_THREE_B && dst.len() >= 3 {
         dst[0] = (code >> 12 & 0x0F) as u8 | TAG_THREE_B;
-        dst[1] = (code >>  6 & 0x3F) as u8 | TAG_CONT;
+        dst[1] = (code >> 6 & 0x3F) as u8 | TAG_CONT;
         dst[2] = (code & 0x3F) as u8 | TAG_CONT;
         Some(3)
     } else if dst.len() >= 4 {
         dst[0] = (code >> 18 & 0x07) as u8 | TAG_FOUR_B;
         dst[1] = (code >> 12 & 0x3F) as u8 | TAG_CONT;
-        dst[2] = (code >>  6 & 0x3F) as u8 | TAG_CONT;
+        dst[2] = (code >> 6 & 0x3F) as u8 | TAG_CONT;
         dst[3] = (code & 0x3F) as u8 | TAG_CONT;
         Some(4)
     } else {
@@ -290,7 +301,7 @@ pub fn encode_utf16_raw(mut ch: u32, dst: &mut [u16]) -> Option<usize> {
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct EscapeUnicode {
     c: char,
-    state: EscapeUnicodeState
+    state: EscapeUnicodeState,
 }
 
 #[derive(Clone)]
@@ -364,7 +375,7 @@ impl Iterator for EscapeUnicode {
 #[derive(Clone)]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct EscapeDefault {
-    state: EscapeDefaultState
+    state: EscapeDefaultState,
 }
 
 #[derive(Clone)]

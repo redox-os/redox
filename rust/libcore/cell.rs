@@ -171,9 +171,7 @@ impl<T:Copy> Cell<T> {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub const fn new(value: T) -> Cell<T> {
-        Cell {
-            value: UnsafeCell::new(value),
-        }
+        Cell { value: UnsafeCell::new(value) }
     }
 
     /// Returns a copy of the contained value.
@@ -190,7 +188,7 @@ impl<T:Copy> Cell<T> {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn get(&self) -> T {
-        unsafe{ *self.value.get() }
+        unsafe { *self.value.get() }
     }
 
     /// Sets the contained value.
@@ -496,7 +494,7 @@ impl<'b> BorrowRef<'b> {
             b => {
                 borrow.set(b + 1);
                 Some(BorrowRef { _borrow: borrow })
-            },
+            }
         }
     }
 }
@@ -622,9 +620,11 @@ impl<'b, T: ?Sized> Ref<'b, T> {
     pub fn filter_map<U: ?Sized, F>(orig: Ref<'b, T>, f: F) -> Option<Ref<'b, U>>
         where F: FnOnce(&T) -> Option<&U>
     {
-        f(orig._value).map(move |new| Ref {
-            _value: new,
-            _borrow: orig._borrow,
+        f(orig._value).map(move |new| {
+            Ref {
+                _value: new,
+                _borrow: orig._borrow,
+            }
         })
     }
 }
@@ -699,9 +699,11 @@ impl<'b, T: ?Sized> RefMut<'b, T> {
         where F: FnOnce(&mut T) -> Option<&mut U>
     {
         let RefMut { _value, _borrow } = orig;
-        f(_value).map(move |new| RefMut {
-            _value: new,
-            _borrow: _borrow,
+        f(_value).map(move |new| {
+            RefMut {
+                _value: new,
+                _borrow: _borrow,
+            }
         })
     }
 }
@@ -726,7 +728,7 @@ impl<'b> BorrowRefMut<'b> {
             UNUSED => {
                 borrow.set(WRITING);
                 Some(BorrowRefMut { _borrow: borrow })
-            },
+            }
             _ => None,
         }
     }

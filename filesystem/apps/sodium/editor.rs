@@ -35,11 +35,7 @@ impl Editor {
     pub fn new() -> Editor {
 
 
-        let window = Window::new(-1,
-                                 -1,
-                                 700,
-                                 500,
-                                 &"Sodium").unwrap();
+        let window = Window::new(-1, -1, 700, 500, &"Sodium").unwrap();
 
         let mut editor = Editor {
             current_cursor: 0,

@@ -96,9 +96,9 @@ impl FromStr for bool {
     #[inline]
     fn from_str(s: &str) -> Result<bool, ParseBoolError> {
         match s {
-            "true"  => Ok(true),
+            "true" => Ok(true),
             "false" => Ok(false),
-            _       => Err(ParseBoolError { _priv: () }),
+            _ => Err(ParseBoolError { _priv: () }),
         }
     }
 }
@@ -106,7 +106,9 @@ impl FromStr for bool {
 /// An error returned when parsing a `bool` from a string fails.
 #[derive(Debug, Clone, PartialEq)]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct ParseBoolError { _priv: () }
+pub struct ParseBoolError {
+    _priv: (),
+}
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl fmt::Display for ParseBoolError {
@@ -115,9 +117,9 @@ impl fmt::Display for ParseBoolError {
     }
 }
 
-/*
-Section: Creating a string
-*/
+//
+// Section: Creating a string
+//
 
 /// Errors which can occur when attempting to interpret a sequence of `u8`
 /// as a string.
@@ -156,7 +158,9 @@ impl Utf8Error {
     /// assert_eq!(1, error.valid_up_to());
     /// ```
     #[stable(feature = "utf8_error", since = "1.5.0")]
-    pub fn valid_up_to(&self) -> usize { self.valid_up_to }
+    pub fn valid_up_to(&self) -> usize {
+        self.valid_up_to
+    }
 }
 
 /// Converts a slice of bytes to a string slice.
@@ -277,13 +281,15 @@ pub unsafe fn from_utf8_unchecked(v: &[u8]) -> &str {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl fmt::Display for Utf8Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "invalid utf-8: invalid byte near index {}", self.valid_up_to)
+        write!(f,
+               "invalid utf-8: invalid byte near index {}",
+               self.valid_up_to)
     }
 }
 
-/*
-Section: Iterators
-*/
+//
+// Section: Iterators
+//
 
 /// Iterator for the char (representing *Unicode Scalar Values*) of a string
 ///
@@ -291,23 +297,29 @@ Section: Iterators
 #[derive(Clone)]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub struct Chars<'a> {
-    iter: slice::Iter<'a, u8>
+    iter: slice::Iter<'a, u8>,
 }
 
 /// Return the initial codepoint accumulator for the first byte.
 /// The first byte is special, only want bottom 5 bits for width 2, 4 bits
 /// for width 3, and 3 bits for width 4.
 #[inline]
-fn utf8_first_byte(byte: u8, width: u32) -> u32 { (byte & (0x7F >> width)) as u32 }
+fn utf8_first_byte(byte: u8, width: u32) -> u32 {
+    (byte & (0x7F >> width)) as u32
+}
 
 /// Return the value of `ch` updated with continuation byte `byte`.
 #[inline]
-fn utf8_acc_cont_byte(ch: u32, byte: u8) -> u32 { (ch << 6) | (byte & CONT_MASK) as u32 }
+fn utf8_acc_cont_byte(ch: u32, byte: u8) -> u32 {
+    (ch << 6) | (byte & CONT_MASK) as u32
+}
 
 /// Checks whether the byte is a UTF-8 continuation byte (i.e. starts with the
 /// bits `10`).
 #[inline]
-fn utf8_is_cont_byte(byte: u8) -> bool { (byte & !CONT_MASK) == TAG_CONT_U8 }
+fn utf8_is_cont_byte(byte: u8) -> bool {
+    (byte & !CONT_MASK) == TAG_CONT_U8
+}
 
 #[inline]
 fn unwrap_or_0(opt: Option<&u8>) -> u8 {
@@ -391,9 +403,7 @@ impl<'a> Iterator for Chars<'a> {
     fn next(&mut self) -> Option<char> {
         next_code_point(&mut self.iter).map(|ch| {
             // str invariant says `ch` is a valid Unicode Scalar Value
-            unsafe {
-                char::from_u32_unchecked(ch)
-            }
+            unsafe { char::from_u32_unchecked(ch) }
         })
     }
 
@@ -413,9 +423,7 @@ impl<'a> DoubleEndedIterator for Chars<'a> {
     fn next_back(&mut self) -> Option<char> {
         next_code_point_reverse(&mut self.iter).map(|ch| {
             // str invariant says `ch` is a valid Unicode Scalar Value
-            unsafe {
-                char::from_u32_unchecked(ch)
-            }
+            unsafe { char::from_u32_unchecked(ch) }
         })
     }
 }
@@ -733,7 +741,9 @@ impl<'a, P: Pattern<'a>> SplitInternal<'a, P> {
 
     #[inline]
     fn next(&mut self) -> Option<&'a str> {
-        if self.finished { return None }
+        if self.finished {
+            return None;
+        }
 
         let haystack = self.matcher.haystack();
         match self.matcher.next_match() {
@@ -750,13 +760,17 @@ impl<'a, P: Pattern<'a>> SplitInternal<'a, P> {
     fn next_back(&mut self) -> Option<&'a str>
         where P::Searcher: ReverseSearcher<'a>
     {
-        if self.finished { return None }
+        if self.finished {
+            return None;
+        }
 
         if !self.allow_trailing_empty {
             self.allow_trailing_empty = true;
             match self.next_back() {
                 Some(elt) if !elt.is_empty() => return Some(elt),
-                _ => if self.finished { return None }
+                _ => if self.finished {
+                    return None;
+                },
             }
         }
 
@@ -818,8 +832,14 @@ impl<'a, P: Pattern<'a>> SplitNInternal<'a, P> {
     fn next(&mut self) -> Option<&'a str> {
         match self.count {
             0 => None,
-            1 => { self.count = 0; self.iter.get_end() }
-            _ => { self.count -= 1; self.iter.next() }
+            1 => {
+                self.count = 0;
+                self.iter.get_end()
+            }
+            _ => {
+                self.count -= 1;
+                self.iter.next()
+            }
         }
     }
 
@@ -829,8 +849,14 @@ impl<'a, P: Pattern<'a>> SplitNInternal<'a, P> {
     {
         match self.count {
             0 => None,
-            1 => { self.count = 0; self.iter.get_end() }
-            _ => { self.count -= 1; self.iter.next_back() }
+            1 => {
+                self.count = 0;
+                self.iter.get_end()
+            }
+            _ => {
+                self.count -= 1;
+                self.iter.next_back()
+            }
         }
     }
 }
@@ -858,18 +884,18 @@ struct MatchIndicesInternal<'a, P: Pattern<'a>>(P::Searcher);
 impl<'a, P: Pattern<'a>> MatchIndicesInternal<'a, P> {
     #[inline]
     fn next(&mut self) -> Option<(usize, &'a str)> {
-        self.0.next_match().map(|(start, end)| unsafe {
-            (start, self.0.haystack().slice_unchecked(start, end))
-        })
+        self.0
+            .next_match()
+            .map(|(start, end)| unsafe { (start, self.0.haystack().slice_unchecked(start, end)) })
     }
 
     #[inline]
     fn next_back(&mut self) -> Option<(usize, &'a str)>
         where P::Searcher: ReverseSearcher<'a>
     {
-        self.0.next_match_back().map(|(start, end)| unsafe {
-            (start, self.0.haystack().slice_unchecked(start, end))
-        })
+        self.0
+            .next_match_back()
+            .map(|(start, end)| unsafe { (start, self.0.haystack().slice_unchecked(start, end)) })
     }
 }
 
@@ -970,8 +996,11 @@ impl<'a> Fn<(&'a str,)> for LinesAnyMap {
     #[inline]
     extern "rust-call" fn call(&self, (line,): (&'a str,)) -> &'a str {
         let l = line.len();
-        if l > 0 && line.as_bytes()[l - 1] == b'\r' { &line[0 .. l - 1] }
-        else { line }
+        if l > 0 && line.as_bytes()[l - 1] == b'\r' {
+            &line[0..l - 1]
+        } else {
+            line
+        }
     }
 }
 
@@ -1016,9 +1045,9 @@ impl<'a> DoubleEndedIterator for LinesAny<'a> {
     }
 }
 
-/*
-Section: Comparing strings
-*/
+//
+// Section: Comparing strings
+//
 
 /// Bytewise slice equality
 /// NOTE: This function is (ab)used in rustc::middle::trans::_match
@@ -1036,21 +1065,22 @@ fn eq_slice(a: &str, b: &str) -> bool {
 unsafe fn cmp_slice(a: &str, b: &str, len: usize) -> i32 {
     // NOTE: In theory n should be libc::size_t and not usize, but libc is not available here
     #[allow(improper_ctypes)]
-    extern { fn memcmp(s1: *const i8, s2: *const i8, n: usize) -> i32; }
+    extern {
+        fn memcmp(s1: *const i8, s2: *const i8, n: usize) -> i32;
+    }
     memcmp(a.as_ptr() as *const i8, b.as_ptr() as *const i8, len)
 }
 
-/*
-Section: Misc
-*/
+//
+// Section: Misc
+//
 
 /// Walk through `iter` checking that it's a valid UTF-8 sequence,
 /// returning `true` in that case, or, if it is invalid, `false` with
 /// `iter` reset such that it is pointing at the first byte in the
 /// invalid sequence.
 #[inline(always)]
-fn run_utf8_validation_iterator(iter: &mut slice::Iter<u8>)
-                                -> Result<(), Utf8Error> {
+fn run_utf8_validation_iterator(iter: &mut slice::Iter<u8>) -> Result<(), Utf8Error> {
     let whole = iter.as_slice();
     loop {
         // save the current thing we're pointing at.
@@ -1076,7 +1106,7 @@ fn run_utf8_validation_iterator(iter: &mut slice::Iter<u8>)
             Some(&b) => b,
             // we're at the end of the iterator and a codepoint
             // boundary at the same time, so this string is valid.
-            None => return Ok(())
+            None => return Ok(()),
         };
 
         // ASCII characters are always valid, so only large
@@ -1103,49 +1133,49 @@ fn run_utf8_validation_iterator(iter: &mut slice::Iter<u8>)
             // UTF8-4      = %xF0 %x90-BF 2( UTF8-tail ) / %xF1-F3 3( UTF8-tail ) /
             //               %xF4 %x80-8F 2( UTF8-tail )
             match w {
-                2 => if second & !CONT_MASK != TAG_CONT_U8 {err!()},
+                2 => if second & !CONT_MASK != TAG_CONT_U8 {
+                    err!()
+                },
                 3 => {
                     match (first, second, next!() & !CONT_MASK) {
-                        (0xE0         , 0xA0 ... 0xBF, TAG_CONT_U8) |
-                        (0xE1 ... 0xEC, 0x80 ... 0xBF, TAG_CONT_U8) |
-                        (0xED         , 0x80 ... 0x9F, TAG_CONT_U8) |
-                        (0xEE ... 0xEF, 0x80 ... 0xBF, TAG_CONT_U8) => {}
-                        _ => err!()
+                        (0xE0, 0xA0...0xBF, TAG_CONT_U8) |
+                        (0xE1...0xEC, 0x80...0xBF, TAG_CONT_U8) |
+                        (0xED, 0x80...0x9F, TAG_CONT_U8) |
+                        (0xEE...0xEF, 0x80...0xBF, TAG_CONT_U8) => {}
+                        _ => err!(),
                     }
                 }
                 4 => {
                     match (first, second, next!() & !CONT_MASK, next!() & !CONT_MASK) {
-                        (0xF0         , 0x90 ... 0xBF, TAG_CONT_U8, TAG_CONT_U8) |
-                        (0xF1 ... 0xF3, 0x80 ... 0xBF, TAG_CONT_U8, TAG_CONT_U8) |
-                        (0xF4         , 0x80 ... 0x8F, TAG_CONT_U8, TAG_CONT_U8) => {}
-                        _ => err!()
+                        (0xF0, 0x90...0xBF, TAG_CONT_U8, TAG_CONT_U8) |
+                        (0xF1...0xF3, 0x80...0xBF, TAG_CONT_U8, TAG_CONT_U8) |
+                        (0xF4, 0x80...0x8F, TAG_CONT_U8, TAG_CONT_U8) => {}
+                        _ => err!(),
                     }
                 }
-                _ => err!()
+                _ => err!(),
             }
         }
     }
 }
 
 // https://tools.ietf.org/html/rfc3629
-static UTF8_CHAR_WIDTH: [u8; 256] = [
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0x1F
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0x3F
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0x5F
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
-1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1, // 0x7F
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0x9F
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, // 0xBF
-0,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
-2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2, // 0xDF
-3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3, // 0xEF
-4,4,4,4,4,0,0,0,0,0,0,0,0,0,0,0, // 0xFF
-];
+static UTF8_CHAR_WIDTH: [u8; 256] = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 /* 0x1F */, 1, 1, 1, 1,
+                                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                     1, 1, 1, 1, 1, 1, 1, 1 /* 0x3F */, 1, 1, 1, 1, 1, 1, 1, 1,
+                                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                     1, 1, 1, 1 /* 0x5F */, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+                                     1 /* 0x7F */, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                     0 /* 0x9F */, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                     0 /* 0xBF */, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                                     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+                                     2 /* 0xDF */, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
+                                     3 /* 0xEF */, 4, 4, 4, 4, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                     0 /* 0xFF */];
 
 /// Struct that contains a `char` and the index of the first byte of
 /// the next `char` in a string.  This can be used as a data structure
@@ -1168,9 +1198,9 @@ const CONT_MASK: u8 = 0b0011_1111;
 /// Value of the tag bits (tag mask is !CONT_MASK) of a continuation byte
 const TAG_CONT_U8: u8 = 0b1000_0000;
 
-/*
-Section: Trait implementations
-*/
+//
+// Section: Trait implementations
+//
 
 mod traits {
     use cmp::{self, Ordering, Ord, PartialEq, PartialOrd, Eq};
@@ -1185,9 +1215,7 @@ mod traits {
     impl Ord for str {
         #[inline]
         fn cmp(&self, other: &str) -> Ordering {
-            let cmp = unsafe {
-                super::cmp_slice(self, other, cmp::min(self.len(), other.len()))
-            };
+            let cmp = unsafe { super::cmp_slice(self, other, cmp::min(self.len(), other.len())) };
             if cmp == 0 {
                 self.len().cmp(&other.len())
             } else if cmp < 0 {
@@ -1205,7 +1233,9 @@ mod traits {
             eq_slice(self, other)
         }
         #[inline]
-        fn ne(&self, other: &str) -> bool { !(*self).eq(other) }
+        fn ne(&self, other: &str) -> bool {
+            !(*self).eq(other)
+        }
     }
 
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -1251,8 +1281,7 @@ mod traits {
         #[inline]
         fn index(&self, index: ops::Range<usize>) -> &str {
             // is_char_boundary checks that the index is in [0, .len()]
-            if index.start <= index.end &&
-               self.is_char_boundary(index.start) &&
+            if index.start <= index.end && self.is_char_boundary(index.start) &&
                self.is_char_boundary(index.end) {
                 unsafe { self.slice_unchecked(index.start, index.end) }
             } else {
@@ -1268,8 +1297,7 @@ mod traits {
         #[inline]
         fn index_mut(&mut self, index: ops::Range<usize>) -> &mut str {
             // is_char_boundary checks that the index is in [0, .len()]
-            if index.start <= index.end &&
-               self.is_char_boundary(index.start) &&
+            if index.start <= index.end && self.is_char_boundary(index.start) &&
                self.is_char_boundary(index.end) {
                 unsafe { self.slice_mut_unchecked(index.start, index.end) }
             } else {
@@ -1386,20 +1414,15 @@ pub trait StrExt {
     fn bytes(&self) -> Bytes;
     fn char_indices(&self) -> CharIndices;
     fn split<'a, P: Pattern<'a>>(&'a self, pat: P) -> Split<'a, P>;
-    fn rsplit<'a, P: Pattern<'a>>(&'a self, pat: P) -> RSplit<'a, P>
-        where P::Searcher: ReverseSearcher<'a>;
+    fn rsplit<'a, P: Pattern<'a>>(&'a self, pat: P) -> RSplit<'a, P> where P::Searcher: ReverseSearcher<'a>;
     fn splitn<'a, P: Pattern<'a>>(&'a self, count: usize, pat: P) -> SplitN<'a, P>;
-    fn rsplitn<'a, P: Pattern<'a>>(&'a self, count: usize, pat: P) -> RSplitN<'a, P>
-        where P::Searcher: ReverseSearcher<'a>;
+    fn rsplitn<'a, P: Pattern<'a>>(&'a self, count: usize, pat: P) -> RSplitN<'a, P> where P::Searcher: ReverseSearcher<'a>;
     fn split_terminator<'a, P: Pattern<'a>>(&'a self, pat: P) -> SplitTerminator<'a, P>;
-    fn rsplit_terminator<'a, P: Pattern<'a>>(&'a self, pat: P) -> RSplitTerminator<'a, P>
-        where P::Searcher: ReverseSearcher<'a>;
+    fn rsplit_terminator<'a, P: Pattern<'a>>(&'a self, pat: P) -> RSplitTerminator<'a, P> where P::Searcher: ReverseSearcher<'a>;
     fn matches<'a, P: Pattern<'a>>(&'a self, pat: P) -> Matches<'a, P>;
-    fn rmatches<'a, P: Pattern<'a>>(&'a self, pat: P) -> RMatches<'a, P>
-        where P::Searcher: ReverseSearcher<'a>;
+    fn rmatches<'a, P: Pattern<'a>>(&'a self, pat: P) -> RMatches<'a, P> where P::Searcher: ReverseSearcher<'a>;
     fn match_indices<'a, P: Pattern<'a>>(&'a self, pat: P) -> MatchIndices<'a, P>;
-    fn rmatch_indices<'a, P: Pattern<'a>>(&'a self, pat: P) -> RMatchIndices<'a, P>
-        where P::Searcher: ReverseSearcher<'a>;
+    fn rmatch_indices<'a, P: Pattern<'a>>(&'a self, pat: P) -> RMatchIndices<'a, P> where P::Searcher: ReverseSearcher<'a>;
     fn lines(&self) -> Lines;
     #[allow(deprecated)]
     fn lines_any(&self) -> LinesAny;
@@ -1408,13 +1431,10 @@ pub trait StrExt {
     unsafe fn slice_unchecked(&self, begin: usize, end: usize) -> &str;
     unsafe fn slice_mut_unchecked(&mut self, begin: usize, end: usize) -> &mut str;
     fn starts_with<'a, P: Pattern<'a>>(&'a self, pat: P) -> bool;
-    fn ends_with<'a, P: Pattern<'a>>(&'a self, pat: P) -> bool
-        where P::Searcher: ReverseSearcher<'a>;
-    fn trim_matches<'a, P: Pattern<'a>>(&'a self, pat: P) -> &'a str
-        where P::Searcher: DoubleEndedSearcher<'a>;
+    fn ends_with<'a, P: Pattern<'a>>(&'a self, pat: P) -> bool where P::Searcher: ReverseSearcher<'a>;
+    fn trim_matches<'a, P: Pattern<'a>>(&'a self, pat: P) -> &'a str where P::Searcher: DoubleEndedSearcher<'a>;
     fn trim_left_matches<'a, P: Pattern<'a>>(&'a self, pat: P) -> &'a str;
-    fn trim_right_matches<'a, P: Pattern<'a>>(&'a self, pat: P) -> &'a str
-        where P::Searcher: ReverseSearcher<'a>;
+    fn trim_right_matches<'a, P: Pattern<'a>>(&'a self, pat: P) -> &'a str where P::Searcher: ReverseSearcher<'a>;
     fn is_char_boundary(&self, index: usize) -> bool;
     fn char_range_at(&self, start: usize) -> CharRange;
     fn char_range_at_reverse(&self, start: usize) -> CharRange;
@@ -1422,8 +1442,7 @@ pub trait StrExt {
     fn char_at_reverse(&self, i: usize) -> char;
     fn as_bytes(&self) -> &[u8];
     fn find<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<usize>;
-    fn rfind<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<usize>
-        where P::Searcher: ReverseSearcher<'a>;
+    fn rfind<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<usize> where P::Searcher: ReverseSearcher<'a>;
     fn find_str<'a, P: Pattern<'a>>(&'a self, pat: P) -> Option<usize>;
     fn split_at(&self, mid: usize) -> (&str, &str);
     fn split_at_mut(&mut self, mid: usize) -> (&mut str, &mut str);
@@ -1439,7 +1458,9 @@ pub trait StrExt {
 fn slice_error_fail(s: &str, begin: usize, end: usize) -> ! {
     assert!(begin <= end);
     panic!("index {} and/or {} in `{}` do not lie on character boundary",
-          begin, end, s);
+           begin,
+           end,
+           s);
 }
 
 impl StrExt for str {
@@ -1455,7 +1476,7 @@ impl StrExt for str {
 
     #[inline]
     fn chars(&self) -> Chars {
-        Chars{iter: self.as_bytes().iter()}
+        Chars { iter: self.as_bytes().iter() }
     }
 
     #[inline]
@@ -1465,7 +1486,10 @@ impl StrExt for str {
 
     #[inline]
     fn char_indices(&self) -> CharIndices {
-        CharIndices { front_offset: 0, iter: self.chars() }
+        CharIndices {
+            front_offset: 0,
+            iter: self.chars(),
+        }
     }
 
     #[inline]
@@ -1503,10 +1527,7 @@ impl StrExt for str {
 
     #[inline]
     fn split_terminator<'a, P: Pattern<'a>>(&'a self, pat: P) -> SplitTerminator<'a, P> {
-        SplitTerminator(SplitInternal {
-            allow_trailing_empty: false,
-            ..self.split(pat).0
-        })
+        SplitTerminator(SplitInternal { allow_trailing_empty: false, ..self.split(pat).0 })
     }
 
     #[inline]
@@ -1551,7 +1572,9 @@ impl StrExt for str {
     }
 
     #[inline]
-    fn char_len(&self) -> usize { self.chars().count() }
+    fn char_len(&self) -> usize {
+        self.chars().count()
+    }
 
     fn slice_chars(&self, begin: usize, end: usize) -> &str {
         assert!(begin <= end);
@@ -1562,17 +1585,26 @@ impl StrExt for str {
         // This could be even more efficient by not decoding,
         // only finding the char boundaries
         for (idx, _) in self.char_indices() {
-            if count == begin { begin_byte = Some(idx); }
-            if count == end { end_byte = Some(idx); break; }
+            if count == begin {
+                begin_byte = Some(idx);
+            }
+            if count == end {
+                end_byte = Some(idx);
+                break;
+            }
             count += 1;
         }
-        if begin_byte.is_none() && count == begin { begin_byte = Some(self.len()) }
-        if end_byte.is_none() && count == end { end_byte = Some(self.len()) }
+        if begin_byte.is_none() && count == begin {
+            begin_byte = Some(self.len())
+        }
+        if end_byte.is_none() && count == end {
+            end_byte = Some(self.len())
+        }
 
         match (begin_byte, end_byte) {
             (None, _) => panic!("slice_chars: `begin` is beyond end of string"),
             (_, None) => panic!("slice_chars: `end` is beyond end of string"),
-            (Some(a), Some(b)) => unsafe { self.slice_unchecked(a, b) }
+            (Some(a), Some(b)) => unsafe { self.slice_unchecked(a, b) },
         }
     }
 
@@ -1655,7 +1687,9 @@ impl StrExt for str {
 
     #[inline]
     fn is_char_boundary(&self, index: usize) -> bool {
-        if index == self.len() { return true; }
+        if index == self.len() {
+            return true;
+        }
         match self.as_bytes().get(index) {
             None => false,
             Some(&b) => b < 128 || b >= 192,
@@ -1665,7 +1699,10 @@ impl StrExt for str {
     #[inline]
     fn char_range_at(&self, i: usize) -> CharRange {
         let (c, n) = char_range_at_raw(self.as_bytes(), i);
-        CharRange { ch: unsafe { char::from_u32_unchecked(c) }, next: n }
+        CharRange {
+            ch: unsafe { char::from_u32_unchecked(c) },
+            next: n,
+        }
     }
 
     #[inline]
@@ -1674,7 +1711,10 @@ impl StrExt for str {
 
         prev = prev.saturating_sub(1);
         if self.as_bytes()[prev] < 128 {
-            return CharRange{ch: self.as_bytes()[prev] as char, next: prev}
+            return CharRange {
+                ch: self.as_bytes()[prev] as char,
+                next: prev,
+            };
         }
 
         // Multibyte case is a fn to allow char_range_at_reverse to inline cleanly
@@ -1684,16 +1724,23 @@ impl StrExt for str {
                 i -= 1;
             }
 
-            let first= s.as_bytes()[i];
+            let first = s.as_bytes()[i];
             let w = UTF8_CHAR_WIDTH[first as usize];
             assert!(w != 0);
 
             let mut val = utf8_first_byte(first, w as u32);
             val = utf8_acc_cont_byte(val, s.as_bytes()[i + 1]);
-            if w > 2 { val = utf8_acc_cont_byte(val, s.as_bytes()[i + 2]); }
-            if w > 3 { val = utf8_acc_cont_byte(val, s.as_bytes()[i + 3]); }
+            if w > 2 {
+                val = utf8_acc_cont_byte(val, s.as_bytes()[i + 2]);
+            }
+            if w > 3 {
+                val = utf8_acc_cont_byte(val, s.as_bytes()[i + 3]);
+            }
 
-            CharRange {ch: unsafe { char::from_u32_unchecked(val) }, next: i}
+            CharRange {
+                ch: unsafe { char::from_u32_unchecked(val) },
+                next: i,
+            }
         }
 
         multibyte_char_range_at_reverse(self, prev)
@@ -1782,13 +1829,19 @@ impl StrExt for str {
     }
 
     #[inline]
-    fn len(&self) -> usize { self.repr().len }
+    fn len(&self) -> usize {
+        self.repr().len
+    }
 
     #[inline]
-    fn is_empty(&self) -> bool { self.len() == 0 }
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     #[inline]
-    fn parse<T: FromStr>(&self) -> Result<T, T::Err> { FromStr::from_str(self) }
+    fn parse<T: FromStr>(&self) -> Result<T, T::Err> {
+        FromStr::from_str(self)
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -1815,8 +1868,12 @@ fn char_range_at_raw(bytes: &[u8], i: usize) -> (u32, usize) {
 
         let mut val = utf8_first_byte(first, w as u32);
         val = utf8_acc_cont_byte(val, bytes[i + 1]);
-        if w > 2 { val = utf8_acc_cont_byte(val, bytes[i + 2]); }
-        if w > 3 { val = utf8_acc_cont_byte(val, bytes[i + 3]); }
+        if w > 2 {
+            val = utf8_acc_cont_byte(val, bytes[i + 2]);
+        }
+        if w > 3 {
+            val = utf8_acc_cont_byte(val, bytes[i + 3]);
+        }
 
         (val, i + w as usize)
     }
@@ -1826,5 +1883,7 @@ fn char_range_at_raw(bytes: &[u8], i: usize) -> (u32, usize) {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a> Default for &'a str {
-    fn default() -> &'a str { "" }
+    fn default() -> &'a str {
+        ""
+    }
 }

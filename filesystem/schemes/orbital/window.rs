@@ -116,12 +116,10 @@ impl Window {
             display.rect(Point::new(self.point.x - 2, self.point.y),
                          Size::new(2, self.size.height),
                          self.border_color);
-            display.rect(Point::new(self.point.x - 2,
-                                    self.point.y + self.size.height as isize),
+            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize),
                          Size::new(self.size.width + 4, 2),
                          self.border_color);
-            display.rect(Point::new(self.point.x + self.size.width as isize,
-                                    self.point.y),
+            display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y),
                          Size::new(2, self.size.height),
                          self.border_color);
 
@@ -145,17 +143,12 @@ impl Window {
     }
 
     fn on_window_decoration(&self, x: isize, y: isize) -> bool {
-        !self.minimized && x >= -2 &&
-            x < self.size.width as isize + 4 &&
-            y >= -18 &&
-            y < 0
+        !self.minimized && x >= -2 && x < self.size.width as isize + 4 && y >= -18 && y < 0
     }
 
     fn on_window_body(&self, x: isize, y: isize) -> bool {
-        !self.minimized && x >= 0 &&
-            x < self.size.width as isize &&
-            y >= 0 &&
-            y < self.size.height as isize
+        !self.minimized && x >= 0 && x < self.size.width as isize && y >= 0 &&
+        y < self.size.height as isize
     }
 
     /// Called on mouse movement
@@ -171,7 +164,7 @@ impl Window {
             if mouse_event.left_button {
                 if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
-                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                } else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
                     if !self.last_mouse_event.left_button {
                         self.dragging = true;
@@ -184,7 +177,7 @@ impl Window {
             if mouse_event.right_button {
                 if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
-                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                } else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
                     if !self.last_mouse_event.right_button {
                         self.minimized = !self.minimized;
@@ -195,7 +188,7 @@ impl Window {
             if mouse_event.middle_button {
                 if self.on_window_body(mouse_event.x, mouse_event.y) {
                     caught = true;
-                }else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+                } else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
                     caught = true;
                     unsafe {
                         let reenable = scheduler::start_no_ints();

@@ -63,9 +63,7 @@ impl Permission {
             ComponentType::Except => Component::Except(PermissionUnit::from_str(&cur)),
         });
 
-        Permission {
-            components: comps,
-        }
+        Permission { components: comps }
     }
 
     /// Test if this permission unit is allowed
@@ -91,7 +89,7 @@ impl Permission {
                         if x.write_foc() {
                             write_foc = true;
                         }
-                    },
+                    }
 
                     Component::Except(ref x) => {
                         if x.read() {
@@ -111,9 +109,8 @@ impl Permission {
             }
         }
 
-        (!read || unit.read())
-            && (!write || unit.write())
-            && (!(read || read_foc) || unit.read_foc())
-            && (!(write || write_foc) || unit.write_foc())
+        (!read || unit.read()) && (!write || unit.write()) &&
+        (!(read || read_foc) || unit.read_foc()) &&
+        (!(write || write_foc) || unit.write_foc())
     }
 }

@@ -32,8 +32,7 @@ pub fn main() {
                 match &a_command[..] {
                     command if command == console_commands[0] =>
                         unsafe { sys_exit(0); },
-                    command if command == console_commands[1] =>
-                        panic!("Test panic"),
+                    command if command == console_commands[1] => panic!("Test panic"),
                     command if command == console_commands[2] => {
                         for entry in fs::read_dir("file:///").unwrap() {
                             println!("{}", entry.path());
@@ -41,11 +40,15 @@ pub fn main() {
                     }
                     command if command == console_commands[3] => {
                         let a_ptr = rand() as *mut u8;
-                        unsafe { ptr::write(a_ptr, rand() as u8); }
+                        unsafe {
+                            ptr::write(a_ptr, rand() as u8);
+                        }
                     }
                     command if command == console_commands[4] => {
                         let a_box = Box::new(rand() as u8);
-                        unsafe { ptr::write(Box::into_raw(a_box), rand() as u8); }
+                        unsafe {
+                            ptr::write(Box::into_raw(a_box), rand() as u8);
+                        }
                     }
                     command if command == console_commands[5] => {
                         unsafe {
@@ -77,7 +80,7 @@ pub fn main() {
                         println!("Parent after spawn: {}", parent_message);
                         match handle.join() {
                             Some(child_message) => println!("Parent after join: {}", child_message),
-                            None => println!("Failed to join")
+                            None => println!("Failed to join"),
                         }
                     }
                     command if command == console_commands[8] => {
@@ -97,7 +100,7 @@ pub fn main() {
                     _ => println!("Commands: {}", console_commands.join(" ")),
                 }
             }
-        }else{
+        } else {
             println!("Failed to read line from stdin");
         }
     }
