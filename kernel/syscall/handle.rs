@@ -51,8 +51,9 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
 
     let reenable = scheduler::start_no_ints();
 
-    if ::console as usize > 0 {
-        (*::console).write(bytes);
+    if ::console_ptr as usize > 0 {
+        let mut console = unsafe { &mut *::console_ptr }.lock();
+        console.write(bytes);
     }
 
     let serial_status = Pio8::new(0x3F8 + 5);

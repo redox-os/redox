@@ -35,21 +35,19 @@ impl Resource for DebugResource {
 
         if self.command.is_empty() {
             loop {
-                unsafe {
-                    let reenable = scheduler::start_no_ints();
+                {
+                    let mut console = unsafe { &mut *::console_ptr }.lock();
 
-                    if (*::console).command.is_some() {
-                        if let Some(ref command) = (*::console).command {
+                    if console.command.is_some() {
+                        if let Some(ref command) = console.command {
                             self.command = command.clone();
                         }
-                        (*::console).command = None;
+                        console.command = None;
                         break;
                     }
-
-                    scheduler::end_no_ints(reenable);
-
-                    context_switch(false);
                 }
+
+                unsafe { context_switch(false) };
             }
         }
 

@@ -24,8 +24,8 @@ pub struct VBEModeInfo {
     segment_b: u16,
     winfuncptr: u32,
     bytesperscanline: u16,
-    xresolution: u16,
-    yresolution: u16,
+    pub xresolution: u16,
+    pub yresolution: u16,
     xcharsize: u8,
     ycharsize: u8,
     numberofplanes: u8,
@@ -49,7 +49,7 @@ pub struct VBEModeInfo {
     offscreenmemsize: u16,
 }
 
-const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
+pub const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
 
 pub static mut fonts: usize = 0;
 

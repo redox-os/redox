@@ -52,13 +52,8 @@ impl Event {
 
     /// Event trigger
     pub fn trigger(&self) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-
-            (*::events_ptr).push_back(*self);
-
-            scheduler::end_no_ints(reenable);
-        }
+        let mut events = unsafe{ &mut *::events_ptr }.lock();
+        events.push_back(*self);
     }
 }
 
