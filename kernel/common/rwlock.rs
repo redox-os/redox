@@ -29,7 +29,7 @@ impl<T> RwLock<T> {
 }
 
 impl<T: ?Sized> RwLock<T> {
-    /// Lock the mutex
+    /// Lock for read
     pub fn read(&self) -> RwLockReadGuard<T> {
         loop {
             {
@@ -44,6 +44,7 @@ impl<T: ?Sized> RwLock<T> {
         RwLockReadGuard::new(&self.inner, &self.value)
     }
 
+    /// Lock for write
     pub fn write(&self) -> RwLockWriteGuard<T> {
         loop {
             {
@@ -69,8 +70,8 @@ pub struct RwLockReadGuard<'a, T: ?Sized + 'a> {
     data: &'a UnsafeCell<T>,
 }
 
-impl<'mutex, T: ?Sized> RwLockReadGuard<'mutex, T> {
-    fn new(inner: &'mutex Mutex<RwLockInner>, data: &'mutex UnsafeCell<T>) -> Self {
+impl<'rwlock, T: ?Sized> RwLockReadGuard<'rwlock, T> {
+    fn new(inner: &'rwlock Mutex<RwLockInner>, data: &'rwlock UnsafeCell<T>) -> Self {
         RwLockReadGuard {
             inner: inner,
             data: data,
@@ -78,7 +79,7 @@ impl<'mutex, T: ?Sized> RwLockReadGuard<'mutex, T> {
     }
 }
 
-impl<'mutex, T: ?Sized> Deref for RwLockReadGuard<'mutex, T> {
+impl<'rwlock, T: ?Sized> Deref for RwLockReadGuard<'rwlock, T> {
     type Target = T;
 
     fn deref<'a>(&'a self) -> &'a T {
@@ -100,8 +101,8 @@ pub struct RwLockWriteGuard<'a, T: ?Sized + 'a> {
     data: &'a UnsafeCell<T>,
 }
 
-impl<'mutex, T: ?Sized> RwLockWriteGuard<'mutex, T> {
-    fn new(inner: &'mutex Mutex<RwLockInner>, data: &'mutex UnsafeCell<T>) -> Self {
+impl<'rwlock, T: ?Sized> RwLockWriteGuard<'rwlock, T> {
+    fn new(inner: &'rwlock Mutex<RwLockInner>, data: &'rwlock UnsafeCell<T>) -> Self {
         RwLockWriteGuard {
             inner: inner,
             data: data,
@@ -109,7 +110,7 @@ impl<'mutex, T: ?Sized> RwLockWriteGuard<'mutex, T> {
     }
 }
 
-impl<'mutex, T: ?Sized> Deref for RwLockWriteGuard<'mutex, T> {
+impl<'rwlock, T: ?Sized> Deref for RwLockWriteGuard<'rwlock, T> {
     type Target = T;
 
     fn deref<'a>(&'a self) -> &'a T {
@@ -117,7 +118,7 @@ impl<'mutex, T: ?Sized> Deref for RwLockWriteGuard<'mutex, T> {
     }
 }
 
-impl<'mutex, T: ?Sized> DerefMut for RwLockWriteGuard<'mutex, T> {
+impl<'rwlock, T: ?Sized> DerefMut for RwLockWriteGuard<'rwlock, T> {
     fn deref_mut<'a>(&'a mut self) -> &'a mut T {
         unsafe { &mut *self.data.get() }
     }
