@@ -250,9 +250,7 @@ pub unsafe fn zeroed<T>() -> T {
 #[unstable(feature = "filling_drop", issue = "5016")]
 pub unsafe fn dropped<T>() -> T {
     #[inline(always)]
-    unsafe fn dropped_impl<T>() -> T {
-        intrinsics::init_dropped()
-    }
+    unsafe fn dropped_impl<T>() -> T { intrinsics::init_dropped() }
 
     dropped_impl()
 }
@@ -510,8 +508,7 @@ pub fn replace<T>(dest: &mut T, mut src: T) -> T {
 ///
 #[inline]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub fn drop<T>(_x: T) {
-}
+pub fn drop<T>(_x: T) { }
 
 macro_rules! repeat_u8_as_u32 {
     ($name:expr) => { (($name as u32) << 24 |

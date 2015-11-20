@@ -86,7 +86,7 @@ pub enum SearchStep {
     Reject(usize, usize),
     /// Expresses that every byte of the haystack has been visted, ending
     /// the iteration.
-    Done,
+    Done
 }
 
 /// A searcher for a string pattern.
@@ -189,7 +189,7 @@ pub unsafe trait ReverseSearcher<'a>: Searcher<'a> {
 
     /// Find the next `Match` result. See `next_back()`
     #[inline]
-    fn next_match_back(&mut self) -> Option<(usize, usize)> {
+    fn next_match_back(&mut self) -> Option<(usize, usize)>{
         loop {
             match self.next_back() {
                 SearchStep::Match(a, b) => return Some((a, b)),
@@ -201,7 +201,7 @@ pub unsafe trait ReverseSearcher<'a>: Searcher<'a> {
 
     /// Find the next `Reject` result. See `next_back()`
     #[inline]
-    fn next_reject_back(&mut self) -> Option<(usize, usize)> {
+    fn next_reject_back(&mut self) -> Option<(usize, usize)>{
         loop {
             match self.next_back() {
                 SearchStep::Reject(a, b) => return Some((a, b)),
@@ -235,9 +235,10 @@ pub unsafe trait ReverseSearcher<'a>: Searcher<'a> {
 /// `"[aa]a"` or `"a[aa]"`, depending from which side it is searched.
 pub trait DoubleEndedSearcher<'a>: ReverseSearcher<'a> {}
 
-/// //////////////////////////////////////////////////////////////////////////
-/// Impl for a CharEq wrapper
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// Impl for a CharEq wrapper
+/////////////////////////////////////////////////////////////////////////////
+
 #[doc(hidden)]
 trait CharEq {
     fn matches(&mut self, char) -> bool;
@@ -246,35 +247,24 @@ trait CharEq {
 
 impl CharEq for char {
     #[inline]
-    fn matches(&mut self, c: char) -> bool {
-        *self == c
-    }
+    fn matches(&mut self, c: char) -> bool { *self == c }
 
     #[inline]
-    fn only_ascii(&self) -> bool {
-        (*self as u32) < 128
-    }
+    fn only_ascii(&self) -> bool { (*self as u32) < 128 }
 }
 
 impl<F> CharEq for F where F: FnMut(char) -> bool {
     #[inline]
-    fn matches(&mut self, c: char) -> bool {
-        (*self)(c)
-    }
+    fn matches(&mut self, c: char) -> bool { (*self)(c) }
 
     #[inline]
-    fn only_ascii(&self) -> bool {
-        false
-    }
+    fn only_ascii(&self) -> bool { false }
 }
 
 impl<'a> CharEq for &'a [char] {
     #[inline]
     fn matches(&mut self, c: char) -> bool {
-        self.iter().any(|&m| {
-            let mut m = m;
-            m.matches(c)
-        })
+        self.iter().any(|&m| { let mut m = m; m.matches(c) })
     }
 
     #[inline]
@@ -420,9 +410,9 @@ macro_rules! searcher_methods {
     }
 }
 
-/// //////////////////////////////////////////////////////////////////////////
-/// Impl for char
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// Impl for char
+/////////////////////////////////////////////////////////////////////////////
 
 /// Associated type for `<char as Pattern<'a>>::Searcher`.
 #[derive(Clone)]
@@ -468,9 +458,9 @@ impl<'a, 'b> Pattern<'a> for &'b [char] {
     pattern_methods!(CharSliceSearcher<'a, 'b>, CharEqPattern, CharSliceSearcher);
 }
 
-/// //////////////////////////////////////////////////////////////////////////
-/// Impl for F: FnMut(char) -> bool
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// Impl for F: FnMut(char) -> bool
+/////////////////////////////////////////////////////////////////////////////
 
 /// Associated type for `<F as Pattern<'a>>::Searcher`.
 #[derive(Clone)]
@@ -525,21 +515,24 @@ impl<'a, 'b> Pattern<'a> for &'b str {
     /// Checks whether the pattern matches at the front of the haystack
     #[inline]
     fn is_prefix_of(self, haystack: &'a str) -> bool {
-        haystack.is_char_boundary(self.len()) && self == &haystack[..self.len()]
+        haystack.is_char_boundary(self.len()) &&
+            self == &haystack[..self.len()]
     }
 
     /// Checks whether the pattern matches at the back of the haystack
     #[inline]
     fn is_suffix_of(self, haystack: &'a str) -> bool {
-        self.len() <= haystack.len() && haystack.is_char_boundary(haystack.len() - self.len()) &&
-        self == &haystack[haystack.len() - self.len()..]
+        self.len() <= haystack.len() &&
+            haystack.is_char_boundary(haystack.len() - self.len()) &&
+            self == &haystack[haystack.len() - self.len()..]
     }
 }
 
 
-/// //////////////////////////////////////////////////////////////////////////
-/// Two Way substring searcher
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// Two Way substring searcher
+/////////////////////////////////////////////////////////////////////////////
+
 #[derive(Clone, Debug)]
 /// Associated type for `<&str as Pattern<'a>>::Searcher`.
 pub struct StrSearcher<'a, 'b> {
@@ -580,17 +573,16 @@ impl<'a, 'b> StrSearcher<'a, 'b> {
             StrSearcher {
                 haystack: haystack,
                 needle: needle,
-                searcher: StrSearcherImpl::TwoWay(TwoWaySearcher::new(needle.as_bytes(),
-                                                                      haystack.len())),
+                searcher: StrSearcherImpl::TwoWay(
+                    TwoWaySearcher::new(needle.as_bytes(), haystack.len())
+                ),
             }
         }
     }
 }
 
 unsafe impl<'a, 'b> Searcher<'a> for StrSearcher<'a, 'b> {
-    fn haystack(&self) -> &'a str {
-        self.haystack
-    }
+    fn haystack(&self) -> &'a str { self.haystack }
 
     #[inline]
     fn next(&mut self) -> SearchStep {
@@ -621,7 +613,8 @@ unsafe impl<'a, 'b> Searcher<'a> for StrSearcher<'a, 'b> {
                 let is_long = searcher.memory == usize::MAX;
                 match searcher.next::<RejectAndMatch>(self.haystack.as_bytes(),
                                                       self.needle.as_bytes(),
-                                                      is_long) {
+                                                      is_long)
+                {
                     SearchStep::Reject(a, mut b) => {
                         // skip to next char boundary
                         while !self.haystack.is_char_boundary(b) {
@@ -644,7 +637,7 @@ unsafe impl<'a, 'b> Searcher<'a> for StrSearcher<'a, 'b> {
                     match self.next() {
                         SearchStep::Match(a, b) => return Some((a, b)),
                         SearchStep::Done => return None,
-                        SearchStep::Reject(..) => {}
+                        SearchStep::Reject(..) => { }
                     }
                 }
             }
@@ -690,7 +683,8 @@ unsafe impl<'a, 'b> ReverseSearcher<'a> for StrSearcher<'a, 'b> {
                 let is_long = searcher.memory == usize::MAX;
                 match searcher.next_back::<RejectAndMatch>(self.haystack.as_bytes(),
                                                            self.needle.as_bytes(),
-                                                           is_long) {
+                                                           is_long)
+                {
                     SearchStep::Reject(mut a, b) => {
                         // skip to next char boundary
                         while !self.haystack.is_char_boundary(a) {
@@ -713,7 +707,7 @@ unsafe impl<'a, 'b> ReverseSearcher<'a> for StrSearcher<'a, 'b> {
                     match self.next_back() {
                         SearchStep::Match(a, b) => return Some((a, b)),
                         SearchStep::Done => return None,
-                        SearchStep::Reject(..) => {}
+                        SearchStep::Reject(..) => { }
                     }
                 }
             }
@@ -757,89 +751,90 @@ struct TwoWaySearcher {
     memory_back: usize,
 }
 
-//
-// This is the Two-Way search algorithm, which was introduced in the paper:
-// Crochemore, M., Perrin, D., 1991, Two-way string-matching, Journal of the ACM 38(3):651-675.
-//
-// Here's some background information.
-//
-// A *word* is a string of symbols. The *length* of a word should be a familiar
-// notion, and here we denote it for any word x by |x|.
-// (We also allow for the possibility of the *empty word*, a word of length zero).
-//
-// If x is any non-empty word, then an integer p with 0 < p <= |x| is said to be a
-// period* for x iff for all i with 0 <= i <= |x| - p - 1, we have x[i] == x[i+p].
-// For example, both 1 and 2 are periods for the string "aa". As another example,
-// the only period of the string "abcd" is 4.
-//
-// We denote by period(x) the *smallest* period of x (provided that x is non-empty).
-// This is always well-defined since every non-empty word x has at least one period,
-// |x|. We sometimes call this *the period* of x.
-//
-// If u, v and x are words such that x = uv, where uv is the concatenation of u and
-// v, then we say that (u, v) is a *factorization* of x.
-//
-// Let (u, v) be a factorization for a word x. Then if w is a non-empty word such
-// that both of the following hold
-//
-// - either w is a suffix of u or u is a suffix of w
-// - either w is a prefix of v or v is a prefix of w
-//
-// then w is said to be a *repetition* for the factorization (u, v).
-//
-// Just to unpack this, there are four possibilities here. Let w = "abc". Then we
-// might have:
-//
-// - w is a suffix of u and w is a prefix of v. ex: ("lolabc", "abcde")
-// - w is a suffix of u and v is a prefix of w. ex: ("lolabc", "ab")
-// - u is a suffix of w and w is a prefix of v. ex: ("bc", "abchi")
-// - u is a suffix of w and v is a prefix of w. ex: ("bc", "a")
-//
-// Note that the word vu is a repetition for any factorization (u,v) of x = uv,
-// so every factorization has at least one repetition.
-//
-// If x is a string and (u, v) is a factorization for x, then a *local period* for
-// (u, v) is an integer r such that there is some word w such that |w| = r and w is
-// a repetition for (u, v).
-//
-// We denote by local_period(u, v) the smallest local period of (u, v). We sometimes
-// call this *the local period* of (u, v). Provided that x = uv is non-empty, this
-// is well-defined (because each non-empty word has at least one factorization, as
-// noted above).
-//
-// It can be proven that the following is an equivalent definition of a local period
-// for a factorization (u, v): any positive integer r such that x[i] == x[i+r] for
-// all i such that |u| - r <= i <= |u| - 1 and such that both x[i] and x[i+r] are
-// defined. (i.e. i > 0 and i + r < |x|).
-//
-// Using the above reformulation, it is easy to prove that
-//
-// 1 <= local_period(u, v) <= period(uv)
-//
-// A factorization (u, v) of x such that local_period(u,v) = period(x) is called a
-// critical factorization*.
-//
-// The algorithm hinges on the following theorem, which is stated without proof:
-//
-// *Critical Factorization Theorem** Any word x has at least one critical
-// factorization (u, v) such that |u| < period(x).
-//
-// The purpose of maximal_suffix is to find such a critical factorization.
-//
-// If the period is short, compute another factorization x = u' v' to use
-// for reverse search, chosen instead so that |v'| < period(x).
-//
-//
+/*
+    This is the Two-Way search algorithm, which was introduced in the paper:
+    Crochemore, M., Perrin, D., 1991, Two-way string-matching, Journal of the ACM 38(3):651-675.
+
+    Here's some background information.
+
+    A *word* is a string of symbols. The *length* of a word should be a familiar
+    notion, and here we denote it for any word x by |x|.
+    (We also allow for the possibility of the *empty word*, a word of length zero).
+
+    If x is any non-empty word, then an integer p with 0 < p <= |x| is said to be a
+    *period* for x iff for all i with 0 <= i <= |x| - p - 1, we have x[i] == x[i+p].
+    For example, both 1 and 2 are periods for the string "aa". As another example,
+    the only period of the string "abcd" is 4.
+
+    We denote by period(x) the *smallest* period of x (provided that x is non-empty).
+    This is always well-defined since every non-empty word x has at least one period,
+    |x|. We sometimes call this *the period* of x.
+
+    If u, v and x are words such that x = uv, where uv is the concatenation of u and
+    v, then we say that (u, v) is a *factorization* of x.
+
+    Let (u, v) be a factorization for a word x. Then if w is a non-empty word such
+    that both of the following hold
+
+      - either w is a suffix of u or u is a suffix of w
+      - either w is a prefix of v or v is a prefix of w
+
+    then w is said to be a *repetition* for the factorization (u, v).
+
+    Just to unpack this, there are four possibilities here. Let w = "abc". Then we
+    might have:
+
+      - w is a suffix of u and w is a prefix of v. ex: ("lolabc", "abcde")
+      - w is a suffix of u and v is a prefix of w. ex: ("lolabc", "ab")
+      - u is a suffix of w and w is a prefix of v. ex: ("bc", "abchi")
+      - u is a suffix of w and v is a prefix of w. ex: ("bc", "a")
+
+    Note that the word vu is a repetition for any factorization (u,v) of x = uv,
+    so every factorization has at least one repetition.
+
+    If x is a string and (u, v) is a factorization for x, then a *local period* for
+    (u, v) is an integer r such that there is some word w such that |w| = r and w is
+    a repetition for (u, v).
+
+    We denote by local_period(u, v) the smallest local period of (u, v). We sometimes
+    call this *the local period* of (u, v). Provided that x = uv is non-empty, this
+    is well-defined (because each non-empty word has at least one factorization, as
+    noted above).
+
+    It can be proven that the following is an equivalent definition of a local period
+    for a factorization (u, v): any positive integer r such that x[i] == x[i+r] for
+    all i such that |u| - r <= i <= |u| - 1 and such that both x[i] and x[i+r] are
+    defined. (i.e. i > 0 and i + r < |x|).
+
+    Using the above reformulation, it is easy to prove that
+
+        1 <= local_period(u, v) <= period(uv)
+
+    A factorization (u, v) of x such that local_period(u,v) = period(x) is called a
+    *critical factorization*.
+
+    The algorithm hinges on the following theorem, which is stated without proof:
+
+    **Critical Factorization Theorem** Any word x has at least one critical
+    factorization (u, v) such that |u| < period(x).
+
+    The purpose of maximal_suffix is to find such a critical factorization.
+
+    If the period is short, compute another factorization x = u' v' to use
+    for reverse search, chosen instead so that |v'| < period(x).
+
+*/
 impl TwoWaySearcher {
     fn new(needle: &[u8], end: usize) -> TwoWaySearcher {
         let (crit_pos_false, period_false) = TwoWaySearcher::maximal_suffix(needle, false);
         let (crit_pos_true, period_true) = TwoWaySearcher::maximal_suffix(needle, true);
 
-        let (crit_pos, period) = if crit_pos_false > crit_pos_true {
-            (crit_pos_false, period_false)
-        } else {
-            (crit_pos_true, period_true)
-        };
+        let (crit_pos, period) =
+            if crit_pos_false > crit_pos_true {
+                (crit_pos_false, period_false)
+            } else {
+                (crit_pos_true, period_true)
+            };
 
         // A particularly readable explanation of what's going on here can be found
         // in Crochemore and Rytter's book "Text Algorithms", ch 13. Specifically
@@ -850,7 +845,7 @@ impl TwoWaySearcher {
         // &v[..period]. If it is, we use "Algorithm CP1". Otherwise we use
         // "Algorithm CP2", which is optimized for when the period of the needle
         // is large.
-        if &needle[..crit_pos] == &needle[period..period + crit_pos] {
+        if &needle[..crit_pos] == &needle[period.. period + crit_pos] {
             // short period case -- the period is exact
             // compute a separate critical factorization for the reversed needle
             // x = u' v' where |v'| < period(x).
@@ -860,13 +855,9 @@ impl TwoWaySearcher {
             // (crit_pos = 1, period = 3) while being factored with approximate
             // period in reverse (crit_pos = 2, period = 2). We use the given
             // reverse factorization but keep the exact period.
-            let crit_pos_back = needle.len() -
-                                cmp::max(TwoWaySearcher::reverse_maximal_suffix(needle,
-                                                                                period,
-                                                                                false),
-                                         TwoWaySearcher::reverse_maximal_suffix(needle,
-                                                                                period,
-                                                                                true));
+            let crit_pos_back = needle.len() - cmp::max(
+                TwoWaySearcher::reverse_maximal_suffix(needle, period, false),
+                TwoWaySearcher::reverse_maximal_suffix(needle, period, true));
 
             TwoWaySearcher {
                 crit_pos: crit_pos,
@@ -917,7 +908,8 @@ impl TwoWaySearcher {
     // How far we can jump when we encounter a mismatch is all based on the fact
     // that (u, v) is a critical factorization for the needle.
     #[inline(always)]
-    fn next<S>(&mut self, haystack: &[u8], needle: &[u8], long_period: bool) -> S::Output
+    fn next<S>(&mut self, haystack: &[u8], needle: &[u8], long_period: bool)
+        -> S::Output
         where S: TwoWayStrategy
     {
         // `next()` uses `self.position` as its cursor
@@ -949,11 +941,8 @@ impl TwoWaySearcher {
             }
 
             // See if the right part of the needle matches
-            let start = if long_period {
-                self.crit_pos
-            } else {
-                cmp::max(self.crit_pos, self.memory)
-            };
+            let start = if long_period { self.crit_pos }
+                        else { cmp::max(self.crit_pos, self.memory) };
             for i in start..needle.len() {
                 if needle[i] != haystack[self.position + i] {
                     self.position += i - self.crit_pos + 1;
@@ -965,11 +954,7 @@ impl TwoWaySearcher {
             }
 
             // See if the left part of the needle matches
-            let start = if long_period {
-                0
-            } else {
-                self.memory
-            };
+            let start = if long_period { 0 } else { self.memory };
             for i in (start..self.crit_pos).rev() {
                 if needle[i] != haystack[self.position + i] {
                     self.position += self.period;
@@ -1006,7 +991,8 @@ impl TwoWaySearcher {
     // To search in reverse through the haystack, we search forward through
     // a reversed haystack with a reversed needle, matching first u' and then v'.
     #[inline]
-    fn next_back<S>(&mut self, haystack: &[u8], needle: &[u8], long_period: bool) -> S::Output
+    fn next_back<S>(&mut self, haystack: &[u8], needle: &[u8], long_period: bool)
+        -> S::Output
         where S: TwoWayStrategy
     {
         // `next_back()` uses `self.end` as its cursor -- so that `next()` and `next_back()`
@@ -1039,11 +1025,8 @@ impl TwoWaySearcher {
             }
 
             // See if the left part of the needle matches
-            let crit = if long_period {
-                self.crit_pos_back
-            } else {
-                cmp::min(self.crit_pos_back, self.memory_back)
-            };
+            let crit = if long_period { self.crit_pos_back }
+                       else { cmp::min(self.crit_pos_back, self.memory_back) };
             for i in (0..crit).rev() {
                 if needle[i] != haystack[self.end - needle.len() + i] {
                     self.end -= self.crit_pos_back - i;
@@ -1055,11 +1038,8 @@ impl TwoWaySearcher {
             }
 
             // See if the right part of the needle matches
-            let needle_end = if long_period {
-                needle.len()
-            } else {
-                self.memory_back
-            };
+            let needle_end = if long_period { needle.len() }
+                             else { self.memory_back };
             for i in self.crit_pos_back..needle_end {
                 if needle[i] != haystack[self.end - needle.len() + i] {
                     self.end -= self.period;
@@ -1141,7 +1121,9 @@ impl TwoWaySearcher {
     // a critical factorization.
     //
     // For long period cases, the resulting period is not exact (it is too short).
-    fn reverse_maximal_suffix(arr: &[u8], known_period: usize, order_greater: bool) -> usize {
+    fn reverse_maximal_suffix(arr: &[u8], known_period: usize,
+                              order_greater: bool) -> usize
+    {
         let mut left = 0; // Corresponds to i in the paper
         let mut right = 1; // Corresponds to j in the paper
         let mut offset = 0; // Corresponds to k in the paper, but starting at 0
@@ -1197,17 +1179,11 @@ impl TwoWayStrategy for MatchOnly {
     type Output = Option<(usize, usize)>;
 
     #[inline]
-    fn use_early_reject() -> bool {
-        false
-    }
+    fn use_early_reject() -> bool { false }
     #[inline]
-    fn rejecting(_a: usize, _b: usize) -> Self::Output {
-        None
-    }
+    fn rejecting(_a: usize, _b: usize) -> Self::Output { None }
     #[inline]
-    fn matching(a: usize, b: usize) -> Self::Output {
-        Some((a, b))
-    }
+    fn matching(a: usize, b: usize) -> Self::Output { Some((a, b)) }
 }
 
 /// Emit Rejects regularly
@@ -1217,15 +1193,9 @@ impl TwoWayStrategy for RejectAndMatch {
     type Output = SearchStep;
 
     #[inline]
-    fn use_early_reject() -> bool {
-        true
-    }
+    fn use_early_reject() -> bool { true }
     #[inline]
-    fn rejecting(a: usize, b: usize) -> Self::Output {
-        SearchStep::Reject(a, b)
-    }
+    fn rejecting(a: usize, b: usize) -> Self::Output { SearchStep::Reject(a, b) }
     #[inline]
-    fn matching(a: usize, b: usize) -> Self::Output {
-        SearchStep::Match(a, b)
-    }
+    fn matching(a: usize, b: usize) -> Self::Output { SearchStep::Match(a, b) }
 }

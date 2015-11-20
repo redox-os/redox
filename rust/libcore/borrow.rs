@@ -85,35 +85,25 @@ pub trait BorrowMut<Borrowed: ?Sized> : Borrow<Borrowed> {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> Borrow<T> for T {
-    fn borrow(&self) -> &T {
-        self
-    }
+    fn borrow(&self) -> &T { self }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> BorrowMut<T> for T {
-    fn borrow_mut(&mut self) -> &mut T {
-        self
-    }
+    fn borrow_mut(&mut self) -> &mut T { self }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized> Borrow<T> for &'a T {
-    fn borrow(&self) -> &T {
-        &**self
-    }
+    fn borrow(&self) -> &T { &**self }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized> Borrow<T> for &'a mut T {
-    fn borrow(&self) -> &T {
-        &**self
-    }
+    fn borrow(&self) -> &T { &**self }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized> BorrowMut<T> for &'a mut T {
-    fn borrow_mut(&mut self) -> &mut T {
-        &mut **self
-    }
+    fn borrow_mut(&mut self) -> &mut T { &mut **self }
 }

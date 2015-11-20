@@ -41,8 +41,7 @@ use slice::SliceExt;
 /// intended to have wrapping semantics.
 #[stable(feature = "rust1", since = "1.0.0")]
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug, Default)]
-pub struct Wrapping<T>(#[stable(feature = "rust1", since = "1.0.0")]
-    pub T);
+pub struct Wrapping<T>(#[stable(feature = "rust1", since = "1.0.0")] pub T);
 
 pub mod wrapping;
 
@@ -107,9 +106,7 @@ zero_one_impl_float! { f32 f64 }
 // Just for stage0; a byte swap on a byte is a no-op
 // Delete this once it becomes unused
 #[cfg(stage0)]
-unsafe fn bswap8(x: u8) -> u8 {
-    x
-}
+unsafe fn bswap8(x: u8) -> u8 { x }
 
 macro_rules! checked_op {
     ($U:ty, $op:path, $x:expr, $y:expr) => {{
@@ -1406,7 +1403,7 @@ pub enum FpCategory {
 
     /// Positive or negative infinity
     #[stable(feature = "rust1", since = "1.0.0")]
-    Infinite,
+    Infinite ,
 
     /// Positive or negative zero
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -1526,13 +1523,14 @@ macro_rules! doit {
 }
 doit! { i8 i16 i32 i64 isize u8 u16 u32 u64 usize }
 
-fn from_str_radix<T: FromStrRadixHelper>(src: &str, radix: u32) -> Result<T, ParseIntError> {
+fn from_str_radix<T: FromStrRadixHelper>(src: &str, radix: u32)
+                                         -> Result<T, ParseIntError> {
     use self::IntErrorKind::*;
     use self::ParseIntError as PIE;
 
     assert!(radix >= 2 && radix <= 36,
-            "from_str_radix_int: must lie in the range `[2, 36]` - found {}",
-            radix);
+           "from_str_radix_int: must lie in the range `[2, 36]` - found {}",
+           radix);
 
     if src.is_empty() {
         return Err(PIE { kind: Empty });
@@ -1549,7 +1547,7 @@ fn from_str_radix<T: FromStrRadixHelper>(src: &str, radix: u32) -> Result<T, Par
     let (is_positive, digits) = match src[0] {
         b'+' => (true, &src[1..]),
         b'-' if is_signed_ty => (false, &src[1..]),
-        _ => (true, src),
+        _ => (true, src)
     };
 
     if digits.is_empty() {
@@ -1596,9 +1594,7 @@ fn from_str_radix<T: FromStrRadixHelper>(src: &str, radix: u32) -> Result<T, Par
 /// An error which can be returned when parsing an integer.
 #[derive(Debug, Clone, PartialEq)]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct ParseIntError {
-    kind: IntErrorKind,
-}
+pub struct ParseIntError { kind: IntErrorKind }
 
 #[derive(Debug, Clone, PartialEq)]
 enum IntErrorKind {

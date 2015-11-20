@@ -66,9 +66,7 @@ pub struct Slice<T> {
 
 impl<T> Copy for Slice<T> {}
 impl<T> Clone for Slice<T> {
-    fn clone(&self) -> Slice<T> {
-        *self
-    }
+    fn clone(&self) -> Slice<T> { *self }
 }
 
 /// The representation of a trait object like `&SomeTrait`.
@@ -158,9 +156,7 @@ pub unsafe trait Repr<T> {
     /// for the struct. This is a safe method because by default it does not
     /// enable write-access to the fields of the return value in safe code.
     #[inline]
-    fn repr(&self) -> T {
-        unsafe { mem::transmute_copy(&self) }
-    }
+    fn repr(&self) -> T { unsafe { mem::transmute_copy(&self) } }
 }
 
 unsafe impl<T> Repr<Slice<T>> for [T] {}

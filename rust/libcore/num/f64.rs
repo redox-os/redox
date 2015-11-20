@@ -63,13 +63,13 @@ pub const MAX_10_EXP: i32 = 308;
 
 #[stable(feature = "rust1", since = "1.0.0")]
 #[allow(missing_docs)]
-pub const NAN: f64 = 0.0_f64 / 0.0_f64;
+pub const NAN: f64 = 0.0_f64/0.0_f64;
 #[stable(feature = "rust1", since = "1.0.0")]
 #[allow(missing_docs)]
-pub const INFINITY: f64 = 1.0_f64 / 0.0_f64;
+pub const INFINITY: f64 = 1.0_f64/0.0_f64;
 #[stable(feature = "rust1", since = "1.0.0")]
 #[allow(missing_docs)]
-pub const NEG_INFINITY: f64 = -1.0_f64 / 0.0_f64;
+pub const NEG_INFINITY: f64 = -1.0_f64/0.0_f64;
 
 /// Basic mathematical constants.
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -143,42 +143,28 @@ pub mod consts {
 
 impl Float for f64 {
     #[inline]
-    fn nan() -> f64 {
-        NAN
-    }
+    fn nan() -> f64 { NAN }
 
     #[inline]
-    fn infinity() -> f64 {
-        INFINITY
-    }
+    fn infinity() -> f64 { INFINITY }
 
     #[inline]
-    fn neg_infinity() -> f64 {
-        NEG_INFINITY
-    }
+    fn neg_infinity() -> f64 { NEG_INFINITY }
 
     #[inline]
-    fn zero() -> f64 {
-        0.0
-    }
+    fn zero() -> f64 { 0.0 }
 
     #[inline]
-    fn neg_zero() -> f64 {
-        -0.0
-    }
+    fn neg_zero() -> f64 { -0.0 }
 
     #[inline]
-    fn one() -> f64 {
-        1.0
-    }
+    fn one() -> f64 { 1.0 }
 
     from_str_radix_float_impl! { f64 }
 
     /// Returns `true` if the number is NaN.
     #[inline]
-    fn is_nan(self) -> bool {
-        self != self
-    }
+    fn is_nan(self) -> bool { self != self }
 
     /// Returns `true` if the number is infinite.
     #[inline]
@@ -207,22 +193,18 @@ impl Float for f64 {
 
         let bits: u64 = unsafe { mem::transmute(self) };
         match (bits & MAN_MASK, bits & EXP_MASK) {
-            (0, 0) => Fp::Zero,
-            (_, 0) => Fp::Subnormal,
+            (0, 0)        => Fp::Zero,
+            (_, 0)        => Fp::Subnormal,
             (0, EXP_MASK) => Fp::Infinite,
             (_, EXP_MASK) => Fp::Nan,
-            _ => Fp::Normal,
+            _             => Fp::Normal,
         }
     }
 
     /// Returns the mantissa, exponent and sign as integers.
     fn integer_decode(self) -> (u64, i16, i8) {
         let bits: u64 = unsafe { mem::transmute(self) };
-        let sign: i8 = if bits >> 63 == 0 {
-            1
-        } else {
-            -1
-        };
+        let sign: i8 = if bits >> 63 == 0 { 1 } else { -1 };
         let mut exponent: i16 = ((bits >> 52) & 0x7ff) as i16;
         let mantissa = if exponent == 0 {
             (bits & 0xfffffffffffff) << 1
@@ -271,9 +253,7 @@ impl Float for f64 {
 
     /// Returns the reciprocal (multiplicative inverse) of the number.
     #[inline]
-    fn recip(self) -> f64 {
-        1.0 / self
-    }
+    fn recip(self) -> f64 { 1.0 / self }
 
     #[inline]
     fn powi(self, n: i32) -> f64 {
@@ -282,9 +262,7 @@ impl Float for f64 {
 
     /// Converts to degrees, assuming the number is in radians.
     #[inline]
-    fn to_degrees(self) -> f64 {
-        self * (180.0f64 / consts::PI)
-    }
+    fn to_degrees(self) -> f64 { self * (180.0f64 / consts::PI) }
 
     /// Converts to radians, assuming the number is in degrees.
     #[inline]

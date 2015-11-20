@@ -50,9 +50,9 @@
 //! }
 //! ```
 //!
-//!
-//! FIXME: Show how `Option` is used in practice, with lots of methods
-//!
+//
+// FIXME: Show how `Option` is used in practice, with lots of methods
+//
 //! # Options and pointers ("nullable" pointers)
 //!
 //! Rust's pointer types must always point to a valid location; there are
@@ -170,17 +170,17 @@ pub enum Option<T> {
     None,
     /// Some value `T`
     #[stable(feature = "rust1", since = "1.0.0")]
-    Some(T),
+    Some(T)
 }
 
-/// //////////////////////////////////////////////////////////////////////////
-/// Type implementation
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// Type implementation
+/////////////////////////////////////////////////////////////////////////////
 
 impl<T> Option<T> {
-    /// //////////////////////////////////////////////////////////////////////
-    /// Querying the contained values
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Querying the contained values
+    /////////////////////////////////////////////////////////////////////////
 
     /// Returns `true` if the option is a `Some` value
     ///
@@ -219,9 +219,9 @@ impl<T> Option<T> {
         !self.is_some()
     }
 
-    /// //////////////////////////////////////////////////////////////////////
-    /// Adapter for working with references
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Adapter for working with references
+    /////////////////////////////////////////////////////////////////////////
 
     /// Converts from `Option<T>` to `Option<&T>`
     ///
@@ -304,9 +304,9 @@ impl<T> Option<T> {
         }
     }
 
-    /// //////////////////////////////////////////////////////////////////////
-    /// Getting to contained values
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Getting to contained values
+    /////////////////////////////////////////////////////////////////////////
 
     /// Unwraps an option, yielding the content of a `Some`
     ///
@@ -402,9 +402,9 @@ impl<T> Option<T> {
         }
     }
 
-    /// //////////////////////////////////////////////////////////////////////
-    /// Transforming contained values
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Transforming contained values
+    /////////////////////////////////////////////////////////////////////////
 
     /// Maps an `Option<T>` to `Option<U>` by applying a function to a contained value
     ///
@@ -514,9 +514,9 @@ impl<T> Option<T> {
         }
     }
 
-    /// //////////////////////////////////////////////////////////////////////
-    /// Iterator constructors
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Iterator constructors
+    /////////////////////////////////////////////////////////////////////////
 
     /// Returns an iterator over the possibly contained value.
     ///
@@ -556,9 +556,9 @@ impl<T> Option<T> {
         IterMut { inner: Item { opt: self.as_mut() } }
     }
 
-    /// //////////////////////////////////////////////////////////////////////
-    /// Boolean operations on the values, eager and lazy
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Boolean operations on the values, eager and lazy
+    /////////////////////////////////////////////////////////////////////////
 
     /// Returns `None` if the option is `None`, otherwise returns `optb`.
     ///
@@ -667,9 +667,9 @@ impl<T> Option<T> {
         }
     }
 
-    /// //////////////////////////////////////////////////////////////////////
-    /// Misc
-    /// //////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////
+    // Misc
+    /////////////////////////////////////////////////////////////////////////
 
     /// Takes the value out of the option, leaving a `None` in its place.
     ///
@@ -749,16 +749,14 @@ impl<T: Default> Option<T> {
     }
 }
 
-/// //////////////////////////////////////////////////////////////////////////
-/// Trait implementations
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// Trait implementations
+/////////////////////////////////////////////////////////////////////////////
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Default for Option<T> {
     #[inline]
-    fn default() -> Option<T> {
-        None
-    }
+    fn default() -> Option<T> { None }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -805,13 +803,13 @@ impl<'a, T> IntoIterator for &'a mut Option<T> {
     }
 }
 
-/// //////////////////////////////////////////////////////////////////////////
-/// The Option Iterators
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// The Option Iterators
+/////////////////////////////////////////////////////////////////////////////
 
 #[derive(Clone)]
 struct Item<A> {
-    opt: Option<A>,
+    opt: Option<A>
 }
 
 impl<A> Iterator for Item<A> {
@@ -842,30 +840,22 @@ impl<A> ExactSizeIterator for Item<A> {}
 
 /// An iterator over a reference of the contained item in an Option.
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct Iter<'a, A: 'a> {
-    inner: Item<&'a A>,
-}
+pub struct Iter<'a, A: 'a> { inner: Item<&'a A> }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, A> Iterator for Iter<'a, A> {
     type Item = &'a A;
 
     #[inline]
-    fn next(&mut self) -> Option<&'a A> {
-        self.inner.next()
-    }
+    fn next(&mut self) -> Option<&'a A> { self.inner.next() }
     #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.inner.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.inner.size_hint() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, A> DoubleEndedIterator for Iter<'a, A> {
     #[inline]
-    fn next_back(&mut self) -> Option<&'a A> {
-        self.inner.next_back()
-    }
+    fn next_back(&mut self) -> Option<&'a A> { self.inner.next_back() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -880,30 +870,22 @@ impl<'a, A> Clone for Iter<'a, A> {
 
 /// An iterator over a mutable reference of the contained item in an Option.
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct IterMut<'a, A: 'a> {
-    inner: Item<&'a mut A>,
-}
+pub struct IterMut<'a, A: 'a> { inner: Item<&'a mut A> }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, A> Iterator for IterMut<'a, A> {
     type Item = &'a mut A;
 
     #[inline]
-    fn next(&mut self) -> Option<&'a mut A> {
-        self.inner.next()
-    }
+    fn next(&mut self) -> Option<&'a mut A> { self.inner.next() }
     #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.inner.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.inner.size_hint() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, A> DoubleEndedIterator for IterMut<'a, A> {
     #[inline]
-    fn next_back(&mut self) -> Option<&'a mut A> {
-        self.inner.next_back()
-    }
+    fn next_back(&mut self) -> Option<&'a mut A> { self.inner.next_back() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -912,38 +894,30 @@ impl<'a, A> ExactSizeIterator for IterMut<'a, A> {}
 /// An iterator over the item contained inside an Option.
 #[derive(Clone)]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub struct IntoIter<A> {
-    inner: Item<A>,
-}
+pub struct IntoIter<A> { inner: Item<A> }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A> Iterator for IntoIter<A> {
     type Item = A;
 
     #[inline]
-    fn next(&mut self) -> Option<A> {
-        self.inner.next()
-    }
+    fn next(&mut self) -> Option<A> { self.inner.next() }
     #[inline]
-    fn size_hint(&self) -> (usize, Option<usize>) {
-        self.inner.size_hint()
-    }
+    fn size_hint(&self) -> (usize, Option<usize>) { self.inner.size_hint() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A> DoubleEndedIterator for IntoIter<A> {
     #[inline]
-    fn next_back(&mut self) -> Option<A> {
-        self.inner.next_back()
-    }
+    fn next_back(&mut self) -> Option<A> { self.inner.next_back() }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A> ExactSizeIterator for IntoIter<A> {}
 
-/// //////////////////////////////////////////////////////////////////////////
-/// FromIterator
-/// //////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////
+// FromIterator
+/////////////////////////////////////////////////////////////////////////////
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<A, V: FromIterator<A>> FromIterator<Option<A>> for Option<V> {
@@ -965,7 +939,7 @@ impl<A, V: FromIterator<A>> FromIterator<Option<A>> for Option<V> {
     /// assert!(res == Some(vec!(2, 3)));
     /// ```
     #[inline]
-    fn from_iter<I: IntoIterator<Item = Option<A>>>(iter: I) -> Option<V> {
+    fn from_iter<I: IntoIterator<Item=Option<A>>>(iter: I) -> Option<V> {
         // FIXME(#11084): This could be replaced with Iterator::scan when this
         // performance bug is closed.
 
@@ -990,10 +964,7 @@ impl<A, V: FromIterator<A>> FromIterator<Option<A>> for Option<V> {
             }
         }
 
-        let mut adapter = Adapter {
-            iter: iter.into_iter(),
-            found_none: false,
-        };
+        let mut adapter = Adapter { iter: iter.into_iter(), found_none: false };
         let v: V = FromIterator::from_iter(adapter.by_ref());
 
         if adapter.found_none {

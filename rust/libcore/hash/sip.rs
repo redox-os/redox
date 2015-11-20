@@ -153,7 +153,7 @@ impl Hasher for SipHasher {
             if length < needed {
                 self.tail |= u8to64_le!(msg, 0, length) << 8 * self.ntail;
                 self.ntail += length;
-                return;
+                return
             }
 
             let m = self.tail | u8to64_le!(msg, 0, needed) << 8 * self.ntail;

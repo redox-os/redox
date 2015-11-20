@@ -13,23 +13,35 @@
             issue = "27755")]
 
 #[cfg(stage0)]
-pub use intrinsics::{u8_add_with_overflow, i8_add_with_overflow, u16_add_with_overflow,
-                     i16_add_with_overflow, u32_add_with_overflow, i32_add_with_overflow,
-                     u64_add_with_overflow, i64_add_with_overflow, u8_sub_with_overflow,
-                     i8_sub_with_overflow, u16_sub_with_overflow, i16_sub_with_overflow,
-                     u32_sub_with_overflow, i32_sub_with_overflow, u64_sub_with_overflow,
-                     i64_sub_with_overflow, u8_mul_with_overflow, i8_mul_with_overflow,
-                     u16_mul_with_overflow, i16_mul_with_overflow, u32_mul_with_overflow,
-                     i32_mul_with_overflow, u64_mul_with_overflow, i64_mul_with_overflow};
+pub use intrinsics::{
+    u8_add_with_overflow, i8_add_with_overflow,
+    u16_add_with_overflow, i16_add_with_overflow,
+    u32_add_with_overflow, i32_add_with_overflow,
+    u64_add_with_overflow, i64_add_with_overflow,
+
+    u8_sub_with_overflow, i8_sub_with_overflow,
+    u16_sub_with_overflow, i16_sub_with_overflow,
+    u32_sub_with_overflow, i32_sub_with_overflow,
+    u64_sub_with_overflow, i64_sub_with_overflow,
+
+    u8_mul_with_overflow, i8_mul_with_overflow,
+    u16_mul_with_overflow, i16_mul_with_overflow,
+    u32_mul_with_overflow, i32_mul_with_overflow,
+    u64_mul_with_overflow, i64_mul_with_overflow,
+};
 
 #[cfg(not(stage0))]
-pub use intrinsics::{add_with_overflow, sub_with_overflow, mul_with_overflow};
+pub use intrinsics::{
+    add_with_overflow,
+    sub_with_overflow,
+    mul_with_overflow,
+};
 
 use super::Wrapping;
 
 use ops::*;
 
-use {i8, i16, i32, i64};
+use ::{i8,i16,i32,i64};
 
 pub trait OverflowingOps {
     fn overflowing_add(self, rhs: Self) -> (Self, bool);
@@ -176,12 +188,12 @@ wrapping_impl! { usize u8 u16 u32 u64 isize i8 i16 i32 i64 }
 mod shift_max {
     #![allow(non_upper_case_globals)]
 
-    pub const i8: u32 = (1 << 3) - 1;
+    pub const  i8: u32 = (1 << 3) - 1;
     pub const i16: u32 = (1 << 4) - 1;
     pub const i32: u32 = (1 << 5) - 1;
     pub const i64: u32 = (1 << 6) - 1;
 
-    pub const u8: u32 = i8;
+    pub const  u8: u32 = i8;
     pub const u16: u32 = i16;
     pub const u32: u32 = i32;
     pub const u64: u32 = i64;
@@ -363,7 +375,9 @@ impl OverflowingOps for usize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_add(self, rhs: usize) -> (usize, bool) {
-        unsafe { add_with_overflow(self, rhs) }
+        unsafe {
+            add_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -376,7 +390,9 @@ impl OverflowingOps for usize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_sub(self, rhs: usize) -> (usize, bool) {
-        unsafe { sub_with_overflow(self, rhs) }
+        unsafe {
+            sub_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -389,7 +405,9 @@ impl OverflowingOps for usize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_mul(self, rhs: usize) -> (usize, bool) {
-        unsafe { mul_with_overflow(self, rhs) }
+        unsafe {
+            mul_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     fn overflowing_div(self, rhs: usize) -> (usize, bool) {
@@ -431,7 +449,9 @@ impl OverflowingOps for usize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_add(self, rhs: usize) -> (usize, bool) {
-        unsafe { add_with_overflow(self, rhs) }
+        unsafe {
+            add_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -444,7 +464,9 @@ impl OverflowingOps for usize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_sub(self, rhs: usize) -> (usize, bool) {
-        unsafe { sub_with_overflow(self, rhs) }
+        unsafe {
+            sub_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -457,7 +479,9 @@ impl OverflowingOps for usize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_mul(self, rhs: usize) -> (usize, bool) {
-        unsafe { mul_with_overflow(self, rhs) }
+        unsafe {
+            mul_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     fn overflowing_div(self, rhs: usize) -> (usize, bool) {
@@ -499,7 +523,9 @@ impl OverflowingOps for isize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_add(self, rhs: isize) -> (isize, bool) {
-        unsafe { add_with_overflow(self, rhs) }
+        unsafe {
+            add_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -512,7 +538,9 @@ impl OverflowingOps for isize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_sub(self, rhs: isize) -> (isize, bool) {
-        unsafe { sub_with_overflow(self, rhs) }
+        unsafe {
+            sub_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -525,7 +553,9 @@ impl OverflowingOps for isize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_mul(self, rhs: isize) -> (isize, bool) {
-        unsafe { mul_with_overflow(self, rhs) }
+        unsafe {
+            mul_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     fn overflowing_div(self, rhs: isize) -> (isize, bool) {
@@ -567,7 +597,9 @@ impl OverflowingOps for isize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_add(self, rhs: isize) -> (isize, bool) {
-        unsafe { add_with_overflow(self, rhs) }
+        unsafe {
+            add_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -580,7 +612,9 @@ impl OverflowingOps for isize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_sub(self, rhs: isize) -> (isize, bool) {
-        unsafe { sub_with_overflow(self, rhs) }
+        unsafe {
+            sub_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     #[cfg(stage0)]
@@ -593,7 +627,9 @@ impl OverflowingOps for isize {
     #[inline(always)]
     #[cfg(not(stage0))]
     fn overflowing_mul(self, rhs: isize) -> (isize, bool) {
-        unsafe { mul_with_overflow(self, rhs) }
+        unsafe {
+            mul_with_overflow(self, rhs)
+        }
     }
     #[inline(always)]
     fn overflowing_div(self, rhs: isize) -> (isize, bool) {

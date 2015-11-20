@@ -393,7 +393,8 @@ extern "rust-intrinsic" {
     /// `min_align_of::<T>()`
     ///
     /// The volatile parameter is set to `true`, so it will not be optimized out.
-    pub fn volatile_copy_nonoverlapping_memory<T>(dst: *mut T, src: *const T, count: usize);
+    pub fn volatile_copy_nonoverlapping_memory<T>(dst: *mut T, src: *const T,
+                                                  count: usize);
     /// Equivalent to the appropriate `llvm.memmove.p0i8.0i8.*` intrinsic, with
     /// a size of `count` * `size_of::<T>()` and an alignment of
     /// `min_align_of::<T>()`
