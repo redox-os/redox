@@ -37,6 +37,7 @@ use core::slice::SliceExt;
 use common::debug;
 use common::event::{self, Event, EventOption};
 use common::get_slice::GetSlice;
+use common::mutex::Mutex;
 use common::memory;
 use common::paging::Page;
 use common::time::Duration;
@@ -107,7 +108,7 @@ pub mod usb;
 pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
 /// Default console for debugging
-static mut console: *mut Console = 0 as *mut Console;
+static mut console_ptr: *mut Mutex<Console> = 0 as *mut Mutex<Console>;
 
 /// Clock realtime (default)
 static mut clock_realtime: Duration = Duration {
@@ -131,7 +132,7 @@ static PIT_DURATION: Duration = Duration {
 static mut session_ptr: *mut Session = 0 as *mut Session;
 
 /// Event pointer
-static mut events_ptr: *mut VecDeque<Event> = 0 as *mut VecDeque<Event>;
+static mut events_ptr: *mut Mutex<VecDeque<Event>> = 0 as *mut Mutex<VecDeque<Event>>;
 
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
@@ -174,44 +175,37 @@ unsafe fn poll_loop() -> ! {
 }
 
 /// Event loop
-unsafe fn event_loop() -> ! {
-    let events = &mut *events_ptr;
+fn event_loop() -> ! {
+    let events = unsafe { &mut *events_ptr };
     let mut cmd = String::new();
     loop {
         loop {
-            let reenable = scheduler::start_no_ints();
-
-            let event_option = events.pop_front();
-
-            scheduler::end_no_ints(reenable);
-
-            match event_option {
+            let mut console = unsafe { &mut *console_ptr }.lock();
+            match events.lock().pop_front() {
                 Some(event) => {
-                    if (*console).draw {
+                    if console.draw {
                         match event.to_option() {
                             EventOption::Key(key_event) => {
                                 if key_event.pressed {
                                     match key_event.scancode {
                                         event::K_F2 => {
-                                            (*console).draw = false;
+                                            console.draw = false;
                                         }
                                         event::K_BKSP => if !cmd.is_empty() {
-                                            debug::db(8);
+                                            console.write(&[8]);
                                             cmd.pop();
                                         },
                                         _ => match key_event.character {
                                             '\0' => (),
                                             '\n' => {
-                                                let reenable = scheduler::start_no_ints();
-                                                (*console).command = Some(cmd.clone());
-                                                scheduler::end_no_ints(reenable);
+                                                console.command = Some(cmd.clone());
 
                                                 cmd.clear();
-                                                debug::dl();
+                                                console.write(&[10]);
                                             }
                                             _ => {
                                                 cmd.push(key_event.character);
-                                                debug::dc(key_event.character);
+                                                console.write(&[key_event.character as u8]);
                                             }
                                         },
                                     }
@@ -221,18 +215,20 @@ unsafe fn event_loop() -> ! {
                         }
                     } else {
                         if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
-                            (*console).draw = true;
-                            (*console).redraw = true;
+                            console.draw = true;
+                            console.redraw = true;
                         } else {
                             // TODO: Magical orbital hack
-                            let reenable = scheduler::start_no_ints();
-                            for item in (*::session_ptr).items.iter_mut() {
-                                if item.scheme() == "orbital" {
-                                    item.event(&event);
-                                    break;
+                            unsafe {
+                                let reenable = scheduler::start_no_ints();
+                                for item in (*::session_ptr).items.iter_mut() {
+                                    if item.scheme() == "orbital" {
+                                        item.event(&event);
+                                        break;
+                                    }
                                 }
+                                scheduler::end_no_ints(reenable);
                             }
-                            scheduler::end_no_ints(reenable);
                         }
                     }
                 }
@@ -240,16 +236,17 @@ unsafe fn event_loop() -> ! {
             }
         }
 
-        if (*console).draw {
-            let reenable = scheduler::start_no_ints();
-            if (*console).redraw {
-                (*console).redraw = false;
-                (*console).display.flip();
+        {
+            let mut console = unsafe { &mut *console_ptr }.lock();
+            if console.draw {
+                if console.redraw {
+                    console.redraw = false;
+                    console.display.flip();
+                }
             }
-            scheduler::end_no_ints(reenable);
         }
 
-        context_switch(false);
+        unsafe { context_switch(false) };
     }
 }
 
@@ -263,8 +260,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
 
-    console = Box::into_raw(Console::new());
-    (*console).draw = true;
+    console_ptr = Box::into_raw(box Mutex::new(Console::new()));
+    (*console_ptr).lock().draw = true;
 
     //debug_init();
 
@@ -286,7 +283,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     session_ptr = Box::into_raw(Session::new());
 
-    events_ptr = Box::into_raw(box VecDeque::new());
+    events_ptr = Box::into_raw(box Mutex::new(VecDeque::new()));
 
     let session = &mut *session_ptr;
 

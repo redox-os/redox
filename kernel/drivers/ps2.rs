@@ -6,6 +6,8 @@ use common::event::{KeyEvent, MouseEvent};
 
 use drivers::pio::*;
 
+use graphics::display::VBEMODEINFO;
+
 use schemes::KScheme;
 
 use drivers::kb_layouts::layouts;
@@ -222,11 +224,12 @@ impl Ps2 {
             }
 
             unsafe {
+                let mode_info = &*VBEMODEINFO;
                 self.mouse_x = cmp::max(0,
-                                        cmp::min((*::console).display.width as isize,
+                                        cmp::min(mode_info.xresolution as isize,
                                                  self.mouse_x + x));
                 self.mouse_y = cmp::max(0,
-                                        cmp::min((*::console).display.height as isize,
+                                        cmp::min(mode_info.yresolution as isize,
                                                  self.mouse_y + y));
             }
 
