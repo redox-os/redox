@@ -22,7 +22,7 @@ impl Spa {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub struct SpaNamespace {
-    avl: avl::Tree<Spa, &str>,
+    avl: avl::Tree<Spa, &str>, // AVL tree of Spa sorted by name
 }
 
 impl SpaNamespace {
@@ -32,7 +32,16 @@ impl SpaNamespace {
         }
     }
 
-    pub fn add(name: String, config: NvList) {
+    pub fn add(&mut self, name: String, config: NvList) {
         let spa = Spa::new(name);
+        self.avl.insert(spa);
+    }
+
+    pub fn find<'a>(&'a self, name: &str) -> Option<&'a Spa> {
+        self.avl.find(name)
+    }
+
+    pub fn find_mut<'a>(&'a mut self, name: &str) -> Option<&'a mut Spa> {
+        self.avl.find_mut(name)
     }
 }

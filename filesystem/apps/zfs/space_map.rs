@@ -1,5 +1,4 @@
-use redox::Box;
-use redox::fmt;
+use redox::{String, ToString, fmt};
 
 use super::avl;
 use super::from_bytes::FromBytes;
@@ -33,9 +32,20 @@ pub struct SpaceMap {
     pub size: usize,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MapType {
     Alloc = 0,
     Free = 1,
+}
+
+impl MapType {
+    pub fn from_u64(u: u64) -> Option<Self> {
+        match u {
+            0 => Some(MapType::Alloc),
+            1 => Some(MapType::Free),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Copy, Clone)]
@@ -54,8 +64,8 @@ impl Entry {
         self.0 & 0x7FFF // 15 bits long
     }
 
-    pub fn map_type(&self) -> u64 {
-        (self.0 >> 15) & 0x1 // 1 bit long
+    pub fn map_type(&self) -> Option<MapType> {
+        MapType::from_u64((self.0 >> 15) & 0x1) // 1 bit long
     }
 
     pub fn offset(&self) -> u64 {
@@ -80,11 +90,11 @@ impl Entry {
 impl fmt::Debug for Entry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.debug() == 1 {
-            write!(f, "DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
-                   self.action(), self.sync_pass(), self.txg());
+            try!(write!(f, "DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
+                   self.action(), self.sync_pass(), self.txg()));
         } else {
-            write!(f, "ENTRY: size:0x{:X}  map_type:0x{:X}  offset:0x{:X}",
-                   self.size(), self.map_type(), self.offset());
+            try!(write!(f, "ENTRY: size:0x{:X}  map_type:0x{:?}  offset:0x{:X}",
+                   self.size(), self.map_type(), self.offset()));
         }
         Ok(())
     }
@@ -93,13 +103,22 @@ impl fmt::Debug for Entry {
 pub fn load_space_map_avl(sm: &SpaceMap,
                           tree: &mut avl::Tree<Entry, u64>,
                           bytes: &[u8],
-                          map_type: MapType) {
+                          map_type: MapType) -> Result<(), String> {
     for i in 0..sm.size {
         let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
-        if entry.debug() != 1 {
-            // it's not a debug entry, add it to the tree
+        let entry_map_type =
+            match entry.map_type() {
+                Some(map_type) => {
+                    map_type
+                },
+                None => { return Err("Invalid map type".to_string()); },
+            };
+        if entry.debug() != 1 && entry_map_type == map_type {
+            // it's not a debug entry and it's the right map type, add it to the tree
             tree.insert(entry);
         }
     }
     tree.in_order(|node| { println!("{:?}", node.value()); });
+    
+    Ok(())
 }
