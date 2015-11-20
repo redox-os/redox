@@ -37,19 +37,33 @@ use vec::Vec;
 use slice::SliceConcatExt;
 use boxed::Box;
 
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{FromStr, Utf8Error};
 #[allow(deprecated)]
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{Lines, LinesAny, CharRange};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{Split, RSplit};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{SplitN, RSplitN};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{SplitTerminator, RSplitTerminator};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{Matches, RMatches};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{MatchIndices, RMatchIndices};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{from_utf8, Chars, CharIndices, Bytes};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::{from_utf8_unchecked, ParseBoolError};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use rustc_unicode::str::{SplitWhitespace};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::str::pattern;
 
+#[unstable(feature = "slice_concat_ext",
+           reason = "trait should not have to exist",
+           issue = "27747")]
 impl<S: Borrow<str>> SliceConcatExt<str> for [S] {
     type Output = String;
 
@@ -298,7 +312,7 @@ impl str {
     /// done by `.chars()` or `.char_indices()`.
     ///
     /// ```
-    /// #![feature(str_char, core)]
+    /// #![feature(str_char)]
     ///
     /// use std::str::CharRange;
     ///
@@ -358,7 +372,7 @@ impl str {
     /// done by `.chars().rev()` or `.char_indices()`.
     ///
     /// ```
-    /// #![feature(str_char, core)]
+    /// #![feature(str_char)]
     ///
     /// use std::str::CharRange;
     ///
@@ -634,6 +648,7 @@ impl str {
     /// # Examples
     ///
     /// ```
+    /// # #![allow(deprecated)]
     /// let four_lines = "foo\r\nbar\n\r\nbaz";
     /// let v: Vec<&str> = four_lines.lines_any().collect();
     ///
@@ -643,6 +658,7 @@ impl str {
     /// Leaving off the trailing character:
     ///
     /// ```
+    /// # #![allow(deprecated)]
     /// let four_lines = "foo\r\nbar\n\r\nbaz\n";
     /// let v: Vec<&str> = four_lines.lines_any().collect();
     ///
@@ -1179,8 +1195,6 @@ impl str {
     /// # Examples
     ///
     /// ```
-    /// #![feature(str_match_indices)]
-    ///
     /// let v: Vec<_> = "abcXXXabcYYYabc".match_indices("abc").collect();
     /// assert_eq!(v, [(0, "abc"), (6, "abc"), (12, "abc")]);
     ///
@@ -1216,8 +1230,6 @@ impl str {
     /// # Examples
     ///
     /// ```
-    /// #![feature(str_match_indices)]
-    ///
     /// let v: Vec<_> = "abcXXXabcYYYabc".rmatch_indices("abc").collect();
     /// assert_eq!(v, [(12, "abc"), (6, "abc"), (0, "abc")]);
     ///

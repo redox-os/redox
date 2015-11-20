@@ -233,6 +233,7 @@ impl<T: Ord> BinaryHeap<T> {
     ///
     /// ```
     /// #![feature(binary_heap_extras)]
+    /// # #![allow(deprecated)]
     ///
     /// use std::collections::BinaryHeap;
     /// let heap = BinaryHeap::from_vec(vec![9, 1, 2, 7, 3, 2]);
@@ -521,29 +522,30 @@ impl<T: Ord> BinaryHeap<T> {
 
             while hole.pos() > start {
                 let parent = (hole.pos() - 1) / 2;
-                if hole.removed() <= hole.get(parent) { break }
+                if hole.element() <= hole.get(parent) { break; }
                 hole.move_to(parent);
             }
         }
     }
 
-    fn sift_down_range(&mut self, mut pos: usize, end: usize) {
-        let start = pos;
+    /// Take an element at `pos` and move it down the heap,
+    /// while its children are larger.
+    fn sift_down_range(&mut self, pos: usize, end: usize) {
         unsafe {
             let mut hole = Hole::new(&mut self.data, pos);
             let mut child = 2 * pos + 1;
             while child < end {
                 let right = child + 1;
+                // compare with the greater of the two children
                 if right < end && !(hole.get(child) > hole.get(right)) {
                     child = right;
                 }
+                // if we are already in order, stop.
+                if hole.element() >= hole.get(child) { break; }
                 hole.move_to(child);
                 child = 2 * hole.pos() + 1;
             }
-
-            pos = hole.pos;
         }
-        self.sift_up(start, pos);
     }
 
     fn sift_down(&mut self, pos: usize) {
@@ -605,7 +607,7 @@ impl<'a, T> Hole<'a, T> {
 
     /// Return a reference to the element removed
     #[inline(always)]
-    fn removed(&self) -> &T {
+    fn element(&self) -> &T {
         self.elt.as_ref().unwrap()
     }
 
@@ -729,6 +731,7 @@ impl<'a, T: 'a> DoubleEndedIterator for Drain<'a, T> {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: 'a> ExactSizeIterator for Drain<'a, T> {}
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Ord> From<Vec<T>> for BinaryHeap<T> {
     fn from(vec: Vec<T>) -> BinaryHeap<T> {
         let mut heap = BinaryHeap { data: vec };
@@ -741,6 +744,7 @@ impl<T: Ord> From<Vec<T>> for BinaryHeap<T> {
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> From<BinaryHeap<T>> for Vec<T> {
     fn from(heap: BinaryHeap<T>) -> Vec<T> {
         heap.data

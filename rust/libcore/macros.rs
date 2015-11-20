@@ -89,7 +89,7 @@ macro_rules! assert_eq {
             (left_val, right_val) => {
                 if !(*left_val == *right_val) {
                     panic!("assertion failed: `(left == right)` \
-                           (left: `{:?}`, right: `{:?}`)", *left_val, *right_val)
+                           (left: `{:?}`, right: `{:?}`)", left_val, right_val)
                 }
             }
         }
@@ -247,6 +247,7 @@ macro_rules! writeln {
 /// Match arms:
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// fn foo(x: Option<i32>) {
 ///     match x {
 ///         Some(n) if n >= 0 => println!("Some(Non-negative)"),
@@ -260,6 +261,7 @@ macro_rules! writeln {
 /// Iterators:
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// fn divide_by_three(x: u32) -> u32 { // one of the poorest implementations of x/3
 ///     for i in 0.. {
 ///         if 3*i < i { panic!("u32 overflow"); }
@@ -308,27 +310,27 @@ macro_rules! unreachable {
 ///
 /// ```
 /// # trait Foo {
-/// #     fn foo(&self);
 /// #     fn bar(&self);
+/// #     fn baz(&self);
 /// # }
 /// struct MyStruct;
 ///
 /// impl Foo for MyStruct {
-///     fn foo(&self) {
+///     fn bar(&self) {
 ///         // implementation goes here
 ///     }
 ///
-///     fn bar(&self) {
-///         // let's not worry about implementing bar() for now
+///     fn baz(&self) {
+///         // let's not worry about implementing baz() for now
 ///         unimplemented!();
 ///     }
 /// }
 ///
 /// fn main() {
 ///     let s = MyStruct;
-///     s.foo();
+///     s.bar();
 ///
-///     // we aren't even using bar() yet, so this is fine.
+///     // we aren't even using baz() yet, so this is fine.
 /// }
 /// ```
 #[macro_export]
