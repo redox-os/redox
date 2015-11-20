@@ -241,6 +241,7 @@
 //! method calls a closure on each element it iterates over:
 //!
 //! ```
+//! # #![allow(unused_must_use)]
 //! let v = vec![1, 2, 3, 4, 5];
 //! v.iter().map(|x| println!("{}", x));
 //! ```
@@ -369,6 +370,24 @@ pub trait Iterator {
     /// `None` here means that either there is no known upper bound, or the
     /// upper bound is larger than `usize`.
     ///
+    /// # Implementation notes
+    ///
+    /// It is not enforced that an iterator implementation yields the declared
+    /// number of elements. A buggy iterator may yield less than the lower bound
+    /// or more than the upper bound of elements.
+    ///
+    /// `size_hint()` is primarily intended to be used for optimizations such as
+    /// reserving space for the elements of the iterator, but must not be
+    /// trusted to e.g. omit bounds checks in unsafe code. An incorrect
+    /// implementation of `size_hint()` should not lead to memory safety
+    /// violations.
+    ///
+    /// That said, the implementation should provide a correct estimation,
+    /// because otherwise it would be a violation of the trait's protocol.
+    ///
+    /// The default implementation returns `(0, None)` which is correct for any
+    /// iterator.
+    ///
     /// # Examples
     ///
     /// Basic usage:
@@ -401,7 +420,7 @@ pub trait Iterator {
     ///
     /// ```
     /// // an infinite iterator has no upper bound
-    /// let iter = (0..);
+    /// let iter = 0..;
     ///
     /// assert_eq!((0, None), iter.size_hint());
     /// ```
@@ -691,6 +710,7 @@ pub trait Iterator {
     /// If you're doing some sort of side effect, prefer [`for`] to `map()`:
     ///
     /// ```
+    /// # #![allow(unused_must_use)]
     /// // don't do this:
     /// (0..5).map(|x| println!("{}", x));
     ///
@@ -2355,32 +2375,118 @@ impl<'a, I: Iterator + ?Sized> Iterator for &'a mut I {
 }
 
 /// Conversion from an `Iterator`.
+///
+/// By implementing `FromIterator` for a type, you define how it will be
+/// created from an iterator. This is common for types which describe a
+/// collection of some kind.
+///
+/// `FromIterator`'s [`from_iter()`] is rarely called explicitly, and is instead
+/// used through [`Iterator`]'s [`collect()`] method. See [`collect()`]'s
+/// documentation for more examples.
+///
+/// [`from_iter()`]: #tymethod.from_iter
+/// [`Iterator`]: trait.Iterator.html
+/// [`collect()`]: trait.Iterator.html#method.collect
+///
+/// See also: [`IntoIterator`].
+///
+/// [`IntoIterator`]: trait.IntoIterator.html
+///
+/// # Examples
+///
+/// Basic usage:
+///
+/// ```
+/// use std::iter::FromIterator;
+///
+/// let five_fives = std::iter::repeat(5).take(5);
+///
+/// let v = Vec::from_iter(five_fives);
+///
+/// assert_eq!(v, vec![5, 5, 5, 5, 5]);
+/// ```
+///
+/// Using [`collect()`] to implicitly use `FromIterator`:
+///
+/// ```
+/// let five_fives = std::iter::repeat(5).take(5);
+///
+/// let v: Vec<i32> = five_fives.collect();
+///
+/// assert_eq!(v, vec![5, 5, 5, 5, 5]);
+/// ```
+///
+/// Implementing `FromIterator` for your type:
+///
+/// ```
+/// use std::iter::FromIterator;
+///
+/// // A sample collection, that's just a wrapper over Vec<T>
+/// #[derive(Debug)]
+/// struct MyCollection(Vec<i32>);
+///
+/// // Let's give it some methods so we can create one and add things
+/// // to it.
+/// impl MyCollection {
+///     fn new() -> MyCollection {
+///         MyCollection(Vec::new())
+///     }
+///
+///     fn add(&mut self, elem: i32) {
+///         self.0.push(elem);
+///     }
+/// }
+///
+/// // and we'll implement FromIterator
+/// impl FromIterator<i32> for MyCollection {
+///     fn from_iter<I: IntoIterator<Item=i32>>(iterator: I) -> Self {
+///         let mut c = MyCollection::new();
+///
+///         for i in iterator {
+///             c.add(i);
+///         }
+///
+///         c
+///     }
+/// }
+///
+/// // Now we can make a new iterator...
+/// let iter = (0..5).into_iter();
+///
+/// // ... and make a MyCollection out of it
+/// let c = MyCollection::from_iter(iter);
+///
+/// assert_eq!(c.0, vec![0, 1, 2, 3, 4]);
+///
+/// // collect works too!
+///
+/// let iter = (0..5).into_iter();
+/// let c: MyCollection = iter.collect();
+///
+/// assert_eq!(c.0, vec![0, 1, 2, 3, 4]);
+/// ```
 #[stable(feature = "rust1", since = "1.0.0")]
 #[rustc_on_unimplemented="a collection of type `{Self}` cannot be \
                           built from an iterator over elements of type `{A}`"]
 pub trait FromIterator<A>: Sized {
-    /// Builds a container with elements from something iterable.
+    /// Creates a value from an iterator.
+    ///
+    /// See the [module-level documentation] for more.
+    ///
+    /// [module-level documentation]: trait.FromIterator.html
     ///
     /// # Examples
     ///
+    /// Basic usage:
+    ///
     /// ```
-    /// use std::collections::HashSet;
     /// use std::iter::FromIterator;
     ///
-    /// let colors_vec = vec!["red", "red", "yellow", "blue"];
-    /// let colors_set = HashSet::<&str>::from_iter(colors_vec);
-    /// assert_eq!(colors_set.len(), 3);
-    /// ```
+    /// let five_fives = std::iter::repeat(5).take(5);
     ///
-    /// `FromIterator` is more commonly used implicitly via the
-    /// `Iterator::collect` method:
+    /// let v = Vec::from_iter(five_fives);
     ///
-    /// ```
-    /// use std::collections::HashSet;
-    ///
-    /// let colors_vec = vec!["red", "red", "yellow", "blue"];
-    /// let colors_set = colors_vec.into_iter().collect::<HashSet<&str>>();
-    /// assert_eq!(colors_set.len(), 3);
+    /// assert_eq!(v, vec![5, 5, 5, 5, 5]);
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     fn from_iter<T: IntoIterator<Item=A>>(iterator: T) -> Self;
@@ -2395,9 +2501,13 @@ pub trait FromIterator<A>: Sized {
 /// One benefit of implementing `IntoIterator` is that your type will [work
 /// with Rust's `for` loop syntax](index.html#for-loops-and-intoiterator).
 ///
+/// See also: [`FromIterator`].
+///
+/// [`FromIterator`]: trait.FromIterator.html
+///
 /// # Examples
 ///
-/// Vectors implement `IntoIterator`:
+/// Basic usage:
 ///
 /// ```
 /// let v = vec![1, 2, 3];
@@ -2469,7 +2579,33 @@ pub trait IntoIterator {
     #[stable(feature = "rust1", since = "1.0.0")]
     type IntoIter: Iterator<Item=Self::Item>;
 
-    /// Consumes `Self` and returns an iterator over it.
+    /// Creates an iterator from a value.
+    ///
+    /// See the [module-level documentation] for more.
+    ///
+    /// [module-level documentation]: trait.IntoIterator.html
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let v = vec![1, 2, 3];
+    ///
+    /// let mut iter = v.into_iter();
+    ///
+    /// let n = iter.next();
+    /// assert_eq!(Some(1), n);
+    ///
+    /// let n = iter.next();
+    /// assert_eq!(Some(2), n);
+    ///
+    /// let n = iter.next();
+    /// assert_eq!(Some(3), n);
+    ///
+    /// let n = iter.next();
+    /// assert_eq!(None, n);
+    /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     fn into_iter(self) -> Self::IntoIter;
 }
@@ -2677,7 +2813,7 @@ impl<'a, I: DoubleEndedIterator + ?Sized> DoubleEndedIterator for &'a mut I {
 ///
 /// ```
 /// // a finite range knows exactly how many times it will iterate
-/// let five = (0..5);
+/// let five = 0..5;
 ///
 /// assert_eq!(5, five.len());
 /// ```
@@ -2731,7 +2867,11 @@ pub trait ExactSizeIterator: Iterator {
     /// implementation, you can do so. See the [trait-level] docs for an
     /// example.
     ///
+    /// This function has the same safety guarantees as the [`size_hint()`]
+    /// function.
+    ///
     /// [trait-level]: trait.ExactSizeIterator.html
+    /// [`size_hint()`]: trait.Iterator.html#method.size_hint
     ///
     /// # Examples
     ///
@@ -2739,7 +2879,7 @@ pub trait ExactSizeIterator: Iterator {
     ///
     /// ```
     /// // a finite range knows exactly how many times it will iterate
-    /// let five = (0..5);
+    /// let five = 0..5;
     ///
     /// assert_eq!(5, five.len());
     /// ```
@@ -3464,6 +3604,7 @@ impl<I: Iterator> Peekable<I> {
     ///
     /// assert_eq!(iter.is_empty(), true);
     /// ```
+    #[unstable(feature = "core", issue = "27701")]
     #[inline]
     pub fn is_empty(&mut self) -> bool {
         self.peek().is_none()
@@ -3967,6 +4108,9 @@ pub trait Step: PartialOrd + Sized {
 
 macro_rules! step_impl_unsigned {
     ($($t:ty)*) => ($(
+        #[unstable(feature = "step_trait",
+                   reason = "likely to be replaced by finer-grained traits",
+                   issue = "27741")]
         impl Step for $t {
             #[inline]
             fn step(&self, by: &$t) -> Option<$t> {
@@ -3994,6 +4138,9 @@ macro_rules! step_impl_unsigned {
 }
 macro_rules! step_impl_signed {
     ($($t:ty)*) => ($(
+        #[unstable(feature = "step_trait",
+                   reason = "likely to be replaced by finer-grained traits",
+                   issue = "27741")]
         impl Step for $t {
             #[inline]
             fn step(&self, by: &$t) -> Option<$t> {
@@ -4033,6 +4180,9 @@ macro_rules! step_impl_signed {
 
 macro_rules! step_impl_no_between {
     ($($t:ty)*) => ($(
+        #[unstable(feature = "step_trait",
+                   reason = "likely to be replaced by finer-grained traits",
+                   issue = "27741")]
         impl Step for $t {
             #[inline]
             fn step(&self, by: &$t) -> Option<$t> {

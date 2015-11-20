@@ -45,6 +45,7 @@
 //!
 //! struct Person {
 //!     id: u32,
+//! # #[allow(dead_code)]
 //!     name: String,
 //!     phone: u64,
 //! }
@@ -74,6 +75,7 @@ use prelude::v1::*;
 
 use mem;
 
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use self::sip::SipHasher;
 
 mod sip;
@@ -92,6 +94,8 @@ mod sip;
 ///
 /// In other words, if two keys are equal, their hashes should also be equal.
 /// `HashMap` and `HashSet` both rely on this behavior.
+///
+/// This trait can be used with `#[derive]`.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait Hash {
     /// Feeds this value into the state given, updating the hasher as necessary.
