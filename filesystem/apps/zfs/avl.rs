@@ -100,6 +100,18 @@ impl<T, K: PartialOrd> Tree<T, K> {
         }
     }
 
+    /// Good ol' binary search. Returns immutable reference
+    pub fn find(&self, key: K) -> Option<&T> {
+        let root = self.root;
+        self._find(key, root)
+    }
+
+    /// Good ol' binary search. Returns a mutable reference
+    pub fn find_mut(&mut self, key: K) -> Option<&mut T> {
+        let root = self.root;
+        self._find_mut(key, root)
+    }
+
     // Implementation of insert
     fn _insert(&mut self, value: T, node: Option<usize>) -> usize {
         let node =
@@ -134,6 +146,39 @@ impl<T, K: PartialOrd> Tree<T, K> {
         f(self.node(node));
         if let Some(r) = self.node(node).right {
             self._in_order(f, r);
+        }
+    }
+
+    pub fn _find(&self, key: K, node: Option<usize>) -> Option<&T> {
+        node.and_then(|n| {
+            if (self.key)(&self.node(n).value) < key {
+                let left = self.node(n).left;
+                self._find(key, left)
+            } else if (self.key)(&self.node(n).value) > key {
+                let right = self.node(n).right;
+                self._find(key, right)
+            } else {
+                // Found it!
+                Some(&self.node(n).value)
+            }
+        })
+    }
+
+    pub fn _find_mut(&mut self, key: K, node: Option<usize>) -> Option<&mut T> {
+        match node {
+            Some(n) => {
+                if (self.key)(&self.node(n).value) < key {
+                    let left = self.node(n).left;
+                    self._find_mut(key, left)
+                } else if (self.key)(&self.node(n).value) > key {
+                    let right = self.node(n).right;
+                    self._find_mut(key, right)
+                } else {
+                    // Found it!
+                    Some(&mut self.node_mut(n).value)
+                }
+            },
+            None => { None },
         }
     }
 
