@@ -1,7 +1,7 @@
 use common::get_slice::GetSlice;
 
+use alloc::arc::Arc;
 use alloc::boxed::{Box, FnBox};
-use alloc::rc::Rc;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
@@ -146,7 +146,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
             cwd: if flags & CLONE_FS == CLONE_FS {
                 parent.cwd.clone()
             } else {
-                Rc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+                Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
             },
             memory: if flags & CLONE_VM == CLONE_VM {
                 parent.memory.clone()
@@ -166,7 +166,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                         });
                     }
                 }
-                Rc::new(UnsafeCell::new(mem))
+                Arc::new(UnsafeCell::new(mem))
             },
             files: if flags & CLONE_FILES == CLONE_FILES {
                 parent.files.clone()
@@ -180,7 +180,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                         });
                     }
                 }
-                Rc::new(UnsafeCell::new(files))
+                Arc::new(UnsafeCell::new(files))
             },
 
             statuses: Vec::new(),
@@ -314,13 +314,13 @@ pub struct Context {
 
 // These members are cloned for threads, copied or created for processes {
     // Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
-    pub args: Rc<UnsafeCell<Vec<String>>>,
+    pub args: Arc<UnsafeCell<Vec<String>>>,
     /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
-    pub cwd: Rc<UnsafeCell<String>>,
+    pub cwd: Arc<UnsafeCell<String>>,
     /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
-    pub memory: Rc<UnsafeCell<Vec<ContextMemory>>>,
+    pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
     /// Program files, cloned for threads, copied or created for processes. Modified by file operations
-    pub files: Rc<UnsafeCell<Vec<ContextFile>>>,
+    pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
 // }
 
     /// Exit statuses of children
@@ -372,10 +372,10 @@ impl Context {
             stack: None,
             loadable: false,
 
-            args: Rc::new(UnsafeCell::new(Vec::new())),
-            cwd: Rc::new(UnsafeCell::new(String::new())),
-            memory: Rc::new(UnsafeCell::new(Vec::new())),
-            files: Rc::new(UnsafeCell::new(Vec::new())),
+            args: Arc::new(UnsafeCell::new(Vec::new())),
+            cwd: Arc::new(UnsafeCell::new(String::new())),
+            memory: Arc::new(UnsafeCell::new(Vec::new())),
+            files: Arc::new(UnsafeCell::new(Vec::new())),
 
             statuses: Vec::new(),
         }
@@ -400,10 +400,10 @@ impl Context {
             stack: None,
             loadable: false,
 
-            args: Rc::new(UnsafeCell::new(Vec::new())),
-            cwd: Rc::new(UnsafeCell::new(String::new())),
-            memory: Rc::new(UnsafeCell::new(Vec::new())),
-            files: Rc::new(UnsafeCell::new(Vec::new())),
+            args: Arc::new(UnsafeCell::new(Vec::new())),
+            cwd: Arc::new(UnsafeCell::new(String::new())),
+            memory: Arc::new(UnsafeCell::new(Vec::new())),
+            files: Arc::new(UnsafeCell::new(Vec::new())),
 
             statuses: Vec::new(),
         };

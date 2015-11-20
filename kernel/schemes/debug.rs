@@ -3,7 +3,6 @@ use alloc::boxed::Box;
 use collections::string::String;
 
 use scheduler::context::{context_switch, context_i, contexts_ptr};
-use scheduler;
 
 use schemes::{KScheme, Resource, Url};
 
