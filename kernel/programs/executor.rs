@@ -1,4 +1,4 @@
-use alloc::rc::Rc;
+use alloc::arc::Arc;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
@@ -93,9 +93,9 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                             writeable: true
                         });
 
-                        context.args = Rc::new(UnsafeCell::new(args));
-                        context.cwd = Rc::new(UnsafeCell::new((*context.cwd.get()).clone()));
-                        context.memory = Rc::new(UnsafeCell::new(memory));
+                        context.args = Arc::new(UnsafeCell::new(args));
+                        context.cwd = Arc::new(UnsafeCell::new((*context.cwd.get()).clone()));
+                        context.memory = Arc::new(UnsafeCell::new(memory));
 
                         let user_sp = if let Some(ref stack) = context.stack {
                             let mut sp = stack.physical_address + stack.virtual_size - 128;

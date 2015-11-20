@@ -4,7 +4,6 @@ use collections::vec::Vec;
 use core::ops::Deref;
 use core::{mem, ptr, slice, str, usize};
 
-use common::get_slice::GetSlice;
 use common::memory;
 use common::time::Duration;
 
