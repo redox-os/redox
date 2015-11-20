@@ -427,7 +427,12 @@ pub fn main() {
                                                     println!("got space map phys: {:?}", space_map_phys);
                                                     //println!("got space map: {:?}", &space_map.unwrap()[0..64]);
 
-                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 15 }, &space_map.unwrap());
+                                                    let mut range_tree: avl::Tree<space_map::Entry, u64> =
+                                                        avl::Tree::new(Box::new(|x| x.offset()));
+                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 15 },
+                                                                                  &mut range_tree,
+                                                                                  &space_map.unwrap(),
+                                                                                  space_map::MapType::Alloc);
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue type. Expected Uint64.");
                                                 }
