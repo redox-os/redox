@@ -113,9 +113,9 @@ pub enum ZfsTraverse {
 pub struct Zfs {
     pub reader: ZfsReader,
     pub uberblock: Uberblock, // The active uberblock
-    pub mos: Box<ObjectSetPhys>,
-    fs_objset: Box<ObjectSetPhys>,
-    master_node: Box<DNodePhys>,
+    pub mos: ObjectSetPhys,
+    fs_objset: ObjectSetPhys,
+    master_node: DNodePhys,
     root: u64,
 }
 
@@ -149,25 +149,25 @@ impl Zfs {
         let uberblock = try!(zfs_reader.uber(&[]));
 
         //let mos_dva = uberblock.rootbp.dvas[0];
-        let mos: Box<ObjectSetPhys> = Box::new(try!(zfs_reader.read_type(&uberblock.rootbp)));
+        let mos: ObjectSetPhys = try!(zfs_reader.read_type(&uberblock.rootbp));
         let mos_bp1 = mos.meta_dnode.get_blockptr(0);
 
         // 2nd dnode in MOS points at the root dataset zap
-        let dnode1: Box<DNodePhys> = Box::new(try!(zfs_reader.read_type_array(&mos_bp1, 1)));
+        let dnode1: DNodePhys = try!(zfs_reader.read_type_array(&mos_bp1, 1));
 
-        let root_ds_bp = Box::new(dnode1.get_blockptr(0));
-        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(*root_ds_bp));
+        let root_ds_bp = dnode1.get_blockptr(0);
+        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(root_ds_bp));
 
-        let root_ds_dnode: Box<DNodePhys> =
-            Box::new(try!(zfs_reader.read_type_array(&mos_bp1, root_ds.chunks[0].value as usize)));
+        let root_ds_dnode: DNodePhys =
+            try!(zfs_reader.read_type_array(&mos_bp1, root_ds.chunks[0].value as usize));
 
-        let dsl_dir = Box::new(try!(DslDirPhys::from_bytes(root_ds_dnode.get_bonus())));
-        let head_ds_dnode: Box<DNodePhys> =
-            Box::new(try!(zfs_reader.read_type_array(&mos_bp1, dsl_dir.head_dataset_obj as usize)));
+        let dsl_dir = try!(DslDirPhys::from_bytes(root_ds_dnode.get_bonus()));
+        let head_ds_dnode: DNodePhys =
+            try!(zfs_reader.read_type_array(&mos_bp1, dsl_dir.head_dataset_obj as usize));
 
-        let root_dataset = Box::new(try!(DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus())));
+        let root_dataset = try!(DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()));
 
-        let fs_objset: Box<ObjectSetPhys> = Box::new(try!(zfs_reader.read_type(&root_dataset.bp)));
+        let fs_objset: ObjectSetPhys = try!(zfs_reader.read_type(&root_dataset.bp));
 
         let mut indirect: BlockPtr = try!(zfs_reader.read_type_array(fs_objset.meta_dnode.get_blockptr(0), 0));
         while indirect.level() > 0 {
@@ -175,7 +175,7 @@ impl Zfs {
         }
 
         // Master node is always the second object in the object set
-        let master_node: Box<DNodePhys> = Box::new(try!(zfs_reader.read_type_array(&indirect, 1)));
+        let master_node: DNodePhys = try!(zfs_reader.read_type_array(&indirect, 1));
         let master_node_zap: zap::MZapWrapper = try!(zfs_reader.read_type(master_node.get_blockptr(0)));
 
         // Find the ROOT zap entry
