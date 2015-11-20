@@ -242,7 +242,7 @@ impl MemoryTree {
                               level: level,
                               idx: n,
                           },
-                          MemoryState::Free);
+                          MemoryState::Used);
             Some(Block {
                 idx: n,
                 level: level,
