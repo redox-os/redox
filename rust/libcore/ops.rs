@@ -476,7 +476,9 @@ impl Rem for f32 {
     #[inline]
     #[cfg(not(target_env = "msvc"))]
     fn rem(self, other: f32) -> f32 {
-        extern { fn fmodf(a: f32, b: f32) -> f32; }
+        extern {
+            fn fmodf(a: f32, b: f32) -> f32;
+        }
         unsafe { fmodf(self, other) }
     }
 }
@@ -488,7 +490,9 @@ impl Rem for f64 {
 
     #[inline]
     fn rem(self, other: f64) -> f64 {
-        extern { fn fmod(a: f64, b: f64) -> f64; }
+        extern {
+            fn fmod(a: f64, b: f64) -> f64;
+        }
         unsafe { fmod(self, other) }
     }
 }
@@ -1652,14 +1656,18 @@ pub trait Deref {
 impl<'a, T: ?Sized> Deref for &'a T {
     type Target = T;
 
-    fn deref(&self) -> &T { *self }
+    fn deref(&self) -> &T {
+        *self
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized> Deref for &'a mut T {
     type Target = T;
 
-    fn deref(&self) -> &T { *self }
+    fn deref(&self) -> &T {
+        *self
+    }
 }
 
 /// The `DerefMut` trait is used to specify the functionality of dereferencing
@@ -1711,7 +1719,9 @@ pub trait DerefMut: Deref {
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: ?Sized> DerefMut for &'a mut T {
-    fn deref_mut(&mut self) -> &mut T { *self }
+    fn deref_mut(&mut self) -> &mut T {
+        *self
+    }
 }
 
 /// A version of the call operator that takes an immutable receiver.
@@ -1800,7 +1810,7 @@ mod impls {
 #[unstable(feature = "coerce_unsized", issue = "27732")]
 #[lang="coerce_unsized"]
 pub trait CoerceUnsized<T> {
-    // Empty.
+// Empty.
 }
 
 // &mut T -> &mut U

@@ -25,7 +25,7 @@ use cmp::{PartialEq, Eq, PartialOrd, Ord, Ordering};
 use convert::{AsRef, AsMut};
 use default::Default;
 use fmt;
-use hash::{Hash, self};
+use hash::{self, Hash};
 use iter::IntoIterator;
 use marker::{Copy, Sized, Unsize};
 use option::Option;

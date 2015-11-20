@@ -110,10 +110,9 @@ pub use core::slice::{SplitN, RSplitN, SplitNMut, RSplitNMut};
 pub use core::slice::{bytes, mut_ref_slice, ref_slice};
 pub use core::slice::{from_raw_parts, from_raw_parts_mut};
 
-////////////////////////////////////////////////////////////////////////////////
-// Basic slice extension methods
-////////////////////////////////////////////////////////////////////////////////
-
+/// /////////////////////////////////////////////////////////////////////////////
+/// Basic slice extension methods
+/// /////////////////////////////////////////////////////////////////////////////
 // HACK(japaric) needed for the implementation of `vec!` macro during testing
 // NB see the hack module in this file for more details
 #[cfg(test)]
@@ -150,7 +149,9 @@ mod hack {
     }
 
     #[inline]
-    pub fn to_vec<T>(s: &[T]) -> Vec<T> where T: Clone {
+    pub fn to_vec<T>(s: &[T]) -> Vec<T>
+        where T: Clone
+    {
         let mut vector = Vec::with_capacity(s.len());
         vector.push_all(s);
         vector
@@ -529,7 +530,9 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn split<F>(&self, pred: F) -> Split<T, F> where F: FnMut(&T) -> bool {
+    pub fn split<F>(&self, pred: F) -> Split<T, F>
+        where F: FnMut(&T) -> bool
+    {
         core_slice::SliceExt::split(self, pred)
     }
 
@@ -537,7 +540,9 @@ impl<T> [T] {
     /// match `pred`.  The matched element is not contained in the subslices.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn split_mut<F>(&mut self, pred: F) -> SplitMut<T, F> where F: FnMut(&T) -> bool {
+    pub fn split_mut<F>(&mut self, pred: F) -> SplitMut<T, F>
+        where F: FnMut(&T) -> bool
+    {
         core_slice::SliceExt::split_mut(self, pred)
     }
 
@@ -561,7 +566,9 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn splitn<F>(&self, n: usize, pred: F) -> SplitN<T, F> where F: FnMut(&T) -> bool {
+    pub fn splitn<F>(&self, n: usize, pred: F) -> SplitN<T, F>
+        where F: FnMut(&T) -> bool
+    {
         core_slice::SliceExt::splitn(self, n, pred)
     }
 
@@ -574,7 +581,8 @@ impl<T> [T] {
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn splitn_mut<F>(&mut self, n: usize, pred: F) -> SplitNMut<T, F>
-                         where F: FnMut(&T) -> bool {
+        where F: FnMut(&T) -> bool
+    {
         core_slice::SliceExt::splitn_mut(self, n, pred)
     }
 
@@ -599,7 +607,9 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn rsplitn<F>(&self, n: usize, pred: F) -> RSplitN<T, F> where F: FnMut(&T) -> bool {
+    pub fn rsplitn<F>(&self, n: usize, pred: F) -> RSplitN<T, F>
+        where F: FnMut(&T) -> bool
+    {
         core_slice::SliceExt::rsplitn(self, n, pred)
     }
 
@@ -612,8 +622,9 @@ impl<T> [T] {
     /// slice.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn rsplitn_mut<F>(&mut self,  n: usize, pred: F) -> RSplitNMut<T, F>
-                      where F: FnMut(&T) -> bool {
+    pub fn rsplitn_mut<F>(&mut self, n: usize, pred: F) -> RSplitNMut<T, F>
+        where F: FnMut(&T) -> bool
+    {
         core_slice::SliceExt::rsplitn_mut(self, n, pred)
     }
 
@@ -627,7 +638,9 @@ impl<T> [T] {
     /// assert!(!v.contains(&50));
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn contains(&self, x: &T) -> bool where T: PartialEq {
+    pub fn contains(&self, x: &T) -> bool
+        where T: PartialEq
+    {
         core_slice::SliceExt::contains(self, x)
     }
 
@@ -643,7 +656,9 @@ impl<T> [T] {
     /// assert!(!v.starts_with(&[10, 50]));
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn starts_with(&self, needle: &[T]) -> bool where T: PartialEq {
+    pub fn starts_with(&self, needle: &[T]) -> bool
+        where T: PartialEq
+    {
         core_slice::SliceExt::starts_with(self, needle)
     }
 
@@ -659,7 +674,9 @@ impl<T> [T] {
     /// assert!(!v.ends_with(&[50, 30]));
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn ends_with(&self, needle: &[T]) -> bool where T: PartialEq {
+    pub fn ends_with(&self, needle: &[T]) -> bool
+        where T: PartialEq
+    {
         core_slice::SliceExt::ends_with(self, needle)
     }
 
@@ -686,7 +703,9 @@ impl<T> [T] {
     /// assert!(match r { Ok(1...4) => true, _ => false, });
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
-    pub fn binary_search(&self, x: &T) -> Result<usize, usize> where T: Ord {
+    pub fn binary_search(&self, x: &T) -> Result<usize, usize>
+        where T: Ord
+    {
         core_slice::SliceExt::binary_search(self, x)
     }
 
@@ -723,7 +742,9 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn binary_search_by<F>(&self, f: F) -> Result<usize, usize> where F: FnMut(&T) -> Ordering {
+    pub fn binary_search_by<F>(&self, f: F) -> Result<usize, usize>
+        where F: FnMut(&T) -> Ordering
+    {
         core_slice::SliceExt::binary_search_by(self, f)
     }
 
@@ -743,7 +764,9 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn sort(&mut self) where T: Ord {
+    pub fn sort(&mut self)
+        where T: Ord
+    {
         self.sort_by(|a, b| a.cmp(b))
     }
 
@@ -766,7 +789,9 @@ impl<T> [T] {
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn sort_by<F>(&mut self, compare: F) where F: FnMut(&T, &T) -> Ordering {
+    pub fn sort_by<F>(&mut self, compare: F)
+        where F: FnMut(&T, &T) -> Ordering
+    {
         merge_sort(self, compare)
     }
 
@@ -790,14 +815,18 @@ impl<T> [T] {
     /// assert!(dst == [3, 4, 5]);
     /// ```
     #[unstable(feature = "clone_from_slice", issue = "27750")]
-    pub fn clone_from_slice(&mut self, src: &[T]) -> usize where T: Clone {
+    pub fn clone_from_slice(&mut self, src: &[T]) -> usize
+        where T: Clone
+    {
         core_slice::SliceExt::clone_from_slice(self, src)
     }
 
     /// Copies `self` into a new `Vec`.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn to_vec(&self) -> Vec<T> where T: Clone {
+    pub fn to_vec(&self) -> Vec<T>
+        where T: Clone
+    {
         // NB see hack module in this file
         hack::to_vec(self)
     }
@@ -811,9 +840,9 @@ impl<T> [T] {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Extension traits for slices over specific kinds of data
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
+/// Extension traits for slices over specific kinds of data
+/// /////////////////////////////////////////////////////////////////////////////
 #[unstable(feature = "slice_concat_ext",
            reason = "trait should not have to exist",
            issue = "27747")]
@@ -876,7 +905,11 @@ impl<T: Clone, V: Borrow<[T]>> SliceConcatExt<T> for [V] {
         let mut result = Vec::with_capacity(size + self.len());
         let mut first = true;
         for v in self {
-            if first { first = false } else { result.push(sep.clone()) }
+            if first {
+                first = false
+            } else {
+                result.push(sep.clone())
+            }
             result.push_all(v.borrow())
         }
         result
@@ -887,39 +920,48 @@ impl<T: Clone, V: Borrow<[T]>> SliceConcatExt<T> for [V] {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Standard trait implementations for slices
-////////////////////////////////////////////////////////////////////////////////
-
+/// /////////////////////////////////////////////////////////////////////////////
+/// Standard trait implementations for slices
+/// /////////////////////////////////////////////////////////////////////////////
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Borrow<[T]> for Vec<T> {
-    fn borrow(&self) -> &[T] { &self[..] }
+    fn borrow(&self) -> &[T] {
+        &self[..]
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T> BorrowMut<[T]> for Vec<T> {
-    fn borrow_mut(&mut self) -> &mut [T] { &mut self[..] }
+    fn borrow_mut(&mut self) -> &mut [T] {
+        &mut self[..]
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: Clone> ToOwned for [T] {
     type Owned = Vec<T>;
     #[cfg(not(test))]
-    fn to_owned(&self) -> Vec<T> { self.to_vec() }
+    fn to_owned(&self) -> Vec<T> {
+        self.to_vec()
+    }
 
     // HACK(japaric): with cfg(test) the inherent `[T]::to_vec`, which is required for this method
     // definition, is not available. Since we don't require this method for testing purposes, I'll
     // just stub it
     // NB see the slice::hack module in slice.rs for more information
     #[cfg(test)]
-    fn to_owned(&self) -> Vec<T> { panic!("not available with cfg(test)") }
+    fn to_owned(&self) -> Vec<T> {
+        panic!("not available with cfg(test)")
+    }
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// Sorting
-////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////
+/// Sorting
+/// /////////////////////////////////////////////////////////////////////////////
 
-fn insertion_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Ordering {
+fn insertion_sort<T, F>(v: &mut [T], mut compare: F)
+    where F: FnMut(&T, &T) -> Ordering
+{
     let len = v.len() as isize;
     let buf_v = v.as_mut_ptr();
 
@@ -935,8 +977,7 @@ fn insertion_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> O
             // rather than <=, to maintain stability.
 
             // 0 <= j - 1 < len, so .offset(j - 1) is in bounds.
-            while j > 0 &&
-                    compare(&*read_ptr, &*buf_v.offset(j - 1)) == Less {
+            while j > 0 && compare(&*read_ptr, &*buf_v.offset(j - 1)) == Less {
                 j -= 1;
             }
 
@@ -949,9 +990,7 @@ fn insertion_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> O
 
             if i != j {
                 let tmp = ptr::read(read_ptr);
-                ptr::copy(&*buf_v.offset(j),
-                          buf_v.offset(j + 1),
-                          (i - j) as usize);
+                ptr::copy(&*buf_v.offset(j), buf_v.offset(j + 1), (i - j) as usize);
                 ptr::copy_nonoverlapping(&tmp, buf_v.offset(j), 1);
                 mem::forget(tmp);
             }
@@ -959,7 +998,9 @@ fn insertion_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> O
     }
 }
 
-fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Ordering {
+fn merge_sort<T, F>(v: &mut [T], mut compare: F)
+    where F: FnMut(&T, &T) -> Ordering
+{
     // warning: this wildly uses unsafe.
     const BASE_INSERTION: usize = 32;
     const LARGE_INSERTION: usize = 16;
@@ -988,7 +1029,7 @@ fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Order
     let mut working_space = Vec::with_capacity(2 * len);
     // these both are buffers of length `len`.
     let mut buf_dat = working_space.as_mut_ptr();
-    let mut buf_tmp = unsafe {buf_dat.offset(len as isize)};
+    let mut buf_tmp = unsafe { buf_dat.offset(len as isize) };
 
     // length `len`.
     let buf_v = v.as_ptr();
@@ -1000,7 +1041,7 @@ fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Order
     // We could hardcode the sorting comparisons here, and we could
     // manipulate/step the pointers themselves, rather than repeatedly
     // .offset-ing.
-    for start in (0.. len).step_by(insertion) {
+    for start in (0..len).step_by(insertion) {
         // start <= i < len;
         for i in start..cmp::min(start + insertion, len) {
             // j satisfies: start <= j <= i;
@@ -1014,8 +1055,7 @@ fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Order
 
                 // start <= j - 1 < len, so .offset(j - 1) is in
                 // bounds.
-                while j > start as isize &&
-                        compare(&*read_ptr, &*buf_dat.offset(j - 1)) == Less {
+                while j > start as isize && compare(&*read_ptr, &*buf_dat.offset(j - 1)) == Less {
                     j -= 1;
                 }
 
@@ -1025,9 +1065,7 @@ fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Order
                 // j + 1 could be `len` (for the last `i`), but in
                 // that case, `i == j` so we don't copy. The
                 // `.offset(j)` is always in bounds.
-                ptr::copy(&*buf_dat.offset(j),
-                          buf_dat.offset(j + 1),
-                          i - j as usize);
+                ptr::copy(&*buf_dat.offset(j), buf_dat.offset(j + 1), i - j as usize);
                 ptr::copy_nonoverlapping(read_ptr, buf_dat.offset(j), 1);
             }
         }

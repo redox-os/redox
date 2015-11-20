@@ -54,7 +54,9 @@ pub use intrinsics::drop_in_place;
 /// ```
 #[inline]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub const fn null<T>() -> *const T { 0 as *const T }
+pub const fn null<T>() -> *const T {
+    0 as *const T
+}
 
 /// Creates a null mutable raw pointer.
 ///
@@ -68,7 +70,9 @@ pub const fn null<T>() -> *const T { 0 as *const T }
 /// ```
 #[inline]
 #[stable(feature = "rust1", since = "1.0.0")]
-pub const fn null_mut<T>() -> *mut T { 0 as *mut T }
+pub const fn null_mut<T>() -> *mut T {
+    0 as *mut T
+}
 
 /// Swaps the values at two mutable locations of the same type, without
 /// deinitializing either. They may overlap, unlike `mem::swap` which is
@@ -166,7 +170,9 @@ impl<T: ?Sized> *const T {
     /// Returns true if the pointer is null.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_null(self) -> bool where T: Sized {
+    pub fn is_null(self) -> bool
+        where T: Sized
+    {
         self == null()
     }
 
@@ -185,7 +191,9 @@ impl<T: ?Sized> *const T {
                          the raw pointer",
                issue = "27780")]
     #[inline]
-    pub unsafe fn as_ref<'a>(&self) -> Option<&'a T> where T: Sized {
+    pub unsafe fn as_ref<'a>(&self) -> Option<&'a T>
+        where T: Sized
+    {
         if self.is_null() {
             None
         } else {
@@ -204,7 +212,9 @@ impl<T: ?Sized> *const T {
     /// any further use of the returned value will result in undefined behavior.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub unsafe fn offset(self, count: isize) -> *const T where T: Sized {
+    pub unsafe fn offset(self, count: isize) -> *const T
+        where T: Sized
+    {
         intrinsics::offset(self, count)
     }
 }
@@ -214,7 +224,9 @@ impl<T: ?Sized> *mut T {
     /// Returns true if the pointer is null.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub fn is_null(self) -> bool where T: Sized {
+    pub fn is_null(self) -> bool
+        where T: Sized
+    {
         self == null_mut()
     }
 
@@ -233,7 +245,9 @@ impl<T: ?Sized> *mut T {
                          the raw pointer",
                issue = "27780")]
     #[inline]
-    pub unsafe fn as_ref<'a>(&self) -> Option<&'a T> where T: Sized {
+    pub unsafe fn as_ref<'a>(&self) -> Option<&'a T>
+        where T: Sized
+    {
         if self.is_null() {
             None
         } else {
@@ -251,7 +265,9 @@ impl<T: ?Sized> *mut T {
     /// the pointer is used.
     #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
-    pub unsafe fn offset(self, count: isize) -> *mut T where T: Sized {
+    pub unsafe fn offset(self, count: isize) -> *mut T
+        where T: Sized
+    {
         intrinsics::offset(self, count) as *mut T
     }
 
@@ -267,7 +283,9 @@ impl<T: ?Sized> *mut T {
                          information",
                issue = "27780")]
     #[inline]
-    pub unsafe fn as_mut<'a>(&self) -> Option<&'a mut T> where T: Sized {
+    pub unsafe fn as_mut<'a>(&self) -> Option<&'a mut T>
+        where T: Sized
+    {
         if self.is_null() {
             None
         } else {
@@ -280,7 +298,9 @@ impl<T: ?Sized> *mut T {
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> PartialEq for *const T {
     #[inline]
-    fn eq(&self, other: &*const T) -> bool { *self == *other }
+    fn eq(&self, other: &*const T) -> bool {
+        *self == *other
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -289,7 +309,9 @@ impl<T: ?Sized> Eq for *const T {}
 #[stable(feature = "rust1", since = "1.0.0")]
 impl<T: ?Sized> PartialEq for *mut T {
     #[inline]
-    fn eq(&self, other: &*mut T) -> bool { *self == *other }
+    fn eq(&self, other: &*mut T) -> bool {
+        *self == *other
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -418,16 +440,24 @@ impl<T: ?Sized> PartialOrd for *const T {
     }
 
     #[inline]
-    fn lt(&self, other: &*const T) -> bool { *self < *other }
+    fn lt(&self, other: &*const T) -> bool {
+        *self < *other
+    }
 
     #[inline]
-    fn le(&self, other: &*const T) -> bool { *self <= *other }
+    fn le(&self, other: &*const T) -> bool {
+        *self <= *other
+    }
 
     #[inline]
-    fn gt(&self, other: &*const T) -> bool { *self > *other }
+    fn gt(&self, other: &*const T) -> bool {
+        *self > *other
+    }
 
     #[inline]
-    fn ge(&self, other: &*const T) -> bool { *self >= *other }
+    fn ge(&self, other: &*const T) -> bool {
+        *self >= *other
+    }
 }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -452,16 +482,24 @@ impl<T: ?Sized> PartialOrd for *mut T {
     }
 
     #[inline]
-    fn lt(&self, other: &*mut T) -> bool { *self < *other }
+    fn lt(&self, other: &*mut T) -> bool {
+        *self < *other
+    }
 
     #[inline]
-    fn le(&self, other: &*mut T) -> bool { *self <= *other }
+    fn le(&self, other: &*mut T) -> bool {
+        *self <= *other
+    }
 
     #[inline]
-    fn gt(&self, other: &*mut T) -> bool { *self > *other }
+    fn gt(&self, other: &*mut T) -> bool {
+        *self > *other
+    }
 
     #[inline]
-    fn ge(&self, other: &*mut T) -> bool { *self >= *other }
+    fn ge(&self, other: &*mut T) -> bool {
+        *self >= *other
+    }
 }
 
 /// A wrapper around a raw `*mut T` that indicates that the possessor
@@ -532,7 +570,8 @@ impl<T: ?Sized> Unique<T> {
     }
 }
 
-#[cfg(not(stage0))] // remove cfg after new snapshot
+#[cfg(not(stage0))]
+// remove cfg after new snapshot
 #[unstable(feature = "unique", issue = "27730")]
 impl<T: ?Sized, U: ?Sized> CoerceUnsized<Unique<U>> for Unique<T> where T: Unsize<U> { }
 
@@ -583,7 +622,10 @@ impl<T: ?Sized> !Sync for Shared<T> { }
 impl<T: ?Sized> Shared<T> {
     /// Creates a new `Shared`.
     pub unsafe fn new(ptr: *mut T) -> Self {
-        Shared { pointer: NonZero::new(ptr), _marker: PhantomData }
+        Shared {
+            pointer: NonZero::new(ptr),
+            _marker: PhantomData,
+        }
     }
 }
 
@@ -597,7 +639,8 @@ impl<T: ?Sized> Clone for Shared<T> {
 #[unstable(feature = "shared", issue = "27730")]
 impl<T: ?Sized> Copy for Shared<T> { }
 
-#[cfg(not(stage0))] // remove cfg after new snapshot
+#[cfg(not(stage0))]
+// remove cfg after new snapshot
 #[unstable(feature = "shared", issue = "27730")]
 impl<T: ?Sized, U: ?Sized> CoerceUnsized<Shared<U>> for Shared<T> where T: Unsize<U> { }
 

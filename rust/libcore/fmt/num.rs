@@ -74,7 +74,7 @@ trait GenericRadix {
                 curr -= 1;
                 if x == zero {
                     // No more digits left to accumulate.
-                    break
+                    break;
                 };
             }
         } else {
@@ -86,7 +86,7 @@ trait GenericRadix {
                 curr -= 1;
                 if x == zero {
                     // No more digits left to accumulate.
-                    break
+                    break;
                 };
             }
         }
@@ -255,8 +255,7 @@ integer! { i16, u16 }
 integer! { i32, u32 }
 integer! { i64, u64 }
 
-const DEC_DIGITS_LUT: &'static[u8] =
-    b"0001020304050607080910111213141516171819\
+const DEC_DIGITS_LUT: &'static [u8] = b"0001020304050607080910111213141516171819\
       2021222324252627282930313233343536373839\
       4041424344454647484950515253545556575859\
       6061626364656667686970717273747576777879\

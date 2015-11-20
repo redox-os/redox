@@ -251,9 +251,15 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn store(&self, val: bool, order: Ordering) {
-        let val = if val { UINT_TRUE } else { 0 };
+        let val = if val {
+            UINT_TRUE
+        } else {
+            0
+        };
 
-        unsafe { atomic_store(self.v.get(), val, order); }
+        unsafe {
+            atomic_store(self.v.get(), val, order);
+        }
     }
 
     /// Stores a value into the bool, returning the old value.
@@ -273,7 +279,11 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn swap(&self, val: bool, order: Ordering) -> bool {
-        let val = if val { UINT_TRUE } else { 0 };
+        let val = if val {
+            UINT_TRUE
+        } else {
+            0
+        };
 
         unsafe { atomic_swap(self.v.get(), val, order) > 0 }
     }
@@ -302,8 +312,16 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn compare_and_swap(&self, current: bool, new: bool, order: Ordering) -> bool {
-        let current = if current { UINT_TRUE } else { 0 };
-        let new = if new { UINT_TRUE } else { 0 };
+        let current = if current {
+            UINT_TRUE
+        } else {
+            0
+        };
+        let new = if new {
+            UINT_TRUE
+        } else {
+            0
+        };
 
         unsafe { atomic_compare_and_swap(self.v.get(), current, new, order) > 0 }
     }
@@ -335,7 +353,11 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn fetch_and(&self, val: bool, order: Ordering) -> bool {
-        let val = if val { UINT_TRUE } else { 0 };
+        let val = if val {
+            UINT_TRUE
+        } else {
+            0
+        };
 
         unsafe { atomic_and(self.v.get(), val, order) > 0 }
     }
@@ -368,7 +390,11 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn fetch_nand(&self, val: bool, order: Ordering) -> bool {
-        let val = if val { UINT_TRUE } else { 0 };
+        let val = if val {
+            UINT_TRUE
+        } else {
+            0
+        };
 
         unsafe { atomic_nand(self.v.get(), val, order) > 0 }
     }
@@ -400,7 +426,11 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn fetch_or(&self, val: bool, order: Ordering) -> bool {
-        let val = if val { UINT_TRUE } else { 0 };
+        let val = if val {
+            UINT_TRUE
+        } else {
+            0
+        };
 
         unsafe { atomic_or(self.v.get(), val, order) > 0 }
     }
@@ -432,7 +462,11 @@ impl AtomicBool {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn fetch_xor(&self, val: bool, order: Ordering) -> bool {
-        let val = if val { UINT_TRUE } else { 0 };
+        let val = if val {
+            UINT_TRUE
+        } else {
+            0
+        };
 
         unsafe { atomic_xor(self.v.get(), val, order) > 0 }
     }
@@ -451,7 +485,7 @@ impl AtomicIsize {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub const fn new(v: isize) -> AtomicIsize {
-        AtomicIsize {v: UnsafeCell::new(v)}
+        AtomicIsize { v: UnsafeCell::new(v) }
     }
 
     /// Loads a value from the isize.
@@ -498,7 +532,9 @@ impl AtomicIsize {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn store(&self, val: isize, order: Ordering) {
-        unsafe { atomic_store(self.v.get(), val, order); }
+        unsafe {
+            atomic_store(self.v.get(), val, order);
+        }
     }
 
     /// Stores a value into the isize, returning the old value.
@@ -690,7 +726,9 @@ impl AtomicUsize {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn store(&self, val: usize, order: Ordering) {
-        unsafe { atomic_store(self.v.get(), val, order); }
+        unsafe {
+            atomic_store(self.v.get(), val, order);
+        }
     }
 
     /// Stores a value into the usize, returning the old value.
@@ -861,9 +899,7 @@ impl<T> AtomicPtr<T> {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn load(&self, order: Ordering) -> *mut T {
-        unsafe {
-            atomic_load(self.p.get() as *mut usize, order) as *mut T
-        }
+        unsafe { atomic_load(self.p.get() as *mut usize, order) as *mut T }
     }
 
     /// Stores a value into the pointer.
@@ -889,7 +925,9 @@ impl<T> AtomicPtr<T> {
     #[inline]
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn store(&self, ptr: *mut T, order: Ordering) {
-        unsafe { atomic_store(self.p.get() as *mut usize, ptr as usize, order); }
+        unsafe {
+            atomic_store(self.p.get() as *mut usize, ptr as usize, order);
+        }
     }
 
     /// Stores a value into the pointer, returning the old value.
@@ -939,31 +977,33 @@ impl<T> AtomicPtr<T> {
     #[stable(feature = "rust1", since = "1.0.0")]
     pub fn compare_and_swap(&self, current: *mut T, new: *mut T, order: Ordering) -> *mut T {
         unsafe {
-            atomic_compare_and_swap(self.p.get() as *mut usize, current as usize,
-                                    new as usize, order) as *mut T
+            atomic_compare_and_swap(self.p.get() as *mut usize,
+                                    current as usize,
+                                    new as usize,
+                                    order) as *mut T
         }
     }
 }
 
 #[inline]
-unsafe fn atomic_store<T>(dst: *mut T, val: T, order:Ordering) {
+unsafe fn atomic_store<T>(dst: *mut T, val: T, order: Ordering) {
     match order {
         Release => intrinsics::atomic_store_rel(dst, val),
         Relaxed => intrinsics::atomic_store_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_store(dst, val),
+        SeqCst => intrinsics::atomic_store(dst, val),
         Acquire => panic!("there is no such thing as an acquire store"),
-        AcqRel  => panic!("there is no such thing as an acquire/release store"),
+        AcqRel => panic!("there is no such thing as an acquire/release store"),
     }
 }
 
 #[inline]
-unsafe fn atomic_load<T>(dst: *const T, order:Ordering) -> T {
+unsafe fn atomic_load<T>(dst: *const T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_load_acq(dst),
         Relaxed => intrinsics::atomic_load_relaxed(dst),
-        SeqCst  => intrinsics::atomic_load(dst),
+        SeqCst => intrinsics::atomic_load(dst),
         Release => panic!("there is no such thing as a release load"),
-        AcqRel  => panic!("there is no such thing as an acquire/release load"),
+        AcqRel => panic!("there is no such thing as an acquire/release load"),
     }
 }
 
@@ -972,9 +1012,9 @@ unsafe fn atomic_swap<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_xchg_acq(dst, val),
         Release => intrinsics::atomic_xchg_rel(dst, val),
-        AcqRel  => intrinsics::atomic_xchg_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_xchg_acqrel(dst, val),
         Relaxed => intrinsics::atomic_xchg_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_xchg(dst, val)
+        SeqCst => intrinsics::atomic_xchg(dst, val),
     }
 }
 
@@ -984,9 +1024,9 @@ unsafe fn atomic_add<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_xadd_acq(dst, val),
         Release => intrinsics::atomic_xadd_rel(dst, val),
-        AcqRel  => intrinsics::atomic_xadd_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_xadd_acqrel(dst, val),
         Relaxed => intrinsics::atomic_xadd_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_xadd(dst, val)
+        SeqCst => intrinsics::atomic_xadd(dst, val),
     }
 }
 
@@ -996,20 +1036,20 @@ unsafe fn atomic_sub<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_xsub_acq(dst, val),
         Release => intrinsics::atomic_xsub_rel(dst, val),
-        AcqRel  => intrinsics::atomic_xsub_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_xsub_acqrel(dst, val),
         Relaxed => intrinsics::atomic_xsub_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_xsub(dst, val)
+        SeqCst => intrinsics::atomic_xsub(dst, val),
     }
 }
 
 #[inline]
-unsafe fn atomic_compare_and_swap<T>(dst: *mut T, old:T, new:T, order: Ordering) -> T {
+unsafe fn atomic_compare_and_swap<T>(dst: *mut T, old: T, new: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_cxchg_acq(dst, old, new),
         Release => intrinsics::atomic_cxchg_rel(dst, old, new),
-        AcqRel  => intrinsics::atomic_cxchg_acqrel(dst, old, new),
+        AcqRel => intrinsics::atomic_cxchg_acqrel(dst, old, new),
         Relaxed => intrinsics::atomic_cxchg_relaxed(dst, old, new),
-        SeqCst  => intrinsics::atomic_cxchg(dst, old, new),
+        SeqCst => intrinsics::atomic_cxchg(dst, old, new),
     }
 }
 
@@ -1018,9 +1058,9 @@ unsafe fn atomic_and<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_and_acq(dst, val),
         Release => intrinsics::atomic_and_rel(dst, val),
-        AcqRel  => intrinsics::atomic_and_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_and_acqrel(dst, val),
         Relaxed => intrinsics::atomic_and_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_and(dst, val)
+        SeqCst => intrinsics::atomic_and(dst, val),
     }
 }
 
@@ -1029,9 +1069,9 @@ unsafe fn atomic_nand<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_nand_acq(dst, val),
         Release => intrinsics::atomic_nand_rel(dst, val),
-        AcqRel  => intrinsics::atomic_nand_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_nand_acqrel(dst, val),
         Relaxed => intrinsics::atomic_nand_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_nand(dst, val)
+        SeqCst => intrinsics::atomic_nand(dst, val),
     }
 }
 
@@ -1041,9 +1081,9 @@ unsafe fn atomic_or<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_or_acq(dst, val),
         Release => intrinsics::atomic_or_rel(dst, val),
-        AcqRel  => intrinsics::atomic_or_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_or_acqrel(dst, val),
         Relaxed => intrinsics::atomic_or_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_or(dst, val)
+        SeqCst => intrinsics::atomic_or(dst, val),
     }
 }
 
@@ -1053,9 +1093,9 @@ unsafe fn atomic_xor<T>(dst: *mut T, val: T, order: Ordering) -> T {
     match order {
         Acquire => intrinsics::atomic_xor_acq(dst, val),
         Release => intrinsics::atomic_xor_rel(dst, val),
-        AcqRel  => intrinsics::atomic_xor_acqrel(dst, val),
+        AcqRel => intrinsics::atomic_xor_acqrel(dst, val),
         Relaxed => intrinsics::atomic_xor_relaxed(dst, val),
-        SeqCst  => intrinsics::atomic_xor(dst, val)
+        SeqCst => intrinsics::atomic_xor(dst, val),
     }
 }
 
@@ -1087,9 +1127,9 @@ pub fn fence(order: Ordering) {
         match order {
             Acquire => intrinsics::atomic_fence_acq(),
             Release => intrinsics::atomic_fence_rel(),
-            AcqRel  => intrinsics::atomic_fence_acqrel(),
-            SeqCst  => intrinsics::atomic_fence(),
-            Relaxed => panic!("there is no such thing as a relaxed fence")
+            AcqRel => intrinsics::atomic_fence_acqrel(),
+            SeqCst => intrinsics::atomic_fence(),
+            Relaxed => panic!("there is no such thing as a relaxed fence"),
         }
     }
 }
