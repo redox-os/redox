@@ -29,6 +29,7 @@ pub mod uberblock;
 pub mod vdev;
 pub mod xdr;
 pub mod zap;
+pub mod zfs;
 pub mod zil_header;
 pub mod zio;
 
