@@ -3,11 +3,11 @@ use alloc::boxed::Box;
 use collections::slice;
 use collections::string::ToString;
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
 
 use core::ptr;
 
 use common::{debug, memory};
-use common::queue::Queue;
 use schemes::{Resource, Url};
 use scheduler;
 
@@ -32,8 +32,8 @@ pub struct Rtl8139 {
     memory_mapped: bool,
     irq: u8,
     resources: Vec<*mut NetworkResource>,
-    inbound: Queue<Vec<u8>>,
-    outbound: Queue<Vec<u8>>,
+    inbound: VecDeque<Vec<u8>>,
+    outbound: VecDeque<Vec<u8>>,
     txds: Vec<Txd>,
     txd_i: usize,
 }
@@ -49,8 +49,8 @@ impl Rtl8139 {
             memory_mapped: base & 1 == 0,
             irq: irq,
             resources: Vec::new(),
-            inbound: Queue::new(),
-            outbound: Queue::new(),
+            inbound: VecDeque::new(),
+            outbound: VecDeque::new(),
             txds: Vec::new(),
             txd_i: 0,
         };
@@ -147,7 +147,7 @@ impl Rtl8139 {
             debug::dl();
 
             self.inbound
-                .push(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
+                .push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
@@ -160,7 +160,7 @@ impl Rtl8139 {
     }
 
     unsafe fn send_outbound(&mut self) {
-        while let Some(bytes) = self.outbound.pop() {
+        while let Some(bytes) = self.outbound.pop_front() {
             if let Some(txd) = self.txds.get(self.txd_i) {
                 if bytes.len() < 4096 {
                     let mut tx_status;
@@ -269,8 +269,8 @@ impl NetworkScheme for Rtl8139 {
             let reenable = scheduler::start_no_ints();
 
             for resource in self.resources.iter() {
-                while let Some(bytes) = (**resource).outbound.pop() {
-                    self.outbound.push(bytes);
+                while let Some(bytes) = (**resource).outbound.pop_front() {
+                    self.outbound.push_back(bytes);
                 }
             }
 
@@ -278,9 +278,9 @@ impl NetworkScheme for Rtl8139 {
 
             self.receive_inbound();
 
-            while let Some(bytes) = self.inbound.pop() {
+            while let Some(bytes) = self.inbound.pop_front() {
                 for resource in self.resources.iter() {
-                    (**resource).inbound.push(bytes.clone());
+                    (**resource).inbound.push_back(bytes.clone());
                 }
             }
 

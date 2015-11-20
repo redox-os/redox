@@ -2,9 +2,9 @@ use audio::ac97::AC97;
 use audio::intelhda::IntelHDA;
 
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
 
 use common::debug;
-use common::queue::Queue;
 
 use drivers::pciconfig::PciConfig;
 
@@ -80,8 +80,8 @@ pub unsafe fn pci_device(session: &mut Session,
                         memory_mapped: base & 1 == 0,
                         irq: pci.read(0x3C) as u8 & 0xF,
                         resources: Vec::new(),
-                        inbound: Queue::new(),
-                        outbound: Queue::new(),
+                        inbound: VecDeque::new(),
+                        outbound: VecDeque::new(),
                     };
                     module.init();
                     session.items.push(module);

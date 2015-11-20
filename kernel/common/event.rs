@@ -55,7 +55,7 @@ impl Event {
         unsafe {
             let reenable = scheduler::start_no_ints();
 
-            (*::events_ptr).push(*self);
+            (*::events_ptr).push_back(*self);
 
             scheduler::end_no_ints(reenable);
         }
