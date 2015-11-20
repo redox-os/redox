@@ -113,7 +113,6 @@ macro_rules! print {
 /// println!("format {} arguments", "some");
 /// ```
 #[macro_export]
-#[stable(feature = "rust1", since = "1.0.0")]
 macro_rules! println {
     ($fmt:expr) => (print!(concat!($fmt, "\n")));
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
