@@ -25,6 +25,8 @@ pub mod parse_path;
 pub mod parse_ip;
 /// A module for pseudorandom generator
 pub mod random;
+/// A module for read-write locking
+pub mod rwlock;
 /// A module for time
 pub mod time;
 /// String to number
