@@ -24,6 +24,7 @@ use fmt;
 
 use self::Cow::*;
 
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::borrow::{Borrow, BorrowMut};
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -72,6 +73,7 @@ impl<T> ToOwned for T where T: Clone {
 /// ```
 /// use std::borrow::Cow;
 ///
+/// # #[allow(dead_code)]
 /// fn abs_all(input: &mut Cow<[i32]>) {
 ///     for i in 0..input.len() {
 ///         let v = input[i];

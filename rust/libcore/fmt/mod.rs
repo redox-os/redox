@@ -24,10 +24,13 @@ use slice;
 use str;
 use self::rt::v1::Alignment;
 
+#[unstable(feature = "fmt_radix", issue = "27728")]
 pub use self::num::radix;
+#[unstable(feature = "fmt_radix", issue = "27728")]
 pub use self::num::Radix;
+#[unstable(feature = "fmt_radix", issue = "27728")]
 pub use self::num::RadixFmt;
-
+#[stable(feature = "debug_builders", since = "1.2.0")]
 pub use self::builders::{DebugStruct, DebugTuple, DebugSet, DebugList, DebugMap};
 
 mod num;
@@ -170,6 +173,8 @@ pub struct ArgumentV1<'a> {
     formatter: fn(&Void, &mut Formatter) -> Result,
 }
 
+#[unstable(feature = "fmt_internals", reason = "internal to format_args!",
+           issue = "0")]
 impl<'a> Clone for ArgumentV1<'a> {
     fn clone(&self) -> ArgumentV1<'a> {
         *self
@@ -300,6 +305,8 @@ impl<'a> Display for Arguments<'a> {
 ///
 /// [module]: ../../std/fmt/index.html
 ///
+/// This trait can be used with `#[derive]`.
+///
 /// # Examples
 ///
 /// Deriving an implementation:
@@ -328,7 +335,7 @@ impl<'a> Display for Arguments<'a> {
 ///
 /// impl fmt::Debug for Point {
 ///     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-///         write!(f, "({}, {})", self.x, self.y)
+///         write!(f, "Point {{ x: {}, y: {} }}", self.x, self.y)
 ///     }
 /// }
 ///
@@ -1566,6 +1573,7 @@ impl Debug for () {
         f.pad("()")
     }
 }
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> Debug for PhantomData<T> {
     fn fmt(&self, f: &mut Formatter) -> Result {
         f.pad("PhantomData")

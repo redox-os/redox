@@ -242,6 +242,7 @@ impl<T> Vec<T> {
     /// # Examples
     ///
     /// ```
+    /// # #![allow(unused_mut)]
     /// let mut vec: Vec<i32> = Vec::new();
     /// ```
     #[inline]
@@ -1220,8 +1221,7 @@ impl<T> FromIterator<T> for Vec<T> {
         // expanded on this iteration in every case when the iterable is not
         // empty, but the loop in extend_desugared() is not going to see the
         // vector being full in the few subsequent loop iterations.
-        // So we get better branch prediction and the possibility to
-        // construct the vector with initial estimated capacity.
+        // So we get better branch prediction.
         let mut iterator = iterable.into_iter();
         let mut vector = match iterator.next() {
             None => return Vec::new(),
@@ -1471,12 +1471,14 @@ impl<'a, T> FromIterator<T> for Cow<'a, [T]> where T: Clone {
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T: 'a> IntoCow<'a, [T]> for Vec<T> where T: Clone {
     fn into_cow(self) -> Cow<'a, [T]> {
         Cow::Owned(self)
     }
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<'a, T> IntoCow<'a, [T]> for &'a [T] where T: Clone {
     fn into_cow(self) -> Cow<'a, [T]> {
         Cow::Borrowed(self)
@@ -1495,7 +1497,9 @@ pub struct IntoIter<T> {
     end: *const T
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: Send> Send for IntoIter<T> { }
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl<T: Sync> Sync for IntoIter<T> { }
 
 #[stable(feature = "rust1", since = "1.0.0")]
@@ -1590,7 +1594,9 @@ pub struct Drain<'a, T: 'a> {
     vec: *mut Vec<T>,
 }
 
+#[unstable(feature = "drain", reason = "recently added", issue = "27711")]
 unsafe impl<'a, T: Sync> Sync for Drain<'a, T> {}
+#[unstable(feature = "drain", reason = "recently added", issue = "27711")]
 unsafe impl<'a, T: Send> Send for Drain<'a, T> {}
 
 #[stable(feature = "rust1", since = "1.0.0")]

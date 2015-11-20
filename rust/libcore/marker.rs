@@ -31,9 +31,12 @@ pub unsafe trait Send {
     // empty.
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl Send for .. { }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> !Send for *const T { }
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> !Send for *mut T { }
 
 /// Types with a constant size known at compile-time.
@@ -42,6 +45,7 @@ impl<T> !Send for *mut T { }
 /// `?Sized` can be used to remove this bound if it is not appropriate.
 ///
 /// ```
+/// # #![allow(dead_code)]
 /// struct Foo<T>(T);
 /// struct Bar<T: ?Sized>(T);
 ///
@@ -106,6 +110,7 @@ pub trait Unsize<T: ?Sized> {
 /// `struct` can be `Copy`:
 ///
 /// ```
+/// # #[allow(dead_code)]
 /// struct Point {
 ///    x: i32,
 ///    y: i32,
@@ -115,6 +120,7 @@ pub trait Unsize<T: ?Sized> {
 /// A `struct` can be `Copy`, and `i32` is `Copy`, so therefore, `Point` is eligible to be `Copy`.
 ///
 /// ```
+/// # #![allow(dead_code)]
 /// # struct Point;
 /// struct PointList {
 ///     points: Vec<Point>,
@@ -162,6 +168,10 @@ pub trait Unsize<T: ?Sized> {
 /// to consider though: if you think your type may _not_ be able to implement `Copy` in the future,
 /// then it might be prudent to not implement `Copy`. This is because removing `Copy` is a breaking
 /// change: that second example would fail to compile if we made `Foo` non-`Copy`.
+///
+/// # Derivable
+///
+/// This trait can be used with `#[derive]`.
 #[stable(feature = "rust1", since = "1.0.0")]
 #[lang = "copy"]
 pub trait Copy : Clone {
@@ -216,48 +226,59 @@ pub unsafe trait Sync {
     // Empty
 }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 unsafe impl Sync for .. { }
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> !Sync for *const T { }
+#[stable(feature = "rust1", since = "1.0.0")]
 impl<T> !Sync for *mut T { }
 
 macro_rules! impls{
     ($t: ident) => (
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> Hash for $t<T> {
             #[inline]
             fn hash<H: Hasher>(&self, _: &mut H) {
             }
         }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> cmp::PartialEq for $t<T> {
             fn eq(&self, _other: &$t<T>) -> bool {
                 true
             }
         }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> cmp::Eq for $t<T> {
         }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> cmp::PartialOrd for $t<T> {
             fn partial_cmp(&self, _other: &$t<T>) -> Option<cmp::Ordering> {
                 Option::Some(cmp::Ordering::Equal)
             }
         }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> cmp::Ord for $t<T> {
             fn cmp(&self, _other: &$t<T>) -> cmp::Ordering {
                 cmp::Ordering::Equal
             }
         }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> Copy for $t<T> { }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> Clone for $t<T> {
             fn clone(&self) -> $t<T> {
                 $t
             }
         }
 
+        #[stable(feature = "rust1", since = "1.0.0")]
         impl<T:?Sized> Default for $t<T> {
             fn default() -> $t<T> {
                 $t
@@ -303,6 +324,7 @@ macro_rules! impls{
 /// ```
 /// use std::marker::PhantomData;
 ///
+/// # #[allow(dead_code)]
 /// struct Slice<'a, T:'a> {
 ///     start: *const T,
 ///     end: *const T,
@@ -323,6 +345,7 @@ macro_rules! impls{
 /// mismatches by enforcing types in the method implementations:
 ///
 /// ```
+/// # #![allow(dead_code)]
 /// # trait ResType { fn foo(&self); }
 /// # struct ParamType;
 /// # mod foreign_lib {
@@ -378,7 +401,9 @@ impls! { PhantomData }
 mod impls {
     use super::{Send, Sync, Sized};
 
+    #[stable(feature = "rust1", since = "1.0.0")]
     unsafe impl<'a, T: Sync + ?Sized> Send for &'a T {}
+    #[stable(feature = "rust1", since = "1.0.0")]
     unsafe impl<'a, T: Send + ?Sized> Send for &'a mut T {}
 }
 
@@ -393,6 +418,8 @@ mod impls {
 /// #![feature(reflect_marker)]
 /// use std::marker::Reflect;
 /// use std::any::Any;
+///
+/// # #[allow(dead_code)]
 /// fn foo<T:Reflect+'static>(x: &T) {
 ///     let any: &Any = x;
 ///     if any.is::<u32>() { println!("u32"); }
@@ -422,4 +449,7 @@ mod impls {
                             ensure all type parameters are bounded by `Any`"]
 pub trait Reflect {}
 
+#[unstable(feature = "reflect_marker",
+           reason = "requires RFC and more experience",
+           issue = "27749")]
 impl Reflect for .. { }

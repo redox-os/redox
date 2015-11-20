@@ -43,6 +43,8 @@ use option::Option::{self, Some};
 /// in terms of it by default. Any manual implementation of `ne` *must* respect
 /// the rule that `eq` is a strict inverse of `ne`; that is, `!(a == b)` if and
 /// only if `a != b`.
+///
+/// This trait can be used with `#[derive]`.
 #[lang = "eq"]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait PartialEq<Rhs: ?Sized = Self> {
@@ -69,6 +71,8 @@ pub trait PartialEq<Rhs: ?Sized = Self> {
 ///
 /// This property cannot be checked by the compiler, and therefore `Eq` implies
 /// `PartialEq`, and has no extra methods.
+///
+/// This trait can be used with `#[derive]`.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait Eq: PartialEq<Self> {
     // FIXME #13101: this method is used solely by #[deriving] to
@@ -140,8 +144,6 @@ impl Ordering {
     /// This method can be used to reverse a comparison:
     ///
     /// ```
-    /// use std::cmp::Ordering;
-    ///
     /// let mut data: &mut [_] = &mut [2, 10, 5, 8];
     ///
     /// // sort the array from largest to smallest.
@@ -173,6 +175,8 @@ impl Ordering {
 /// - transitive, `a < b` and `b < c` implies `a < c`. The same must hold for both `==` and `>`.
 ///
 /// When this trait is `derive`d, it produces a lexicographic ordering.
+///
+/// This trait can be used with `#[derive]`.
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait Ord: Eq + PartialOrd<Self> {
     /// This method returns an `Ordering` between `self` and `other`.
@@ -229,6 +233,8 @@ impl PartialOrd for Ordering {
 /// However it remains possible to implement the others separately for types which do not have a
 /// total order. For example, for floating point numbers, `NaN < 0 == false` and `NaN >= 0 ==
 /// false` (cf. IEEE 754-2008 section 5.11).
+///
+/// This trait can be used with `#[derive]`.
 #[lang = "ord"]
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait PartialOrd<Rhs: ?Sized = Self>: PartialEq<Rhs> {
@@ -263,8 +269,6 @@ pub trait PartialOrd<Rhs: ?Sized = Self>: PartialEq<Rhs> {
     /// # Examples
     ///
     /// ```
-    /// use std::cmp::Ordering;
-    ///
     /// let result = 1.0 < 2.0;
     /// assert_eq!(result, true);
     ///
