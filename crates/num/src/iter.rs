@@ -18,7 +18,7 @@ use redox::ops::{Add, Sub};
 pub struct Range<A> {
     state: A,
     stop: A,
-    one: A
+    one: A,
 }
 
 /// Returns an iterator over the given range [start, stop) (that is, starting
@@ -40,7 +40,11 @@ pub struct Range<A> {
 pub fn range<A>(start: A, stop: A) -> Range<A>
     where A: Add<A, Output = A> + PartialOrd + Clone + One
 {
-    Range{state: start, stop: stop, one: One::one()}
+    Range {
+        state: start,
+        stop: stop,
+        one: One::one(),
+    }
 }
 
 // FIXME: rust-lang/rust#10414: Unfortunate type bound
@@ -72,23 +76,23 @@ impl<A> Iterator for Range<A>
                     Some(Some(bound)) => bound.to_usize(),
                     _ => None,
                 }
-            },
+            }
             None => match self.state.to_u64() {
                 Some(a) => {
                     let sz = self.stop.to_u64().map(|b| b.checked_sub(a));
                     match sz {
                         Some(Some(bound)) => bound.to_usize(),
-                        _ => None
+                        _ => None,
                     }
-                },
-                None => None
-            }
+                }
+                None => None,
+            },
         };
 
         match bound {
             Some(b) => (b, Some(b)),
             // Standard fallback for unbounded/unrepresentable bounds
-            None => (0, None)
+            None => (0, None),
         }
     }
 }
@@ -121,7 +125,10 @@ pub struct RangeInclusive<A> {
 pub fn range_inclusive<A>(start: A, stop: A) -> RangeInclusive<A>
     where A: Add<A, Output = A> + PartialOrd + Clone + One
 {
-    RangeInclusive{range: range(start, stop), done: false}
+    RangeInclusive {
+        range: range(start, stop),
+        done: false,
+    }
 }
 
 impl<A> Iterator for RangeInclusive<A>
@@ -153,7 +160,7 @@ impl<A> Iterator for RangeInclusive<A>
             let lo = lo.saturating_add(1);
             let hi = match hi {
                 Some(x) => x.checked_add(1),
-                None => None
+                None => None,
             };
             (lo, hi)
         }
@@ -193,7 +200,12 @@ pub fn range_step<A>(start: A, stop: A, step: A) -> RangeStep<A>
     where A: CheckedAdd + PartialOrd + Clone + Zero
 {
     let rev = step < Zero::zero();
-    RangeStep{state: start, stop: stop, step: step, rev: rev}
+    RangeStep {
+        state: start,
+        stop: stop,
+        step: step,
+        rev: rev,
+    }
 }
 
 impl<A> Iterator for RangeStep<A>
@@ -207,7 +219,7 @@ impl<A> Iterator for RangeStep<A>
             let result = self.state.clone();
             match self.state.checked_add(&self.step) {
                 Some(x) => self.state = x,
-                None => self.state = self.stop.clone()
+                None => self.state = self.stop.clone(),
             }
             Some(result)
         } else {
@@ -232,7 +244,13 @@ pub fn range_step_inclusive<A>(start: A, stop: A, step: A) -> RangeStepInclusive
     where A: CheckedAdd + PartialOrd + Clone + Zero
 {
     let rev = step < Zero::zero();
-    RangeStepInclusive{state: start, stop: stop, step: step, rev: rev, done: false}
+    RangeStepInclusive {
+        state: start,
+        stop: stop,
+        step: step,
+        rev: rev,
+        done: false,
+    }
 }
 
 impl<A> Iterator for RangeStepInclusive<A>
@@ -242,12 +260,12 @@ impl<A> Iterator for RangeStepInclusive<A>
 
     #[inline]
     fn next(&mut self) -> Option<A> {
-        if !self.done && ((self.rev && self.state >= self.stop) ||
-                          (!self.rev && self.state <= self.stop)) {
+        if !self.done &&
+           ((self.rev && self.state >= self.stop) || (!self.rev && self.state <= self.stop)) {
             let result = self.state.clone();
             match self.state.checked_add(&self.step) {
                 Some(x) => self.state = x,
-                None => self.done = true
+                None => self.done = true,
             }
             Some(result)
         } else {

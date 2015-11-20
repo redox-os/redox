@@ -160,19 +160,37 @@ pub trait Integer
 }
 
 /// Simultaneous integer division and modulus
-#[inline] pub fn div_rem<T: Integer>(x: T, y: T) -> (T, T) { x.div_rem(&y) }
+#[inline]
+pub fn div_rem<T: Integer>(x: T, y: T) -> (T, T) {
+    x.div_rem(&y)
+}
 /// Floored integer division
-#[inline] pub fn div_floor<T: Integer>(x: T, y: T) -> T { x.div_floor(&y) }
+#[inline]
+pub fn div_floor<T: Integer>(x: T, y: T) -> T {
+    x.div_floor(&y)
+}
 /// Floored integer modulus
-#[inline] pub fn mod_floor<T: Integer>(x: T, y: T) -> T { x.mod_floor(&y) }
+#[inline]
+pub fn mod_floor<T: Integer>(x: T, y: T) -> T {
+    x.mod_floor(&y)
+}
 /// Simultaneous floored integer division and modulus
-#[inline] pub fn div_mod_floor<T: Integer>(x: T, y: T) -> (T, T) { x.div_mod_floor(&y) }
+#[inline]
+pub fn div_mod_floor<T: Integer>(x: T, y: T) -> (T, T) {
+    x.div_mod_floor(&y)
+}
 
 /// Calculates the Greatest Common Divisor (GCD) of the number and `other`. The
 /// result is always positive.
-#[inline(always)] pub fn gcd<T: Integer>(x: T, y: T) -> T { x.gcd(&y) }
+#[inline(always)]
+pub fn gcd<T: Integer>(x: T, y: T) -> T {
+    x.gcd(&y)
+}
 /// Calculates the Lowest Common Multiple (LCM) of the number and `other`.
-#[inline(always)] pub fn lcm<T: Integer>(x: T, y: T) -> T { x.lcm(&y) }
+#[inline(always)]
+pub fn lcm<T: Integer>(x: T, y: T) -> T {
+    x.lcm(&y)
+}
 
 macro_rules! impl_integer_for_isize {
     ($T:ty, $test_mod:ident) => (

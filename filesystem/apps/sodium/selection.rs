@@ -11,7 +11,7 @@ impl Editor {
             // Single line mode
             let (a, b) = if self.x() > x {
                 (x, self.x())
-             } else {
+            } else {
                 (self.x(), x)
             };
             for _ in a..b {

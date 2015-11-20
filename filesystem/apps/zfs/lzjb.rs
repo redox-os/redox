@@ -10,7 +10,7 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
     let mut src_i = 0; // Current index in src
     let mut dst_i = 0; // Current index in dst
 
-    // We place 1 extra byte preceding every 8 bytes. Each bit in this byte is 
+    // We place 1 extra byte preceding every 8 bytes. Each bit in this byte is
     // a flag that corresponds to one of the 8 bytes that delimit it. If the
     // flag is set, the byte is a copy item. If the flag is 0, it is a literal
     // item. We'll call this the copy flag.
@@ -28,7 +28,7 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
         copymask <<= 1;
         if copymask == (1 << NBBY) {
             // We've reached the end of our 8-byte cycle
-            if dst_i >= dst.len() - 1 - 2*NBBY {
+            if dst_i >= dst.len() - 1 - 2 * NBBY {
                 // If we've reached the last two bytes, we're done
                 return src.len();
             }
@@ -50,7 +50,8 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
 
         // Compute hash of current 3 byte slice. It will be the index to our
         // cache
-        let mut hash = ((src[src_i] as usize) << 16) + ((src[src_i+1] as usize) << 8) + (src[src_i+2] as usize);
+        let mut hash = ((src[src_i] as usize) << 16) + ((src[src_i + 1] as usize) << 8) +
+                       (src[src_i + 2] as usize);
         hash += hash >> 9;
         hash += hash >> 5;
         let hp = (hash as usize) & (LEMPEL_SIZE - 1);
@@ -66,16 +67,17 @@ pub fn compress(src: &[u8], dst: &mut [u8]) -> usize {
 
         // Check that the cached item is valid
         if src_i >= offset && cpy != src_i && src[src_i] == src[cpy] &&
-            src[src_i+1] == src[cpy+1] && src[src_i+2] == src[cpy+2]
-        {
+           src[src_i + 1] == src[cpy + 1] && src[src_i + 2] == src[cpy + 2] {
             // This cache item is valid, write a copy item
-            dst[copymap] |= copymask as u8; // Set the 
+            dst[copymap] |= copymask as u8; // Set the
 
             // Find the full length of this match. Since it was in the hash,
             // we know the match length is at least 3.
             let mut mlen = MATCH_MIN;
             while mlen < MATCH_MAX {
-                if src[src_i+mlen] != src[cpy+mlen] { break; }
+                if src[src_i + mlen] != src[cpy + mlen] {
+                    break;
+                }
                 mlen += 1;
             }
 
@@ -117,7 +119,8 @@ pub fn decompress(src: &[u8], dst: &mut [u8]) -> bool {
         if (copymap & (copymask as u8)) != 0 {
             // Found a copy item
             let mlen = ((src[src_i] as usize) >> (NBBY - MATCH_BITS)) + MATCH_MIN;
-            let offset = (((src[src_i] as usize) << NBBY) | (src[src_i+1] as usize)) & OFFSET_MASK;
+            let offset = (((src[src_i] as usize) << NBBY) | (src[src_i + 1] as usize)) &
+                         OFFSET_MASK;
             src_i += 2;
             if dst_i < offset {
                 // Copy item points to invalid index, error

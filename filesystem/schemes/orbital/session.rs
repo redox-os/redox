@@ -77,7 +77,9 @@ impl Session {
 
             for folder in string.lines() {
                 if folder.ends_with('/') {
-                    ret.packages.push(Package::from_url(&Url::from_string("file:/apps/".to_string() + &folder)));
+                    ret.packages
+                       .push(Package::from_url(&Url::from_string("file:/apps/".to_string() +
+                                                                 &folder)));
                 }
             }
         } else {
@@ -108,7 +110,7 @@ impl Session {
                 None => break,
             }
 
-            if remove{
+            if remove {
                 self.windows.remove(i);
             }
         }
@@ -156,10 +158,9 @@ impl Session {
                 let mut x = 0;
                 for package in self.packages.iter() {
                     if !(&package.icon).is_empty() {
-                        if mouse_event.x >= x &&
-                           mouse_event.x < x + package.icon.width() as isize {
-                               let binary = package.binary.to_string();
-                               File::exec(&binary, &[]);
+                        if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
+                            let binary = package.binary.to_string();
+                            File::exec(&binary, &[]);
                         }
                         x = x + package.icon.width() as isize;
                     }
@@ -174,12 +175,11 @@ impl Session {
 
                 x += 4;
                 for window_ptr in self.windows_ordered.iter() {
-                    let w = (chars*8 + 2*4) as usize;
+                    let w = (chars * 8 + 2 * 4) as usize;
                     if mouse_event.x >= x && mouse_event.x < x + w as isize {
                         for j in 0..self.windows.len() {
                             match self.windows.get(j) {
-                                Some(catcher_window_ptr) =>
-                                    if catcher_window_ptr == window_ptr {
+                                Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
                                     unsafe {
                                         if j == self.windows.len() - 1 {
                                             (**window_ptr).minimized = !(**window_ptr).minimized;
@@ -234,13 +234,13 @@ impl Session {
             self.display.set(Color::rgb(75, 163, 253));
             if self.background.has_data() {
                 self.display.image(Point::new((self.display.width as isize -
-                                                 self.background.width() as isize) /
-                                                2,
-                                                (self.display.height as isize -
-                                                 self.background.height() as isize) /
-                                                2),
-                                    (&self.background).as_ptr(),
-                                    Size::new(self.background.width(), self.background.height()));
+                                               self.background.width() as isize) /
+                                              2,
+                                              (self.display.height as isize -
+                                               self.background.height() as isize) /
+                                              2),
+                                   (&self.background).as_ptr(),
+                                   Size::new(self.background.width(), self.background.height()));
             }
 
             for i in 0..self.windows.len() {
@@ -267,21 +267,25 @@ impl Session {
                                           Size::new(package.icon.width(), package.icon.height()),
                                           Color::rgba(128, 128, 128, 128));
 
-                       self.display.rect(Point::new(x, y - 16),
-                                         Size::new(package.name.len() * 8, 16),
-                                         Color::rgba(0, 0, 0, 128));
+                        self.display.rect(Point::new(x, y - 16),
+                                          Size::new(package.name.len() * 8, 16),
+                                          Color::rgba(0, 0, 0, 128));
 
                         let mut c_x = x;
                         for c in package.name.chars() {
                             self.display
-                                .char(Point::new(c_x, y - 16), c, Color::rgb(255, 255, 255), self.font.as_ptr() as usize);
+                                .char(Point::new(c_x, y - 16),
+                                      c,
+                                      Color::rgb(255, 255, 255),
+                                      self.font.as_ptr() as usize);
                             c_x += 8;
                         }
                     }
 
                     self.display.image_alpha(Point::new(x, y),
                                              (&package.icon).as_ptr(),
-                                             Size::new(package.icon.width(), package.icon.height()));
+                                             Size::new(package.icon.width(),
+                                                       package.icon.height()));
                     x = x + package.icon.width() as isize;
                 }
             }
@@ -295,7 +299,7 @@ impl Session {
 
             x += 4;
             for window_ptr in self.windows_ordered.iter() {
-                let w = (chars*8 + 2*4) as usize;
+                let w = (chars * 8 + 2 * 4) as usize;
                 self.display.rect(Point::new(x, self.display.height as isize - 32),
                                   Size::new(w, 32),
                                   (**window_ptr).border_color);

@@ -403,7 +403,7 @@ impl Isaac64Rng {
         // abbreviations
         let mut a = self.a;
         let mut b = self.b + self.c;
-        const MIDPOINT: usize =  RAND_SIZE_64 / 2;
+        const MIDPOINT: usize = RAND_SIZE_64 / 2;
         const MP_VEC: [(usize, usize); 2] = [(0, MIDPOINT), (MIDPOINT, 0)];
         macro_rules! ind {
             ($x:expr) => {
@@ -611,7 +611,7 @@ mod tests {
     fn test_rng_32_true_values() {
         let seed: &[_] = &[1, 23, 456, 7890, 12345];
         let mut ra: IsaacRng = SeedableRng::from_seed(seed);
-        // Regression test that isaac is actually using the above vector
+    // Regression test that isaac is actually using the above vector
         let v = (0..10).map(|_| ra.next_u32()).collect::<Vec<_>>();
         assert_eq!(v,
                    vec!(2558573138, 873787463, 263499565, 2103644246, 3595684709,
@@ -619,7 +619,7 @@ mod tests {
 
         let seed: &[_] = &[12345, 67890, 54321, 9876];
         let mut rb: IsaacRng = SeedableRng::from_seed(seed);
-        // skip forward to the 10000th number
+    // skip forward to the 10000th number
         for _ in 0..10000 {
             rb.next_u32();
         }
@@ -634,7 +634,7 @@ mod tests {
     fn test_rng_64_true_values() {
         let seed: &[_] = &[1, 23, 456, 7890, 12345];
         let mut ra: Isaac64Rng = SeedableRng::from_seed(seed);
-        // Regression test that isaac is actually using the above vector
+    // Regression test that isaac is actually using the above vector
         let v = (0..10).map(|_| ra.next_u64()).collect::<Vec<_>>();
         assert_eq!(v,
                    vec!(547121783600835980, 14377643087320773276, 17351601304698403469,
@@ -644,7 +644,7 @@ mod tests {
 
         let seed: &[_] = &[12345, 67890, 54321, 9876];
         let mut rb: Isaac64Rng = SeedableRng::from_seed(seed);
-        // skip forward to the 10000th number
+    // skip forward to the 10000th number
         for _ in 0..10000 {
             rb.next_u64();
         }

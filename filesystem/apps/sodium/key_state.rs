@@ -30,14 +30,14 @@ impl KeyState {
                     K_LEFT_SHIFT | K_RIGHT_SHIFT => self.shift = k.pressed,
                     _ if k.pressed => {
                         return Some(Key::from_event(k));
-                    },
-                    _ => {},
+                    }
+                    _ => {}
                 }
-            },
+            }
             _ if k.pressed => {
                 return Some(Key::from_event(k));
-            },
-            _ => {},
+            }
+            _ => {}
         }
 
         None

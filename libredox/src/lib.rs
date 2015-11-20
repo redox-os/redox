@@ -35,177 +35,178 @@
 #![feature(no_std)]
 #![no_std]
 
-//#![warn(missing_docs)]
+// #![warn(missing_docs)]
 
-/* STD COPY { */
-    // We want to reexport a few macros from core but libcore has already been
-    // imported by the compiler (via our #[no_std] attribute) In this case we just
-    // add a new crate name so we can attach the reexports to it.
-    #[macro_reexport(assert, assert_eq, debug_assert, debug_assert_eq,
+// STD COPY {
+// We want to reexport a few macros from core but libcore has already been
+// imported by the compiler (via our #[no_std] attribute) In this case we just
+// add a new crate name so we can attach the reexports to it.
+#[macro_reexport(assert, assert_eq, debug_assert, debug_assert_eq,
                     unreachable, unimplemented, write, writeln)]
-    extern crate core as __core;
+extern crate core as __core;
+
+#[macro_use]
+#[macro_reexport(vec, format)]
+extern crate collections as core_collections;
+
+#[allow(deprecated)]
+extern crate rand as core_rand;
+extern crate alloc;
+extern crate rustc_unicode;
+// TODO extern crate libc;
+
+// NB: These reexports are in the order they should be listed in rustdoc
+
+pub use core::any;
+pub use core::cell;
+pub use core::clone;
+pub use core::cmp;
+pub use core::convert;
+pub use core::default;
+pub use core::hash;
+pub use core::intrinsics;
+pub use core::iter;
+pub use core::marker;
+pub use core::mem;
+pub use core::ops;
+pub use core::ptr;
+pub use core::raw;
+#[allow(deprecated)]
+pub use core::simd;
+pub use core::result;
+pub use core::option;
+pub mod error;
+    #[macro_use]
+pub mod debug;
+
+pub use alloc::arc;
+pub use alloc::boxed;
+pub use alloc::rc;
+
+pub use core_collections::borrow;
+pub use core_collections::fmt;
+pub use core_collections::slice;
+pub use core_collections::str;
+pub use core_collections::string;
+pub use core_collections::vec;
+
+pub use rustc_unicode::char;
+
+// Exported macros
 
     #[macro_use]
-    #[macro_reexport(vec, format)]
-    extern crate collections as core_collections;
+pub mod macros;
 
-    #[allow(deprecated)] extern crate rand as core_rand;
-    extern crate alloc;
-    extern crate rustc_unicode;
-    //TODO extern crate libc;
+// TODO mod rtdeps;
 
-    // NB: These reexports are in the order they should be listed in rustdoc
+// The Prelude.
+pub mod prelude;
 
-    pub use core::any;
-    pub use core::cell;
-    pub use core::clone;
-    pub use core::cmp;
-    pub use core::convert;
-    pub use core::default;
-    pub use core::hash;
-    pub use core::intrinsics;
-    pub use core::iter;
-    pub use core::marker;
-    pub use core::mem;
-    pub use core::ops;
-    pub use core::ptr;
-    pub use core::raw;
-    #[allow(deprecated)]
-    pub use core::simd;
-    pub use core::result;
-    pub use core::option;
-    pub mod error;
-    #[macro_use]
-    pub mod debug;
 
-    pub use alloc::arc;
-    pub use alloc::boxed;
-    pub use alloc::rc;
+// Primitive types
 
-    pub use core_collections::borrow;
-    pub use core_collections::fmt;
-    pub use core_collections::slice;
-    pub use core_collections::str;
-    pub use core_collections::string;
-    pub use core_collections::vec;
+// NB: slice and str are primitive types too, but their module docs + primitive
+// doc pages are inlined from the public re-exports of core_collections::{slice,
+// str} above.
 
-    pub use rustc_unicode::char;
+pub use core::isize;
+pub use core::i8;
+pub use core::i16;
+pub use core::i32;
+pub use core::i64;
 
-    /* Exported macros */
+pub use core::usize;
+pub use core::u8;
+pub use core::u16;
+pub use core::u32;
+pub use core::u64;
+
+// TODO: Add methods to f64
+pub use core::num;
+
+// TODO #[path = "num/f32.rs"]   pub mod f32;
+// TODO #[path = "num/f64.rs"]   pub mod f64;
+
+pub mod ascii;
+
+// Common traits
+
+pub mod floating_num;
+
+// Runtime and platform support
 
     #[macro_use]
-    pub mod macros;
+pub mod thread;
 
-    // TODO mod rtdeps;
+pub mod collections;
+// TODO pub mod dynamic_lib;
+pub mod env;
+// TODO pub mod ffi;
+pub mod fs;
+pub mod io;
+pub mod net;
+// TODO pub mod os;
+// TODO pub mod path;
+// TODO pub mod process;
+pub mod sync;
+pub mod time;
 
-    /* The Prelude. */
-    pub mod prelude;
+// TODO #[macro_use]
+// TODO #[path = "sys/common/mod.rs"] mod sys_common;
 
+// TODO #[cfg(unix)]
+// TODO #[path = "sys/unix/mod.rs"] mod sys;
+// TODO #[cfg(windows)]
+// TODO #[path = "sys/windows/mod.rs"] mod sys;
 
-    /* Primitive types */
+pub mod rt;
+// TODO mod panicking;
+pub use __core::panicking;
 
-    // NB: slice and str are primitive types too, but their module docs + primitive
-    // doc pages are inlined from the public re-exports of core_collections::{slice,
-    // str} above.
+pub mod rand_old;
+pub mod hashmap;
 
-    pub use core::isize;
-    pub use core::i8;
-    pub use core::i16;
-    pub use core::i32;
-    pub use core::i64;
-
-    pub use core::usize;
-    pub use core::u8;
-    pub use core::u16;
-    pub use core::u32;
-    pub use core::u64;
-
-    // TODO: Add methods to f64
-    pub use core::num;
-
-    //TODO #[path = "num/f32.rs"]   pub mod f32;
-    //TODO #[path = "num/f64.rs"]   pub mod f64;
-
-    pub mod ascii;
-
-    /* Common traits */
-
-    pub mod floating_num;
-
-    /* Runtime and platform support */
-
-    #[macro_use]
-    pub mod thread;
-
-    pub mod collections;
-    // TODO pub mod dynamic_lib;
-    pub mod env;
-    // TODO pub mod ffi;
-    pub mod fs;
-    pub mod io;
-    pub mod net;
-    // TODO pub mod os;
-    // TODO pub mod path;
-    // TODO pub mod process;
-    pub mod sync;
-    pub mod time;
-
-    //TODO #[macro_use]
-    //TODO #[path = "sys/common/mod.rs"] mod sys_common;
-
-    //TODO #[cfg(unix)]
-    //TODO #[path = "sys/unix/mod.rs"] mod sys;
-    //TODO #[cfg(windows)]
-    //TODO #[path = "sys/windows/mod.rs"] mod sys;
-
-    pub mod rt;
-    //TODO mod panicking;
-    pub use __core::panicking;
-
-    pub mod rand_old;
-    pub mod hashmap;
-
-    // Some external utilities of the standard library rely on randomness (aka
-    // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
-    // here. This module is not at all intended for stabilization as-is, however,
-    // but it may be stabilized long-term. As a result we're exposing a hidden,
-    // unstable module so we can get our build working.
+// Some external utilities of the standard library rely on randomness (aka
+// rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
+// here. This module is not at all intended for stabilization as-is, however,
+// but it may be stabilized long-term. As a result we're exposing a hidden,
+// unstable module so we can get our build working.
     #[doc(hidden)]
-    //TODO #[unstable(feature = "rand", issue = "0")]
-    pub mod rand {
-        pub use core_rand::{/*thread_rng, ThreadRng,*/ Rng};
-    }
-/* } STD COPY */
+// TODO #[unstable(feature = "rand", issue = "0")]
+pub mod rand {
+    pub use core_rand::Rng;
+}
+// } STD COPY
 
-/* Additional Stuff { */
-    pub use boxed::Box;
-    pub use env::*;
-    pub use fs::*;
-    pub use io::*;
-    pub use rand_old::*;
-    pub use string::*;
-    pub use vec::Vec;
+// Additional Stuff {
+pub use boxed::Box;
+pub use env::*;
+pub use fs::*;
+pub use io::*;
+pub use rand_old::*;
+pub use string::*;
+pub use vec::Vec;
 
-    pub use url::*;
-    pub use get_slice::*;
-    pub use to_num::*;
+pub use url::*;
+pub use get_slice::*;
+pub use to_num::*;
 
-    pub mod alloc_system;
+pub mod alloc_system;
 
-    /// A module for necessary C and assembly constructs
+/// A module for necessary C and assembly constructs
     #[path="../../kernel/externs.rs"]
-    pub mod externs;
+pub mod externs;
 
-    /// A module for system calls
-    pub mod syscall;
+/// A module for system calls
+pub mod syscall;
 
-    /// A module for audio
-    pub mod audio;
+/// A module for audio
+pub mod audio;
 
-    pub mod panic;
+pub mod panic;
 
-    pub mod url;
+pub mod url;
 
-    pub mod get_slice;
-    pub mod to_num;
-/* } Additional Stuff */
+pub mod get_slice;
+pub mod to_num;
+// } Additional Stuff

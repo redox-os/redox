@@ -30,11 +30,11 @@ pub struct DNodePhys {
 
 impl DNodePhys {
     pub fn get_blockptr<'a>(&self, i: usize) -> &'a BlockPtr {
-        unsafe { mem::transmute(&self.blkptr_bonus[i*128]) }
+        unsafe { mem::transmute(&self.blkptr_bonus[i * 128]) }
     }
 
     pub fn get_bonus(&self) -> &[u8] {
-        &self.blkptr_bonus[(self.nblkptr as usize)*128..]
+        &self.blkptr_bonus[(self.nblkptr as usize) * 128..]
     }
 }
 
@@ -42,8 +42,14 @@ impl FromBytes for DNodePhys { }
 
 impl fmt::Debug for DNodePhys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "DNodePhys {{ object_type: {:X}, nlevels: {:X}, nblkptr: {:X}, bonus_type: {:X}, bonus_len: {:X}}}\n",
-                    self.object_type, self.nlevels, self.nblkptr, self.bonus_type, self.bonus_len));
+        try!(write!(f,
+                    "DNodePhys {{ object_type: {:X}, nlevels: {:X}, nblkptr: {:X}, bonus_type: \
+                     {:X}, bonus_len: {:X}}}\n",
+                    self.object_type,
+                    self.nlevels,
+                    self.nblkptr,
+                    self.bonus_type,
+                    self.bonus_len));
         Ok(())
     }
 }
@@ -52,8 +58,7 @@ impl fmt::Debug for DNodePhys {
 pub struct ObjectSetPhys {
     pub meta_dnode: DNodePhys,
     pub zil_header: ZilHeader,
-    pub os_type: u64,
-    //pad: [u8; 360],
+    pub os_type: u64, // pad: [u8; 360],
 }
 
 impl FromBytes for ObjectSetPhys { }

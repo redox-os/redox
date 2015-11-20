@@ -43,7 +43,9 @@ impl AvlNodeId {
         }
     }
 
-    pub fn try_get_mut<'a, T: PartialOrd>(&self, avl: &'a mut Avl<T>) -> Option<&'a mut AvlNode<T>> {
+    pub fn try_get_mut<'a, T: PartialOrd>(&self,
+                                          avl: &'a mut Avl<T>)
+                                          -> Option<&'a mut AvlNode<T>> {
         avl.nodes
            .get_mut(self.index)
            .and_then(|slot| {
@@ -74,27 +76,26 @@ impl<T: PartialOrd> Avl<T> {
     // Inserts a value into the tree, keeping it balanced. Lesser values will be stored on
     // the left, while greater values will be stored on the right. No duplicates are allowed.
     fn insert(&mut self, value: T, node_index: Option<AvlNodeId>) -> AvlNodeId {
-        let node =
-            match node_index {
-                Some(node) => {
-                    // Node exists, check which way to branch.
-                    if value == node.get(self).value {
-                        return node;
-                    } else if value < node.get(self).value {
-                        let l = node.get(self).left;
-                        node.get_mut(self).left = Some(self.insert(value, l));
-                    } else if value > node.get(self).value {
-                        let r = node.get(self).right;
-                        node.get_mut(self).right = Some(self.insert(value, r));
-                    }
+        let node = match node_index {
+            Some(node) => {
+                // Node exists, check which way to branch.
+                if value == node.get(self).value {
+                    return node;
+                } else if value < node.get(self).value {
+                    let l = node.get(self).left;
+                    node.get_mut(self).left = Some(self.insert(value, l));
+                } else if value > node.get(self).value {
+                    let r = node.get(self).right;
+                    node.get_mut(self).right = Some(self.insert(value, r));
+                }
 
-                    node
-                },
-                None => {
-                    // The node doesn't exist, create it here.
-                    self.allocate_node(value)
-                },
-            };
+                node
+            }
+            None => {
+                // The node doesn't exist, create it here.
+                self.allocate_node(value)
+            }
+        };
 
         self.rebalance(node)
     }
@@ -108,7 +109,7 @@ impl<T: PartialOrd> Avl<T> {
         let r = node.get(self).right.unwrap();
         let rl = r.get(self).left;
 
-        let ret = r; 
+        let ret = r;
         node.get_mut(self).right = rl;
         ret.get_mut(self).left = Some(node);
 
@@ -149,20 +150,26 @@ impl<T: PartialOrd> Avl<T> {
     // _rebalance rebalances the provided node
     fn rebalance(&mut self, node: AvlNodeId) -> AvlNodeId {
         let balance = self.height(node.get(self).left) - self.height(node.get(self).right);
-        if balance == 2 { // left
+        if balance == 2 {
+            // left
             let lbalance = self.height(node.get(self).left.unwrap().get(self).left) -
                            self.height(node.get(self).left.unwrap().get(self).right);
-            if lbalance == 0 || lbalance == 1 { // left left - need to rotate right
+            if lbalance == 0 || lbalance == 1 {
+                // left left - need to rotate right
                 return self.rotate_right(node);
-            } else if lbalance == -1 { // left right
+            } else if lbalance == -1 {
+                // left right
                 return self.rotate_leftright(node); // function name is just a coincidence
             }
-        } else if balance == -2 { // right
+        } else if balance == -2 {
+            // right
             let rbalance = self.height(node.get(self).right.unwrap().get(self).left) -
                            self.height(node.get(self).right.unwrap().get(self).right);
-            if rbalance == 1 { // right left
+            if rbalance == 1 {
+                // right left
                 return self.rotate_rightleft(node); // function name is just a coincidence
-            } else if rbalance == 0 || rbalance == -1 { // right right - need to rotate left
+            } else if rbalance == 0 || rbalance == -1 {
+                // right right - need to rotate left
                 return self.rotate_left(node);
             }
         }
@@ -178,33 +185,47 @@ impl<T: PartialOrd> Avl<T> {
                 let right_height = self.height(node.get(self).right);
 
                 if left_height > right_height {
-                    left_height+1
+                    left_height + 1
                 } else {
-                    right_height+1
+                    right_height + 1
                 }
-            },
-            None => { -1 },
+            }
+            None => {
+                -1
+            }
         }
     }
 
     fn allocate_node(&mut self, value: T) -> AvlNodeId {
         match self.free_list.pop() {
             Some(index) => {
-                AvlNodeId { time_stamp: self.nodes[index].time_stamp+1, index: index }
-            },
+                AvlNodeId {
+                    time_stamp: self.nodes[index].time_stamp + 1,
+                    index: index,
+                }
+            }
             None => {
                 // No free slots, create a new one
-                let id = AvlNodeId { index: self.nodes.len(), time_stamp: 0 };
-                self.nodes.push(AvlSlot { time_stamp: 0,
-                                          node: Some(AvlNode { value: value, left: None, right: None }) });
+                let id = AvlNodeId {
+                    index: self.nodes.len(),
+                    time_stamp: 0,
+                };
+                self.nodes.push(AvlSlot {
+                    time_stamp: 0,
+                    node: Some(AvlNode {
+                        value: value,
+                        left: None,
+                        right: None,
+                    }),
+                });
                 id
-            },
+            }
         }
     }
 
     fn free_node(&mut self, id: AvlNodeId) -> AvlNode<T> {
         self.free_list.push(id.index);
-        
+
         // NOTE: We unwrap here, because we trust that `id` points to a valid node, because
         // only we can create and free AvlNodes and their AvlNodeIds
         self.nodes[id.index].node.take().unwrap()

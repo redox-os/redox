@@ -41,21 +41,21 @@ impl Editor {
 
     fn save(&mut self, window: &Window) {
         if self.file.is_none() {
-            /*
-            let mut save_window = {
-                const WIDTH: usize = 400;
-                const HEIGHT: usize = 200;
-                ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
-                            (window.y() + (window.height()/2 - HEIGHT/2) as isize),
-                            WIDTH,
-                            HEIGHT,
-                            "Save As")
-            };
-            if let Some(line) = save_window.read() {
-                debugln!("Create: {}", &line);
-                self.file = File::create(&line);
-            }
-            */
+            //
+            // let mut save_window = {
+            // const WIDTH: usize = 400;
+            // const HEIGHT: usize = 200;
+            // ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
+            // (window.y() + (window.height()/2 - HEIGHT/2) as isize),
+            // WIDTH,
+            // HEIGHT,
+            // "Save As")
+            // };
+            // if let Some(line) = save_window.read() {
+            // debugln!("Create: {}", &line);
+            // self.file = File::create(&line);
+            // }
+            //
         }
 
         if let Some(ref mut file) = self.file {
@@ -64,7 +64,7 @@ impl Editor {
             debugln!("  Write: {:?}", file.write(&self.string.as_bytes()));
             debugln!("  Set length: {}", file.set_len(self.string.len()));
             debugln!("  Sync: {}", file.sync());
-        }else{
+        } else {
             debugln!("File not open");
         }
     }
@@ -92,14 +92,18 @@ impl Editor {
                     if col >= 0 && col < cols && row >= 0 && row < rows {
                         window.rect(8 * col, 16 * row, 8, 16, gray);
                     } else {
-                        if col < 0 { //Too far to the left
+                        if col < 0 {
+                            // Too far to the left
                             self.scroll_x += col;
-                        } else if col >= cols { //Too far to the right
+                        } else if col >= cols {
+                            // Too far to the right
                             self.scroll_x += cols - col + 1;
                         }
-                        if row < 0 { //Too far up
+                        if row < 0 {
+                            // Too far up
                             self.scroll_y += row;
-                        } else if row >= rows { //Too far down
+                        } else if row >= rows {
+                            // Too far down
                             self.scroll_y += rows - row + 1;
                         }
 
@@ -126,14 +130,18 @@ impl Editor {
                 if col >= 0 && col < cols && row >= 0 && row < rows {
                     window.rect(8 * col, 16 * row, 8, 16, gray);
                 } else {
-                    if col < 0 { //Too far to the left
+                    if col < 0 {
+                        // Too far to the left
                         self.scroll_x += col;
-                    } else if col >= cols { //Too far to the right
+                    } else if col >= cols {
+                        // Too far to the right
                         self.scroll_x += cols - col + 1;
                     }
-                    if row < 0 { //Too far up
+                    if row < 0 {
+                        // Too far up
                         self.scroll_y += row;
-                    } else if row >= rows { //Too far down
+                    } else if row >= rows {
+                        // Too far down
                         self.scroll_y += rows - row + 1;
                     }
 
@@ -150,11 +158,8 @@ impl Editor {
     }
 
     fn main(&mut self, url: &str) {
-        let mut window = Window::new(-1,
-                                     -1,
-                                     576,
-                                     400,
-                                     &("Editor (".to_string() + url + ")")).unwrap();
+        let mut window = Window::new(-1, -1, 576, 400, &("Editor (".to_string() + url + ")"))
+                             .unwrap();
 
         self.url = url.to_string();
         self.file = File::open(&self.url);
@@ -168,13 +173,13 @@ impl Editor {
                     match key_event.scancode {
                         K_ESC => break,
                         K_BKSP => if self.offset > 0 {
-                            self.string = self.string[0 .. self.offset - 1].to_string() +
-                                          &self.string[self.offset .. self.string.len()];
+                            self.string = self.string[0..self.offset - 1].to_string() +
+                                          &self.string[self.offset..self.string.len()];
                             self.offset -= 1;
                         },
                         K_DEL => if self.offset < self.string.len() {
-                            self.string = self.string[0 .. self.offset].to_string() +
-                                          &self.string[self.offset + 1 .. self.string.len() - 1];
+                            self.string = self.string[0..self.offset].to_string() +
+                                          &self.string[self.offset + 1..self.string.len() - 1];
                         },
                         K_F5 => self.reload(),
                         K_F6 => self.save(&window),
@@ -217,9 +222,9 @@ impl Editor {
                         _ => match key_event.character {
                             '\0' => (),
                             _ => {
-                                self.string = self.string[0 .. self.offset].to_string() +
+                                self.string = self.string[0..self.offset].to_string() +
                                               &key_event.character.to_string() +
-                                              &self.string[self.offset .. self.string.len()];
+                                              &self.string[self.offset..self.string.len()];
                                 self.offset += 1;
                             }
                         },

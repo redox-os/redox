@@ -66,11 +66,13 @@ impl Context {
     }
 
     fn extract_digit(&self) -> i32 {
-        if self.numer > self.accum {return -1;}
-        let (q, r) =
-            (&self.numer * Context::from_i32(3) + &self.accum)
-            .div_rem(&self.denom);
-        if r + &self.numer >= self.denom {return -1;}
+        if self.numer > self.accum {
+            return -1;
+        }
+        let (q, r) = (&self.numer * Context::from_i32(3) + &self.accum).div_rem(&self.denom);
+        if r + &self.numer >= self.denom {
+            return -1;
+        }
         q.to_i32().unwrap()
     }
 
@@ -93,24 +95,30 @@ fn pidigits(n: isize, out: &mut io::Write) -> io::Result<()> {
     let mut k = 0;
     let mut context = Context::new();
 
-    for i in (1..(n+1)) {
+    for i in (1..(n + 1)) {
         let mut d;
         loop {
             k += 1;
             context.next_term(k);
             d = context.extract_digit();
-            if d != -1 {break;}
+            if d != -1 {
+                break;
+            }
         }
 
         try!(write!(out, "{}", d));
-        if i % 10 == 0 { try!(write!(out, "\t:{}\n", i)); }
+        if i % 10 == 0 {
+            try!(write!(out, "\t:{}\n", i));
+        }
 
         context.eliminate_digit(d);
     }
 
     let m = n % 10;
     if m != 0 {
-        for _ in (m..10) { try!(write!(out, " ")); }
+        for _ in (m..10) {
+            try!(write!(out, " "));
+        }
         try!(write!(out, "\t:{}\n", n));
     }
     Ok(())
@@ -123,7 +131,7 @@ fn main() {
     let n = if args.len() < 2 {
         DEFAULT_DIGITS
     } else if args[1] == "--bench" {
-        return pidigits(DEFAULT_DIGITS, &mut std::io::sink()).unwrap()
+        return pidigits(DEFAULT_DIGITS, &mut std::io::sink()).unwrap();
     } else {
         FromStr::from_str(&args[1]).unwrap()
     };

@@ -71,7 +71,8 @@ impl MouseEvent {
             code: 'm',
             a: self.x,
             b: self.y,
-            c: self.left_button as isize | (self.middle_button as isize) << 1 | (self.right_button as isize) << 2,
+            c: self.left_button as isize | (self.middle_button as isize) << 1 |
+               (self.right_button as isize) << 2,
         }
     }
 

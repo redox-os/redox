@@ -136,7 +136,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                         physical_address: physical_address,
                         virtual_address: entry.virtual_address,
                         virtual_size: entry.virtual_size,
-                        writeable: true
+                        writeable: true,
                     })
                 } else {
                     None
@@ -166,7 +166,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                             physical_address: physical_address,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
-                            writeable: entry.writeable
+                            writeable: entry.writeable,
                         });
                     }
                 }
@@ -241,16 +241,18 @@ pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
     pub virtual_size: usize,
-    pub writeable: bool
+    pub writeable: bool,
 }
 
 impl ContextMemory {
     pub unsafe fn map(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
             if self.writeable {
-                Page::new(self.virtual_address + i * 4096).map_user_write(self.physical_address + i * 4096);
+                Page::new(self.virtual_address + i * 4096)
+                    .map_user_write(self.physical_address + i * 4096);
             } else {
-                Page::new(self.virtual_address + i * 4096).map_user_read(self.physical_address + i * 4096);
+                Page::new(self.virtual_address + i * 4096)
+                    .map_user_read(self.physical_address + i * 4096);
             }
         }
     }
@@ -347,7 +349,7 @@ impl Context {
                     physical_address: memory::alloc(CONTEXT_STACK_SIZE),
                     virtual_address: CONTEXT_STACK_ADDR,
                     virtual_size: CONTEXT_STACK_SIZE,
-                    writeable: true
+                    writeable: true,
                 })
             } else {
                 None
@@ -455,7 +457,7 @@ impl Context {
         let mut next_mem = 0;
 
         for mem in (*self.memory.get()).iter() {
-            let pages = (mem.virtual_size + 4095)/4096;
+            let pages = (mem.virtual_size + 4095) / 4096;
             let end = mem.virtual_address + pages * 4096;
             if next_mem < end {
                 next_mem = end;

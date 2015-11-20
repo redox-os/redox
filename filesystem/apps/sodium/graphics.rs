@@ -17,7 +17,11 @@ impl Editor {
 
 
         if self.options.line_marker {
-            self.window.rect(0, (pos_y - self.scroll_y) as isize * 16, w, 16, Color::rgb(45, 45, 45));
+            self.window.rect(0,
+                             (pos_y - self.scroll_y) as isize * 16,
+                             w,
+                             16,
+                             Color::rgb(45, 45, 45));
         }
 
         self.window.rect(8 * (pos_x - self.scroll_x) as isize,
@@ -37,19 +41,39 @@ impl Editor {
                         '\'' | '"' => {
                             string = !string;
                             (226, 225, 167) //(167, 222, 156)
-                        },
+                        }
                         _ if string => (226, 225, 167), //(167, 222, 156)
-                        '!' | '@' | '#' | '$' | '%' | '^' | '&' | '|' | '*' | '+' | '-' | '/' | ':' | '=' | '<' | '>' => (198, 83, 83), //(228, 190, 175), //(194, 106, 71),
+                        '!' |
+                        '@' |
+                        '#' |
+                        '$' |
+                        '%' |
+                        '^' |
+                        '&' |
+                        '|' |
+                        '*' |
+                        '+' |
+                        '-' |
+                        '/' |
+                        ':' |
+                        '=' |
+                        '<' |
+                        '>' => (198, 83, 83), //(228, 190, 175), //(194, 106, 71),
                         '.' | ',' => (241, 213, 226),
                         '(' | ')' | '[' | ']' | '{' | '}' => (164, 212, 125), //(195, 139, 75),
-                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' => (209, 209, 177),
+                        '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' =>
+                            (209, 209, 177),
                         _ => (255, 255, 255),
                     }
                 } else {
                     (255, 255, 255)
                 };
 
-                let c = if c == '\t' { ' ' } else { c };
+                let c = if c == '\t' {
+                    ' '
+                } else {
+                    c
+                };
 
                 if pos_x == x && pos_y == y {
                     self.window.char(8 * (x - self.scroll_x) as isize,
@@ -77,13 +101,18 @@ impl Editor {
         let h = self.window.height();
         let w = self.window.width();
         let mode = self.cursor().mode;
-        self.window.rect(0, h as isize - 18 - {
-            if mode == Mode::Primitive(PrimitiveMode::Prompt) {
-                18
-            } else {
-                0
-            }
-        }, w, 18, Color::rgba(74, 74, 74, 255));
+        self.window.rect(0,
+                         h as isize - 18 -
+                         {
+                             if mode == Mode::Primitive(PrimitiveMode::Prompt) {
+                                 18
+                             } else {
+                                 0
+                             }
+                         },
+                         w,
+                         18,
+                         Color::rgba(74, 74, 74, 255));
 
         let sb_mode = self.status_bar.mode.clone();
         status_bar(self, sb_mode, 0, 4);
@@ -106,22 +135,28 @@ fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
 
     let h = editor.window.height();
     let w = editor.window.width();
-    //let y = editor.y();
+    // let y = editor.y();
     let mode = editor.cursor().mode;
 
     for (n, c) in (if text.len() > w / (8 * b) {
-        text.chars().take(w / (8 * b) - 5).chain(vec!['.'; 3]).collect::<Vec<_>>()
-    } else {
-        text.chars().collect()
-    }).into_iter().enumerate() {
+                      text.chars().take(w / (8 * b) - 5).chain(vec!['.'; 3]).collect::<Vec<_>>()
+                  } else {
+                      text.chars().collect()
+                  })
+                  .into_iter()
+                  .enumerate() {
 
-        editor.window.char(((w * a) / b) as isize + (n as isize * 8), h as isize - 16 - 1 - {
-            if mode == Mode::Primitive(PrimitiveMode::Prompt) {
-                16 + 1 + 1
-            } else {
-                0
-            }
-        }, c, Color::WHITE);
+        editor.window.char(((w * a) / b) as isize + (n as isize * 8),
+                           h as isize - 16 - 1 -
+                           {
+                               if mode == Mode::Primitive(PrimitiveMode::Prompt) {
+                                   16 + 1 + 1
+                               } else {
+                                   0
+                               }
+                           },
+                           c,
+                           Color::WHITE);
     }
 }
 

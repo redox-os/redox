@@ -27,7 +27,7 @@ pub struct Console {
     pub command: Option<String>,
     pub escape: bool,
     pub escape_sequence: bool,
-    pub sequence: Vec<String>
+    pub sequence: Vec<String>,
 }
 
 impl Console {
@@ -42,28 +42,28 @@ impl Console {
             command: None,
             escape: false,
             escape_sequence: false,
-            sequence: Vec::new()
+            sequence: Vec::new(),
         }
     }
 
-    pub fn code(&mut self, c: char){
+    pub fn code(&mut self, c: char) {
         if self.escape_sequence {
             if c >= '0' && c <= '9' {
-                //Add a number to the sequence list
+                // Add a number to the sequence list
                 if let Some(mut value) = self.sequence.last_mut() {
                     value.push(c);
                 }
             } else if c == ';' {
-                //Split sequence into list
+                // Split sequence into list
                 self.sequence.push(String::new());
             } else if c == 'm' {
-                //Display attributes
+                // Display attributes
                 for value in self.sequence.iter() {
                     if value == "0" {
-                        //Reset all
+                        // Reset all
                         self.foreground = WHITE;
                         self.background = BLACK;
-                    }else if value == "30" {
+                    } else if value == "30" {
                         self.foreground = BLACK;
                     } else if value == "31" {
                         self.foreground = RED;
@@ -79,7 +79,7 @@ impl Console {
                         self.foreground = CYAN;
                     } else if value == "37" {
                         self.foreground = WHITE;
-                    }else if value == "40" {
+                    } else if value == "40" {
                         self.background = BLACK;
                     } else if value == "41" {
                         self.background = RED;
@@ -103,17 +103,17 @@ impl Console {
                 self.escape_sequence = false;
             }
 
-            if ! self.escape_sequence {
+            if !self.escape_sequence {
                 self.sequence.clear();
                 self.escape = false;
             }
         } else if c == '[' {
-            //Control sequence initiator
+            // Control sequence initiator
 
             self.escape_sequence = true;
             self.sequence.push(String::new());
         } else if c == 'c' {
-            //Reset
+            // Reset
             self.point.x = 0;
             self.point.y = 0;
             self.foreground = WHITE;
@@ -123,17 +123,17 @@ impl Console {
 
             self.escape = false;
         } else {
-            //Unknown escape character
+            // Unknown escape character
 
             self.escape = false;
         }
     }
 
-    pub fn character(&mut self, c: char){
+    pub fn character(&mut self, c: char) {
         self.display.rect(self.point, Size::new(8, 16), self.background);
         if c == '\x1B' {
             self.escape = true;
-        }else if c == '\n' {
+        } else if c == '\n' {
             self.point.x = 0;
             self.point.y += 16;
         } else if c == '\x08' {
@@ -159,18 +159,18 @@ impl Console {
         self.redraw = true;
     }
 
-    pub fn write(&mut self, bytes: &[u8]){
+    pub fn write(&mut self, bytes: &[u8]) {
         for byte in bytes.iter() {
             let c = *byte as char;
 
             if self.escape {
                 self.code(c);
-            }else{
+            } else {
                 self.character(c);
             }
         }
         // If contexts disabled, probably booting up
-        if ! unsafe { ::scheduler::context::context_enabled } && self.draw && self.redraw {
+        if !unsafe { ::scheduler::context::context_enabled } && self.draw && self.redraw {
             self.redraw = false;
             self.display.flip();
         }

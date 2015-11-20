@@ -38,7 +38,7 @@ pub struct Package {
 impl Package {
     /// Get content
     pub fn get_content(&self) -> Tarball {
-        
+
     }
 
     /// Get package from string
@@ -104,9 +104,9 @@ impl Package {
 
         for s in self.sign {
             if s.check(con) && col.keys.contains(s) {
-                return TrustLevel::TrustedPackage
+                return TrustLevel::TrustedPackage;
             } else if !s.check(con) {
-                return TrustLevel::InvalidSignature
+                return TrustLevel::InvalidSignature;
             }
         }
 
@@ -256,6 +256,3 @@ impl Collection {
         None
     }
 }
-
-
-

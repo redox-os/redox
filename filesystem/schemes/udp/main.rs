@@ -31,7 +31,7 @@ impl FromBytes for Udp {
             unsafe {
                 return Option::Some(Udp {
                     header: ptr::read(bytes.as_ptr() as *const UdpHeader),
-                    data: bytes[mem::size_of::<UdpHeader>().. bytes.len()].to_vec(),
+                    data: bytes[mem::size_of::<UdpHeader>()..bytes.len()].to_vec(),
                 });
             }
         }
@@ -43,7 +43,8 @@ impl ToBytes for Udp {
     fn to_bytes(&self) -> Vec<u8> {
         unsafe {
             let header_ptr: *const UdpHeader = &self.header;
-            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8, mem::size_of::<UdpHeader>()));
+            let mut ret = Vec::from(slice::from_raw_parts(header_ptr as *const u8,
+                                                          mem::size_of::<UdpHeader>()));
             ret.push_all(&self.data);
             ret
         }
@@ -69,12 +70,15 @@ impl Resource {
                 peer_port: self.peer_port,
                 host_port: self.host_port,
             }),
-            None => None
+            None => None,
         }
     }
 
     pub fn path(&self) -> Option<String> {
-        Some(format!("udp://{}:{}/{}", self.peer_addr.to_string(), self.peer_port, self.host_port))
+        Some(format!("udp://{}:{}/{}",
+                     self.peer_addr.to_string(),
+                     self.peer_port,
+                     self.host_port))
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
@@ -82,10 +86,10 @@ impl Resource {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
 
-            //TODO: Allow splitting
+            // TODO: Allow splitting
             let i = 0;
             while i < buf.len() && i < bytes.len() {
-                 buf[i] = bytes[i];
+                buf[i] = bytes[i];
             }
             return Some(i);
         }
@@ -97,7 +101,7 @@ impl Resource {
                     if let Some(datagram) = Udp::from_bytes(bytes) {
                         if datagram.header.dst.get() == self.host_port &&
                            datagram.header.src.get() == self.peer_port {
-                            //TODO: Allow splitting
+                            // TODO: Allow splitting
                             let i = 0;
                             while i < buf.len() && i < datagram.data.len() {
                                 buf[i] = datagram.data[i];
@@ -169,7 +173,7 @@ impl Scheme {
     pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
-        //Check host and port vs path
+        // Check host and port vs path
         if !url.path().is_empty() {
             let host_port = url.port().to_num();
             if host_port > 0 && host_port < 65536 {

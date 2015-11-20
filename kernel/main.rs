@@ -70,7 +70,7 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-//use schemes::display::*;
+// use schemes::display::*;
 
 use syscall::handle::*;
 
@@ -268,7 +268,7 @@ pub unsafe fn debug_init() {
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
-    //debug::d("INITIALIZING...");
+    // debug::d("INITIALIZING...");
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
 
@@ -291,9 +291,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     debug_init();
 
     Page::init();
-    //debug::d("Initializing memory");
+    // debug::d("Initializing memory");
     memory::memory_init();
-    //debug::d("Memory initialized");
+    // debug::d("Memory initialized");
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
@@ -353,7 +353,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     context_enabled = true;
 
-    //TODO: Run schemes in contexts
+    // TODO: Run schemes in contexts
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);

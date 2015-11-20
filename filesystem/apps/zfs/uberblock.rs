@@ -39,7 +39,8 @@ impl FromBytes for Uberblock {
             }
         } else {
             Err(format!("Error: Need {} bytes to read uberblock, only {} in buffer",
-                        mem::size_of::<Uberblock>(), data.len()))
+                        mem::size_of::<Uberblock>(),
+                        data.len()))
         }
     }
 }
