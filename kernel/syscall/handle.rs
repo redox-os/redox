@@ -53,21 +53,21 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
     if ::console_ptr as usize > 0 {
         let mut console = unsafe { &mut *::console_ptr }.lock();
         console.write(bytes);
-    }
+    } else {
+        let serial_status = Pio8::new(0x3F8 + 5);
+        let mut serial_data = Pio8::new(0x3F8);
 
-    let serial_status = Pio8::new(0x3F8 + 5);
-    let mut serial_data = Pio8::new(0x3F8);
-
-    for byte in bytes.iter() {
-        while serial_status.read() & 0x20 == 0 {}
-        serial_data.write(*byte);
-
-        if *byte == 8 {
+        for byte in bytes.iter() {
             while serial_status.read() & 0x20 == 0 {}
-            serial_data.write(0x20);
+            serial_data.write(*byte);
 
-            while serial_status.read() & 0x20 == 0 {}
-            serial_data.write(8);
+            if *byte == 8 {
+                while serial_status.read() & 0x20 == 0 {}
+                serial_data.write(0x20);
+
+                while serial_status.read() & 0x20 == 0 {}
+                serial_data.write(8);
+            }
         }
     }
 
