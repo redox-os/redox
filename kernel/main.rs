@@ -40,6 +40,7 @@ use common::get_slice::GetSlice;
 use common::memory;
 use common::paging::Page;
 use common::queue::Queue;
+use common::slice_data::SliceData;
 // use common::prompt;
 use common::time::Duration;
 
