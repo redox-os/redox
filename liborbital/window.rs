@@ -192,8 +192,9 @@ impl Window {
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.seek(SeekFrom::Start(0));
-        let to_write: &[u8] = unsafe{ mem::transmute::<&[u32],&[u8]>(&self.data) };
-        self.file.write(to_write);
+        self.file.write(& unsafe {
+            slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len() * mem::size_of::<u32>())
+        });
         return self.file.sync();
     }
 
