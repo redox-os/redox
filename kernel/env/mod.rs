@@ -6,6 +6,7 @@ use collections::vec_deque::VecDeque;
 
 use common::event::Event;
 use common::mutex::Mutex;
+use common::recursive_mutex::RecursiveMutex;
 use common::rwlock::RwLock;
 use common::time::Duration;
 
@@ -28,7 +29,7 @@ pub struct Environment {
     /// Monotonic clock
     pub clock_monotonic: Duration,
     /// Default console
-    pub console: Mutex<Console>,
+    pub console: RecursiveMutex<Console>,
     /// Pending events
     pub events: Mutex<VecDeque<Event>>,
     /// Schemes
@@ -40,7 +41,7 @@ impl Environment {
         box Environment {
             clock_realtime: Duration::new(0, 0),
             clock_monotonic: Duration::new(0, 0),
-            console: Mutex::new(Console::new()),
+            console: RecursiveMutex::new(Console::new()),
             events: Mutex::new(VecDeque::new()),
             schemes: Vec::new(),
         }

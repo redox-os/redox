@@ -245,6 +245,12 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     tss_ptr = tss_data as *mut TSS;
 
     env_ptr = Box::into_raw(Environment::new());
+    
+    context_pid = 1;
+    context_i = 0;
+    context_enabled = false;
+    contexts_ptr = Box::into_raw(box Vec::new());
+    (*contexts_ptr).push(Context::root());
 
     let env = &mut *env_ptr;
     env.console.lock().draw = true;
@@ -255,12 +261,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     debug::dl();
 
     env.clock_realtime = Rtc::new().time();
-
-    context_pid = 1;
-    context_i = 0;
-    context_enabled = false;
-    contexts_ptr = Box::into_raw(box Vec::new());
-    (*contexts_ptr).push(Context::root());
 
     env.schemes.push(UnsafeCell::new(Ps2::new()));
     env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
