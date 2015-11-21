@@ -141,6 +141,8 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
         clone_pid = Context::next_pid();
         let parent_ptr: *const Context = parent.deref();
 
+        debug!("Clone {} to {} flags {}\n", parent.pid, clone_pid, flags);
+
         let mut context_clone_args: Vec<usize> = Vec::new();
         context_clone_args.push(clone_pid);
         context_clone_args.push(flags);

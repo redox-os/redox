@@ -17,8 +17,8 @@ use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch,
 use schemes::Url;
 
 /// Excecute an excecutable
-// TODO: Modify current context, take current stdio
 pub fn execute(url: Url, mut args: Vec<String>) {
+    debug!("Launch {}\n", url.string);
     unsafe {
         let reenable = scheduler::start_no_ints();
 

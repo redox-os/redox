@@ -158,6 +158,7 @@ impl Session {
                 for package in self.packages.iter() {
                     if !(&package.icon).is_empty() {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
+                            debugln!("Launching: {}", package.binary);
                             if let Some(mut child) = Command::new(&package.binary).spawn() {
                                 if let Some(status) = child.wait() {
                                     if let Some(code) = status.code() {
