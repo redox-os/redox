@@ -2,6 +2,7 @@ use redox::Vec;
 
 use super::from_bytes::FromBytes;
 use super::metaslab::{Metaslab, MetaslabGroup};
+use super::nvpair::NvList;
 
 #[repr(packed)]
 pub struct VdevLabel {
@@ -12,6 +13,19 @@ pub struct VdevLabel {
 }
 
 impl FromBytes for VdevLabel { }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub enum AllocType {
+    Load = 0,
+    Add,
+    Spare,
+    L2Cache,
+    RootPool,
+    Split,
+    Attach,
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -31,4 +45,23 @@ pub struct Vdev {
     metaslabs: Vec<Metaslab>,
 
     // Leaf only
+}
+
+impl Vdev {
+    pub fn new(nv: &NvList, alloc_type: AllocType) -> Self {
+        Vdev {
+            id: 0,
+            guid: 0,
+            guid_sum: 0,
+            orig_guid: 0,
+            asize: 0,
+            min_asize: 0,
+            max_asize: 0,
+            ashift: 0,
+
+            ms_array_object: 0,
+            ms_group: MetaslabGroup,
+            metaslabs: vec![],
+        }
+    }
 }
