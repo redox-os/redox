@@ -89,12 +89,12 @@ impl KScheme for Serial {
             }
 
             if c != '\0' || sc != 0 {
-                event::KeyEvent {
+                let key_event = event::KeyEvent {
                     character: c,
                     scancode: sc,
                     pressed: true,
-                }
-                .trigger();
+                };
+                ::env().events.lock().push_back(key_event.to_event());
             }
         }
     }

@@ -1,8 +1,12 @@
 use core::char;
 
-use scheduler;
+pub const EVENT_NONE: i64 = 0;
+pub const EVENT_MOUSE: i64 = 1;
+pub const EVENT_KEY: i64 = 2;
+pub const EVENT_QUIT: i64 = 3;
 
 /// An optional event
+#[derive(Copy, Clone)]
 pub enum EventOption {
     /// A mouse event
     Mouse(MouseEvent),
@@ -10,28 +14,27 @@ pub enum EventOption {
     Key(KeyEvent),
     /// A quit request event
     Quit(QuitEvent),
-    /// A unknown event
+    /// An unknown event
     Unknown(Event),
     /// No event
     None,
 }
 
 /// An event
-// TODO: Make this a scheme
 #[derive(Copy, Clone)]
 #[repr(packed)]
 pub struct Event {
-    pub code: char,
-    pub a: isize,
-    pub b: isize,
-    pub c: isize,
+    pub code: i64,
+    pub a: i64,
+    pub b: i64,
+    pub c: i64,
 }
 
 impl Event {
     /// Create a null event
     pub fn new() -> Event {
         Event {
-            code: '\0',
+            code: 0,
             a: 0,
             b: 0,
             c: 0,
@@ -42,33 +45,27 @@ impl Event {
     // TODO: Consider doing this via a From trait.
     pub fn to_option(self) -> EventOption {
         match self.code {
-            'm' => EventOption::Mouse(MouseEvent::from_event(self)),
-            'k' => EventOption::Key(KeyEvent::from_event(self)),
-            'q' => EventOption::Quit(QuitEvent::from_event(self)),
-            '\0' => EventOption::None,
+            EVENT_NONE => EventOption::None,
+            EVENT_MOUSE => EventOption::Mouse(MouseEvent::from_event(self)),
+            EVENT_KEY => EventOption::Key(KeyEvent::from_event(self)),
+            EVENT_QUIT => EventOption::Quit(QuitEvent::from_event(self)),
             _ => EventOption::Unknown(self),
         }
-    }
-
-    /// Event trigger
-    pub fn trigger(&self) {
-        let mut events = ::env().events.lock();
-        events.push_back(*self);
     }
 }
 
 /// A event related to the mouse
 #[derive(Copy, Clone)]
 pub struct MouseEvent {
-    /// The x coordinate
+    /// The x coordinate of the mouse
     pub x: isize,
-    /// The y coordinate
+    /// The y coordinate of the mouse
     pub y: isize,
-    /// Is the left button pressed?
+    /// Was the left button pressed?
     pub left_button: bool,
-    /// Is the midle button pressed?
+    /// Was the middle button pressed?
     pub middle_button: bool,
-    /// Is the right button pressed?
+    /// Was the right button pressed?
     pub right_button: bool,
 }
 
@@ -76,29 +73,22 @@ impl MouseEvent {
     /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         Event {
-            code: 'm',
-            a: self.x,
-            b: self.y,
-            c: (self.left_button as isize) | (self.middle_button as isize) << 1 |
-               (self.right_button as isize) << 2,
+            code: EVENT_MOUSE,
+            a: self.x as i64,
+            b: self.y as i64,
+            c: self.left_button as i64 | (self.middle_button as i64) << 1 | (self.right_button as i64) << 2,
         }
     }
 
     /// Convert an `Event` to a `MouseEvent`
     pub fn from_event(event: Event) -> MouseEvent {
         MouseEvent {
-            x: event.a,
-            y: event.b,
+            x: event.a as isize,
+            y: event.b as isize,
             left_button: event.c & 1 == 1,
             middle_button: event.c & 2 == 2,
             right_button: event.c & 4 == 4,
         }
-    }
-
-    /// Mouse event trigger
-    #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
     }
 }
 
@@ -154,15 +144,19 @@ pub const K_DEL: u8 = 0x53;
 pub const K_F11: u8 = 0x57;
 /// F12 key
 pub const K_F12: u8 = 0x58;
+/// Left shift
+pub const K_LEFT_SHIFT: u8 = 0x2A;
+/// Right shift
+pub const K_RIGHT_SHIFT: u8 = 0x36;
 
 /// A key event (such as a pressed key)
 #[derive(Copy, Clone)]
 pub struct KeyEvent {
-    /// The char of the key
+    /// The charecter of the key
     pub character: char,
     /// The scancode of the key
     pub scancode: u8,
-    /// Is the key pressed?
+    /// Was it pressed?
     pub pressed: bool,
 }
 
@@ -170,33 +164,20 @@ impl KeyEvent {
     /// Convert to an `Event`
     pub fn to_event(&self) -> Event {
         Event {
-            code: 'k',
-            a: self.character as isize,
-            b: self.scancode as isize,
-            c: self.pressed as isize,
+            code: EVENT_KEY,
+            a: self.character as i64,
+            b: self.scancode as i64,
+            c: self.pressed as i64,
         }
     }
 
     /// Convert from an `Event`
     pub fn from_event(event: Event) -> KeyEvent {
-        match char::from_u32(event.a as u32) {
-            Some(character) => KeyEvent {
-                character: character,
-                scancode: event.b as u8,
-                pressed: event.c > 0,
-            },
-            None => KeyEvent {
-                character: '\0',
-                scancode: event.b as u8,
-                pressed: event.c > 0,
-            },
+        KeyEvent {
+            character: char::from_u32(event.a as u32).unwrap_or('\0'),
+            scancode: event.b as u8,
+            pressed: event.c > 0,
         }
-    }
-
-    /// Key event trigger
-    #[inline]
-    pub fn trigger(&self) {
-        self.to_event().trigger();
     }
 }
 
@@ -206,7 +187,7 @@ pub struct QuitEvent;
 impl QuitEvent {
     pub fn to_event(&self) -> Event {
         Event {
-            code: 'q',
+            code: EVENT_QUIT,
             a: 0,
             b: 0,
             c: 0,
