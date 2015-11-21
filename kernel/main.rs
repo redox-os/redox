@@ -36,7 +36,7 @@ use core::{mem, usize};
 use core::slice::SliceExt;
 
 use common::debug;
-use common::event::{self, Event, EventOption};
+use common::event::{self, EVENT_KEY, Event, EventOption};
 use common::get_slice::GetSlice;
 use common::mutex::Mutex;
 use common::memory;
@@ -198,7 +198,7 @@ fn event_loop() -> ! {
                             _ => (),
                         }
                     } else {
-                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
+                        if event.code == EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
                             console.draw = true;
                             console.redraw = true;
                         } else {
