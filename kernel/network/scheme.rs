@@ -65,7 +65,7 @@ impl Resource for NetworkResource {
         Url::from_str("network:")
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for RTL8139\n");
         None
     }

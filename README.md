@@ -107,6 +107,14 @@ sudo yum install qemu-system-x86 qemu-kvm
 make qemu
 ```
 
+## Building and Running on NixOS
+
+```bash
+nix-shell setup/dev-env.nix
+make all
+make qemu
+```
+
 ## Building on OS X
 - Install MacPorts or Homebrew
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)

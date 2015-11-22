@@ -16,7 +16,6 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
-#![feature(raw)]
 #![no_std]
 
 #[macro_use]
@@ -245,7 +244,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     tss_ptr = tss_data as *mut TSS;
 
     env_ptr = Box::into_raw(Environment::new());
-    
+
     context_pid = 1;
     context_i = 0;
     context_enabled = false;

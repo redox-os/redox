@@ -41,7 +41,7 @@ impl Resource for IpResource {
         Url::from_string(format!("ip:{}/{:X}", self.peer_addr.to_string(), self.proto))
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for ip:\n");
         None
     }

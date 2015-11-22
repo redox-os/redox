@@ -2,11 +2,9 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
-use scheduler::context::{context_switch, context_i, contexts_ptr};
+use scheduler::context::context_switch;
 
 use schemes::{KScheme, Resource, Url};
-
-use syscall::handle;
 
 /// A debug resource
 pub struct DebugResource {
