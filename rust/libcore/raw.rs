@@ -9,6 +9,7 @@
 // except according to those terms.
 
 #![allow(missing_docs)]
+#![allow(raw_pointer_derive)]
 #![unstable(feature = "raw", issue = "27751")]
 
 //! Contains struct definitions for the layout of compiler built-in types.

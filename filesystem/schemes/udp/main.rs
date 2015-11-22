@@ -29,13 +29,14 @@ impl FromBytes for Udp {
     fn from_bytes(bytes: Vec<u8>) -> Option<Self> {
         if bytes.len() >= mem::size_of::<UdpHeader>() {
             unsafe {
-                return Option::Some(Udp {
+                Option::Some(Udp {
                     header: ptr::read(bytes.as_ptr() as *const UdpHeader),
                     data: bytes[mem::size_of::<UdpHeader>().. bytes.len()].to_vec(),
-                });
+                })
             }
+        } else {
+            Option::None
         }
-        Option::None
     }
 }
 
@@ -144,12 +145,12 @@ impl Resource {
         }
 
         match self.ip.write(&udp.to_bytes()) {
-            Some(_) => return Some(buf.len()),
-            None => return None,
+            Some(_) => Some(buf.len()),
+            None => None,
         }
     }
 
-    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
+    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
         None
     }
 

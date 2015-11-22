@@ -17,7 +17,6 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
-#![feature(raw)]
 #![no_std]
 
 #[macro_use]
@@ -165,7 +164,7 @@ unsafe fn idle_loop() -> ! {
 }
 
 /// Event poll loop
-unsafe fn poll_loop() -> ! {
+unsafe fn poll_loop() {
     let session = &mut *session_ptr;
 
     loop {
@@ -176,7 +175,7 @@ unsafe fn poll_loop() -> ! {
 }
 
 /// Event loop
-unsafe fn event_loop() -> ! {
+unsafe fn event_loop() {
     let events = &mut *events_ptr;
     let mut cmd = String::new();
     loop {
