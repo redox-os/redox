@@ -185,21 +185,12 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
-            name: "read",
-            help: "",
-            main: Box::new(|_: &Vec<String>| {}),
-        });
-
-        commands.push(Command {
             name: "run",
-            help: "",
+            help: "Run a command\n",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
                     let mut commands = String::new();
-                    if let Some(mut file) = File::open(path) {
-                        file.read_to_string(&mut commands);
-                    }
 
                     for command in commands.split('\n') {
                         exec!(command);
