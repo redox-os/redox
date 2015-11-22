@@ -70,7 +70,7 @@ impl ZfsReader {
         data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
     }
 
-    pub fn uber(&mut self, uberblocks: &[u8]) -> Result<Uberblock, String> {
+    pub fn uber(&mut self, _: &[u8]) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
             /*let ub_len = 2*512;
