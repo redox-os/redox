@@ -191,9 +191,6 @@ impl<'a> Command<'a> {
                 if let Some(path) = args.get(1) {
 
                     let mut commands = String::new();
-                    if let Some(mut file) = File::open(path) {
-                        file.read_to_string(&mut commands);
-                    }
 
                     for command in commands.split('\n') {
                         exec!(command);
