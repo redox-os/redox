@@ -450,7 +450,7 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_mkdir(path: *const u8, mode: usize) -> usize {
+pub unsafe fn do_sys_mkdir(_: *const u8, _: usize) -> usize {
     // Implement body of do_sys_mkdir
 
     usize::MAX
@@ -523,7 +523,7 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
+pub unsafe fn do_sys_unlink(_: *const u8) -> usize {
     // Implement body of do_sys_mkdir
 
     usize::MAX

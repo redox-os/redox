@@ -33,7 +33,7 @@ pub fn main() {
                 break;
             }
         }
-        if let EventOption::Quit(quit_event) = event.to_option() {
+        if let EventOption::Quit(_) = event.to_option() {
             break;
         }
     }

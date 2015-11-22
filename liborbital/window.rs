@@ -2,7 +2,6 @@ use redox::Box;
 use redox::fs::File;
 use redox::io::*;
 use redox::mem;
-use redox::ops::DerefMut;
 use redox::slice;
 use redox::syscall::sys_yield;
 use redox::String;
@@ -104,7 +103,7 @@ impl Window {
     }
 
     /// Set title
-    pub fn set_title(&mut self, title: &str) {
+    pub fn set_title(&mut self, _: &str) {
         //TODO
     }
 
