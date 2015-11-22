@@ -232,7 +232,7 @@ impl MemoryTree {
         let level = MT_DEPTH - order;
 
         let mut free = None;
-        for i in 0..size {
+        for i in 0..2 * (1 << level) {
             if let MemoryState::Free = self.tree.get(Block {
                 level: level,
                 idx: i,
