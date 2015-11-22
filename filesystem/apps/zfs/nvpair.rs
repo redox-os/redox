@@ -37,6 +37,10 @@ impl NvList {
         }
         None
     }
+
+    pub fn get<'a, T: GetNvValue<'a>>(&'a self, name: &str) -> Option<T> {
+        self.find(name).and_then(|x| GetNvValue::get(x))
+    }
 }
 
 impl fmt::Debug for NvList {
@@ -73,8 +77,8 @@ pub enum NvValue {
     Uint64Array(Vec<u64>),
     StringArray(Vec<String>),
     HrTime(i64),
-    NvList(Box<NvList>),
-    NvListArray(Vec<Box<NvList>>),
+    NvList(NvList),
+    NvListArray(Vec<NvList>),
     BooleanValue(bool),
     Int8(i8),
     Uint8(u8),
@@ -154,11 +158,11 @@ impl fmt::Debug for NvValue {
         match *self {
             NvValue::Int64(v) => write!(f, "Int64(0x{:X})", v),
             NvValue::Uint64(v) => write!(f, "Uint64(0x{:X})", v),
-            NvValue::NvList(ref v) => write!(f, "NvList({:?})", **v),
+            NvValue::NvList(ref v) => write!(f, "NvList({:?})", v),
             NvValue::NvListArray(ref v) => {
                 try!(write!(f, "NvListArray(["));
                 for nv_list in v {
-                    try!(write!(f, "NvList({:?})", **nv_list));
+                    try!(write!(f, "NvList({:?})", nv_list));
                 }
                 write!(f, "])")
             },
@@ -262,6 +266,102 @@ impl DataType {
             DataType::BooleanArray => 24,
             DataType::Int8Array => 25,
             DataType::Uint8Array => 26,
+        }
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+pub trait GetNvValue<'a>: Sized {
+    fn get(value: &'a NvValue) -> Option<Self>;
+}
+
+impl<'a> GetNvValue<'a> for bool {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::BooleanValue(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for u8 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Byte(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for u16 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Uint16(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for u32 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Uint32(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for u64 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Uint64(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for i16 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Int16(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for i32 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Int32(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for i64 {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::Int64(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for &'a NvList {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::NvList(ref v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for &'a Vec<NvList> {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::NvListArray(ref v) => Some(v),
+            _ => None,
         }
     }
 }
