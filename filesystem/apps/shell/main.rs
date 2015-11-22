@@ -186,7 +186,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "run",
-            help: "",
+            help: "Run a command\n",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
