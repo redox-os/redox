@@ -192,7 +192,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "run",
-            help: "",
+            help: "Reads and runs a script file\n    run <my_script>",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
