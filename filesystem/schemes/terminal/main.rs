@@ -87,7 +87,7 @@ impl Scheme {
     }
 
     pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
-        let (scheme, mut title) = path.split_at(path.find(':').unwrap_or(path.len() - 1) + 1);
+        let (_, title) = path.split_at(path.find(':').unwrap_or(path.len() - 1) + 1);
 
         Some(box Resource {
             console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(-1, -1, 640, 480, title))),
