@@ -104,7 +104,7 @@ impl Window {
     }
 
     /// Set title
-    pub fn set_title(&mut self, title: &str) {
+    pub fn set_title(&mut self, _: &str) {
         //TODO
     }
 

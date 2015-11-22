@@ -18,7 +18,6 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(core_simd)]
-#![feature(core_slice_ext)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]

@@ -58,5 +58,5 @@ pub use self::exec::*;
 pub mod invert;
 
 pub fn main() {
-    let editor = Editor::new();
+    Editor::init();
 }
