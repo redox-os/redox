@@ -186,7 +186,7 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "read",
-            help: "",
+            help: "To read some variables\n    read <my_variable>",
             main: Box::new(|_: &Vec<String>| {}),
         });
 
