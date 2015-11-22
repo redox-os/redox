@@ -1,5 +1,6 @@
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut};
+use core::usize;
 
 use common::mutex::Mutex;
 
@@ -38,7 +39,7 @@ impl<T: ?Sized> RecursiveMutex<T> {
             if let Some(current) = Context::current() {
                 pid = current.pid;
             }else{
-                pid = 0;
+                pid = usize::MAX;
             }
             scheduler::end_no_ints(reenable);
         }
@@ -46,7 +47,7 @@ impl<T: ?Sized> RecursiveMutex<T> {
         loop {
             {
                 let mut inner = self.inner.lock();
-                if inner.owner == pid || inner.count == 0 {
+                if inner.count == 0 || inner.owner == pid  {
                     inner.owner = pid;
                     inner.count += 1;
                     break;
@@ -96,5 +97,8 @@ impl<'a, T: ?Sized> Drop for RecursiveMutexGuard<'a, T> {
     fn drop(&mut self) {
         let mut inner = self.inner.lock();
         inner.count -= 1;
+        if inner.count == 0 {
+            inner.owner = 0;
+        }
     }
 }
