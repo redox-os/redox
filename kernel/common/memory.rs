@@ -96,7 +96,7 @@ impl StateArray {
         let ptr = (self.ptr + byte) as *mut u8;
         let b = ptr::read(ptr);
 
-        ptr::write(ptr, (b & !((3 << 6) >> bit)) ^ ((val as u8) << (8 - bit)));
+        ptr::write(ptr, ((val as u8) << bit) ^ (!(3 << 6) >> bit) & b);
     }
 }
 
@@ -146,7 +146,7 @@ pub struct Block {
 impl Block {
     /// Get the position of this block
     pub fn pos(&self) -> usize {
-        (1 + self.idx - (MT_LEAFS >> self.level)) << self.level
+        self.idx + (1 << self.level) - 1
     }
 
     /// Get sibling side
@@ -185,8 +185,12 @@ impl Block {
     /// Convert a pointer to a block
     pub fn from_ptr(ptr: usize) -> Block {
         // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
-        let level = ceil_log2(((ptr - HEAP_START) / MT_ATOM));
-        let idx = (ptr + (1 << MT_DEPTH) - 1) >> level;
+
+        let pos = (ptr - HEAP_START) / MT_ATOM;
+        let level = ceil_log2(pos);
+
+        let idx = (pos + 1) >> level;
+
 
         Block {
             level: level,
@@ -257,7 +261,7 @@ impl MemoryTree {
                 None
             } else {
                 // Kernel panic on OOM
-                Some(if let Some(m) = self.alloc(size << 1) {
+                Some(if let Some(m) = self.alloc(size * 2) {
                     self.split(m)
                 } else {
                     return None;
