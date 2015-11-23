@@ -22,7 +22,6 @@ pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_SLICES: usize = 4;
 
-pub static mut contexts_ptr: *mut Vec<Box<Context>> = 0 as *mut Vec<Box<Context>>;
 pub static mut context_i: usize = 0;
 pub static mut context_enabled: bool = false;
 pub static mut context_pid: usize = 0;
@@ -31,9 +30,7 @@ pub static mut context_pid: usize = 0;
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
 pub unsafe fn context_switch(interrupted: bool) {
-    let reenable = scheduler::start_no_ints();
-
-    let contexts = &mut *contexts_ptr;
+    let mut contexts = ::env().contexts.lock();
     if context_enabled {
         let current_i = context_i;
         context_i += 1;
@@ -91,8 +88,6 @@ pub unsafe fn context_switch(interrupted: bool) {
             }
         }
     }
-
-    scheduler::end_no_ints(reenable);
 }
 
 /// Clone context
@@ -186,7 +181,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
             statuses: Vec::new(),
         };
 
-        let contexts = &mut *contexts_ptr;
+        let mut contexts = ::env().contexts.lock();
         contexts.push(context);
     }
 
@@ -329,12 +324,12 @@ pub struct Context {
 
 impl Context {
     pub unsafe fn next_pid() -> usize {
-        let reenable = scheduler::start_no_ints();
+        let contexts = ::env().contexts.lock();
 
         let mut collision = true;
         while collision {
             collision = false;
-            for context in (*contexts_ptr).iter() {
+            for context in contexts.iter() {
                 if context_pid == context.pid {
                     context_pid += 1;
                     collision = true;
@@ -349,8 +344,6 @@ impl Context {
         if context_pid >= 65536 {
             context_pid = 1;
         }
-
-        scheduler::end_no_ints(reenable);
 
         ret
     }
@@ -426,12 +419,8 @@ impl Context {
             context_box_args.push(box_fn_ptr as usize);
             context_box_args.push(0); //Return address, 0 catches bad code
 
-            let reenable = scheduler::start_no_ints();
-            if contexts_ptr as usize > 0 {
-                (*contexts_ptr)
-                    .push(Context::new(name, context_box as usize, &context_box_args));
-            }
-            scheduler::end_no_ints(reenable);
+            let mut contexts = ::env().contexts.lock();
+            contexts.push(Context::new(name, context_box as usize, &context_box_args));
         }
     }
 
@@ -439,19 +428,31 @@ impl Context {
         return context_i;
     }
 
+    //TODO: Do not cheat
     pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {
         if context_enabled {
-            let contexts = &mut *contexts_ptr;
-            contexts.get(context_i)
+            let contexts = ::env().contexts.lock();
+            if let Some(context) = contexts.get(context_i) {
+                let context_ptr: *const Box<Context> = context;
+                Some(&*context_ptr)
+            } else {
+                None
+            }
         } else {
             None
         }
     }
 
+    //TODO: Do not cheat
     pub unsafe fn current_mut<'a>() -> Option<&'a mut Box<Context>> {
         if context_enabled {
-            let contexts = &mut *contexts_ptr;
-            contexts.get_mut(context_i)
+            let mut contexts = ::env().contexts.lock();
+            if let Some(mut context) = contexts.get_mut(context_i) {
+                let context_ptr: *mut Box<Context> = context;
+                Some(&mut *context_ptr)
+            } else {
+                None
+            }
         } else {
             None
         }

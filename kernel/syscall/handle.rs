@@ -12,7 +12,7 @@ use drivers::pio::*;
 use programs::executor::execute;
 
 use scheduler::{self, Regs};
-use scheduler::context::{context_clone, context_switch, contexts_ptr, Context, ContextMemory, ContextFile, ContextStatus};
+use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile, ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -149,7 +149,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
         context_clone_args.push(parent_ptr as usize);
         context_clone_args.push(0); //Return address, 0 catches bad code
 
-        let contexts = &mut *::scheduler::context::contexts_ptr;
+        let mut contexts = ::env().contexts.lock();
         contexts.push(Context::new(format!("kclone {}", parent.name),
                                    context_clone as usize,
                                    &context_clone_args));
@@ -303,7 +303,8 @@ pub unsafe fn do_sys_exit(status: usize){
         (0, 0)
     };
 
-    for context in (*contexts_ptr).iter_mut() {
+    let mut contexts = ::env().contexts.lock();
+    for context in contexts.iter_mut() {
         //Add exit status to parent
         if context.pid == ppid {
             context.statuses.push(ContextStatus {

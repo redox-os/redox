@@ -12,7 +12,7 @@ use common::elf::Elf;
 use common::memory;
 
 use scheduler;
-use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, contexts_ptr, Context, ContextFile, ContextMemory};
+use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextFile, ContextMemory};
 
 use schemes::Url;
 

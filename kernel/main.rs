@@ -37,10 +37,10 @@ use core::slice::SliceExt;
 use common::debug;
 use common::event::{self, EVENT_KEY, Event, EventOption};
 use common::get_slice::GetSlice;
-use common::mutex::Mutex;
+use sync::Mutex;
 use common::memory;
 use common::paging::Page;
-use common::rwlock::RwLock;
+use sync::RwLock;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -60,7 +60,7 @@ use programs::executor::execute;
 use programs::scheme::*;
 
 use scheduler::{Context, Regs, TSS};
-use scheduler::context::{context_enabled, context_switch, context_i, context_pid, contexts_ptr};
+use scheduler::context::{context_enabled, context_switch, context_i, context_pid};
 
 use schemes::Url;
 use schemes::arp::*;
@@ -101,6 +101,8 @@ pub mod programs;
 pub mod schemes;
 /// Scheduling
 pub mod scheduler;
+/// Sync primatives
+pub mod sync;
 /// System calls
 pub mod syscall;
 /// USB input/output
@@ -127,14 +129,16 @@ unsafe fn idle_loop() -> ! {
 
         let mut halt = true;
 
-        let contexts = &*contexts_ptr;
-        for i in 1..contexts.len() {
-            match contexts.get(i) {
-                Some(context) => if context.interrupted {
-                    halt = false;
-                    break;
-                },
-                None => (),
+        {
+            let contexts = ::env().contexts.lock();
+            for i in 1..contexts.len() {
+                match contexts.get(i) {
+                    Some(context) => if context.interrupted {
+                        halt = false;
+                        break;
+                    },
+                    None => (),
+                }
             }
         }
 
@@ -248,10 +252,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     context_pid = 1;
     context_i = 0;
     context_enabled = false;
-    contexts_ptr = Box::into_raw(box Vec::new());
-    (*contexts_ptr).push(Context::root());
 
     let env = &mut *env_ptr;
+    env.contexts.lock().push(Context::root());
     env.console.lock().draw = true;
 
     debug!("Redox ");
