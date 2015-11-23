@@ -231,7 +231,7 @@ impl MemoryTree {
 
     /// Allocate of minimum size, size
     pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
-        let order = ceil_log2(size / MT_ATOM);
+        let order = ceil_log2(size / MT_ATOM) - 1;
         size = (1 << order) * MT_ATOM;
         let level = MT_DEPTH - order;
 
