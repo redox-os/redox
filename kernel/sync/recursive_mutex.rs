@@ -12,7 +12,7 @@ struct RecursiveMutexInner {
     count: usize
 }
 
-pub struct RecursiveMutex<T> {
+pub struct RecursiveMutex<T: ?Sized> {
     inner: Mutex<RecursiveMutexInner>,
     value: UnsafeCell<T>
 }

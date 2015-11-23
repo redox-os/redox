@@ -7,18 +7,16 @@ use core::cell::UnsafeCell;
 use core::ops::DerefMut;
 use core::{mem, ptr};
 
-use common::debug;
 use common::elf::Elf;
 use common::memory;
 
 use scheduler;
-use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextFile, ContextMemory};
+use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 
 /// Excecute an excecutable
 pub fn execute(url: Url, mut args: Vec<String>) {
-    debug!("Launch {}\n", url.string);
     unsafe {
         let reenable = scheduler::start_no_ints();
 

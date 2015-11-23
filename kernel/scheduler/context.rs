@@ -7,7 +7,7 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
-use core::{mem, ptr, usize};
+use core::{mem, ptr};
 
 use common::memory;
 use common::paging::Page;

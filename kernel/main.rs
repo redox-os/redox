@@ -1,6 +1,7 @@
 #![crate_type="staticlib"]
 #![feature(alloc)]
 #![feature(allocator)]
+#![feature(arc_counts)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
@@ -28,19 +29,15 @@ use alloc::boxed::Box;
 
 use collections::string::{String, ToString};
 use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
 
 use core::cell::UnsafeCell;
 use core::{mem, usize};
 use core::slice::SliceExt;
 
 use common::debug;
-use common::event::{self, EVENT_KEY, Event, EventOption};
-use common::get_slice::GetSlice;
-use sync::Mutex;
+use common::event::{self, EVENT_KEY, EventOption};
 use common::memory;
 use common::paging::Page;
-use sync::RwLock;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -50,7 +47,6 @@ use drivers::rtc::*;
 use drivers::serial::*;
 
 use env::Environment;
-use env::console::Console;
 
 pub use externs::*;
 
@@ -72,7 +68,6 @@ use schemes::ip::*;
 use schemes::memory::*;
 //use schemes::display::*;
 
-use syscall::common::CLONE_VM;
 use syscall::handle::*;
 
 /// Common std-like functionality
