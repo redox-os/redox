@@ -1,3 +1,5 @@
+use alloc::arc::Arc;
+
 use collections::string::ToString;
 use collections::vec::Vec;
 
@@ -134,14 +136,15 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
     let mut clone_pid = usize::MAX;
+    let mut mem_count = 0;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
         clone_pid = Context::next_pid();
-        let parent_ptr: *const Context = parent.deref();
+        mem_count = Arc::strong_count(&parent.memory);
 
-        debug!("Clone {} to {} flags {}\n", parent.pid, clone_pid, flags);
+        let parent_ptr: *const Context = parent.deref();
 
         let mut context_clone_args: Vec<usize> = Vec::new();
         context_clone_args.push(clone_pid);
@@ -168,6 +171,11 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
             if current.pid == clone_pid {
                 ret = 0;
             } else {
+                if flags & CLONE_VFORK == CLONE_VFORK {
+                    while Arc::strong_count(&current.memory) > mem_count {
+                        context_switch(false);
+                    }
+                }
                 ret = clone_pid;
             }
         }

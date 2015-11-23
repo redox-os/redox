@@ -10,7 +10,7 @@ struct RwLockInner {
     readers: usize
 }
 
-pub struct RwLock<T> {
+pub struct RwLock<T: ?Sized> {
     inner: Mutex<RwLockInner>,
     value: UnsafeCell<T>
 }
