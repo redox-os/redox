@@ -24,6 +24,7 @@ pub mod lzjb;
 pub mod metaslab;
 pub mod nvpair;
 pub mod nvstream;
+pub mod spa;
 pub mod space_map;
 pub mod uberblock;
 pub mod vdev;
