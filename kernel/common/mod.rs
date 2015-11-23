@@ -9,8 +9,6 @@ pub mod event;
 pub mod get_slice;
 /// Kernel memory allocation
 pub mod memory;
-/// Kernel mutual exclusion
-pub mod mutex;
 /// Paging (x86)
 #[cfg(target_arch = "x86")]
 #[path="paging-i386.rs"]
@@ -25,10 +23,6 @@ pub mod parse_path;
 pub mod parse_ip;
 /// A module for pseudorandom generator
 pub mod random;
-/// A module for recursive mutexes
-pub mod recursive_mutex;
-/// A module for read-write locking
-pub mod rwlock;
 /// A module for getting pointers and length from slices
 pub mod slice_data;
 /// A module for time

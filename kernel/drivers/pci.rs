@@ -7,7 +7,7 @@ use collections::vec_deque::VecDeque;
 use core::cell::UnsafeCell;
 
 use common::debug;
-use common::rwlock::RwLock;
+use sync::RwLock;
 
 use drivers::pciconfig::PciConfig;
 

@@ -16,10 +16,9 @@ impl KScheme for ContextScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}", "PID", "PPID", "TIME", "MEM", "FDS", "FLG", "NAME");
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            let mut i = 0;
-            for context in (*context::contexts_ptr).iter() {
+        {
+            let contexts = ::env().contexts.lock();
+            for context in contexts.iter() {
                 let mut memory = 0;
                 if context.kernel_stack > 0 {
                     memory += context::CONTEXT_STACK_SIZE;
@@ -27,8 +26,10 @@ impl KScheme for ContextScheme {
                 if let Some(ref stack) = context.stack {
                     memory += stack.virtual_size;
                 }
-                for context_memory in (*context.memory.get()).iter() {
-                    memory += context_memory.virtual_size;
+                unsafe {
+                    for context_memory in (*context.memory.get()).iter() {
+                        memory += context_memory.virtual_size;
+                    }
                 }
 
                 let memory_string = if memory >= 1024 * 1024 * 1024 {
@@ -59,14 +60,12 @@ impl KScheme for ContextScheme {
                                    context.ppid,
                                    context.slice_total,
                                    memory_string,
-                                   (*context.files.get()).len(),
+                                   unsafe { (*context.files.get()).len() },
                                    flags_string,
                                    context.name);
 
                 string = string + "\n" + &line;
-                i += 1;
             }
-            scheduler::end_no_ints(reenable);
         }
 
         Some(box VecResource::new(Url::from_str("context:"), string.into_bytes()))

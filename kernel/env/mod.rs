@@ -5,12 +5,13 @@ use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
 use common::event::Event;
-use common::mutex::Mutex;
-use common::recursive_mutex::RecursiveMutex;
-use common::rwlock::RwLock;
+use sync::Intex;
+use sync::Mutex;
 use common::time::Duration;
 
 use core::cell::UnsafeCell;
+
+use scheduler::context::Context;
 
 use schemes::KScheme;
 use schemes::Resource;
@@ -24,12 +25,16 @@ pub mod console;
 
 /// The kernel environment
 pub struct Environment {
+    /// Contexts
+    pub contexts: Intex<Vec<Box<Context>>>,
+
     /// Clock realtime (default)
     pub clock_realtime: Duration,
     /// Monotonic clock
     pub clock_monotonic: Duration,
+
     /// Default console
-    pub console: RecursiveMutex<Console>,
+    pub console: Intex<Console>,
     /// Pending events
     pub events: Mutex<VecDeque<Event>>,
     /// Schemes
@@ -39,9 +44,12 @@ pub struct Environment {
 impl Environment {
     pub fn new() -> Box<Environment> {
         box Environment {
+            contexts: Intex::new(Vec::new()),
+
             clock_realtime: Duration::new(0, 0),
             clock_monotonic: Duration::new(0, 0),
-            console: RecursiveMutex::new(Console::new()),
+
+            console: Intex::new(Console::new()),
             events: Mutex::new(VecDeque::new()),
             schemes: Vec::new(),
         }
