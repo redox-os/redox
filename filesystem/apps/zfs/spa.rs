@@ -2,6 +2,7 @@ use redox::{Box, String, Vec};
 
 use super::avl;
 use super::nvpair::NvList;
+use super::uberblock::Uberblock;
 use super::vdev;
 use super::zfs;
 
@@ -16,6 +17,9 @@ pub struct Spa {
     state: zfs::PoolState,
     load_state: zfs::SpaLoadState,
     root_vdev: vdev::Vdev,
+    //ubsync: Uberblock, // Last synced uberblock
+    //uberblock: Uberblock, // Current active uberblock
+    did: u64, // if procp != p0, did of t1
 }
 
 impl Spa {
@@ -45,6 +49,7 @@ impl Spa {
             state: zfs::PoolState::Uninitialized,
             load_state: zfs::SpaLoadState::None,
             root_vdev: root_vdev,
+            did: 0,
         }
     }
 
@@ -93,6 +98,11 @@ impl Spa {
         assert!(self.state == zfs::PoolState::Uninitialized);
 
         self.state = zfs::PoolState::Active;
+
+        //self.normal_class = MetaslabClass::create(self, zfs_metaslab_ops);
+        //self.log_class = MetaslabClass::create(self, zfs_metaslab_ops);
+        
+        self.did = 0;
     }
 }
 
