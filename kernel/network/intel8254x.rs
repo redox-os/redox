@@ -2,11 +2,11 @@ use alloc::boxed::Box;
 
 use collections::slice;
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
 
 use core::ptr;
 
 use common::{debug, memory};
-use common::queue::Queue;
 use scheduler;
 
 use drivers::pciconfig::PciConfig;
@@ -106,8 +106,8 @@ pub struct Intel8254x {
     pub memory_mapped: bool,
     pub irq: u8,
     pub resources: Vec<*mut NetworkResource>,
-    pub inbound: Queue<Vec<u8>>,
-    pub outbound: Queue<Vec<u8>>,
+    pub inbound: VecDeque<Vec<u8>>,
+    pub outbound: VecDeque<Vec<u8>>,
 }
 
 impl KScheme for Intel8254x {
@@ -173,8 +173,8 @@ impl NetworkScheme for Intel8254x {
             let reenable = scheduler::start_no_ints();
 
             for resource in self.resources.iter() {
-                while let Some(bytes) = (**resource).outbound.pop() {
-                    self.outbound.push(bytes);
+                while let Some(bytes) = (**resource).outbound.pop_front() {
+                    self.outbound.push_back(bytes);
                 }
             }
 
@@ -182,9 +182,9 @@ impl NetworkScheme for Intel8254x {
 
             self.receive_inbound();
 
-            while let Some(bytes) = self.inbound.pop() {
+            while let Some(bytes) = self.inbound.pop_front() {
                 for resource in self.resources.iter() {
-                    (**resource).inbound.push(bytes.clone());
+                    (**resource).inbound.push_back(bytes.clone());
                 }
             }
 
@@ -211,7 +211,7 @@ impl Intel8254x {
                 debug::dh(rd.length as usize);
                 debug::dl();
 
-                self.inbound.push(Vec::from(slice::from_raw_parts(rd.buffer as *const u8,
+                self.inbound.push_back(Vec::from(slice::from_raw_parts(rd.buffer as *const u8,
                                                                   rd.length as usize)));
 
                 rd.status = 0;
@@ -220,7 +220,7 @@ impl Intel8254x {
     }
 
     pub unsafe fn send_outbound(&mut self) {
-        while let Some(bytes) = self.outbound.pop() {
+        while let Some(bytes) = self.outbound.pop_front() {
             let transmit_ring = self.read(TDBAL) as *mut Td;
             let length = self.read(TDLEN);
 

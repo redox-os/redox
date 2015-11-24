@@ -2,16 +2,18 @@ use audio::ac97::AC97;
 use audio::intelhda::IntelHDA;
 
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
+
+use core::cell::UnsafeCell;
 
 use common::debug;
-use common::queue::Queue;
 
 use drivers::pciconfig::PciConfig;
 
+use env::Environment;
+
 use network::intel8254x::Intel8254x;
 use network::rtl8139::Rtl8139;
-
-use programs::session::Session;
 
 use schemes::file::FileScheme;
 
@@ -20,7 +22,7 @@ use usb::uhci::Uhci;
 use usb::xhci::Xhci;
 
 /// PCI device
-pub unsafe fn pci_device(session: &mut Session,
+pub unsafe fn pci_device(env: &mut Environment,
                          mut pci: PciConfig,
                          class_id: u32,
                          subclass_id: u32,
@@ -29,7 +31,7 @@ pub unsafe fn pci_device(session: &mut Session,
                          device_code: u32) {
     if class_id == 0x01 && subclass_id == 0x01 {
         if let Some(module) = FileScheme::new(pci) {
-            session.items.push(module);
+            env.schemes.push(UnsafeCell::new(module));
         }
     } else if class_id == 0x0C && subclass_id == 0x03 {
         if interface_id == 0x30 {
@@ -42,7 +44,7 @@ pub unsafe fn pci_device(session: &mut Session,
                 irq: pci.read(0x3C) as u8 & 0xF,
             };
             module.init();
-            session.items.push(module);
+            env.schemes.push(UnsafeCell::new(module));
         } else if interface_id == 0x20 {
             let base = pci.read(0x10) as usize;
 
@@ -53,13 +55,13 @@ pub unsafe fn pci_device(session: &mut Session,
                 irq: pci.read(0x3C) as u8 & 0xF,
             };
             module.init();
-            session.items.push(module);
+            env.schemes.push(UnsafeCell::new(module));
         } else if interface_id == 0x10 {
             let base = pci.read(0x10) as usize;
 
             debug!("OHCI Controller on {}\n", base & 0xFFFFFFF0);
         } else if interface_id == 0x00 {
-            session.items.push(Uhci::new(pci));
+            env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
         } else {
             debug!("Unknown USB interface version\n");
         }
@@ -67,7 +69,7 @@ pub unsafe fn pci_device(session: &mut Session,
         match vendor_code {
             0x10EC => match device_code { // REALTEK
                 0x8139 => {
-                    session.items.push(Rtl8139::new(pci));
+                    env.schemes.push(UnsafeCell::new(Rtl8139::new(pci)));
                 }
                 _ => (),
             },
@@ -80,14 +82,14 @@ pub unsafe fn pci_device(session: &mut Session,
                         memory_mapped: base & 1 == 0,
                         irq: pci.read(0x3C) as u8 & 0xF,
                         resources: Vec::new(),
-                        inbound: Queue::new(),
-                        outbound: Queue::new(),
+                        inbound: VecDeque::new(),
+                        outbound: VecDeque::new(),
                     };
                     module.init();
-                    session.items.push(module);
+                    env.schemes.push(UnsafeCell::new(module));
                 }
-                0x2415 => session.items.push(AC97::new(pci)),
-                0x24C5 => session.items.push(AC97::new(pci)),
+                0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
                 0x2668 => {
                     let base = pci.read(0x10) as usize;
                     let mut module = box IntelHDA {
@@ -97,7 +99,7 @@ pub unsafe fn pci_device(session: &mut Session,
                         irq: pci.read(0x3C) as u8 & 0xF,
                     };
                     module.init();
-                    session.items.push(module);
+                    env.schemes.push(UnsafeCell::new(module));
                 }
                 _ => (),
             },
@@ -107,7 +109,7 @@ pub unsafe fn pci_device(session: &mut Session,
 }
 
 /// Initialize PCI session
-pub unsafe fn pci_init(session: &mut Session) {
+pub unsafe fn pci_init(env: &mut Environment) {
     for bus in 0..256 {
         for slot in 0..32 {
             for func in 0..8 {
@@ -136,7 +138,7 @@ pub unsafe fn pci_init(session: &mut Session) {
 
                     debug::dl();
 
-                    pci_device(session,
+                    pci_device(env,
                                pci,
                                (class_id >> 24) & 0xFF,
                                (class_id >> 16) & 0xFF,

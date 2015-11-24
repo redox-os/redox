@@ -9,9 +9,9 @@ int main(int argc, char ** argv){
     for(i = 0; i < argc; i++){
         printf("%d: %s\n", i, argv[i]);
     }
-    struct timeval tv;
-    if(gettimeofday(&tv, NULL) == 0){
-        printf("Gettimeofday %d %d\n", tv.tv_sec, tv.tv_usec);
+    struct timespec tp;
+    if(clock_gettime(CLOCK_REALTIME, &tp) == 0){
+        printf("clock_gettime %d %d\n", tp.tv_sec, tp.tv_nsec);
         void* test = malloc(1024*1024);
         if(test > 0){
             printf("Malloc %x\n", test);
@@ -27,12 +27,19 @@ int main(int argc, char ** argv){
                 closedir(dir);
 
         	    pid_t pid = fork();
-                if(pid == 0){
-                    printf("Fork Parent\n");
-                }else if(pid > 0){
-                    printf("Fork Child %d\n", pid);
+                if(pid > 0){
+                    printf("Fork Parent %d = %d\n", getpid(), pid);
+                    int status = 0;
+                    if(waitpid(pid, &status, 0) >= 0){
+                        printf("waitpid status %d\n", status);
+                    }else{
+                        printf("waitpid failed\n");
+                    }
+                }else if(pid == 0){
+                    printf("Fork Child %d = %d\n", getpid(), pid);
+                    _exit(123);
                 } else {
-                    printf("Fork Failed\n");
+                    printf("Fork Failed %d = %d\n", getpid(), pid);
                 }
             }else{
                 printf("Opendir Failed\n");
@@ -41,7 +48,7 @@ int main(int argc, char ** argv){
             printf("Malloc Failed\n");
         }
     } else {
-        printf("Gettimeofday Failed\n");
+        printf("clock_gettime Failed\n");
     }
-    return 0;
+    return 234;
 }

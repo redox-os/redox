@@ -6,6 +6,13 @@ use drivers::pio::*;
 
 use schemes::KScheme;
 
+#[repr(packed)]
+struct SerialInfo {
+    pub ports: [u16; 4]
+}
+
+const SERIALINFO: *const SerialInfo = 0x400 as *const SerialInfo;
+
 /// Serial
 pub struct Serial {
     pub data: Pio8,
@@ -18,6 +25,17 @@ pub struct Serial {
 impl Serial {
     /// Create new
     pub fn new(port: u16, irq: u8) -> Box<Self> {
+        unsafe {
+            Pio8::new(port + 1).write(0x00);
+            Pio8::new(port + 3).write(0x80);
+            Pio8::new(port + 0).write(0x03);
+            Pio8::new(port + 1).write(0x00);
+            Pio8::new(port + 3).write(0x03);
+            Pio8::new(port + 2).write(0xC7);
+            Pio8::new(port + 4).write(0x0B);
+            Pio8::new(port + 1).write(0x01);
+        }
+
         box Serial {
             data: Pio8::new(port),
             status: Pio8::new(port + 5),
@@ -71,12 +89,12 @@ impl KScheme for Serial {
             }
 
             if c != '\0' || sc != 0 {
-                event::KeyEvent {
+                let key_event = event::KeyEvent {
                     character: c,
                     scancode: sc,
                     pressed: true,
-                }
-                .trigger();
+                };
+                ::env().events.lock().push_back(key_event.to_event());
             }
         }
     }

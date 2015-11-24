@@ -86,6 +86,7 @@ long_mode:
 
     ;rust init
     xor rax, rax
+    mov [0x100000], rax
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], rax
 

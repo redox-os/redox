@@ -1,150 +1,130 @@
-use collections::string::String;
+use alloc::arc::Arc;
+
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use scheduler::context::{contexts_ptr, Context, ContextFile, ContextMemory};
-use common::debug;
+use core::cell::UnsafeCell;
+use core::ops::DerefMut;
+use core::{mem, ptr};
+
 use common::elf::Elf;
 use common::memory;
+
 use scheduler;
-use collections::string::ToString;
+use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 
 /// Excecute an excecutable
-// TODO: Modify current context, take current stdio
-pub fn execute(url: &Url, wd: &Url, mut args: Vec<String>) {
+pub fn execute(url: Url, mut args: Vec<String>) {
     unsafe {
-        let mut memory = Vec::new();
-        let mut entry = 0;
+        let reenable = scheduler::start_no_ints();
 
-        if let Some(mut resource) = url.open() {
-            let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
-
-            let executable = Elf::from_data(vec.as_ptr() as usize);
-            entry = executable.entry();
-            for segment in executable.load_segment().iter() {
-                let virtual_address = segment.vaddr as usize;
-                let virtual_size = segment.mem_len as usize;
-                let physical_address = memory::alloc(virtual_size);
-
-                if physical_address > 0 {
-                    // Copy progbits
-                    ::memcpy(physical_address as *mut u8,
-                             (executable.data + segment.off as usize) as *const u8,
-                             segment.file_len as usize);
-                    // Zero bss
-                    ::memset((physical_address + segment.file_len as usize) as *mut u8,
-                             0,
-                             segment.mem_len as usize - segment.file_len as usize);
-
-                     memory.push(ContextMemory {
-                         physical_address: physical_address,
-                         virtual_address: virtual_address,
-                         virtual_size: virtual_size,
-                         writeable: segment.flags & 2 == 2
-                     });
-                }
-            }
+        let context_ptr: *mut Context = if let Some(mut current) = Context::current_mut() {
+            current.deref_mut()
         } else {
-            debug::d("Failed to open\n");
-        }
+            0 as *mut Context
+        };
 
-        if ! memory.is_empty() && entry > 0 {
-            args.insert(0, url.to_string());
+        scheduler::end_no_ints(reenable);
 
-            let mut context_args: Vec<usize> = Vec::new();
-            context_args.push(0); // ENVP
-            context_args.push(0); // ARGV NULL
-            let mut argc = 0;
-            for i in 0..args.len() {
-                if let Some(arg) = args.get(args.len() - i - 1) {
-                    context_args.push(arg.as_ptr() as usize);
-                    argc += 1;
-                }
-            }
-            context_args.push(argc);
+        if context_ptr as usize > 0 {
+            Context::spawn("kexec ".to_string() + &url.string, box move || {
+                if let Some(mut resource) = url.open() {
+                    let mut vec: Vec<u8> = Vec::new();
+                    resource.read_to_end(&mut vec);
 
-            let context = Context::new(url.to_string(), true, entry, &context_args);
+                    let executable = Elf::from_data(vec.as_ptr() as usize);
+                    let entry = executable.entry();
+                    let mut memory = Vec::new();
+                    for segment in executable.load_segment().iter() {
+                        let virtual_address = segment.vaddr as usize;
+                        let virtual_size = segment.mem_len as usize;
+                        let physical_address = memory::alloc(virtual_size);
 
-            (*context.memory.get()) = memory;
+                        if physical_address > 0 {
+                            // Copy progbits
+                            ::memcpy(physical_address as *mut u8,
+                                     (executable.data + segment.off as usize) as *const u8,
+                                     segment.file_len as usize);
+                            // Zero bss
+                            ::memset((physical_address + segment.file_len as usize) as *mut u8,
+                                     0,
+                                     segment.mem_len as usize - segment.file_len as usize);
 
-            *context.cwd.get() = wd.to_string();
-
-            *context.args.get() = args;
-
-            //TODO: Do this the right way
-            let mut create = [true; 3];
-            if let Some(current) = Context::current() {
-                if let Some(stdin) = current.get_file(0) {
-                    if let Some(stdin_dup) = stdin.dup() {
-                        (*context.files.get()).push(ContextFile {
-                            fd: 0, // STDIN
-                            resource: stdin_dup,
-                        });
-                        create[0] = false;
+                             memory.push(ContextMemory {
+                                 physical_address: physical_address,
+                                 virtual_address: virtual_address,
+                                 virtual_size: virtual_size,
+                                 writeable: segment.flags & 2 == 2
+                             });
+                        }
                     }
-                }
 
-                if let Some(stdout) = current.get_file(1) {
-                    if let Some(stdout_dup) = stdout.dup() {
-                        (*context.files.get()).push(ContextFile {
-                            fd: 1, // STDOUT
-                            resource: stdout_dup,
+                    if entry > 0 && ! memory.is_empty() {
+                        args.insert(0, url.to_string());
+
+                        let mut context_args: Vec<usize> = Vec::new();
+                        context_args.push(0); // ENVP
+                        context_args.push(0); // ARGV NULL
+                        let mut argc = 0;
+                        for i in 0..args.len() {
+                            if let Some(arg) = args.get(args.len() - i - 1) {
+                                context_args.push(arg.as_ptr() as usize);
+                                argc += 1;
+                            }
+                        }
+                        context_args.push(argc);
+
+                        let reenable = scheduler::start_no_ints();
+
+                        let context = &mut * context_ptr;
+
+                        context.name = url.to_string();
+
+                        context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
+
+                        context.stack = Some(ContextMemory {
+                            physical_address: memory::alloc(CONTEXT_STACK_SIZE),
+                            virtual_address: CONTEXT_STACK_ADDR,
+                            virtual_size: CONTEXT_STACK_SIZE,
+                            writeable: true
                         });
-                        create[1] = false;
+
+                        context.args = Arc::new(UnsafeCell::new(args));
+                        context.cwd = Arc::new(UnsafeCell::new((*context.cwd.get()).clone()));
+                        context.memory = Arc::new(UnsafeCell::new(memory));
+
+                        let user_sp = if let Some(ref stack) = context.stack {
+                            let mut sp = stack.physical_address + stack.virtual_size - 128;
+                            for arg in context_args.iter() {
+                                sp -= mem::size_of::<usize>();
+                                ptr::write(sp as *mut usize, *arg);
+                            }
+                            sp - stack.physical_address + stack.virtual_address
+                        } else {
+                            0
+                        };
+
+                        context.push(0x20 | 3);
+                        context.push(user_sp);
+                        context.push(1 << 9);
+                        context.push(0x18 | 3);
+                        context.push(entry);
+                        context.push(context_userspace as usize);
+
+                        scheduler::end_no_ints(reenable);
+                    } else {
+                        debug!("{}: Invalid memory or entry\n", url.string);
                     }
-                }
-
-                if let Some(stderr) = current.get_file(2) {
-                    if let Some(stderr_dup) = stderr.dup() {
-                        (*context.files.get()).push(ContextFile {
-                            fd: 2, // STDERR
-                            resource: stderr_dup,
-                        });
-                        create[2] = false;
-                    }
-                }
-            }
-
-            if create[0] {
-                if let Some(stdin) = Url::from_str("debug:").open() {
-                    (*context.files.get()).push(ContextFile {
-                        fd: 0, // STDIN
-                        resource: stdin,
-                    });
                 } else {
-                    debugln!("Failed to open stdin");
+                    debug!("{}: Failed to open\n", url.string);
                 }
-            }
+            });
 
-            if create[1] {
-                if let Some(stdout) = Url::from_str("debug:").open() {
-                    (*context.files.get()).push(ContextFile {
-                        fd: 1, // STDOUT
-                        resource: stdout,
-                    });
-                } else {
-                    debugln!("Failed to open stdout");
-                }
+            loop {
+                context_switch(false);
             }
-
-            if create[2] {
-                if let Some(stderr) = Url::from_str("debug:").open() {
-                    (*context.files.get()).push(ContextFile {
-                        fd: 2, // STDERR
-                        resource: stderr,
-                    });
-                } else {
-                    debugln!("Failed to open stderr");
-                }
-            }
-
-            let reenable = scheduler::start_no_ints();
-            (*contexts_ptr).push(context);
-            scheduler::end_no_ints(reenable);
-        } else {
-            debug::d("Invalid memory or entry\n");
         }
     }
 }

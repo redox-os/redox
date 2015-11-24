@@ -144,12 +144,12 @@ impl Url {
 
     /// Open this URL (returns a resource)
     pub fn open(&self) -> Option<Box<Resource>> {
-        unsafe { (*::session_ptr).open(&self, O_RDWR) }
+        ::env().open(&self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
     pub fn create(&self) -> Option<Box<Resource>> {
-        unsafe { (*::session_ptr).open(&self, O_CREAT | O_RDWR | O_TRUNC) }
+        ::env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
     }
 
     /// Return the scheme of this url

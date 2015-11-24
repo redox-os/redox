@@ -1,9 +1,10 @@
 use alloc::arc::Arc;
 
+use collections::vec_deque::VecDeque;
+
 use core::ptr;
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use common::queue::Queue;
 use common::memory::Memory;
 use scheduler;
 
@@ -173,7 +174,7 @@ pub struct Disk {
     ctrl: u16,
     master: bool,
     request: Option<Request>,
-    requests: Queue<Request>,
+    requests: VecDeque<Request>,
     cmd: Pio8,
     sts: Pio8,
     prdt: Option<Prdt>,
@@ -188,7 +189,7 @@ impl Disk {
             ctrl: 0x3F4,
             master: true,
             request: None,
-            requests: Queue::new(),
+            requests: VecDeque::new(),
             cmd: Pio8::new(base),
             sts: Pio8::new(base + 2),
             prdt: Prdt::new(base + 4),
@@ -203,7 +204,7 @@ impl Disk {
             ctrl: 0x3F4,
             master: false,
             request: None,
-            requests: Queue::new(),
+            requests: VecDeque::new(),
             cmd: Pio8::new(base),
             sts: Pio8::new(base + 2),
             prdt: Prdt::new(base + 4),
@@ -218,7 +219,7 @@ impl Disk {
             ctrl: 0x374,
             master: true,
             request: None,
-            requests: Queue::new(),
+            requests: VecDeque::new(),
             cmd: Pio8::new(base + 8),
             sts: Pio8::new(base + 0xA),
             prdt: Prdt::new(base + 0xC),
@@ -233,7 +234,7 @@ impl Disk {
             ctrl: 0x374,
             master: false,
             request: None,
-            requests: Queue::new(),
+            requests: VecDeque::new(),
             cmd: Pio8::new(base + 8),
             sts: Pio8::new(base + 0xA),
             prdt: Prdt::new(base + 0xC),
@@ -339,7 +340,7 @@ impl Disk {
         let sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
                       ((destination.read(102) as u64) << 32) |
                       ((destination.read(103) as u64) << 48);
-        debug!("Size: {} MB", (sectors / 2048) as usize);
+        debug!(" Size: {} MB", (sectors / 2048) as usize);
 
         true
     }
@@ -435,7 +436,7 @@ impl Disk {
         unsafe {
             let reenable = scheduler::start_no_ints();
 
-            self.requests.push(request);
+            self.requests.push_back(request);
 
             if self.request.is_none() {
                 self.next_request();
@@ -469,7 +470,7 @@ impl Disk {
             req.complete.store(true, Ordering::SeqCst);
         }
 
-        self.request = self.requests.pop();
+        self.request = self.requests.pop_front();
 
         if let Some(ref req) = self.request {
             if req.mem > 0 {

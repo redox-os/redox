@@ -61,6 +61,10 @@ pub unsafe fn sys_execve(path: *const u8, args: *const *const u8) -> usize {
     syscall(SYS_EXECVE, path as usize, args as usize, 0)
 }
 
+pub unsafe fn sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
+    syscall(SYS_SPAWNVE, path as usize, args as usize, 0)
+}
+
 pub unsafe fn sys_exit(status: isize) {
     syscall(SYS_EXIT, status as usize, 0, 0);
 }
@@ -77,6 +81,10 @@ pub unsafe fn sys_fsync(fd: usize) -> usize {
 
 pub unsafe fn sys_ftruncate(fd: usize, len: usize) -> usize {
     syscall(SYS_FTRUNCATE, fd, len, 0)
+}
+
+pub unsafe fn sys_getpid() -> usize {
+    syscall(SYS_GETPID, 0, 0, 0)
 }
 
 pub unsafe fn sys_link(old: *const u8, new: *const u8) -> usize {
@@ -105,6 +113,10 @@ pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 
 pub unsafe fn sys_unlink(path: *const u8) -> usize {
     syscall(SYS_UNLINK, path as usize, 0, 0)
+}
+
+pub unsafe fn sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
+    syscall(SYS_WAITPID, pid as usize, status as usize, options)
 }
 
 pub unsafe fn sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
