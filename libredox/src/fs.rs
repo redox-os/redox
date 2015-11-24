@@ -5,7 +5,7 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{sys_open, sys_dup, sys_close, sys_execve, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir, sys_mkdir};
+use syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir, sys_mkdir};
 use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
@@ -15,25 +15,6 @@ pub struct File {
 }
 
 impl File {
-    pub fn exec(path: &str, args: &[&str]) -> bool {
-        let path_c = path.to_string() + "\0";
-
-        let mut args_vec: Vec<String> = Vec::new();
-        for arg in args.iter() {
-            args_vec.push(arg.to_string() + "\0");
-        }
-
-        let mut args_c: Vec<*const u8> = Vec::new();
-        for arg_vec in args_vec.iter() {
-            args_c.push(arg_vec.as_ptr());
-        }
-        args_c.push(0 as *const u8);
-
-        unsafe {
-            sys_execve(path_c.as_ptr(), args_c.as_ptr()) == 0
-        }
-    }
-
     /// Open a new file using a path
     pub fn open(path: &str) -> Option<File> {
         unsafe {

@@ -1,12 +1,12 @@
 #![crate_type="staticlib"]
 #![feature(alloc)]
 #![feature(allocator)]
+#![feature(arc_counts)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
 #![feature(const_fn)]
 #![feature(core_intrinsics)]
-#![feature(core_simd)]
 #![feature(core_str_ext)]
 #![feature(core_slice_ext)]
 #![feature(fnbox)]
@@ -30,17 +30,14 @@ use alloc::boxed::Box;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::mem;
+use core::cell::UnsafeCell;
+use core::{mem, usize};
 use core::slice::SliceExt;
 
 use common::debug;
-use common::event::{self, Event, EventOption};
-use common::get_slice::GetSlice;
+use common::event::{self, EVENT_KEY, EventOption};
 use common::memory;
 use common::paging::Page;
-use common::queue::Queue;
-use common::slice_data::SliceData;
-// use common::prompt;
 use common::time::Duration;
 
 use drivers::pci::*;
@@ -49,7 +46,7 @@ use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
 
-use env::console::Console;
+use env::Environment;
 
 pub use externs::*;
 
@@ -57,10 +54,9 @@ use graphics::display;
 
 use programs::executor::execute;
 use programs::scheme::*;
-use programs::session::*;
 
 use scheduler::{Context, Regs, TSS};
-use scheduler::context::{context_enabled, context_exit, context_switch, context_i, contexts_ptr};
+use scheduler::context::{context_enabled, context_switch, context_i, context_pid};
 
 use schemes::Url;
 use schemes::arp::*;
@@ -100,6 +96,8 @@ pub mod programs;
 pub mod schemes;
 /// Scheduling
 pub mod scheduler;
+/// Sync primatives
+pub mod sync;
 /// System calls
 pub mod syscall;
 /// USB input/output
@@ -107,32 +105,17 @@ pub mod usb;
 
 pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
 
-/// Default console for debugging
-static mut console: *mut Console = 0 as *mut Console;
+pub static mut env_ptr: *mut Environment = 0 as *mut Environment;
 
-/// Clock realtime (default)
-static mut clock_realtime: Duration = Duration {
-    secs: 0,
-    nanos: 0,
-};
-
-/// Monotonic clock
-static mut clock_monotonic: Duration = Duration {
-    secs: 0,
-    nanos: 0,
-};
+pub fn env() -> &'static Environment {
+    unsafe { &*env_ptr }
+}
 
 /// Pit duration
 static PIT_DURATION: Duration = Duration {
     secs: 0,
     nanos: 2250286,
 };
-
-/// Session pointer
-static mut session_ptr: *mut Session = 0 as *mut Session;
-
-/// Event pointer
-static mut events_ptr: *mut Queue<Event> = 0 as *mut Queue<Event>;
 
 /// Idle loop (active while idle)
 unsafe fn idle_loop() -> ! {
@@ -141,14 +124,16 @@ unsafe fn idle_loop() -> ! {
 
         let mut halt = true;
 
-        let contexts = &*contexts_ptr;
-        for i in 1..contexts.len() {
-            match contexts.get(i) {
-                Some(context) => if context.interrupted {
-                    halt = false;
-                    break;
-                },
-                None => (),
+        {
+            let contexts = ::env().contexts.lock();
+            for i in 1..contexts.len() {
+                match contexts.get(i) {
+                    Some(context) => if context.interrupted {
+                        halt = false;
+                        break;
+                    },
+                    None => (),
+                }
             }
         }
 
@@ -164,55 +149,45 @@ unsafe fn idle_loop() -> ! {
 }
 
 /// Event poll loop
-unsafe fn poll_loop() {
-    let session = &mut *session_ptr;
-
+fn poll_loop() -> ! {
     loop {
-        session.on_poll();
+        env().on_poll();
 
-        context_switch(false);
+        unsafe { context_switch(false) };
     }
 }
 
 /// Event loop
-unsafe fn event_loop() {
-    let events = &mut *events_ptr;
+fn event_loop() -> ! {
     let mut cmd = String::new();
     loop {
         loop {
-            let reenable = scheduler::start_no_ints();
-
-            let event_option = events.pop();
-
-            scheduler::end_no_ints(reenable);
-
-            match event_option {
+            let mut console = env().console.lock();
+            match env().events.lock().pop_front() {
                 Some(event) => {
-                    if (*console).draw {
+                    if console.draw {
                         match event.to_option() {
                             EventOption::Key(key_event) => {
                                 if key_event.pressed {
                                     match key_event.scancode {
                                         event::K_F2 => {
-                                            (*console).draw = false;
+                                            console.draw = false;
                                         }
                                         event::K_BKSP => if !cmd.is_empty() {
-                                            debug::db(8);
+                                            console.write(&[8]);
                                             cmd.pop();
                                         },
                                         _ => match key_event.character {
                                             '\0' => (),
                                             '\n' => {
-                                                let reenable = scheduler::start_no_ints();
-                                                (*console).command = Some(cmd.clone());
-                                                scheduler::end_no_ints(reenable);
+                                                console.command = Some(cmd.clone());
 
                                                 cmd.clear();
-                                                debug::dl();
+                                                console.write(&[10]);
                                             }
                                             _ => {
                                                 cmd.push(key_event.character);
-                                                debug::dc(key_event.character);
+                                                console.write(&[key_event.character as u8]);
                                             }
                                         },
                                     }
@@ -221,19 +196,21 @@ unsafe fn event_loop() {
                             _ => (),
                         }
                     } else {
-                        if event.code == 'k' && event.b as u8 == event::K_F1 && event.c > 0 {
-                            (*console).draw = true;
-                            (*console).redraw = true;
+                        if event.code == EVENT_KEY && event.b as u8 == event::K_F1 && event.c > 0 {
+                            console.draw = true;
+                            console.redraw = true;
                         } else {
                             // TODO: Magical orbital hack
-                            let reenable = scheduler::start_no_ints();
-                            for item in (*::session_ptr).items.iter_mut() {
-                                if item.scheme() == "orbital" {
-                                    item.event(&event);
-                                    break;
+                            unsafe {
+                                let reenable = scheduler::start_no_ints();
+                                for scheme in env().schemes.iter() {
+                                    if (*scheme.get()).scheme() == "orbital" {
+                                        (*scheme.get()).event(&event);
+                                        break;
+                                    }
                                 }
+                                scheduler::end_no_ints(reenable);
                             }
-                            scheduler::end_no_ints(reenable);
                         }
                     }
                 }
@@ -241,99 +218,69 @@ unsafe fn event_loop() {
             }
         }
 
-        if (*console).draw {
-            if (*console).redraw {
-                (*console).redraw = false;
-                (*console).display.flip();
+        {
+            let mut console = env().console.lock();
+            if console.draw {
+                if console.redraw {
+                    console.redraw = false;
+                    console.display.flip();
+                }
             }
-        } else {
-            // session.redraw();
         }
 
-        context_switch(false);
+        unsafe { context_switch(false) };
     }
-}
-
-/// Initialize debug
-pub unsafe fn debug_init() {
-    Pio8::new(0x3F8 + 1).write(0x00);
-    Pio8::new(0x3F8 + 3).write(0x80);
-    Pio8::new(0x3F8 + 0).write(0x03);
-    Pio8::new(0x3F8 + 1).write(0x00);
-    Pio8::new(0x3F8 + 3).write(0x03);
-    Pio8::new(0x3F8 + 2).write(0xC7);
-    Pio8::new(0x3F8 + 4).write(0x0B);
-    Pio8::new(0x3F8 + 1).write(0x01);
 }
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
-    display::fonts = font_data;
-    tss_ptr = tss_data as *mut TSS;
-
-    console = 0 as *mut Console;
-
-    clock_realtime.secs = 0;
-    clock_realtime.nanos = 0;
-
-    clock_monotonic.secs = 0;
-    clock_monotonic.nanos = 0;
-
-    contexts_ptr = 0 as *mut Vec<Box<Context>>;
-    context_i = 0;
-    context_enabled = false;
-
-    session_ptr = 0 as *mut Session;
-
-    events_ptr = 0 as *mut Queue<Event>;
-
-    debug_init();
-
     Page::init();
     memory::cluster_init();
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    console = Box::into_raw(Console::new());
-    (*console).draw = true;
+    display::fonts = font_data;
+    tss_ptr = tss_data as *mut TSS;
+
+    env_ptr = Box::into_raw(Environment::new());
+
+    context_pid = 1;
+    context_i = 0;
+    context_enabled = false;
+
+    let env = &mut *env_ptr;
+    env.contexts.lock().push(Context::root());
+    env.console.lock().draw = true;
 
     debug!("Redox ");
     debug::dd(mem::size_of::<usize>() * 8);
     debug!(" bits");
     debug::dl();
 
-    clock_realtime = Rtc::new().time();
+    env.clock_realtime = Rtc::new().time();
 
-    contexts_ptr = Box::into_raw(box Vec::new());
-    (*contexts_ptr).push(Context::root());
+    env.schemes.push(UnsafeCell::new(Ps2::new()));
+    env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
 
-    session_ptr = Box::into_raw(Session::new());
+    pci_init(env);
 
-    events_ptr = Box::into_raw(box Queue::new());
-
-    let session = &mut *session_ptr;
-
-    session.items.push(Ps2::new());
-    session.items.push(Serial::new(0x3F8, 0x4));
-
-    pci_init(session);
-
-    session.items.push(DebugScheme::new());
-    session.items.push(box ContextScheme);
-    session.items.push(box MemoryScheme);
+    env.schemes.push(UnsafeCell::new(DebugScheme::new()));
+    env.schemes.push(UnsafeCell::new(box ContextScheme));
+    env.schemes.push(UnsafeCell::new(box MemoryScheme));
     // session.items.push(box RandomScheme);
     // session.items.push(box TimeScheme);
 
-    session.items.push(box EthernetScheme);
-    session.items.push(box ArpScheme);
-    session.items.push(box IcmpScheme);
-    session.items.push(box IpScheme { arp: Vec::new() });
+    env.schemes.push(UnsafeCell::new(box EthernetScheme));
+    env.schemes.push(UnsafeCell::new(box ArpScheme));
+    env.schemes.push(UnsafeCell::new(box IcmpScheme));
+    env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
     // session.items.push(box DisplayScheme);
 
     Context::spawn("kpoll".to_string(),
                    box move || {
                        poll_loop();
                    });
+
     Context::spawn("kevent".to_string(),
                    box move || {
                        event_loop();
@@ -343,6 +290,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                    box move || {
                        ArpScheme::reply_loop();
                    });
+
     Context::spawn("kicmp".to_string(),
                    box move || {
                        IcmpScheme::reply_loop();
@@ -350,7 +298,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     context_enabled = true;
 
-    //TODO: Run schemes in contexts
     if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
         let mut vec: Vec<u8> = Vec::new();
         resource.read_to_end(&mut vec);
@@ -362,34 +309,45 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                                                                          &folder));
 
                 let reenable = scheduler::start_no_ints();
-                session.items.push(scheme_item);
+                env.schemes.push(UnsafeCell::new(scheme_item));
                 scheduler::end_no_ints(reenable);
             }
         }
     }
 
-    {
+    Context::spawn("kinit".to_string(), box move || {
+        let wd_c = "file:/\0";
+        do_sys_chdir(wd_c.as_ptr());
+
+        let stdio_c = "debug:\0";
+        do_sys_open(stdio_c.as_ptr(), 0);
+        do_sys_open(stdio_c.as_ptr(), 0);
+        do_sys_open(stdio_c.as_ptr(), 0);
+
         let path_string = "file:/apps/shell/main.bin";
-        let path = Url::from_string(path_string.to_string());
-        let wd = Url::from_string(path_string.get_slice(None,
-                                                        Some(path_string.rfind('/').unwrap_or(0) +
-                                                             1))
-                                             .to_string());
-        execute(&path, &wd, Vec::new());
-    }
+        let path = Url::from_str(path_string);
+
+        debug!("INIT: Executing {}\n", path_string);
+        execute(path, Vec::new());
+        debug!("INIT: Failed to execute\n");
+
+        loop {
+            context_switch(false);
+        }
+    });
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
 /// Take regs for kernel calls and exceptions
-pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
+pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception_inner {
         ($name:expr) => ({
-            if let Some(context) = Context::current() {
-                debugln!("PID {}: {}", context_i, context.name);
-            } else {
-                debugln!("PID {}", context_i,);
+            unsafe {
+                if let Some(context) = Context::current() {
+                    debugln!("PID {}: {}", context.pid, context.name);
+                }
             }
 
             debugln!("  INT {:X}: {}", interrupt, $name);
@@ -399,16 +357,15 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    DI:  {:08X}    SI:  {:08X}", regs.di, regs.di);
 
             let cr0: usize;
-            asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
-
             let cr2: usize;
-            asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
-
             let cr3: usize;
-            asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
-
             let cr4: usize;
-            asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
+            unsafe {
+                asm!("mov $0, cr0" : "=r"(cr0) : : : "intel", "volatile");
+                asm!("mov $0, cr2" : "=r"(cr2) : : : "intel", "volatile");
+                asm!("mov $0, cr3" : "=r"(cr3) : : : "intel", "volatile");
+                asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
+            }
             debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
         })
     };
@@ -418,7 +375,7 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             exception_inner!($name);
 
             loop {
-                context_exit();
+                unsafe { do_sys_exit(usize::MAX) };
             }
         })
     };
@@ -437,48 +394,65 @@ pub unsafe extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    ERR: {:08X}", error);
 
             loop {
-                context_exit();
+                unsafe { do_sys_exit(usize::MAX) };
             }
         })
     };
 
     if interrupt >= 0x20 && interrupt < 0x30 {
         if interrupt >= 0x28 {
-            Pio8::new(0xA0).write(0x20);
+            unsafe { Pio8::new(0xA0).write(0x20) };
         }
 
-        Pio8::new(0x20).write(0x20);
+        unsafe { Pio8::new(0x20).write(0x20) };
     }
 
     match interrupt {
         0x20 => {
-            let reenable = scheduler::start_no_ints();
-            clock_realtime = clock_realtime + PIT_DURATION;
-            clock_monotonic = clock_monotonic + PIT_DURATION;
-            scheduler::end_no_ints(reenable);
+            unsafe {
+                let reenable = scheduler::start_no_ints();
 
-            context_switch(true);
+                let env = &mut *env_ptr;
+                env.clock_realtime = env.clock_realtime + PIT_DURATION;
+                env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
+
+                scheduler::end_no_ints(reenable);
+
+                let switch = if let Some(mut context) = Context::current_mut() {
+                    context.slices -= 1;
+                    context.slice_total += 1;
+                    context.slices == 0
+                } else {
+                    false
+                };
+
+                if switch {
+                    context_switch(true);
+                }
+            }
         }
-        0x21 => (*session_ptr).on_irq(0x1), // keyboard
-        0x23 => (*session_ptr).on_irq(0x3), // serial 2 and 4
-        0x24 => (*session_ptr).on_irq(0x4), // serial 1 and 3
-        0x25 => (*session_ptr).on_irq(0x5), //parallel 2
-        0x26 => (*session_ptr).on_irq(0x6), //floppy
-        0x27 => (*session_ptr).on_irq(0x7), //parallel 1 or spurious
-        0x28 => (*session_ptr).on_irq(0x8), //RTC
-        0x29 => (*session_ptr).on_irq(0x9), //pci
-        0x2A => (*session_ptr).on_irq(0xA), //pci
-        0x2B => (*session_ptr).on_irq(0xB), //pci
-        0x2C => (*session_ptr).on_irq(0xC), //mouse
-        0x2D => (*session_ptr).on_irq(0xD), //coprocessor
-        0x2E => (*session_ptr).on_irq(0xE), //disk
-        0x2F => (*session_ptr).on_irq(0xF), //disk
-        0x80 => if !syscall_handle(regs) {
+        0x21 => env().on_irq(0x1), // keyboard
+        0x23 => env().on_irq(0x3), // serial 2 and 4
+        0x24 => env().on_irq(0x4), // serial 1 and 3
+        0x25 => env().on_irq(0x5), //parallel 2
+        0x26 => env().on_irq(0x6), //floppy
+        0x27 => env().on_irq(0x7), //parallel 1 or spurious
+        0x28 => env().on_irq(0x8), //RTC
+        0x29 => env().on_irq(0x9), //pci
+        0x2A => env().on_irq(0xA), //pci
+        0x2B => env().on_irq(0xB), //pci
+        0x2C => env().on_irq(0xC), //mouse
+        0x2D => env().on_irq(0xD), //coprocessor
+        0x2E => env().on_irq(0xE), //disk
+        0x2F => env().on_irq(0xF), //disk
+        0x80 => if ! unsafe { syscall_handle(regs) } {
             exception!("Unknown Syscall");
         },
         0xFF => {
-            init(regs.ax, regs.bx);
-            idle_loop();
+            unsafe {
+                init(regs.ax, regs.bx);
+                idle_loop();
+            }
         }
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),

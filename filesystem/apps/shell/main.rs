@@ -9,19 +9,11 @@ use redox::env::*;
 use redox::time::Duration;
 use redox::to_num::*;
 use redox::hashmap::HashMap;
+use redox::process;
 
-/* Magic Macros { */
+/* Magic { */
 static mut application: *mut Application<'static> = 0 as *mut Application;
-
-/// Execute a command
-macro_rules! exec {
-    ($cmd:expr) => ({
-        unsafe {
-            (*application).on_command(&$cmd.to_string());
-        }
-    })
-}
-/* } Magic Macros */
+/* } Magic */
 
 /// Structure which represents a Terminal's command.
 /// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
@@ -105,13 +97,25 @@ impl<'a> Command<'a> {
             name: "exec",
             help: "To execute a binary in the output\n    exec <my_binary>",
             main: Box::new(|args: &Vec<String>| {
-                if let Some(arg) = args.get(1) {
-                    let mut args_str: Vec<&str> = Vec::new();
+                if let Some(path) = args.get(1) {
+                    let mut command = process::Command::new(path);
                     for arg in args.get_slice(Some(2), None) {
-                        args_str.push(arg);
+                        command.arg(arg);
                     }
 
-                    File::exec(arg, &args_str);
+                    if let Some(mut child) = command.spawn() {
+                        if let Some(status) = child.wait() {
+                            if let Some(code) = status.code() {
+                                unsafe { (*application).set_var("?", &format!("{}", code)) };
+                            } else {
+                                println!("{}: No child exit code", path);
+                            }
+                        } else {
+                            println!("{}: Failed to wait", path);
+                        }
+                    } else {
+                        println!("{}: Failed to execute", path);
+                    }
                 }
             }),
         });
@@ -202,7 +206,9 @@ impl<'a> Command<'a> {
                     }
 
                     for command in commands.split('\n') {
-                        exec!(command);
+                        unsafe {
+                            (*application).on_command(&command);
+                        }
                     }
                 }
             }),
@@ -613,13 +619,12 @@ impl<'a> Application<'a> {
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {
-                    println!("Exit temporarily blocked (due to using terminal as init)")
-                    //break;
+                    break;
                 } else if !command.is_empty() {
                     self.on_command(&command);
                 }
             } else {
-                println!("Failed to read from stdin");
+                break;
             }
         }
     }

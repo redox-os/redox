@@ -3,6 +3,8 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::Vec;
 
+use drivers::pio::Pio8;
+
 use graphics::color::Color;
 use graphics::display::Display;
 use graphics::point::Point;
@@ -31,8 +33,8 @@ pub struct Console {
 }
 
 impl Console {
-    pub fn new() -> Box<Console> {
-        box Console {
+    pub fn new() -> Console {
+        Console {
             display: unsafe { Display::root() },
             point: Point::new(0, 0),
             foreground: WHITE,
@@ -137,7 +139,6 @@ impl Console {
             self.point.x = 0;
             self.point.y += 16;
         } else if c == '\x08' {
-            // TODO: Fix up hack for backspace
             self.point.x -= 8;
             if self.point.x < 0 {
                 self.point.x = 0
@@ -160,6 +161,9 @@ impl Console {
     }
 
     pub fn write(&mut self, bytes: &[u8]){
+        let serial_status = Pio8::new(0x3F8 + 5);
+        let mut serial_data = Pio8::new(0x3F8);
+
         for byte in bytes.iter() {
             let c = *byte as char;
 
@@ -167,6 +171,19 @@ impl Console {
                 self.code(c);
             }else{
                 self.character(c);
+            }
+
+            unsafe {
+                while serial_status.read() & 0x20 == 0 {}
+                serial_data.write(*byte);
+
+                if *byte == 8 {
+                    while serial_status.read() & 0x20 == 0 {}
+                    serial_data.write(0x20);
+
+                    while serial_status.read() & 0x20 == 0 {}
+                    serial_data.write(8);
+                }
             }
         }
         // If contexts disabled, probably booting up
