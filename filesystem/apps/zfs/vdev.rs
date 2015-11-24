@@ -70,6 +70,9 @@ impl Top {
 pub struct Leaf {
     whole_disk: u64,
     path: String,
+    dev_id: String,
+    phys_path: String,
+    fru: String, // physical fru location
 }
 
 impl Leaf {
@@ -77,6 +80,9 @@ impl Leaf {
         Leaf {
             whole_disk: 0,
             path: "".to_string(),
+            dev_id: "".to_string(),
+            phys_path: "".to_string(),
+            fru: "".to_string(),
         }
     }
 }
@@ -96,6 +102,8 @@ pub struct Vdev {
     state: State,
     prev_state: State,
     //ops: VdevOps,
+    parent: Option<TreeIndex>,
+    children: Vec<TreeIndex>,
     create_txg: u64, // txg when top-level was added
 
     top: Option<Top>,
@@ -103,7 +111,7 @@ pub struct Vdev {
 }
 
 impl Vdev {
-    pub fn new(id: u64, guid: Option<u64>) -> Self {
+    pub fn new(id: u64, guid: Option<u64>, ashift: u64, create_txg: u64) -> Self {
         let guid =
             guid.unwrap_or_else(|| {
                 // TODO: generate a guid
@@ -117,17 +125,19 @@ impl Vdev {
             asize: 0,
             min_asize: 0,
             max_asize: 0,
-            ashift: 0,
+            ashift: ashift,
             state: State::Closed,
             prev_state: State::Unknown,
-            create_txg: 0,
+            parent: None,
+            children: Vec::new(),
+            create_txg: create_txg,
 
             top: None,
             leaf: None,
         }
     }
 
-    pub fn load(nv: &NvList, id: u64, alloc_type: AllocType) -> zfs::Result<Self> {
+    pub fn load(nv: &NvList, id: u64, parent: Option<TreeIndex>, alloc_type: AllocType) -> zfs::Result<Self> {
         let vdev_type = try!(nv.get::<&String>("type").ok_or(zfs::Error::Invalid)).clone();
 
         if alloc_type == AllocType::Load {
@@ -146,6 +156,64 @@ impl Vdev {
                 _ => { None },
             };
 
-        Ok(Self::new(id, guid))
+        let create_txg = try!(nv.get("create_txg").ok_or(zfs::Error::Invalid));
+        let ashift = try!(nv.get("ashift").ok_or(zfs::Error::Invalid));
+
+        let mut vdev = Self::new(id, guid, ashift, create_txg);
+        vdev.parent = parent;
+
+        Ok(vdev)
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Copy, Clone)]
+pub struct TreeIndex(usize);
+
+impl TreeIndex {
+    pub fn get<'a>(&self, tree: &'a Tree) -> &'a Vdev {
+        tree.nodes[self.0].as_ref().unwrap()
+    }
+
+    pub fn get_mut<'a>(&self, tree: &'a mut Tree) -> &'a mut Vdev {
+        tree.nodes[self.0].as_mut().unwrap()
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+pub struct Tree {
+    nodes: Vec<Option<Vdev>>,
+    free: Vec<usize>,
+}
+
+impl Tree {
+    pub fn new() -> Self {
+        Tree {
+            nodes: Vec::new(),
+            free: Vec::new(),
+        }
+    }
+
+    pub fn add(&mut self, vdev: Vdev) {
+        let parent = vdev.parent;
+
+        // Add the vdev node
+        let index =
+            match self.free.pop() {
+                Some(free_index) => {
+                    self.nodes[free_index] = Some(vdev);
+                    free_index
+                },
+                None => {
+                    self.nodes.push(Some(vdev));
+                    self.nodes.len()-1
+                },
+            };
+
+        if let Some(parent) = parent {
+            parent.get_mut(self).children.push(TreeIndex(index));
+        }
     }
 }

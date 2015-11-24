@@ -78,13 +78,14 @@ impl Spa {
                 ImportType::Existing => vdev::AllocType::Load,
                 ImportType::Assemble => vdev::AllocType::Split,
             };
-        let root_vdev = try!(self.parse_vdev_tree(nvroot, vdev_alloc_type));
+        let root_vdev = try!(self.parse_vdev_tree(nvroot, None, vdev_alloc_type));
 
         Ok(())
     }
 
-    fn parse_vdev_tree(&mut self, nv: &NvList, alloc_type: vdev::AllocType) -> zfs::Result<vdev::Vdev> {
-        let vdev = vdev::Vdev::load(nv, 0, alloc_type);
+    fn parse_vdev_tree(&mut self, nv: &NvList, parent: Option<vdev::TreeIndex>,
+                       alloc_type: vdev::AllocType) -> zfs::Result<vdev::Vdev> {
+        let vdev = vdev::Vdev::load(nv, 0, parent, alloc_type);
 
         // TODO: return here if the vdev is a leaf node
 
