@@ -61,6 +61,10 @@ pub unsafe fn sys_execve(path: *const u8, args: *const *const u8) -> usize {
     syscall(SYS_EXECVE, path as usize, args as usize, 0)
 }
 
+pub unsafe fn sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
+    syscall(SYS_SPAWNVE, path as usize, args as usize, 0)
+}
+
 pub unsafe fn sys_exit(status: isize) {
     syscall(SYS_EXIT, status as usize, 0, 0);
 }

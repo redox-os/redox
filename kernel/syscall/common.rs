@@ -14,6 +14,7 @@ pub const SYS_CLOCK_GETTIME: usize = 265;
     pub const CLOCK_MONOTONIC: usize = 4;
 pub const SYS_DUP: usize = 41;
 pub const SYS_EXECVE: usize = 11;
+pub const SYS_SPAWNVE: usize = 1011; //Extra to fix scheme execve
 pub const SYS_EXIT: usize = 1;
 pub const SYS_FPATH: usize = 3001;
 pub const SYS_FSTAT: usize = 28;

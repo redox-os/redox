@@ -410,7 +410,9 @@ impl Context {
         ret
     }
 
-    pub fn spawn(name: String, box_fn: Box<FnBox()>) {
+    pub fn spawn(name: String, box_fn: Box<FnBox()>) -> usize {
+        let ret;
+
         unsafe {
             let box_fn_ptr: *mut Box<FnBox()> = memory::alloc_type();
             ptr::write(box_fn_ptr, box_fn);
@@ -419,9 +421,15 @@ impl Context {
             context_box_args.push(box_fn_ptr as usize);
             context_box_args.push(0); //Return address, 0 catches bad code
 
+            let context = Context::new(name, context_box as usize, &context_box_args);
+
+            ret = context.pid;
+
             let mut contexts = ::env().contexts.lock();
-            contexts.push(Context::new(name, context_box as usize, &context_box_args));
+            contexts.push(context);
         }
+
+        ret
     }
 
     pub unsafe fn current_i() -> usize {
