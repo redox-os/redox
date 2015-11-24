@@ -190,18 +190,8 @@ impl Scheme {
                         }
                     }
                     if accepted {
-                        if let Some(mut child) = Command::new(&package.binary).arg(&path).spawn() {
-                            if let Some(status) = child.wait() {
-                                if let Some(code) = status.code() {
-                                    debugln!("{}: Child exited with exit code: {}", package.binary, code);
-                                } else {
-                                    debugln!("{}: No child exit code", package.binary);
-                                }
-                            } else {
-                                debugln!("{}: Failed to wait", package.binary);
-                            }
-                        } else {
-                            debugln!("{}: Failed to execute", package.binary);
+                        if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
+                            debugln!("{}: Failed to launch", package.binary);
                         }
                         break;
                     }

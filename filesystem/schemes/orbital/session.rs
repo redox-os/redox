@@ -158,19 +158,8 @@ impl Session {
                 for package in self.packages.iter() {
                     if !(&package.icon).is_empty() {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
-                            debugln!("Launching: {}", package.binary);
-                            if let Some(mut child) = Command::new(&package.binary).spawn() {
-                                if let Some(status) = child.wait() {
-                                    if let Some(code) = status.code() {
-                                        debugln!("{}: Child exited with exit code: {}", package.binary, code);
-                                    } else {
-                                        debugln!("{}: No child exit code", package.binary);
-                                    }
-                                } else {
-                                    debugln!("{}: Failed to wait", package.binary);
-                                }
-                            } else {
-                                debugln!("{}: Failed to execute", package.binary);
+                            if Command::new(&package.binary).spawn_scheme().is_none() {
+                                debugln!("{}: Failed to launch", package.binary);
                             }
                         }
                         x = x + package.icon.width() as isize;
