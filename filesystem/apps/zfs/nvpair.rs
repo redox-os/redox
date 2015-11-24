@@ -348,6 +348,15 @@ impl<'a> GetNvValue<'a> for i64 {
     }
 }
 
+impl<'a> GetNvValue<'a> for &'a String {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::String(ref v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
 impl<'a> GetNvValue<'a> for &'a NvList {
     fn get(value: &'a NvValue) -> Option<Self> {
         match *value {
