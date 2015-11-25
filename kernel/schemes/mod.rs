@@ -51,6 +51,10 @@ pub trait KScheme {
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         None
     }
+
+    fn unlink(&mut self, url: &Url) -> bool {
+        false
+    }
 }
 
 /// Resource seek

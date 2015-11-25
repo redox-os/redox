@@ -5,7 +5,7 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir, sys_mkdir};
+use syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_chdir, sys_mkdir, sys_unlink};
 use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
@@ -215,11 +215,17 @@ pub fn change_cwd(path: &str) -> bool {
 
     if let Some(file) = file_option {
         if let Some(file_path) = file.path() {
-            if unsafe { sys_chdir((file_path + "\0").as_ptr()) } == 0 {
+            let path_c = file_path + "\0";
+            if unsafe { sys_chdir(path_c.as_ptr()) } == 0 {
                 return true;
             }
         }
     }
 
     false
+}
+
+pub fn unlink(path: &str) -> bool {
+    let path_c = path.to_string() + "\0";
+    unsafe { sys_unlink(path_c.as_ptr()) == 0 }
 }
