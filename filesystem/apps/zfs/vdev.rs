@@ -196,7 +196,7 @@ impl Tree {
         }
     }
 
-    pub fn add(&mut self, vdev: Vdev) {
+    pub fn add(&mut self, vdev: Vdev) -> TreeIndex {
         let parent = vdev.parent;
 
         // Add the vdev node
@@ -215,5 +215,7 @@ impl Tree {
         if let Some(parent) = parent {
             parent.get_mut(self).children.push(TreeIndex(index));
         }
+
+        TreeIndex(index)
     }
 }
