@@ -195,6 +195,19 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "rm",
+            help: "To remove a file, in the current directory\n    rm <my_file>",
+            main: Box::new(|args: &Vec<String>| {
+                match args.get(1) {
+                    Some(file_name) => if ! unlink(file_name) {
+                        println!("Failed to remove: {}", file_name);
+                    },
+                    None => println!("No name provided")
+                }
+            }),
+        });
+
+        commands.push(Command {
             name: "run",
             help: "Reads and runs a script file\n    run <my_script>",
             main: Box::new(|args: &Vec<String>| {
