@@ -475,8 +475,8 @@ impl Context {
                                       .rfind('/')
                                       .map_or(cwd.len(), |i| i + 1)))
                    .to_string() + &path.get_slice(Some(3), None)
-            } else if path == "./" {
-                cwd.to_string()
+            } else if path.starts_with("./") {
+                cwd.to_string() + &path.get_slice(Some(2), None)
             } else if path.starts_with('/') {
                 cwd.get_slice(None, Some(cwd.find(':').map_or(1, |i| i + 1))).to_string() + &path
             } else {
