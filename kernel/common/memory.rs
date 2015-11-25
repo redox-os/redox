@@ -215,10 +215,6 @@ impl MemoryTree {
     /// Split a block
     pub unsafe fn split(&self, block: Block) -> Block {
         self.tree.set(block, MemoryState::Split);
-        self.tree.set(Block {
-            idx: block.idx * 2 + 1,
-            level: block.level + 1,
-        }, MemoryState::Free);
 
         let res = Block {
             idx: block.idx * 2,
