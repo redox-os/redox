@@ -2,8 +2,7 @@
 pub use common::heap::Memory;
 
 use core::ops::{Index, IndexMut};
-use core::{cmp, intrinsics, mem};
-use core::ptr;
+use core::{cmp, intrinsics, mem, ptr};
 
 use scheduler;
 
@@ -35,15 +34,9 @@ pub const HEAP_START: usize = PAGE_END + MT_BYTES;
 pub const MT_PTR: usize = PAGE_END;
 
 /// Ceil log 2
+#[inline]
 fn ceil_log2(n: usize) -> usize {
-    let mut res = 0;
-    let mut n = 0;
-    while res > 0 {
-        n += 1;
-        res >>= 1;
-    }
-
-    n
+    mem::size_of::<usize>() * 8 - (n - 1).leading_zeros() as usize + 1
 }
 
 
@@ -85,7 +78,7 @@ impl StateArray {
         let byte = n / 4;
         let bit = 6 - 2 * (n % 4); // (from right)
 
-        MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 3))
+        MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 0b11))
     }
 
     /// Set the nth memory state (where n is a path in the tree)
@@ -96,7 +89,7 @@ impl StateArray {
         let ptr = (self.ptr + byte) as *mut u8;
         let b = ptr::read(ptr);
 
-        ptr::write(ptr, ((val as u8) << bit) ^ (!(3 << bit) & b));
+        ptr::write(ptr, ((val as u8) << bit) ^ (!(0b11 << bit) & b));
     }
 }
 
@@ -169,11 +162,7 @@ impl Block {
     pub fn parrent(&self) -> Block {
         Block {
             idx: self.idx / 2,
-            level: if self.level == 0 {
-                self.level
-            } else {
-                self.level - 1
-            },
+            level: self.level.saturating_sub(1),
         }
     }
 
@@ -187,7 +176,7 @@ impl Block {
         // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
 
         let pos = (ptr - HEAP_START) / MT_ATOM;
-        let level = ceil_log2(pos);
+        let level = pos.trailing_zeros() as usize;
 
         let idx = (pos + 1) >> level;
 
