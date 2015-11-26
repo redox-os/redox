@@ -51,22 +51,22 @@ fn ceil_log2(n: usize) -> usize {
 /// The state of a memory block
 pub enum MemoryState {
     /// None
-    None = 4,
+    None = 3,
     /// Free
-    Free = 1,
+    Free = 0,
     /// Used
-    Used = 2,
+    Used = 1,
     /// Splitted
-    Split = 3,
+    Split = 2,
 }
 
 impl MemoryState {
     /// Convert an u8 to MemoryState
     pub fn from_u8(n: u8) -> MemoryState {
         match n {
-            1 => MemoryState::Free,
-            2 => MemoryState::Used,
-            3 => MemoryState::Split,
+            0 => MemoryState::Free,
+            1 => MemoryState::Used,
+            2 => MemoryState::Split,
             _ => MemoryState::None,
         }
     }
