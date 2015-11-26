@@ -169,11 +169,7 @@ impl Block {
     pub fn parrent(&self) -> Block {
         Block {
             idx: self.idx / 2,
-            level: if self.level == 0 {
-                self.level
-            } else {
-                self.level - 1
-            },
+            level: self.level.saturating_sub(1),
         }
     }
 
