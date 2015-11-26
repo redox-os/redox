@@ -51,22 +51,22 @@ fn ceil_log2(n: usize) -> usize {
 /// The state of a memory block
 pub enum MemoryState {
     /// None
-    None,
+    None = 3,
     /// Free
-    Free,
+    Free = 0,
     /// Used
-    Used,
+    Used = 1,
     /// Splitted
-    Split,
+    Split = 2,
 }
 
 impl MemoryState {
     /// Convert an u8 to MemoryState
     pub fn from_u8(n: u8) -> MemoryState {
         match n {
-            1 => MemoryState::Free,
-            2 => MemoryState::Used,
-            3 => MemoryState::Split,
+            0 => MemoryState::Free,
+            1 => MemoryState::Used,
+            2 => MemoryState::Split,
             _ => MemoryState::None,
         }
     }
@@ -83,7 +83,7 @@ impl StateArray {
     /// Get the nth memory state (where n is a path in the tree)
     pub unsafe fn get(&self, n: usize) -> MemoryState {
         let byte = n / 4;
-        let bit = n % 8;
+        let bit = 6 - 2 * (n % 4); // (from right)
 
         MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 3))
     }
@@ -91,12 +91,12 @@ impl StateArray {
     /// Set the nth memory state (where n is a path in the tree)
     pub unsafe fn set(&self, n: usize, val: MemoryState) {
         let byte = n / 4;
-        let bit = n % 8;
+        let bit = 6 - 2 * (n % 4); // (from right)
 
         let ptr = (self.ptr + byte) as *mut u8;
         let b = ptr::read(ptr);
 
-        ptr::write(ptr, ((val as u8) << bit) ^ (!(3 << 6) >> bit) & b);
+        ptr::write(ptr, ((val as u8) << bit) ^ (!(3 << bit) & b));
     }
 }
 
