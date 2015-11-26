@@ -51,13 +51,13 @@ fn ceil_log2(n: usize) -> usize {
 /// The state of a memory block
 pub enum MemoryState {
     /// None
-    None,
+    None = 4,
     /// Free
-    Free,
+    Free = 1,
     /// Used
-    Used,
+    Used = 2,
     /// Splitted
-    Split,
+    Split = 3,
 }
 
 impl MemoryState {
