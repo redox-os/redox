@@ -2,8 +2,7 @@
 pub use common::heap::Memory;
 
 use core::ops::{Index, IndexMut};
-use core::{cmp, intrinsics, mem};
-use core::ptr;
+use core::{cmp, intrinsics, mem, ptr};
 
 use scheduler;
 
@@ -35,15 +34,9 @@ pub const HEAP_START: usize = PAGE_END + MT_BYTES;
 pub const MT_PTR: usize = PAGE_END;
 
 /// Ceil log 2
+#[inline]
 fn ceil_log2(n: usize) -> usize {
-    let mut res = 0;
-    let mut n = 0;
-    while res > 0 {
-        n += 1;
-        res >>= 1;
-    }
-
-    n
+    mem::size_of::<usize>() * 8 - (n - 1).leading_zeros() as usize + 1
 }
 
 
