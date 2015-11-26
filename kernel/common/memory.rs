@@ -187,7 +187,7 @@ impl Block {
         // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
 
         let pos = (ptr - HEAP_START) / MT_ATOM;
-        let level = pos.trailing_zeros();
+        let level = pos.trailing_zeros() as usize;
 
         let idx = (pos + 1) >> level;
 
