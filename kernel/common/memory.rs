@@ -1,218 +1,375 @@
 // TODO: Doc the rest
+pub use common::heap::Memory;
 
-use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
+use core::{cmp, intrinsics, mem};
 use core::ptr;
 
 use scheduler;
 
 use common::paging::PAGE_END;
 
-pub const CLUSTER_ADDRESS: usize = PAGE_END;
-pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
-pub const CLUSTER_SIZE: usize = 4096; // Of 4 K chunks
+// MT = Memory tree
+// /// The offset adress for the memory map
+// pub const MT_ADDR: usize = PAGE_END;
+/// The depth of the memory tree
+pub const MT_DEPTH: usize = 20;
+/// The smallest possible memory block
+pub const MT_ATOM: usize = 512;
+/// The number of leafs in the memory tree
+pub const MT_LEAFS: usize = 1 << MT_DEPTH;
+/// The size of the root block
+pub const MT_ROOT: usize = MT_LEAFS * MT_ATOM;
+/// The number of nodes
+pub const MT_NODES: usize = MT_LEAFS * 2 - 1;
+/// The size of the memory map in bytes
+pub const MT_BYTES: usize = MT_NODES / 4;
+/// Empty memory tree
+pub const MT: MemoryTree = MemoryTree {
+    tree: StateTree { arr: StateArray { ptr: MT_PTR /* [0; MT_BYTES], */ } },
+};
+/// Where the heap starts
+pub const HEAP_START: usize = PAGE_END + MT_BYTES;
 
-/// A wrapper around raw pointers
-pub struct Memory<T> {
-    pub ptr: *mut T,
+/// The memory tree
+pub const MT_PTR: usize = PAGE_END;
+
+/// Ceil log 2
+fn ceil_log2(n: usize) -> usize {
+    let mut res = 0;
+    let mut n = 0;
+    while res > 0 {
+        n += 1;
+        res >>= 1;
+    }
+
+    n
 }
 
-impl<T> Memory<T> {
-    /// Create an empty
-    pub fn new(count: usize) -> Option<Self> {
-        let alloc = unsafe { alloc(count * mem::size_of::<T>()) };
-        if alloc > 0 {
-            Some(Memory { ptr: alloc as *mut T })
-        } else {
-            None
+
+#[derive(Clone, Copy)]
+/// The state of a memory block
+pub enum MemoryState {
+    /// None
+    None = 3,
+    /// Free
+    Free = 0,
+    /// Used
+    Used = 1,
+    /// Splitted
+    Split = 2,
+}
+
+impl MemoryState {
+    /// Convert an u8 to MemoryState
+    pub fn from_u8(n: u8) -> MemoryState {
+        match n {
+            0 => MemoryState::Free,
+            1 => MemoryState::Used,
+            2 => MemoryState::Split,
+            _ => MemoryState::None,
+        }
+    }
+}
+
+// #[derive(Clone, Copy)]
+/// The memory tree
+pub struct StateArray {
+    /// The ptr to byte buffer of the state array
+    ptr: usize, // bytes: [u8; MT_BYTES],
+}
+
+impl StateArray {
+    /// Get the nth memory state (where n is a path in the tree)
+    pub unsafe fn get(&self, n: usize) -> MemoryState {
+        let byte = n / 4;
+        let bit = 6 - 2 * (n % 4); // (from right)
+
+        MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 3))
+    }
+
+    /// Set the nth memory state (where n is a path in the tree)
+    pub unsafe fn set(&self, n: usize, val: MemoryState) {
+        let byte = n / 4;
+        let bit = 6 - 2 * (n % 4); // (from right)
+
+        let ptr = (self.ptr + byte) as *mut u8;
+        let b = ptr::read(ptr);
+
+        ptr::write(ptr, ((val as u8) << bit) ^ (!(3 << bit) & b));
+    }
+}
+
+// #[derive(Clone, Copy)]
+pub struct StateTree {
+    /// The array describing the state tree
+    arr: StateArray,
+}
+
+impl StateTree {
+    /// Get the position of a given node in the tree
+    pub fn pos(&self, idx: usize, level: usize) -> usize {
+        (Block {
+            idx: idx,
+            level: level,
+        })
+        .pos()
+    }
+
+    /// Set the value of a node
+    pub unsafe fn set(&self, block: Block, state: MemoryState) {
+        self.arr.set(block.pos(), state);
+    }
+
+    /// Get the value of a node
+    pub unsafe fn get(&self, block: Block) -> MemoryState {
+        self.arr.get(block.pos())
+    }
+}
+
+#[derive(Clone, Copy)]
+/// Sibling
+pub enum Sibling {
+    Left = 0,
+    Right = 1,
+}
+
+#[derive(Clone, Copy)]
+/// A memory block
+pub struct Block {
+    /// The index
+    idx: usize,
+    /// The level
+    level: usize,
+}
+
+impl Block {
+    /// Get the position of this block
+    pub fn pos(&self) -> usize {
+        self.idx + (1 << self.level) - 1
+    }
+
+    /// Get sibling side
+    pub fn sibl(&self) -> Sibling {
+        match self.idx & 1 {
+            0 => Sibling::Left,
+            _ => Sibling::Right,
         }
     }
 
-    pub fn new_align(count: usize, align: usize) -> Option<Self> {
-        let alloc = unsafe { alloc_aligned(count * mem::size_of::<T>(), align) };
-        if alloc > 0 {
-            Some(Memory { ptr: alloc as *mut T })
-        } else {
-            None
+    /// Get this blocks buddy
+    pub fn get_buddy(&self) -> Block {
+        Block {
+            idx: self.idx ^ 1,
+            level: self.level,
         }
     }
 
-    /// Renew the memory
-    pub fn renew(&mut self, count: usize) -> bool {
-        let address = unsafe { realloc(self.ptr as usize, count * mem::size_of::<T>()) };
-        if address > 0 {
-            self.ptr = address as *mut T;
-            true
-        } else {
-            false
+    /// The parrent of this block
+    pub fn parrent(&self) -> Block {
+        Block {
+            idx: self.idx / 2,
+            level: if self.level == 0 {
+                self.level
+            } else {
+                self.level - 1
+            },
         }
     }
 
-    /// Get the size in bytes
+    /// The size of this block
     pub fn size(&self) -> usize {
-        unsafe { alloc_size(self.ptr as usize) }
+        MT_ROOT / (1 << self.level)
     }
 
-    /// Get the length in T elements
-    pub fn length(&self) -> usize {
-        unsafe { alloc_size(self.ptr as usize) / mem::size_of::<T>() }
-    }
+    /// Convert a pointer to a block
+    pub fn from_ptr(ptr: usize) -> Block {
+        // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
 
-    /// Get the address
-    pub unsafe fn address(&self) -> usize {
-        self.ptr as usize
-    }
+        let pos = (ptr - HEAP_START) / MT_ATOM;
+        let level = ceil_log2(pos);
 
-    /// Read the memory
-    pub unsafe fn read(&self, i: usize) -> T {
-        ptr::read(self.ptr.offset(i as isize))
-    }
+        let idx = (pos + 1) >> level;
 
-    /// Load the memory
-    pub unsafe fn load(&self, i: usize) -> T {
-        intrinsics::atomic_singlethreadfence();
-        ptr::read(self.ptr.offset(i as isize))
-    }
 
-    /// Overwrite the memory
-    pub unsafe fn write(&mut self, i: usize, value: T) {
-        ptr::write(self.ptr.offset(i as isize), value);
-    }
-
-    /// Store the memory
-    pub unsafe fn store(&mut self, i: usize, value: T) {
-        intrinsics::atomic_singlethreadfence();
-        ptr::write(self.ptr.offset(i as isize), value)
-    }
-
-    /// Convert into a raw pointer
-    pub unsafe fn into_raw(&mut self) -> *mut T {
-        let ptr = self.ptr;
-        self.ptr = 0 as *mut T;
-        ptr
-    }
-}
-
-impl<T> Drop for Memory<T> {
-    fn drop(&mut self) {
-        if self.ptr as usize > 0 {
-            unsafe { unalloc(self.ptr as usize) };
+        Block {
+            level: level,
+            idx: idx,
         }
     }
-}
 
-impl<T> Index<usize> for Memory<T> {
-    type Output = T;
-
-    fn index<'a>(&'a self, _index: usize) -> &'a T {
-        unsafe { &*self.ptr.offset(_index as isize) }
+    /// Convert a block to a pointer
+    pub fn to_ptr(&self) -> usize {
+        HEAP_START + self.pos() * MT_ATOM
     }
 }
 
-impl<T> IndexMut<usize> for Memory<T> {
-    fn index_mut<'a>(&'a mut self, _index: usize) -> &'a mut T {
-        unsafe { &mut *self.ptr.offset(_index as isize) }
-    }
+// #[derive(Clone, Copy)]
+/// Memory tree
+pub struct MemoryTree {
+    /// The state tree
+    tree: StateTree,
 }
 
-/// A memory map entry
-#[repr(packed)]
-struct MemoryMapEntry {
-    base: u64,
-    len: u64,
-    class: u32,
-    acpi: u32,
-}
+impl MemoryTree {
+    /// Split a block
+    pub unsafe fn split(&self, block: Block) -> Block {
+        self.tree.set(block, MemoryState::Split);
 
-const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
+        let res = Block {
+            idx: block.idx * 2,
+            level: block.level + 1,
+        };
+        self.tree.set(res, MemoryState::Used);
 
-/// Get the data (address) of a given cluster
-pub unsafe fn cluster(number: usize) -> usize {
-    if number < CLUSTER_COUNT {
-        ptr::read((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *const usize)
-    } else {
-        0
-    }
-}
-
-/// Set the address of a cluster
-pub unsafe fn set_cluster(number: usize, address: usize) {
-    if number < CLUSTER_COUNT {
-        ptr::write((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *mut usize,
-                   address);
-    }
-}
-
-/// Convert an adress to the cluster number
-pub unsafe fn address_to_cluster(address: usize) -> usize {
-    if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() {
-        (address - CLUSTER_ADDRESS - CLUSTER_COUNT * mem::size_of::<usize>()) / CLUSTER_SIZE
-    } else {
-        0
-    }
-}
-
-pub unsafe fn cluster_to_address(number: usize) -> usize {
-    CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() + number * CLUSTER_SIZE
-}
-
-/// Initialize clusters
-pub unsafe fn cluster_init() {
-    // First, set all clusters to the not present value
-    for cluster in 0..CLUSTER_COUNT {
-        set_cluster(cluster, 0xFFFFFFFF);
+        res
     }
 
-    // Next, set all valid clusters to the free value
-    // TODO: Optimize this function
-    for i in 0..((0x5000 - 0x500) / mem::size_of::<MemoryMapEntry>()) {
-        let entry = &*MEMORY_MAP.offset(i as isize);
-        if entry.len > 0 && entry.class == 1 {
-            for cluster in 0..CLUSTER_COUNT {
-                let address = cluster_to_address(cluster);
-                if address as u64 >= entry.base &&
-                   (address as u64 + CLUSTER_SIZE as u64) <= (entry.base + entry.len) {
-                    set_cluster(cluster, 0);
-                }
+    /// Allocate of minimum size, size
+    pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
+        let order = ceil_log2(size / MT_ATOM) - 1;
+        size = (1 << order) * MT_ATOM;
+        let level = MT_DEPTH - order;
+
+        let mut free = None;
+        for i in 0..2 * (1 << level) {
+            if let MemoryState::Free = self.tree.get(Block {
+                level: level,
+                idx: i,
+            }) {
+                free = Some(i);
+            }
+        }
+
+        if let Some(n) = free {
+            self.tree.set(Block {
+                              level: level,
+                              idx: n,
+                          },
+                          MemoryState::Used);
+
+            Some(Block {
+                idx: n,
+                level: level,
+            })
+        } else {
+            if level == 0 {
+                None
+            } else {
+                // Kernel panic on OOM
+                Some(if let Some(m) = self.alloc(size * 2) {
+                    self.split(m)
+                } else {
+                    return None;
+                })
             }
         }
     }
+
+    /// Reallocate a block in an optimal way (by unifing it with its buddy)
+    pub unsafe fn realloc(&self, mut block: Block, mut size: usize) -> Option<Block> {
+        if let Sibling::Left = block.sibl() {
+            let mut level = 0;
+
+            let order = ceil_log2(size / MT_ATOM);
+            size = (1 << order) * MT_ATOM;
+            let level = MT_DEPTH - order;
+
+            let delta = level as isize - block.level as isize;
+
+            if delta < 0 {
+                for i in 1..(-delta as usize) {
+                    block = self.split(block);
+                }
+
+                Some(self.split(block))
+            } else {
+                let mut buddy = block.get_buddy();
+
+                for i in 1..delta {
+
+                    if let MemoryState::Free = self.tree.get(buddy) {
+                    } else {
+                        return None;
+                    }
+
+                    buddy = block.parrent().get_buddy();
+                }
+
+                if let MemoryState::Free = self.tree.get(buddy) {
+                    let parrent = buddy.parrent();
+                    self.tree.set(parrent, MemoryState::Used);
+                    Some(parrent)
+                } else {
+                    None
+                }
+
+            }
+        } else {
+            None
+        }
+
+    }
+
+    /// Deallocate a block
+    pub unsafe fn dealloc(&mut self, block: Block) {
+        self.tree.set(block, MemoryState::Free);
+        if let MemoryState::Free = self.tree.get(block.get_buddy()) {
+            self.tree.set(block.parrent(), MemoryState::Free);
+        }
+    }
+
 }
+
+/// Initialize dynamic memory (the heap)
+pub fn memory_init() {
+    unsafe {
+        MT.tree.set(Block { level: 0, idx: 0 }, MemoryState::Free);
+    }
+}
+
+
 
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
-    let mut ret = 0;
+    let ret;
 
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    if size > 0 {
-        let mut number = 0;
-        let mut count = 0;
+    //     if size > 0 {
+    //         let mut number = 0;
+    //         let mut count = 0;
+    //
+    //         for i in 0..CLUSTER_COUNT {
+    //             if cluster(i) == 0 {
+    //                 if count == 0 {
+    //                     number = i;
+    //                 }
+    //                 count += 1;
+    //                 if count * CLUSTER_SIZE > size {
+    //                     break;
+    //                 }
+    //             } else {
+    //                 count = 0;
+    //             }
+    //         }
+    //         if count * CLUSTER_SIZE > size {
+    //             let address = cluster_to_address(number);
+    //
+    //             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+    //
+    //             for i in number..number + count {
+    //                 set_cluster(i, address);
+    //             }
+    //             ret = address;
+    //         }
+    //     }
 
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                if count == 0 {
-                    number = i;
-                }
-                count += 1;
-                if count * CLUSTER_SIZE > size {
-                    break;
-                }
-            } else {
-                count = 0;
-            }
-        }
-        if count * CLUSTER_SIZE > size {
-            let address = cluster_to_address(number);
-
-            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
-
-            for i in number..number + count {
-                set_cluster(i, address);
-            }
-            ret = address;
-        }
+    unsafe {
+        // NOTE: In this case kernel panic is inevitable when OOM
+        // TODO: Swap files
+        ret = MT.alloc(size).unwrap().to_ptr();
     }
 
     // Memory allocation must be atomic
@@ -221,39 +378,46 @@ pub unsafe fn alloc(size: usize) -> usize {
     ret
 }
 
+// TODO
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
-    let mut ret = 0;
+    let ret;
 
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    if size > 0 {
-        let mut number = 0;
-        let mut count = 0;
+    //     if size > 0 {
+    //         let mut number = 0;
+    //         let mut count = 0;
+    //
+    //         for i in 0..CLUSTER_COUNT {
+    //             if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
+    //                 if count == 0 {
+    //                     number = i;
+    //                 }
+    //                 count += 1;
+    //                 if count * CLUSTER_SIZE > size {
+    //                     break;
+    //                 }
+    //             } else {
+    //                 count = 0;
+    //             }
+    //         }
+    //         if count * CLUSTER_SIZE > size {
+    //             let address = cluster_to_address(number);
+    //
+    //             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
+    //
+    //             for i in number..number + count {
+    //                 set_cluster(i, address);
+    //             }
+    //             ret = address;
+    //         }
+    //     }
 
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
-                if count == 0 {
-                    number = i;
-                }
-                count += 1;
-                if count * CLUSTER_SIZE > size {
-                    break;
-                }
-            } else {
-                count = 0;
-            }
-        }
-        if count * CLUSTER_SIZE > size {
-            let address = cluster_to_address(number);
-
-            ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
-
-            for i in number..number + count {
-                set_cluster(i, address);
-            }
-            ret = address;
-        }
+    unsafe {
+        // NOTE: In this case kernel panic is inevitable when OOM
+        // TODO: Swap files
+        ret = MT.alloc(size).unwrap().to_ptr();
     }
 
     // Memory allocation must be atomic
@@ -262,82 +426,65 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     ret
 }
 
+/// Allocate type
 pub unsafe fn alloc_type<T>() -> *mut T {
     alloc(mem::size_of::<T>()) as *mut T
 }
 
+/// Get the allocate size
 pub unsafe fn alloc_size(ptr: usize) -> usize {
-    let mut size = 0;
-
-    // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
-
-    if ptr > 0 {
-        for i in address_to_cluster(ptr)..CLUSTER_COUNT {
-            if cluster(i) == ptr {
-                size += CLUSTER_SIZE;
-            } else {
-                break;
-            }
-        }
-    }
-
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
-
-    size
+    Block::from_ptr(ptr).size()
 }
 
+/// Unallocate
 pub unsafe fn unalloc(ptr: usize) {
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    if ptr > 0 {
-        for i in address_to_cluster(ptr)..CLUSTER_COUNT {
-            if cluster(i) == ptr {
-                set_cluster(i, 0);
-            } else {
-                break;
-            }
-        }
+    //     if ptr > 0 {
+    //         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
+    //             if cluster(i) == ptr {
+    //                 set_cluster(i, 0);
+    //             } else {
+    //                 break;
+    //             }
+    //         }
+    //     }
+    let b = Block::from_ptr(ptr);
+    MT.dealloc(b);
+    for i in 0..b.size() {
+        ptr::write((ptr + i) as *mut u8, 0);
     }
 
     // Memory allocation must be atomic
     scheduler::end_no_ints(reenable);
 }
 
+/// Reallocate
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
-    let mut ret = 0;
+    let ret;
 
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    if size == 0 {
-        if ptr > 0 {
-            unalloc(ptr);
-        }
+    if let Some(mut b) = MT.realloc(Block::from_ptr(ptr), size) {
+        ret = b.to_ptr();
     } else {
-        let old_size = alloc_size(ptr);
-        if size <= old_size {
-            ret = ptr;
-        } else {
-            ret = alloc(size);
-            if ptr > 0 {
-                if ret > 0 {
-                    let copy_size = cmp::min(old_size, size);
-
-                    ::memmove(ret as *mut u8, ptr as *const u8, copy_size);
-                }
-                unalloc(ptr);
-            }
+        unalloc(ptr);
+        ret = alloc(size);
+        // TODO Optimize
+        for n in 0..size {
+            ptr::write((ret + n) as *mut u8, ptr::read((ptr + n) as *mut u8));
         }
     }
+
 
     scheduler::end_no_ints(reenable);
 
     ret
 }
 
+/// Reallocate in place
 pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
     let old_size = alloc_size(ptr);
     if size <= old_size {
@@ -350,17 +497,9 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
 pub fn memory_used() -> usize {
     let mut ret = 0;
     unsafe {
-        // Memory allocation must be atomic
-        let reenable = scheduler::start_no_ints();
-
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
-                ret += CLUSTER_SIZE;
-            }
-        }
+        // TODO
 
         // Memory allocation must be atomic
-        scheduler::end_no_ints(reenable);
     }
     ret
 }
@@ -369,16 +508,74 @@ pub fn memory_free() -> usize {
     let mut ret = 0;
     unsafe {
         // Memory allocation must be atomic
-        let reenable = scheduler::start_no_ints();
-
-        for i in 0..CLUSTER_COUNT {
-            if cluster(i) == 0 {
-                ret += CLUSTER_SIZE;
-            }
-        }
+        // TODO
 
         // Memory allocation must be atomic
-        scheduler::end_no_ints(reenable);
     }
     ret
 }
+
+
+// /// A memory map entry
+// #[repr(packed)]
+// struct MemoryMapEntry {
+//     base: u64,
+//     len: u64,
+//     class: u32,
+//     acpi: u32,
+// }
+//
+// const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
+//
+// /// Get the data (address) of a given cluster
+// pub unsafe fn cluster(number: usize) -> usize {
+//     if number < CLUSTER_COUNT {
+//         ptr::read((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *const usize)
+//     } else {
+//         0
+//     }
+// }
+//
+// /// Set the address of a cluster
+// pub unsafe fn set_cluster(number: usize, address: usize) {
+//     if number < CLUSTER_COUNT {
+//         ptr::write((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *mut usize,
+//                    address);
+//     }
+// }
+//
+// /// Convert an adress to the cluster number
+// pub unsafe fn address_to_cluster(address: usize) -> usize {
+//     if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() {
+//         (address - CLUSTER_ADDRESS - CLUSTER_COUNT * mem::size_of::<usize>()) / CLUSTER_SIZE
+//     } else {
+//         0
+//     }
+// }
+//
+// pub unsafe fn cluster_to_address(number: usize) -> usize {
+//     CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() + number * CLUSTER_SIZE
+// }
+//
+// /// Initialize clusters
+// pub unsafe fn cluster_init() {
+//     // First, set all clusters to the not present value
+//     for cluster in 0..CLUSTER_COUNT {
+//         set_cluster(cluster, 0xFFFFFFFF);
+//     }
+//
+//     // Next, set all valid clusters to the free value
+//     // TODO: Optimize this function
+//     for i in 0..((0x5000 - 0x500) / mem::size_of::<MemoryMapEntry>()) {
+//         let entry = &*MEMORY_MAP.offset(i as isize);
+//         if entry.len > 0 && entry.class == 1 {
+//             for cluster in 0..CLUSTER_COUNT {
+//                 let address = cluster_to_address(cluster);
+//                 if address as u64 >= entry.base &&
+//                    (address as u64 + CLUSTER_SIZE as u64) <= (entry.base + entry.len) {
+//                     set_cluster(cluster, 0);
+//                 }
+//             }
+//         }
+//     }
+// }

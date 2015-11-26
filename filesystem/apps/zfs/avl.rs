@@ -237,7 +237,8 @@ impl<T, K: PartialOrd> Tree<T, K> {
                            self.height(self.node(self.node(node).left.unwrap()).right);
             if lbalance == 0 || lbalance == 1 { // left left - need to rotate right
                 return self.rotate_right(node);
-            } else if lbalance == -1 { // left right
+            } else if lbalance == -1 {
+                // left right
                 return self.rotate_leftright(node); // function name is just a coincidence
             }
         } else if balance == -2 { // right
@@ -245,7 +246,8 @@ impl<T, K: PartialOrd> Tree<T, K> {
                            self.height(self.node(self.node(node).right.unwrap()).right);
             if rbalance == 1 { // right left
                 return self.rotate_rightleft(node); // function name is just a coincidence
-            } else if rbalance == 0 || rbalance == -1 { // right right - need to rotate left
+            } else if rbalance == 0 || rbalance == -1 {
+                // right right - need to rotate left
                 return self.rotate_left(node);
             }
         }
@@ -261,12 +263,14 @@ impl<T, K: PartialOrd> Tree<T, K> {
                 let right_height = self.height(self.node(node).right);
 
                 if left_height > right_height {
-                    left_height+1
+                    left_height + 1
                 } else {
-                    right_height+1
+                    right_height + 1
                 }
-            },
-            None => { -1 },
+            }
+            None => {
+                -1
+            }
         }
     }
 

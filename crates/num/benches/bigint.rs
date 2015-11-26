@@ -9,7 +9,7 @@ use num::{BigUint, Zero, One, FromPrimitive};
 
 fn factorial(n: usize) -> BigUint {
     let mut f: BigUint = One::one();
-    for i in 1..(n+1) {
+    for i in 1..(n + 1) {
         let bu: BigUint = FromPrimitive::from_usize(i).unwrap();
         f = f * bu;
     }
@@ -54,7 +54,10 @@ fn to_string(b: &mut Bencher) {
 
 #[bench]
 fn shr(b: &mut Bencher) {
-    let n = { let one : BigUint = One::one(); one << 1000 };
+    let n = {
+        let one: BigUint = One::one();
+        one << 1000
+    };
     b.iter(|| {
         let mut m = n.clone();
         for _ in 0..10 {

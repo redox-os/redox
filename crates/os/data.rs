@@ -32,9 +32,7 @@ pub struct File {
 impl File {
     /// Create a file from a slice of bytes
     pub fn from_bytes(b: &[u8]) -> Self {
-        let name = unsafe {
-            String::from_utf8_unchecked(b[0..64].to_vec())
-        };
+        let name = unsafe { String::from_utf8_unchecked(b[0..64].to_vec()) };
         let data = b[256..].to_vec();
 
         File {
@@ -55,9 +53,7 @@ pub struct Dir {
 impl Dir {
     /// Create a new directory from a slice of bytes
     pub fn from_bytes(b: &[u8]) -> Self {
-        let name = unsafe {
-            String::from_utf8_unchecked(b[0..64].to_vec())
-        };
+        let name = unsafe { String::from_utf8_unchecked(b[0..64].to_vec()) };
         let mut n = 0;
         while let Some(&35) = b.get(n + 256 - 1) {
             n += 256;

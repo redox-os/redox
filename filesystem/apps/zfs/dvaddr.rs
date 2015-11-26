@@ -14,7 +14,7 @@ impl DVAddr {
     }
 
     pub fn gang(&self) -> bool {
-        if self.offset&0x8000000000000000 == 1 {
+        if self.offset & 0x8000000000000000 == 1 {
             true
         } else {
             false
@@ -32,8 +32,11 @@ impl DVAddr {
 
 impl fmt::Debug for DVAddr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        try!(write!(f, "DVAddr {{ offset: {:X}, gang: {}, asize: {:X} }}\n",
-                    self.offset(), self.gang(), self.asize()));
+        try!(write!(f,
+                    "DVAddr {{ offset: {:X}, gang: {}, asize: {:X} }}\n",
+                    self.offset(),
+                    self.gang(),
+                    self.asize()));
         Ok(())
     }
 }

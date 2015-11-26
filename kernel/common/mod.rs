@@ -29,3 +29,5 @@ pub mod slice_data;
 pub mod time;
 /// String to number
 pub mod to_num;
+/// Heap
+mod heap;

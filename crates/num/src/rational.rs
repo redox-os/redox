@@ -28,7 +28,7 @@ use {Num, Signed, Zero, One};
 #[allow(missing_docs)]
 pub struct Ratio<T> {
     numer: T,
-    denom: T
+    denom: T,
 }
 
 /// Alias for a `Ratio` of machine-sized integers.
@@ -50,7 +50,10 @@ impl<T: Clone + Integer + PartialOrd> Ratio<T> {
     /// Creates a ratio without checking for `denom == 0` or reducing.
     #[inline]
     pub fn new_raw(numer: T, denom: T) -> Ratio<T> {
-        Ratio { numer: numer, denom: denom }
+        Ratio {
+            numer: numer,
+            denom: denom,
+        }
     }
 
     /// Create a new Ratio. Fails if `denom == 0`.
@@ -90,7 +93,7 @@ impl<T: Clone + Integer + PartialOrd> Ratio<T> {
 
     /// Put self into lowest terms, with denom > 0.
     fn reduce(&mut self) {
-        let g : T = self.numer.gcd(&self.denom);
+        let g: T = self.numer.gcd(&self.denom);
 
         // FIXME(#5992): assignment operator overloads
         // self.numer /= g;
@@ -124,7 +127,8 @@ impl<T: Clone + Integer + PartialOrd> Ratio<T> {
     pub fn floor(&self) -> Ratio<T> {
         if *self < Zero::zero() {
             let one: T = One::one();
-            Ratio::from_integer((self.numer.clone() - self.denom.clone() + one) / self.denom.clone())
+            Ratio::from_integer((self.numer.clone() - self.denom.clone() + one) /
+                                self.denom.clone())
         } else {
             Ratio::from_integer(self.numer.clone() / self.denom.clone())
         }
@@ -137,7 +141,8 @@ impl<T: Clone + Integer + PartialOrd> Ratio<T> {
             Ratio::from_integer(self.numer.clone() / self.denom.clone())
         } else {
             let one: T = One::one();
-            Ratio::from_integer((self.numer.clone() + self.denom.clone() - one) / self.denom.clone())
+            Ratio::from_integer((self.numer.clone() + self.denom.clone() - one) /
+                                self.denom.clone())
         }
     }
 
@@ -150,7 +155,9 @@ impl<T: Clone + Integer + PartialOrd> Ratio<T> {
 
         // Find unsigned fractional part of rational number
         let mut fractional = self.fract();
-        if fractional < zero { fractional = zero - fractional };
+        if fractional < zero {
+            fractional = zero - fractional
+        };
 
         // The algorithm compares the unsigned fractional part with 1/2, that
         // is, a/b >= 1/2, or a >= b/2. For odd denominators, we use
@@ -193,8 +200,8 @@ impl<T: Clone + Integer + PartialOrd + PrimInt> Ratio<T> {
         match expon.cmp(&0) {
             cmp::Ordering::Equal => One::one(),
             cmp::Ordering::Less => self.recip().pow(-expon),
-            cmp::Ordering::Greater => Ratio::new_raw(self.numer.pow(expon as u32),
-                                                     self.denom.pow(expon as u32)),
+            cmp::Ordering::Greater =>
+                Ratio::new_raw(self.numer.pow(expon as u32), self.denom.pow(expon as u32)),
         }
     }
 }
@@ -207,7 +214,11 @@ impl Ratio<BigInt> {
             return None;
         }
         let (mantissa, exponent, sign) = f.integer_decode();
-        let bigint_sign = if sign == 1 { Sign::Plus } else { Sign::Minus };
+        let bigint_sign = if sign == 1 {
+            Sign::Plus
+        } else {
+            Sign::Minus
+        };
         if exponent < 0 {
             let one: BigInt = One::one();
             let denom: BigInt = one << ((-exponent) as usize);
@@ -221,7 +232,7 @@ impl Ratio<BigInt> {
     }
 }
 
-/* Comparisons */
+// Comparisons
 
 // comparing a/b and c/d is the same as comparing a*d and b*c, so we
 // abstract that pattern. The following macro takes a trait and either
@@ -302,7 +313,7 @@ macro_rules! forward_all_binop {
     };
 }
 
-/* Arithmetic */
+// Arithmetic
 forward_all_binop!(impl Mul, mul);
 // a/b * c/d = (a*c)/(b*d)
 impl<'a, 'b, T> Mul<&'b Ratio<T>> for &'a Ratio<T>
@@ -312,7 +323,8 @@ impl<'a, 'b, T> Mul<&'b Ratio<T>> for &'a Ratio<T>
         type Output = Ratio<T>;
     #[inline]
     fn mul(self, rhs: &Ratio<T>) -> Ratio<T> {
-        Ratio::new(self.numer.clone() * rhs.numer.clone(), self.denom.clone() * rhs.denom.clone())
+        Ratio::new(self.numer.clone() * rhs.numer.clone(),
+                   self.denom.clone() * rhs.denom.clone())
     }
 }
 
@@ -325,7 +337,8 @@ impl<'a, 'b, T> Div<&'b Ratio<T>> for &'a Ratio<T>
 
     #[inline]
     fn div(self, rhs: &Ratio<T>) -> Ratio<T> {
-        Ratio::new(self.numer.clone() * rhs.denom.clone(), self.denom.clone() * rhs.numer.clone())
+        Ratio::new(self.numer.clone() * rhs.denom.clone(),
+                   self.denom.clone() * rhs.numer.clone())
     }
 }
 
@@ -360,7 +373,9 @@ impl<T> Neg for Ratio<T>
     type Output = Ratio<T>;
 
     #[inline]
-    fn neg(self) -> Ratio<T> { -&self }
+    fn neg(self) -> Ratio<T> {
+        -&self
+    }
 }
 
 impl<'a, T> Neg for &'a Ratio<T>
@@ -374,7 +389,7 @@ impl<'a, T> Neg for &'a Ratio<T>
     }
 }
 
-/* Constants */
+// Constants
 impl<T: Clone + Integer + PartialOrd>
     Zero for Ratio<T> {
     #[inline]
@@ -405,15 +420,12 @@ impl<T: Clone + Integer + PartialOrd> Num for Ratio<T> {
         if split.len() < 2 {
             Err(ParseRatioError)
         } else {
-            let a_result: Result<T, _> = T::from_str_radix(
-                split[0],
-                radix).map_err(|_| ParseRatioError);
+            let a_result: Result<T, _> = T::from_str_radix(split[0], radix)
+                                             .map_err(|_| ParseRatioError);
             a_result.and_then(|a| {
-                let b_result: Result<T, _>  =
-                    T::from_str_radix(split[1], radix).map_err(|_| ParseRatioError);
-                b_result.and_then(|b| {
-                    Ok(Ratio::new(a.clone(), b.clone()))
-                })
+                let b_result: Result<T, _> = T::from_str_radix(split[1], radix)
+                                                 .map_err(|_| ParseRatioError);
+                b_result.and_then(|b| Ok(Ratio::new(a.clone(), b.clone())))
             })
         }
     }
@@ -422,12 +434,20 @@ impl<T: Clone + Integer + PartialOrd> Num for Ratio<T> {
 impl<T: Clone + Integer + PartialOrd + Signed> Signed for Ratio<T> {
     #[inline]
     fn abs(&self) -> Ratio<T> {
-        if self.is_negative() { -self.clone() } else { self.clone() }
+        if self.is_negative() {
+            -self.clone()
+        } else {
+            self.clone()
+        }
     }
 
     #[inline]
     fn abs_sub(&self, other: &Ratio<T>) -> Ratio<T> {
-        if *self <= *other { Zero::zero() } else { self - other }
+        if *self <= *other {
+            Zero::zero()
+        } else {
+            self - other
+        }
     }
 
     #[inline]
@@ -437,18 +457,22 @@ impl<T: Clone + Integer + PartialOrd + Signed> Signed for Ratio<T> {
         } else if self.is_zero() {
             Zero::zero()
         } else {
-            - ::one::<Ratio<T>>()
+            -::one::<Ratio<T>>()
         }
     }
 
     #[inline]
-    fn is_positive(&self) -> bool { *self > Zero::zero() }
+    fn is_positive(&self) -> bool {
+        *self > Zero::zero()
+    }
 
     #[inline]
-    fn is_negative(&self) -> bool { *self < Zero::zero() }
+    fn is_negative(&self) -> bool {
+        *self < Zero::zero()
+    }
 }
 
-/* String conversions */
+// String conversions
 impl<T> fmt::Display for Ratio<T> where
     T: fmt::Display + Eq + One
 {
@@ -490,5 +514,7 @@ impl fmt::Display for ParseRatioError {
 }
 
 impl Error for ParseRatioError {
-    fn description(&self) -> &str { "failed to parse bigint/biguint" }
+    fn description(&self) -> &str {
+        "failed to parse bigint/biguint"
+    }
 }

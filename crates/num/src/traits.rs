@@ -46,8 +46,13 @@ macro_rules! int_trait_impl {
 // FIXME: Temporary replacements for unstable ::redox::num::ParseFloatError and
 // ::redox::num::FloatErrorKind. These can be removed once the std float implementation of
 // from_str_radix stabilises.
-pub enum FloatErrorKind { Empty, Invalid }
-pub struct ParseFloatError { pub kind: FloatErrorKind }
+pub enum FloatErrorKind {
+    Empty,
+    Invalid,
+}
+pub struct ParseFloatError {
+    pub kind: FloatErrorKind,
+}
 
 // FIXME: This should be removed and replaced with the std implementation of from_str_radix once
 // it is stabilised.
@@ -513,7 +518,7 @@ impl<T: CheckedAdd + CheckedSub + Zero + PartialOrd + Bounded> Saturating for T 
                 Bounded::max_value()
             } else {
                 Bounded::min_value()
-            }
+            },
         }
     }
 
@@ -525,7 +530,7 @@ impl<T: CheckedAdd + CheckedSub + Zero + PartialOrd + Bounded> Saturating for T 
                 Bounded::min_value()
             } else {
                 Bounded::max_value()
-            }
+            },
         }
     }
 }
@@ -1298,7 +1303,7 @@ impl_from_primitive! { f64, to_f64 }
 /// ```
 ///
 #[inline]
-pub fn cast<T: NumCast,U: NumCast>(n: T) -> Option<U> {
+pub fn cast<T: NumCast, U: NumCast>(n: T) -> Option<U> {
     NumCast::from(n)
 }
 
@@ -2420,7 +2425,11 @@ macro_rules! float_impl {
 
 fn integer_decode_f32(f: f32) -> (u64, i16, i8) {
     let bits: u32 = unsafe { mem::transmute(f) };
-    let sign: i8 = if bits >> 31 == 0 { 1 } else { -1 };
+    let sign: i8 = if bits >> 31 == 0 {
+        1
+    } else {
+        -1
+    };
     let mut exponent: i16 = ((bits >> 23) & 0xff) as i16;
     let mantissa = if exponent == 0 {
         (bits & 0x7fffff) << 1
@@ -2434,7 +2443,11 @@ fn integer_decode_f32(f: f32) -> (u64, i16, i8) {
 
 fn integer_decode_f64(f: f64) -> (u64, i16, i8) {
     let bits: u64 = unsafe { mem::transmute(f) };
-    let sign: i8 = if bits >> 63 == 0 { 1 } else { -1 };
+    let sign: i8 = if bits >> 63 == 0 {
+        1
+    } else {
+        -1
+    };
     let mut exponent: i16 = ((bits >> 52) & 0x7ff) as i16;
     let mantissa = if exponent == 0 {
         (bits & 0xfffffffffffff) << 1

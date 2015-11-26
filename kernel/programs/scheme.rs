@@ -32,7 +32,7 @@ pub enum Msg {
     Seek(usize, isize, isize),
     Sync(usize),
     Truncate(usize, usize),
-    Event(*const Event)
+    Event(*const Event),
 }
 
 pub struct Response {
@@ -46,7 +46,7 @@ impl Response {
         box Response {
             msg: msg,
             result: AtomicUsize::new(0),
-            ready: AtomicBool::new(false)
+            ready: AtomicBool::new(false),
         }
     }
 
@@ -56,7 +56,7 @@ impl Response {
     }
 
     pub fn get(&self) -> usize {
-        while ! self.ready.load(Ordering::SeqCst) {
+        while !self.ready.load(Ordering::SeqCst) {
             unsafe { context_switch(false) };
         }
 
@@ -65,8 +65,8 @@ impl Response {
 }
 
 impl Drop for Response {
-    fn drop(&mut self){
-        while ! self.ready.load(Ordering::SeqCst) {
+    fn drop(&mut self) {
+        while !self.ready.load(Ordering::SeqCst) {
             unsafe { context_switch(false) };
         }
     }
@@ -77,7 +77,7 @@ pub struct SchemeResource {
     /// Pointer to parent
     pub parent: *mut SchemeItem,
     /// File handle
-    pub handle: usize
+    pub handle: usize,
 }
 
 impl SchemeResource {
@@ -120,7 +120,7 @@ impl Resource for SchemeResource {
         unsafe {
             let reenable = start_no_ints();
             if let Some(context) = Context::current() {
-                if let Some(translated) = context.translate(ptr as usize){
+                if let Some(translated) = context.translate(ptr as usize) {
                     ptr = translated as *mut u8;
                 }
             }
@@ -141,7 +141,7 @@ impl Resource for SchemeResource {
         unsafe {
             let reenable = start_no_ints();
             if let Some(context) = Context::current() {
-                if let Some(translated) = context.translate(ptr as usize){
+                if let Some(translated) = context.translate(ptr as usize) {
                     ptr = translated as *const u8;
                 }
             }
@@ -247,7 +247,7 @@ impl SchemeItem {
         };
 
         for part in url.reference().rsplit('/') {
-            if ! part.is_empty() {
+            if !part.is_empty() {
                 scheme_item.scheme = part.to_string();
                 break;
             }
@@ -281,15 +281,19 @@ impl SchemeItem {
 
                     if physical_address > 0 {
                         // Copy progbits
-                        ::memcpy(physical_address as *mut u8, (executable.data + segment.off as usize) as *const u8, segment.file_len as usize);
+                        ::memcpy(physical_address as *mut u8,
+                                 (executable.data + segment.off as usize) as *const u8,
+                                 segment.file_len as usize);
                         // Zero bss
-                        ::memset((physical_address + segment.file_len as usize) as *mut u8, 0, segment.mem_len as usize - segment.file_len as usize);
+                        ::memset((physical_address + segment.file_len as usize) as *mut u8,
+                                 0,
+                                 segment.mem_len as usize - segment.file_len as usize);
 
                         memory.push(ContextMemory {
                             physical_address: physical_address,
                             virtual_address: virtual_address,
                             virtual_size: virtual_size,
-                            writeable: segment.flags & 2 == 2
+                            writeable: segment.flags & 2 == 2,
                         });
                     }
                 }
@@ -370,7 +374,7 @@ impl SchemeItem {
         response.get()
     }
 
-    //TODO: More advanced check
+    // TODO: More advanced check
     pub fn valid(&self, call: usize) -> bool {
         call > 0
     }
@@ -417,28 +421,34 @@ impl SchemeItem {
                     },
                     Msg::Path(fd, ptr, len) => if self.valid(self._fpath) {
                         let fn_ptr: *const usize = &self._fpath;
-                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd, ptr, len)
+                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
+                                                                                            ptr,
+                                                                                            len)
                     } else {
                         usize::MAX
                     },
                     Msg::Read(fd, ptr, len) => if self.valid(self._read) {
                         let fn_ptr: *const usize = &self._read;
-                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd, ptr, len)
+                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
+                                                                                            ptr,
+                                                                                            len)
                     } else {
                         usize::MAX
                     },
-                    Msg::Write(fd, ptr, len) => if self.valid(self._write) {
-                        let fn_ptr: *const usize = &self._write;
-                        (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(fd, ptr, len)
-                    } else {
-                        usize::MAX
-                    },
-                    Msg::Seek(fd, offset, whence) => if self.valid(self._lseek) {
-                        let fn_ptr: *const usize = &self._lseek;
-                        (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(fd, offset, whence)
-                    } else {
-                        usize::MAX
-                    },
+                    Msg::Write(fd, ptr, len) =>
+                        if self.valid(self._write) {
+                            let fn_ptr: *const usize = &self._write;
+                            (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(fd, ptr, len)
+                        } else {
+                            usize::MAX
+                        },
+                    Msg::Seek(fd, offset, whence) =>
+                        if self.valid(self._lseek) {
+                            let fn_ptr: *const usize = &self._lseek;
+                            (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(fd, offset, whence)
+                        } else {
+                            usize::MAX
+                        },
                     Msg::Sync(fd) => if self.valid(self._fsync) {
                         let fn_ptr: *const usize = &self._fsync;
                         (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
@@ -456,11 +466,11 @@ impl SchemeItem {
                         (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
                     } else {
                         usize::MAX
-                    }
+                    },
                 };
 
                 (*response_ptr).set(ret);
-            }else{
+            } else {
                 context_switch(false);
             }
         }

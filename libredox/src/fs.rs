@@ -22,9 +22,7 @@ impl File {
             if fd == usize::MAX {
                 None
             } else {
-                Some(File {
-                    fd: fd
-                })
+                Some(File { fd: fd })
             }
         }
     }
@@ -32,27 +30,25 @@ impl File {
     /// Create a new file using a path
     pub fn create(path: &str) -> Option<File> {
         unsafe {
-            let fd = sys_open((path.to_string() + "\0").as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0);
+            let fd = sys_open((path.to_string() + "\0").as_ptr(),
+                              O_CREAT | O_RDWR | O_TRUNC,
+                              0);
             if fd == usize::MAX {
                 None
             } else {
-                Some(File {
-                    fd: fd
-                })
+                Some(File { fd: fd })
             }
         }
     }
 
     /// Duplicate the file
     pub fn dup(&self) -> Option<File> {
-        unsafe{
+        unsafe {
             let new_fd = sys_dup(self.fd);
             if new_fd == usize::MAX {
                 None
             } else {
-                Some(File {
-                    fd: new_fd
-                })
+                Some(File { fd: new_fd })
             }
         }
     }
@@ -133,7 +129,7 @@ impl Drop for File {
 }
 
 pub struct DirEntry {
-    path: String
+    path: String,
 }
 
 impl DirEntry {
@@ -149,9 +145,7 @@ impl DirEntry {
             if dir == usize::MAX {
                 None
             } else {
-                Some(DirEntry {
-                    path: path.to_string()
-                })
+                Some(DirEntry { path: path.to_string() })
             }
         }
     }
@@ -159,7 +153,7 @@ impl DirEntry {
 }
 
 pub struct ReadDir {
-    file: File
+    file: File,
 }
 
 impl Iterator for ReadDir {
@@ -174,18 +168,16 @@ impl Iterator for ReadDir {
                     if buf[0] == 10 {
                         break;
                     } else {
-                        path.push_str(unsafe { str::from_utf8_unchecked(&buf[.. count]) });
+                        path.push_str(unsafe { str::from_utf8_unchecked(&buf[..count]) });
                     }
-                },
-                None => break
+                }
+                None => break,
             }
         }
         if path.is_empty() {
             None
-        }else {
-            Some(DirEntry {
-                path: path
-            })
+        } else {
+            Some(DirEntry { path: path })
         }
     }
 }
@@ -198,9 +190,7 @@ pub fn read_dir(path: &str) -> Option<ReadDir> {
     };
 
     if let Some(file) = file_option {
-        Some(ReadDir{
-            file: file
-        })
+        Some(ReadDir { file: file })
     } else {
         None
     }

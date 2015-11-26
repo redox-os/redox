@@ -17,14 +17,18 @@ fn test() {
     assert!(PermissionUnit::from_str("rw=hey").read());
     assert!(!PermissionUnit::from_str("r=hey").write());
     assert!(PermissionUnit::from_str("r=hey").read_foc());
-    assert!(PermissionUnit::from_str("r=file:home/*").applies(&PermissionUnit::from_str("R=file:home/lal")));
+    assert!(PermissionUnit::from_str("r=file:home/*")
+                .applies(&PermissionUnit::from_str("R=file:home/lal")));
     assert!(PermissionUnit::from_str("R=file:home/lal").read_foc);
     assert!(PermissionUnit::from_str("r=file:home/lal").read_foc());
     assert!(!PermissionUnit::from_str("RW=http:*").read());
     // Test permissions
-    assert!(Permission::from_str("rw=file:home/*-rw=file:veryimportant").test(PermissionUnit::from_str("rw=file:home/lal")));
-    assert!(Permission::from_str("rw=file:home/*-rw=file:veryimportant").test(PermissionUnit::from_str("rw=file:home/veryimportant")));
-    assert!(Permission::from_str("rw=i\\+can\\+do\\+like\\+this").test(PermissionUnit::from_str("rw=file:i+can+do+like+this")));
+    assert!(Permission::from_str("rw=file:home/*-rw=file:veryimportant")
+                .test(PermissionUnit::from_str("rw=file:home/lal")));
+    assert!(Permission::from_str("rw=file:home/*-rw=file:veryimportant")
+                .test(PermissionUnit::from_str("rw=file:home/veryimportant")));
+    assert!(Permission::from_str("rw=i\\+can\\+do\\+like\\+this")
+                .test(PermissionUnit::from_str("rw=file:i+can+do+like+this")));
 
     // assert!(!Permission::from_str("RW=http:*").test(PermissionUnit::from_str("rw=http://google.com")));
     // TODO: Failes when using uppercase RW

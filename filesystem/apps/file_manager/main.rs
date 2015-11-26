@@ -17,7 +17,10 @@ struct FileType {
 
 impl FileType {
     fn new(desc: &'static str, icon: &str) -> FileType {
-        FileType { description: desc, icon: load_icon(icon) }
+        FileType {
+            description: desc,
+            icon: load_icon(icon),
+        }
     }
 
 }
@@ -27,48 +30,33 @@ struct FileTypesInfo {
 }
 
 impl FileTypesInfo {
-    pub fn new () -> FileTypesInfo {
+    pub fn new() -> FileTypesInfo {
         let mut file_types = BTreeMap::<&'static str, FileType>::new();
-        file_types.insert("/",
-                          FileType::new("Folder", "inode-directory"));
-        file_types.insert("wav",
-                          FileType::new("WAV audio", "audio-x-wav"));
+        file_types.insert("/", FileType::new("Folder", "inode-directory"));
+        file_types.insert("wav", FileType::new("WAV audio", "audio-x-wav"));
         file_types.insert("bin",
                           FileType::new("Executable", "application-x-executable"));
-        file_types.insert("bmp",
-                          FileType::new("Bitmap Image", "image-x-generic"));
-        file_types.insert("rs",
-                          FileType::new("Rust source code", "text-x-makefile"));
+        file_types.insert("bmp", FileType::new("Bitmap Image", "image-x-generic"));
+        file_types.insert("rs", FileType::new("Rust source code", "text-x-makefile"));
         file_types.insert("crate",
                           FileType::new("Rust crate", "application-x-archive"));
         file_types.insert("rlib",
                           FileType::new("Static Rust library", "application-x-object"));
-        file_types.insert("asm",
-                          FileType::new("Assembly source", "text-x-makefile"));
+        file_types.insert("asm", FileType::new("Assembly source", "text-x-makefile"));
         file_types.insert("list",
                           FileType::new("Disassembly source", "text-x-makefile"));
-        file_types.insert("c",
-                          FileType::new("C source code", "text-x-csrc"));
-        file_types.insert("cpp",
-                          FileType::new("C++ source code", "text-x-c++src"));
-        file_types.insert("h",
-                          FileType::new("C header", "text-x-chdr"));
-        file_types.insert("sh",
-                          FileType::new("Shell script", "text-x-script"));
-        file_types.insert("lua",
-                          FileType::new("Lua script", "text-x-script"));
+        file_types.insert("c", FileType::new("C source code", "text-x-csrc"));
+        file_types.insert("cpp", FileType::new("C++ source code", "text-x-c++src"));
+        file_types.insert("h", FileType::new("C header", "text-x-chdr"));
+        file_types.insert("sh", FileType::new("Shell script", "text-x-script"));
+        file_types.insert("lua", FileType::new("Lua script", "text-x-script"));
         file_types.insert("txt",
                           FileType::new("Plain text document", "text-x-generic"));
-        file_types.insert("md",
-                          FileType::new("Markdown document", "text-x-generic"));
-        file_types.insert("toml",
-                          FileType::new("TOML document", "text-x-generic"));
-        file_types.insert("json",
-                          FileType::new("JSON document", "text-x-generic"));
-        file_types.insert("REDOX",
-                          FileType::new("Redox package", "text-x-generic"));
-        file_types.insert("",
-                          FileType::new("Unknown file", "unknown"));
+        file_types.insert("md", FileType::new("Markdown document", "text-x-generic"));
+        file_types.insert("toml", FileType::new("TOML document", "text-x-generic"));
+        file_types.insert("json", FileType::new("JSON document", "text-x-generic"));
+        file_types.insert("REDOX", FileType::new("Redox package", "text-x-generic"));
+        file_types.insert("", FileType::new("Unknown file", "unknown"));
         FileTypesInfo { file_types: file_types }
     }
 
@@ -138,7 +126,7 @@ impl FileManager {
                 right_button: false,
             },
             click_time: Duration::new(0, 0),
-            window: Window::new(-1,-1,0,0,"").unwrap(),
+            window: Window::new(-1, -1, 0, 0, "").unwrap(),
         }
     }
 
@@ -169,15 +157,15 @@ impl FileManager {
         for (file_name, file_size) in self.files.iter().zip(self.file_sizes.iter()) {
             if i == self.selected {
                 let width = self.window.width();
-                self.window.rect(0, 32 * row as isize, width, 32, Color::rgba(224, 224, 224, 255));
+                self.window.rect(0,
+                                 32 * row as isize,
+                                 width,
+                                 32,
+                                 Color::rgba(224, 224, 224, 255));
             }
 
             let icon = self.file_types_info.icon_for(&file_name);
-            self.window.image(0,
-                              32 * row as isize,
-                              icon.width(),
-                              icon.height(),
-                              &icon);
+            self.window.image(0, 32 * row as isize, icon.width(), icon.height(), &icon);
 
             let mut col = 0;
             for c in file_name.chars() {
@@ -189,9 +177,9 @@ impl FileManager {
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
                         self.window.char(8 * col as isize + 40,
-                                    32 * row as isize + 8,
-                                    c,
-                                    Color::BLACK);
+                                         32 * row as isize + 8,
+                                         c,
+                                         Color::BLACK);
                         col += 1;
                     }
                 }
@@ -212,9 +200,9 @@ impl FileManager {
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
                         self.window.char(8 * col as isize + 40,
-                                    32 * row as isize + 8,
-                                    c,
-                                    Color::BLACK);
+                                         32 * row as isize + 8,
+                                         c,
+                                         Color::BLACK);
                         col += 1;
                     }
                 }
@@ -236,9 +224,9 @@ impl FileManager {
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
                         self.window.char(8 * col as isize + 40,
-                                    32 * row as isize + 8,
-                                    c,
-                                    Color::BLACK);
+                                         32 * row as isize + 8,
+                                         c,
+                                         Color::BLACK);
                         col += 1;
                     }
                 }
@@ -289,30 +277,28 @@ impl FileManager {
             }
             for entry in readdir {
                 self.files.push(entry.path().to_string());
-                self.file_sizes.push(
-                    // When the entry is a folder
-                    if entry.path().ends_with('/') {
-                        FileManager::get_num_entries(&(path.to_string() + entry.path()))
-                    } else {
-                        match File::open(&entry.path()) {
-                            Some(mut file) => match file.seek(SeekFrom::End(0)) {
-                                Some(size) => {
-                                    if size >= 1_000_000_000 {
-                                        format!("{:.1} GB", (size as f64)/1_000_000_000.0)
-                                    } else if size >= 1_000_000 {
-                                        format!("{:.1} MB", (size as f64)/1_000_000.0)
-                                    } else if size >= 1_000 {
-                                        format!("{:.1} KB", (size as f64)/1_000.0)
-                                    } else {
-                                        format!("{:.1} bytes", size)
-                                    }
+                self.file_sizes.push(// When the entry is a folder
+                                     if entry.path().ends_with('/') {
+                    FileManager::get_num_entries(&(path.to_string() + entry.path()))
+                } else {
+                    match File::open(&entry.path()) {
+                        Some(mut file) => match file.seek(SeekFrom::End(0)) {
+                            Some(size) => {
+                                if size >= 1_000_000_000 {
+                                    format!("{:.1} GB", (size as f64) / 1_000_000_000.0)
+                                } else if size >= 1_000_000 {
+                                    format!("{:.1} MB", (size as f64) / 1_000_000.0)
+                                } else if size >= 1_000 {
+                                    format!("{:.1} KB", (size as f64) / 1_000.0)
+                                } else {
+                                    format!("{:.1} bytes", size)
                                 }
-                                None => "Failed to seek".to_string()
-                            },
-                            None => "Failed to open".to_string()
-                        }
+                            }
+                            None => "Failed to seek".to_string(),
+                        },
+                        None => "Failed to open".to_string(),
                     }
-                );
+                });
                 // Unwrapping the last file size will not panic since it has
                 // been at least pushed once in the vector
                 let description = self.file_types_info.description_for(entry.path());
@@ -331,7 +317,8 @@ impl FileManager {
                                   self.window.y(),
                                   width.iter().sum(),
                                   height,
-                                  &path).unwrap();
+                                  &path)
+                          .unwrap();
         self.draw_content();
     }
 
@@ -366,7 +353,7 @@ impl FileManager {
                                                 } else {
                                                     command = Some(FileManagerCommand::Execute(file.clone()));
                                                 }
-                                            },
+                                            }
                                             None => (),
                                         }
                                     }
@@ -406,7 +393,8 @@ impl FileManager {
                             } else if c == '\t' {
                                 col += 8 - col % 8;
                             } else {
-                                if col < self.window.width() / 8 && row < self.window.height() / 32 {
+                                if col < self.window.width() / 8 &&
+                                   row < self.window.height() / 32 {
                                     col += 1;
                                 }
                             }
@@ -416,15 +404,17 @@ impl FileManager {
                             }
                         }
                         row += 1;
-                        i += 1; }
+                        i += 1;
+                    }
 
-                    //Check for double click
+                    // Check for double click
                     if mouse_event.left_button {
                         let click_time = Duration::realtime();
 
-                        if click_time - self.click_time < Duration::new(0, 500 * time::NANOS_PER_MILLI)
-                            && self.last_mouse_event.x == mouse_event.x
-                            && self.last_mouse_event.y == mouse_event.y {
+                        if click_time - self.click_time <
+                           Duration::new(0, 500 * time::NANOS_PER_MILLI) &&
+                           self.last_mouse_event.x == mouse_event.x &&
+                           self.last_mouse_event.y == mouse_event.y {
                             if self.selected >= 0 && self.selected < self.files.len() as isize {
                                 if let Some(file) = self.files.get(self.selected as usize) {
                                     if file.ends_with('/') {
@@ -467,11 +457,11 @@ impl FileManager {
                             current_path = current_path + &dir;
                         }
                         self.set_path(&current_path);
-                    },
+                    }
                     FileManagerCommand::Execute(cmd) => {
-                        //TODO: What is the best way to request a launch?
+                        // TODO: What is the best way to request a launch?
                         File::open(&("orbital://launch/".to_string() + &current_path + &cmd));
-                    } ,
+                    }
                     FileManagerCommand::Redraw => (),
                     FileManagerCommand::Quit => break,
                 };

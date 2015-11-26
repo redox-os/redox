@@ -69,7 +69,7 @@ impl<'mutex, T: ?Sized> DerefMut for MutexGuard<'mutex, T> {
 impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     fn drop(&mut self) {
         if !self.lock.compare_and_swap(true, false, Ordering::SeqCst) {
-            //Mutex was already unlocked!
+            // Mutex was already unlocked!
         }
     }
 }

@@ -27,7 +27,7 @@ impl Resource {
     pub fn dup(&self) -> Option<Box<Self>> {
         Some(box Resource {
             console_window: self.console_window.clone(),
-            line_end_toggle: false
+            line_end_toggle: false,
         })
     }
 
@@ -56,14 +56,15 @@ impl Resource {
                     }
 
                     Some(i)
-                },
-                None => None
+                }
+                None => None,
             }
         }
     }
 
     pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) }, Color::rgba(224, 224, 224, 255));
+        self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) },
+                               Color::rgba(224, 224, 224, 255));
         self.sync();
 
         Some(buf.len())
@@ -91,7 +92,7 @@ impl Scheme {
 
         Some(box Resource {
             console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(-1, -1, 640, 480, title))),
-            line_end_toggle: false
+            line_end_toggle: false,
         })
     }
 }

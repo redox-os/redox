@@ -11,9 +11,18 @@ use redox::to_num::*;
 use redox::hashmap::HashMap;
 use redox::process;
 
-/* Magic { */
+// Magic Macros {
 static mut application: *mut Application<'static> = 0 as *mut Application;
-/* } Magic */
+
+/// Execute a command
+macro_rules! exec {
+    ($cmd:expr) => ({
+        unsafe {
+            (*application).on_command(&$cmd.to_string());
+        }
+    })
+}
+// } Magic Macros
 
 /// Structure which represents a Terminal's command.
 /// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
@@ -71,7 +80,7 @@ impl<'a> Command<'a> {
                             println!("Bad path: {}", path);
                         }
                     }
-                    None => println!("No path given")
+                    None => println!("No path given"),
                 }
             }),
         });
@@ -81,8 +90,8 @@ impl<'a> Command<'a> {
             help: "To display some text in the output\n    echo Hello world!",
             main: Box::new(|args: &Vec<String>| {
                 let echo = args.iter()
-                    .skip(1)
-                    .fold(String::new(), |string, arg| string + " " + arg);
+                               .skip(1)
+                               .fold(String::new(), |string, arg| string + " " + arg);
                 println!("{}", echo.trim());
             }),
         });
@@ -167,7 +176,7 @@ impl<'a> Command<'a> {
                     Some(dir_name) => if DirEntry::create(dir_name).is_none() {
                         println!("Failed to create {}", dir_name);
                     },
-                    None => println!("No name provided")
+                    None => println!("No name provided"),
                 }
             }),
         });
@@ -259,9 +268,9 @@ impl<'a> Command<'a> {
                     println!("URL: {:?}", file.path());
 
                     let string: String = args.iter()
-                        .skip(2)
-                        .fold(String::new(), |s, arg| s + " " + arg)
-                        + "\r\n\r\n";
+                                             .skip(2)
+                                             .fold(String::new(), |s, arg| s + " " + arg) +
+                                         "\r\n\r\n";
 
                     match file.write(string.trim_left().as_bytes()) {
                         Some(size) => println!("Wrote {} bytes", size),
@@ -288,7 +297,7 @@ impl<'a> Command<'a> {
                     Some(file_name) => if File::create(file_name).is_none() {
                         println!("Failed to create: {}", file_name);
                     },
-                    None => println!("No name provided")
+                    None => println!("No name provided"),
                 }
             }),
         });
@@ -322,7 +331,8 @@ impl<'a> Command<'a> {
 
         commands.push(Command {
             name: "wget",
-            help: "To make some requests at a given host, using TCP protocol\n    wget <host> <request>",
+            help: "To make some requests at a given host, using TCP protocol\n    wget <host> \
+                   <request>",
             main: Box::new(|args: &Vec<String>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
@@ -345,7 +355,7 @@ impl<'a> Command<'a> {
             }),
         });
 
-        let mut command_helper : HashMap<String, String> = HashMap::new();
+        let mut command_helper: HashMap<String, String> = HashMap::new();
 
         for c in commands.iter() {
             command_helper.insert(c.name.clone().to_string(), c.help.clone().to_string());
@@ -359,20 +369,18 @@ impl<'a> Command<'a> {
                     if command_helper.contains_key(&command) {
                         match command_helper.get(&command) {
                             Some(help) => println!("{}", help),
-                            None => println!("Command helper not found [run 'help']...")
+                            None => println!("Command helper not found [run 'help']..."),
                         }
-                    }
-                    else {
+                    } else {
                         println!("Command helper not found [run 'help']...");
                     }
-                }
-                else {
+                } else {
                     println!("Please to specify a command!");
                 }
             }),
         });
 
-        let command_list = commands.iter().fold(String::new(), |l , c| l + " " + c.name);
+        let command_list = commands.iter().fold(String::new(), |l, c| l + " " + c.name);
 
         commands.push(Command {
             name: "help",
@@ -380,7 +388,7 @@ impl<'a> Command<'a> {
             main: Box::new(move |_: &Vec<String>| {
                 println!("Commands:{}", command_list);
             }),
-         });
+        });
 
         commands
     }
@@ -414,12 +422,12 @@ impl<'a> Application<'a> {
     }
 
     fn on_command(&mut self, command_string: &str) {
-        //Comment
+        // Comment
         if command_string.starts_with('#') {
             return;
         }
 
-        //Show variables
+        // Show variables
         if command_string == "$" {
             for variable in self.variables.iter() {
                 println!("{}={}", variable.name, variable.value);
@@ -427,12 +435,12 @@ impl<'a> Application<'a> {
             return;
         }
 
-        //Explode into arguments, replace variables
+        // Explode into arguments, replace variables
         let mut args: Vec<String> = Vec::<String>::new();
         for arg in command_string.split(' ') {
             if !arg.is_empty() {
                 if arg.starts_with('$') {
-                    let name = arg[1 .. arg.len()].to_string();
+                    let name = arg[1..arg.len()].to_string();
                     for variable in self.variables.iter() {
                         if variable.name == name {
                             args.push(variable.value.clone());
@@ -445,7 +453,7 @@ impl<'a> Application<'a> {
             }
         }
 
-        //Execute commands
+        // Execute commands
         if let Some(cmd) = args.get(0) {
             if cmd == "if" {
                 let mut value = false;
@@ -526,10 +534,10 @@ impl<'a> Application<'a> {
                 }
             }
 
-            //Set variables
+            // Set variables
             if let Some(i) = cmd.find('=') {
-                let name = cmd[0 .. i].trim();
-                let mut value = cmd[i + 1 .. cmd.len()].trim().to_string();
+                let name = cmd[0..i].trim();
+                let mut value = cmd[i + 1..cmd.len()].trim().to_string();
 
                 for i in 1..args.len() {
                     if let Some(arg) = args.get(i) {
@@ -541,7 +549,7 @@ impl<'a> Application<'a> {
                 return;
             }
 
-            //Commands
+            // Commands
             for command in self.commands.iter() {
                 if &command.name == cmd {
                     (*command.main)(&args);
@@ -554,7 +562,7 @@ impl<'a> Application<'a> {
     }
 
 
-    pub fn set_var(&mut self, name: &str, value: &str){
+    pub fn set_var(&mut self, name: &str, value: &str) {
         if name.is_empty() {
             return;
         }

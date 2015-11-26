@@ -68,13 +68,13 @@ pub use rational::BigRational;
 pub use complex::Complex;
 pub use integer::Integer;
 pub use iter::{range, range_inclusive, range_step, range_step_inclusive};
-pub use traits::{Num, Zero, One, Signed, Unsigned, Bounded,
-                 Saturating, CheckedAdd, CheckedSub, CheckedMul, CheckedDiv,
-                 PrimInt, Float, ToPrimitive, FromPrimitive, NumCast, cast};
+pub use traits::{Num, Zero, One, Signed, Unsigned, Bounded, Saturating, CheckedAdd, CheckedSub,
+                 CheckedMul, CheckedDiv, PrimInt, Float, ToPrimitive, FromPrimitive, NumCast, cast};
 
-#[cfg(test)] use redox::hash;
+#[cfg(test)]
+use redox::hash;
 
-use redox::ops::{Mul};
+use redox::ops::Mul;
 
 #[cfg(feature = "bigint")]
 pub mod bigint;
@@ -86,10 +86,16 @@ pub mod traits;
 pub mod rational;
 
 /// Returns the additive identity, `0`.
-#[inline(always)] pub fn zero<T: Zero>() -> T { Zero::zero() }
+#[inline(always)]
+pub fn zero<T: Zero>() -> T {
+    Zero::zero()
+}
 
 /// Returns the multiplicative identity, `1`.
-#[inline(always)] pub fn one<T: One>() -> T { One::one() }
+#[inline(always)]
+pub fn one<T: One>() -> T {
+    One::one()
+}
 
 /// Computes the absolute value.
 ///
@@ -123,7 +129,10 @@ pub fn abs_sub<T: Signed>(x: T, y: T) -> T {
 /// * `0` if the number is zero
 /// * `1` if the number is positive
 /// * `-1` if the number is negative
-#[inline(always)] pub fn signum<T: Signed>(value: T) -> T { value.signum() }
+#[inline(always)]
+pub fn signum<T: Signed>(value: T) -> T {
+    value.signum()
+}
 
 /// Raises a value to the power of exp, using exponentiation by squaring.
 ///
@@ -137,8 +146,9 @@ pub fn abs_sub<T: Signed>(x: T, y: T) -> T {
 /// ```
 #[inline]
 pub fn pow<T: Clone + One + Mul<T, Output = T>>(mut base: T, mut exp: usize) -> T {
-    if exp == 1 { base }
-    else {
+    if exp == 1 {
+        base
+    } else {
         let mut acc = one::<T>();
         while exp > 0 {
             if (exp & 1) == 1 {

@@ -20,22 +20,19 @@ impl DataPtr {
             let len = b[9..16].iter().fold(0, |x, &i| x << 8 | i as u64);
 
             match data_type {
-                102 => { // File
-                    Some(DataPtr::File(
-                        FilePtr {
-                            pos: pos,
-                            len: len,
-                        }
-                    ))
-                },
+                102 => {
+                    // File
+                    Some(DataPtr::File(FilePtr {
+                        pos: pos,
+                        len: len,
+                    }))
+                }
                 100 => {
-                    Some(DataPtr::Dir(
-                        DirPtr {
-                            pos: pos,
-                            len: len,
-                        }
-                    ))
-                },
+                    Some(DataPtr::Dir(DirPtr {
+                        pos: pos,
+                        len: len,
+                    }))
+                }
                 _ => None,
             }
         }

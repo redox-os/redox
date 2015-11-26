@@ -14,11 +14,7 @@ pub fn main() {
         file.read_to_end(&mut vec);
     }
 
-    let mut window = Window::new(-1,
-                                 -1,
-                                 320,
-                                 0,
-                                 &("Player (".to_string() + &url + ")")).unwrap();
+    let mut window = Window::new(-1, -1, 320, 0, &("Player (".to_string() + &url + ")")).unwrap();
     window.sync();
 
     let wav = WavFile::from_data(&vec);
