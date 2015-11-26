@@ -250,13 +250,13 @@ fn decode_nv_value(xdr: &mut xdr::Xdr,
             Ok(NvValue::HrTime(try!(xdr.decode_i64())))
         }
         DataType::NvList => {
-            let nv_list = Box::new(try!(decode_nv_list_embedded(xdr)));
+            let nv_list = try!(decode_nv_list_embedded(xdr));
             Ok(NvValue::NvList(nv_list))
         }
         DataType::NvListArray => {
             let mut v = Vec::with_capacity(num_elements);
             for _ in 0..num_elements {
-                v.push(Box::new(try!(decode_nv_list_embedded(xdr))));
+                v.push(try!(decode_nv_list_embedded(xdr)));
             }
             Ok(NvValue::NvListArray(v))
         }

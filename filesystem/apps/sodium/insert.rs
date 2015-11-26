@@ -41,7 +41,7 @@ impl Editor {
     }
 
     /// Insert text under the current cursor.
-    pub fn insert(&mut self, k: Key, InsertOptions { mode: mode }: InsertOptions) {
+    pub fn insert(&mut self, k: Key, InsertOptions { mode }: InsertOptions) {
         let (mut x, mut y) = self.pos();
         match mode {
             InsertMode::Insert | InsertMode::Append => {

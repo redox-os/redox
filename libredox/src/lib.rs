@@ -18,7 +18,6 @@
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(core_simd)]
-#![feature(core_slice_ext)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -136,41 +135,41 @@ pub mod floating_num;
 // Runtime and platform support
 
     #[macro_use]
-pub mod thread;
+    pub mod thread;
 
-pub mod collections;
-// TODO pub mod dynamic_lib;
-pub mod env;
-// TODO pub mod ffi;
-pub mod fs;
-pub mod io;
-pub mod net;
-// TODO pub mod os;
-// TODO pub mod path;
-// TODO pub mod process;
-pub mod sync;
-pub mod time;
+    pub mod collections;
+    // TODO pub mod dynamic_lib;
+    pub mod env;
+    // TODO pub mod ffi;
+    pub mod fs;
+    pub mod io;
+    pub mod net;
+    // TODO pub mod os;
+    // TODO pub mod path;
+    pub mod process;
+    pub mod sync;
+    pub mod time;
 
-// TODO #[macro_use]
-// TODO #[path = "sys/common/mod.rs"] mod sys_common;
+    //TODO #[macro_use]
+    //TODO #[path = "sys/common/mod.rs"] mod sys_common;
 
-// TODO #[cfg(unix)]
-// TODO #[path = "sys/unix/mod.rs"] mod sys;
-// TODO #[cfg(windows)]
-// TODO #[path = "sys/windows/mod.rs"] mod sys;
+    //TODO #[cfg(unix)]
+    //TODO #[path = "sys/unix/mod.rs"] mod sys;
+    //TODO #[cfg(windows)]
+    //TODO #[path = "sys/windows/mod.rs"] mod sys;
 
-pub mod rt;
-// TODO mod panicking;
-pub use __core::panicking;
+    pub mod rt;
+    //TODO mod panicking;
+    pub use __core::panicking;
 
-pub mod rand_old;
-pub mod hashmap;
+    pub mod rand_old;
+    pub mod hashmap;
 
-// Some external utilities of the standard library rely on randomness (aka
-// rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
-// here. This module is not at all intended for stabilization as-is, however,
-// but it may be stabilized long-term. As a result we're exposing a hidden,
-// unstable module so we can get our build working.
+    // Some external utilities of the standard library rely on randomness (aka
+    // rustc_back::TempDir and tests) and need a way to get at the OS rng we've got
+    // here. This module is not at all intended for stabilization as-is, however,
+    // but it may be stabilized long-term. As a result we're exposing a hidden,
+    // unstable module so we can get our build working.
     #[doc(hidden)]
 // TODO #[unstable(feature = "rand", issue = "0")]
 pub mod rand {

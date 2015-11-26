@@ -2,7 +2,6 @@ use redox::Box;
 use redox::fs::File;
 use redox::io::*;
 use redox::mem;
-use redox::ops::DerefMut;
 use redox::slice;
 use redox::syscall::sys_yield;
 use redox::String;
@@ -104,8 +103,8 @@ impl Window {
     }
 
     /// Set title
-    pub fn set_title(&mut self, title: &str) {
-        // TODO
+    pub fn set_title(&mut self, _: &str) {
+        //TODO
     }
 
     /// Draw a pixel
@@ -176,14 +175,14 @@ impl Window {
     /// Poll for an event
     // TODO: clean this up
     pub fn poll(&mut self) -> Option<Event> {
-        let mut event = box Event::new();
-        let event_ptr: *mut Event = event.deref_mut();
+        let mut event = Event::new();
+        let event_ptr: *mut Event = &mut event;
         loop {
             match self.file.read(&mut unsafe {
                 slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
             }) {
                 Some(0) => unsafe { sys_yield() },
-                Some(_) => return Some(*event),
+                Some(_) => return Some(event),
                 None => return None,
             }
         }
@@ -192,8 +191,9 @@ impl Window {
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.seek(SeekFrom::Start(0));
-        let to_write: &[u8] = unsafe { mem::transmute::<&[u32], &[u8]>(&self.data) };
-        self.file.write(to_write);
+        self.file.write(& unsafe {
+            slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len() * mem::size_of::<u32>())
+        });
         return self.file.sync();
     }
 

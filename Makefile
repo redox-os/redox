@@ -281,12 +281,20 @@ qemu: $(BUILD)/harddrive.bin
 qemu_bare: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net none -vga std -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
+qemu_bare_no_vga: $(BUILD)/harddrive.bin
+	-qemu-system-$(ARCH) -net none -vga none -nographic -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
+
 qemu_no_kvm: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -hda $<
+
+qemu_no_vga: $(BUILD)/harddrive.bin
+	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
+			-soundhw ac97 -vga none -nographic \
+			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_tap: $(BUILD)/harddrive.bin
 	sudo tunctl -t tap_redox -u "${USER}"

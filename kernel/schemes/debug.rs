@@ -2,16 +2,12 @@ use alloc::boxed::Box;
 
 use collections::string::String;
 
-use scheduler::context::{context_switch, context_i, contexts_ptr};
-use scheduler;
+use scheduler::context::context_switch;
 
 use schemes::{KScheme, Resource, Url};
 
-use syscall::handle;
-
 /// A debug resource
 pub struct DebugResource {
-    pub scheme: *mut DebugScheme,
     pub command: String,
     pub line_toggle: bool,
 }
@@ -19,7 +15,6 @@ pub struct DebugResource {
 impl Resource for DebugResource {
     fn dup(&self) -> Option<Box<Resource>> {
         Some(box DebugResource {
-            scheme: self.scheme,
             command: self.command.clone(),
             line_toggle: self.line_toggle,
         })
@@ -37,27 +32,19 @@ impl Resource for DebugResource {
 
         if self.command.is_empty() {
             loop {
-                unsafe {
-                    let reenable = scheduler::start_no_ints();
+                {
+                    let mut console = ::env().console.lock();
 
-                    // Hack!
-                    if (*self.scheme).context >= (*contexts_ptr).len() ||
-                       (*self.scheme).context < context_i {
-                        (*self.scheme).context = context_i;
-                    }
-
-                    if (*self.scheme).context == context_i && (*::console).command.is_some() {
-                        if let Some(ref command) = (*::console).command {
+                    if console.command.is_some() {
+                        if let Some(ref command) = console.command {
                             self.command = command.clone();
                         }
-                        (*::console).command = None;
+                        console.command = None;
                         break;
                     }
-
-                    scheduler::end_no_ints(reenable);
-
-                    context_switch(false);
                 }
+
+                unsafe { context_switch(false) };
             }
         }
 
@@ -76,9 +63,7 @@ impl Resource for DebugResource {
     }
 
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe {
-            handle::do_sys_debug(buf.as_ptr(), buf.len());
-        }
+        ::env().console.lock().write(buf);
         return Some(buf.len());
     }
 
@@ -87,13 +72,11 @@ impl Resource for DebugResource {
     }
 }
 
-pub struct DebugScheme {
-    pub context: usize,
-}
+pub struct DebugScheme;
 
 impl DebugScheme {
     pub fn new() -> Box<Self> {
-        box DebugScheme { context: 0 }
+        box DebugScheme
     }
 }
 
@@ -104,7 +87,6 @@ impl KScheme for DebugScheme {
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
         Some(box DebugResource {
-            scheme: self,
             command: String::new(),
             line_toggle: false,
         })

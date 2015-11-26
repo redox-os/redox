@@ -32,7 +32,7 @@ pub struct Editor {
 
 impl Editor {
     /// Create new default state editor
-    pub fn new() -> Editor {
+    pub fn init() {
 
 
         let window = Window::new(-1, -1, 700, 500, &"Sodium").unwrap();
@@ -62,8 +62,6 @@ impl Editor {
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();
         }
-
-        editor
     }
 
     /// Get a slice of the current line

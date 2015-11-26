@@ -15,6 +15,8 @@ use common::time::{self, Duration};
 use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
 
+use graphics::display::VBEMODEINFO;
+
 use schemes::KScheme;
 
 pub struct Uhci {
@@ -556,16 +558,18 @@ impl Uhci {
                                    let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
                                    let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                   let mouse_x = (x * (*::console).display.width) / 32768;
-                                   let mouse_y = (y * (*::console).display.height) / 32768;
+                                   let mode_info = &*VBEMODEINFO;
+                                   let mouse_x = (x * mode_info.xresolution as usize) / 32768;
+                                   let mouse_y = (y * mode_info.yresolution as usize) / 32768;
 
-                                   MouseEvent {
-                                       x: cmp::max(0, cmp::min((*::console).display.width as isize - 1, mouse_x as isize)),
-                                       y: cmp::max(0, cmp::min((*::console).display.height as isize - 1, mouse_y as isize)),
+                                   let mouse_event = MouseEvent {
+                                       x: cmp::max(0, cmp::min(mode_info.xresolution as isize - 1, mouse_x as isize)),
+                                       y: cmp::max(0, cmp::min(mode_info.yresolution as isize - 1, mouse_y as isize)),
                                        left_button: buttons & 1 == 1,
                                        middle_button: buttons & 4 == 4,
                                        right_button: buttons & 2 == 2,
-                                   }.trigger();
+                                   };
+                                   ::env().events.lock().push_back(mouse_event.to_event());
                                 }
 
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();

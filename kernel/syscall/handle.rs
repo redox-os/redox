@@ -1,10 +1,11 @@
-use collections::string::ToString;
+use alloc::arc::Arc;
+
+use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::ops::Deref;
-use core::{ptr, slice, str, usize};
+use core::{mem, ptr, slice, str, usize};
 
-use common::get_slice::GetSlice;
 use common::memory;
 use common::time::Duration;
 
@@ -13,8 +14,7 @@ use drivers::pio::*;
 use programs::executor::execute;
 
 use scheduler::{self, Regs};
-use scheduler::context::{context_clone, context_exit, context_switch, Context, ContextMemory,
-                         ContextFile};
+use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile, ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -52,23 +52,23 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
 
     let reenable = scheduler::start_no_ints();
 
-    if ::console as usize > 0 {
-        (*::console).write(bytes);
-    }
+    if ::env_ptr as usize > 0 {
+        ::env().console.lock().write(bytes);
+    } else {
+        let serial_status = Pio8::new(0x3F8 + 5);
+        let mut serial_data = Pio8::new(0x3F8);
 
-    let serial_status = Pio8::new(0x3F8 + 5);
-    let mut serial_data = Pio8::new(0x3F8);
-
-    for byte in bytes.iter() {
-        while serial_status.read() & 0x20 == 0 {}
-        serial_data.write(*byte);
-
-        if *byte == 8 {
+        for byte in bytes.iter() {
             while serial_status.read() & 0x20 == 0 {}
-            serial_data.write(0x20);
+            serial_data.write(*byte);
 
-            while serial_status.read() & 0x20 == 0 {}
-            serial_data.write(8);
+            if *byte == 8 {
+                while serial_status.read() & 0x20 == 0 {}
+                serial_data.write(0x20);
+
+                while serial_status.read() & 0x20 == 0 {}
+                serial_data.write(8);
+            }
         }
     }
 
@@ -135,21 +135,25 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
 #[cold]
 #[inline(never)]
 pub unsafe fn do_sys_clone(flags: usize) -> usize {
-    let mut parent_ptr: *const Context = 0 as *const Context;
+    let mut clone_pid = usize::MAX;
+    let mut mem_count = 0;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(parent) = Context::current() {
-        parent_ptr = parent.deref();
+        clone_pid = Context::next_pid();
+        mem_count = Arc::strong_count(&parent.memory);
+
+        let parent_ptr: *const Context = parent.deref();
 
         let mut context_clone_args: Vec<usize> = Vec::new();
+        context_clone_args.push(clone_pid);
         context_clone_args.push(flags);
         context_clone_args.push(parent_ptr as usize);
-        context_clone_args.push(context_exit as usize);
+        context_clone_args.push(0); //Return address, 0 catches bad code
 
-        let contexts = &mut *::scheduler::context::contexts_ptr;
+        let mut contexts = ::env().contexts.lock();
         contexts.push(Context::new(format!("kclone {}", parent.name),
-                                   false,
                                    context_clone as usize,
                                    &context_clone_args));
     }
@@ -160,15 +164,19 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 
     let mut ret = usize::MAX;
 
-    if parent_ptr as usize > 0 {
+    if clone_pid != usize::MAX {
         let reenable = scheduler::start_no_ints();
 
-        if let Some(new) = Context::current() {
-            let new_ptr: *const Context = new.deref();
-            if new_ptr == parent_ptr {
-                ret = 1;
-            } else {
+        if let Some(current) = Context::current() {
+            if current.pid == clone_pid {
                 ret = 0;
+            } else {
+                if flags & CLONE_VFORK == CLONE_VFORK {
+                    while Arc::strong_count(&current.memory) > mem_count {
+                        context_switch(false);
+                    }
+                }
+                ret = clone_pid;
             }
         }
 
@@ -221,15 +229,16 @@ pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if tp as usize > 0 {
+        let env = ::env();
         match clock {
             CLOCK_REALTIME => {
-                (*tp).tv_sec = ::clock_realtime.secs;
-                (*tp).tv_nsec = ::clock_realtime.nanos;
+                (*tp).tv_sec = env.clock_realtime.secs;
+                (*tp).tv_nsec = env.clock_realtime.nanos;
                 ret = 0;
             }
             CLOCK_MONOTONIC => {
-                (*tp).tv_sec = ::clock_monotonic.secs;
-                (*tp).tv_nsec = ::clock_monotonic.nanos;
+                (*tp).tv_sec = env.clock_monotonic.secs;
+                (*tp).tv_nsec = env.clock_monotonic.nanos;
                 ret = 0;
             }
             _ => (),
@@ -265,33 +274,99 @@ pub unsafe fn do_sys_dup(fd: usize) -> usize {
     ret
 }
 
-// TODO: Make sure this does not return (it should be called from a clone)
 pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut ret = usize::MAX;
 
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
-        let path_string = current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
-
-        let path = Url::from_string(path_string.clone());
-        let wd = Url::from_string(path_string.get_slice(None,
-                                                        Some(path_string.rfind('/').unwrap_or(0) +
-                                                             1))
-                                             .to_string());
+        let path = Url::from_string(current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path))));
 
         let mut args_vec = Vec::new();
         for arg in c_array_to_slice(args) {
             args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
         }
 
-        execute(&path, &wd, args_vec);
+        execute(path, args_vec);
         ret = 0;
     }
 
     scheduler::end_no_ints(reenable);
 
     ret
+}
+
+pub unsafe fn do_sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
+    let reenable = scheduler::start_no_ints();
+
+    let mut args_vec = Vec::new();
+    let path_url = if let Some(current) = Context::current() {
+        for arg in c_array_to_slice(args) {
+            args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
+        }
+
+        Url::from_string(current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path))))
+    } else {
+        Url::from_string(String::new())
+    };
+
+    scheduler::end_no_ints(reenable);
+
+    return Context::spawn("kspawn".to_string(), box move || {
+        let wd_c = "file:/\0";
+        do_sys_chdir(wd_c.as_ptr());
+
+        let stdio_c = "debug:\0";
+        do_sys_open(stdio_c.as_ptr(), 0);
+        do_sys_open(stdio_c.as_ptr(), 0);
+        do_sys_open(stdio_c.as_ptr(), 0);
+
+        execute(path_url, args_vec);
+
+        do_sys_exit(127);
+    });
+}
+
+/// Exit context
+///
+/// Unsafe due to interrupt disabling and raw pointers
+pub unsafe fn do_sys_exit(status: usize){
+    let reenable = scheduler::start_no_ints();
+
+    let mut statuses = Vec::new();
+    let (pid, ppid) = if let Some(mut current) = Context::current_mut() {
+        current.exited = true;
+        mem::swap(&mut statuses, &mut current.statuses);
+        (current.pid, current.ppid)
+    } else {
+        (0, 0)
+    };
+
+    let mut contexts = ::env().contexts.lock();
+    for context in contexts.iter_mut() {
+        //Add exit status to parent
+        if context.pid == ppid {
+            context.statuses.push(ContextStatus {
+                pid: pid,
+                status: status
+            });
+            for status in statuses.iter() {
+                context.statuses.push(ContextStatus {
+                    pid: status.pid,
+                    status: status.status
+                });
+            }
+        }
+
+        //Move children to parent
+        if context.ppid == pid {
+            context.ppid = ppid;
+        }
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    context_switch(false);
 }
 
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
@@ -367,6 +442,20 @@ pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
     ret
 }
 
+pub unsafe fn do_sys_getpid() -> usize {
+    let mut ret = usize::MAX;
+
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(current) = Context::current() {
+        ret = current.pid;
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
+}
+
 // TODO: link
 
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
@@ -401,12 +490,10 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_mkdir(path: *const u8, mode: usize) -> usize {
-    let mut ret = usize::MAX;
-
+pub unsafe fn do_sys_mkdir(_: *const u8, _: usize) -> usize {
     // Implement body of do_sys_mkdir
 
-    ret
+    usize::MAX
 }
 
 pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
@@ -434,7 +521,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 
         scheduler::end_no_ints(reenable);
 
-        let resource_option = (*::session_ptr).open(&Url::from_string(path_string), flags);
+        let resource_option = (::env()).open(&Url::from_string(path_string), flags);
 
         scheduler::start_no_ints();
 
@@ -475,10 +562,59 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
+pub unsafe fn do_sys_unlink(_: *const u8) -> usize {
+    // Implement body of do_sys_mkdir
+
+    usize::MAX
+}
+
+pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {
     let mut ret = usize::MAX;
 
-    // Implement body of do_sys_mkdir
+    loop {
+        let reenable = scheduler::start_no_ints();
+
+        if let Some(mut current) = Context::current_mut() {
+            let mut found = false;
+            let mut i = 0;
+            while i < current.statuses.len() {
+                if let Some(current_status) = current.statuses.get(i) {
+                    if pid > 0 && pid as usize == current_status.pid {
+                        //Specific child
+                        found = true;
+                    } else if pid == 0 {
+                        //TODO Any child whose PGID is equal to this process
+                    } else if pid == -1 {
+                        //Any child
+                        found = true;
+                    } else {
+                        //TODO Any child whose PGID is equal to abs(pid)
+                    }
+                }
+                if found {
+                    let current_status = current.statuses.remove(i);
+
+                    ret = current_status.pid;
+                    if status as usize > 0 {
+                        ptr::write(status, current_status.status);
+                    }
+
+                    break;
+                } else {
+                    i += 1;
+                }
+            }
+            if found {
+                break;
+            }
+        } else {
+            break;
+        }
+
+        scheduler::end_no_ints(reenable);
+
+        context_switch(false);
+    }
 
     ret
 }
@@ -599,23 +735,26 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_BRK => regs.ax = do_sys_brk(regs.bx),
         SYS_CHDIR => regs.ax = do_sys_chdir(regs.bx as *const u8),
         SYS_CLONE => regs.ax = do_sys_clone(regs.bx),
-        SYS_CLOSE => regs.ax = do_sys_close(regs.bx as usize),
+        SYS_CLOSE => regs.ax = do_sys_close(regs.bx),
         SYS_CLOCK_GETTIME => regs.ax = do_sys_clock_gettime(regs.bx, regs.cx as *mut TimeSpec),
         SYS_DUP => regs.ax = do_sys_dup(regs.bx),
         SYS_EXECVE => regs.ax = do_sys_execve(regs.bx as *const u8, regs.cx as *const *const u8),
-        SYS_EXIT => context_exit(),
+        SYS_SPAWNVE => regs.ax = do_sys_spawnve(regs.bx as *const u8, regs.cx as *const *const u8),
+        SYS_EXIT => do_sys_exit(regs.bx),
         SYS_FPATH => regs.ax = do_sys_fpath(regs.bx, regs.cx as *mut u8, regs.dx),
         // TODO: fstat
         SYS_FSYNC => regs.ax = do_sys_fsync(regs.bx),
         SYS_FTRUNCATE => regs.ax = do_sys_ftruncate(regs.bx, regs.cx),
+        SYS_GETPID => regs.ax = do_sys_getpid(),
         // TODO: link
-        SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx as usize),
+        SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx),
         SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
         SYS_NANOSLEEP =>
             regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *const u8),
+        SYS_WAITPID => regs.ax = do_sys_waitpid(regs.bx as isize, regs.cx as *mut usize, regs.dx),
         SYS_WRITE => regs.ax = do_sys_write(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_YIELD => context_switch(false),
 

@@ -2,7 +2,7 @@ use redox::Box;
 use redox::{cmp, env};
 use redox::collections::BTreeMap;
 use redox::fs::{self, File};
-use redox::io::{Read, Seek, SeekFrom};
+use redox::io::{Seek, SeekFrom};
 use redox::time::{self, Duration};
 use redox::vec::Vec;
 use redox::string::{String, ToString};
@@ -435,7 +435,7 @@ impl FileManager {
                         command = Some(FileManagerCommand::Redraw);
                     }
                 }
-                EventOption::Quit(quit_event) => command = Some(FileManagerCommand::Quit),
+                EventOption::Quit(_) => command = Some(FileManagerCommand::Quit),
                 _ => (),
             }
         }

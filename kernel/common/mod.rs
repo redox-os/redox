@@ -21,10 +21,10 @@ pub mod paging;
 pub mod parse_path;
 /// A module for parsing IP related string
 pub mod parse_ip;
-/// A module for queues
-pub mod queue;
 /// A module for pseudorandom generator
 pub mod random;
+/// A module for getting pointers and length from slices
+pub mod slice_data;
 /// A module for time
 pub mod time;
 /// String to number

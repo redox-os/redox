@@ -1,8 +1,8 @@
 use redox::{Box, String, Url};
 use redox::{cmp, mem, ptr};
-use redox::fs::File;
 use redox::get_slice::GetSlice;
 use redox::io::*;
+use redox::process::Command;
 use redox::ops::DerefMut;
 use redox::to_num::ToNum;
 
@@ -194,7 +194,9 @@ impl Scheme {
                         }
                     }
                     if accepted {
-                        File::exec(&package.binary, &[&path]);
+                        if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
+                            debugln!("{}: Failed to launch", package.binary);
+                        }
                         break;
                     }
                 }

@@ -18,6 +18,8 @@ use scheduler::{start_no_ints, end_no_ints};
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
 
+use syscall::handle::*;
+
 pub enum Msg {
     Start,
     Stop,
@@ -298,21 +300,29 @@ impl SchemeItem {
             }
         }
 
+        let wd = url.to_string();
         let scheme_item_ptr: *mut SchemeItem = scheme_item.deref_mut();
-        Context::spawn(scheme_item.binary.to_string(),
-                       box move || {
-                           unsafe {
-                               let reenable = start_no_ints();
-                               if let Some(mut context) = Context::current_mut() {
-                                   context.unmap();
-                                   (*context.memory.get()) = memory;
-                                   context.map();
-                               }
-                               end_no_ints(reenable);
+        Context::spawn(scheme_item.binary.to_string(), box move || {
+            unsafe {
+                let wd_c = wd + "\0";
+                do_sys_chdir(wd_c.as_ptr());
 
-                               (*scheme_item_ptr).run()
-                           }
-                       });
+                let stdio_c = "debug:\0";
+                do_sys_open(stdio_c.as_ptr(), 0);
+                do_sys_open(stdio_c.as_ptr(), 0);
+                do_sys_open(stdio_c.as_ptr(), 0);
+
+                let reenable = start_no_ints();
+                if let Some(mut context) = Context::current_mut() {
+                    context.unmap();
+                    (*context.memory.get()) = memory;
+                    context.map();
+                }
+                end_no_ints(reenable);
+
+                (*scheme_item_ptr).run();
+            }
+        });
 
         scheme_item.handle = scheme_item.send(Msg::Start);
 
@@ -461,7 +471,7 @@ impl SchemeItem {
 
                 (*response_ptr).set(ret);
             } else {
-                context_switch(true);
+                context_switch(false);
             }
         }
     }

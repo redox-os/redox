@@ -1,12 +1,12 @@
 use alloc::boxed::Box;
 
 use collections::vec::Vec;
+use collections::vec_deque::VecDeque;
 
 use core::ops::DerefMut;
 
 use scheduler::context::context_switch;
 use common::debug;
-use common::queue::Queue;
 use scheduler;
 
 use schemes::{Resource, ResourceSeek, Url};
@@ -20,8 +20,8 @@ pub trait NetworkScheme {
 pub struct NetworkResource {
     pub nic: *mut NetworkScheme,
     pub ptr: *mut NetworkResource,
-    pub inbound: Queue<Vec<u8>>,
-    pub outbound: Queue<Vec<u8>>,
+    pub inbound: VecDeque<Vec<u8>>,
+    pub outbound: VecDeque<Vec<u8>>,
 }
 
 impl NetworkResource {
@@ -29,8 +29,8 @@ impl NetworkResource {
         let mut ret = box NetworkResource {
             nic: nic,
             ptr: 0 as *mut NetworkResource,
-            inbound: Queue::new(),
-            outbound: Queue::new(),
+            inbound: VecDeque::new(),
+            outbound: VecDeque::new(),
         };
 
         unsafe {
@@ -65,7 +65,7 @@ impl Resource for NetworkResource {
         Url::from_str("network:")
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
         debug::d("TODO: Implement read for RTL8139\n");
         None
     }
@@ -76,7 +76,7 @@ impl Resource for NetworkResource {
                 (*self.nic).sync();
 
                 let reenable = scheduler::start_no_ints();
-                let option = (*self.ptr).inbound.pop();
+                let option = (*self.ptr).inbound.pop_front();
                 scheduler::end_no_ints(reenable);
 
                 if let Some(bytes) = option {
@@ -92,7 +92,7 @@ impl Resource for NetworkResource {
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         unsafe {
             let reenable = scheduler::start_no_ints();
-            (*self.ptr).outbound.push(Vec::from(buf));
+            (*self.ptr).outbound.push_back(Vec::from(buf));
             scheduler::end_no_ints(reenable);
 
             (*self.nic).sync();
