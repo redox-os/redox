@@ -113,34 +113,34 @@ impl Resource {
                             self.acknowledge = segment.header.sequence.get() +
                                                segment.data.len() as u32;
                             let mut tcp = Tcp {
-                                header: TcpHeader {
-                                    src: n16::new(self.host_port),
-                                    dst: n16::new(self.peer_port),
-                                    sequence: n32::new(self.sequence),
-                                    ack_num: n32::new(self.acknowledge),
-                                    flags: n16::new(((mem::size_of::<TcpHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
-                                    window_size: n16::new(65535),
-                                    checksum: Checksum {
-                                        data: 0
-                                    },
-                                    urgent_pointer: n16::new(0)
-                                },
-                                options: Vec::new(),
-                                data: Vec::new()
-                            };
+                                        header: TcpHeader {
+                                            src: n16::new(self.host_port),
+                                            dst: n16::new(self.peer_port),
+                                            sequence: n32::new(self.sequence),
+                                            ack_num: n32::new(self.acknowledge),
+                                            flags: n16::new(((mem::size_of::<TcpHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
+                                            window_size: n16::new(65535),
+                                            checksum: Checksum {
+                                                data: 0
+                                            },
+                                            urgent_pointer: n16::new(0)
+                                        },
+                                        options: Vec::new(),
+                                        data: Vec::new()
+                                    };
 
                             unsafe {
                                 let proto = n16::new(0x06);
                                 let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                 tcp.header.checksum.data = Checksum::compile(
-                                    Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
-                                    Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
-                                    Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
-                                    Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
-                                    Checksum::sum((&tcp.header as *const TcpHeader) as usize, mem::size_of::<TcpHeader>()) +
-                                    Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
-                                    Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
-                                );
+                                            Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                            Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                            Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
+                                            Checksum::sum((&tcp.header as *const TcpHeader) as usize, mem::size_of::<TcpHeader>()) +
+                                            Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
+                                            Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
+                                            );
                             }
 
                             self.ip.write(&tcp.to_bytes());
@@ -206,30 +206,30 @@ impl Resource {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
-                                if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                                    TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
-                                    return Some(size);
+                                    Some(size)
                                 } else {
-                                    return None;
-                                }
+                                    None
+                                };
                             }
                         }
                     }
                     None => return None,
                 }
             },
-            None => return None,
+            None => None,
         }
     }
 
-    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
-        return None;
+    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
+        None
     }
 
     pub fn sync(&mut self) -> bool {
-        return self.ip.sync();
+        self.ip.sync()
     }
 
     /// Etablish client
@@ -279,48 +279,48 @@ impl Resource {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
-                                if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                                    (TCP_SYN | TCP_ACK) {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
 
                                     self.acknowledge += 1;
                                     tcp = Tcp {
-                                        header: TcpHeader {
-                                            src: n16::new(self.host_port),
-                                            dst: n16::new(self.peer_port),
-                                            sequence: n32::new(self.sequence),
-                                            ack_num: n32::new(self.acknowledge),
-                                            flags: n16::new(((mem::size_of::<TcpHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
-                                            window_size: n16::new(65535),
-                                            checksum: Checksum {
-                                                data: 0
-                                            },
-                                            urgent_pointer: n16::new(0)
-                                        },
-                                        options: Vec::new(),
-                                        data: Vec::new()
-                                    };
+                                                header: TcpHeader {
+                                                    src: n16::new(self.host_port),
+                                                    dst: n16::new(self.peer_port),
+                                                    sequence: n32::new(self.sequence),
+                                                    ack_num: n32::new(self.acknowledge),
+                                                    flags: n16::new(((mem::size_of::<TcpHeader>() << 10) & 0xF000) as u16 | TCP_ACK),
+                                                    window_size: n16::new(65535),
+                                                    checksum: Checksum {
+                                                        data: 0
+                                                    },
+                                                    urgent_pointer: n16::new(0)
+                                                },
+                                                options: Vec::new(),
+                                                data: Vec::new()
+                                            };
 
                                     unsafe {
                                         let proto = n16::new(0x06);
                                         let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
                                         tcp.header.checksum.data = Checksum::compile(
-                                            Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
-                                            Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
-                                            Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
-                                            Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
-                                            Checksum::sum((&tcp.header as *const TcpHeader) as usize, mem::size_of::<TcpHeader>()) +
-                                            Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
-                                            Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
-                                        );
+                                                    Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                                    Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
+                                                    Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
+                                                    Checksum::sum((&segment_len as *const n16) as usize, mem::size_of::<n16>()) +
+                                                    Checksum::sum((&tcp.header as *const TcpHeader) as usize, mem::size_of::<TcpHeader>()) +
+                                                    Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
+                                                    Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
+                                                    );
                                     }
 
                                     self.ip.write(&tcp.to_bytes());
 
-                                    return true;
+                                    true
                                 } else {
-                                    return false;
+                                    false
                                 }
                             }
                         }
@@ -328,12 +328,12 @@ impl Resource {
                     None => return false,
                 }
             },
-            None => return false,
+            None => false,
         }
     }
 
     /// Try to establish a server connection
-    pub fn server_establish(&mut self, syn: Tcp) -> bool {
+    pub fn server_establish(&mut self, _: Tcp) -> bool {
         // Send SYN-ACK
         self.acknowledge += 1;
         let mut tcp = Tcp {
@@ -381,13 +381,13 @@ impl Resource {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
-                                if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                                    TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
-                                    return true;
+                                    true
                                 } else {
-                                    return false;
+                                    false
                                 }
                             }
                         }
@@ -395,7 +395,7 @@ impl Resource {
                     None => return false,
                 }
             },
-            None => return false,
+            None => false,
         }
     }
 }

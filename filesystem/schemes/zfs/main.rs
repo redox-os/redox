@@ -1,4 +1,6 @@
-// To use this, please install zfs-fuse
+#![allow(unused_must_use)]
+
+//To use this, please install zfs-fuse
 use redox::*;
 use redox::cmp::{min, max};
 
@@ -435,7 +437,7 @@ impl Scheme {
         box Scheme { zfs: None }
     }
 
-    pub fn open(&mut self, url_str: &str, mode: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
         if self.zfs.is_none() {
             if let Some(file) = File::open("file:///apps/zfs/zfs.img") {
                 write!(io::stdout(), "ZFS Mount {:?}\n", file.path());

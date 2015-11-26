@@ -104,8 +104,8 @@ impl Window {
     }
 
     /// Set title
-    pub fn set_title(&mut self, title: &str) {
-        // TODO
+    pub fn set_title(&mut self, _: &str) {
+        //TODO
     }
 
     /// Draw a pixel

@@ -39,7 +39,7 @@ impl Editor {
         }
     }
 
-    fn save(&mut self, window: &Window) {
+    fn save(&mut self, _: &Window) {
         if self.file.is_none() {
             //
             // let mut save_window = {
@@ -233,7 +233,7 @@ impl Editor {
                     self.draw_content(&mut window);
                 }
             }
-            if let EventOption::Quit(quit_event) = event.to_option() {
+            if let EventOption::Quit(_) = event.to_option() {
                 break;
             }
         }

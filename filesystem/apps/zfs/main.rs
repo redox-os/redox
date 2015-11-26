@@ -21,6 +21,7 @@ pub mod dsl_dir;
 pub mod dvaddr;
 pub mod from_bytes;
 pub mod lzjb;
+pub mod metaslab;
 pub mod nvpair;
 pub mod nvstream;
 pub mod space_map;
@@ -28,6 +29,7 @@ pub mod uberblock;
 pub mod vdev;
 pub mod xdr;
 pub mod zap;
+pub mod zfs;
 pub mod zil_header;
 pub mod zio;
 
@@ -71,7 +73,7 @@ impl ZfsReader {
         data.and_then(|data| T::from_bytes(&data[offset * mem::size_of::<T>()..]))
     }
 
-    pub fn uber(&mut self, uberblocks: &[u8]) -> Result<Uberblock, String> {
+    pub fn uber(&mut self, _: &[u8]) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
             // let ub_len = 2*512;
@@ -114,9 +116,9 @@ pub enum ZfsTraverse {
 pub struct Zfs {
     pub reader: ZfsReader,
     pub uberblock: Uberblock, // The active uberblock
-    pub mos: Box<ObjectSetPhys>,
-    fs_objset: Box<ObjectSetPhys>,
-    master_node: Box<DNodePhys>,
+    pub mos: ObjectSetPhys,
+    fs_objset: ObjectSetPhys,
+    master_node: DNodePhys,
     root: u64,
 }
 
@@ -153,26 +155,26 @@ impl Zfs {
         // let uberblock = try!(zfs_reader.uber(&vdev_label.uberblocks));
         let uberblock = try!(zfs_reader.uber(&[]));
 
-        // let mos_dva = uberblock.rootbp.dvas[0];
-        let mos: Box<ObjectSetPhys> = Box::new(try!(zfs_reader.read_type(&uberblock.rootbp)));
+        //let mos_dva = uberblock.rootbp.dvas[0];
+        let mos: ObjectSetPhys = try!(zfs_reader.read_type(&uberblock.rootbp));
         let mos_bp1 = mos.meta_dnode.get_blockptr(0);
 
         // 2nd dnode in MOS points at the root dataset zap
-        let dnode1: Box<DNodePhys> = Box::new(try!(zfs_reader.read_type_array(&mos_bp1, 1)));
+        let dnode1: DNodePhys = try!(zfs_reader.read_type_array(&mos_bp1, 1));
 
-        let root_ds_bp = Box::new(dnode1.get_blockptr(0));
-        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(*root_ds_bp));
+        let root_ds_bp = dnode1.get_blockptr(0);
+        let root_ds: zap::MZapWrapper = try!(zfs_reader.read_type(root_ds_bp));
 
-        let root_ds_dnode: Box<DNodePhys> =
-            Box::new(try!(zfs_reader.read_type_array(&mos_bp1, root_ds.chunks[0].value as usize)));
+        let root_ds_dnode: DNodePhys =
+            try!(zfs_reader.read_type_array(&mos_bp1, root_ds.chunks[0].value as usize));
 
-        let dsl_dir = Box::new(try!(DslDirPhys::from_bytes(root_ds_dnode.get_bonus())));
-        let head_ds_dnode: Box<DNodePhys> =
-            Box::new(try!(zfs_reader.read_type_array(&mos_bp1, dsl_dir.head_dataset_obj as usize)));
+        let dsl_dir = try!(DslDirPhys::from_bytes(root_ds_dnode.get_bonus()));
+        let head_ds_dnode: DNodePhys =
+            try!(zfs_reader.read_type_array(&mos_bp1, dsl_dir.head_dataset_obj as usize));
 
-        let root_dataset = Box::new(try!(DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus())));
+        let root_dataset = try!(DslDatasetPhys::from_bytes(head_ds_dnode.get_bonus()));
 
-        let fs_objset: Box<ObjectSetPhys> = Box::new(try!(zfs_reader.read_type(&root_dataset.bp)));
+        let fs_objset: ObjectSetPhys = try!(zfs_reader.read_type(&root_dataset.bp));
 
         let mut indirect: BlockPtr = try!(zfs_reader.read_type_array(fs_objset.meta_dnode
                                                                               .get_blockptr(0),
@@ -182,9 +184,8 @@ impl Zfs {
         }
 
         // Master node is always the second object in the object set
-        let master_node: Box<DNodePhys> = Box::new(try!(zfs_reader.read_type_array(&indirect, 1)));
-        let master_node_zap: zap::MZapWrapper =
-            try!(zfs_reader.read_type(master_node.get_blockptr(0)));
+        let master_node: DNodePhys = try!(zfs_reader.read_type_array(&indirect, 1));
+        let master_node_zap: zap::MZapWrapper = try!(zfs_reader.read_type(master_node.get_blockptr(0)));
 
         // Find the ROOT zap entry
         let mut root = None;
@@ -468,7 +469,12 @@ pub fn main() {
                                                              space_map_phys);
                                                     // println!("got space map: {:?}", &space_map.unwrap()[0..64]);
 
-                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 15 }, &space_map.unwrap());
+                                                    let mut range_tree: avl::Tree<space_map::Entry, u64> =
+                                                        avl::Tree::new(Box::new(|x| x.offset()));
+                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
+                                                                                  &mut range_tree,
+                                                                                  &space_map.unwrap(),
+                                                                                  space_map::MapType::Alloc).unwrap();
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue \
                                                               type. Expected Uint64.");
@@ -517,46 +523,6 @@ pub fn main() {
                             }
                             None => println!("Usage: ls <path>"),
                         }
-                    } else if command == "mos" {
-                        let ref uberblock = zfs.uberblock;
-                        let mos_dva = uberblock.rootbp.dvas[0];
-                        println!("DVA: {:?}", mos_dva);
-                        println!("type: {:X}", uberblock.rootbp.object_type());
-                        println!("checksum: {:X}", uberblock.rootbp.checksum());
-                        println!("compression: {:X}", uberblock.rootbp.compression());
-                        println!("Reading {} sectors starting at {}",
-                                 mos_dva.asize(),
-                                 mos_dva.sector());
-                        let obj_set: Result<ObjectSetPhys, String> = zfs.reader
-                                                                        .read_type(&uberblock.rootbp);
-                        if let Ok(ref obj_set) = obj_set {
-                            println!("Got meta object set");
-                            println!("os_type: {:X}", obj_set.os_type);
-                            println!("meta dnode: {:?}\n", obj_set.meta_dnode);
-
-                            println!("Reading MOS...");
-                            let mos_block_ptr = obj_set.meta_dnode.get_blockptr(0);
-                            let mos_array_dva = mos_block_ptr.dvas[0];
-
-                            println!("DVA: {:?}", mos_array_dva);
-                            println!("type: {:X}", mos_block_ptr.object_type());
-                            println!("checksum: {:X}", mos_block_ptr.checksum());
-                            println!("compression: {:X}", mos_block_ptr.compression());
-                            println!("Reading {} sectors starting at {}",
-                                     mos_array_dva.asize(),
-                                     mos_array_dva.sector());
-                            let dnode: Result<DNodePhys, String> =
-                                zfs.reader.read_type_array(&mos_block_ptr, 1);
-                            println!("Got MOS dnode array");
-                            println!("dnode: {:?}", dnode);
-
-                            if let Ok(ref dnode) = dnode {
-                                println!("Reading object directory zap object...");
-                                let zap_obj: Result<zap::MZapWrapper, String> =
-                                    zfs.reader.read_type(dnode.get_blockptr(0));
-                                println!("{:?}", zap_obj);
-                            }
-                        }
                     } else if command == "dump" {
                         match args.get(1) {
                             Some(arg) => {
@@ -582,7 +548,7 @@ pub fn main() {
                         println!("Closing");
                         close = true;
                     } else {
-                        println!("Commands: uber vdev_label mos file ls dump close");
+                        println!("Commands: uber vdev_label file ls dump close");
                     }
                 }
                 None => {
