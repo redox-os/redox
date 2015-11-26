@@ -28,6 +28,7 @@ pub mod spa;
 pub mod space_map;
 pub mod uberblock;
 pub mod vdev;
+pub mod vdev_file;
 pub mod xdr;
 pub mod zap;
 pub mod zfs;

@@ -90,7 +90,10 @@ impl Spa {
         let vdev = try!(vdev::Vdev::load(nv, 0, parent, alloc_type));
         let index = self.vdev_tree.add(vdev);
 
-        // TODO: return here if the vdev is a leaf node
+        // Done parsing if this is a leaf
+        if index.get(&self.vdev_tree).ops.is_leaf() {
+            return Ok(index);
+        }
 
         // Get the vdev's children
         let children: &Vec<NvList> = try!(nv.get("children").ok_or(zfs::Error::Invalid));
