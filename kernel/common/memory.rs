@@ -85,7 +85,7 @@ impl StateArray {
         let byte = n / 4;
         let bit = 6 - 2 * (n % 4); // (from right)
 
-        MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 3))
+        MemoryState::from_u8(((ptr::read((self.ptr + byte) as *mut u8) >> bit) & 0b11))
     }
 
     /// Set the nth memory state (where n is a path in the tree)
@@ -96,7 +96,7 @@ impl StateArray {
         let ptr = (self.ptr + byte) as *mut u8;
         let b = ptr::read(ptr);
 
-        ptr::write(ptr, ((val as u8) << bit) ^ (!(3 << bit) & b));
+        ptr::write(ptr, ((val as u8) << bit) ^ (!(0b11 << bit) & b));
     }
 }
 
@@ -187,7 +187,7 @@ impl Block {
         // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
 
         let pos = (ptr - HEAP_START) / MT_ATOM;
-        let level = ceil_log2(pos);
+        let level = pos.trailing_zeros();
 
         let idx = (pos + 1) >> level;
 
