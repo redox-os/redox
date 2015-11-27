@@ -267,4 +267,24 @@ impl Tree {
 
         TreeIndex(index)
     }
+
+    pub fn parse(&mut self, nv: &NvList, parent: Option<TreeIndex>,
+             alloc_type: AllocType) -> zfs::Result<TreeIndex> {
+        let vdev = try!(Vdev::load(nv, 0, parent, alloc_type));
+        let index = self.add(vdev);
+
+        // Done parsing if this is a leaf
+        if index.get(self).ops.is_leaf() {
+            return Ok(index);
+        }
+
+        // Get the vdev's children
+        let children: &Vec<NvList> = try!(nv.get("children").ok_or(zfs::Error::Invalid));
+
+        for child in children {
+            self.parse(child, Some(index), alloc_type);
+        }
+
+        Ok(index)
+    }
 }

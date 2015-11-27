@@ -16,19 +16,19 @@ pub struct Spa {
     name: String, // Pool name
     state: zfs::PoolState,
     load_state: zfs::SpaLoadState,
-    root_vdev: vdev::TreeIndex,
     vdev_tree: vdev::Tree,
+    root_vdev: vdev::TreeIndex,
     //ubsync: Uberblock, // Last synced uberblock
     //uberblock: Uberblock, // Current active uberblock
     did: u64, // if procp != p0, did of t1
 }
 
 impl Spa {
-    // TODO
-    /*pub fn create(name: String, config: NvList) -> Self {
-        let root_vdev = vdev::Vdev::new();
-        Self::new(name, root_vdev)
-    }*/
+    pub fn create(name: String, nvroot: &NvList) -> zfs::Result<Self> {
+        let mut vdev_tree = vdev::Tree::new();
+        let root_vdev = try!(vdev_tree.parse(nvroot, None, vdev::AllocType::Add));
+        Ok(Self::new(name, vdev_tree, root_vdev))
+    }
 
     pub fn open(&mut self) -> zfs::Result<()> {
         let load_state = zfs::SpaLoadState::Open;
@@ -44,13 +44,13 @@ impl Spa {
         Ok(())
     }
 
-    fn new(name: String, root_vdev: vdev::TreeIndex) -> Self {
+    fn new(name: String, vdev_tree: vdev::Tree, root_vdev: vdev::TreeIndex) -> Self {
         Spa {
             name: name,
             state: zfs::PoolState::Uninitialized,
             load_state: zfs::SpaLoadState::None,
-            root_vdev: root_vdev,
             vdev_tree: vdev::Tree::new(),
+            root_vdev: root_vdev,
             did: 0,
         }
     }
@@ -74,35 +74,15 @@ impl Spa {
         self.load_state = load_state;
 
         // Parse the vdev tree config
-        let nvroot = try!(config.get("vdev_tree").ok_or(zfs::Error::Invalid));
+        let nvroot: &NvList = try!(config.get("vdev_tree").ok_or(zfs::Error::Invalid));
         let vdev_alloc_type =
             match import_type {
                 ImportType::Existing => vdev::AllocType::Load,
                 ImportType::Assemble => vdev::AllocType::Split,
             };
-        self.root_vdev = try!(self.parse_vdev_tree(nvroot, None, vdev_alloc_type));
+        //self.root_vdev = try!(self.parse_vdev_tree(nvroot, None, vdev_alloc_type));
 
         Ok(())
-    }
-
-    fn parse_vdev_tree(&mut self, nv: &NvList, parent: Option<vdev::TreeIndex>,
-                       alloc_type: vdev::AllocType) -> zfs::Result<vdev::TreeIndex> {
-        let vdev = try!(vdev::Vdev::load(nv, 0, parent, alloc_type));
-        let index = self.vdev_tree.add(vdev);
-
-        // Done parsing if this is a leaf
-        if index.get(&self.vdev_tree).ops.is_leaf() {
-            return Ok(index);
-        }
-
-        // Get the vdev's children
-        let children: &Vec<NvList> = try!(nv.get("children").ok_or(zfs::Error::Invalid));
-
-        for child in children {
-            self.parse_vdev_tree(child, Some(index), alloc_type);
-        }
-
-        Ok(index)
     }
     
     fn activate(&mut self) {
