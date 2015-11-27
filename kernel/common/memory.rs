@@ -171,7 +171,7 @@ impl Block {
     pub fn parrent(&self) -> Block {
         Block {
             idx: self.idx / 2,
-            level: self.level.saturating_sub(1),
+            level: self.level - 1,
         }
     }
 
@@ -223,12 +223,16 @@ impl MemoryTree {
 
     /// Allocate of minimum size, size
     pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
+        if size >= MT_ROOT {
+            return None;
+        }
+
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
         let level = MT_DEPTH - order;
 
         let mut free = None;
-        for i in 0..2 * (1 << level) {
+        for i in 0..1 << level {
             if let MemoryState::Free = self.tree.get(Block {
                 level: level,
                 idx: i,
@@ -264,6 +268,10 @@ impl MemoryTree {
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
     pub unsafe fn realloc(&self, mut block: Block, mut size: usize) -> Option<Block> {
+        if size >= MT_ROOT {
+            return None;
+        }
+
         if let Sibling::Left = block.sibl() {
             let mut level = 0;
 
@@ -279,7 +287,7 @@ impl MemoryTree {
                 }
 
                 Some(self.split(block))
-            } else {
+            } else if block.level != 0 {
                 let mut buddy = block.get_buddy();
 
                 for i in 1..delta {
@@ -300,6 +308,8 @@ impl MemoryTree {
                     None
                 }
 
+            } else {
+                None
             }
         } else {
             None
@@ -310,8 +320,10 @@ impl MemoryTree {
     /// Deallocate a block
     pub unsafe fn dealloc(&mut self, block: Block) {
         self.tree.set(block, MemoryState::Free);
-        if let MemoryState::Free = self.tree.get(block.get_buddy()) {
-            self.tree.set(block.parrent(), MemoryState::Free);
+        if block.level != 0 {
+            if let MemoryState::Free = self.tree.get(block.get_buddy()) {
+                self.dealloc(block.parrent());
+            }
         }
     }
 
@@ -328,6 +340,10 @@ pub fn memory_init() {
 
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
+    if size > MT_ROOT {
+        return 0;
+    }
+
     let ret;
 
     // Memory allocation must be atomic
@@ -458,6 +474,10 @@ pub unsafe fn unalloc(ptr: usize) {
 
 /// Reallocate
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
+    if size > MT_ROOT {
+        return 0;
+    }
+
     let ret;
 
     // Memory allocation must be atomic
@@ -510,68 +530,3 @@ pub fn memory_free() -> usize {
     }
     ret
 }
-
-
-// /// A memory map entry
-// #[repr(packed)]
-// struct MemoryMapEntry {
-//     base: u64,
-//     len: u64,
-//     class: u32,
-//     acpi: u32,
-// }
-//
-// const MEMORY_MAP: *const MemoryMapEntry = 0x500 as *const MemoryMapEntry;
-//
-// /// Get the data (address) of a given cluster
-// pub unsafe fn cluster(number: usize) -> usize {
-//     if number < CLUSTER_COUNT {
-//         ptr::read((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *const usize)
-//     } else {
-//         0
-//     }
-// }
-//
-// /// Set the address of a cluster
-// pub unsafe fn set_cluster(number: usize, address: usize) {
-//     if number < CLUSTER_COUNT {
-//         ptr::write((CLUSTER_ADDRESS + number * mem::size_of::<usize>()) as *mut usize,
-//                    address);
-//     }
-// }
-//
-// /// Convert an adress to the cluster number
-// pub unsafe fn address_to_cluster(address: usize) -> usize {
-//     if address >= CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() {
-//         (address - CLUSTER_ADDRESS - CLUSTER_COUNT * mem::size_of::<usize>()) / CLUSTER_SIZE
-//     } else {
-//         0
-//     }
-// }
-//
-// pub unsafe fn cluster_to_address(number: usize) -> usize {
-//     CLUSTER_ADDRESS + CLUSTER_COUNT * mem::size_of::<usize>() + number * CLUSTER_SIZE
-// }
-//
-// /// Initialize clusters
-// pub unsafe fn cluster_init() {
-//     // First, set all clusters to the not present value
-//     for cluster in 0..CLUSTER_COUNT {
-//         set_cluster(cluster, 0xFFFFFFFF);
-//     }
-//
-//     // Next, set all valid clusters to the free value
-//     // TODO: Optimize this function
-//     for i in 0..((0x5000 - 0x500) / mem::size_of::<MemoryMapEntry>()) {
-//         let entry = &*MEMORY_MAP.offset(i as isize);
-//         if entry.len > 0 && entry.class == 1 {
-//             for cluster in 0..CLUSTER_COUNT {
-//                 let address = cluster_to_address(cluster);
-//                 if address as u64 >= entry.base &&
-//                    (address as u64 + CLUSTER_SIZE as u64) <= (entry.base + entry.len) {
-//                     set_cluster(cluster, 0);
-//                 }
-//             }
-//         }
-//     }
-// }
