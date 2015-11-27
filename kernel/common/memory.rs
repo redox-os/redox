@@ -36,7 +36,11 @@ pub const MT_PTR: usize = PAGE_END;
 /// Ceil log 2
 #[inline]
 fn ceil_log2(n: usize) -> usize {
-    mem::size_of::<usize>() * 8 - (n - 1).leading_zeros() as usize + 1
+    floor_log2(n - 1) + 1
+}
+
+fn floor_log2(n: usize) -> usize {
+    mem::size_of::<usize>() * 8 - n.leading_zeros() as usize
 }
 
 
@@ -176,7 +180,7 @@ impl Block {
         // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
 
         let pos = (ptr - HEAP_START) / MT_ATOM;
-        let level = pos.trailing_zeros() as usize;
+        let level = floor_log2(pos);
 
         let idx = (pos + 1) >> level;
 
