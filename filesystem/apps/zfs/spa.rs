@@ -1,7 +1,7 @@
-use redox::{Box, String, Vec};
+use redox::{Box, String, ToString, Vec};
 
 use super::avl;
-use super::nvpair::NvList;
+use super::nvpair::{NvList, NvValue};
 use super::uberblock::Uberblock;
 use super::vdev;
 use super::zfs;
@@ -14,6 +14,7 @@ pub enum ImportType {
 // Storage pool allocator
 pub struct Spa {
     name: String, // Pool name
+    config: NvList,
     state: zfs::PoolState,
     load_state: zfs::SpaLoadState,
     vdev_tree: vdev::Tree,
@@ -25,12 +26,23 @@ pub struct Spa {
 
 impl Spa {
     pub fn create(name: String, nvroot: &NvList) -> zfs::Result<Self> {
-        let mut vdev_tree = vdev::Tree::new();
-        let root_vdev = try!(vdev_tree.parse(nvroot, None, vdev::AllocType::Add));
-        Ok(Self::new(name, vdev_tree, root_vdev))
+        let mut config = NvList::new(0);
+        config.add("name".to_string(), NvValue::String(name.clone()));
+        Self::new(name, config, vdev::AllocType::Add)
     }
 
-    pub fn open(&mut self) -> zfs::Result<()> {
+    pub fn import(name: String, config: NvList) -> zfs::Result<Self> {
+        let load_state = zfs::SpaLoadState::Import;
+
+        // mos_config is true - we trust the user's config in this case
+        let mut spa = try!(Self::load(name, config, load_state, ImportType::Existing, true));
+
+        spa.activate();
+
+        Ok(spa)
+    }
+
+    /*pub fn open(&mut self) -> zfs::Result<()> {
         let load_state = zfs::SpaLoadState::Open;
         if self.state == zfs::PoolState::Uninitialized {
             // First time opening
@@ -38,55 +50,61 @@ impl Spa {
             self.activate();
 
             try!(self.load(load_state, ImportType::Existing, false));
-
         }
 
         Ok(())
-    }
+    }*/
 
-    fn new(name: String, vdev_tree: vdev::Tree, root_vdev: vdev::TreeIndex) -> Self {
-        Spa {
+    fn new(name: String, config: NvList, vdev_alloc_type: vdev::AllocType) -> zfs::Result<Self> {
+        // Parse vdev tree
+        let mut vdev_tree = vdev::Tree::new();
+        let root_vdev = {
+            let nvroot: &NvList = try!(config.get("vdev_tree").ok_or(zfs::Error::Invalid));
+            try!(vdev_tree.parse(nvroot, None, vdev_alloc_type))
+        };
+
+        Ok(Spa {
             name: name,
+            config: config,
             state: zfs::PoolState::Uninitialized,
             load_state: zfs::SpaLoadState::None,
-            vdev_tree: vdev::Tree::new(),
+            vdev_tree: vdev_tree,
             root_vdev: root_vdev,
             did: 0,
-        }
+        })
     }
 
-    fn load(&mut self, load_state: zfs::SpaLoadState,
-            import_type: ImportType, mos_config: bool) -> zfs::Result<()> {
-        let ref config = NvList::new(0); // TODO: this should be replaced by self.config
-
+    fn load(name: String, config: NvList, load_state: zfs::SpaLoadState,
+            import_type: ImportType, mos_config: bool) -> zfs::Result<Self> {
         let pool_guid = try!(config.get("pool_guid").ok_or(zfs::Error::Invalid));
 
-        self.load_impl(pool_guid, config, load_state, import_type, mos_config);
-        self.load_state = zfs::SpaLoadState::None;
+        let mut spa = try!(Self::load_impl(name, pool_guid, config, load_state,
+                                           import_type, mos_config));
+        spa.load_state = zfs::SpaLoadState::None;
 
-        Ok(())
+        Ok(spa)
     }
 
     /// mosconfig: Whether `config` came from on-disk MOS and so is trusted, or was user-made and so
     /// is untrusted.
-    fn load_impl(&mut self, pool_guid: u64, config: &NvList, load_state: zfs::SpaLoadState,
-                 import_type: ImportType, mos_config: bool) -> zfs::Result<()> {
-        self.load_state = load_state;
-
-        // Parse the vdev tree config
-        let nvroot: &NvList = try!(config.get("vdev_tree").ok_or(zfs::Error::Invalid));
+    fn load_impl(name: String, pool_guid: u64, config: NvList,
+                 load_state: zfs::SpaLoadState, import_type: ImportType,
+                 mos_config: bool) -> zfs::Result<Self> {
+        // Determine the vdev allocation type from import type
         let vdev_alloc_type =
             match import_type {
                 ImportType::Existing => vdev::AllocType::Load,
                 ImportType::Assemble => vdev::AllocType::Split,
             };
-        //self.root_vdev = try!(self.parse_vdev_tree(nvroot, None, vdev_alloc_type));
 
-        Ok(())
+        let mut spa = try!(Self::new(name, config, vdev_alloc_type));
+        spa.load_state = load_state;
+
+        Ok(spa)
     }
     
     fn activate(&mut self) {
-        assert!(self.state == zfs::PoolState::Uninitialized);
+        //assert!(self.state == zfs::PoolState::Uninitialized);
 
         self.state = zfs::PoolState::Active;
 

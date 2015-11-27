@@ -20,6 +20,10 @@ impl NvList {
         }
     }
 
+    pub fn add(&mut self, name: String, value: NvValue) {
+        self.pairs.push((name, value));
+    }
+
     pub fn find(&self, name: &str) -> Option<&NvValue> {
         for pair in &self.pairs {
             if pair.0 == name {
