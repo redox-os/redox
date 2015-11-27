@@ -36,7 +36,16 @@ pub const MT_PTR: usize = PAGE_END;
 /// Ceil log 2
 #[inline]
 fn ceil_log2(n: usize) -> usize {
-    mem::size_of::<usize>() * 8 - (n - 1).leading_zeros() as usize + 1
+    if n == 0 {
+        0
+    } else {
+        floor_log2(n - 1) + 1
+    }
+}
+
+#[inline]
+fn floor_log2(n: usize) -> usize {
+    mem::size_of::<usize>() * 8 - n.leading_zeros() as usize
 }
 
 
@@ -173,10 +182,8 @@ impl Block {
 
     /// Convert a pointer to a block
     pub fn from_ptr(ptr: usize) -> Block {
-        // 47b4bbc7da718f45f89ce13d26a05ba89aa35510
-
         let pos = (ptr - HEAP_START) / MT_ATOM;
-        let level = pos.trailing_zeros() as usize;
+        let level = floor_log2(pos);
 
         let idx = (pos + 1) >> level;
 
@@ -216,7 +223,7 @@ impl MemoryTree {
 
     /// Allocate of minimum size, size
     pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
-        let order = ceil_log2(size / MT_ATOM) - 1;
+        let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
         let level = MT_DEPTH - order;
 
