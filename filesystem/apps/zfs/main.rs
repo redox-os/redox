@@ -428,7 +428,7 @@ impl Zfs {
                         println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
                         println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
                     } else if command == "spa_import" {
-                        let mut nvpairs_buffer = zfs.reader.zio.read(32, 256 * 224);
+                        let mut nvpairs_buffer = zfs.reader.zio.read(32, 224);
                         let mut xdr = xdr::MemOps::new(&mut nvpairs_buffer);
                         let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
                         let name = nv_list.get::<&String>("name").unwrap().clone();
