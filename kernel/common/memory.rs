@@ -240,7 +240,7 @@ impl MemoryTree {
 
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
-        let level = MT_DEPTH - order;
+        let level = MT_DEPTH - order - 1;
 
         let mut free = None;
         for i in 0..1 << level {
@@ -288,7 +288,7 @@ impl MemoryTree {
 
             let order = ceil_log2(size / MT_ATOM);
             size = (1 << order) * MT_ATOM;
-            let level = MT_DEPTH - order;
+            let level = MT_DEPTH - order - 1;
 
             let delta = level as isize - block.level as isize;
 
