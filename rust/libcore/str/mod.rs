@@ -37,6 +37,13 @@ pub mod pattern;
 
 /// A trait to abstract the idea of creating a new instance of a type from a
 /// string.
+///
+/// `FromStr`'s [`from_str()`] method is often used implicitly, through
+/// [`str`]'s [`parse()`] method. See [`parse()`]'s documentation for examples.
+///
+/// [`from_str()`]: #tymethod.from_str
+/// [`str`]: ../primitive.str.html
+/// [`parse()`]: ../primitive.str.html#method.parse
 #[stable(feature = "rust1", since = "1.0.0")]
 pub trait FromStr: Sized {
     /// The associated error which can be returned from parsing.
@@ -955,7 +962,7 @@ impl<'a> DoubleEndedIterator for Lines<'a> {
 
 /// Created with the method `.lines_any()`.
 #[stable(feature = "rust1", since = "1.0.0")]
-#[deprecated(since = "1.4.0", reason = "use lines()/Lines instead now")]
+#[rustc_deprecated(since = "1.4.0", reason = "use lines()/Lines instead now")]
 #[derive(Clone)]
 #[allow(deprecated)]
 pub struct LinesAny<'a>(Lines<'a>);
@@ -1434,6 +1441,7 @@ pub trait StrExt {
 }
 
 #[inline(never)]
+#[cold]
 fn slice_error_fail(s: &str, begin: usize, end: usize) -> ! {
     assert!(begin <= end);
     panic!("index {} and/or {} in `{}` do not lie on character boundary",

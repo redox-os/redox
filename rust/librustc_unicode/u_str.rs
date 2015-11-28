@@ -21,6 +21,7 @@ use core::str::Split;
 
 /// An iterator over the non-whitespace substrings of a string,
 /// separated by any amount of whitespace.
+#[stable(feature = "split_whitespace", since = "1.1.0")]
 pub struct SplitWhitespace<'a> {
     inner: Filter<Split<'a, fn(char) -> bool>, fn(&&str) -> bool>,
 }
@@ -128,6 +129,8 @@ pub fn is_utf16(v: &[u16]) -> bool {
 
 /// An iterator that decodes UTF-16 encoded codepoints from a vector
 /// of `u16`s.
+#[rustc_deprecated(since = "1.4.0", reason = "renamed to `char::DecodeUtf16`")]
+#[unstable(feature = "decode_utf16", reason = "not exposed in std", issue = "27830")]
 #[allow(deprecated)]
 #[derive(Clone)]
 pub struct Utf16Items<'a> {
@@ -135,6 +138,9 @@ pub struct Utf16Items<'a> {
 }
 
 /// The possibilities for values decoded from a `u16` stream.
+#[rustc_deprecated(since = "1.4.0",
+                   reason = "`char::DecodeUtf16` uses `Result<char, u16>` instead")]
+#[unstable(feature = "decode_utf16", reason = "not exposed in std", issue = "27830")]
 #[allow(deprecated)]
 #[derive(Copy, PartialEq, Eq, Clone, Debug)]
 pub enum Utf16Item {
@@ -157,6 +163,8 @@ impl Utf16Item {
     }
 }
 
+#[rustc_deprecated(since = "1.4.0", reason = "use `char::DecodeUtf16` instead")]
+#[unstable(feature = "decode_utf16", reason = "not exposed in std", issue = "27830")]
 #[allow(deprecated)]
 impl<'a> Iterator for Utf16Items<'a> {
     type Item = Utf16Item;
@@ -203,6 +211,8 @@ impl<'a> Iterator for Utf16Items<'a> {
 ///                     LoneSurrogate(0xD834)]);
 /// }
 /// ```
+#[rustc_deprecated(since = "1.4.0", reason = "renamed to `char::decode_utf16`")]
+#[unstable(feature = "decode_utf16", reason = "not exposed in std", issue = "27830")]
 #[allow(deprecated)]
 pub fn utf16_items<'a>(v: &'a [u16]) -> Utf16Items<'a> {
     Utf16Items { decoder: decode_utf16(v.iter().cloned()) }
