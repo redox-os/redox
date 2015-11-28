@@ -26,6 +26,7 @@
 //! implemented on `char`, as well as some useful constants and conversion
 //! functions that convert various types to `char`.
 
+#![stable(feature = "rust1", since = "1.0.0")]
 
 use core::char::CharExt as C;
 use core::option::Option::{self, Some, None};
@@ -33,9 +34,11 @@ use core::iter::Iterator;
 use tables::{derived_property, property, general_category, conversions};
 
 // stable reexports
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::char::{MAX, from_u32, from_u32_unchecked, from_digit, EscapeUnicode, EscapeDefault};
 
 // unstable reexports
+#[unstable(feature = "unicode", issue = "27783")]
 pub use tables::UNICODE_VERSION;
 
 /// Returns an iterator that yields the lowercase equivalent of a `char`.
@@ -45,8 +48,10 @@ pub use tables::UNICODE_VERSION;
 ///
 /// [`to_lowercase()`]: primitive.char.html#method.escape_to_lowercase
 /// [`char`]: primitive.char.html
+#[stable(feature = "rust1", since = "1.0.0")]
 pub struct ToLowercase(CaseMappingIter);
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl Iterator for ToLowercase {
     type Item = char;
     fn next(&mut self) -> Option<char> {
@@ -61,8 +66,10 @@ impl Iterator for ToLowercase {
 ///
 /// [`to_uppercase()`]: primitive.char.html#method.escape_to_uppercase
 /// [`char`]: primitive.char.html
+#[stable(feature = "rust1", since = "1.0.0")]
 pub struct ToUppercase(CaseMappingIter);
 
+#[stable(feature = "rust1", since = "1.0.0")]
 impl Iterator for ToUppercase {
     type Item = char;
     fn next(&mut self) -> Option<char> {
@@ -168,6 +175,7 @@ impl char {
     ///
     /// assert!(result.is_err());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_digit(self, radix: u32) -> bool {
         C::is_digit(self, radix)
@@ -233,6 +241,7 @@ impl char {
     ///
     /// assert!(result.is_err());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn to_digit(self, radix: u32) -> Option<u32> {
         C::to_digit(self, radix)
@@ -268,6 +277,7 @@ impl char {
     ///
     /// assert_eq!(heart, r"\u{2764}");
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn escape_unicode(self) -> EscapeUnicode {
         C::escape_unicode(self)
@@ -316,6 +326,7 @@ impl char {
     ///
     /// assert_eq!(quote, "\\\"");
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn escape_default(self) -> EscapeDefault {
         C::escape_default(self)
@@ -366,6 +377,7 @@ impl char {
     /// // ... just like the &str
     /// assert_eq!(len, tokyo.len());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn len_utf8(self) -> usize {
         C::len_utf8(self)
@@ -389,6 +401,7 @@ impl char {
     /// let len = '💣'.len_utf16();
     /// assert_eq!(len, 2);
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn len_utf16(self) -> usize {
         C::len_utf16(self)
@@ -426,6 +439,9 @@ impl char {
     ///
     /// assert_eq!(result, None);
     /// ```
+    #[unstable(feature = "unicode",
+               reason = "pending decision about Iterator/Writer/Reader",
+               issue = "27784")]
     #[inline]
     pub fn encode_utf8(self, dst: &mut [u8]) -> Option<usize> {
         C::encode_utf8(self, dst)
@@ -463,6 +479,9 @@ impl char {
     ///
     /// assert_eq!(result, None);
     /// ```
+    #[unstable(feature = "unicode",
+               reason = "pending decision about Iterator/Writer/Reader",
+               issue = "27784")]
     #[inline]
     pub fn encode_utf16(self, dst: &mut [u16]) -> Option<usize> {
         C::encode_utf16(self, dst)
@@ -486,6 +505,7 @@ impl char {
     /// // love is many things, but it is not alphabetic
     /// assert!(!c.is_alphabetic());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_alphabetic(self) -> bool {
         match self {
@@ -501,6 +521,9 @@ impl char {
     /// 'XID_Start' is a Unicode Derived Property specified in
     /// [UAX #31](http://unicode.org/reports/tr31/#NFKC_Modifications),
     /// mostly similar to `ID_Start` but modified for closure under `NFKx`.
+    #[unstable(feature = "unicode",
+               reason = "mainly needed for compiler internals",
+               issue = "0")]
     #[inline]
     pub fn is_xid_start(self) -> bool {
         derived_property::XID_Start(self)
@@ -512,6 +535,9 @@ impl char {
     /// 'XID_Continue' is a Unicode Derived Property specified in
     /// [UAX #31](http://unicode.org/reports/tr31/#NFKC_Modifications),
     /// mostly similar to 'ID_Continue' but modified for closure under NFKx.
+    #[unstable(feature = "unicode",
+               reason = "mainly needed for compiler internals",
+               issue = "0")]
     #[inline]
     pub fn is_xid_continue(self) -> bool {
         derived_property::XID_Continue(self)
@@ -543,6 +569,7 @@ impl char {
     /// let c = '中';
     /// assert!(!c.is_lowercase());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_lowercase(self) -> bool {
         match self {
@@ -578,6 +605,7 @@ impl char {
     /// let c = '中';
     /// assert!(!c.is_uppercase());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_uppercase(self) -> bool {
         match self {
@@ -607,6 +635,7 @@ impl char {
     /// let c = '越';
     /// assert!(!c.is_whitespace());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_whitespace(self) -> bool {
         match self {
@@ -650,6 +679,7 @@ impl char {
     /// let c = '①';
     /// assert!(!c.is_alphanumeric());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_alphanumeric(self) -> bool {
         self.is_alphabetic() || self.is_numeric()
@@ -672,6 +702,7 @@ impl char {
     /// let c = 'q';
     /// assert!(!c.is_control());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_control(self) -> bool {
         general_category::Cc(self)
@@ -711,6 +742,7 @@ impl char {
     /// let c = '①';
     /// assert!(!c.is_numeric());
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn is_numeric(self) -> bool {
         match self {
@@ -751,6 +783,7 @@ impl char {
     /// let c = '山';
     /// assert_eq!(c.to_uppercase().next(), Some('山'));
     /// ```
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn to_lowercase(self) -> ToLowercase {
         ToLowercase(CaseMappingIter::new(conversions::to_lower(self)))
@@ -813,6 +846,7 @@ impl char {
     /// ```
     ///
     /// holds across languages.
+    #[stable(feature = "rust1", since = "1.0.0")]
     #[inline]
     pub fn to_uppercase(self) -> ToUppercase {
         ToUppercase(CaseMappingIter::new(conversions::to_upper(self)))
@@ -820,6 +854,7 @@ impl char {
 }
 
 /// An iterator that decodes UTF-16 encoded code points from an iterator of `u16`s.
+#[unstable(feature = "decode_utf16", reason = "recently exposed", issue = "27830")]
 #[derive(Clone)]
 pub struct DecodeUtf16<I>
     where I: Iterator<Item = u16>
@@ -874,6 +909,7 @@ pub struct DecodeUtf16<I>
 ///                "𝄞mus�ic�");
 /// }
 /// ```
+#[unstable(feature = "decode_utf16", reason = "recently exposed", issue = "27830")]
 #[inline]
 pub fn decode_utf16<I: IntoIterator<Item = u16>>(iterable: I) -> DecodeUtf16<I::IntoIter> {
     DecodeUtf16 {
@@ -882,6 +918,7 @@ pub fn decode_utf16<I: IntoIterator<Item = u16>>(iterable: I) -> DecodeUtf16<I::
     }
 }
 
+#[unstable(feature = "decode_utf16", reason = "recently exposed", issue = "27830")]
 impl<I: Iterator<Item=u16>> Iterator for DecodeUtf16<I> {
     type Item = Result<char, u16>;
 
@@ -931,4 +968,5 @@ impl<I: Iterator<Item=u16>> Iterator for DecodeUtf16<I> {
 /// `U+FFFD REPLACEMENT CHARACTER` (�) is used in Unicode to represent a decoding error.
 /// It can occur, for example, when giving ill-formed UTF-8 bytes to
 /// [`String::from_utf8_lossy`](../string/struct.String.html#method.from_utf8_lossy).
+#[unstable(feature = "decode_utf16", reason = "recently added", issue = "27830")]
 pub const REPLACEMENT_CHARACTER: char = '\u{FFFD}';

@@ -240,7 +240,7 @@ impl MemoryTree {
 
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
-        let level = MT_DEPTH - order;
+        let level = MT_DEPTH - order - 1;
 
         let mut free = None;
         for i in 0..1 << level {
@@ -249,6 +249,7 @@ impl MemoryTree {
                 idx: i,
             }) {
                 free = Some(i);
+                break;
             }
         }
 
@@ -288,7 +289,7 @@ impl MemoryTree {
 
             let order = ceil_log2(size / MT_ATOM);
             size = (1 << order) * MT_ATOM;
-            let level = MT_DEPTH - order;
+            let level = MT_DEPTH - order - 1;
 
             let delta = level as isize - block.level as isize;
 
@@ -343,6 +344,7 @@ impl MemoryTree {
 /// Initialize dynamic memory (the heap)
 pub fn memory_init() {
     unsafe {
+        ptr::write(MT_PTR as *mut [u8; MT_BYTES], [0b11111111; MT_BYTES]);
         MT.tree.set(Block { level: 0, idx: 0 }, MemoryState::Free);
     }
 }

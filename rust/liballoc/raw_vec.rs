@@ -65,7 +65,7 @@ impl<T> RawVec<T> {
                 0
             };
 
-            // heap::EMPTY doubles as "deallocated" and "zero-sized allocation"
+            // heap::EMPTY doubles as "unallocated" and "zero-sized allocation"
             RawVec {
                 ptr: Unique::new(heap::EMPTY as *mut T),
                 cap: cap,

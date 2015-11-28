@@ -56,7 +56,7 @@
             reason = "the libcore library has not yet been scrutinized for \
                       stabilization in terms of structure and naming",
             issue = "27701")]
-#![staged_api]
+#![cfg_attr(stage0, staged_api)]
 #![crate_type = "rlib"]
 #![doc(html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
        html_favicon_url = "https://doc.rust-lang.org/favicon.ico",
@@ -68,6 +68,8 @@
 #![no_core]
 #![deny(missing_docs)]
 
+#![cfg_attr(stage0, feature(rustc_attrs))]
+#![cfg_attr(stage0, allow(unused_attributes))]
 #![feature(allow_internal_unstable)]
 #![feature(associated_type_defaults)]
 #![feature(concat_idents)]
@@ -80,7 +82,6 @@
 #![feature(on_unimplemented)]
 #![feature(optin_builtin_traits)]
 #![feature(reflect)]
-#![feature(rustc_attrs)]
 #![feature(unwind_attributes)]
 #![cfg_attr(stage0, feature(simd))]
 #![cfg_attr(not(stage0), feature(repr_simd, platform_intrinsics))]
