@@ -1,17 +1,22 @@
-![Redox](img/transp_background_with_text.png)
+<img alt="Redox" height="170" src="img/logo.png">
 
-**Redox** is a Rust based operating system, designed to be modular and secure. The developer blog can be found at http://www.redox-os.org
+**Redox** is a operating system written in pure Rust, designed to be modular and secure. The development blog can be found at http://www.redox-os.org.
 
 Docs can be found [here](http://ticki.github.io/redocs/redox/).
 
 Please make sure you use the **latest nightly** before the building.
 
+![travis](https://api.travis-ci.org/redox-os/redox.svg)
+
 ## What it looks like
 
-![Redox](img/screenshots/Desktop.png)
-![Redox](img/screenshots/Fancy_opacity.png)
-![Redox](img/screenshots/File_manager.png)
-![Redox](img/screenshots/Boot.png)
+<img alt="Redox" height="170" src="img/screenshots/Desktop.png">
+<img alt="Redox" height="170" src="img/screenshots/Fancy_opacity.png">
+<img alt="Redox" height="170" src="img/screenshots/File_manager.png">
+<img alt="Redox" height="170" src="img/screenshots/Sodium_v1.png">
+<img alt="Redox" height="170" src="img/screenshots/Boot.png">
+<img alt="Redox" height="170" src="img/screenshots/start.png">
+
 
 ## Help! Redox won't compile!
 
