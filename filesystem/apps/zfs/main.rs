@@ -28,6 +28,7 @@ pub mod spa;
 pub mod space_map;
 pub mod uberblock;
 pub mod vdev;
+pub mod vdev_file;
 pub mod xdr;
 pub mod zap;
 pub mod zfs;
@@ -385,6 +386,12 @@ pub fn main() {
                         println!("ROOTBP[0] {:?}", uberblock.rootbp.dvas[0]);
                         println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
                         println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
+                    } else if command == "spa_import" {
+                        let mut nvpairs_buffer = zfs.reader.zio.read(32, 256 * 224);
+                        let mut xdr = xdr::MemOps::new(&mut nvpairs_buffer);
+                        let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
+                        let name = nv_list.get::<&String>("name").unwrap().clone();
+                        let spa = spa::Spa::import(name, nv_list).unwrap();
                     } else if command == "vdev_label" {
                         match VdevLabel::from_bytes(&zfs.reader.zio.read(0, 256 * 2)) {
                             Ok(ref mut vdev_label) => {
