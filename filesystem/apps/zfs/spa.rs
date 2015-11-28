@@ -109,6 +109,13 @@ impl Spa {
         let mut spa = try!(Self::new(name, config, vdev_alloc_type));
         spa.load_state = load_state;
 
+        // TODO: Try to open all vdevs, loading each label in the process.
+
+        // TODO: Initialize internal structures
+
+        // Load stuff for the top-level and leaf vdevs
+        spa.vdev_tree.load(spa.root_vdev);
+
         Ok(spa)
     }
 

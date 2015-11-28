@@ -100,6 +100,7 @@ pub enum State {
 // Stuff that only top level vdevs have
 pub struct Top {
     ms_array_object: u64,
+    ms_shift: u64,
     ms_group: MetaslabGroup,
     metaslabs: Vec<Metaslab>,
     is_hole: bool,
@@ -109,6 +110,7 @@ impl Top {
     pub fn new() -> Self {
         Top {
             ms_array_object: 0,
+            ms_shift: 0,
             ms_group: MetaslabGroup,
             metaslabs: vec![],
             is_hole: false, /* TODO: zol checks vdev_ops for this, but idk what to do yet */
@@ -144,6 +146,7 @@ pub struct Vdev {
     prev_state: State,
     pub ops: VdevOps,
     parent: Option<TreeIndex>,
+    top_vdev: Option<TreeIndex>,
     children: Vec<TreeIndex>,
     create_txg: u64, // txg when top-level was added
 
@@ -170,6 +173,7 @@ impl Vdev {
             prev_state: State::Unknown,
             ops: ops,
             parent: None,
+            top_vdev: None,
             children: Vec::new(),
             create_txg: create_txg,
 
@@ -214,10 +218,29 @@ impl Vdev {
 
         Ok(vdev)
     }
+
+    fn metaslab_init(&mut self, txg: u64) -> zfs::Result<()> {
+        let ref top = try!(self.top.as_ref().ok_or(zfs::Error::Invalid));
+
+        //assert!(txg == 0 || spa_config_held(spa, SCL_ALLOC, RW_WRITER));
+
+        // Return if vdev isn't being allocated from yet
+        if top.ms_shift == 0 {
+            return Ok(());
+        }
+        //assert!(!vdev.is_hole); // Must not be a hole
+
+        // We assume this is a top-level vdev
+        let old_count = top.metaslabs.len();
+        let new_count = self.asize >> top.ms_shift;
+
+        Ok(())
+    }
 }
 
-/// /////////////////////////////////////////////////////////////////////////////////////////////////
-#[derive(Copy, Clone)]
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Copy, Clone, PartialEq)]
 pub struct TreeIndex(usize);
 
 impl TreeIndex {
@@ -230,7 +253,7 @@ impl TreeIndex {
     }
 }
 
-/// /////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub struct Tree {
     nodes: Vec<Option<Vdev>>,
@@ -247,24 +270,30 @@ impl Tree {
 
     pub fn add(&mut self, vdev: Vdev) -> TreeIndex {
         let parent = vdev.parent;
+        let guid = vdev.guid;
 
         // Add the vdev node
-        let index = match self.free.pop() {
-            Some(free_index) => {
-                self.nodes[free_index] = Some(vdev);
-                free_index
-            }
-            None => {
-                self.nodes.push(Some(vdev));
-                self.nodes.len() - 1
-            }
-        };
+        let index =
+            TreeIndex(match self.free.pop() {
+                Some(free_index) => {
+                    self.nodes[free_index] = Some(vdev);
+                    free_index
+                },
+                None => {
+                    self.nodes.push(Some(vdev));
+                    self.nodes.len()-1
+                },
+            });
+
+        index.get_mut(self).top_vdev =
+            parent.map(|parent| parent.get(self).top_vdev.unwrap_or(index));
 
         if let Some(parent) = parent {
-            parent.get_mut(self).children.push(TreeIndex(index));
+            parent.get_mut(self).guid_sum += guid;
+            parent.get_mut(self).children.push(index);
         }
 
-        TreeIndex(index)
+        index
     }
 
     pub fn parse(&mut self,
@@ -288,5 +317,28 @@ impl Tree {
         }
 
         Ok(index)
+    }
+
+    pub fn load(&mut self, root: TreeIndex) {
+        // We use an iterative solution because of borrowing issues
+        let mut queue = vec![root];
+
+        while let Some(index) = queue.pop() {
+            let vdev = index.get_mut(self);
+            
+            // Recursively load all children
+            for child in &vdev.children {
+                queue.push(*child);
+            }
+
+            // Load metaslabs for top-level vdevs
+            if vdev.top.is_some() /*&& !vdev.is_hole*/ {
+                if vdev.ashift == 0 || vdev.asize == 0 || vdev.metaslab_init(0).is_err() {
+                    // TODO: Set vdev state to error
+                }
+            }
+
+            // TODO: Load DTL for leaf vdevs
+        }
     }
 }
