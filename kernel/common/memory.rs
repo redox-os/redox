@@ -249,6 +249,7 @@ impl MemoryTree {
                 idx: i,
             }) {
                 free = Some(i);
+                break;
             }
         }
 
