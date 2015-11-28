@@ -344,6 +344,7 @@ impl MemoryTree {
 /// Initialize dynamic memory (the heap)
 pub fn memory_init() {
     unsafe {
+        ptr::write(MT_PTR as *mut [u8; MT_BYTES], [0b11111111; MT_BYTES]);
         MT.tree.set(Block { level: 0, idx: 0 }, MemoryState::Free);
     }
 }

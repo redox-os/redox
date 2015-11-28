@@ -234,6 +234,7 @@ fn event_loop() -> ! {
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
+
     // debug::d("INITIALIZING...");
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
@@ -331,6 +332,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             context_switch(false);
         }
     });
+
+    memory::memory_init();
 }
 
 #[cold]
