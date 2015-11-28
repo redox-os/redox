@@ -10,7 +10,7 @@ pub extern "C" fn __rust_allocate(size: usize, align: usize) -> *mut u8 {
 #[allow(unused_variables)]
 #[no_mangle]
 pub extern "C" fn __rust_deallocate(ptr: *mut u8, old_size: usize, align: usize) {
-    unsafe { sys_unalloc(ptr as usize) }
+    unsafe { sys_dealloc(ptr as usize) }
 }
 
 #[allow(unused_variables)]

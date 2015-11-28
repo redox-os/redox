@@ -139,6 +139,6 @@ pub unsafe fn sys_realloc_inplace(ptr: usize, size: usize) -> usize {
     syscall(SYS_REALLOC_INPLACE, ptr, size, 0)
 }
 
-pub unsafe fn sys_unalloc(ptr: usize) {
-    syscall(SYS_UNALLOC, ptr, 0, 0);
+pub unsafe fn sys_dealloc(ptr: usize) {
+    syscall(SYS_DEALLOC, ptr, 0, 0);
 }

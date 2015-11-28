@@ -186,8 +186,8 @@ impl Resource for IntelHDAResource {
             // stream.cbl = 0;
             // stream.lvi = 0;
             // stream.bdlpl = 0;
-            // memory::unalloc(bd_addr);
-            // memory::unalloc(bdl as usize);
+            // memory::dealloc(bd_addr);
+            // memory::dealloc(bdl as usize);
             //
 
             Some(buf.len())

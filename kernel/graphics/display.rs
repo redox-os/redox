@@ -454,11 +454,11 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                memory::unalloc(self.offscreen);
+                memory::dealloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                memory::unalloc(self.onscreen);
+                memory::dealloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;
