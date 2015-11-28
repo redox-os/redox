@@ -575,7 +575,7 @@ impl Uhci {
                                 Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                             }
 
-                        // memory::unalloc(in_td as usize);
+                        // memory::dealloc(in_td as usize);
                         });
                     }
                     DESC_HID => {
@@ -593,10 +593,10 @@ impl Uhci {
                 i += length as isize;
             }
 
-            memory::unalloc(desc_cfg_buf as usize);
+            memory::dealloc(desc_cfg_buf as usize);
         }
 
-        memory::unalloc(desc_dev as usize);
+        memory::dealloc(desc_dev as usize);
     }
 
     pub unsafe fn init(&self) {

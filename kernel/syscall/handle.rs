@@ -713,7 +713,7 @@ pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_unalloc(ptr: usize) {
+pub unsafe fn do_sys_dealloc(ptr: usize) {
     let reenable = scheduler::start_no_ints();
 
     if let Some(mut current) = Context::current_mut() {
@@ -762,7 +762,7 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         SYS_ALLOC => regs.ax = do_sys_alloc(regs.bx),
         SYS_REALLOC => regs.ax = do_sys_realloc(regs.bx, regs.cx),
         SYS_REALLOC_INPLACE => regs.ax = do_sys_realloc_inplace(regs.bx, regs.cx),
-        SYS_UNALLOC => do_sys_unalloc(regs.bx),
+        SYS_DEALLOC => do_sys_dealloc(regs.bx),
 
         _ => return false,
     }

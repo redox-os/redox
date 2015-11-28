@@ -228,7 +228,7 @@ pub unsafe extern "cdecl" fn context_userspace(ip: usize,
 /// Unsafe due to raw memory handling and FnBox
 pub unsafe extern "cdecl" fn context_box(box_fn_ptr: usize) {
     let box_fn = ptr::read(box_fn_ptr as *mut Box<FnBox()>);
-    memory::unalloc(box_fn_ptr);
+    memory::dealloc(box_fn_ptr);
     box_fn();
     do_sys_exit(0);
 }
@@ -262,7 +262,7 @@ impl ContextMemory {
 
 impl Drop for ContextMemory {
     fn drop(&mut self) {
-        unsafe { memory::unalloc(self.physical_address) };
+        unsafe { memory::dealloc(self.physical_address) };
     }
 }
 
@@ -740,7 +740,7 @@ impl Context {
 impl Drop for Context {
     fn drop(&mut self) {
         if self.kernel_stack > 0 {
-            unsafe { memory::unalloc(self.kernel_stack) };
+            unsafe { memory::dealloc(self.kernel_stack) };
         }
     }
 }

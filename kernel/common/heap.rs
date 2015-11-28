@@ -88,7 +88,7 @@ impl<T> Memory<T> {
 impl<T> Drop for Memory<T> {
     fn drop(&mut self) {
         if self.ptr as usize > 0 {
-            unsafe { unalloc(self.ptr as usize) };
+            unsafe { dealloc(self.ptr as usize) };
         }
     }
 }

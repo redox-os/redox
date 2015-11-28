@@ -413,7 +413,7 @@ impl Drop for Elf {
     fn drop(&mut self) {
         unsafe {
             if self.data > 0 {
-                memory::unalloc(self.data);
+                memory::dealloc(self.data);
                 self.data = 0;
             }
         }

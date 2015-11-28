@@ -30,4 +30,4 @@ pub mod time;
 /// String to number
 pub mod to_num;
 /// Heap
-mod heap;
+pub mod heap;

@@ -51,7 +51,7 @@ pub const SYS_YIELD: usize = 158;
 pub const SYS_ALLOC: usize = 1000;
 pub const SYS_REALLOC: usize = 1001;
 pub const SYS_REALLOC_INPLACE: usize = 1002;
-pub const SYS_UNALLOC: usize = 1003;
+pub const SYS_DEALLOC: usize = 1003;
 
 // Structures
 

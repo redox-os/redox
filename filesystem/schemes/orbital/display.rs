@@ -2,7 +2,7 @@
 
 use redox::Box;
 use redox::{cmp, mem};
-use redox::syscall::{sys_alloc, sys_unalloc};
+use redox::syscall::{sys_alloc, sys_dealloc};
 
 use orbital::Color;
 use orbital::Point;
@@ -441,11 +441,11 @@ impl Drop for Display {
     fn drop(&mut self) {
         unsafe {
             if self.offscreen > 0 {
-                sys_unalloc(self.offscreen);
+                sys_dealloc(self.offscreen);
                 self.offscreen = 0;
             }
             if !self.root && self.onscreen > 0 {
-                sys_unalloc(self.onscreen);
+                sys_dealloc(self.onscreen);
                 self.onscreen = 0;
             }
             self.size = 0;

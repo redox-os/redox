@@ -1,8 +1,9 @@
-// TODO: Doc the rest
-pub use common::heap::Memory;
+// TODO: Doc the restpub use common::heap::Memory;
 
 use core::ops::{Index, IndexMut};
 use core::{cmp, intrinsics, mem, ptr};
+
+pub use common::heap::*;
 
 use scheduler;
 
@@ -64,6 +65,7 @@ pub enum MemoryState {
 
 impl MemoryState {
     /// Convert an u8 to MemoryState
+    #[inline]
     pub fn from_u8(n: u8) -> MemoryState {
         match n {
             0 => MemoryState::Free,
@@ -110,6 +112,7 @@ pub struct StateTree {
 
 impl StateTree {
     /// Get the position of a given node in the tree
+    #[inline]
     pub fn pos(&self, idx: usize, level: usize) -> usize {
         (Block {
             idx: idx,
@@ -119,11 +122,13 @@ impl StateTree {
     }
 
     /// Set the value of a node
+    #[inline]
     pub unsafe fn set(&self, block: Block, state: MemoryState) {
         self.arr.set(block.pos(), state);
     }
 
     /// Get the value of a node
+    #[inline]
     pub unsafe fn get(&self, block: Block) -> MemoryState {
         self.arr.get(block.pos())
     }
@@ -147,11 +152,13 @@ pub struct Block {
 
 impl Block {
     /// Get the position of this block
+    #[inline]
     pub fn pos(&self) -> usize {
         self.idx + (1 << self.level) - 1
     }
 
     /// Get sibling side
+    #[inline]
     pub fn sibl(&self) -> Sibling {
         match self.idx & 1 {
             0 => Sibling::Left,
@@ -160,6 +167,7 @@ impl Block {
     }
 
     /// Get this blocks buddy
+    #[inline]
     pub fn get_buddy(&self) -> Block {
         Block {
             idx: self.idx ^ 1,
@@ -168,6 +176,7 @@ impl Block {
     }
 
     /// The parrent of this block
+    #[inline]
     pub fn parrent(&self) -> Block {
         Block {
             idx: self.idx / 2,
@@ -176,6 +185,7 @@ impl Block {
     }
 
     /// The size of this block
+    #[inline]
     pub fn size(&self) -> usize {
         MT_ROOT / (1 << self.level)
     }
@@ -195,6 +205,7 @@ impl Block {
     }
 
     /// Convert a block to a pointer
+    #[inline]
     pub fn to_ptr(&self) -> usize {
         HEAP_START + self.pos() * MT_ATOM
     }
@@ -448,8 +459,8 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
     Block::from_ptr(ptr).size()
 }
 
-/// Unallocate
-pub unsafe fn unalloc(ptr: usize) {
+/// Deallocate
+pub unsafe fn dealloc(ptr: usize) {
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
@@ -486,7 +497,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
     if let Some(mut b) = MT.realloc(Block::from_ptr(ptr), size) {
         ret = b.to_ptr();
     } else {
-        unalloc(ptr);
+        dealloc(ptr);
         ret = alloc(size);
         // TODO Optimize
         for n in 0..size {
