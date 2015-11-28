@@ -110,6 +110,8 @@ impl Spa {
 
         //self.normal_class = MetaslabClass::create(self, zfs_metaslab_ops);
         //self.log_class = MetaslabClass::create(self, zfs_metaslab_ops);
+
+        // TODO: Start the spa thread
         
         self.did = 0;
     }
