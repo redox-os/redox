@@ -1,8 +1,8 @@
 // use core::simd::*;
 
-use redox::Box;
-use redox::{cmp, mem};
-use redox::syscall::{sys_alloc, sys_dealloc};
+use std::Box;
+use std::{cmp, mem};
+use std::syscall::{sys_alloc, sys_unalloc};
 
 use orbital::Color;
 use orbital::Point;

@@ -1,4 +1,4 @@
-use redox::*;
+use std::*;
 
 pub trait FromBytes: Sized {
     fn from_bytes(data: &[u8]) -> Result<Self, String> {

@@ -1,7 +1,7 @@
-use redox::{Box, String, ToString, Vec, Url};
-use redox::fs::File;
-use redox::io::Read;
-use redox::process::Command;
+use std::{Box, String, ToString, Vec, Url};
+use std::fs::File;
+use std::io::Read;
+use std::process::Command;
 
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
@@ -58,18 +58,18 @@ impl Session {
             file.read_to_end(&mut vec);
             ret.font = vec;
         } else {
-            debugln!("Failed to read font");
+            println!("Failed to read font");
         }
 
         ret.cursor = BmpFile::from_path("file:/ui/cursor.bmp");
         if !ret.cursor.has_data() {
-            debugln!("Failed to read cursor");
+            println!("Failed to read cursor");
         }
 
 
         ret.background = BmpFile::from_path("file:/ui/background.bmp");
         if !ret.background.has_data() {
-            debugln!("Failed to read background");
+            println!("Failed to read background");
         }
 
         if let Some(mut file) = File::open("file:/apps/") {
@@ -84,7 +84,7 @@ impl Session {
                 }
             }
         } else {
-            debugln!("Failed to open apps")
+            println!("Failed to open apps")
         }
 
         ret
@@ -161,7 +161,7 @@ impl Session {
                     if !(&package.icon).is_empty() {
                         if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
                             if Command::new(&package.binary).spawn_scheme().is_none() {
-                                debugln!("{}: Failed to launch", package.binary);
+                                println!("{}: Failed to launch", package.binary);
                             }
                         }
                         x = x + package.icon.width() as isize;

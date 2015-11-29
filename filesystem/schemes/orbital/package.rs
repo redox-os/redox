@@ -1,6 +1,6 @@
-use redox::{Box, GetSlice, String, ToString, Vec, Url};
-use redox::fs::File;
-use redox::io::Read;
+use std::{Box, GetSlice, String, ToString, Vec, Url};
+use std::fs::File;
+use std::io::Read;
 
 use orbital::BmpFile;
 
@@ -65,7 +65,7 @@ impl Package {
             } else if line.starts_with("description=") {
                 package.descriptions.push(line.get_slice(Some(12), None).to_string());
             } else {
-                debugln!("Unknown package info: {}", line);
+                println!("Unknown package info: {}", line);
             }
         }
 

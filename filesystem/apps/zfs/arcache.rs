@@ -1,5 +1,5 @@
-use redox::{Vec, String, ToString};
-use redox::collections::{BTreeMap, VecDeque};
+use std::{Vec, String, ToString};
+use std::collections::{BTreeMap, VecDeque};
 
 use super::dvaddr::DVAddr;
 use super::zio;

@@ -1,11 +1,9 @@
 #![crate_type="rlib"]
 #![feature(associated_consts)]
 #![feature(box_syntax)]
-#![feature(no_std)]
-#![no_std]
+#![feature(core)]
 
-#[macro_use]
-extern crate redox;
+extern crate core;
 
 pub use bmp::BmpFile;
 pub use color::Color;

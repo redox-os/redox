@@ -1,4 +1,4 @@
-use redox::{String, ToString, fmt};
+use std::{String, ToString, fmt};
 
 use super::avl;
 use super::from_bytes::FromBytes;

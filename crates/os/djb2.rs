@@ -1,4 +1,4 @@
-use redox::hash::Hasher;
+use std::hash::Hasher;
 
 pub struct Djb2 {
     state: u64,

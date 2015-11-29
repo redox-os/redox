@@ -1,11 +1,14 @@
-use redox::Box;
-use redox::{cmp, env};
-use redox::collections::BTreeMap;
-use redox::fs::{self, File};
-use redox::io::{Seek, SeekFrom};
-use redox::time::{self, Duration};
-use redox::vec::Vec;
-use redox::string::{String, ToString};
+#![feature(iter_arith)]
+
+extern crate orbital;
+
+use std::{cmp, env};
+use std::collections::BTreeMap;
+use std::fs::{self, File};
+use std::io::{Seek, SeekFrom};
+use std::time::{self, Duration};
+use std::vec::Vec;
+use std::string::{String, ToString};
 
 use orbital::{event, BmpFile, Color, EventOption, MouseEvent, Window};
 
@@ -472,6 +475,7 @@ impl FileManager {
     }
 }
 
+#[no_mangle]
 pub fn main() {
     match env::args().get(1) {
         Some(arg) => FileManager::new().main(arg),

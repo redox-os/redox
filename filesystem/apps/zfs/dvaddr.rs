@@ -1,4 +1,4 @@
-use redox::fmt;
+use std::fmt;
 
 #[derive(Copy, Clone, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(packed)]

@@ -1,6 +1,6 @@
 use super::*;
-use redox::prelude::v1::*;
-use redox::iter::FromIterator;
+use std::prelude::v1::*;
+use std::iter::FromIterator;
 
 #[derive(Clone, PartialEq, Copy)]
 /// The type of the insert mode

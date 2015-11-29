@@ -95,4 +95,18 @@ impl Environment {
             None
         }
     }
+
+    /// Unlink a resource
+    pub fn unlink(&self, url: &Url) -> bool {
+        let url_scheme = url.scheme();
+        if ! url_scheme.is_empty() {
+            for scheme in self.schemes.iter() {
+                let scheme_str = unsafe { (*scheme.get()).scheme() };
+                if scheme_str == url_scheme {
+                    return unsafe { (*scheme.get()).unlink(url) };
+                }
+            }
+        }
+        false
+    }
 }
