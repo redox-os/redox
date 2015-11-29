@@ -1,5 +1,5 @@
-use redox::mem;
-use redox::ptr;
+use std::mem;
+use std::ptr;
 
 use super::from_bytes::FromBytes;
 use super::block_ptr::BlockPtr;

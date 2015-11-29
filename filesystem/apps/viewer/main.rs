@@ -1,9 +1,12 @@
-use core::cmp::max;
+extern crate orbital;
 
-use redox::*;
+use std::cmp::max;
+
+use std::*;
 
 use orbital::*;
 
+#[no_mangle]
 pub fn main() {
     let url = match args().get(1) {
         Some(arg) => arg.clone(),

@@ -1,6 +1,6 @@
-use redox::{Box, String};
-use redox::collections::VecDeque;
-use redox::ops::DerefMut;
+use std::{Box, String};
+use std::collections::VecDeque;
+use std::ops::DerefMut;
 
 use orbital::{Color, Point, Size, Event, KeyEvent, MouseEvent, QuitEvent};
 

@@ -1,9 +1,9 @@
-use redox::Box;
-use redox::cell::UnsafeCell;
-use redox::io::SeekFrom;
-use redox::rc::Rc;
-use redox::str;
-use redox::string::{String, ToString};
+use std::Box;
+use std::cell::UnsafeCell;
+use std::io::SeekFrom;
+use std::rc::Rc;
+use std::str;
+use std::string::{String, ToString};
 
 use orbital::Color;
 use self::window::ConsoleWindow;

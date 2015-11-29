@@ -1,4 +1,4 @@
-use redox::{Box, String, ToString, Vec};
+use std::{Box, String, ToString, Vec};
 
 use orbital::*;
 

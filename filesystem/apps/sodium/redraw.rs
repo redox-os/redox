@@ -1,4 +1,4 @@
-use core::ops::Range;
+use std::ops::Range;
 
 #[derive(Clone)]
 pub enum RedrawTask {
@@ -9,4 +9,3 @@ pub enum RedrawTask {
     StatusBar,
     Cursor((usize, usize), (usize, usize)),
 }
-

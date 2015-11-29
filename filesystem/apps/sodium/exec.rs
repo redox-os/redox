@@ -1,6 +1,6 @@
 use super::*;
-use redox::*;
-use core::iter::FromIterator;
+use std::*;
+use std::iter::FromIterator;
 
 // TODO: Move the command definitions outta here
 impl Editor {

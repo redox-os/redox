@@ -1,4 +1,4 @@
-use redox::{Box, String, ToString, Vec};
+use std::{Box, String, ToString, Vec};
 
 use super::from_bytes::FromBytes;
 use super::metaslab::{Metaslab, MetaslabGroup};

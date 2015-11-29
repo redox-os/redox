@@ -2,13 +2,8 @@
 #![allow(unused_features)]
 #![feature(asm)]
 #![feature(box_syntax)]
-#![feature(no_std)]
 #![feature(vec_push_all)]
 #![feature(vec_resize)]
-#![no_std]
-
-#[macro_use]
-extern crate redox;
 
 extern crate orbital;
 
@@ -17,9 +12,14 @@ use scheme::{Resource, Scheme};
 #[path="SCHEME_PATH"]
 pub mod scheme;
 
-use redox::Box;
-use redox::io::{Read, Write, Seek, SeekFrom};
-use redox::{ptr, slice, str, usize};
+use std::Box;
+use std::io::{Read, Write, Seek, SeekFrom};
+use std::{ptr, slice, str, usize};
+
+#[no_mangle]
+pub fn main(){
+    println!("This is a scheme, it cannot be run like a normal program");
+}
 
 #[cold]
 #[inline(never)]

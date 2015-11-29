@@ -1,13 +1,13 @@
-use redox::Box;
-use redox::fs::File;
-use redox::io::*;
-use redox::mem;
-use redox::slice;
-use redox::syscall::sys_yield;
-use redox::String;
-use redox::ToString;
-use redox::to_num::ToNum;
-use redox::Vec;
+use std::Box;
+use std::fs::File;
+use std::io::*;
+use std::mem;
+use std::slice;
+use std::syscall::sys_yield;
+use std::String;
+use std::ToString;
+use std::to_num::ToNum;
+use std::Vec;
 
 use super::Event;
 use super::Color;
