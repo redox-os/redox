@@ -400,7 +400,8 @@ pub unsafe fn alloc(size: usize) -> usize {
         ret = if let Some(p) = MT.alloc(size) {
             p.to_ptr()
         } else {
-            0xFFFFFFFF
+            debugln!("Cannot find a fitting block");
+            0
         }
     }
 
@@ -451,7 +452,8 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
         ret = if let Some(p) = MT.alloc(size) {
             p.to_ptr()
         } else {
-            0xFFFFFFFF
+            debugln!("Cannot find a fitting block");
+            0
         }
     }
 
