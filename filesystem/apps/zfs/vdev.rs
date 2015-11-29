@@ -1,6 +1,7 @@
 use super::from_bytes::FromBytes;
 use super::metaslab::{Metaslab, MetaslabGroup};
 use super::nvpair::{NvList, NvValue};
+use super::util;
 use super::vdev_file::VdevFile;
 use super::zfs;
 use super::zio;
@@ -219,6 +220,10 @@ impl Vdev {
         Ok(vdev)
     }
 
+    fn open(&mut self) -> zfs::Result<()> {
+        Ok(())
+    }
+
     fn metaslab_init(&mut self, txg: u64) -> zfs::Result<()> {
         let ref top = try!(self.top.as_ref().ok_or(zfs::Error::Invalid));
 
@@ -236,6 +241,34 @@ impl Vdev {
 
         Ok(())
     }
+
+    // Get the minimum allocatable size. We define the allocatable size as
+    // the vdev's asize rounded to the nearest metaslab. This allows us to
+    // replace or attach devices which don't have the same physical size but
+    // can still satisfy the same number of allocations.
+    /*fn get_min_asize(&self, parent: Option<&Vdev>) -> u64 {
+        //vdev_t *pvd = vd->vdev_parent;
+
+        // If our parent is NULL (inactive spare or cache) or is the root,
+        // just return our own asize.
+        if self.parent.is_none() {
+            return self.asize;
+        }
+
+        // The top-level vdev just returns the allocatable size rounded
+        // to the nearest metaslab.
+        if let Some(ref top) = self.top {
+            return util::p2_align(self.asize, 1u64 << top.ms_shift);
+        }
+
+        // The allocatable space for a raidz vdev is N * sizeof(smallest child),
+        // so each child must provide at least 1/Nth of its asize.
+        //if pvd->vdev_ops == &vdev_raidz_ops {
+        //    return pvd->vdev_min_asize / pvd->vdev_children;
+        //}
+
+        //pvd->vdev_min_asize
+    }*/
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

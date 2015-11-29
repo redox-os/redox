@@ -37,6 +37,7 @@ pub mod nvstream;
 pub mod spa;
 pub mod space_map;
 pub mod uberblock;
+pub mod util;
 pub mod vdev;
 pub mod vdev_file;
 pub mod xdr;
