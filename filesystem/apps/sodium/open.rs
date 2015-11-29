@@ -1,7 +1,7 @@
 use super::*;
-use redox::prelude::v1::*;
-use redox::fs::File;
-use redox::io::Read;
+use std::prelude::v1::*;
+use std::fs::File;
+use std::io::Read;
 
 pub enum OpenStatus {
     Ok,

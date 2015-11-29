@@ -1,10 +1,10 @@
-use redox::{Box, String, Url};
-use redox::{cmp, mem, ptr};
-use redox::get_slice::GetSlice;
-use redox::io::*;
-use redox::process::Command;
-use redox::ops::DerefMut;
-use redox::to_num::ToNum;
+use std::{Box, String, Url};
+use std::{cmp, mem, ptr};
+use std::get_slice::GetSlice;
+use std::io::*;
+use std::process::Command;
+use std::ops::DerefMut;
+use std::to_num::ToNum;
 
 use orbital::event::Event;
 use orbital::Point;
@@ -109,9 +109,9 @@ pub struct Scheme {
 
 impl Scheme {
     pub fn new() -> Box<Scheme> {
-        debugln!("- Starting Orbital");
-        debugln!("    Console: Press F1");
-        debugln!("    Desktop: Press F2");
+        println!("- Starting Orbital");
+        println!("    Console: Press F1");
+        println!("    Desktop: Press F2");
         let mut ret = box Scheme {
             session: Session::new(),
             next_x: 0,
@@ -191,7 +191,7 @@ impl Scheme {
                     }
                     if accepted {
                         if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                            debugln!("{}: Failed to launch", package.binary);
+                            println!("{}: Failed to launch", package.binary);
                         }
                         break;
                     }

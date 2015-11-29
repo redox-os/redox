@@ -1,4 +1,4 @@
-use redox::*;
+use std::*;
 
 // nvp implementation version
 pub const NV_VERSION: i32 = 0;

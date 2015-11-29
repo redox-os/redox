@@ -1,7 +1,8 @@
-use redox::fs::File;
-use redox::process::Command;
-use redox::syscall::sys_close;
+use std::fs::File;
+use std::process::Command;
+use std::syscall::sys_close;
 
+#[no_mangle]
 pub fn main() {
     unsafe {
         sys_close(2);
@@ -17,14 +18,14 @@ pub fn main() {
     if let Some(mut child) = Command::new(path).spawn() {
         if let Some(status) = child.wait() {
             if let Some(code) = status.code() {
-                debugln!("{}: Child exited with exit code: {}", path, code);
+                println!("{}: Child exited with exit code: {}", path, code);
             } else {
-                debugln!("{}: No child exit code", path);
+                println!("{}: No child exit code", path);
             }
         } else {
-            debugln!("{}: Failed to wait", path);
+            println!("{}: Failed to wait", path);
         }
     } else {
-        debugln!("{}: Failed to execute", path);
+        println!("{}: Failed to execute", path);
     }
 }

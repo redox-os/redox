@@ -1,4 +1,4 @@
-use redox::String;
+use std::String;
 
 use super::nvpair::NvList;
 use super::vdev;

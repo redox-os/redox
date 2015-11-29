@@ -1,8 +1,8 @@
 #![allow(unused_must_use)]
 
 //To use this, please install zfs-fuse
-use redox::*;
-use redox::cmp::{min, max};
+use std::*;
+use std::cmp::{min, max};
 
 use self::dnode::{DNodePhys, ObjectSetPhys};
 use self::block_ptr::BlockPtr;

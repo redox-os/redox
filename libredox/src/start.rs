@@ -1,26 +1,11 @@
-#![crate_type="staticlib"]
-#![allow(unused_features)]
-#![feature(asm)]
-#![feature(box_syntax)]
-#![feature(iter_arith)]
-#![feature(no_std)]
-#![feature(slice_concat_ext)]
-#![feature(vec_push_all)]
-#![feature(vec_resize)]
-#![no_std]
+use super::{ptr, slice, str};
+use super::env::{args_init, args_destroy};
+use super::syscall::sys_exit;
+use super::Vec;
 
-#[macro_use]
-extern crate redox;
-
-extern crate orbital;
-
-use application::main;
-
-#[path="APPLICATION_PATH"]
-pub mod application;
-
-use redox::*;
-use redox::syscall::sys_exit;
+extern {
+    fn main();
+}
 
 #[no_mangle]
 #[inline(never)]
@@ -48,16 +33,3 @@ pub unsafe extern fn _start_stack(stack: *const usize) {
     args_destroy();
     sys_exit(0);
 }
-
-/*
-#[cold]
-#[inline(never)]
-#[naked]
-#[no_mangle]
-#[cfg(target_arch = "x86")]
-pub unsafe fn _start() {
-    let stack: *const usize;
-    asm!("" : "={esp}"(stack) : : "memory" : "intel", "volatile");
-    _start_stack(stack);
-}
-*/

@@ -1,15 +1,25 @@
-use redox::get_slice::GetSlice;
-use redox::ops::DerefMut;
-use redox::string::*;
-use redox::vec::Vec;
-use redox::boxed::Box;
-use redox::fs::*;
-use redox::io::*;
-use redox::env::*;
-use redox::time::Duration;
-use redox::to_num::*;
-use redox::hashmap::HashMap;
-use redox::process;
+use std::get_slice::GetSlice;
+use std::ops::DerefMut;
+use std::string::*;
+use std::vec::Vec;
+use std::boxed::Box;
+use std::fs::*;
+use std::io::*;
+use std::env::*;
+use std::time::Duration;
+use std::to_num::*;
+use std::hashmap::HashMap;
+use std::process;
+
+macro_rules! readln {
+    () => ({
+        let mut buffer = String::new();
+        match std::io::stdin().read_to_string(&mut buffer) {
+            Some(_) => Some(buffer),
+            None => None
+        }
+    });
+}
 
 /* Magic { */
 static mut application: *mut Application<'static> = 0 as *mut Application;
@@ -643,6 +653,7 @@ impl<'a> Application<'a> {
     }
 }
 
+#[no_mangle]
 pub fn main() {
     unsafe {
         let mut app = Box::new(Application::new());

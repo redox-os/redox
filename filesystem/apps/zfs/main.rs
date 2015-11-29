@@ -1,5 +1,5 @@
 //To use this, please install zfs-fuse
-use redox::*;
+use std::*;
 
 use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
@@ -11,6 +11,16 @@ use self::nvpair::NvValue;
 use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
+
+macro_rules! readln {
+    () => ({
+        let mut buffer = String::new();
+        match std::io::stdin().read_to_string(&mut buffer) {
+            Some(_) => Some(buffer),
+            None => None
+        }
+    });
+}
 
 pub mod arcache;
 pub mod avl;
@@ -358,6 +368,7 @@ impl Zfs {
 }
 
 //TODO: Find a way to remove all the to_string's
+#[no_mangle]
 pub fn main() {
     println!("Type open zfs.img to open the image file");
 

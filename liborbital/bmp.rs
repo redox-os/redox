@@ -1,10 +1,10 @@
 use super::Color;
 
-use redox::fs::File;
-use redox::io::Read;
-use redox::ops::Deref;
-use redox::String;
-use redox::Vec;
+use std::fs::File;
+use std::io::Read;
+use std::ops::Deref;
+use std::String;
+use std::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap

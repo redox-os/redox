@@ -1,14 +1,14 @@
-use redox::boxed::Box;
-use redox::fs::File;
-use redox::io::{Read, Write, SeekFrom};
-use redox::mem;
-use redox::net::*;
-use redox::rand;
-use redox::slice;
-use redox::string::{String, ToString};
-use redox::to_num::*;
-use redox::vec::Vec;
-use redox::Url;
+use std::boxed::Box;
+use std::fs::File;
+use std::io::{Read, Write, SeekFrom};
+use std::mem;
+use std::net::*;
+use std::rand;
+use std::slice;
+use std::string::{String, ToString};
+use std::to_num::*;
+use std::vec::Vec;
+use std::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]

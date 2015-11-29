@@ -1,4 +1,7 @@
-use redox::*;
+extern crate orbital;
+
+use std::*;
+
 use orbital::*;
 
 pub struct Editor {
@@ -52,20 +55,20 @@ impl Editor {
                             "Save As")
             };
             if let Some(line) = save_window.read() {
-                debugln!("Create: {}", &line);
+                println!("Create: {}", &line);
                 self.file = File::create(&line);
             }
             */
         }
 
         if let Some(ref mut file) = self.file {
-            debugln!("Save: {:?}", file.path());
-            debugln!("  Seek: {:?}", file.seek(SeekFrom::Start(0)));
-            debugln!("  Write: {:?}", file.write(&self.string.as_bytes()));
-            debugln!("  Set length: {}", file.set_len(self.string.len()));
-            debugln!("  Sync: {}", file.sync());
+            println!("Save: {:?}", file.path());
+            println!("  Seek: {:?}", file.seek(SeekFrom::Start(0)));
+            println!("  Write: {:?}", file.write(&self.string.as_bytes()));
+            println!("  Set length: {}", file.set_len(self.string.len()));
+            println!("  Sync: {}", file.sync());
         }else{
-            debugln!("File not open");
+            println!("File not open");
         }
     }
 
@@ -235,6 +238,7 @@ impl Editor {
     }
 }
 
+#[no_mangle]
 pub fn main() {
     match args().get(1) {
         Some(arg) => Editor::new().main(&arg),

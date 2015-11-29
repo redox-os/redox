@@ -118,18 +118,6 @@ macro_rules! println {
     ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
 }
 
-#[macro_export]
-macro_rules! readln {
-    () => ({
-        let mut buffer = String::new();
-        match $crate::io::stdin().read_to_string(&mut buffer) {
-            Some(_) => Some(buffer),
-            None => None
-        }
-    });
-}
-
-
 /// Helper macro for unwrapping `Result` values while returning early with an
 /// error if the value of the expression is `Err`. Can only be used in
 /// functions that return `Result` because of the early return of `Err` that
