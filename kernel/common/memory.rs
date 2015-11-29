@@ -15,18 +15,22 @@ use common::paging::PAGE_END;
 /// The depth of the memory tree
 pub const MT_DEPTH: usize = 20;
 /// The smallest possible memory block
-pub const MT_ATOM: usize = 512;
+pub const MT_ATOM: usize = 4096;
 /// The number of leafs in the memory tree
 pub const MT_LEAFS: usize = 1 << MT_DEPTH;
 /// The size of the root block
-pub const MT_ROOT: usize = MT_LEAFS * MT_ATOM;
+//pub const MT_ROOT: usize = MT_LEAFS * MT_ATOM;
 /// The number of nodes
 pub const MT_NODES: usize = MT_LEAFS * 2 - 1;
 /// The size of the memory map in bytes
 pub const MT_BYTES: usize = MT_NODES / 4;
 /// Empty memory tree
 pub const MT: MemoryTree = MemoryTree {
-    tree: StateTree { arr: StateArray { ptr: MT_PTR /* [0; MT_BYTES], */ } },
+    tree: StateTree {
+        arr: StateArray {
+            ptr: MT_PTR,
+        }
+    },
 };
 /// Where the heap starts
 pub const HEAP_START: usize = PAGE_END + MT_BYTES;
@@ -187,7 +191,7 @@ impl Block {
     /// The size of this block
     #[inline]
     pub fn size(&self) -> usize {
-        MT_ROOT / (1 << self.level)
+        MT_ATOM * (1 << (MT_DEPTH - self.level))
     }
 
     /// Convert a pointer to a block
@@ -234,9 +238,9 @@ impl MemoryTree {
 
     /// Allocate of minimum size, size
     pub unsafe fn alloc(&self, mut size: usize) -> Option<Block> {
-        if size >= MT_ROOT {
-            return None;
-        }
+//         if size >= MT_ROOT {
+//             return None;
+//         }
 
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
@@ -280,9 +284,9 @@ impl MemoryTree {
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
     pub unsafe fn realloc(&self, mut block: Block, mut size: usize) -> Option<Block> {
-        if size >= MT_ROOT {
-            return None;
-        }
+//         if size >= MT_ROOT {
+//             return None;
+//         }
 
         if let Sibling::Left = block.sibl() {
             let mut level = 0;
@@ -353,9 +357,9 @@ pub fn memory_init() {
 
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
-    if size > MT_ROOT {
-        return 0;
-    }
+//     if size > MT_ROOT {
+//         return 0;
+//     }
 
     let ret;
 
@@ -493,9 +497,9 @@ pub unsafe fn dealloc(ptr: usize) {
 
 /// Reallocate
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
-    if size > MT_ROOT {
-        return 0;
-    }
+//     if size > MT_ROOT {
+//         return 0;
+//     }
 
     let ret;
 
@@ -540,7 +544,7 @@ pub fn memory_used() -> usize {
 }
 
 pub fn memory_free() -> usize {
-    let mut ret = 0;
+    let mut ret = 0xFFFFFFFF;//MT_ROOT;
     unsafe {
         // Memory allocation must be atomic
         // TODO
