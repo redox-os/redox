@@ -1,5 +1,5 @@
-use redox::prelude::v1::*;
-use redox::hash::{Hash, Hasher};
+use std::prelude::v1::*;
+use std::hash::{Hash, Hasher};
 use ptr::DataPtr;
 use djb2::Djb2;
 
