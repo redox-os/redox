@@ -21,7 +21,7 @@ pub const MT_LEAFS: usize = 1 << MT_DEPTH;
 /// The size of the root block
 //pub const MT_ROOT: usize = MT_LEAFS * MT_ATOM;
 /// The number of nodes
-pub const MT_NODES: usize = MT_LEAFS * 2 - 1;
+pub const MT_NODES: usize = MT_LEAFS * 2;
 /// The size of the memory map in bytes
 pub const MT_BYTES: usize = MT_NODES / 4;
 /// Empty memory tree
@@ -400,7 +400,7 @@ pub unsafe fn alloc(size: usize) -> usize {
         ret = if let Some(p) = MT.alloc(size) {
             p.to_ptr()
         } else {
-            0
+            0xFFFFFFFF
         }
     }
 
@@ -451,7 +451,7 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
         ret = if let Some(p) = MT.alloc(size) {
             p.to_ptr()
         } else {
-            0
+            0xFFFFFFFF
         }
     }
 
@@ -544,7 +544,7 @@ pub fn memory_used() -> usize {
 }
 
 pub fn memory_free() -> usize {
-    let mut ret = 0xFFFFFFFF;//MT_ROOT;
+    let mut ret = 1024 * 1024;
     unsafe {
         // Memory allocation must be atomic
         // TODO
