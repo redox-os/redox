@@ -32,6 +32,7 @@
 #![feature(wrapping)]
 #![feature(zero_one)]
 #![feature(no_std)]
+#![feature(prelude_import)]
 #![no_std]
 
 //#![warn(missing_docs)]
@@ -96,7 +97,9 @@
     // TODO mod rtdeps;
 
     /* The Prelude. */
+    #[prelude_import]
     pub mod prelude;
+
 
 
     /* Primitive types */
