@@ -392,9 +392,12 @@ pub unsafe fn alloc(size: usize) -> usize {
     //     }
 
     unsafe {
-        // NOTE: In this case kernel panic is inevitable when OOM
         // TODO: Swap files
-        ret = MT.alloc(size).unwrap().to_ptr();
+        ret = if let Some(p) = MT.alloc(size) {
+            p.to_ptr()
+        } else {
+            0
+        }
     }
 
     // Memory allocation must be atomic
@@ -440,9 +443,12 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     //     }
 
     unsafe {
-        // NOTE: In this case kernel panic is inevitable when OOM
         // TODO: Swap files
-        ret = MT.alloc(size).unwrap().to_ptr();
+        ret = if let Some(p) = MT.alloc(size) {
+            p.to_ptr()
+        } else {
+            0
+        }
     }
 
     // Memory allocation must be atomic

@@ -2,7 +2,7 @@
 
 use std::Box;
 use std::{cmp, mem};
-use std::syscall::{sys_alloc, sys_unalloc};
+use std::syscall::{sys_alloc, sys_dealloc};
 
 use orbital::Color;
 use orbital::Point;
