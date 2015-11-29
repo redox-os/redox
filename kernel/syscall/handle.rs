@@ -331,42 +331,46 @@ pub unsafe fn do_sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
 ///
 /// Unsafe due to interrupt disabling and raw pointers
 pub unsafe fn do_sys_exit(status: usize){
-    let reenable = scheduler::start_no_ints();
+    {
+        let reenable = scheduler::start_no_ints();
 
-    let mut statuses = Vec::new();
-    let (pid, ppid) = if let Some(mut current) = Context::current_mut() {
-        current.exited = true;
-        mem::swap(&mut statuses, &mut current.statuses);
-        (current.pid, current.ppid)
-    } else {
-        (0, 0)
-    };
+        let mut statuses = Vec::new();
+        let (pid, ppid) = if let Some(mut current) = Context::current_mut() {
+            current.exited = true;
+            mem::swap(&mut statuses, &mut current.statuses);
+            (current.pid, current.ppid)
+        } else {
+            (0, 0)
+        };
 
-    let mut contexts = ::env().contexts.lock();
-    for context in contexts.iter_mut() {
-        //Add exit status to parent
-        if context.pid == ppid {
-            context.statuses.push(ContextStatus {
-                pid: pid,
-                status: status
-            });
-            for status in statuses.iter() {
+        let mut contexts = ::env().contexts.lock();
+        for context in contexts.iter_mut() {
+            //Add exit status to parent
+            if context.pid == ppid {
                 context.statuses.push(ContextStatus {
-                    pid: status.pid,
-                    status: status.status
+                    pid: pid,
+                    status: status
                 });
+                for status in statuses.iter() {
+                    context.statuses.push(ContextStatus {
+                        pid: status.pid,
+                        status: status.status
+                    });
+                }
+            }
+
+            //Move children to parent
+            if context.ppid == pid {
+                context.ppid = ppid;
             }
         }
 
-        //Move children to parent
-        if context.ppid == pid {
-            context.ppid = ppid;
-        }
+        scheduler::end_no_ints(reenable);
     }
 
-    scheduler::end_no_ints(reenable);
-
-    context_switch(false);
+    loop {
+        context_switch(false);
+    }
 }
 
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
@@ -562,10 +566,27 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     ret
 }
 
-pub unsafe fn do_sys_unlink(_: *const u8) -> usize {
-    // Implement body of do_sys_mkdir
+pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
+    let mut ret = usize::MAX;
 
-    usize::MAX
+    let reenable = scheduler::start_no_ints();
+
+    if let Some(current) = Context::current() {
+        let path_string =
+            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
+
+        scheduler::end_no_ints(reenable);
+
+        if (::env()).unlink(&Url::from_string(path_string)) {
+            ret = 0;
+        }
+
+        scheduler::start_no_ints();
+    }
+
+    scheduler::end_no_ints(reenable);
+
+    ret
 }
 
 pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> usize {

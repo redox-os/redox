@@ -1,4 +1,4 @@
-use redox::*;
+use std::*;
 
 use super::from_bytes::FromBytes;
 

@@ -1,5 +1,5 @@
 use super::*;
-use redox::*;
+use std::*;
 
 impl Editor {
     /// Invoke a command in the prompt

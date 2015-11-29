@@ -1,4 +1,4 @@
-use redox::*;
+use std::*;
 
 // nvp implementation version
 pub const NV_VERSION: i32 = 0;
@@ -18,6 +18,10 @@ impl NvList {
             nvflag: nvflag,
             pairs: Vec::new(),
         }
+    }
+
+    pub fn add(&mut self, name: String, value: NvValue) {
+        self.pairs.push((name, value));
     }
 
     pub fn find(&self, name: &str) -> Option<&NvValue> {
@@ -350,6 +354,15 @@ impl<'a> GetNvValue<'a> for i64 {
     fn get(value: &'a NvValue) -> Option<Self> {
         match *value {
             NvValue::Int64(v) => Some(v),
+            _ => None,
+        }
+    }
+}
+
+impl<'a> GetNvValue<'a> for &'a String {
+    fn get(value: &'a NvValue) -> Option<Self> {
+        match *value {
+            NvValue::String(ref v) => Some(v),
             _ => None,
         }
     }

@@ -1,5 +1,5 @@
-// To use this, please install zfs-fuse
-use redox::*;
+//To use this, please install zfs-fuse
+use std::*;
 
 use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
@@ -11,6 +11,16 @@ use self::nvpair::NvValue;
 use self::space_map::SpaceMapPhys;
 use self::uberblock::Uberblock;
 use self::vdev::VdevLabel;
+
+macro_rules! readln {
+    () => ({
+        let mut buffer = String::new();
+        match std::io::stdin().read_to_string(&mut buffer) {
+            Some(_) => Some(buffer),
+            None => None
+        }
+    });
+}
 
 pub mod arcache;
 pub mod avl;
@@ -28,6 +38,7 @@ pub mod spa;
 pub mod space_map;
 pub mod uberblock;
 pub mod vdev;
+pub mod vdev_file;
 pub mod xdr;
 pub mod zap;
 pub mod zfs;
@@ -386,7 +397,8 @@ impl Zfs {
     }
 }
 
-// TODO: Find a way to remove all the to_string's
+//TODO: Find a way to remove all the to_string's
+#[no_mangle]
 pub fn main() {
     println!("Type open zfs.img to open the image file");
 
@@ -415,6 +427,12 @@ pub fn main() {
                         println!("ROOTBP[0] {:?}", uberblock.rootbp.dvas[0]);
                         println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
                         println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
+                    } else if command == "spa_import" {
+                        let mut nvpairs_buffer = zfs.reader.zio.read(32, 256 * 224);
+                        let mut xdr = xdr::MemOps::new(&mut nvpairs_buffer);
+                        let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
+                        let name = nv_list.get::<&String>("name").unwrap().clone();
+                        let spa = spa::Spa::import(name, nv_list).unwrap();
                     } else if command == "vdev_label" {
                         match VdevLabel::from_bytes(&zfs.reader.zio.read(0, 256 * 2)) {
                             Ok(ref mut vdev_label) => {

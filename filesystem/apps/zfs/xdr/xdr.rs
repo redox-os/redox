@@ -1,4 +1,4 @@
-use redox::*;
+use std::*;
 
 #[derive(Debug)]
 pub struct XdrError;

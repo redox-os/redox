@@ -32,6 +32,7 @@
 #![feature(wrapping)]
 #![feature(zero_one)]
 #![feature(no_std)]
+#![feature(prelude_import)]
 #![no_std]
 
 // #![warn(missing_docs)]
@@ -42,41 +43,38 @@
 // add a new crate name so we can attach the reexports to it.
 #[macro_reexport(assert, assert_eq, debug_assert, debug_assert_eq,
                     unreachable, unimplemented, write, writeln)]
-extern crate core as __core;
+    extern crate core as __core;
 
-#[macro_use]
-#[macro_reexport(vec, format)]
-extern crate collections as core_collections;
-
-#[allow(deprecated)]
-extern crate rand as core_rand;
-extern crate alloc;
-extern crate rustc_unicode;
-// TODO extern crate libc;
-
-// NB: These reexports are in the order they should be listed in rustdoc
-
-pub use core::any;
-pub use core::cell;
-pub use core::clone;
-pub use core::cmp;
-pub use core::convert;
-pub use core::default;
-pub use core::hash;
-pub use core::intrinsics;
-pub use core::iter;
-pub use core::marker;
-pub use core::mem;
-pub use core::ops;
-pub use core::ptr;
-pub use core::raw;
-#[allow(deprecated)]
-pub use core::simd;
-pub use core::result;
-pub use core::option;
-pub mod error;
     #[macro_use]
-pub mod debug;
+    #[macro_reexport(vec, format)]
+    extern crate collections as core_collections;
+
+    #[allow(deprecated)] extern crate rand as core_rand;
+    extern crate alloc;
+    extern crate rustc_unicode;
+    //TODO extern crate libc;
+
+    // NB: These reexports are in the order they should be listed in rustdoc
+
+    pub use core::any;
+    pub use core::cell;
+    pub use core::clone;
+    pub use core::cmp;
+    pub use core::convert;
+    pub use core::default;
+    pub use core::hash;
+    pub use core::intrinsics;
+    pub use core::iter;
+    pub use core::marker;
+    pub use core::mem;
+    pub use core::ops;
+    pub use core::ptr;
+    pub use core::raw;
+    #[allow(deprecated)]
+    pub use core::simd;
+    pub use core::result;
+    pub use core::option;
+    pub mod error;
 
 pub use alloc::arc;
 pub use alloc::boxed;
@@ -98,11 +96,13 @@ pub mod macros;
 
 // TODO mod rtdeps;
 
-// The Prelude.
-pub mod prelude;
+    /* The Prelude. */
+    #[prelude_import]
+    pub mod prelude;
 
 
-// Primitive types
+
+    /* Primitive types */
 
 // NB: slice and str are primitive types too, but their module docs + primitive
 // doc pages are inlined from the public re-exports of core_collections::{slice,
@@ -196,8 +196,10 @@ pub mod alloc_system;
     #[path="../../kernel/externs.rs"]
 pub mod externs;
 
-/// A module for system calls
-pub mod syscall;
+    pub mod start;
+
+    /// A module for system calls
+    pub mod syscall;
 
 /// A module for audio
 pub mod audio;

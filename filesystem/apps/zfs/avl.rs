@@ -1,4 +1,4 @@
-use redox::{Box, Vec};
+use std::{Box, Vec};
 
 pub struct Node<T> {
     value: T,

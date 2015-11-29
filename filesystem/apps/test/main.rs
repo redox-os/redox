@@ -1,14 +1,28 @@
-use redox::Box;
-use redox::fs;
-use redox::io::Read;
-use redox::rand;
-use redox::ptr;
-use redox::slice::SliceConcatExt;
-use redox::string::*;
-use redox::syscall::sys_exit;
-use redox::thread;
-use redox::Vec;
+#![feature(asm)]
+#![feature(slice_concat_ext)]
 
+use std::Box;
+use std::fs;
+use std::io::Read;
+use std::rand;
+use std::ptr;
+use std::slice::SliceConcatExt;
+use std::string::*;
+use std::syscall::sys_exit;
+use std::thread;
+use std::Vec;
+
+macro_rules! readln {
+    () => ({
+        let mut buffer = String::new();
+        match std::io::stdin().read_to_string(&mut buffer) {
+            Some(_) => Some(buffer),
+            None => None
+        }
+    });
+}
+
+#[no_mangle]
 pub fn main() {
     println!("Type help for a command list");
     loop {
@@ -90,7 +104,7 @@ pub fn main() {
                         }
                     }
                     command if command == console_commands[9] => {
-                        ::redox::hashmap::test();
+                        ::std::hashmap::test();
                     }
                     command if command == console_commands[10] => {
                         unsafe {

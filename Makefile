@@ -158,32 +158,32 @@ FORCE:
 tests/%: FORCE
 	@$(SHELL) $@ && echo "$*: PASSED" || echo "$*: FAILED"
 
-$(BUILD)/libcore.rlib: rust/libcore/lib.rs
+$(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/osmium.rlib: crates/os/lib.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
+$(BUILD)/osmium.rlib: crates/os/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liballoc_system.rlib: rust/liballoc_system/lib.rs $(BUILD)/libcore.rlib
+$(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/liballoc.rlib: rust/liballoc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc_system.rlib
+$(BUILD)/liballoc.rlib: rust/src/liballoc/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc_system.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/librustc_unicode.rlib: rust/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
+$(BUILD)/librustc_unicode.rlib: rust/src/librustc_unicode/lib.rs $(BUILD)/libcore.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libcollections.rlib: rust/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
+$(BUILD)/libcollections.rlib: rust/src/libcollections/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/librand.rlib: rust/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/librand.rlib: rust/src/librand/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/librustc_unicode.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
-$(BUILD)/libredox.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
-	$(RUSTC) $(RUSTCFLAGS) --cfg std --crate-name redox -o $@ $<
+$(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib $(BUILD)/librand.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name std -o $@ $<
 
-$(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libredox.rlib
+$(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
@@ -200,20 +200,19 @@ $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 
 $(BUILD)/crt0.o: kernel/program-$(ARCH).asm
 ifeq ($(ARCH),x86_64)
-	$(AS) -f elf64 $< -o $@
+	$(AS) -f elf64 -o $@ $<
 else
-	$(AS) -f elf $< -o $@
+	$(AS) -f elf -o $@ $<
 endif
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs kernel/program.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
-	$(SED) "s|APPLICATION_PATH|../../$<|" kernel/program.rs > $(BUILD)/apps_$*.gen
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/apps_$*.rlib $(BUILD)/apps_$*.gen
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/apps_$*.rlib $<
 	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
-filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libredox.rlib $(BUILD)/liborbital.rlib
+filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
-	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/schemes_$*.rlib $(BUILD)/libredox.rlib
+	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/schemes_$*.rlib
 
 filesystem/%.list: filesystem/%.bin
 	$(OBJDUMP) -C -M intel -D $< > $@

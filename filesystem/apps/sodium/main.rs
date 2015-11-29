@@ -1,5 +1,6 @@
-pub use redox::collections::VecDeque;
+extern crate orbital;
 
+pub use std::collections::VecDeque;
 
 mod editor;
 pub use self::editor::*;
@@ -57,6 +58,7 @@ pub use self::exec::*;
 
 pub mod invert;
 
+#[no_mangle]
 pub fn main() {
     Editor::init();
 }

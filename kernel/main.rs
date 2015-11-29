@@ -66,7 +66,7 @@ use schemes::ethernet::*;
 use schemes::icmp::*;
 use schemes::ip::*;
 use schemes::memory::*;
-// use schemes::display::*;
+//use schemes::display::*;
 
 use syscall::handle::*;
 
@@ -234,8 +234,11 @@ fn event_loop() -> ! {
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
+    Page::init();
+    memory::memory_init();
+    // Unmap first page to catch null pointer errors (after reading memory map)
+    Page::new(0).unmap();
 
-    // debug::d("INITIALIZING...");
     display::fonts = font_data;
     tss_ptr = tss_data as *mut TSS;
 
@@ -332,8 +335,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             context_switch(false);
         }
     });
-
-    memory::memory_init();
 }
 
 #[cold]

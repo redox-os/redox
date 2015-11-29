@@ -713,4 +713,31 @@ impl KScheme for FileScheme {
             }
         }
     }
+
+    fn unlink(&mut self, url: &Url) -> bool {
+        let mut ret = false;
+
+        let mut path = url.reference();
+        while path.starts_with('/') {
+            path = &path[1..];
+        }
+
+        let mut i = 0;
+        while i < self.fs.nodes.len() {
+            let mut remove = false;
+
+            if let Some(node) = self.fs.nodes.get(i) {
+                remove = node.name == path;
+            }
+
+            if remove {
+                self.fs.nodes.remove(i);
+                ret = true;
+            } else {
+                i += 1;
+            }
+        }
+
+        ret
+    }
 }

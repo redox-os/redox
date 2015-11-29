@@ -1,4 +1,4 @@
-use redox::prelude::v1::*;
+use std::prelude::v1::*;
 use header::GlobalHeader;
 use table::NodeTable;
 use data::Data;

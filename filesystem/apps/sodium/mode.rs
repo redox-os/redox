@@ -1,5 +1,5 @@
 use super::*;
-use redox::*;
+use std::*;
 
 #[derive(Clone, PartialEq, Copy)]
 /// A mode. Modes determine which set of commands that will be used. Modes comes in two flavors:

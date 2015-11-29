@@ -1,4 +1,4 @@
-use redox::result;
+use std::result;
 
 /// The error type used throughout ZFS
 #[derive(Copy, Clone, Debug, PartialEq)]

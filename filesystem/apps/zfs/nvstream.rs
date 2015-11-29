@@ -1,4 +1,4 @@
-use redox::*;
+use std::*;
 
 use super::nvpair::{DataType, NV_VERSION, NvList, NvValue};
 use super::xdr;
