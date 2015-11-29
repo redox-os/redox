@@ -37,6 +37,12 @@ Make sure you get submodules when you clone the repository.
 git clone --recursive
 ```
 
+If you already have a copy of the repository locally without submodules, you
+can download them with: 
+```bash
+git submodule update --init
+```
+
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
