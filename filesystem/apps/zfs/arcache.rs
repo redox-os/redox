@@ -63,7 +63,7 @@ impl Mfu {
 
     pub fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
         {
-            let mut lowest_freq = 0;
+            let mut lowest_freq = ::std::u64::MAX;
             let mut lowest_dva: Result<DVAddr, String> = Err("No valid DVA found.".to_string());
 
             for (&dva_key, &(freq, _)) in self.map.iter() {
