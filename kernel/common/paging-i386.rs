@@ -82,7 +82,7 @@ impl Page {
     /// Map the memory page to a given physical memory address
     pub unsafe fn map(&mut self, physical_address: usize) {
         ptr::write(self.entry_address() as *mut u32,
-                //TODO: Remove 1 << 2 which is there to allow for userspace arg access
+                   // TODO: Remove 1 << 2 which is there to allow for userspace arg access
                    (physical_address as u32 & 0xFFFFF000) | 1 << 2 | 1); //read/write, present
         self.flush();
     }

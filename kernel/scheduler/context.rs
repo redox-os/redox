@@ -93,7 +93,9 @@ pub unsafe fn context_switch(interrupted: bool) {
 /// Clone context
 ///
 /// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize, clone_pid: usize) {
+pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
+                                           flags: usize,
+                                           clone_pid: usize) {
     let reenable = scheduler::start_no_ints();
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -127,7 +129,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                         physical_address: physical_address,
                         virtual_address: entry.virtual_address,
                         virtual_size: entry.virtual_size,
-                        writeable: true
+                        writeable: true,
                     })
                 } else {
                     None
@@ -157,7 +159,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: us
                             physical_address: physical_address,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
-                            writeable: entry.writeable
+                            writeable: entry.writeable,
                         });
                     }
                 }
@@ -238,16 +240,18 @@ pub struct ContextMemory {
     pub physical_address: usize,
     pub virtual_address: usize,
     pub virtual_size: usize,
-    pub writeable: bool
+    pub writeable: bool,
 }
 
 impl ContextMemory {
     pub unsafe fn map(&mut self) {
         for i in 0..(self.virtual_size + 4095) / 4096 {
             if self.writeable {
-                Page::new(self.virtual_address + i * 4096).map_user_write(self.physical_address + i * 4096);
+                Page::new(self.virtual_address + i * 4096)
+                    .map_user_write(self.physical_address + i * 4096);
             } else {
-                Page::new(self.virtual_address + i * 4096).map_user_read(self.physical_address + i * 4096);
+                Page::new(self.virtual_address + i * 4096)
+                    .map_user_read(self.physical_address + i * 4096);
             }
         }
     }
@@ -276,49 +280,49 @@ pub struct ContextStatus {
 
 pub struct Context {
 // These members are used for control purposes by the scheduler {
-    /// The PID of the context
+// The PID of the context
     pub pid: usize,
-    /// The PID of the parent
+/// The PID of the parent
     pub ppid: usize,
-    /// The name of the context
+/// The name of the context
     pub name: String,
-    /// Indicates that the context was interrupted, used for prioritizing active contexts
+/// Indicates that the context was interrupted, used for prioritizing active contexts
     pub interrupted: bool,
-    /// Indicates that the context exited
+/// Indicates that the context exited
     pub exited: bool,
-    /// The number of time slices left
+/// The number of time slices left
     pub slices: usize,
-    /// The total of all used slices
+/// The total of all used slices
     pub slice_total: usize,
 // }
 
 // These members control the stack and registers and are unique to each context {
-    /// The kernel stack
+// The kernel stack
     pub kernel_stack: usize,
-    /// The current kernel stack pointer
+/// The current kernel stack pointer
     pub sp: usize,
-    /// The current kernel flags
+/// The current kernel flags
     pub flags: usize,
-    /// The location used to save and load SSE and FPU registers
+/// The location used to save and load SSE and FPU registers
     pub fx: usize,
-    /// The context stack
+/// The context stack
     pub stack: Option<ContextMemory>,
-    /// Indicates that registers can be loaded (they must be saved first)
+/// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
 // }
 
 // These members are cloned for threads, copied or created for processes {
-    // Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
+// Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
     pub args: Arc<UnsafeCell<Vec<String>>>,
-    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
     pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
-    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
+/// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
 // }
 
-    /// Exit statuses of children
+/// Exit statuses of children
     pub statuses: Vec<ContextStatus>,
 }
 
@@ -436,7 +440,7 @@ impl Context {
         return context_i;
     }
 
-    //TODO: Do not cheat
+    // TODO: Do not cheat
     pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {
         if context_enabled {
             let contexts = ::env().contexts.lock();
@@ -451,7 +455,7 @@ impl Context {
         }
     }
 
-    //TODO: Do not cheat
+    // TODO: Do not cheat
     pub unsafe fn current_mut<'a>() -> Option<&'a mut Box<Context>> {
         if context_enabled {
             let mut contexts = ::env().contexts.lock();
@@ -492,7 +496,7 @@ impl Context {
         let mut next_mem = 0;
 
         for mem in (*self.memory.get()).iter() {
-            let pages = (mem.virtual_size + 4095)/4096;
+            let pages = (mem.virtual_size + 4095) / 4096;
             let end = mem.virtual_address + pages * 4096;
             if next_mem < end {
                 next_mem = end;

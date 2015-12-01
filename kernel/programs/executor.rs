@@ -11,7 +11,8 @@ use common::elf::Elf;
 use common::memory;
 
 use scheduler;
-use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
+use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch,
+                         context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 
@@ -43,11 +44,11 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                         let physical_address = memory::alloc(virtual_size);
 
                         if physical_address > 0 {
-                            // Copy progbits
+            // Copy progbits
                             ::memcpy(physical_address as *mut u8,
                                      (executable.data + segment.off as usize) as *const u8,
                                      segment.file_len as usize);
-                            // Zero bss
+            // Zero bss
                             ::memset((physical_address + segment.file_len as usize) as *mut u8,
                                      0,
                                      segment.mem_len as usize - segment.file_len as usize);

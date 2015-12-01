@@ -102,7 +102,11 @@ impl Resource for AC97Resource {
                     Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                 }
 
-                debug!("{} / {}: {} / {}\n", po_civ.read(), lvi as usize, position, buf.len());
+                debug!("{} / {}: {} / {}\n",
+                       po_civ.read(),
+                       lvi as usize,
+                       position,
+                       buf.len());
 
                 let bytes = cmp::min(65534 * 2, (buf.len() - position + 1));
                 let samples = bytes / 2;
@@ -196,7 +200,10 @@ impl AC97 {
             irq: pci.read(0x3C) as u8 & 0xF,
         };
 
-        debug!("AC97 on: {:X}, {:X}, IRQ: {:X}\n", module.audio, module.bus_master, module.irq);
+        debug!("AC97 on: {:X}, {:X}, IRQ: {:X}\n",
+               module.audio,
+               module.bus_master,
+               module.irq);
 
         module
     }

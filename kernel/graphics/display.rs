@@ -1,7 +1,7 @@
 use alloc::boxed::Box;
 
 use core::{cmp, mem};
-//use core::simd::*;
+// use core::simd::*;
 
 use common::memory;
 
@@ -111,22 +111,22 @@ impl Display {
     // Optimized {
     pub unsafe fn set_run(data: u32, dst: usize, len: usize) {
         let mut i = 0;
-        /*
+        //
         // Only use 16 byte transfer if possible
-        if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
-            // Align 16
-            while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
-                *((dst + i) as *mut u32) = data;
-                i += mem::size_of::<u32>();
-            }
-            // While 16 byte transfers
-            let simd: u32x4 = u32x4(data, data, data, data);
-            while len - i >= mem::size_of::<u32x4>() {
-                *((dst + i) as *mut u32x4) = simd;
-                i += mem::size_of::<u32x4>();
-            }
-        }
-        */
+        // if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
+        // Align 16
+        // while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
+        // ((dst + i) as *mut u32) = data;
+        // i += mem::size_of::<u32>();
+        // }
+        // While 16 byte transfers
+        // let simd: u32x4 = u32x4(data, data, data, data);
+        // while len - i >= mem::size_of::<u32x4>() {
+        // ((dst + i) as *mut u32x4) = simd;
+        // i += mem::size_of::<u32x4>();
+        // }
+        // }
+        //
         // Everything after last 16 byte transfer
         while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = data;
@@ -136,21 +136,21 @@ impl Display {
 
     pub unsafe fn copy_run(src: usize, dst: usize, len: usize) {
         let mut i = 0;
-        /*
+        //
         // Only use 16 byte transfer if possible
-        if (src + i) % 16 == (dst + i) % 16 {
-            // Align 16
-            while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
-                *((dst + i) as *mut u32) = *((src + i) as *const u32);
-                i += mem::size_of::<u32>();
-            }
-            // While 16 byte transfers
-            while len - i >= mem::size_of::<u32x4>() {
-                *((dst + i) as *mut u32x4) = *((src + i) as *const u32x4);
-                i += mem::size_of::<u32x4>();
-            }
-        }
-        */
+        // if (src + i) % 16 == (dst + i) % 16 {
+        // Align 16
+        // while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
+        // ((dst + i) as *mut u32) = *((src + i) as *const u32);
+        // i += mem::size_of::<u32>();
+        // }
+        // While 16 byte transfers
+        // while len - i >= mem::size_of::<u32x4>() {
+        // ((dst + i) as *mut u32x4) = *((src + i) as *const u32x4);
+        // i += mem::size_of::<u32x4>();
+        // }
+        // }
+        //
         // Everything after last 16 byte transfer
         while len - i >= mem::size_of::<u32>() {
             *((dst + i) as *mut u32) = *((src + i) as *const u32);
