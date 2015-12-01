@@ -1,5 +1,4 @@
 use super::*;
-use std::prelude::v1::*;
 use std::iter::FromIterator;
 
 #[derive(Clone, PartialEq, Copy)]

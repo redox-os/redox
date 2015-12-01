@@ -1,5 +1,4 @@
 use super::*;
-use std::*;
 
 impl Editor {
     /// Invoke a command in the prompt
