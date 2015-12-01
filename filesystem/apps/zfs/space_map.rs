@@ -16,14 +16,13 @@ const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
 /// bucket, smp_histogram[i], contains the number of free regions
 /// whose size is:
 /// 2^(i+sm_shift) <= size of free region in bytes < 2^(i+sm_shift+1)
-
 #[derive(Debug)]
 pub struct SpaceMapPhys {
-    object: u64,   // on-disk space map object
-    objsize: u64,  // size of the object
-    alloc: u64,    // space allocated from the map
-    //pad: [u64; 5], // reserved
-    //histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE],
+    object: u64, // on-disk space map object
+    objsize: u64, // size of the object
+    alloc: u64, /* space allocated from the map
+                 * pad: [u64; 5], // reserved
+                 * histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE], */
 }
 
 impl FromBytes for SpaceMapPhys { }
@@ -90,11 +89,17 @@ impl Entry {
 impl fmt::Debug for Entry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.debug() == 1 {
-            try!(write!(f, "DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
-                   self.action(), self.sync_pass(), self.txg()));
+            try!(write!(f,
+                        "DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
+                        self.action(),
+                        self.sync_pass(),
+                        self.txg()));
         } else {
-            try!(write!(f, "ENTRY: size:0x{:X}  map_type:0x{:?}  offset:0x{:X}",
-                   self.size(), self.map_type(), self.offset()));
+            try!(write!(f,
+                        "ENTRY: size:0x{:X}  map_type:0x{:?}  offset:0x{:X}",
+                        self.size(),
+                        self.map_type(),
+                        self.offset()));
         }
         Ok(())
     }
@@ -103,22 +108,26 @@ impl fmt::Debug for Entry {
 pub fn load_space_map_avl(sm: &SpaceMap,
                           tree: &mut avl::Tree<Entry, u64>,
                           bytes: &[u8],
-                          map_type: MapType) -> Result<(), String> {
+                          map_type: MapType)
+                          -> Result<(), String> {
     for i in 0..sm.size {
-        let entry = Entry::from_bytes(&bytes[i*8..]).unwrap();
-        let entry_map_type =
-            match entry.map_type() {
-                Some(map_type) => {
-                    map_type
-                },
-                None => { return Err("Invalid map type".to_string()); },
-            };
+        let entry = Entry::from_bytes(&bytes[i * 8..]).unwrap();
+        let entry_map_type = match entry.map_type() {
+            Some(map_type) => {
+                map_type
+            }
+            None => {
+                return Err("Invalid map type".to_string());
+            }
+        };
         if entry.debug() != 1 && entry_map_type == map_type {
             // it's not a debug entry and it's the right map type, add it to the tree
             tree.insert(entry);
         }
     }
-    tree.in_order(|node| { println!("{:?}", node.value()); });
-    
+    tree.in_order(|node| {
+        println!("{:?}", node.value());
+    });
+
     Ok(())
 }

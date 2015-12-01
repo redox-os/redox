@@ -39,9 +39,10 @@ impl Editor {
     /// such as r (replace).
     pub fn get_char(&mut self) -> char {
         loop {
-            if let EventOption::Key(k) = self.window.poll()
-                                         .unwrap_or(Event::new())
-                                         .to_option() {
+            if let EventOption::Key(k) = self.window
+                                             .poll()
+                                             .unwrap_or(Event::new())
+                                             .to_option() {
                 if let Some(Key::Char(c)) = self.key_state.feed(k) {
                     self.status_bar.cmd.push(c);
                     self.redraw_task = RedrawTask::StatusBar;
@@ -60,9 +61,12 @@ impl Editor {
         let mut key = Key::Null;
         self.status_bar.cmd = String::new();
 
-//        self.status_bar.cmd = String::new();
+        // self.status_bar.cmd = String::new();
         loop {
-            if let EventOption::Key(key_event) = self.window.poll().unwrap_or(Event::new()).to_option() {
+            if let EventOption::Key(key_event) = self.window
+                                                     .poll()
+                                                     .unwrap_or(Event::new())
+                                                     .to_option() {
 
                 if let Some(k) = self.key_state.feed(key_event) {
                     let c = k.to_char();
@@ -72,50 +76,50 @@ impl Editor {
                     match self.cursor().mode {
                         Mode::Primitive(_) => {
                             key = k;
-                        },
+                        }
                         Mode::Command(_) => {
                             n = match c {
                                 '0' => {
                                     unset = false;
                                     n * 10
-                                },
+                                }
                                 '1' => {
                                     unset = false;
                                     n * 10 + 1
-                                },
+                                }
                                 '2' => {
                                     unset = false;
                                     n * 10 + 2
-                                },
+                                }
                                 '3' => {
                                     unset = false;
                                     n * 10 + 3
-                                },
+                                }
                                 '4' => {
                                     unset = false;
                                     n * 10 + 4
-                                },
+                                }
                                 '5' => {
                                     unset = false;
                                     n * 10 + 5
-                                },
+                                }
                                 '6' => {
                                     unset = false;
                                     n * 10 + 6
-                                },
+                                }
                                 '7' => {
                                     unset = false;
                                     n * 10 + 7
-                                },
+                                }
                                 '8' => {
                                     unset = false;
                                     n * 10 + 8
-                                },
+                                }
                                 '9' => {
                                     unset = false;
                                     n * 10 + 9
-                                },
-                                _   => {
+                                }
+                                _ => {
 
                                     key = k;
                                     n
@@ -127,11 +131,14 @@ impl Editor {
                 }
             }
             if key != Key::Null {
-                return Inst(if unset { Parameter::Null } else { Parameter::Int(n) }, {
-                    Cmd {
-                        key: key,
-                    }
-                });
+                return Inst(if unset {
+                                Parameter::Null
+                            } else {
+                                Parameter::Int(n)
+                            },
+                            {
+                                Cmd { key: key }
+                            });
             }
         }
 

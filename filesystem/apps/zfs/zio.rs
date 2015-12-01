@@ -11,7 +11,7 @@ pub struct Reader {
 }
 
 impl Reader {
-    //TODO: Error handling
+    // TODO: Error handling
     pub fn read(&mut self, start: usize, length: usize) -> Vec<u8> {
         let mut ret: Vec<u8> = vec![0; length*512];
 
@@ -36,13 +36,13 @@ impl Reader {
             2 => {
                 // compression off
                 Ok(data)
-            },
+            }
             1 | 3 => {
                 // lzjb compression
                 let mut decompressed = vec![0; (block_ptr.lsize()*512) as usize];
                 lzjb::decompress(&data, &mut decompressed);
                 Ok(decompressed)
-            },
+            }
             _ => Err("Error: not enough bytes".to_string()),
         }
     }
@@ -52,28 +52,30 @@ impl Reader {
         data.and_then(|data| T::from_bytes(&data[..]))
     }
 
-    pub fn read_type_array<T: FromBytes>(&mut self, block_ptr: &BlockPtr, offset: usize) -> Result<T, String> {
+    pub fn read_type_array<T: FromBytes>(&mut self,
+                                         block_ptr: &BlockPtr,
+                                         offset: usize)
+                                         -> Result<T, String> {
         let data = self.read_block(block_ptr);
-        data.and_then(|data| T::from_bytes(&data[offset*mem::size_of::<T>()..]))
+        data.and_then(|data| T::from_bytes(&data[offset * mem::size_of::<T>()..]))
     }
 
     pub fn uber(&mut self) -> Result<Uberblock, String> {
         let mut newest_uberblock: Option<Uberblock> = None;
         for i in 0..128 {
             if let Ok(uberblock) = Uberblock::from_bytes(&self.read(256 + i * 2, 2)) {
-                let newest =
-                    match newest_uberblock {
-                        Some(previous) => {
-                            if uberblock.txg > previous.txg {
-                                // Found a newer uberblock
-                                true
-                            } else {
-                                false
-                            }
+                let newest = match newest_uberblock {
+                    Some(previous) => {
+                        if uberblock.txg > previous.txg {
+                            // Found a newer uberblock
+                            true
+                        } else {
+                            false
                         }
-                        // No uberblock yet, so first one we find is the newest
-                        None => true,
-                    };
+                    }
+                    // No uberblock yet, so first one we find is the newest
+                    None => true,
+                };
 
                 if newest {
                     newest_uberblock = Some(uberblock);

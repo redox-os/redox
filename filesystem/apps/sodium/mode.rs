@@ -25,14 +25,15 @@ impl Mode {
             Command(Normal) => "Normal",
             Primitive(Insert(_)) => "Insert",
             Primitive(Prompt) => "Prompt",
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
 #[derive(Clone, PartialEq, Copy)]
 /// A command mode
 pub enum CommandMode {
-//    Visual(VisualOptions),
+    // Visual(VisualOptions),
     /// Normal mode. The default mode, which can be used for most common commands and switching to
     /// other modes.
     Normal,

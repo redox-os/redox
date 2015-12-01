@@ -161,7 +161,7 @@ impl Editor {
 
                     pos = self.after(1, p);
 
-                },
+                }
             }
 
 
@@ -188,7 +188,7 @@ impl Editor {
 
                     pos = self.before(1, p);
 
-                },
+                }
             }
 
 
@@ -197,4 +197,3 @@ impl Editor {
 
 
 }
-
