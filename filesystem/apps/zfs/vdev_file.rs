@@ -1,8 +1,5 @@
-use std::String;
-
 use super::nvpair::NvList;
-use super::vdev;
-use super::zfs;
+use super::{vdev, zfs};
 
 pub struct VdevFile {
     path: String,

@@ -1,4 +1,4 @@
-use std::*;
+use std::mem;
 
 use super::nvpair::{DataType, NV_VERSION, NvList, NvValue};
 use super::xdr;

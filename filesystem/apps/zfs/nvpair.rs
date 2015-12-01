@@ -1,4 +1,4 @@
-use std::*;
+use std::fmt;
 
 // nvp implementation version
 pub const NV_VERSION: i32 = 0;
