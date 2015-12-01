@@ -33,7 +33,7 @@ pub const MT: MemoryTree = MemoryTree {
     },
 };
 /// Where the heap starts
-pub const HEAP_START: usize = PAGE_END + MT_BYTES;
+pub const HEAP_START: usize = MT_PTR + MT_BYTES;
 
 /// The memory tree
 pub const MT_PTR: usize = PAGE_END;
