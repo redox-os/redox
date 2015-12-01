@@ -206,8 +206,9 @@ impl Resource {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                   TCP_ACK {
+                                return if (segment.header.flags.get() &
+                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                          TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
                                     Some(size)
@@ -279,8 +280,9 @@ impl Resource {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                   (TCP_SYN | TCP_ACK) {
+                                return if (segment.header.flags.get() &
+                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                          (TCP_SYN | TCP_ACK) {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
 
@@ -321,7 +323,7 @@ impl Resource {
                                     true
                                 } else {
                                     false
-                                }
+                                };
                             }
                         }
                     }
@@ -381,14 +383,15 @@ impl Resource {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                   TCP_ACK {
+                                return if (segment.header.flags.get() &
+                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                          TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
                                     true
                                 } else {
                                     false
-                                }
+                                };
                             }
                         }
                     }

@@ -22,7 +22,7 @@ impl<'a> XdrOps for MemOps<'a> {
     fn get_i64(&mut self) -> XdrResult<i64> {
         if self.pos >= self.buffer.len() {
             Err(XdrError)
-        } else if self.buffer.len()-self.pos < 8 {
+        } else if self.buffer.len() - self.pos < 8 {
             Err(XdrError)
         } else {
             let d: &i64 = unsafe { mem::transmute(&self.buffer[self.pos]) };
@@ -32,7 +32,7 @@ impl<'a> XdrOps for MemOps<'a> {
     }
 
     fn put_i64(&mut self, l: i64) -> XdrResult<()> {
-        if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < 8 {
+        if self.pos >= self.buffer.len() || self.buffer.len() - self.pos < 8 {
             // Buffer is too small
             return Err(XdrError);
         }
@@ -46,7 +46,7 @@ impl<'a> XdrOps for MemOps<'a> {
     fn get_i32(&mut self) -> XdrResult<i32> {
         if self.pos >= self.buffer.len() {
             Err(XdrError)
-        } else if self.buffer.len()-self.pos < 4 {
+        } else if self.buffer.len() - self.pos < 4 {
             Err(XdrError)
         } else {
             let d: &i32 = unsafe { mem::transmute(&self.buffer[self.pos]) };
@@ -56,7 +56,7 @@ impl<'a> XdrOps for MemOps<'a> {
     }
 
     fn put_i32(&mut self, i: i32) -> XdrResult<()> {
-        if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < 4 {
+        if self.pos >= self.buffer.len() || self.buffer.len() - self.pos < 4 {
             // Buffer is too small
             return Err(XdrError);
         }
@@ -73,13 +73,15 @@ impl<'a> XdrOps for MemOps<'a> {
         }
         if self.pos >= self.buffer.len() {
             Err(XdrError)
-        } else if self.buffer.len()-self.pos < bytes.len() {
+        } else if self.buffer.len() - self.pos < bytes.len() {
             Err(XdrError)
         } else {
             // Technically the upper bound on this slice doesn't have to be there
-            let src = self.buffer[self.pos..self.pos+bytes.len()].as_ptr();
+            let src = self.buffer[self.pos..self.pos + bytes.len()].as_ptr();
             let dst = bytes.as_mut_ptr();
-            unsafe { ptr::copy(src, dst, bytes.len()); }
+            unsafe {
+                ptr::copy(src, dst, bytes.len());
+            }
             self.pos += bytes.len();
 
             Ok(())
@@ -87,15 +89,17 @@ impl<'a> XdrOps for MemOps<'a> {
     }
 
     fn put_bytes(&mut self, bytes: &[u8]) -> XdrResult<()> {
-        if self.pos >= self.buffer.len() || self.buffer.len()-self.pos < bytes.len() {
+        if self.pos >= self.buffer.len() || self.buffer.len() - self.pos < bytes.len() {
             // Buffer is too small
             return Err(XdrError);
         }
 
         let src = bytes.as_ptr();
         // Technically the upper bound on this slice doesn't have to be there
-        let dst = self.buffer[self.pos..self.pos+bytes.len()].as_mut_ptr();
-        unsafe { ptr::copy(src, dst, bytes.len()); }
+        let dst = self.buffer[self.pos..self.pos + bytes.len()].as_mut_ptr();
+        unsafe {
+            ptr::copy(src, dst, bytes.len());
+        }
         self.pos += bytes.len();
 
         Ok(())

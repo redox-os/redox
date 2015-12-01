@@ -226,11 +226,9 @@ impl Ps2 {
             unsafe {
                 let mode_info = &*VBEMODEINFO;
                 self.mouse_x = cmp::max(0,
-                                        cmp::min(mode_info.xresolution as isize,
-                                                 self.mouse_x + x));
+                                        cmp::min(mode_info.xresolution as isize, self.mouse_x + x));
                 self.mouse_y = cmp::max(0,
-                                        cmp::min(mode_info.yresolution as isize,
-                                                 self.mouse_y + y));
+                                        cmp::min(mode_info.yresolution as isize, self.mouse_y + y));
             }
 
             self.mouse_i = 0;
@@ -249,12 +247,11 @@ impl Ps2 {
 
     /// Function to change the layout of the keyboard
     pub fn change_layout(&mut self, layout: usize) {
-        self.layout =
-            match layout {
-                0 => layouts::Layout::ENGLISH,
-                1 => layouts::Layout::FRENCH,
-                _ => layouts::Layout::ENGLISH
-            }
+        self.layout = match layout {
+            0 => layouts::Layout::ENGLISH,
+            1 => layouts::Layout::FRENCH,
+            _ => layouts::Layout::ENGLISH,
+        }
     }
 }
 
