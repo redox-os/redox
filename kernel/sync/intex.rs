@@ -11,9 +11,7 @@ pub struct Intex<T: ?Sized> {
 impl<T> Intex<T> {
     /// Create a new Intex with value `value`.
     pub fn new(value: T) -> Self {
-        Intex {
-            value: UnsafeCell::new(value),
-        }
+        Intex { value: UnsafeCell::new(value) }
     }
 }
 

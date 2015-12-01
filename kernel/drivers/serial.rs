@@ -8,7 +8,7 @@ use schemes::KScheme;
 
 #[repr(packed)]
 struct SerialInfo {
-    pub ports: [u16; 4]
+    pub ports: [u16; 4],
 }
 
 const SERIALINFO: *const SerialInfo = 0x400 as *const SerialInfo;

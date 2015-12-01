@@ -76,7 +76,8 @@ impl MouseEvent {
             code: EVENT_MOUSE,
             a: self.x as i64,
             b: self.y as i64,
-            c: self.left_button as i64 | (self.middle_button as i64) << 1 | (self.right_button as i64) << 2,
+            c: self.left_button as i64 | (self.middle_button as i64) << 1 |
+               (self.right_button as i64) << 2,
         }
     }
 

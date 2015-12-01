@@ -147,7 +147,8 @@ impl Rtl8139 {
             debug::dl();
 
             self.inbound
-                .push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8, frame_len - 4)));
+                .push_back(Vec::from(slice::from_raw_parts(frame_addr as *const u8,
+                                                           frame_len - 4)));
 
             capr = capr + frame_len + 4;
             capr = (capr + 3) & (0xFFFFFFFF - 3);
