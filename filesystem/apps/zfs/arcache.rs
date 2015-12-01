@@ -22,7 +22,7 @@ impl Mru {
         }
     }
 
-    fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
+    pub fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
         // If necessary, make room for the block in the cache
         while self.used + (dva.asize() as usize) > self.size {
             let last_dva = match self.queue.pop_back() {
@@ -61,12 +61,26 @@ impl Mfu {
         }
     }
 
-// TODO: cache_block. Remove the DVA with the lowest frequency
-//
-// fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
-// }
-//
+    pub fn cache_block(&mut self, dva: &DVAddr, block: Vec<u8>) -> Result<Vec<u8>, String> {
+        {
+            let mut lowest_freq = ::std::u64::MAX;
+            let mut lowest_dva: Result<DVAddr, String> = Err("No valid DVA found.".to_string());
 
+            for (&dva_key, &(freq, _)) in self.map.iter() {
+                if freq < lowest_freq {
+                    lowest_freq = freq;
+                    lowest_dva = Ok(dva_key);
+                }
+            }
+
+            self.map.remove(&try!(lowest_dva));
+        }
+
+        // Add the block to the cache
+        self.used += dva.asize() as usize;
+        self.map.insert(*dva, (1, block));
+        Ok(self.map.get(dva).unwrap().1.clone())
+    }
 }
 
 // Our implementation of the Adaptive Replacement Cache (ARC) is set up to allocate
