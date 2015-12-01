@@ -47,12 +47,13 @@ impl ConsoleWindow {
 
     /// Set the window title
     pub fn set_title(&mut self, title: &str) {
-        //TODO THIS IS A HACK, should use self.window.setTitle(title);
+        // TODO THIS IS A HACK, should use self.window.setTitle(title);
         self.window = Window::new(self.window.x(),
                                   self.window.y(),
                                   self.window.width(),
                                   self.window.height(),
-                                  title).unwrap();
+                                  title)
+                          .unwrap();
     }
 
     /// Poll the window
@@ -76,16 +77,19 @@ impl ConsoleWindow {
             if let EventOption::Key(key_event) = event.to_option() {
                 if key_event.pressed {
                     match key_event.scancode {
-                        K_BKSP => if self.offset > 0 {
-                            self.history[self.history_i] = self.history[self.history_i][0 .. self.offset - 1].to_string() +
-                                           &self.history[self.history_i][self.offset ..];
-                            self.offset -= 1;
-                        },
-                        K_DEL => if self.offset < self.history[self.history_i].len() {
-                            self.history[self.history_i] =
+                        K_BKSP =>
+                            if self.offset > 0 {
+                                self.history[self.history_i] =
+                                    self.history[self.history_i][0..self.offset - 1].to_string() +
+                                    &self.history[self.history_i][self.offset..];
+                                self.offset -= 1;
+                            },
+                        K_DEL =>
+                            if self.offset < self.history[self.history_i].len() {
+                                self.history[self.history_i] =
                                 self.history[self.history_i][0 .. self.offset].to_string() +
                                 &self.history[self.history_i][self.offset + 1 .. self.history[self.history_i].len() - 1];
-                        },
+                            },
                         K_HOME => self.offset = 0,
                         K_UP => {
                             if self.history_i + 1 < self.history.len() {
@@ -124,9 +128,10 @@ impl ConsoleWindow {
                             }
                             '\x1B' => break,
                             _ => {
-                                self.history[self.history_i] = self.history[self.history_i][0 .. self.offset].to_string() +
-                                               &key_event.character.to_string() +
-                                               &self.history[self.history_i][self.offset ..];
+                                self.history[self.history_i] =
+                                    self.history[self.history_i][0..self.offset].to_string() +
+                                    &key_event.character.to_string() +
+                                    &self.history[self.history_i][self.offset..];
                                 self.offset += 1;
                             }
                         },

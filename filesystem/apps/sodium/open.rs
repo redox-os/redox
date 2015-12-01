@@ -1,5 +1,4 @@
 use super::*;
-use std::prelude::v1::*;
 use std::fs::File;
 use std::io::Read;
 
@@ -16,7 +15,9 @@ impl Editor {
             let mut con = String::new();
             file.read_to_string(&mut con);
 
-            self.text = con.lines().map(|x| x.chars().collect::<VecDeque<char>>()).collect::<VecDeque<VecDeque<char>>>();
+            self.text = con.lines()
+                           .map(|x| x.chars().collect::<VecDeque<char>>())
+                           .collect::<VecDeque<VecDeque<char>>>();
 
             OpenStatus::Ok
         } else {

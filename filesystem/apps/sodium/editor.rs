@@ -1,7 +1,4 @@
 use super::*;
-
-use std::*;
-
 use orbital::*;
 
 /// The current state of the editor, including the file, the cursor, the scrolling info, etc.
@@ -35,11 +32,7 @@ impl Editor {
     pub fn init() {
 
 
-        let window = Window::new(-1,
-                                 -1,
-                                 700,
-                                 500,
-                                 &"Sodium").unwrap();
+        let window = Window::new(-1, -1, 700, 500, &"Sodium").unwrap();
 
         let mut editor = Editor {
             current_cursor: 0,

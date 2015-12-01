@@ -39,7 +39,7 @@ impl Package {
         };
 
         for part in url.to_string().rsplit('/') {
-            if ! part.is_empty() {
+            if !part.is_empty() {
                 package.id = part.to_string();
                 break;
             }

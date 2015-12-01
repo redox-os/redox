@@ -14,7 +14,14 @@ impl KScheme for ContextScheme {
     }
 
     fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}", "PID", "PPID", "TIME", "MEM", "FDS", "FLG", "NAME");
+        let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
+                                 "PID",
+                                 "PPID",
+                                 "TIME",
+                                 "MEM",
+                                 "FDS",
+                                 "FLG",
+                                 "NAME");
         {
             let contexts = ::env().contexts.lock();
             for context in contexts.iter() {

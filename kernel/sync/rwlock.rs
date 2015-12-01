@@ -7,12 +7,12 @@ use scheduler::context::context_switch;
 
 struct RwLockInner {
     writer: bool,
-    readers: usize
+    readers: usize,
 }
 
 pub struct RwLock<T: ?Sized> {
     inner: Mutex<RwLockInner>,
-    value: UnsafeCell<T>
+    value: UnsafeCell<T>,
 }
 
 impl<T> RwLock<T> {
@@ -21,7 +21,7 @@ impl<T> RwLock<T> {
         RwLock {
             inner: Mutex::new(RwLockInner {
                 writer: false,
-                readers: 0
+                readers: 0,
             }),
             value: UnsafeCell::new(value),
         }
