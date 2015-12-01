@@ -1,4 +1,4 @@
-use std::*;
+use std::{mem, ptr};
 
 use super::{XdrOps, XdrError, XdrResult};
 
