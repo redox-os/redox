@@ -1,5 +1,4 @@
 use std::{mem, ptr};
-use std::{String, ToString};
 
 use super::from_bytes::FromBytes;
 use super::block_ptr::BlockPtr;

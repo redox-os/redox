@@ -1,4 +1,4 @@
-use std::*;
+use std::{mem, ptr};
 
 pub trait FromBytes: Sized {
     fn from_bytes(data: &[u8]) -> Result<Self, String> {
