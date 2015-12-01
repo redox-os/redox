@@ -30,6 +30,19 @@ Sometimes things goes wrong when compiling. Try the following before opening an 
 
 and then rebuild!
 
+## Cloning the repository
+
+Make sure you get submodules when you clone the repository.
+```bash
+git clone --recursive
+```
+
+If you already have a copy of the repository locally without submodules, you
+can download them with: 
+```bash
+git submodule update --init
+```
+
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
