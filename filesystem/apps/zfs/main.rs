@@ -1,5 +1,5 @@
-// To use this, please install zfs-fuse
-use std::*;
+//To use this, please install zfs-fuse
+use std::{mem, str, File, Read, ToNum};
 
 use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};

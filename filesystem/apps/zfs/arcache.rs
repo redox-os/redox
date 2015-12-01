@@ -1,4 +1,3 @@
-use std::{Vec, String, ToString};
 use std::collections::{BTreeMap, VecDeque};
 
 use super::dvaddr::DVAddr;
@@ -78,7 +77,7 @@ impl Mfu {
 
         // Add the block to the cache
         self.used += dva.asize() as usize;
-        self.map.insert(*dva, (1, block));
+        self.map.insert(*dva, (2, block));
         Ok(self.map.get(dva).unwrap().1.clone())
     }
 }
