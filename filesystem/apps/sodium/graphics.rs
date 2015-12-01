@@ -1,6 +1,4 @@
 use super::*;
-use std::*;
-
 use orbital::*;
 
 impl Editor {
