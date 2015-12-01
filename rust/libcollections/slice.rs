@@ -102,12 +102,18 @@ use core::slice as core_slice;
 use borrow::{Borrow, BorrowMut, ToOwned};
 use vec::Vec;
 
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::slice::{Chunks, Windows};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::slice::{Iter, IterMut};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::slice::{SplitMut, ChunksMut, Split};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::slice::{SplitN, RSplitN, SplitNMut, RSplitNMut};
+#[unstable(feature = "ref_slice", issue = "27774")]
 #[allow(deprecated)]
 pub use core::slice::{bytes, mut_ref_slice, ref_slice};
+#[stable(feature = "rust1", since = "1.0.0")]
 pub use core::slice::{from_raw_parts, from_raw_parts_mut};
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -852,6 +858,7 @@ pub trait SliceConcatExt<T: ?Sized> {
     /// # Examples
     ///
     /// ```
+    /// # #![allow(deprecated)]
     /// assert_eq!(["hello", "world"].connect(" "), "hello world");
     /// ```
     #[stable(feature = "rust1", since = "1.0.0")]
@@ -859,6 +866,9 @@ pub trait SliceConcatExt<T: ?Sized> {
     fn connect(&self, sep: &T) -> Self::Output;
 }
 
+#[unstable(feature = "slice_concat_ext",
+           reason = "trait should not have to exist",
+           issue = "27747")]
 impl<T: Clone, V: Borrow<[T]>> SliceConcatExt<T> for [V] {
     type Output = Vec<T>;
 
@@ -1066,6 +1076,18 @@ fn merge_sort<T, F>(v: &mut [T], mut compare: F) where F: FnMut(&T, &T) -> Order
                 // `len`, so these are in bounds.
                 let mut out = buf_tmp.offset(start as isize);
                 let out_end = buf_tmp.offset(right_end_idx as isize);
+
+                // If left[last] <= right[0], they are already in order:
+                // fast-forward the left side (the right side is handled
+                // in the loop).
+                // If `right` is not empty then left is not empty, and
+                // the offsets are in bounds.
+                if right != right_end && compare(&*right.offset(-1), &*right) != Greater {
+                    let elems = (right_start as usize - left as usize) / mem::size_of::<T>();
+                    ptr::copy_nonoverlapping(&*left, out, elems);
+                    out = out.offset(elems as isize);
+                    left = right_start;
+                }
 
                 while out < out_end {
                     // Either the left or the right run are exhausted,
