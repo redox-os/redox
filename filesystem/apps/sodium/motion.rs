@@ -28,7 +28,7 @@ impl Editor {
                 } else {
                     None
                 }
-            },
+            }
             Char('f') => {
 
                 let ch = self.get_char();
@@ -38,16 +38,16 @@ impl Editor {
                 } else {
                     None
                 }
-            },
+            }
             Char(c) => {
                 self.status_bar.msg = format!("Motion not defined: '{}'", c);
                 self.redraw_status_bar();
                 None
-            },
+            }
             _ => {
                 self.status_bar.msg = format!("Motion not defined");
                 None
-            },
+            }
         }
     }
     /// Like to_motion() but does not bound to the text. Therefore it returns an isize, and in some
@@ -73,7 +73,7 @@ impl Editor {
                 } else {
                     None
                 }
-            },
+            }
             Char('f') => {
 
                 let ch = self.get_char();
@@ -83,7 +83,7 @@ impl Editor {
                 } else {
                     None
                 }
-            },
+            }
             _ => None,
         }
     }

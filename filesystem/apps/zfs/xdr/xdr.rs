@@ -37,13 +37,13 @@ pub trait XdrOps {
     /// Lets you reposition the stream
     fn set_pos(&mut self, offset: usize) -> XdrResult<()>;
 
-    // TODO: Not sure if we'll need this?
-    // Buf quick ptr to buffered data
-    //fn inline(&mut self, len: usize) -> *mut i32;
+// TODO: Not sure if we'll need this?
+// Buf quick ptr to buffered data
+// fn inline(&mut self, len: usize) -> *mut i32;
 
-    // TODO: Not sure if we'll need this?
-    // Change, retrieve client info
-    //fn control(&mut self, req: isize, op: void *);
+// TODO: Not sure if we'll need this?
+// Change, retrieve client info
+// fn control(&mut self, req: isize, op: void *);
 }
 
 pub trait Xdr {
@@ -86,11 +86,10 @@ pub trait Xdr {
 
 impl<T: XdrOps> Xdr for T {
     fn encode_bool(&mut self, b: bool) -> XdrResult<()> {
-        let i =
-            match b {
-                false => 0,
-                true => 1,
-            };
+        let i = match b {
+            false => 0,
+            true => 1,
+        };
         self.put_i32(i)
     }
 
@@ -170,7 +169,7 @@ impl<T: XdrOps> Xdr for T {
     fn encode_opaque(&mut self, bytes: &[u8]) -> XdrResult<()> {
         // XDR byte strings always have len%4 == 0
         let crud: [u8; 4] = [0; 4];
-        let mut round_up = bytes.len()%4;
+        let mut round_up = bytes.len() % 4;
         if round_up > 0 {
             round_up = 4 - round_up;
         }
@@ -182,7 +181,7 @@ impl<T: XdrOps> Xdr for T {
     fn decode_opaque(&mut self, bytes: &mut [u8]) -> XdrResult<()> {
         // XDR byte strings always have len%4 == 0
         let mut crud: [u8; 4] = [0; 4];
-        let mut round_up = bytes.len()%4;
+        let mut round_up = bytes.len() % 4;
         if round_up > 0 {
             round_up = 4 - round_up;
         }
