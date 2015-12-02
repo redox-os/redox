@@ -103,12 +103,17 @@ pub mod syscall;
 /// USB input/output
 pub mod usb;
 
-pub static mut tss_ptr: *mut TSS = 0 as *mut TSS;
+pub static mut TSS_PTR: Option<&'static mut TSS> = None;
 
-pub static mut env_ptr: *mut Environment = 0 as *mut Environment;
+pub static mut ENV_PTR: Option<&'static mut Environment> = None;
 
 pub fn env() -> &'static Environment {
-    unsafe { &*env_ptr }
+    unsafe {
+        match ENV_PTR {
+            Some(&mut ref p) => p,
+            None => unreachable!(),
+        }
+    }
 }
 
 /// Pit duration
@@ -240,102 +245,106 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     Page::new(0).unmap();
 
     display::fonts = font_data;
-    tss_ptr = tss_data as *mut TSS;
-
-    env_ptr = Box::into_raw(Environment::new());
+    TSS_PTR = Some(&mut *(tss_data as *mut TSS));
+ 
+    ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
     context_pid = 1;
     context_i = 0;
     context_enabled = false;
 
-    let env = &mut *env_ptr;
-    env.contexts.lock().push(Context::root());
-    env.console.lock().draw = true;
+    match ENV_PTR {
+        Some(ref mut env) => {
+            env.contexts.lock().push(Context::root());
+            env.console.lock().draw = true;
 
-    debug!("Redox ");
-    debug::dd(mem::size_of::<usize>() * 8);
-    debug!(" bits");
-    debug::dl();
+            debug!("Redox ");
+            debug::dd(mem::size_of::<usize>() * 8);
+            debug!(" bits");
+            debug::dl();
 
-    env.clock_realtime = Rtc::new().time();
+            env.clock_realtime = Rtc::new().time();
 
-    env.schemes.push(UnsafeCell::new(Ps2::new()));
-    env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
+            env.schemes.push(UnsafeCell::new(Ps2::new()));
+            env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
 
-    pci_init(env);
+            pci_init(env);
 
-    env.schemes.push(UnsafeCell::new(DebugScheme::new()));
-    env.schemes.push(UnsafeCell::new(box ContextScheme));
-    env.schemes.push(UnsafeCell::new(box MemoryScheme));
-    // session.items.push(box RandomScheme);
-    // session.items.push(box TimeScheme);
+            env.schemes.push(UnsafeCell::new(DebugScheme::new()));
+            env.schemes.push(UnsafeCell::new(box ContextScheme));
+            env.schemes.push(UnsafeCell::new(box MemoryScheme));
+            // session.items.push(box RandomScheme);
+            // session.items.push(box TimeScheme);
 
-    env.schemes.push(UnsafeCell::new(box EthernetScheme));
-    env.schemes.push(UnsafeCell::new(box ArpScheme));
-    env.schemes.push(UnsafeCell::new(box IcmpScheme));
-    env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
-    // session.items.push(box DisplayScheme);
+            env.schemes.push(UnsafeCell::new(box EthernetScheme));
+            env.schemes.push(UnsafeCell::new(box ArpScheme));
+            env.schemes.push(UnsafeCell::new(box IcmpScheme));
+            env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
+            // session.items.push(box DisplayScheme);
 
-    Context::spawn("kpoll".to_string(),
-                   box move || {
-                       poll_loop();
-                   });
+            Context::spawn("kpoll".to_string(),
+            box move || {
+                poll_loop();
+            });
 
-    Context::spawn("kevent".to_string(),
-                   box move || {
-                       event_loop();
-                   });
+            Context::spawn("kevent".to_string(),
+            box move || {
+                event_loop();
+            });
 
-    Context::spawn("karp".to_string(),
-                   box move || {
-                       ArpScheme::reply_loop();
-                   });
+            Context::spawn("karp".to_string(),
+            box move || {
+                ArpScheme::reply_loop();
+            });
 
-    Context::spawn("kicmp".to_string(),
-                   box move || {
-                       IcmpScheme::reply_loop();
-                   });
+            Context::spawn("kicmp".to_string(),
+            box move || {
+                IcmpScheme::reply_loop();
+            });
 
-    context_enabled = true;
+            context_enabled = true;
 
-    if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
-        let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
+            if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
+                let mut vec: Vec<u8> = Vec::new();
+                resource.read_to_end(&mut vec);
 
-        for folder in String::from_utf8_unchecked(vec).lines() {
-            if folder.ends_with('/') {
-                let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/"
-                                                                             .to_string() +
-                                                                         &folder));
+                for folder in String::from_utf8_unchecked(vec).lines() {
+                    if folder.ends_with('/') {
+                        let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/"
+                                                                                 .to_string() +
+                                                                                 &folder));
 
-                let reenable = scheduler::start_no_ints();
-                env.schemes.push(UnsafeCell::new(scheme_item));
-                scheduler::end_no_ints(reenable);
+                        let reenable = scheduler::start_no_ints();
+                        env.schemes.push(UnsafeCell::new(scheme_item));
+                        scheduler::end_no_ints(reenable);
+                    }
+                }
             }
-        }
+
+            Context::spawn("kinit".to_string(),
+            box move || {
+                let wd_c = "file:/\0";
+                do_sys_chdir(wd_c.as_ptr());
+
+                let stdio_c = "debug:\0";
+                do_sys_open(stdio_c.as_ptr(), 0);
+                do_sys_open(stdio_c.as_ptr(), 0);
+                do_sys_open(stdio_c.as_ptr(), 0);
+
+                let path_string = "file:/apps/shell/main.bin";
+                let path = Url::from_str(path_string);
+
+                debug!("INIT: Executing {}\n", path_string);
+                execute(path, Vec::new());
+                debug!("INIT: Failed to execute\n");
+
+                loop {
+                    context_switch(false);
+                }
+            });
+        },
+        None => unreachable!(),
     }
-
-    Context::spawn("kinit".to_string(),
-                   box move || {
-                       let wd_c = "file:/\0";
-                       do_sys_chdir(wd_c.as_ptr());
-
-                       let stdio_c = "debug:\0";
-                       do_sys_open(stdio_c.as_ptr(), 0);
-                       do_sys_open(stdio_c.as_ptr(), 0);
-                       do_sys_open(stdio_c.as_ptr(), 0);
-
-                       let path_string = "file:/apps/shell/main.bin";
-                       let path = Url::from_str(path_string);
-
-                       debug!("INIT: Executing {}\n", path_string);
-                       execute(path, Vec::new());
-                       debug!("INIT: Failed to execute\n");
-
-                       loop {
-                           context_switch(false);
-                       }
-                   });
 }
 
 #[cold]
@@ -413,22 +422,26 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             unsafe {
                 let reenable = scheduler::start_no_ints();
 
-                let env = &mut *env_ptr;
-                env.clock_realtime = env.clock_realtime + PIT_DURATION;
-                env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
+                match ENV_PTR {
+                    Some(ref mut env) => {
+                        env.clock_realtime = env.clock_realtime + PIT_DURATION;
+                        env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
 
-                scheduler::end_no_ints(reenable);
+                        scheduler::end_no_ints(reenable);
 
-                let switch = if let Some(mut context) = Context::current_mut() {
-                    context.slices -= 1;
-                    context.slice_total += 1;
-                    context.slices == 0
-                } else {
-                    false
-                };
+                        let switch = if let Some(mut context) = Context::current_mut() {
+                            context.slices -= 1;
+                            context.slice_total += 1;
+                            context.slices == 0
+                        } else {
+                            false
+                        };
 
-                if switch {
-                    context_switch(true);
+                        if switch {
+                            context_switch(true);
+                        }
+                    },
+                    None => unreachable!(),
                 }
             }
         }
