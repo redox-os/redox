@@ -53,7 +53,7 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
 
     let reenable = scheduler::start_no_ints();
 
-    if ::env_ptr as usize > 0 {
+    if ::ENV_PTR.is_some() {
         ::env().console.lock().write(bytes);
     } else {
         let serial_status = Pio8::new(0x3F8 + 5);

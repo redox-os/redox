@@ -77,9 +77,15 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*current_ptr).unmap();
 
                     if (*next_ptr).kernel_stack > 0 {
-                        (*::tss_ptr).sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128;
+                        match ::TSS_PTR {
+                            Some(ref mut x) => x.sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128,
+                            None => unreachable!(),
+                        }
                     } else {
-                        (*::tss_ptr).sp0 = 0x200000 - 128;
+                        match ::TSS_PTR {
+                            Some(ref mut x) => x.sp0 = 0x200000 - 128,
+                            None => unreachable!(),
+                        }
                     }
 
                     (*next_ptr).map();
