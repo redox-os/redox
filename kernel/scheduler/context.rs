@@ -78,12 +78,12 @@ pub unsafe fn context_switch(interrupted: bool) {
 
                     if (*next_ptr).kernel_stack > 0 {
                         match ::TSS_PTR {
-                            Some(ref mut x) => x.sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128,
+                            Some(ref mut tss) => tss.sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128,
                             None => unreachable!(),
                         }
                     } else {
                         match ::TSS_PTR {
-                            Some(ref mut x) => x.sp0 = 0x200000 - 128,
+                            Some(ref mut tss) => tss.sp0 = 0x200000 - 128,
                             None => unreachable!(),
                         }
                     }
