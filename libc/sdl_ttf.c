@@ -58,7 +58,7 @@ main(int argc, char *argv[]){
   SDL_Surface *screen = SDL_SetVideoMode(640, 480, video_info->vfmt->BitsPerPixel, SDL_HWSURFACE);
 
   //Read in a font from the specified font file of the specified size
-  TTF_Font *text_font =  TTF_OpenFont("file:///ui/fonts/DroidSans.ttf", 36);
+  TTF_Font *text_font =  TTF_OpenFont("/ui/fonts/DroidSans.ttf", 36);
 
   if (text_font == NULL) {
     printf("Could not load font\n");

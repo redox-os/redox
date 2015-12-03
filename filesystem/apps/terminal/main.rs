@@ -12,7 +12,7 @@ pub fn main() {
 
     let stdin = File::open("terminal:Terminal").unwrap();
     let stdout = stdin.dup().unwrap();
-    stdout.dup().unwrap();
+    let stderr = stdout.dup().unwrap();
 
     let path = "file:/apps/shell/main.bin";
     if let Some(mut child) = Command::new(path).spawn() {
@@ -28,4 +28,8 @@ pub fn main() {
     } else {
         println!("{}: Failed to execute", path);
     }
+
+    drop(stderr);
+    drop(stdout);
+    drop(stdin);
 }
