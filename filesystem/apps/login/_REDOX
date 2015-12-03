@@ -1,4 +1,4 @@
-name=Shell
-icon=file:/ui/mimetypes/application-x-executable-script.bmp
+name=Login
+icon=file:/ui/apps/preferences-system-login.bmp
 author=Jeremy Soller
-description=Shell for Redox
+description=Login for Redox
