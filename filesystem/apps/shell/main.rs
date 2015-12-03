@@ -1,5 +1,4 @@
 use std::collections::BTreeMap;
-use std::get_slice::GetSlice;
 use std::ops::DerefMut;
 use std::string::*;
 use std::vec::Vec;
@@ -105,8 +104,10 @@ impl<'a> Command<'a> {
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
                     let mut command = process::Command::new(path);
-                    for arg in args.get_slice(Some(2), None) {
-                        command.arg(arg);
+                    for i in 2 .. args.len() {
+                        if let Some(arg) = args.get(i){
+                            command.arg(arg);
+                        }
                     }
 
                     if let Some(mut child) = command.spawn() {
