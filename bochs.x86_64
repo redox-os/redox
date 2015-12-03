@@ -4,7 +4,7 @@ com1: enabled=1, mode=file, dev=build/x86_64/serial.log
 megs: 1024
 
 magic_break: enabled=1
-display_library: sdl, options="gui_debug"
+display_library: x, options="gui_debug"
 
 log: -
 debug: action=ignore
