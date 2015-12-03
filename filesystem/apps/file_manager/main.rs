@@ -477,7 +477,7 @@ impl FileManager {
 
 #[no_mangle]
 pub fn main() {
-    match env::args().get(1) {
+    match env::args().nth(1) {
         Some(arg) => FileManager::new().main(arg),
         None => FileManager::new().main("file:/"),
     }

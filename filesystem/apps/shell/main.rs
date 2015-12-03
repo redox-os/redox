@@ -8,7 +8,10 @@ use std::io::{Read, Write};
 use std::env;
 use std::time::Duration;
 use std::process;
-use std::to_num::ToNum;
+
+use self::to_num::ToNum;
+
+pub mod to_num;
 
 macro_rules! readln {
     () => ({
@@ -72,7 +75,7 @@ impl<'a> Command<'a> {
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
                     Some(path) => {
-                        if ! env::set_current_dir(&path) {
+                        if env::set_current_dir(&path).is_err() {
                             println!("Bad path: {}", path);
                         }
                     }
@@ -618,9 +621,16 @@ impl<'a> Application<'a> {
     /// Run the application
     pub fn main(&mut self) {
         println!("Type help for a command list");
-        if let Some(arg) = env::args().get(1) {
+        for arg in env::args().skip(1) {
+            let cwd = match env::current_dir() {
+                Ok(path) => format!("{}", &path),
+                Err(_) => "?".to_string()
+            };
+
             let command = "run ".to_string() + arg;
-            println!("user@redox:{}# {}", &env::current_dir().unwrap_or("?".to_string()), command);
+
+            println!("user@redox:{}# {}",  cwd, command);
+
             self.on_command(&command);
         }
 
@@ -632,7 +642,14 @@ impl<'a> Application<'a> {
                     print!("- ");
                 }
             }
-            print!("user@redox:{}# ", &env::current_dir().unwrap_or("?".to_string()));
+
+            let cwd =  match env::current_dir() {
+                Ok(path) => format!("{}", &path),
+                Err(_) => "?".to_string()
+            };
+
+            print!("user@redox:{}# ", cwd);
+
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {
