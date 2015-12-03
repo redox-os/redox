@@ -9,7 +9,6 @@ use std::io::*;
 use std::env::*;
 use std::time::Duration;
 use std::to_num::*;
-use std::hashmap::HashMap;
 use std::process;
 
 macro_rules! readln {
@@ -140,6 +139,22 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "free",
+            help: "Show memory information\n    free",
+            main: Box::new(|_: &Vec<String>| {
+                if let Some(mut file) = File::open("memory:") {
+                    let mut string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read: memory:"),
+                    }
+                } else {
+                    println!("Failed to open file: memory:");
+                }
+            }),
+        });
+
+        commands.push(Command {
             name: "if",
             help: "",
             main: Box::new(|_: &Vec<String>| {}),
@@ -170,6 +185,22 @@ impl<'a> Command<'a> {
                         println!("Failed to create {}", dir_name);
                     },
                     None => println!("No name provided"),
+                }
+            }),
+        });
+
+        commands.push(Command {
+            name: "ps",
+            help: "Show process list\n    ps",
+            main: Box::new(|_: &Vec<String>| {
+                if let Some(mut file) = File::open("context:") {
+                    let mut string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read: context:"),
+                    }
+                } else {
+                    println!("Failed to open file: context:");
                 }
             }),
         });
@@ -342,7 +373,7 @@ impl<'a> Command<'a> {
 
         // TODO: Someone should implement FromIterator for HashMap before
         //       changing the type back to HashMap
-        let mut command_helper: BTreeMap<String, String> = commands
+        let command_helper: BTreeMap<String, String> = commands
             .iter()
             .map(|c| (c.name.to_string(), c.help.to_string()))
             .collect();
