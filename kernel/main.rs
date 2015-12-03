@@ -244,9 +244,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
+    sync::intex::intex_count = 0;
+
     display::fonts = font_data;
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
- 
+
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
     context_pid = 1;
