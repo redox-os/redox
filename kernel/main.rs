@@ -333,7 +333,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 do_sys_open(stdio_c.as_ptr(), 0);
                 do_sys_open(stdio_c.as_ptr(), 0);
 
-                let path_string = "file:/apps/shell/main.bin";
+                let path_string = "file:/apps/login/main.bin";
                 let path = Url::from_str(path_string);
 
                 debug!("INIT: Executing {}\n", path_string);
