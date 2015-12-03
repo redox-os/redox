@@ -8,6 +8,7 @@ use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
 use core::{mem, ptr};
+use core::ops::Deref;
 
 use common::memory;
 use common::paging::Page;
@@ -61,9 +62,8 @@ pub unsafe fn context_switch(interrupted: bool) {
         if context_i != current_i {
             if let Some(current) = contexts.get(current_i) {
                 if let Some(next) = contexts.get(context_i) {
-                    let current_ptr: *mut Box<Context> =
-                        mem::transmute(current as *const Box<Context>);
-                    let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
+                    let current_ptr: *mut Context = mem::transmute(current.deref());
+                    let next_ptr: *mut Context = mem::transmute(next.deref());
 
                     (*current_ptr).interrupted = interrupted;
                     (*next_ptr).interrupted = false;
