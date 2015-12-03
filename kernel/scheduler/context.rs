@@ -8,6 +8,7 @@ use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
 use core::{mem, ptr};
+use core::ops::Deref;
 
 use common::memory;
 use common::paging::Page;
@@ -61,9 +62,8 @@ pub unsafe fn context_switch(interrupted: bool) {
         if context_i != current_i {
             if let Some(current) = contexts.get(current_i) {
                 if let Some(next) = contexts.get(context_i) {
-                    let current_ptr: *mut Box<Context> =
-                        mem::transmute(current as *const Box<Context>);
-                    let next_ptr: *mut Box<Context> = mem::transmute(next as *const Box<Context>);
+                    let current_ptr: *mut Context = mem::transmute(current.deref());
+                    let next_ptr: *mut Context = mem::transmute(next.deref());
 
                     (*current_ptr).interrupted = interrupted;
                     (*next_ptr).interrupted = false;
@@ -77,9 +77,15 @@ pub unsafe fn context_switch(interrupted: bool) {
                     (*current_ptr).unmap();
 
                     if (*next_ptr).kernel_stack > 0 {
-                        (*::tss_ptr).sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128;
+                        match ::TSS_PTR {
+                            Some(ref mut tss) => tss.sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128,
+                            None => unreachable!(),
+                        }
                     } else {
-                        (*::tss_ptr).sp0 = 0x200000 - 128;
+                        match ::TSS_PTR {
+                            Some(ref mut tss) => tss.sp0 = 0x200000 - 128,
+                            None => unreachable!(),
+                        }
                     }
 
                     (*next_ptr).map();
@@ -93,7 +99,9 @@ pub unsafe fn context_switch(interrupted: bool) {
 /// Clone context
 ///
 /// Unsafe due to interrupt disabling, C memory handling, and raw pointers
-pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context, flags: usize, clone_pid: usize) {
+pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
+                                           flags: usize,
+                                           clone_pid: usize) {
     let reenable = scheduler::start_no_ints();
 
     let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
@@ -278,49 +286,49 @@ pub struct ContextStatus {
 
 pub struct Context {
 // These members are used for control purposes by the scheduler {
-    /// The PID of the context
+// The PID of the context
     pub pid: usize,
-    /// The PID of the parent
+/// The PID of the parent
     pub ppid: usize,
-    /// The name of the context
+/// The name of the context
     pub name: String,
-    /// Indicates that the context was interrupted, used for prioritizing active contexts
+/// Indicates that the context was interrupted, used for prioritizing active contexts
     pub interrupted: bool,
-    /// Indicates that the context exited
+/// Indicates that the context exited
     pub exited: bool,
-    /// The number of time slices left
+/// The number of time slices left
     pub slices: usize,
-    /// The total of all used slices
+/// The total of all used slices
     pub slice_total: usize,
 // }
 
 // These members control the stack and registers and are unique to each context {
-    /// The kernel stack
+// The kernel stack
     pub kernel_stack: usize,
-    /// The current kernel stack pointer
+/// The current kernel stack pointer
     pub sp: usize,
-    /// The current kernel flags
+/// The current kernel flags
     pub flags: usize,
-    /// The location used to save and load SSE and FPU registers
+/// The location used to save and load SSE and FPU registers
     pub fx: usize,
-    /// The context stack
+/// The context stack
     pub stack: Option<ContextMemory>,
-    /// Indicates that registers can be loaded (they must be saved first)
+/// Indicates that registers can be loaded (they must be saved first)
     pub loadable: bool,
 // }
 
 // These members are cloned for threads, copied or created for processes {
-    // Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
+// Program arguments, cloned for threads, copied or created for processes. It is usually read-only, but is modified by execute
     pub args: Arc<UnsafeCell<Vec<String>>>,
-    /// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
+/// Program working directory, cloned for threads, copied or created for processes. Modified by chdir
     pub cwd: Arc<UnsafeCell<String>>,
-    /// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
+/// Program memory, cloned for threads, copied or created for processes. Modified by memory allocation
     pub memory: Arc<UnsafeCell<Vec<ContextMemory>>>,
-    /// Program files, cloned for threads, copied or created for processes. Modified by file operations
+/// Program files, cloned for threads, copied or created for processes. Modified by file operations
     pub files: Arc<UnsafeCell<Vec<ContextFile>>>,
 // }
 
-    /// Exit statuses of children
+/// Exit statuses of children
     pub statuses: Vec<ContextStatus>,
 }
 
@@ -438,7 +446,7 @@ impl Context {
         return context_i;
     }
 
-    //TODO: Do not cheat
+    // TODO: Do not cheat
     pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {
         if context_enabled {
             let contexts = ::env().contexts.lock();
@@ -453,7 +461,7 @@ impl Context {
         }
     }
 
-    //TODO: Do not cheat
+    // TODO: Do not cheat
     pub unsafe fn current_mut<'a>() -> Option<&'a mut Box<Context>> {
         if context_enabled {
             let mut contexts = ::env().contexts.lock();

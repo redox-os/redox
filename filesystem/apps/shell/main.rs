@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::get_slice::GetSlice;
 use std::ops::DerefMut;
 use std::string::*;
@@ -8,7 +9,6 @@ use std::io::*;
 use std::env::*;
 use std::time::Duration;
 use std::to_num::*;
-use std::hashmap::HashMap;
 use std::process;
 
 macro_rules! readln {
@@ -21,18 +21,9 @@ macro_rules! readln {
     });
 }
 
-// Magic Macros {
+// Magic {
 static mut application: *mut Application<'static> = 0 as *mut Application;
-
-/// Execute a command
-macro_rules! exec {
-    ($cmd:expr) => ({
-        unsafe {
-            (*application).on_command(&$cmd.to_string());
-        }
-    })
-}
-// } Magic Macros
+// } Magic
 
 /// Structure which represents a Terminal's command.
 /// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
@@ -40,6 +31,7 @@ macro_rules! exec {
 /// ```
 /// let my_command = Command {
 ///     name: "my_command",
+///     help: "Describe what my_command does followed by a newline showing usage",
 ///     main: box|args: &Vec<String>| {
 ///         println!("Say 'hello' to my command! :-D");
 ///     }
@@ -61,12 +53,7 @@ impl<'a> Command<'a> {
             name: "cat",
             help: "To display a file in the output\n    cat <your_file>",
             main: Box::new(|args: &Vec<String>| {
-                let path = {
-                    match args.get(1) {
-                        Some(arg) => arg.clone(),
-                        None => String::new(),
-                    }
-                };
+                let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(mut file) = File::open(&path) {
                     let mut string = String::new();
@@ -152,6 +139,22 @@ impl<'a> Command<'a> {
         });
 
         commands.push(Command {
+            name: "free",
+            help: "Show memory information\n    free",
+            main: Box::new(|_: &Vec<String>| {
+                if let Some(mut file) = File::open("memory:") {
+                    let mut string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read: memory:"),
+                    }
+                } else {
+                    println!("Failed to open file: memory:");
+                }
+            }),
+        });
+
+        commands.push(Command {
             name: "if",
             help: "",
             main: Box::new(|_: &Vec<String>| {}),
@@ -161,12 +164,7 @@ impl<'a> Command<'a> {
             name: "ls",
             help: "To list the content of the current directory\n    ls",
             main: Box::new(|args: &Vec<String>| {
-                let path = {
-                    match args.get(1) {
-                        Some(arg) => arg.clone(),
-                        None => String::new(),
-                    }
-                };
+                let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(dir) = read_dir(&path) {
                     for entry in dir {
@@ -187,6 +185,22 @@ impl<'a> Command<'a> {
                         println!("Failed to create {}", dir_name);
                     },
                     None => println!("No name provided"),
+                }
+            }),
+        });
+
+        commands.push(Command {
+            name: "ps",
+            help: "Show process list\n    ps",
+            main: Box::new(|_: &Vec<String>| {
+                if let Some(mut file) = File::open("context:") {
+                    let mut string = String::new();
+                    match file.read_to_string(&mut string) {
+                        Some(_) => println!("{}", string),
+                        None => println!("Failed to read: context:"),
+                    }
+                } else {
+                    println!("Failed to open file: context:");
                 }
             }),
         });
@@ -218,10 +232,10 @@ impl<'a> Command<'a> {
             help: "To remove a file, in the current directory\n    rm <my_file>",
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
-                    Some(file_name) => if ! unlink(file_name) {
+                    Some(file_name) => if !unlink(file_name) {
                         println!("Failed to remove: {}", file_name);
                     },
-                    None => println!("No name provided")
+                    None => println!("No name provided"),
                 }
             }),
         });
@@ -250,21 +264,10 @@ impl<'a> Command<'a> {
             name: "sleep",
             help: "Make a sleep in the current session\n    sleep <number_of_seconds>",
             main: Box::new(|args: &Vec<String>| {
-                let secs = {
-                    match args.get(1) {
-                        Some(arg) => arg.to_num() as i64,
-                        None => 0,
-                    }
-                };
-
-                let nanos = {
-                    match args.get(2) {
-                        Some(arg) => arg.to_num() as i32,
-                        None => 0,
-                    }
-                };
-
+                let secs = args.get(1).map_or(0, |arg| arg.to_num() as i64);
+                let nanos = args.get(2).map_or(0, |arg| arg.to_num() as i32);
                 println!("Sleep: {} {}", secs, nanos);
+
                 let remaining = Duration::new(secs, nanos).sleep();
                 println!("Remaining: {} {}", remaining.secs, remaining.nanos);
             }),
@@ -280,12 +283,7 @@ impl<'a> Command<'a> {
                     return;
                 }
 
-                let path = {
-                    match args.get(1) {
-                        Some(arg) => arg.clone(),
-                        None => String::new(),
-                    }
-                };
+                let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(mut file) = File::open(&path) {
                     println!("URL: {:?}", file.path());
@@ -329,12 +327,7 @@ impl<'a> Command<'a> {
             name: "url_hex",
             help: "",
             main: Box::new(|args: &Vec<String>| {
-                let path = {
-                    match args.get(1) {
-                        Some(arg) => arg.clone(),
-                        None => String::new(),
-                    }
-                };
+                let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(mut file) = File::open(&path) {
                     let mut vec: Vec<u8> = Vec::new();
@@ -378,19 +371,20 @@ impl<'a> Command<'a> {
             }),
         });
 
-        let mut command_helper: HashMap<String, String> = HashMap::new();
-
-        for c in commands.iter() {
-            command_helper.insert(c.name.clone().to_string(), c.help.clone().to_string());
-        }
+        // TODO: Someone should implement FromIterator for HashMap before
+        //       changing the type back to HashMap
+        let command_helper: BTreeMap<String, String> = commands
+            .iter()
+            .map(|c| (c.name.to_string(), c.help.to_string()))
+            .collect();
 
         commands.push(Command {
             name: "man",
             help: "Display a little helper for a given command\n    man ls",
             main: Box::new(move |args: &Vec<String>| {
                 if let Some(command) = args.get(1) {
-                    if command_helper.contains_key(&command) {
-                        match command_helper.get(&command) {
+                    if command_helper.contains_key(command) {
+                        match command_helper.get(command) {
                             Some(help) => println!("{}", help),
                             None => println!("Command helper not found [run 'help']..."),
                         }

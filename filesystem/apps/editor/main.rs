@@ -44,21 +44,21 @@ impl Editor {
 
     fn save(&mut self, _: &Window) {
         if self.file.is_none() {
-            /*
-            let mut save_window = {
-                const WIDTH: usize = 400;
-                const HEIGHT: usize = 200;
-                ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
-                            (window.y() + (window.height()/2 - HEIGHT/2) as isize),
-                            WIDTH,
-                            HEIGHT,
-                            "Save As")
-            };
-            if let Some(line) = save_window.read() {
-                println!("Create: {}", &line);
-                self.file = File::create(&line);
-            }
-            */
+            //
+            // let mut save_window = {
+            // const WIDTH: usize = 400;
+            // const HEIGHT: usize = 200;
+            // ConsoleWindow::new((window.x() + (window.width()/2 - WIDTH/2) as isize),
+            // (window.y() + (window.height()/2 - HEIGHT/2) as isize),
+            // WIDTH,
+            // HEIGHT,
+            // "Save As")
+            // };
+            // if let Some(line) = save_window.read() {
+            // println!("Create: {}", &line);
+            // self.file = File::create(&line);
+            // }
+            //
         }
 
         if let Some(ref mut file) = self.file {
@@ -67,7 +67,7 @@ impl Editor {
             println!("  Write: {:?}", file.write(&self.string.as_bytes()));
             println!("  Set length: {}", file.set_len(self.string.len()));
             println!("  Sync: {}", file.sync());
-        }else{
+        } else {
             println!("File not open");
         }
     }

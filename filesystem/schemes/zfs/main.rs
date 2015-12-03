@@ -1,6 +1,6 @@
 #![allow(unused_must_use)]
 
-//To use this, please install zfs-fuse
+// To use this, please install zfs-fuse
 use std::*;
 use std::cmp::{min, max};
 

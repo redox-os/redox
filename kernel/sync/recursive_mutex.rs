@@ -9,12 +9,12 @@ use scheduler::context::{context_switch, Context};
 
 struct RecursiveMutexInner {
     owner: usize,
-    count: usize
+    count: usize,
 }
 
 pub struct RecursiveMutex<T: ?Sized> {
     inner: Mutex<RecursiveMutexInner>,
-    value: UnsafeCell<T>
+    value: UnsafeCell<T>,
 }
 
 impl<T> RecursiveMutex<T> {
@@ -23,7 +23,7 @@ impl<T> RecursiveMutex<T> {
         RecursiveMutex {
             inner: Mutex::new(RecursiveMutexInner {
                 owner: 0,
-                count: 0
+                count: 0,
             }),
             value: UnsafeCell::new(value),
         }
@@ -38,7 +38,7 @@ impl<T: ?Sized> RecursiveMutex<T> {
             let reenable = scheduler::start_no_ints();
             if let Some(current) = Context::current() {
                 pid = current.pid;
-            }else{
+            } else {
                 pid = usize::MAX;
             }
             scheduler::end_no_ints(reenable);
@@ -47,7 +47,7 @@ impl<T: ?Sized> RecursiveMutex<T> {
         loop {
             {
                 let mut inner = self.inner.lock();
-                if inner.count == 0 || inner.owner == pid  {
+                if inner.count == 0 || inner.owner == pid {
                     inner.owner = pid;
                     inner.count += 1;
                     break;

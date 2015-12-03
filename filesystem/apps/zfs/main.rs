@@ -1,5 +1,5 @@
 //To use this, please install zfs-fuse
-use std::*;
+use std::{mem, str, File, Read, ToNum};
 
 use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
@@ -167,7 +167,7 @@ impl Zfs {
         // let uberblock = try!(zfs_reader.uber(&vdev_label.uberblocks));
         let uberblock = try!(zfs_reader.uber(&[]));
 
-        //let mos_dva = uberblock.rootbp.dvas[0];
+        // let mos_dva = uberblock.rootbp.dvas[0];
         let mos: ObjectSetPhys = try!(zfs_reader.read_type(&uberblock.rootbp));
         let mos_bp1 = mos.meta_dnode.get_blockptr(0);
 
@@ -197,7 +197,8 @@ impl Zfs {
 
         // Master node is always the second object in the object set
         let master_node: DNodePhys = try!(zfs_reader.read_type_array(&indirect, 1));
-        let master_node_zap: zap::MZapWrapper = try!(zfs_reader.read_type(master_node.get_blockptr(0)));
+        let master_node_zap: zap::MZapWrapper =
+            try!(zfs_reader.read_type(master_node.get_blockptr(0)));
 
         // Find the ROOT zap entry
         let mut root = None;
@@ -397,7 +398,7 @@ impl Zfs {
     }
 }
 
-//TODO: Find a way to remove all the to_string's
+// TODO: Find a way to remove all the to_string's
 #[no_mangle]
 pub fn main() {
     println!("Type open zfs.img to open the image file");
@@ -488,7 +489,8 @@ pub fn main() {
                                                              space_map_phys);
                                                     // println!("got space map: {:?}", &space_map.unwrap()[0..64]);
 
-                                                    let mut range_tree: avl::Tree<space_map::Entry, u64> =
+                                                    let mut range_tree: avl::Tree<space_map::Entry,
+                                                                                  u64> =
                                                         avl::Tree::new(Box::new(|x| x.offset()));
                                                     space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
                                                                                   &mut range_tree,

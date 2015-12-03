@@ -31,7 +31,7 @@ impl FromBytes for Udp {
             unsafe {
                 Option::Some(Udp {
                     header: ptr::read(bytes.as_ptr() as *const UdpHeader),
-                    data: bytes[mem::size_of::<UdpHeader>().. bytes.len()].to_vec(),
+                    data: bytes[mem::size_of::<UdpHeader>()..bytes.len()].to_vec(),
                 })
             }
         } else {

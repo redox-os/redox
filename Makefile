@@ -131,6 +131,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
+	  filesystem/apps/login/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
@@ -189,14 +190,17 @@ $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
-$(BUILD)/kernel.ir: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
-
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
 	$(LD) $(LDARGS) -o $@ -T kernel/kernel.ld $<
 
 $(BUILD)/kernel.list: $(BUILD)/kernel.bin
 	$(OBJDUMP) -C -M intel -D $< > $@
+
+$(BUILD)/kernel.asm: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit asm $<
+
+$(BUILD)/kernel.ir: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
 
 $(BUILD)/crt0.o: kernel/program-$(ARCH).asm
 ifeq ($(ARCH),x86_64)
@@ -205,9 +209,9 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs kernel/program.ld $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/apps_$*.rlib $<
-	$(LD) $(LDARGS) -o $@ -T kernel/program.ld $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
+	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
 filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
@@ -274,7 +278,7 @@ qemu: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
 			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
+			-vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_bare: $(BUILD)/harddrive.bin
@@ -292,7 +296,7 @@ qemu_no_kvm: $(BUILD)/harddrive.bin
 
 qemu_no_vga: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-soundhw ac97 -vga none -nographic \
+			-vga none -nographic \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
 qemu_tap: $(BUILD)/harddrive.bin

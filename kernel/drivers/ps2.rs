@@ -226,11 +226,9 @@ impl Ps2 {
             unsafe {
                 let mode_info = &*VBEMODEINFO;
                 self.mouse_x = cmp::max(0,
-                                        cmp::min(mode_info.xresolution as isize,
-                                                 self.mouse_x + x));
+                                        cmp::min(mode_info.xresolution as isize, self.mouse_x + x));
                 self.mouse_y = cmp::max(0,
-                                        cmp::min(mode_info.yresolution as isize,
-                                                 self.mouse_y + y));
+                                        cmp::min(mode_info.yresolution as isize, self.mouse_y + y));
             }
 
             self.mouse_i = 0;

@@ -160,7 +160,7 @@ impl Console {
         self.redraw = true;
     }
 
-    pub fn write(&mut self, bytes: &[u8]){
+    pub fn write(&mut self, bytes: &[u8]) {
         let serial_status = Pio8::new(0x3F8 + 5);
         let mut serial_data = Pio8::new(0x3F8);
 

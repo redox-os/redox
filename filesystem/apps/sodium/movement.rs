@@ -1,7 +1,5 @@
 use super::*;
 
-
-
 impl Editor {
     /// Goto a given position. Does not automatically bound.
     #[inline]
