@@ -16,7 +16,7 @@ context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 
-/// Excecute an excecutable
+/// Execute an executable
 pub fn execute(url: Url, mut args: Vec<String>) {
     unsafe {
 
