@@ -1,8 +1,9 @@
 use string::{String, ToString};
 use vec::Vec;
+use usize;
 
-use syscall::{sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid};
-use syscall::common::{CLONE_VM, CLONE_VFORK};
+use syscall::{sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, sys_open, sys_close};
+use syscall::common::{CLONE_VM, CLONE_VFORK, O_RDONLY};
 
 pub struct ExitStatus {
     status: usize
@@ -59,31 +60,39 @@ impl Command {
 
     pub fn spawn(&mut self) -> Option<Child> {
         let path_c = self.path.to_string() + "\0";
+        unsafe {
+            let fd = sys_open(path_c.as_ptr(), O_RDONLY, 0);
+            if fd == usize::MAX {
+                None
+            } else {
 
-        let mut args_vec: Vec<String> = Vec::new();
-        for arg in self.args.iter() {
-            args_vec.push(arg.to_string() + "\0");
-        }
+                let mut args_vec: Vec<String> = Vec::new();
+                for arg in self.args.iter() {
+                    args_vec.push(arg.to_string() + "\0");
+                }
+    
+                let mut args_c: Vec<*const u8> = Vec::new();
+                for arg_vec in args_vec.iter() {
+                    args_c.push(arg_vec.as_ptr());
+                }
+                args_c.push(0 as *const u8);
 
-        let mut args_c: Vec<*const u8> = Vec::new();
-        for arg_vec in args_vec.iter() {
-            args_c.push(arg_vec.as_ptr());
-        }
-        args_c.push(0 as *const u8);
-
-        let pid = unsafe { sys_clone(CLONE_VM | CLONE_VFORK) } as isize;
-        if pid == 0 {
-            unsafe {
-                sys_execve(path_c.as_ptr(), args_c.as_ptr());
-                sys_exit(127);
-            }
-            None
-        } else if pid > 0 {
-            Some(Child {
-                pid: pid
-            })
-        } else {
-            None
+                let pid =  sys_clone(CLONE_VM | CLONE_VFORK) as isize;
+                if pid == 0 {
+                    unsafe {
+                        sys_execve(path_c.as_ptr(), args_c.as_ptr());
+                        sys_exit(127);
+                    }
+                    None
+                } else if pid > 0 {
+                    sys_close(fd);
+                    Some(Child {
+                        pid: pid
+                    })
+                } else {
+                    None
+                }
+            } 
         }
     }
 
