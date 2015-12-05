@@ -1,4 +1,6 @@
-// TODO: Doc the restpub use common::heap::Memory;
+// TODO: Doc the rest
+
+pub use common::heap::Memory;
 
 use core::ops::{Index, IndexMut};
 use core::{cmp, intrinsics, mem, ptr};
@@ -54,7 +56,7 @@ fn floor_log2(n: usize) -> usize {
 }
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 /// The state of a memory block
 pub enum MemoryState {
     /// None
@@ -158,7 +160,7 @@ impl Block {
     /// Get the position of this block
     #[inline]
     pub fn pos(&self) -> usize {
-        self.idx + (1 << self.level) - 1
+        (self.idx << (MT_DEPTH - self.level)) + (1 << (self.level + 1)) - 1
     }
 
     /// Get sibling side
@@ -194,12 +196,10 @@ impl Block {
         MT_ATOM * (1 << (MT_DEPTH - self.level))
     }
 
-    /// Convert a pointer to a block
-    pub fn from_ptr(ptr: usize) -> Block {
-        let pos = (ptr - HEAP_START) / MT_ATOM;
-        let level = floor_log2(pos);
+    pub fn from_pos(pos: usize) -> Block {
+        let level = floor_log2(pos + 1) - 1;
 
-        let idx = (pos + 1) >> level;
+        let idx = (pos + 1 - (1 << (level + 1))) >> (MT_DEPTH - level);
 
 
         Block {
@@ -208,6 +208,11 @@ impl Block {
         }
     }
 
+    /// Convert a pointer to a block
+    pub fn from_ptr(ptr: usize) -> Block {
+        Block::from_pos((ptr - HEAP_START) / MT_ATOM)
+    }
+ 
     /// Convert a block to a pointer
     #[inline]
     pub fn to_ptr(&self) -> usize {
@@ -232,6 +237,7 @@ impl MemoryTree {
             level: block.level + 1,
         };
         self.tree.set(res, MemoryState::Used);
+        self.tree.set(res.get_buddy(), MemoryState::Free);
 
         res
     }
@@ -280,6 +286,50 @@ impl MemoryTree {
                 })
             }
         }
+    }
+    
+
+    /// Allocate of minimum size, size
+    pub unsafe fn alloc_align(&self, mut size: usize, align: usize) -> Option<Block> {
+
+        // Disclaimer: I'll not pay for
+        // potential eye damage of the
+        // reader. Continue with caution.
+
+        // TODO Optimize so it does not
+        //      run in O(MFG).
+
+//         if size >= MT_ROOT {
+//             return None;
+//         }
+        let order = ceil_log2(size / MT_ATOM);
+        size = (1 << order) * MT_ATOM;
+        let level = MT_DEPTH - order - 1;
+
+        let mut ret = None;
+        for pos in 0..MT_BYTES {
+            let b = Block::from_pos(pos);
+
+            if b.to_ptr() % align == 0 && MemoryState::Free == self.tree.get(b) {
+                ret = Some(b);
+                break;
+            }
+        }
+
+        let mut b = if let Some(b) = ret {
+            b
+        } else {
+            return None;
+        };
+
+        let delta = b.level - level; //level as isize - block.level as isize;
+
+        for i in 0..delta {
+            b = self.split(b);
+        }
+
+        Some(b)
+
     }
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
@@ -366,41 +416,13 @@ pub unsafe fn alloc(size: usize) -> usize {
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    //     if size > 0 {
-    //         let mut number = 0;
-    //         let mut count = 0;
-    //
-    //         for i in 0..CLUSTER_COUNT {
-    //             if cluster(i) == 0 {
-    //                 if count == 0 {
-    //                     number = i;
-    //                 }
-    //                 count += 1;
-    //                 if count * CLUSTER_SIZE > size {
-    //                     break;
-    //                 }
-    //             } else {
-    //                 count = 0;
-    //             }
-    //         }
-    //         if count * CLUSTER_SIZE > size {
-    //             let address = cluster_to_address(number);
-    //
-    //             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
-    //
-    //             for i in number..number + count {
-    //                 set_cluster(i, address);
-    //             }
-    //             ret = address;
-    //         }
-    //     }
 
     unsafe {
         // TODO: Swap files
         ret = if let Some(p) = MT.alloc(size) {
             p.to_ptr()
         } else {
-            debugln!("Cannot find a fitting block");
+            // debugln!("Cannot find a fitting block");
             0
         }
     }
@@ -408,57 +430,33 @@ pub unsafe fn alloc(size: usize) -> usize {
     // Memory allocation must be atomic
     scheduler::end_no_ints(reenable);
 
+    // debugln!("Following block allocated: {}", ret);
     ret
 }
 
-// TODO
+// TODO result's address shall divide align (which is a power of two)
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
+
     let ret;
 
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    //     if size > 0 {
-    //         let mut number = 0;
-    //         let mut count = 0;
-    //
-    //         for i in 0..CLUSTER_COUNT {
-    //             if cluster(i) == 0 && (count > 0 || cluster_to_address(i) % align == 0) {
-    //                 if count == 0 {
-    //                     number = i;
-    //                 }
-    //                 count += 1;
-    //                 if count * CLUSTER_SIZE > size {
-    //                     break;
-    //                 }
-    //             } else {
-    //                 count = 0;
-    //             }
-    //         }
-    //         if count * CLUSTER_SIZE > size {
-    //             let address = cluster_to_address(number);
-    //
-    //             ::memset(address as *mut u8, 0, count * CLUSTER_SIZE);
-    //
-    //             for i in number..number + count {
-    //                 set_cluster(i, address);
-    //             }
-    //             ret = address;
-    //         }
-    //     }
 
     unsafe {
         // TODO: Swap files
-        ret = if let Some(p) = MT.alloc(size) {
+        ret = if let Some(p) = MT.alloc_align(size, align) {
             p.to_ptr()
         } else {
-            debugln!("Cannot find a fitting block");
+            // debugln!("Cannot find a fitting block");
             0
         }
     }
 
     // Memory allocation must be atomic
     scheduler::end_no_ints(reenable);
+
+    // debugln!("Following block allocated (align): {}", ret);
 
     ret
 }
@@ -478,20 +476,13 @@ pub unsafe fn dealloc(ptr: usize) {
     // Memory allocation must be atomic
     let reenable = scheduler::start_no_ints();
 
-    //     if ptr > 0 {
-    //         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
-    //             if cluster(i) == ptr {
-    //                 set_cluster(i, 0);
-    //             } else {
-    //                 break;
-    //             }
-    //         }
-    //     }
     let b = Block::from_ptr(ptr);
     MT.dealloc(b);
     for i in 0..b.size() {
         ptr::write((ptr + i) as *mut u8, 0);
     }
+
+    // debugln!("Following block deallocated: {}", ptr);
 
     // Memory allocation must be atomic
     scheduler::end_no_ints(reenable);
@@ -521,6 +512,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
 
 
     scheduler::end_no_ints(reenable);
+    // debugln!("Following block reallocated: {}", ptr);
 
     ret
 }
