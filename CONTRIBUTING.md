@@ -42,7 +42,7 @@ SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstr
 8. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories.)<br>
 9. Repeat step 7 to make sure the rebase still works<br>
 10. Push to your fork (`git push origin my-branch`)<br>
-11. Create a pull request<br><br>
+11. Create a pull request<br>
 12. Describe your changes<br>
 13. Submit!<br>
 
