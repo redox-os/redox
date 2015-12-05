@@ -25,24 +25,27 @@ A bit more formal way of communication with fellow Redox devs, but a little less
 It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first.
 
 <a name="creating-a-pr"/>
-## Creating a Pull Request in 10 Steps
-0. Fork the repository
-0. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
-HTTPS:`git clone https://github.com/redox-os/redox.git`
-SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
-Use HTTPS if you don't know which one to use.
-0. Add your fork with
-HTTPS:`git remote add origin https://github.com/your-username/redox.git`
-SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
-0. Optionally create a separate branch
-0. Make changes
-0. Commit (`git add . --all; git commit -m "my commit"`)
-0. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)
-0. Push to your fork (`git push origin my-branch`)
-0. Create a pull request
-0. Describe your changes
-0. Submit!
-s
+## Creating a Pull Request
+Steps 1-3
+1. Fork the repository
+2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:<br>
+HTTPS:`git clone https://github.com/redox-os/redox.git`<br>
+SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`<br>
+Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
+3. Add your fork with<br>
+HTTPS:`git remote add origin https://github.com/your-username/redox.git`<br>
+SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`<br>
+4. Optionally create a separate branch (recommended if you're making multiple changes simultaneously)
+5. Make changes
+6. Commit (`git add . --all; git commit -m "my commit"`)
+7. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)
+8. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories.)
+9. Repeat step 7 to make sure the rebase still works
+10. Push to your fork (`git push origin my-branch`)
+11. Create a pull request
+12. Describe your changes
+13. Submit!
+
 <a name="best-practices"/>
 ## Best Practices/Guidelines
 <!-- TODO add this section to the index/TOC -->
