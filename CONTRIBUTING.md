@@ -26,7 +26,7 @@ It's completely fine to just submit a small pull request without first making an
 
 <a name="creating-a-pr"/>
 ## Creating a Pull Request
-Steps 1-3
+Steps 1-3 do not have to be done if you already have a local copy of the repository.
 1. Fork the repository
 2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:<br>
 HTTPS:`git clone https://github.com/redox-os/redox.git`<br>
@@ -75,7 +75,7 @@ SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstr
 #### Applications vs Kernel
 <!-- TODO fill out this section -->
 
-#### Low-Hanging Fruity - Easy Targets for Newbies
+#### Low-Hanging Fruit - Easy Targets for Newbies
 <!-- TODO improve this section -->
 - If you're not fluent in Rust:
     - Documentation
