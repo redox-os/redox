@@ -4,7 +4,7 @@
 
 Docs can be found [here](http://ticki.github.io/redocs/redox/).
 
-Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see "Help! Redox won't compile!").
+Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
 ![travis](https://api.travis-ci.org/redox-os/redox.svg)
 
@@ -17,7 +17,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="170" src="img/screenshots/Boot.png">
 <img alt="Redox" height="170" src="img/screenshots/start.png">
 
-
+<a name="compile-help"/>
 ## Help! Redox won't compile!
 
 Sometimes things goes wrong when compiling. Try the following before opening an issue:
