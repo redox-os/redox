@@ -13,7 +13,7 @@ use common::event::Event;
 use common::get_slice::GetSlice;
 use common::memory;
 
-use scheduler::context::{context_switch, Context, ContextMemory};
+use scheduler::context::{context_i, context_switch, Context, ContextMemory};
 use scheduler::{start_no_ints, end_no_ints};
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
@@ -117,42 +117,38 @@ impl Resource for SchemeResource {
     fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
         let mut ptr = buf.as_mut_ptr();
 
-        unsafe {
-            let reenable = start_no_ints();
-            if let Some(context) = Context::current() {
-                if let Some(translated) = context.translate(ptr as usize) {
-                    ptr = translated as *mut u8;
-                }
+        let contexts = ::env().contexts.lock();
+        if let Some(current) = contexts.get(Context::current_i()) {
+            if let Some(translated) = unsafe { current.translate(ptr as usize) } {
+                ptr = translated as *mut u8;
             }
-            end_no_ints(reenable);
         }
 
         let result = self.send(Msg::Read(self.handle, ptr, buf.len()));
         if result != usize::MAX {
-            return Some(result);
+            Some(result)
+        } else {
+            None
         }
-        None
     }
 
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Option<usize> {
         let mut ptr = buf.as_ptr();
 
-        unsafe {
-            let reenable = start_no_ints();
-            if let Some(context) = Context::current() {
-                if let Some(translated) = context.translate(ptr as usize) {
-                    ptr = translated as *const u8;
-                }
+        let contexts = ::env().contexts.lock();
+        if let Some(current) = contexts.get(Context::current_i()) {
+            if let Some(translated) = unsafe { current.translate(ptr as usize) } {
+                ptr = translated as *const u8;
             }
-            end_no_ints(reenable);
         }
 
         let result = self.send(Msg::Write(self.handle, ptr, buf.len()));
         if result != usize::MAX {
-            return Some(result);
+            Some(result)
+        } else {
+            None
         }
-        None
     }
 
     /// Seek
@@ -305,21 +301,22 @@ impl SchemeItem {
         Context::spawn(scheme_item.binary.to_string(),
                        box move || {
                            unsafe {
-                               let wd_c = wd + "\0";
-                               do_sys_chdir(wd_c.as_ptr());
+                               {
+                                   let wd_c = wd + "\0";
+                                   do_sys_chdir(wd_c.as_ptr());
 
-                               let stdio_c = "debug:\0";
-                               do_sys_open(stdio_c.as_ptr(), 0);
-                               do_sys_open(stdio_c.as_ptr(), 0);
-                               do_sys_open(stdio_c.as_ptr(), 0);
+                                   let stdio_c = "debug:\0";
+                                   do_sys_open(stdio_c.as_ptr(), 0);
+                                   do_sys_open(stdio_c.as_ptr(), 0);
+                                   do_sys_open(stdio_c.as_ptr(), 0);
 
-                               let reenable = start_no_ints();
-                               if let Some(mut context) = Context::current_mut() {
-                                   context.unmap();
-                                   (*context.memory.get()) = memory;
-                                   context.map();
+                                   let mut contexts = ::env().contexts.lock();
+                                   if let Some(mut current) = contexts.get_mut(Context::current_i()) {
+                                       current.unmap();
+                                       (*current.memory.get()) = memory;
+                                       current.map();
+                                   }
                                }
-                               end_no_ints(reenable);
 
                                (*scheme_item_ptr).run();
                            }

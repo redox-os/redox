@@ -441,38 +441,8 @@ impl Context {
         ret
     }
 
-    pub unsafe fn current_i() -> usize {
-        return context_i;
-    }
-
-    // TODO: Do not cheat
-    pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {
-        if context_enabled {
-            let contexts = ::env().contexts.lock();
-            if let Some(context) = contexts.get(context_i) {
-                let context_ptr: *const Box<Context> = context;
-                Some(&*context_ptr)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    // TODO: Do not cheat
-    pub unsafe fn current_mut<'a>() -> Option<&'a mut Box<Context>> {
-        if context_enabled {
-            let mut contexts = ::env().contexts.lock();
-            if let Some(mut context) = contexts.get_mut(context_i) {
-                let context_ptr: *mut Box<Context> = context;
-                Some(&mut *context_ptr)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
+    pub fn current_i() -> usize {
+        unsafe { context_i }
     }
 
     pub unsafe fn canonicalize(&self, path: &str) -> String {
