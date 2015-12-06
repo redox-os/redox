@@ -102,98 +102,97 @@ pub unsafe fn context_switch(interrupted: bool) {
 pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                                            flags: usize,
                                            clone_pid: usize) {
-    let reenable = scheduler::start_no_ints();
+    {
+        let mut contexts = ::env().contexts.lock();
 
-    let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-    if kernel_stack > 0 {
-        let parent = &*parent_ptr;
+        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+        if kernel_stack > 0 {
+            let parent = &*parent_ptr;
 
-        ::memcpy(kernel_stack as *mut u8,
-                 parent.kernel_stack as *const u8,
-                 CONTEXT_STACK_SIZE + 512);
+            ::memcpy(kernel_stack as *mut u8,
+                     parent.kernel_stack as *const u8,
+                     CONTEXT_STACK_SIZE + 512);
 
-        let context = box Context {
-            pid: clone_pid,
-            ppid: parent.pid,
-            name: parent.name.clone(),
-            interrupted: parent.interrupted,
-            exited: parent.exited,
-            slices: CONTEXT_SLICES,
-            slice_total: 0,
+            let context = box Context {
+                pid: clone_pid,
+                ppid: parent.pid,
+                name: parent.name.clone(),
+                interrupted: parent.interrupted,
+                exited: parent.exited,
+                slices: CONTEXT_SLICES,
+                slice_total: 0,
 
-            kernel_stack: kernel_stack,
-            sp: parent.sp - parent.kernel_stack + kernel_stack,
-            flags: parent.flags,
-            fx: kernel_stack + CONTEXT_STACK_SIZE,
-            stack: if let Some(ref entry) = parent.stack {
-                let physical_address = memory::alloc(entry.virtual_size);
-                if physical_address > 0 {
-                    ::memcpy(physical_address as *mut u8,
-                             entry.physical_address as *const u8,
-                             entry.virtual_size);
-                    Some(ContextMemory {
-                        physical_address: physical_address,
-                        virtual_address: entry.virtual_address,
-                        virtual_size: entry.virtual_size,
-                        writeable: true,
-                    })
-                } else {
-                    None
-                }
-            } else {
-                None
-            },
-            loadable: parent.loadable,
-
-            args: parent.args.clone(),
-            cwd: if flags & CLONE_FS == CLONE_FS {
-                parent.cwd.clone()
-            } else {
-                Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-            },
-            memory: if flags & CLONE_VM == CLONE_VM {
-                parent.memory.clone()
-            } else {
-                let mut mem: Vec<ContextMemory> = Vec::new();
-                for entry in (*parent.memory.get()).iter() {
+                kernel_stack: kernel_stack,
+                sp: parent.sp - parent.kernel_stack + kernel_stack,
+                flags: parent.flags,
+                fx: kernel_stack + CONTEXT_STACK_SIZE,
+                stack: if let Some(ref entry) = parent.stack {
                     let physical_address = memory::alloc(entry.virtual_size);
                     if physical_address > 0 {
                         ::memcpy(physical_address as *mut u8,
                                  entry.physical_address as *const u8,
                                  entry.virtual_size);
-                        mem.push(ContextMemory {
+                        Some(ContextMemory {
                             physical_address: physical_address,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
                             writeable: entry.writeable,
-                        });
+                        })
+                    } else {
+                        None
                     }
-                }
-                Arc::new(UnsafeCell::new(mem))
-            },
-            files: if flags & CLONE_FILES == CLONE_FILES {
-                parent.files.clone()
-            } else {
-                let mut files: Vec<ContextFile> = Vec::new();
-                for file in (*parent.files.get()).iter() {
-                    if let Some(resource) = file.resource.dup() {
-                        files.push(ContextFile {
-                            fd: file.fd,
-                            resource: resource,
-                        });
+                } else {
+                    None
+                },
+                loadable: parent.loadable,
+
+                args: parent.args.clone(),
+                cwd: if flags & CLONE_FS == CLONE_FS {
+                    parent.cwd.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+                },
+                memory: if flags & CLONE_VM == CLONE_VM {
+                    parent.memory.clone()
+                } else {
+                    let mut mem: Vec<ContextMemory> = Vec::new();
+                    for entry in (*parent.memory.get()).iter() {
+                        let physical_address = memory::alloc(entry.virtual_size);
+                        if physical_address > 0 {
+                            ::memcpy(physical_address as *mut u8,
+                                     entry.physical_address as *const u8,
+                                     entry.virtual_size);
+                            mem.push(ContextMemory {
+                                physical_address: physical_address,
+                                virtual_address: entry.virtual_address,
+                                virtual_size: entry.virtual_size,
+                                writeable: entry.writeable,
+                            });
+                        }
                     }
-                }
-                Arc::new(UnsafeCell::new(files))
-            },
+                    Arc::new(UnsafeCell::new(mem))
+                },
+                files: if flags & CLONE_FILES == CLONE_FILES {
+                    parent.files.clone()
+                } else {
+                    let mut files: Vec<ContextFile> = Vec::new();
+                    for file in (*parent.files.get()).iter() {
+                        if let Some(resource) = file.resource.dup() {
+                            files.push(ContextFile {
+                                fd: file.fd,
+                                resource: resource,
+                            });
+                        }
+                    }
+                    Arc::new(UnsafeCell::new(files))
+                },
 
-            statuses: Vec::new(),
-        };
+                statuses: Vec::new(),
+            };
 
-        let mut contexts = ::env().contexts.lock();
-        contexts.push(context);
+            contexts.push(context);
+        }
     }
-
-    scheduler::end_no_ints(reenable);
 
     do_sys_exit(0);
 }
