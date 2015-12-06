@@ -5,7 +5,6 @@ pub use common::heap::Memory;
 use core::ops::{Index, IndexMut};
 use core::{cmp, intrinsics, mem, ptr};
 
-pub use common::heap::*;
 
 use scheduler;
 
