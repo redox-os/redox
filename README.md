@@ -30,6 +30,9 @@ Sometimes things goes wrong when compiling. Try the following before opening an 
 
 and then rebuild!
 
+## Contributing to Redox
+If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
+
 ## Cloning the repository
 
 Make sure you get submodules when you clone the repository.
