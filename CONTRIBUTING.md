@@ -79,10 +79,11 @@ SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstr
 <!-- TODO improve this section -->
 - If you're not fluent in Rust:
     - Documentation
-    - Using Redox, filing issues for bugs and needed features
+    - Using/testing Redox, filing issues for bugs and needed features
     - Web dev (redox website, separate repo)
     - Unit tests
 - If you are fluent in Rust, but not OS Development:
     - Apps
-    - Shell development
+    - Shell (Ion) development
+    - Package manager (Oxide) development
     - High-level code
