@@ -351,10 +351,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception_inner {
         ($name:expr) => ({
-            unsafe {
-                if let Some(context) = Context::current() {
-                    debugln!("PID {}: {}", context.pid, context.name);
-                }
+            let contexts = ::env().contexts.lock();
+            if let Some(context) = contexts.get(Context::current_i()) {
+                debugln!("PID {}: {}", context.pid, context.name);
             }
 
             debugln!("  INT {:X}: {}", interrupt, $name);
@@ -417,21 +416,20 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     match interrupt {
         0x20 => {
             unsafe {
-                let reenable = scheduler::start_no_ints();
-
                 match ENV_PTR {
                     Some(ref mut env) => {
                         env.clock_realtime = env.clock_realtime + PIT_DURATION;
                         env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
 
-                        scheduler::end_no_ints(reenable);
-
-                        let switch = if let Some(mut context) = Context::current_mut() {
-                            context.slices -= 1;
-                            context.slice_total += 1;
-                            context.slices == 0
-                        } else {
-                            false
+                        let switch = {
+                            let mut contexts = ::env().contexts.lock();
+                            if let Some(mut context) = contexts.get_mut(Context::current_i()) {
+                                context.slices -= 1;
+                                context.slice_total += 1;
+                                context.slices == 0
+                            } else {
+                                false
+                            }
                         };
 
                         if switch {

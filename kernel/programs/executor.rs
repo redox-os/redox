@@ -18,8 +18,9 @@ use schemes::Url;
 
 /// Execute an executable
 pub fn execute(url: Url, mut args: Vec<String>) {
-    let context_ptr: *mut Context = unsafe {
-        if let Some(current) = Context::current_mut() {
+    let context_ptr: *mut Context = {
+        let mut contexts = ::env().contexts.lock();
+        if let Some(mut current) = contexts.get_mut(Context::current_i()) {
             current.deref_mut()
         } else {
             return
