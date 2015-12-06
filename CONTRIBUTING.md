@@ -14,37 +14,45 @@
 
 <a name="slack"/>
 ## Slack Chat
+
 The quickest and most open way to communicate with the Redox team is with Slack. Currently, the only way to join our slack team is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
 
 <a name="gh-issues"/>
 ## GitHub Issues
+
 A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics, simply put, issues try to state something more than ask.
 
 <a name="prs"/>
 ## Pull Requests
+
 It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first.
 
 <a name="creating-a-pr"/>
 ## Creating a Pull Request
-Steps 1-3 do not have to be done if you already have a local copy of the repository.<br>
-1. Fork the repository<br>
-2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:<br>
-HTTPS:`git clone https://github.com/redox-os/redox.git`<br>
-SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`<br>
-Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)<br>
-3. Add your fork with<br>
-HTTPS:`git remote add origin https://github.com/your-username/redox.git`<br>
-SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`<br>
-4. Optionally create a separate branch (recommended if you're making multiple changes simultaneously)<br>
-5. Make changes<br>
-6. Commit (`git add . --all; git commit -m "my commit"`)<br>
-7. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)<br>
-8. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories.)<br>
-9. Repeat step 7 to make sure the rebase still works<br>
-10. Push to your fork (`git push origin my-branch`)<br>
-11. Create a pull request<br>
-12. Describe your changes<br>
-13. Submit!<br>
+
+1. Fork the repository
+2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
+    - HTTPS:`git clone https://github.com/redox-os/redox.git`
+    - SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
+    - Then rebase: `git rebase upstream master`
+    Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
+3. Add your fork with
+    - HTTPS:`git remote add origin https://github.com/your-username/redox.git`
+    - SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
+4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
+    - Fetch the upstream:`git fetch upstream master` 
+    - Rebase with local commits:`git rebase upstream master`
+    - Update the submodules:`git submodule update --init`
+5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously)
+6. Make changes
+7. Commit (`git add . --all; git commit -m "my commit"`)
+8. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)
+9. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories, although it is fine in some cases.)
+10. Repeat step 7 to make sure the rebase still works
+11. Push to your fork (`git push origin my-branch`)
+12. Create a pull request
+13. Describe your changes
+14. Submit!
 
 <a name="best-practices"/>
 ## Best Practices/Guidelines
@@ -77,6 +85,7 @@ SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstr
 
 #### Low-Hanging Fruit - Easy Targets for Newbies
 <!-- TODO improve this section -->
+
 - If you're not fluent in Rust:
     - Documentation
     - Using/testing Redox, filing issues for bugs and needed features
