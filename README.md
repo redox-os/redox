@@ -22,11 +22,11 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 Sometimes things goes wrong when compiling. Try the following before opening an issue:
 
-1.  Run `make clean`.
-2.  Run `git clean -X -f -d`.
-3.  Make sure you have **the latest version of Rust nightly!** (`multirust` is recommended for managing Rust versions).
-4.  Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
-5.  Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
+1. Run `make clean`.
+2. Run `git clean -X -f -d`.
+3. Make sure you have **the latest version of Rust nightly!** (`multirust` is recommended for managing Rust versions).
+4. Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
+5. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
 
 and then rebuild!
 
