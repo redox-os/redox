@@ -51,7 +51,7 @@ fn ceil_log2(n: usize) -> usize {
 
 #[inline]
 fn floor_log2(n: usize) -> usize {
-    mem::size_of::<usize>() * 8 - n.leading_zeros() as usize
+    (mem::size_of::<usize>() * 8 - n.leading_zeros() as usize) - 1
 }
 
 
