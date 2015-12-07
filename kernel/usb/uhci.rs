@@ -19,6 +19,8 @@ use graphics::display::VBEMODEINFO;
 
 use schemes::KScheme;
 
+use sync::Intex;
+
 pub struct Uhci {
     pub base: usize,
     pub irq: u8,
@@ -537,15 +539,20 @@ impl Uhci {
                                                buffer: in_ptr as u32,
                                            });
 
-                                let reenable = scheduler::start_no_ints();
-                                let frame = (inw(frnum) + 2) & 0x3FF;
-                                volatile_store(frame_list.offset(frame as isize), in_td as u32);
-                                scheduler::end_no_ints(reenable);
+                                let frame = {
+                                    let intex = Intex::static_lock();
+
+                                    let frame = (inw(frnum) + 2) & 0x3FF;
+                                    volatile_store(frame_list.offset(frame as isize), in_td as u32);
+                                    frame
+                                };
 
                                 loop {
-                                    let ctrl_sts = volatile_load(in_td).ctrl_sts;
-                                    if ctrl_sts & (1 << 23) == 0 {
-                                        break;
+                                    {
+                                        let ctrl_sts = volatile_load(in_td).ctrl_sts;
+                                        if ctrl_sts & (1 << 23) == 0 {
+                                            break;
+                                        }
                                     }
 
                                     context::context_switch(false);

@@ -18,8 +18,9 @@ use common::memory::Memory;
 
 use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
 
-use scheduler::{start_no_ints, end_no_ints};
 use scheduler::context::context_switch;
+
+use sync::Intex;
 
 use syscall::common::O_CREAT;
 
@@ -315,7 +316,7 @@ impl Resource for FileResource {
                     debug::dl();
 
                     unsafe {
-                        let reenable = start_no_ints();
+                        let intex = Intex::static_lock();
 
                         let sectors = ((remaining + 511) / 512) as u64;
                         if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
@@ -336,8 +337,6 @@ impl Resource for FileResource {
 
                             node_dirty = true;
                         }
-
-                        end_no_ints(reenable);
                     }
                 }
 
@@ -451,15 +450,15 @@ impl Resource for FileResource {
 
                             debug::d("Renode\n");
 
-                            let reenable = start_no_ints();
+                            {
+                                let intex = Intex::static_lock();
 
-                            for mut node in (*self.scheme).fs.nodes.iter_mut() {
-                                if node.block == self.node.block {
-                                    *node = self.node.clone();
+                                for mut node in (*self.scheme).fs.nodes.iter_mut() {
+                                    if node.block == self.node.block {
+                                        *node = self.node.clone();
+                                    }
                                 }
                             }
-
-                            end_no_ints(reenable);
                         }
                     }
                 } else {

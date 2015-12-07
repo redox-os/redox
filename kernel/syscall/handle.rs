@@ -19,6 +19,8 @@ use scheduler::context::{context_clone, context_i, context_switch, Context, Cont
 
 use schemes::{Resource, ResourceSeek, Url};
 
+use sync::Intex;
+
 use syscall::common::*;
 
 /// Helper function for handling C strings, please do not copy it or make it pub or change it
@@ -51,8 +53,6 @@ unsafe fn c_array_to_slice<'a>(ptr: *const *const u8) -> &'a [*const u8] {
 pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
     let bytes = slice::from_raw_parts(ptr, len);
 
-    let reenable = scheduler::start_no_ints();
-
     if ::ENV_PTR.is_some() {
         ::env().console.lock().write(bytes);
     } else {
@@ -72,8 +72,6 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
             }
         }
     }
-
-    scheduler::end_no_ints(reenable);
 }
 
 pub unsafe fn do_sys_brk(addr: usize) -> usize {
@@ -208,9 +206,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 }
 
 pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
-    let mut ret = usize::MAX;
-
-    let reenable = scheduler::start_no_ints();
+    let intex = Intex::static_lock();
 
     if tp as usize > 0 {
         let env = ::env();
@@ -218,20 +214,18 @@ pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
             CLOCK_REALTIME => {
                 (*tp).tv_sec = env.clock_realtime.secs;
                 (*tp).tv_nsec = env.clock_realtime.nanos;
-                ret = 0;
+                return 0;
             }
             CLOCK_MONOTONIC => {
                 (*tp).tv_sec = env.clock_monotonic.secs;
                 (*tp).tv_nsec = env.clock_monotonic.nanos;
-                ret = 0;
+                return 0;
             }
             _ => (),
         }
     }
 
-    scheduler::end_no_ints(reenable);
-
-    ret
+    usize::MAX
 }
 
 pub unsafe fn do_sys_dup(fd: usize) -> usize {

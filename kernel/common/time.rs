@@ -4,6 +4,8 @@ use core::ops::{Add, Sub};
 use scheduler;
 use scheduler::context;
 
+use sync::Intex;
+
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;
 pub const NANOS_PER_SEC: i32 = 1000000000;
@@ -38,24 +40,16 @@ impl Duration {
 
     /// Get the current duration
     pub fn monotonic() -> Self {
-        let ret;
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            ret = ::env().clock_monotonic;
-            scheduler::end_no_ints(reenable);
-        }
-        ret
+        let intex = Intex::static_lock();
+
+        unsafe { ::env().clock_monotonic }
     }
 
     /// Get the realtime
     pub fn realtime() -> Self {
-        let ret;
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            ret = ::env().clock_realtime;
-            scheduler::end_no_ints(reenable);
-        }
-        ret
+        let intex = Intex::static_lock();
+
+        unsafe { ::env().clock_realtime }
     }
 
     /// Sleep the duration

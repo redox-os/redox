@@ -16,6 +16,8 @@ context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 
+use sync::Intex;
+
 /// Execute an executable
 pub fn execute(url: Url, mut args: Vec<String>) {
     let context_ptr: *mut Context = {
@@ -77,7 +79,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                 context_args.push(argc);
 
                 unsafe {
-                    let reenable = scheduler::start_no_ints();
+                    let intex = Intex::static_lock();
 
                     let context = &mut *context_ptr;
 
@@ -113,8 +115,6 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                     context.push(0x18 | 3);
                     context.push(entry);
                     context.push(context_userspace as usize);
-
-                    scheduler::end_no_ints(reenable);
                 }
             } else {
                 debug!("{}: Invalid memory or entry\n", url.string);
