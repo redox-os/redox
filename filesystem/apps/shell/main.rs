@@ -23,10 +23,6 @@ macro_rules! readln {
     });
 }
 
-// Magic {
-static mut application: *mut Application<'static> = 0 as *mut Application;
-// } Magic
-
 /// Structure which represents a Terminal's command.
 /// This command structure contains a name, and the code which run the functionnality associated to this one, with zero, one or several argument(s).
 /// # Example
@@ -48,7 +44,7 @@ pub struct Command<'a> {
 impl<'a> Command<'a> {
     /// Return the vector of the commands
     // TODO: Use a more efficient collection instead
-    pub fn vec() -> Vec<Self> {
+    pub fn vec(variables: &mut Vec<Variable>, modes: &mut Vec<Mode>) -> Vec<Self> {
         let mut commands: Vec<Self> = Vec::new();
 
         commands.push(Command {
@@ -116,7 +112,7 @@ impl<'a> Command<'a> {
                     if let Some(mut child) = command.spawn() {
                         if let Some(status) = child.wait() {
                             if let Some(code) = status.code() {
-                                unsafe { (*application).set_var("?", &format!("{}", code)) };
+                                set_var(variables, "?", &format!("{}", code));
                             } else {
                                 println!("{}: No child exit code", path);
                             }
@@ -250,15 +246,13 @@ impl<'a> Command<'a> {
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
 
-                    let mut commands = String::new();
+                    let mut command_list = String::new();
                     if let Some(mut file) = File::open(path) {
-                        file.read_to_string(&mut commands);
+                        file.read_to_string(&mut command_list);
                     }
 
-                    for command in commands.split('\n') {
-                        unsafe {
-                            (*application).on_command(&command);
-                        }
+                    for command in command_list.split('\n') {
+                        on_command(&command, &commands, variables, modes);
                     }
                 }
             }),
@@ -425,201 +419,191 @@ pub struct Mode {
     value: bool,
 }
 
-/// An application
-pub struct Application<'a> {
-    commands: Vec<Command<'a>>,
-    variables: Vec<Variable>,
-    modes: Vec<Mode>,
-}
-
-impl<'a> Application<'a> {
-    /// Create a new empty application
-    pub fn new() -> Self {
-        return Application {
-            commands: Command::vec(),
-            variables: Vec::new(),
-            modes: Vec::new(),
-        };
+fn on_command<'a>(command_string: &str,
+                  commands: &Vec<Command<'a>>,
+                  variables: &mut Vec<Variable>,
+                  modes: &mut Vec<Mode>) {
+    // Comment
+    if command_string.starts_with('#') {
+        return;
     }
 
-    fn on_command(&mut self, command_string: &str) {
-        // Comment
-        if command_string.starts_with('#') {
-            return;
+    // Show variables
+    if command_string == "$" {
+        for variable in variables.iter() {
+            println!("{}={}", variable.name, variable.value);
         }
+        return;
+    }
 
-        // Show variables
-        if command_string == "$" {
-            for variable in self.variables.iter() {
-                println!("{}={}", variable.name, variable.value);
-            }
-            return;
-        }
-
-        // Explode into arguments, replace variables
-        let mut args: Vec<String> = Vec::<String>::new();
-        for arg in command_string.split(' ') {
-            if !arg.is_empty() {
-                if arg.starts_with('$') {
-                    let name = arg[1..arg.len()].to_string();
-                    for variable in self.variables.iter() {
-                        if variable.name == name {
-                            args.push(variable.value.clone());
-                            break;
-                        }
+    // Explode into arguments, replace variables
+    let mut args: Vec<String> = Vec::new();
+    for arg in command_string.split(' ') {
+        if !arg.is_empty() {
+            if arg.starts_with('$') {
+                let name = arg[1..arg.len()].to_string();
+                for variable in variables.iter() {
+                    if variable.name == name {
+                        args.push(variable.value.clone());
+                        break;
                     }
-                } else {
-                    args.push(arg.to_string());
                 }
+            } else {
+                args.push(arg.to_string());
             }
         }
+    }
 
-        // Execute commands
-        if let Some(cmd) = args.get(0) {
-            if cmd == "if" {
-                let mut value = false;
+    // Execute commands
+    if let Some(cmd) = args.get(0) {
+        if cmd == "if" {
+            let mut value = false;
 
-                if let Some(left) = args.get(1) {
-                    if let Some(cmp) = args.get(2) {
-                        if let Some(right) = args.get(3) {
-                            if cmp == "==" {
-                                value = *left == *right;
-                            } else if cmp == "!=" {
-                                value = *left != *right;
-                            } else if cmp == ">" {
-                                value = left.to_num_signed() > right.to_num_signed();
-                            } else if cmp == ">=" {
-                                value = left.to_num_signed() >= right.to_num_signed();
-                            } else if cmp == "<" {
-                                value = left.to_num_signed() < right.to_num_signed();
-                            } else if cmp == "<=" {
-                                value = left.to_num_signed() <= right.to_num_signed();
-                            } else {
-                                println!("Unknown comparison: {}", cmp);
-                            }
+            if let Some(left) = args.get(1) {
+                if let Some(cmp) = args.get(2) {
+                    if let Some(right) = args.get(3) {
+                        if cmp == "==" {
+                            value = *left == *right;
+                        } else if cmp == "!=" {
+                            value = *left != *right;
+                        } else if cmp == ">" {
+                            value = left.to_num_signed() > right.to_num_signed();
+                        } else if cmp == ">=" {
+                            value = left.to_num_signed() >= right.to_num_signed();
+                        } else if cmp == "<" {
+                            value = left.to_num_signed() < right.to_num_signed();
+                        } else if cmp == "<=" {
+                            value = left.to_num_signed() <= right.to_num_signed();
                         } else {
-                            println!("No right hand side");
+                            println!("Unknown comparison: {}", cmp);
                         }
                     } else {
-                        println!("No comparison operator");
+                        println!("No right hand side");
                     }
                 } else {
-                    println!("No left hand side");
+                    println!("No comparison operator");
                 }
-
-                self.modes.insert(0, Mode { value: value });
-                return;
+            } else {
+                println!("No left hand side");
             }
 
-            if cmd == "else" {
-                let mut syntax_error = false;
-                match self.modes.get_mut(0) {
-                    Some(mode) => mode.value = !mode.value,
-                    None => syntax_error = true,
-                }
-                if syntax_error {
-                    println!("Syntax error: else found with no previous if");
-                }
-                return;
-            }
-
-            if cmd == "fi" {
-                let mut syntax_error = false;
-                if !self.modes.is_empty() {
-                    self.modes.remove(0);
-                } else {
-                    syntax_error = true;
-                }
-                if syntax_error {
-                    println!("Syntax error: fi found with no previous if");
-                }
-                return;
-            }
-
-            for mode in self.modes.iter() {
-                if !mode.value {
-                    return;
-                }
-            }
-
-            if cmd == "read" {
-                for i in 1..args.len() {
-                    if let Some(arg_original) = args.get(i) {
-                        let arg = arg_original.trim();
-                        print!("{}=", arg);
-                        if let Some(value_original) = readln!() {
-                            let value = value_original.trim();
-                            self.set_var(arg, value);
-                        }
-                    }
-                }
-            }
-
-            // Set variables
-            if let Some(i) = cmd.find('=') {
-                let name = cmd[0..i].trim();
-                let mut value = cmd[i + 1..cmd.len()].trim().to_string();
-
-                for i in 1..args.len() {
-                    if let Some(arg) = args.get(i) {
-                        value = value + " " + &arg;
-                    }
-                }
-
-                self.set_var(name, &value);
-                return;
-            }
-
-            // Commands
-            for command in self.commands.iter() {
-                if &command.name == cmd {
-                    (*command.main)(&args);
-                    return;
-                }
-            }
-
-            println!("Unknown command: '{}'", cmd);
-        }
-    }
-
-
-    pub fn set_var(&mut self, name: &str, value: &str) {
-        if name.is_empty() {
+            modes.insert(0, Mode { value: value });
             return;
         }
 
-        if value.is_empty() {
-            let mut remove = -1;
-            for i in 0..self.variables.len() {
-                match self.variables.get(i) {
-                    Some(variable) => if variable.name == name {
-                        remove = i as isize;
-                        break;
-                    },
-                    None => break,
-                }
+        if cmd == "else" {
+            let mut syntax_error = false;
+            match modes.get_mut(0) {
+                Some(mode) => mode.value = !mode.value,
+                None => syntax_error = true,
             }
-
-            if remove >= 0 {
-                self.variables.remove(remove as usize);
+            if syntax_error {
+                println!("Syntax error: else found with no previous if");
             }
-        } else {
-            for variable in self.variables.iter_mut() {
-                if variable.name == name {
-                    variable.value = value.to_string();
-                    return;
-                }
-            }
-
-            self.variables.push(Variable {
-                name: name.to_string(),
-                value: value.to_string(),
-            });
+            return;
         }
+
+        if cmd == "fi" {
+            let mut syntax_error = false;
+            if !modes.is_empty() {
+                modes.remove(0);
+            } else {
+                syntax_error = true;
+            }
+            if syntax_error {
+                println!("Syntax error: fi found with no previous if");
+            }
+            return;
+        }
+
+        for mode in modes.iter() {
+            if !mode.value {
+                return;
+            }
+        }
+
+        if cmd == "read" {
+            for i in 1..args.len() {
+                if let Some(arg_original) = args.get(i) {
+                    let arg = arg_original.trim();
+                    print!("{}=", arg);
+                    if let Some(value_original) = readln!() {
+                        let value = value_original.trim();
+                        set_var(variables, arg, value);
+                    }
+                }
+            }
+        }
+
+        // Set variables
+        if let Some(i) = cmd.find('=') {
+            let name = cmd[0..i].trim();
+            let mut value = cmd[i + 1..cmd.len()].trim().to_string();
+
+            for i in 1..args.len() {
+                if let Some(arg) = args.get(i) {
+                    value = value + " " + &arg;
+                }
+            }
+
+            set_var(variables, name, &value);
+            return;
+        }
+
+        // Commands
+        for command in commands.iter() {
+            if &command.name == cmd {
+                (*command.main)(&args);
+                return;
+            }
+        }
+
+        println!("Unknown command: '{}'", cmd);
+    }
+}
+
+
+pub fn set_var(variables: &mut Vec<Variable>, name: &str, value: &str) {
+    if name.is_empty() {
+        return;
     }
 
-    /// Run the application
-    pub fn main(&mut self) {
+    if value.is_empty() {
+        let mut remove = -1;
+        for i in 0..variables.len() {
+            match variables.get(i) {
+                Some(variable) => if variable.name == name {
+                    remove = i as isize;
+                    break;
+                },
+                None => break,
+            }
+        }
+
+        if remove >= 0 {
+            variables.remove(remove as usize);
+        }
+    } else {
+        for variable in variables.iter_mut() {
+            if variable.name == name {
+                variable.value = value.to_string();
+                return;
+            }
+        }
+
+        variables.push(Variable {
+            name: name.to_string(),
+            value: value.to_string(),
+        });
+    }
+}
+
+#[no_mangle]
+pub fn main() {
+    unsafe {
+        let mut variables: Vec<Variable> = vec![];
+        let mut modes: Vec<Mode> = vec![];
+        let commands = Command::vec(&mut variables, &mut modes);
         println!("Type help for a command list");
         for arg in env::args().skip(1) {
             let cwd = match env::current_dir() {
@@ -631,11 +615,11 @@ impl<'a> Application<'a> {
 
             println!("user@redox:{}# {}",  cwd, command);
 
-            self.on_command(&command);
+            on_command(&command, &commands, &mut variables, &mut modes);
         }
 
         loop {
-            for mode in self.modes.iter().rev() {
+            for mode in modes.iter().rev() {
                 if mode.value {
                     print!("+ ");
                 } else {
@@ -655,20 +639,11 @@ impl<'a> Application<'a> {
                 if command == "exit" {
                     break;
                 } else if !command.is_empty() {
-                    self.on_command(&command);
+                    on_command(&command, &commands, &mut variables, &mut modes);
                 }
             } else {
                 break;
             }
         }
-    }
-}
-
-#[no_mangle]
-pub fn main() {
-    unsafe {
-        let mut app = Box::new(Application::new());
-        application = app.deref_mut();
-        app.main();
     }
 }
