@@ -205,14 +205,12 @@ fn event_loop() -> ! {
                         } else {
                             // TODO: Magical orbital hack
                             unsafe {
-                                let reenable = scheduler::start_no_ints();
                                 for scheme in env().schemes.iter() {
                                     if (*scheme.get()).scheme() == "orbital" {
                                         (*scheme.get()).event(&event);
                                         break;
                                     }
                                 }
-                                scheduler::end_no_ints(reenable);
                             }
                         }
                     }
@@ -299,8 +297,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 IcmpScheme::reply_loop();
             });
 
-            context_enabled = true;
-
             if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
@@ -311,9 +307,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                                                                                  .to_string() +
                                                                                  &folder));
 
-                        let reenable = scheduler::start_no_ints();
                         env.schemes.push(UnsafeCell::new(scheme_item));
-                        scheduler::end_no_ints(reenable);
                     }
                 }
             }
@@ -339,6 +333,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                     context_switch(false);
                 }
             });
+
+            context_enabled = true;
         },
         None => unreachable!(),
     }
@@ -351,9 +347,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     macro_rules! exception_inner {
         ($name:expr) => ({
-            let contexts = ::env().contexts.lock();
-            if let Some(context) = contexts.get(Context::current_i()) {
-                debugln!("PID {}: {}", context.pid, context.name);
+            {
+                let contexts = ::env().contexts.lock();
+                if let Some(context) = contexts.get(Context::current_i()) {
+                    debugln!("PID {}: {}", context.pid, context.name);
+                }
             }
 
             debugln!("  INT {:X}: {}", interrupt, $name);

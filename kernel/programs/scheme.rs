@@ -14,9 +14,10 @@ use common::get_slice::GetSlice;
 use common::memory;
 
 use scheduler::context::{context_i, context_switch, Context, ContextMemory};
-use scheduler::{start_no_ints, end_no_ints};
 
 use schemes::{KScheme, Resource, ResourceSeek, Url};
+
+use sync::Intex;
 
 use syscall::handle::*;
 
@@ -202,7 +203,7 @@ pub struct SchemeItem {
     /// The binary for the scheme
     binary: Url,
     /// Messages to be responded to
-    responses: VecDeque<*mut Response>,
+    responses: Intex<VecDeque<*mut Response>>,
     /// The handle
     handle: usize,
     _start: usize,
@@ -226,7 +227,7 @@ impl SchemeItem {
             url: url.clone(),
             scheme: String::new(),
             binary: Url::from_string(url.to_string() + "main.bin"),
-            responses: VecDeque::new(),
+            responses: Intex::new(VecDeque::new()),
             handle: 0,
             _start: 0,
             _stop: 0,
@@ -363,11 +364,7 @@ impl SchemeItem {
     pub fn send(&mut self, msg: Msg) -> usize {
         let mut response = Response::new(msg);
 
-        unsafe {
-            let reenable = start_no_ints();
-            self.responses.push_back(response.deref_mut());
-            end_no_ints(reenable);
-        }
+        self.responses.lock().push_back(response.deref_mut());
 
         response.get()
     }
@@ -380,9 +377,7 @@ impl SchemeItem {
     pub unsafe fn run(&mut self) {
         let mut running = true;
         while running {
-            let reenable = start_no_ints();
-            let response_option = self.responses.pop_front();
-            end_no_ints(reenable);
+            let response_option = self.responses.lock().pop_front();
 
             if let Some(response_ptr) = response_option {
                 let ret = match (*response_ptr).msg {
