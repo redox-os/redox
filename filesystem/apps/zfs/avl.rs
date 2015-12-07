@@ -1,5 +1,3 @@
-use std::{Box, Vec};
-
 pub struct Node<T> {
     value: T,
     left: Option<usize>, // ID for left node
@@ -7,17 +5,28 @@ pub struct Node<T> {
 }
 
 impl<T> Node<T> {
-    pub fn value(&self) -> &T { &self.value }
+    pub fn value(&self) -> &T {
+        &self.value
+    }
     pub fn left<K>(&self, tree: &Tree<T, K>) -> Option<NodeId> {
-        self.left.map(|l| NodeId { index: l, time_stamp: tree.nodes[l].time_stamp })
+        self.left.map(|l| {
+            NodeId {
+                index: l,
+                time_stamp: tree.nodes[l].time_stamp,
+            }
+        })
     }
     pub fn right<K>(&self, tree: &Tree<T, K>) -> Option<NodeId> {
-        self.right.map(|r| NodeId { index: r, time_stamp: tree.nodes[r].time_stamp })
+        self.right.map(|r| {
+            NodeId {
+                index: r,
+                time_stamp: tree.nodes[r].time_stamp,
+            }
+        })
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/// /////////////////////////////////////////////////////////////////////////////////////////////////
 #[derive(Copy, Clone)]
 pub struct NodeId {
     index: usize,
@@ -68,7 +77,7 @@ impl NodeId {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////////////
 
 pub struct Tree<T, K> {
     root: Option<usize>, // Index of the root node
@@ -114,27 +123,26 @@ impl<T, K: PartialOrd> Tree<T, K> {
 
     // Implementation of insert
     fn _insert(&mut self, value: T, node: Option<usize>) -> usize {
-        let node =
-            match node{
-                Some(node) => {
-                    // Node exists, check which way to branch.
-                    if (self.key)(&value) == (self.key)(&self.node(node).value) {
-                        return node;
-                    } else if (self.key)(&value) < (self.key)(&self.node(node).value) {
-                        let l = self.node(node).left;
-                        self.node_mut(node).left = Some(self._insert(value, l));
-                    } else if (self.key)(&value) > (self.key)(&self.node(node).value) {
-                        let r = self.node(node).right;
-                        self.node_mut(node).right = Some(self._insert(value, r));
-                    }
+        let node = match node {
+            Some(node) => {
+                // Node exists, check which way to branch.
+                if (self.key)(&value) == (self.key)(&self.node(node).value) {
+                    return node;
+                } else if (self.key)(&value) < (self.key)(&self.node(node).value) {
+                    let l = self.node(node).left;
+                    self.node_mut(node).left = Some(self._insert(value, l));
+                } else if (self.key)(&value) > (self.key)(&self.node(node).value) {
+                    let r = self.node(node).right;
+                    self.node_mut(node).right = Some(self._insert(value, r));
+                }
 
-                    node
-                },
-                None => {
-                    // The node doesn't exist, create it here.
-                    self.allocate_node(value)
-                },
-            };
+                node
+            }
+            None => {
+                // The node doesn't exist, create it here.
+                self.allocate_node(value)
+            }
+        };
 
         self.rebalance(node)
     }
@@ -177,8 +185,10 @@ impl<T, K: PartialOrd> Tree<T, K> {
                     // Found it!
                     Some(&mut self.node_mut(n).value)
                 }
-            },
-            None => { None },
+            }
+            None => {
+                None
+            }
         }
     }
 
@@ -190,7 +200,7 @@ impl<T, K: PartialOrd> Tree<T, K> {
         let r = self.node(node).right.unwrap();
         let rl = self.node(r).left;
 
-        let ret = r; 
+        let ret = r;
         self.node_mut(node).right = rl;
         self.node_mut(ret).left = Some(node);
 
@@ -232,19 +242,23 @@ impl<T, K: PartialOrd> Tree<T, K> {
     // occur
     fn rebalance(&mut self, node: usize) -> usize {
         let balance = self.height(self.node(node).left) - self.height(self.node(node).right);
-        if balance == 2 { // left
+        if balance == 2 {
+            // left
             let lbalance = self.height(self.node(self.node(node).left.unwrap()).left) -
                            self.height(self.node(self.node(node).left.unwrap()).right);
-            if lbalance == 0 || lbalance == 1 { // left left - need to rotate right
+            if lbalance == 0 || lbalance == 1 {
+                // left left - need to rotate right
                 return self.rotate_right(node);
             } else if lbalance == -1 {
                 // left right
                 return self.rotate_leftright(node); // function name is just a coincidence
             }
-        } else if balance == -2 { // right
+        } else if balance == -2 {
+            // right
             let rbalance = self.height(self.node(self.node(node).right.unwrap()).left) -
                            self.height(self.node(self.node(node).right.unwrap()).right);
-            if rbalance == 1 { // right left
+            if rbalance == 1 {
+                // right left
                 return self.rotate_rightleft(node); // function name is just a coincidence
             } else if rbalance == 0 || rbalance == -1 {
                 // right right - need to rotate left
@@ -279,20 +293,26 @@ impl<T, K: PartialOrd> Tree<T, K> {
             Some(index) => {
                 self.nodes[index].time_stamp += 1;
                 index
-            },
+            }
             None => {
                 // No free slots, create a new one
                 let index = self.nodes.len();
-                self.nodes.push(Slot { time_stamp: 0,
-                                          node: Some(Node { value: value, left: None, right: None }) });
+                self.nodes.push(Slot {
+                    time_stamp: 0,
+                    node: Some(Node {
+                        value: value,
+                        left: None,
+                        right: None,
+                    }),
+                });
                 index
-            },
+            }
         }
     }
 
     fn free_node(&mut self, index: usize) -> Node<T> {
         self.free_list.push(index);
-        
+
         // NOTE: We unwrap here, because we trust that `id` points to a valid node, because
         // only we can create and free Nodes and their NodeIds
         self.nodes[index].node.take().unwrap()
@@ -307,7 +327,7 @@ impl<T, K: PartialOrd> Tree<T, K> {
     }
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+/// /////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct Slot<T> {
     time_stamp: u64,

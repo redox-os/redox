@@ -33,18 +33,23 @@
 
 static SDLKey keymap[128];
 
+#define EVENT_NONE 0
+#define EVENT_MOUSE 1
+#define EVENT_KEY 2
+#define EVENT_QUIT 3
+
 struct Event {
-    uint code;
-    uint a;
-    uint b;
-    uint c;
+    int code;
+    int a;
+    int b;
+    int c;
 } __attribute__((packed));
 
 void ORBITAL_PumpEvents(_THIS)
 {
     struct Event event;
     while(read(this->hidden->fd, &event, sizeof(event)) > 0){
-        if ( (char)event.code == 'k' ){
+        if ( event.code == EVENT_KEY ){
             SDL_keysym keysym;
         	keysym.unicode = event.a;
         	keysym.scancode = event.b;
@@ -55,7 +60,7 @@ void ORBITAL_PumpEvents(_THIS)
             } else {
                 SDL_PrivateKeyboard(SDL_RELEASED, &keysym);
             }
-        }else if( (char)event.code == 'm' ){
+        }else if( event.code == EVENT_MOUSE ){
             SDL_PrivateMouseMotion(event.c, 0, event.a, event.b);
             //SDL_PrivateMouseButton(Uint8 state, Uint8 button, Sint16 x, Sint16 y);
         }
@@ -65,7 +70,7 @@ void ORBITAL_PumpEvents(_THIS)
 void ORBITAL_InitOSKeymap(_THIS)
 {
     int i;
-    for ( i=0; i<SDL_arraysize(keymap); ++i )
+    for ( i = 0; i < SDL_arraysize(keymap); ++i )
         keymap[i] = SDLK_UNKNOWN;
 
     keymap[SCANCODE_ESCAPE] = SDLK_ESCAPE;

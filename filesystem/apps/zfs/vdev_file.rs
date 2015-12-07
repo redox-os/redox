@@ -1,8 +1,5 @@
-use std::String;
-
 use super::nvpair::NvList;
-use super::vdev;
-use super::zfs;
+use super::{vdev, zfs};
 
 pub struct VdevFile {
     path: String,
@@ -10,16 +7,14 @@ pub struct VdevFile {
 
 impl VdevFile {
     pub fn load(nv: &NvList) -> zfs::Result<Self> {
-        Ok(VdevFile {
-            path: try!(nv.get::<&String>("path").ok_or(zfs::Error::Invalid)).clone(),
-        })
+        Ok(VdevFile { path: try!(nv.get::<&String>("path").ok_or(zfs::Error::Invalid)).clone() })
     }
 
-    //pub fn io_start(zio: &zio::Zio);
+// pub fn io_start(zio: &zio::Zio);
 
-    //pub fn io_done(zio: &zio::Zio);
+// pub fn io_done(zio: &zio::Zio);
 
-    //pub fn state_change();
+// pub fn state_change();
 }
 
 impl vdev::IVdevOps for VdevFile {
@@ -29,7 +24,7 @@ impl vdev::IVdevOps for VdevFile {
 
     fn close(&mut self, vdev: &mut vdev::Vdev) {
     }
-    
+
     fn asize(&mut self, vdev: &mut vdev::Vdev, psize: u64) -> u64 {
         0
     }

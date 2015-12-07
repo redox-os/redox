@@ -1,4 +1,3 @@
-use std::prelude::v1::*;
 use std::hash::{Hash, Hasher};
 use ptr::DataPtr;
 use djb2::Djb2;

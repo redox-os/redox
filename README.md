@@ -4,7 +4,7 @@
 
 Docs can be found [here](http://ticki.github.io/redocs/redox/).
 
-Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see "Help! Redox won't compile!").
+Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
 ![travis](https://api.travis-ci.org/redox-os/redox.svg)
 
@@ -17,18 +17,40 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="170" src="img/screenshots/Boot.png">
 <img alt="Redox" height="170" src="img/screenshots/start.png">
 
-
+<a name="compile-help"/>
 ## Help! Redox won't compile!
 
 Sometimes things goes wrong when compiling. Try the following before opening an issue:
 
-1.  Run `make clean`.
-2.  Run `git clean -X -f -d`
-3.  Make sure you got **the latest version of Rust nightly!** (you can use `multirust` for managing Rust versions).
-4.  Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
-5.  Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
+1. Run `make clean`.
+2. Run `git clean -X -f -d`.
+3. Make sure you have **the latest version of Rust nightly!** (`multirust` is recommended for managing Rust versions).
+4. Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
+5. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
 
 and then rebuild!
+
+When you have completed these steps, done a full rebuild, you can open an issue. **Make sure you answer the following questions**:
+- Have you followed the steps in "Help! Redox won't compile!"? (confirmation)
+- What host OS are you building Redox on?
+- Have you made any changes?
+Else, your issue may be closed.
+
+## Contributing to Redox
+If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
+
+## Cloning the repository
+
+Make sure you get submodules when you clone the repository.
+```bash
+git clone --recursive
+```
+
+If you already have a copy of the repository locally without submodules, you
+can download them with: 
+```bash
+git submodule update --init
+```
 
 ## Building on Debian/Ubuntu
 - Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
@@ -106,6 +128,27 @@ make all
 - Install Qemu
 ```bash
 sudo yum install qemu-system-x86 qemu-kvm
+```
+- Run Qemu
+```bash
+make qemu
+```
+
+## Building on SUSE
+- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+```bash
+cd setup
+./suse.sh
+./binary.sh
+```
+- Make the project
+```bash
+make all
+```
+## Running on SUSE (Qemu, Advanced)
+- Install Qemu
+```bash
+sudo zypper install qemu-x86 qemu-kvm
 ```
 - Run Qemu
 ```bash

@@ -269,7 +269,7 @@ impl FileManager {
     fn set_path(&mut self, path: &str) {
         let mut width = [48; 3];
         let mut height = 0;
-        fs::change_cwd(path);
+        env::set_current_dir(path);
         if let Some(readdir) = fs::read_dir(path) {
             self.files.clear();
             self.file_sizes.clear();
@@ -477,7 +477,7 @@ impl FileManager {
 
 #[no_mangle]
 pub fn main() {
-    match env::args().get(1) {
+    match env::args().nth(1) {
         Some(arg) => FileManager::new().main(arg),
         None => FileManager::new().main("file:/"),
     }

@@ -11,24 +11,23 @@ use common::elf::Elf;
 use common::memory;
 
 use scheduler;
-use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch, context_userspace, Context, ContextMemory};
+use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch,
+context_userspace, Context, ContextMemory};
 
 use schemes::Url;
 
-/// Excecute an excecutable
+/// Execute an executable
 pub fn execute(url: Url, mut args: Vec<String>) {
     unsafe {
-        let reenable = scheduler::start_no_ints();
 
-        let context_ptr: *mut Context = if let Some(mut current) = Context::current_mut() {
-            current.deref_mut()
-        } else {
-            0 as *mut Context
-        };
 
-        scheduler::end_no_ints(reenable);
 
-        if context_ptr as usize > 0 {
+        if let Some(current) = Context::current_mut() {
+
+            let reenable = scheduler::start_no_ints();
+            let cptr = current.deref_mut();
+            scheduler::end_no_ints(reenable);
+
             Context::spawn("kexec ".to_string() + &url.string, box move || {
                 if let Some(mut resource) = url.open() {
                     let mut vec: Vec<u8> = Vec::new();
@@ -49,15 +48,15 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                                      segment.file_len as usize);
                             // Zero bss
                             ::memset((physical_address + segment.file_len as usize) as *mut u8,
-                                     0,
-                                     segment.mem_len as usize - segment.file_len as usize);
+                            0,
+                            segment.mem_len as usize - segment.file_len as usize);
 
-                             memory.push(ContextMemory {
-                                 physical_address: physical_address,
-                                 virtual_address: virtual_address,
-                                 virtual_size: virtual_size,
-                                 writeable: segment.flags & 2 == 2
-                             });
+                            memory.push(ContextMemory {
+                                physical_address: physical_address,
+                                virtual_address: virtual_address,
+                                virtual_size: virtual_size,
+                                writeable: segment.flags & 2 == 2
+                            });
                         }
                     }
 
@@ -78,7 +77,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
                         let reenable = scheduler::start_no_ints();
 
-                        let context = &mut * context_ptr;
+                        let context = cptr;
 
                         context.name = url.to_string();
 

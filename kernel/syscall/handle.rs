@@ -14,7 +14,8 @@ use drivers::pio::*;
 use programs::executor::execute;
 
 use scheduler::{self, Regs};
-use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile, ContextStatus};
+use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile,
+                         ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
 
@@ -52,7 +53,7 @@ pub unsafe fn do_sys_debug(ptr: *const u8, len: usize) {
 
     let reenable = scheduler::start_no_ints();
 
-    if ::env_ptr as usize > 0 {
+    if ::ENV_PTR.is_some() {
         ::env().console.lock().write(bytes);
     } else {
         let serial_status = Pio8::new(0x3F8 + 5);
@@ -312,25 +313,26 @@ pub unsafe fn do_sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
 
     scheduler::end_no_ints(reenable);
 
-    return Context::spawn("kspawn".to_string(), box move || {
-        let wd_c = "file:/\0";
-        do_sys_chdir(wd_c.as_ptr());
+    return Context::spawn("kspawn".to_string(),
+                          box move || {
+                              let wd_c = "file:/\0";
+                              do_sys_chdir(wd_c.as_ptr());
 
-        let stdio_c = "debug:\0";
-        do_sys_open(stdio_c.as_ptr(), 0);
-        do_sys_open(stdio_c.as_ptr(), 0);
-        do_sys_open(stdio_c.as_ptr(), 0);
+                              let stdio_c = "debug:\0";
+                              do_sys_open(stdio_c.as_ptr(), 0);
+                              do_sys_open(stdio_c.as_ptr(), 0);
+                              do_sys_open(stdio_c.as_ptr(), 0);
 
-        execute(path_url, args_vec);
+                              execute(path_url, args_vec);
 
-        do_sys_exit(127);
-    });
+                              do_sys_exit(127);
+                          });
 }
 
 /// Exit context
 ///
 /// Unsafe due to interrupt disabling and raw pointers
-pub unsafe fn do_sys_exit(status: usize){
+pub unsafe fn do_sys_exit(status: usize) {
     {
         let reenable = scheduler::start_no_ints();
 
@@ -345,21 +347,21 @@ pub unsafe fn do_sys_exit(status: usize){
 
         let mut contexts = ::env().contexts.lock();
         for context in contexts.iter_mut() {
-            //Add exit status to parent
+            // Add exit status to parent
             if context.pid == ppid {
                 context.statuses.push(ContextStatus {
                     pid: pid,
-                    status: status
+                    status: status,
                 });
                 for status in statuses.iter() {
                     context.statuses.push(ContextStatus {
                         pid: status.pid,
-                        status: status.status
+                        status: status.status,
                     });
                 }
             }
 
-            //Move children to parent
+            // Move children to parent
             if context.ppid == pid {
                 context.ppid = ppid;
             }
@@ -572,8 +574,7 @@ pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
     let reenable = scheduler::start_no_ints();
 
     if let Some(current) = Context::current() {
-        let path_string =
-            current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
+        let path_string = current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
         scheduler::end_no_ints(reenable);
 
@@ -601,15 +602,15 @@ pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> 
             while i < current.statuses.len() {
                 if let Some(current_status) = current.statuses.get(i) {
                     if pid > 0 && pid as usize == current_status.pid {
-                        //Specific child
+                        // Specific child
                         found = true;
                     } else if pid == 0 {
-                        //TODO Any child whose PGID is equal to this process
+                        // TODO Any child whose PGID is equal to this process
                     } else if pid == -1 {
-                        //Any child
+                        // Any child
                         found = true;
                     } else {
-                        //TODO Any child whose PGID is equal to abs(pid)
+                        // TODO Any child whose PGID is equal to abs(pid)
                     }
                 }
                 if found {

@@ -212,7 +212,7 @@ impl Intel8254x {
                 debug::dl();
 
                 self.inbound.push_back(Vec::from(slice::from_raw_parts(rd.buffer as *const u8,
-                                                                  rd.length as usize)));
+                                                                       rd.length as usize)));
 
                 rd.status = 0;
             }

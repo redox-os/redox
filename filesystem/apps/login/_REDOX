@@ -1,0 +1,4 @@
+name=Login
+icon=file:/ui/apps/preferences-system-login.bmp
+author=Jeremy Soller
+description=Login for Redox
