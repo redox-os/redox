@@ -307,17 +307,17 @@ handle_command_line_args() {
 
     for arg in "$@"; do
        case "$arg" in
-           --save )
+           -s | --save )
               _save=true
               ;;
-           --uninstall )
+           -u | --uninstall )
               _uninstall=true
               ;;
-           --help )
+           -h | --help )
               _help=true
               ;;
 
-           --verbose)
+           -v | --verbose)
               # verbose is a global flag
               flag_verbose=true
               ;;
@@ -1314,7 +1314,7 @@ maybe_sudo() {
 
 print_help() {
 echo '
-Usage: rustup.sh [--verbose]
+Usage: rustup.sh [--verbose|-v]
 
 Options:
 
@@ -1323,10 +1323,10 @@ Options:
      --revision=<version-number>       Install a specific release
      --spec=<toolchain-spec>           Install from toolchain spec
      --prefix=<path>                   Install to a specific location (default /usr/local)
-     --uninstall                       Uninstall instead of install
+     --uninstall, u                    Uninstall instead of install
      --disable-ldconfig                Do not run ldconfig on Linux
      --disable-sudo                    Do not run installer under sudo
-     --save                            Save downloads for future reuse
+     --save, -s                        Save downloads for future reuse
      --yes, -y                         Disable the interactive mode
 '
 }
