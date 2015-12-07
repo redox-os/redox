@@ -37,7 +37,7 @@ macro_rules! readln {
 pub struct Command {
     pub name: &'static str,
     pub help: &'static str,
-    pub main: Box<Fn(&Vec<String>, &mut Vec<Variable>, &mut Vec<Mode>)>,
+    pub main: Box<Fn(&Vec<String>, &mut Vec<Variable>)>,
 }
 
 impl Command {
@@ -49,7 +49,7 @@ impl Command {
         commands.push(Command {
             name: "cat",
             help: "To display a file in the output\n    cat <your_file>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(mut file) = File::open(&path) {
@@ -67,7 +67,7 @@ impl Command {
         commands.push(Command {
             name: "cd",
             help: "To change the current directory\n    cd <your_destination>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 match args.get(1) {
                     Some(path) => {
                         if env::set_current_dir(&path).is_err() {
@@ -82,7 +82,7 @@ impl Command {
         commands.push(Command {
             name: "echo",
             help: "To display some text in the output\n    echo Hello world!",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 let echo = args.iter()
                                .skip(1)
                                .fold(String::new(), |string, arg| string + " " + arg);
@@ -93,13 +93,13 @@ impl Command {
         commands.push(Command {
             name: "else",
             help: "",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {}),
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {}),
         });
 
         commands.push(Command {
             name: "exec",
             help: "To execute a binary in the output\n    exec <my_binary>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 if let Some(path) = args.get(1) {
                     let mut command = process::Command::new(path);
                     for i in 2 .. args.len() {
@@ -128,19 +128,19 @@ impl Command {
         commands.push(Command {
             name: "exit",
             help: "To exit the curent session",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {}),
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {}),
         });
 
         commands.push(Command {
             name: "fi",
             help: "",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {}),
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {}),
         });
 
         commands.push(Command {
             name: "free",
             help: "Show memory information\n    free",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {
                 if let Some(mut file) = File::open("memory:") {
                     let mut string = String::new();
                     match file.read_to_string(&mut string) {
@@ -156,13 +156,13 @@ impl Command {
         commands.push(Command {
             name: "if",
             help: "",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {}),
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {}),
         });
 
         commands.push(Command {
             name: "ls",
             help: "To list the content of the current directory\n    ls",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(dir) = fs::read_dir(&path) {
@@ -178,7 +178,7 @@ impl Command {
         commands.push(Command {
             name: "mkdir",
             help: "To create a directory in the current directory\n    mkdir <my_new_directory>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 match args.get(1) {
                     Some(dir_name) => if DirEntry::create(dir_name).is_none() {
                         println!("Failed to create {}", dir_name);
@@ -191,7 +191,7 @@ impl Command {
         commands.push(Command {
             name: "ps",
             help: "Show process list\n    ps",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {
                 if let Some(mut file) = File::open("context:") {
                     let mut string = String::new();
                     match file.read_to_string(&mut string) {
@@ -207,7 +207,7 @@ impl Command {
         commands.push(Command {
             name: "pwd",
             help: "To output the path of the current directory\n    pwd",
-            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>| {
                 if let Some(file) = File::open("") {
                     if let Some(path) = file.path() {
                         println!("{}", path);
@@ -223,7 +223,7 @@ impl Command {
         commands.push(Command {
             name: "read",
             help: "To read some variables\n    read <my_variable>",
-            main: Box::new(|args: &Vec<String>, variables: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, variables: &mut Vec<Variable>| {
                 for i in 1..args.len() {
                     if let Some(arg_original) = args.get(i) {
                         let arg = arg_original.trim();
@@ -240,7 +240,7 @@ impl Command {
         commands.push(Command {
             name: "rm",
             help: "To remove a file, in the current directory\n    rm <my_file>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 match args.get(1) {
                     Some(file_name) => if fs::remove_file(file_name).is_err() {
                         println!("Failed to remove: {}", file_name);
@@ -253,7 +253,7 @@ impl Command {
         commands.push(Command {
             name: "sleep",
             help: "Make a sleep in the current session\n    sleep <number_of_seconds>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 let secs = args.get(1).map_or(0, |arg| arg.to_num() as i64);
                 let nanos = args.get(2).map_or(0, |arg| arg.to_num() as i32);
                 println!("Sleep: {} {}", secs, nanos);
@@ -266,7 +266,7 @@ impl Command {
         commands.push(Command {
             name: "send",
             help: "To send data, via an URL\n    send <url> <data>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 if args.len() < 3 {
                     println!("Error: incorrect arguments");
                     println!("Usage: send <url> <data>");
@@ -303,7 +303,7 @@ impl Command {
         commands.push(Command {
             name: "touch",
             help: "To create a file, in the current directory\n    touch <my_file>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 match args.get(1) {
                     Some(file_name) => if File::create(file_name).is_none() {
                         println!("Failed to create: {}", file_name);
@@ -316,7 +316,7 @@ impl Command {
         commands.push(Command {
             name: "url_hex",
             help: "",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(mut file) = File::open(&path) {
@@ -339,7 +339,7 @@ impl Command {
             name: "wget",
             help: "To make some requests at a given host, using TCP protocol\n    wget <host> \
                    <request>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
                         if let Some(mut con) = File::open(&("tcp://".to_string() + host)) {
@@ -371,7 +371,7 @@ impl Command {
         commands.push(Command {
             name: "man",
             help: "Display a little helper for a given command\n    man ls",
-            main: Box::new(move |args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(move |args: &Vec<String>, _: &mut Vec<Variable>| {
                 if let Some(command) = args.get(1) {
                     if command_helper.contains_key(command) {
                         match command_helper.get(command) {
@@ -392,7 +392,7 @@ impl Command {
         commands.push(Command {
             name: "help",
             help: "Print available commands",
-            main: Box::new(move |_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(move |_: &Vec<String>, _: &mut Vec<Variable>| {
                 println!("Commands:{}", command_list);
             }),
         });
@@ -412,9 +412,9 @@ pub struct Mode {
 }
 
 fn on_command(command_string: &str,
-                  commands: &Vec<Command>,
-                  variables: &mut Vec<Variable>,
-                  modes: &mut Vec<Mode>) {
+              commands: &Vec<Command>,
+              variables: &mut Vec<Variable>,
+              modes: &mut Vec<Mode>) {
     // Comment
     if command_string.starts_with('#') {
         return;
@@ -532,7 +532,7 @@ fn on_command(command_string: &str,
         // Commands
         for command in commands.iter() {
             if &command.name == cmd {
-                (*command.main)(&args, variables, modes);
+                (*command.main)(&args, variables);
                 return;
             }
         }
