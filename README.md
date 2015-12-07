@@ -134,6 +134,27 @@ sudo yum install qemu-system-x86 qemu-kvm
 make qemu
 ```
 
+## Building on SUSE
+- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+```bash
+cd setup
+./suse.sh
+./binary.sh
+```
+- Make the project
+```bash
+make all
+```
+## Running on SUSE (Qemu, Advanced)
+- Install Qemu
+```bash
+sudo zypper install qemu-x86 qemu-kvm
+```
+- Run Qemu
+```bash
+make qemu
+```
+
 ## Building and Running on NixOS
 
 ```bash
