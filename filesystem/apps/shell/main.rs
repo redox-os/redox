@@ -44,7 +44,7 @@ impl Command {
     /// Return the vector of the commands
     // TODO: Use a more efficient collection instead
     pub fn vec() -> Vec<Self> {
-        let mut commands: Vec<Self> = Vec::new();
+        let mut commands: Vec<Self> = vec![];
 
         commands.push(Command {
             name: "cat",
@@ -320,7 +320,7 @@ impl Command {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
                 if let Some(mut file) = File::open(&path) {
-                    let mut vec: Vec<u8> = Vec::new();
+                    let mut vec: Vec<u8> = vec![];
                     match file.read_to_end(&mut vec) {
                         Some(_) => {
                             let mut line = "HEX:".to_string();
@@ -345,7 +345,7 @@ impl Command {
                         if let Some(mut con) = File::open(&("tcp://".to_string() + host)) {
                             con.write(("GET ".to_string() + req + " HTTP/1.1").as_bytes());
 
-                            let mut res = Vec::new();
+                            let mut res = vec![];
                             con.read_to_end(&mut res);
 
                             if let Some(mut file) = File::open(&req) {
@@ -429,7 +429,7 @@ fn on_command(command_string: &str,
     }
 
     // Explode into arguments, replace variables
-    let mut args: Vec<String> = Vec::new();
+    let mut args: Vec<String> = vec![];
     for arg in command_string.split(' ') {
         if !arg.is_empty() {
             if arg.starts_with('$') {
