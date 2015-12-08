@@ -206,7 +206,7 @@ pub unsafe fn do_sys_close(fd: usize) -> usize {
 }
 
 pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     if tp as usize > 0 {
         let env = ::env();

@@ -182,7 +182,7 @@ pub unsafe fn cluster_init() {
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     if size > 0 {
         let mut number = 0;
@@ -218,7 +218,7 @@ pub unsafe fn alloc(size: usize) -> usize {
 
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     if size > 0 {
         let mut number = 0;
@@ -258,7 +258,7 @@ pub unsafe fn alloc_type<T>() -> *mut T {
 
 pub unsafe fn alloc_size(ptr: usize) -> usize {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     let mut size = 0;
 
@@ -277,7 +277,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
 
 pub unsafe fn unalloc(ptr: usize) {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     if ptr > 0 {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
@@ -292,7 +292,7 @@ pub unsafe fn unalloc(ptr: usize) {
 
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     let mut ret = 0;
 
@@ -331,7 +331,7 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
 
 pub fn memory_used() -> usize {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     let mut ret = 0;
 
@@ -348,7 +348,7 @@ pub fn memory_used() -> usize {
 
 pub fn memory_free() -> usize {
     // Memory allocation must be atomic
-    let intex = Intex::static_lock();
+    let _intex = Intex::static_lock();
 
     let mut ret = 0;
 

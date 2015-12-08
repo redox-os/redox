@@ -297,6 +297,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 IcmpScheme::reply_loop();
             });
 
+            context_enabled = true;
+
             if let Some(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
@@ -333,8 +335,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                     context_switch(false);
                 }
             });
-
-            context_enabled = true;
         },
         None => unreachable!(),
     }

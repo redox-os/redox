@@ -179,7 +179,7 @@ impl Display {
     /// Flip the display
     pub fn flip(&self) {
         unsafe {
-            let intex = Intex::static_lock();
+            let _intex = Intex::static_lock();
             if self.root {
                 Display::copy_run(self.offscreen, self.onscreen, self.size);
             } else {

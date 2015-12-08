@@ -79,7 +79,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                 context_args.push(argc);
 
                 unsafe {
-                    let intex = Intex::static_lock();
+                    let _intex = Intex::static_lock();
 
                     let context = &mut *context_ptr;
 

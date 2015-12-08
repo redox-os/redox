@@ -59,11 +59,11 @@ pub unsafe fn pci_device(env: &mut Environment,
         } else if interface_id == 0x10 {
             let base = pci.read(0x10) as usize;
 
-            debug!("OHCI Controller on {}\n", base & 0xFFFFFFF0);
+            debug!("OHCI Controller on {:X}\n", base & 0xFFFFFFF0);
         } else if interface_id == 0x00 {
             env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
         } else {
-            debug!("Unknown USB interface version\n");
+            debug!("Unknown USB interface version {:X}\n", interface_id);
         }
     } else {
         match vendor_code {

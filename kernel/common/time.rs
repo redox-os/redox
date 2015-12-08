@@ -40,14 +40,14 @@ impl Duration {
 
     /// Get the current duration
     pub fn monotonic() -> Self {
-        let intex = Intex::static_lock();
+        let _intex = Intex::static_lock();
 
         unsafe { ::env().clock_monotonic }
     }
 
     /// Get the realtime
     pub fn realtime() -> Self {
-        let intex = Intex::static_lock();
+        let _intex = Intex::static_lock();
 
         unsafe { ::env().clock_realtime }
     }
