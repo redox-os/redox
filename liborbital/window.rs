@@ -41,24 +41,26 @@ impl Window {
         }
 
         match File::open(&format!("orbital:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
-            Some(file) => Some(box Window {
-                x: x,
-                y: y,
-                w: w,
-                h: h,
-                t: title.to_string(),
-                file: file,
-                font: font,
-                data: vec![0; w * h * 4],
-            }),
-            None => None
+            Some(file) => {
+                Some(box Window {
+                    x: x,
+                    y: y,
+                    w: w,
+                    h: h,
+                    t: title.to_string(),
+                    file: file,
+                    font: font,
+                    data: vec![0; w * h * 4],
+                })
+            }
+            None => None,
         }
     }
 
-    //TODO: Replace with smarter mechanism, maybe a move event?
+    // TODO: Replace with smarter mechanism, maybe a move event?
     pub fn sync_path(&mut self) {
         if let Some(path) = self.file.path() {
-            //orbital://x/y/w/h/t
+            // orbital://x/y/w/h/t
             let parts: Vec<&str> = path.split('/').collect();
             if let Some(x) = parts.get(3) {
                 self.x = x.to_num_signed();
@@ -76,13 +78,13 @@ impl Window {
     }
 
     /// Get x
-    //TODO: Sync with window movements
+    // TODO: Sync with window movements
     pub fn x(&self) -> isize {
         self.x
     }
 
     /// Get y
-    //TODO: Sync with window movements
+    // TODO: Sync with window movements
     pub fn y(&self) -> isize {
         self.y
     }
@@ -104,7 +106,7 @@ impl Window {
 
     /// Set title
     pub fn set_title(&mut self, _: &str) {
-        //TODO
+        // TODO
     }
 
     /// Draw a pixel
@@ -136,7 +138,7 @@ impl Window {
         }
     }
 
-    //TODO move, resize, set_title
+    // TODO move, resize, set_title
 
     /// Set entire window to a color
     // TODO: Improve speed
@@ -159,7 +161,7 @@ impl Window {
     }
 
     /// Display an image
-    //TODO: Improve speed
+    // TODO: Improve speed
     pub fn image(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, data: &[Color]) {
         let mut i = 0;
         for y in start_y..start_y + h as isize {
@@ -173,7 +175,7 @@ impl Window {
     }
 
     /// Poll for an event
-    //TODO: clean this up
+    // TODO: clean this up
     pub fn poll(&mut self) -> Option<Event> {
         let mut event = Event::new();
         let event_ptr: *mut Event = &mut event;
@@ -191,17 +193,16 @@ impl Window {
     /// Flip the window buffer
     pub fn sync(&mut self) -> bool {
         self.file.seek(SeekFrom::Start(0));
-        self.file.write(& unsafe {
-            slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len() * mem::size_of::<u32>())
+        self.file.write(&unsafe {
+            slice::from_raw_parts(self.data.as_ptr() as *const u8,
+                                  self.data.len() * mem::size_of::<u32>())
         });
         return self.file.sync();
     }
 
     /// Return a iterator over events
     pub fn event_iter<'a>(&'a mut self) -> EventIter<'a> {
-        EventIter {
-            window: self,
-        }
+        EventIter { window: self }
     }
 }
 
