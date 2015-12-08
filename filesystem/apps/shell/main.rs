@@ -1,15 +1,17 @@
 use std::collections::BTreeMap;
-use std::get_slice::GetSlice;
 use std::ops::DerefMut;
-use std::string::*;
+use std::string::String;
 use std::vec::Vec;
 use std::boxed::Box;
-use std::fs::*;
-use std::io::*;
-use std::env::*;
+use std::fs::{self, DirEntry, File};
+use std::io::{Read, Write};
+use std::env;
 use std::time::Duration;
-use std::to_num::*;
 use std::process;
+
+use self::to_num::ToNum;
+
+pub mod to_num;
 
 macro_rules! readln {
     () => ({
@@ -73,7 +75,7 @@ impl<'a> Command<'a> {
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
                     Some(path) => {
-                        if !change_cwd(&path) {
+                        if env::set_current_dir(&path).is_err() {
                             println!("Bad path: {}", path);
                         }
                     }
@@ -105,8 +107,10 @@ impl<'a> Command<'a> {
             main: Box::new(|args: &Vec<String>| {
                 if let Some(path) = args.get(1) {
                     let mut command = process::Command::new(path);
-                    for arg in args.get_slice(Some(2), None) {
-                        command.arg(arg);
+                    for i in 2 .. args.len() {
+                        if let Some(arg) = args.get(i){
+                            command.arg(arg);
+                        }
                     }
 
                     if let Some(mut child) = command.spawn() {
@@ -166,7 +170,7 @@ impl<'a> Command<'a> {
             main: Box::new(|args: &Vec<String>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
-                if let Some(dir) = read_dir(&path) {
+                if let Some(dir) = fs::read_dir(&path) {
                     for entry in dir {
                         println!("{}", entry.path());
                     }
@@ -232,7 +236,7 @@ impl<'a> Command<'a> {
             help: "To remove a file, in the current directory\n    rm <my_file>",
             main: Box::new(|args: &Vec<String>| {
                 match args.get(1) {
-                    Some(file_name) => if !unlink(file_name) {
+                    Some(file_name) => if fs::remove_file(file_name).is_err() {
                         println!("Failed to remove: {}", file_name);
                     },
                     None => println!("No name provided"),
@@ -614,21 +618,19 @@ impl<'a> Application<'a> {
         }
     }
 
-    /// Method to return the current directory
-    /// If the current directory cannot be found, a default string ("?") will be returned
-    pub fn get_current_directory(&mut self) -> String {
-        // Return the current path
-        File::open("")
-            .and_then(|file| file.path())
-            .unwrap_or("?".to_string())
-    }
-
     /// Run the application
     pub fn main(&mut self) {
         println!("Type help for a command list");
-        if let Some(arg) = args().get(1) {
+        for arg in env::args().skip(1) {
+            let cwd = match env::current_dir() {
+                Ok(path) => format!("{}", &path),
+                Err(_) => "?".to_string()
+            };
+
             let command = "run ".to_string() + arg;
-            println!("user@redox:{}# {}", self.get_current_directory(), command);
+
+            println!("user@redox:{}# {}",  cwd, command);
+
             self.on_command(&command);
         }
 
@@ -640,7 +642,14 @@ impl<'a> Application<'a> {
                     print!("- ");
                 }
             }
-            print!("user@redox:{}# ", self.get_current_directory());
+
+            let cwd =  match env::current_dir() {
+                Ok(path) => format!("{}", &path),
+                Err(_) => "?".to_string()
+            };
+
+            print!("user@redox:{}# ", cwd);
+
             if let Some(command_original) = readln!() {
                 let command = command_original.trim();
                 if command == "exit" {

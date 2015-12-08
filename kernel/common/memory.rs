@@ -303,7 +303,7 @@ impl MemoryTree {
 //         }
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
-        let level = MT_DEPTH - order - 1;
+        let level = MT_DEPTH - order;
 
         let mut ret = None;
         for pos in 0..MT_BYTES {

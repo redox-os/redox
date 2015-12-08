@@ -104,7 +104,6 @@ pub mod syscall;
 pub mod usb;
 
 pub static mut TSS_PTR: Option<&'static mut TSS> = None;
-
 pub static mut ENV_PTR: Option<&'static mut Environment> = None;
 
 pub fn env() -> &'static Environment {
@@ -132,12 +131,11 @@ unsafe fn idle_loop() -> ! {
         {
             let contexts = ::env().contexts.lock();
             for i in 1..contexts.len() {
-                match contexts.get(i) {
-                    Some(context) => if context.interrupted {
+                if let Some(context) = contexts.get(i) {
+                    if context.interrupted {
                         halt = false;
                         break;
-                    },
-                    None => (),
+                    }
                 }
             }
         }
@@ -225,11 +223,9 @@ fn event_loop() -> ! {
 
         {
             let mut console = env().console.lock();
-            if console.draw {
-                if console.redraw {
-                    console.redraw = false;
-                    console.display.flip();
-                }
+            if console.draw && console.redraw {
+                console.redraw = false;
+                console.display.flip();
             }
         }
 
@@ -248,7 +244,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
     display::fonts = font_data;
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
-
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
     context_pid = 1;
@@ -469,7 +464,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 init(regs.ax, regs.bx);
                 idle_loop();
             }
-        }
+        },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),
         0x2 => exception!("Non-maskable interrupt"),
