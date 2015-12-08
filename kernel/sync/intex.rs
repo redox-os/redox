@@ -26,9 +26,9 @@ impl<T: ?Sized> Intex<T> {
     }
 }
 
-unsafe impl<T: ?Sized + Send> Send for Intex<T> { }
+unsafe impl<T: ?Sized + Send> Send for Intex<T> {}
 
-unsafe impl<T: ?Sized + Send> Sync for Intex<T> { }
+unsafe impl<T: ?Sized + Send> Sync for Intex<T> {}
 
 /// A Intex guard (returned by .lock())
 pub struct IntexGuard<'a, T: ?Sized + 'a> {
@@ -37,9 +37,7 @@ pub struct IntexGuard<'a, T: ?Sized + 'a> {
 
 impl<'intex, T: ?Sized> IntexGuard<'intex, T> {
     fn new(data: &'intex UnsafeCell<T>) -> Self {
-        IntexGuard {
-            data: data,
-        }
+        IntexGuard { data: data }
     }
 }
 

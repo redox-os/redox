@@ -30,9 +30,9 @@ impl<T: ?Sized> Mutex<T> {
     }
 }
 
-unsafe impl<T: ?Sized + Send> Send for Mutex<T> { }
+unsafe impl<T: ?Sized + Send> Send for Mutex<T> {}
 
-unsafe impl<T: ?Sized + Send> Sync for Mutex<T> { }
+unsafe impl<T: ?Sized + Send> Sync for Mutex<T> {}
 
 /// A mutex guard (returned by .lock())
 pub struct MutexGuard<'a, T: ?Sized + 'a> {

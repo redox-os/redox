@@ -249,11 +249,13 @@ impl NetworkScheme for Rtl8139 {
                 let mut remove = false;
 
                 match self.resources.get(i) {
-                    Some(ptr) => if *ptr == resource {
-                        remove = true;
-                    } else {
-                        i += 1;
-                    },
+                    Some(ptr) => {
+                        if *ptr == resource {
+                            remove = true;
+                        } else {
+                            i += 1;
+                        }
+                    }
                     None => break,
                 }
 

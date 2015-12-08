@@ -67,42 +67,46 @@ pub unsafe fn pci_device(env: &mut Environment,
         }
     } else {
         match vendor_code {
-            0x10EC => match device_code { // REALTEK
-                0x8139 => {
-                    env.schemes.push(UnsafeCell::new(Rtl8139::new(pci)));
+            0x10EC => {
+                match device_code { // REALTEK
+                    0x8139 => {
+                        env.schemes.push(UnsafeCell::new(Rtl8139::new(pci)));
+                    }
+                    _ => (),
                 }
-                _ => (),
-            },
-            0x8086 => match device_code { // INTEL
-                0x100E => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box Intel8254x {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                        resources: Vec::new(),
-                        inbound: VecDeque::new(),
-                        outbound: VecDeque::new(),
-                    };
-                    module.init();
-                    env.schemes.push(UnsafeCell::new(module));
+            }
+            0x8086 => {
+                match device_code { // INTEL
+                    0x100E => {
+                        let base = pci.read(0x10) as usize;
+                        let mut module = box Intel8254x {
+                            pci: pci,
+                            base: base & 0xFFFFFFF0,
+                            memory_mapped: base & 1 == 0,
+                            irq: pci.read(0x3C) as u8 & 0xF,
+                            resources: Vec::new(),
+                            inbound: VecDeque::new(),
+                            outbound: VecDeque::new(),
+                        };
+                        module.init();
+                        env.schemes.push(UnsafeCell::new(module));
+                    }
+                    0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                    0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                    0x2668 => {
+                        let base = pci.read(0x10) as usize;
+                        let mut module = box IntelHDA {
+                            pci: pci,
+                            base: base & 0xFFFFFFF0,
+                            memory_mapped: base & 1 == 0,
+                            irq: pci.read(0x3C) as u8 & 0xF,
+                        };
+                        module.init();
+                        env.schemes.push(UnsafeCell::new(module));
+                    }
+                    _ => (),
                 }
-                0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x2668 => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box IntelHDA {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                    };
-                    module.init();
-                    env.schemes.push(UnsafeCell::new(module));
-                }
-                _ => (),
-            },
+            }
             _ => (),
         }
     }

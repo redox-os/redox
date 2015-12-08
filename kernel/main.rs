@@ -176,23 +176,27 @@ fn event_loop() -> ! {
                                         event::K_F2 => {
                                             console.draw = false;
                                         }
-                                        event::K_BKSP => if !cmd.is_empty() {
-                                            console.write(&[8]);
-                                            cmd.pop();
-                                        },
-                                        _ => match key_event.character {
-                                            '\0' => (),
-                                            '\n' => {
-                                                console.command = Some(cmd.clone());
+                                        event::K_BKSP => {
+                                            if !cmd.is_empty() {
+                                                console.write(&[8]);
+                                                cmd.pop();
+                                            }
+                                        }
+                                        _ => {
+                                            match key_event.character {
+                                                '\0' => (),
+                                                '\n' => {
+                                                    console.command = Some(cmd.clone());
 
-                                                cmd.clear();
-                                                console.write(&[10]);
+                                                    cmd.clear();
+                                                    console.write(&[10]);
+                                                }
+                                                _ => {
+                                                    cmd.push(key_event.character);
+                                                    console.write(&[key_event.character as u8]);
+                                                }
                                             }
-                                            _ => {
-                                                cmd.push(key_event.character);
-                                                console.write(&[key_event.character as u8]);
-                                            }
-                                        },
+                                        }
                                     }
                                 }
                             }
@@ -280,24 +284,24 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             // session.items.push(box DisplayScheme);
 
             Context::spawn("kpoll".to_string(),
-            box move || {
-                poll_loop();
-            });
+                           box move || {
+                               poll_loop();
+                           });
 
             Context::spawn("kevent".to_string(),
-            box move || {
-                event_loop();
-            });
+                           box move || {
+                               event_loop();
+                           });
 
             Context::spawn("karp".to_string(),
-            box move || {
-                ArpScheme::reply_loop();
-            });
+                           box move || {
+                               ArpScheme::reply_loop();
+                           });
 
             Context::spawn("kicmp".to_string(),
-            box move || {
-                IcmpScheme::reply_loop();
-            });
+                           box move || {
+                               IcmpScheme::reply_loop();
+                           });
 
             context_enabled = true;
 
@@ -308,7 +312,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 for folder in String::from_utf8_unchecked(vec).lines() {
                     if folder.ends_with('/') {
                         let scheme_item = SchemeItem::from_url(&Url::from_string("file:/schemes/"
-                                                                                 .to_string() +
+                                                                                     .to_string() +
                                                                                  &folder));
 
                         let reenable = scheduler::start_no_ints();
@@ -319,27 +323,27 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             }
 
             Context::spawn("kinit".to_string(),
-            box move || {
-                let wd_c = "file:/\0";
-                do_sys_chdir(wd_c.as_ptr());
+                           box move || {
+                               let wd_c = "file:/\0";
+                               do_sys_chdir(wd_c.as_ptr());
 
-                let stdio_c = "debug:\0";
-                do_sys_open(stdio_c.as_ptr(), 0);
-                do_sys_open(stdio_c.as_ptr(), 0);
-                do_sys_open(stdio_c.as_ptr(), 0);
+                               let stdio_c = "debug:\0";
+                               do_sys_open(stdio_c.as_ptr(), 0);
+                               do_sys_open(stdio_c.as_ptr(), 0);
+                               do_sys_open(stdio_c.as_ptr(), 0);
 
-                let path_string = "file:/apps/login/main.bin";
-                let path = Url::from_str(path_string);
+                               let path_string = "file:/apps/login/main.bin";
+                               let path = Url::from_str(path_string);
 
-                debug!("INIT: Executing {}\n", path_string);
-                execute(path, Vec::new());
-                debug!("INIT: Failed to execute\n");
+                               debug!("INIT: Executing {}\n", path_string);
+                               execute(path, Vec::new());
+                               debug!("INIT: Failed to execute\n");
 
-                loop {
-                    context_switch(false);
-                }
-            });
-        },
+                               loop {
+                                   context_switch(false);
+                               }
+                           });
+        }
         None => unreachable!(),
     }
 }
@@ -415,33 +419,31 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     }
 
     match interrupt {
-        0x20 => {
-            unsafe {
-                let reenable = scheduler::start_no_ints();
+        0x20 => unsafe {
+            let reenable = scheduler::start_no_ints();
 
-                match ENV_PTR {
-                    Some(ref mut env) => {
-                        env.clock_realtime = env.clock_realtime + PIT_DURATION;
-                        env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
+            match ENV_PTR {
+                Some(ref mut env) => {
+                    env.clock_realtime = env.clock_realtime + PIT_DURATION;
+                    env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
 
-                        scheduler::end_no_ints(reenable);
+                    scheduler::end_no_ints(reenable);
 
-                        let switch = if let Some(mut context) = Context::current_mut() {
-                            context.slices -= 1;
-                            context.slice_total += 1;
-                            context.slices == 0
-                        } else {
-                            false
-                        };
+                    let switch = if let Some(mut context) = Context::current_mut() {
+                        context.slices -= 1;
+                        context.slice_total += 1;
+                        context.slices == 0
+                    } else {
+                        false
+                    };
 
-                        if switch {
-                            context_switch(true);
-                        }
-                    },
-                    None => unreachable!(),
+                    if switch {
+                        context_switch(true);
+                    }
                 }
+                None => unreachable!(),
             }
-        }
+        },
         0x21 => env().on_irq(0x1), // keyboard
         0x23 => env().on_irq(0x3), // serial 2 and 4
         0x24 => env().on_irq(0x4), // serial 1 and 3
@@ -456,14 +458,14 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => env().on_irq(0xD), //coprocessor
         0x2E => env().on_irq(0xE), //disk
         0x2F => env().on_irq(0xF), //disk
-        0x80 => if !unsafe { syscall_handle(regs) } {
-            exception!("Unknown Syscall");
-        },
-        0xFF => {
-            unsafe {
-                init(regs.ax, regs.bx);
-                idle_loop();
+        0x80 => {
+            if !unsafe { syscall_handle(regs) } {
+                exception!("Unknown Syscall");
             }
+        }
+        0xFF => unsafe {
+            init(regs.ax, regs.bx);
+            idle_loop();
         },
         0x0 => exception!("Divide by zero exception"),
         0x1 => exception!("Debug exception"),

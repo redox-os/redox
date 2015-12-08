@@ -42,8 +42,9 @@ impl Resource for DisplayResource {
 
         self.seek = match pos {
             ResourceSeek::Start(offset) => cmp::min(end, cmp::max(0, offset)),
-            ResourceSeek::Current(offset) =>
-                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
+            ResourceSeek::Current(offset) => {
+                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize)
+            }
             ResourceSeek::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
         };
 

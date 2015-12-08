@@ -28,12 +28,14 @@ pub struct EthernetResource {
 impl Resource for EthernetResource {
     fn dup(&self) -> Option<Box<Resource>> {
         match self.network.dup() {
-            Some(network) => Some(box EthernetResource {
-                network: network,
-                data: self.data.clone(),
-                peer_addr: self.peer_addr,
-                ethertype: self.ethertype,
-            }),
+            Some(network) => {
+                Some(box EthernetResource {
+                    network: network,
+                    data: self.data.clone(),
+                    peer_addr: self.peer_addr,
+                    ethertype: self.ethertype,
+                })
+            }
             None => None,
         }
     }

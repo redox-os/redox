@@ -287,10 +287,12 @@ impl Resource for FileResource {
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = offset,
-            ResourceSeek::Current(offset) =>
-                self.seek = cmp::max(0, self.seek as isize + offset) as usize,
-            ResourceSeek::End(offset) =>
-                self.seek = cmp::max(0, self.vec.len() as isize + offset) as usize,
+            ResourceSeek::Current(offset) => {
+                self.seek = cmp::max(0, self.seek as isize + offset) as usize
+            }
+            ResourceSeek::End(offset) => {
+                self.seek = cmp::max(0, self.vec.len() as isize + offset) as usize
+            }
         }
         while self.vec.len() < self.seek {
             self.vec.push(0);
