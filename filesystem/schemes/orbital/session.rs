@@ -202,18 +202,21 @@ impl Session {
                 }
             }
         } else {
+            let mut active_window = true;
             for reverse_i in 0..self.windows.len() {
                 let i = self.windows.len() - 1 - reverse_i;
                 match self.windows.get(i) {
                     Some(window_ptr) => unsafe {
-                        if (**window_ptr).on_mouse(mouse_event, catcher < 0) {
+                        if (**window_ptr).on_mouse(mouse_event, catcher < 0, active_window) {
                             catcher = i as isize;
 
                             self.redraw = true;
+                            break;
                         }
                     },
                     None => (),
                 }
+                active_window = false;
             }
         }
 
