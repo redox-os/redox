@@ -45,7 +45,7 @@ impl Rtc {
         let mut year;
         let register_b;
         unsafe {
-            let intex = Intex::static_lock();
+            let _intex = Intex::static_lock();
             self.wait();
             second = self.read(0) as usize;
             minute = self.read(2) as usize;

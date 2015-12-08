@@ -24,7 +24,7 @@ use sync::Intex;
 
 use syscall::common::O_CREAT;
 
-const PIO: bool = false;
+const PIO: bool = true;
 
 /// The header of the fs
 #[repr(packed)]
@@ -316,7 +316,7 @@ impl Resource for FileResource {
                     debug::dl();
 
                     unsafe {
-                        let intex = Intex::static_lock();
+                        let _intex = Intex::static_lock();
 
                         let sectors = ((remaining + 511) / 512) as u64;
                         if (*self.scheme).fs.header.free_space.length >= sectors * 512 {
@@ -451,7 +451,7 @@ impl Resource for FileResource {
                             debug::d("Renode\n");
 
                             {
-                                let intex = Intex::static_lock();
+                                let _intex = Intex::static_lock();
 
                                 for mut node in (*self.scheme).fs.nodes.iter_mut() {
                                     if node.block == self.node.block {
