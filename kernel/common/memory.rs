@@ -42,16 +42,34 @@ pub const MT_PTR: usize = PAGE_END;
 /// Ceil log 2
 #[inline]
 fn ceil_log2(n: usize) -> usize {
-    if n == 0 {
+    if n < 2 {
         0
     } else {
         floor_log2(n - 1) + 1
     }
 }
 
+#[test]
+fn ceil_test() {
+    assert_eq!(ceil_log2(0), 0);
+    assert_eq!(ceil_log2(1), 0);
+    assert_eq!(ceil_log2(2), 1);
+    assert_eq!(floor_log2(0), 0);
+    assert_eq!(floor_log2(1), 0);
+    assert_eq!(floor_log2(2), 1);
+
+    for i in 2..10000 {
+        assert_eq!(ceil_log2(i), (i as f64).log2().ceil() as usize);
+        assert_eq!(floor_log2(i), (i as f64).log2().floor() as usize);
+    }
+}
 #[inline]
 fn floor_log2(n: usize) -> usize {
-    (mem::size_of::<usize>() * 8 - n.leading_zeros() as usize) - 1
+    if n < 2 {
+        0
+    } else {
+        (mem::size_of::<usize>() * 8 - n.leading_zeros() as usize) - 1
+    }
 }
 
 
