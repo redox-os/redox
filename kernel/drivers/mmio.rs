@@ -4,7 +4,7 @@ pub struct Mmio<T> {
     address: *mut T,
 }
 
-impl <T> Mmio <T> {
+impl<T> Mmio<T> {
     fn new(address: *mut T) -> Self {
         return Mmio { address: address };
     }

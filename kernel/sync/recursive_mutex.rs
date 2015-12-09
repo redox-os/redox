@@ -60,9 +60,9 @@ impl<T: ?Sized> RecursiveMutex<T> {
     }
 }
 
-unsafe impl<T: ?Sized + Send> Send for RecursiveMutex<T> { }
+unsafe impl<T: ?Sized + Send> Send for RecursiveMutex<T> {}
 
-unsafe impl<T: ?Sized + Send> Sync for RecursiveMutex<T> { }
+unsafe impl<T: ?Sized + Send> Sync for RecursiveMutex<T> {}
 
 /// A recursive mutex guard (returned by .lock())
 pub struct RecursiveMutexGuard<'a, T: ?Sized + 'a> {

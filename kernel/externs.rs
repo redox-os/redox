@@ -1,14 +1,10 @@
 use core::ptr;
 
 #[lang="stack_exhausted"]
-extern "C" fn stack_exhausted() {
-
-}
+extern "C" fn stack_exhausted() {}
 
 #[lang="eh_personality"]
-extern "C" fn eh_personality() {
-
-}
+extern "C" fn eh_personality() {}
 
 #[no_mangle]
 pub unsafe extern "C" fn memcmp(a: *mut i8, b: *const i8, len: usize) -> i32 {

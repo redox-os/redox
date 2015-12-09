@@ -3,21 +3,21 @@ use super::env::{args_init, args_destroy};
 use super::syscall::sys_exit;
 use super::Vec;
 
-extern {
+extern "C" {
     fn main();
 }
 
 #[no_mangle]
 #[inline(never)]
-pub unsafe extern fn _start_stack(stack: *const usize) {
+pub unsafe extern "C" fn _start_stack(stack: *const usize) {
     let mut args: Vec<&'static str> = Vec::new();
-    //TODO: Fix issue with stack not being in context VM space
+    // TODO: Fix issue with stack not being in context VM space
     let argc = ptr::read(stack);
     for i in 0..argc as isize {
         let arg = ptr::read(stack.offset(1 + i)) as *const u8;
         if arg as usize > 0 {
             let mut len = 0;
-            for j in 0..4096 /* Max arg length */ {
+            for j in 0..4096 {
                 len = j;
                 if ptr::read(arg.offset(j)) == 0 {
                     break;

@@ -60,9 +60,9 @@ impl<T: ?Sized> RwLock<T> {
     }
 }
 
-unsafe impl<T: ?Sized + Send> Send for RwLock<T> { }
+unsafe impl<T: ?Sized + Send> Send for RwLock<T> {}
 
-unsafe impl<T: ?Sized + Send> Sync for RwLock<T> { }
+unsafe impl<T: ?Sized + Send> Sync for RwLock<T> {}
 
 /// A read guard (returned by .read())
 pub struct RwLockReadGuard<'a, T: ?Sized + 'a> {

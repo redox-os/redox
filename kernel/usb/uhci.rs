@@ -31,8 +31,7 @@ impl KScheme for Uhci {
         }
     }
 
-    fn on_poll(&mut self) {
-    }
+    fn on_poll(&mut self) {}
 }
 
 #[repr(packed)]
@@ -517,66 +516,75 @@ impl Uhci {
                         let base = self.base as u16;
                         let frnum = base + 0x6;
 
-                        Context::spawn("kuhci_hid".to_string(), box move || {
-                            let in_ptr = memory::alloc(in_len) as *mut u8;
-                            let in_td: *mut Td = memory::alloc_type();
+                        Context::spawn("kuhci_hid".to_string(),
+                                       box move || {
+                                           let in_ptr = memory::alloc(in_len) as *mut u8;
+                                           let in_td: *mut Td = memory::alloc_type();
 
-                            loop {
-                                for i in 0..in_len as isize {
-                                    volatile_store(in_ptr.offset(i), 0);
-                                }
+                                           loop {
+                                               for i in 0..in_len as isize {
+                                                   volatile_store(in_ptr.offset(i), 0);
+                                               }
 
-                                ptr::write(in_td,
-                                           Td {
-                                               link_ptr: 1,
-                                               ctrl_sts: 1 << 25 | 1 << 23,
-                                               token: (in_len as u32 - 1) << 21 |
-                                                      (endpoint as u32) << 15 |
-                                                      (address as u32) << 8 |
-                                                      0x69,
-                                               buffer: in_ptr as u32,
-                                           });
+                                               ptr::write(in_td,
+                                                          Td {
+                                                              link_ptr: 1,
+                                                              ctrl_sts: 1 << 25 | 1 << 23,
+                                                              token: (in_len as u32 - 1) << 21 |
+                                                                     (endpoint as u32) << 15 |
+                                                                     (address as u32) << 8 |
+                                                                     0x69,
+                                                              buffer: in_ptr as u32,
+                                                          });
 
-                                let reenable = scheduler::start_no_ints();
-                                let frame = (inw(frnum) + 2) & 0x3FF;
-                                volatile_store(frame_list.offset(frame as isize), in_td as u32);
-                                scheduler::end_no_ints(reenable);
+                                               let reenable = scheduler::start_no_ints();
+                                               let frame = (inw(frnum) + 2) & 0x3FF;
+                                               volatile_store(frame_list.offset(frame as isize),
+                                                              in_td as u32);
+                                               scheduler::end_no_ints(reenable);
 
-                                loop {
-                                    let ctrl_sts = volatile_load(in_td).ctrl_sts;
-                                    if ctrl_sts & (1 << 23) == 0 {
-                                        break;
-                                    }
+                                               loop {
+                                                   let ctrl_sts = volatile_load(in_td).ctrl_sts;
+                                                   if ctrl_sts & (1 << 23) == 0 {
+                                                       break;
+                                                   }
 
-                                    context::context_switch(false);
-                                }
+                                                   context::context_switch(false);
+                                               }
 
-                                volatile_store(frame_list.offset(frame as isize), 1);
+                                               volatile_store(frame_list.offset(frame as isize), 1);
 
-                                if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
-                                   let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                   let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                   let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
+                                               if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
+                                                   let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                                   let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                                   let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                   let mode_info = &*VBEMODEINFO;
-                                   let mouse_x = (x * mode_info.xresolution as usize) / 32768;
-                                   let mouse_y = (y * mode_info.yresolution as usize) / 32768;
+                                                   let mode_info = &*VBEMODEINFO;
+                                                   let mouse_x = (x *
+                                                                  mode_info.xresolution as usize) /
+                                                                 32768;
+                                                   let mouse_y = (y *
+                                                                  mode_info.yresolution as usize) /
+                                                                 32768;
 
-                                   let mouse_event = MouseEvent {
+                                                   let mouse_event = MouseEvent {
                                        x: cmp::max(0, cmp::min(mode_info.xresolution as isize - 1, mouse_x as isize)),
                                        y: cmp::max(0, cmp::min(mode_info.yresolution as isize - 1, mouse_y as isize)),
                                        left_button: buttons & 1 == 1,
                                        middle_button: buttons & 4 == 4,
                                        right_button: buttons & 2 == 2,
                                    };
-                                   ::env().events.lock().push_back(mouse_event.to_event());
-                                }
+                                                   ::env()
+                                                       .events
+                                                       .lock()
+                                                       .push_back(mouse_event.to_event());
+                                               }
 
-                                Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-                            }
+                                               Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
+                                           }
 
-                        // memory::unalloc(in_td as usize);
-                        });
+                                           // memory::unalloc(in_td as usize);
+                                       });
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);

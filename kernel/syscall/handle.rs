@@ -474,16 +474,21 @@ pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
             scheduler::end_no_ints(reenable);
 
             match whence {
-                SEEK_SET =>
+                SEEK_SET => {
                     if let Some(count) = resource.seek(ResourceSeek::Start(offset as usize)) {
                         ret = count;
-                    },
-                SEEK_CUR => if let Some(count) = resource.seek(ResourceSeek::Current(offset)) {
-                    ret = count;
-                },
-                SEEK_END => if let Some(count) = resource.seek(ResourceSeek::End(offset)) {
-                    ret = count;
-                },
+                    }
+                }
+                SEEK_CUR => {
+                    if let Some(count) = resource.seek(ResourceSeek::Current(offset)) {
+                        ret = count;
+                    }
+                }
+                SEEK_END => {
+                    if let Some(count) = resource.seek(ResourceSeek::End(offset)) {
+                        ret = count;
+                    }
+                }
                 _ => (),
             }
 
@@ -771,8 +776,9 @@ pub unsafe fn syscall_handle(regs: &mut Regs) -> bool {
         // TODO: link
         SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx),
         SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
-        SYS_NANOSLEEP =>
-            regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
+        SYS_NANOSLEEP => {
+            regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec)
+        }
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *const u8),

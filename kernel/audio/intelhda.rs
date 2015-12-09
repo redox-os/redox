@@ -225,8 +225,7 @@ impl KScheme for IntelHDA {
         }
     }
 
-    fn on_poll(&mut self) {
-    }
+    fn on_poll(&mut self) {}
 }
 
 impl IntelHDA {

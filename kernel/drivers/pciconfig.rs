@@ -51,5 +51,5 @@ impl PciConfig {
         self.write(offset, value);
     }
 
-// TODO: Write functions to get data structures
+    // TODO: Write functions to get data structures
 }

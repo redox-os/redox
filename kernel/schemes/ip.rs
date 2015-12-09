@@ -26,13 +26,15 @@ pub struct IpResource {
 impl Resource for IpResource {
     fn dup(&self) -> Option<Box<Resource>> {
         match self.link.dup() {
-            Some(link) => Some(box IpResource {
-                link: link,
-                data: self.data.clone(),
-                peer_addr: self.peer_addr,
-                proto: self.proto,
-                id: self.id,
-            }),
+            Some(link) => {
+                Some(box IpResource {
+                    link: link,
+                    data: self.data.clone(),
+                    peer_addr: self.peer_addr,
+                    proto: self.proto,
+                    id: self.id,
+                })
+            }
             None => None,
         }
     }
@@ -164,23 +166,27 @@ impl KScheme for IpScheme {
                             };
 
                             match link.write(&arp.to_bytes()) {
-                                Some(_) => loop {
-                                    let mut bytes: Vec<u8> = Vec::new();
-                                    match link.read_to_end(&mut bytes) {
-                                        Some(_) => if let Some(packet) = Arp::from_bytes(bytes) {
-                                            if packet.header.oper.get() == 2 &&
-                                               packet.header.src_ip.equals(peer_addr) {
-                                                peer_mac = packet.header.src_mac;
-                                                self.arp.push(ArpEntry {
-                                                    ip: peer_addr,
-                                                    mac: peer_mac,
-                                                });
-                                                break;
+                                Some(_) => {
+                                    loop {
+                                        let mut bytes: Vec<u8> = Vec::new();
+                                        match link.read_to_end(&mut bytes) {
+                                            Some(_) => {
+                                                if let Some(packet) = Arp::from_bytes(bytes) {
+                                                    if packet.header.oper.get() == 2 &&
+                                                       packet.header.src_ip.equals(peer_addr) {
+                                                        peer_mac = packet.header.src_mac;
+                                                        self.arp.push(ArpEntry {
+                                                            ip: peer_addr,
+                                                            mac: peer_mac,
+                                                        });
+                                                        break;
+                                                    }
+                                                }
                                             }
-                                        },
-                                        None => (),
+                                            None => (),
+                                        }
                                     }
-                                },
+                                }
                                 None => debug::d("IP: ARP Write Failed!\n"),
                             }
                         }

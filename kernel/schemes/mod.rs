@@ -31,22 +31,16 @@ pub mod memory;
 
 #[allow(unused_variables)]
 pub trait KScheme {
-    fn on_irq(&mut self, irq: u8) {
+    fn on_irq(&mut self, irq: u8) {}
 
-    }
-
-    fn on_poll(&mut self) {
-
-    }
+    fn on_poll(&mut self) {}
 
     fn scheme(&self) -> &str {
         ""
     }
 
     // TODO: Hack for orbital
-    fn event(&mut self, event: &Event) {
-
-    }
+    fn event(&mut self, event: &Event) {}
 
     fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
         None
@@ -165,7 +159,6 @@ impl Url {
     pub fn reference(&self) -> &str {
         self.string.get_slice(self.string.find(':').map(|a| a + 1), None)
     }
-
 }
 
 impl Clone for Url {
@@ -239,13 +232,15 @@ impl Resource for VecResource {
     fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = min(self.vec.len(), offset),
-            ResourceSeek::Current(offset) =>
-                self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize,
-            ResourceSeek::End(offset) =>
+            ResourceSeek::Current(offset) => {
+                self.seek = max(0, min(self.seek as isize, self.seek as isize + offset)) as usize
+            }
+            ResourceSeek::End(offset) => {
                 self.seek = max(0,
                                 min(self.seek as isize,
                                     self.vec.len() as isize +
-                                    offset)) as usize,
+                                    offset)) as usize
+            }
         }
         return Some(self.seek);
     }
