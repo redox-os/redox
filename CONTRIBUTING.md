@@ -114,6 +114,7 @@ Since Rust is a relatively small and new language compared to others like C, the
     - Shell (Ion) development
     - Package manager (Oxide) development
     - High-level code
+
 - If you are fluent in Rust, and have experience with OS Dev:
     - Familiarize yourself with the repository and codebase
     - Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
