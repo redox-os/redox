@@ -442,7 +442,7 @@ impl Uhci {
         }
 
         loop {
-            if out_td[0].ctrl_sts & (1 << 23) == 0 {
+            if out_td.load(0).ctrl_sts & (1 << 23) == 0 {
                 break;
             }
         }
@@ -461,7 +461,7 @@ impl Uhci {
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        // (*desc_dev).d();
+        (*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -477,7 +477,7 @@ impl Uhci {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            // desc_cfg.d();
+            desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
@@ -485,13 +485,13 @@ impl Uhci {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        // let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        // desc_int.d();
+                        let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        desc_int.d();
                     }
                     DESC_END => {
                         let desc_end =
                             ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        // desc_end.d();
+                        desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
