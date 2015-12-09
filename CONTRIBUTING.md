@@ -48,7 +48,7 @@ It's completely fine to just submit a small pull request without first making an
 7. Commit (`git add . --all; git commit -m "my commit"`)
 8. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)
 9. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories, although it is fine in some cases.)
-10. Repeat step 7 to make sure the rebase still works
+10. Repeat step 8 to make sure the rebase still works
 11. Push to your fork (`git push origin my-branch`)
 12. Create a pull request
 13. Describe your changes
@@ -63,7 +63,7 @@ It's completely fine to just submit a small pull request without first making an
 
 #### Testing Practices
 
-- It's always better to test boot every time you make a change, because it is important to see how the OS boots and works after it compiles. Even though Rust is a safety-oriented language, something as unstable as an in-dev operating system will have problems in many cases and may completely break on even the slightest critical change. Also, make sure you check how the unmodified version runs on your machine before making any changes. Else, you won't have anything to compare to, and it will generally just lead to confusion. TLDR; Build/rebuild often.
+- It's always better to test boot every time you make a change, because it is important to see how the OS boots and works after it compiles. Even though Rust is a safety-oriented language, something as unstable as an in-dev operating system will have problems in many cases and may completely break on even the slightest critical change. Also, make sure you check how the unmodified version runs on your machine before making any changes. Else, you won't have anything to compare to, and it will generally just lead to confusion. TLDR: Rebuild often.
 
 - To run the ZFS tests:
     - Create the zfs.img only once. If one has not been created, run `make filesystem/apps/zfs/zfs.img` before booting into Redox.
@@ -72,10 +72,11 @@ It's completely fine to just submit a small pull request without first making an
 
 #### Kernel
 
-- When trying to access a slice, **always** use the `common::GetSlice` trait and use the `.get_slice()` method to get a slice without causing the kernel to panic. The problem with slicing in regular Rust, e.g. `foo[a..b]`, is that if someone tries to access with a range that is out of bounds of an array/string/slice, it will cause a panic at runtime, as a safety measure. Same thing when accessing an element. Always use `foo.get(n)` instead of `foo[n]` and try to cover for the possibility of `Option::None`. Doing the regular way may work fine for applications, but never in the kernel. No possible panics should ever exist in kernel space.
+- When trying to access a slice, **always** use the `common::GetSlice` trait and the `.get_slice()` method to get a slice without causing the kernel to panic. The problem with slicing in regular Rust, e.g. `foo[a..b]`, is that if someone tries to access with a range that is out of bounds of an array/string/slice, it will cause a panic at runtime, as a safety measure. Same thing when accessing an element. Always use `foo.get(n)` instead of `foo[n]` and try to cover for the possibility of `Option::None`. Doing the regular way may work fine for applications, but never in the kernel. No possible panics should ever exist in kernel space, because then the whole OS would just stop working.
 
 #### Style Guidelines
 <!-- TODO fill out this section -->
+Since Rust is a relatively small and new language compared to others like C, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
 
 #### Interactions with Other Projects
 <!-- TODO fill out this section -->
@@ -87,10 +88,11 @@ It's completely fine to just submit a small pull request without first making an
 <!-- TODO improve this section -->
 
 - If you're not fluent in Rust:
+    <!-- TODO write more information about these
     - Documentation
     - Using/testing Redox, filing issues for bugs and needed features
     - Web dev (redox website, separate repo)
-    - Unit tests
+    - Unit tests (may require minimal knowledge of rust)
 - If you are fluent in Rust, but not OS Development:
     - Apps
     - Shell (Ion) development
