@@ -71,7 +71,11 @@ pub fn execute(url: Url, mut args: Vec<String>) {
                 context_args.push(0); // ARGV NULL
                 let mut argc = 0;
                 for i in 0..args.len() {
-                    if let Some(arg) = args.get(args.len() - i - 1) {
+                    let reverse_i = args.len() - i - 1;
+                    if let Some(ref mut arg) = args.get_mut(reverse_i) {
+                        if ! arg.ends_with('\0') {
+                            arg.push('\0');
+                        }
                         context_args.push(arg.as_ptr() as usize);
                         argc += 1;
                     }
@@ -83,7 +87,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
                     let context = &mut *context_ptr;
 
-                    context.name = url.to_string();
+                    context.name = url.string;
 
                     context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
