@@ -8,7 +8,7 @@ use collections::vec::Vec;
 
 use core::cmp::{min, max};
 
-use syscall::common::{O_CREAT, O_RDWR, O_TRUNC};
+use syscall::{O_CREAT, O_RDWR, O_TRUNC};
 
 /// ARP scheme
 pub mod arp;

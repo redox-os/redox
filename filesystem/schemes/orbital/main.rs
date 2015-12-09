@@ -5,7 +5,7 @@ use std::io::*;
 use std::process::Command;
 use std::ops::DerefMut;
 use std::syscall::SysError;
-use std::syscall::common::ENOENT;
+use std::syscall::ENOENT;
 use std::to_num::ToNum;
 
 use orbital::event::Event;

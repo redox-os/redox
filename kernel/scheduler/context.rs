@@ -12,11 +12,10 @@ use core::ops::DerefMut;
 
 use common::memory;
 use common::paging::Page;
-use scheduler;
 
 use schemes::Resource;
 
-use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
+use syscall::{CLONE_FILES, CLONE_FS, CLONE_VM};
 use syscall::handle::do_sys_exit;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;

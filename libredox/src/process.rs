@@ -2,7 +2,7 @@ use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid};
-use syscall::common::{CLONE_VM, CLONE_VFORK};
+use syscall::{CLONE_VM, CLONE_VFORK};
 
 pub struct ExitStatus {
     status: usize

@@ -1,6 +1,5 @@
 //! IO
 
-use core::usize;
 use {fmt, str};
 use string::String;
 use vec::{IntoIter, Vec};

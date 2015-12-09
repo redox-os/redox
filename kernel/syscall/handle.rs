@@ -21,7 +21,7 @@ use schemes::{Resource, ResourceSeek, Url};
 
 use sync::Intex;
 
-use syscall::common::*;
+use syscall::*;
 
 /// Helper function for handling C strings, please do not copy it or make it pub or change it
 unsafe fn c_string_to_slice<'a>(ptr: *const u8) -> &'a [u8] {

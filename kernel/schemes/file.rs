@@ -22,7 +22,7 @@ use scheduler::context::context_switch;
 
 use sync::Intex;
 
-use syscall::common::O_CREAT;
+use syscall::O_CREAT;
 
 const PIO: bool = false;
 
