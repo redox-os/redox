@@ -24,7 +24,7 @@ use sync::Intex;
 
 use syscall::common::O_CREAT;
 
-const PIO: bool = true;
+const PIO: bool = false;
 
 /// The header of the fs
 #[repr(packed)]
