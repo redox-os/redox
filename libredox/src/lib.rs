@@ -100,8 +100,6 @@
     #[prelude_import]
     pub mod prelude;
 
-
-
     /* Primitive types */
 
     // NB: slice and str are primitive types too, but their module docs + primitive
@@ -120,17 +118,15 @@
     pub use core::u32;
     pub use core::u64;
 
-    // TODO: Add methods to f64
     pub use core::num;
-
-    //TODO #[path = "num/f32.rs"]   pub mod f32;
-    //TODO #[path = "num/f64.rs"]   pub mod f64;
+    //#[path = "num/f32.rs"]   pub mod f32;
+    //#[path = "num/f64.rs"]   pub mod f64;
 
     pub mod ascii;
 
     /* Common traits */
 
-    pub mod floating_num;
+    //pub mod num;
 
     /* Runtime and platform support */
 
