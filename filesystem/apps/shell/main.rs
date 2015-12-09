@@ -16,8 +16,8 @@ macro_rules! readln {
     () => ({
         let mut buffer = String::new();
         match std::io::stdin().read_to_string(&mut buffer) {
-            Some(_) => Some(buffer),
-            None => None
+            Ok(_) => Some(buffer),
+            Err(_) => None
         }
     });
 }
@@ -52,14 +52,15 @@ impl Command {
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
-                if let Some(mut file) = File::open(&path) {
-                    let mut string = String::new();
-                    match file.read_to_string(&mut string) {
-                        Some(_) => println!("{}", string),
-                        None => println!("Failed to read: {}", path),
-                    }
-                } else {
-                    println!("Failed to open file: {}", path);
+                match File::open(&path) {
+                    Ok(mut file) => {
+                        let mut string = String::new();
+                        match file.read_to_string(&mut string) {
+                            Ok(_) => println!("{}", string),
+                            Err(err) => println!("Failed to read: {}: {}", path, err),
+                        }
+                    },
+                    Err(err) => println!("Failed to open file: {}: {}", path, err)
                 }
             }),
         });
@@ -70,8 +71,8 @@ impl Command {
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 match args.get(1) {
                     Some(path) => {
-                        if env::set_current_dir(&path).is_err() {
-                            println!("Bad path: {}", path);
+                        if let Err(err) = env::set_current_dir(&path) {
+                            println!("Failed to set current dir to {}: {}", path, err);
                         }
                     }
                     None => println!("No path given"),
@@ -141,14 +142,15 @@ impl Command {
             name: "free",
             help: "Show memory information\n    free",
             main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
-                if let Some(mut file) = File::open("memory:") {
-                    let mut string = String::new();
-                    match file.read_to_string(&mut string) {
-                        Some(_) => println!("{}", string),
-                        None => println!("Failed to read: memory:"),
+                match File::open("memory:") {
+                    Ok(mut file) => {
+                        let mut string = String::new();
+                        match file.read_to_string(&mut string) {
+                            Ok(_) => println!("{}", string),
+                            Err(err) => println!("Failed to read: memory: {}", err),
+                        }
                     }
-                } else {
-                    println!("Failed to open file: memory:");
+                    Err(err) => println!("Failed to open file: memory: {}", err)
                 }
             }),
         });
@@ -165,12 +167,15 @@ impl Command {
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
-                if let Some(dir) = fs::read_dir(&path) {
-                    for entry in dir {
-                        println!("{}", entry.path());
-                    }
-                } else {
-                    println!("Failed to open directory: {}", path);
+                match fs::read_dir(&path) {
+                    Ok(dir) => {
+                        for entry_result in dir {
+                            if let Ok(entry) = entry_result {
+                                println!("{}", entry.path());
+                            }
+                        }
+                    },
+                    Err(err) => println!("Failed to open directory: {}: {}", path, err)
                 }
             }),
         });
@@ -192,14 +197,15 @@ impl Command {
             name: "ps",
             help: "Show process list\n    ps",
             main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
-                if let Some(mut file) = File::open("context:") {
-                    let mut string = String::new();
-                    match file.read_to_string(&mut string) {
-                        Some(_) => println!("{}", string),
-                        None => println!("Failed to read: context:"),
+                match File::open("context:") {
+                    Ok(mut file) => {
+                        let mut string = String::new();
+                        match file.read_to_string(&mut string) {
+                            Ok(_) => println!("{}", string),
+                            Err(err) => println!("Failed to read: context: {}", err),
+                        }
                     }
-                } else {
-                    println!("Failed to open file: context:");
+                    Err(err) => println!("Failed to open file: context: {}", err)
                 }
             }),
         });
@@ -208,14 +214,9 @@ impl Command {
             name: "pwd",
             help: "To output the path of the current directory\n    pwd",
             main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
-                if let Some(file) = File::open("") {
-                    if let Some(path) = file.path() {
-                        println!("{}", path);
-                    } else {
-                        println!("Could not get the path");
-                    }
-                } else {
-                    println!("Could not open the working directory");
+                match env::current_dir() {
+                    Ok(path) => println!("{}", path),
+                    Err(err) => println!("Failed to get current dir: {}", err)
                 }
             }),
         });
@@ -275,24 +276,27 @@ impl Command {
 
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
-                if let Some(mut file) = File::open(&path) {
-                    println!("URL: {:?}", file.path());
+                match File::open(&path) {
+                    Ok(mut file) => {
+                        println!("URL: {:?}", file.path());
 
-                    let string: String = args.iter()
-                                             .skip(2)
-                                             .fold(String::new(), |s, arg| s + " " + arg) +
-                                         "\r\n\r\n";
+                        let string: String = args.iter()
+                                                 .skip(2)
+                                                 .fold(String::new(), |s, arg| s + " " + arg) +
+                                             "\r\n\r\n";
 
-                    match file.write(string.trim_left().as_bytes()) {
-                        Some(size) => println!("Wrote {} bytes", size),
-                        None => println!("Failed to write"),
-                    }
+                        match file.write(string.trim_left().as_bytes()) {
+                            Ok(size) => println!("Wrote {} bytes", size),
+                            Err(err) => println!("Failed to write: {}", err),
+                        }
 
-                    let mut string = String::new();
-                    match file.read_to_string(&mut string) {
-                        Some(_) => println!("{}", string),
-                        None => println!("Failed to read"),
-                    }
+                        let mut string = String::new();
+                        match file.read_to_string(&mut string) {
+                            Ok(_) => println!("{}", string),
+                            Err(err) => println!("Failed to read: {}", err),
+                        }
+                    },
+                    Err(err) => println!("Failed to open: {}", err)
                 }
             }),
         });
@@ -305,8 +309,8 @@ impl Command {
             help: "To create a file, in the current directory\n    touch <my_file>",
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 match args.get(1) {
-                    Some(file_name) => if File::create(file_name).is_none() {
-                        println!("Failed to create: {}", file_name);
+                    Some(file_name) => if let Err(err) = File::create(file_name) {
+                        println!("Failed to create: {}: {}", file_name, err);
                     },
                     None => println!("No name provided"),
                 }
@@ -319,18 +323,21 @@ impl Command {
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 let path = args.get(1).map_or(String::new(), |arg| arg.clone());
 
-                if let Some(mut file) = File::open(&path) {
-                    let mut vec: Vec<u8> = vec![];
-                    match file.read_to_end(&mut vec) {
-                        Some(_) => {
-                            let mut line = "HEX:".to_string();
-                            for byte in vec.iter() {
-                                line = line + " " + &format!("{:X}", *byte);
+                match File::open(&path) {
+                    Ok(mut file) => {
+                        let mut vec: Vec<u8> = vec![];
+                        match file.read_to_end(&mut vec) {
+                            Ok(_) => {
+                                let mut line = "HEX:".to_string();
+                                for byte in vec.iter() {
+                                    line = line + " " + &format!("{:X}", *byte);
+                                }
+                                println!("{}", line);
                             }
-                            println!("{}", line);
+                            Err(err) => println!("Failed to read: {}", err)
                         }
-                        None => println!("Failed to read"),
                     }
+                    Err(err) => println!("Failed to open: {}", err)
                 }
             }),
         });
@@ -342,13 +349,13 @@ impl Command {
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 if let Some(host) = args.get(1) {
                     if let Some(req) = args.get(2) {
-                        if let Some(mut con) = File::open(&("tcp://".to_string() + host)) {
+                        if let Ok(mut con) = File::open(&("tcp://".to_string() + host)) {
                             con.write(("GET ".to_string() + req + " HTTP/1.1").as_bytes());
 
                             let mut res = vec![];
                             con.read_to_end(&mut res);
 
-                            if let Some(mut file) = File::open(&req) {
+                            if let Ok(mut file) = File::open(&req) {
                                 file.write(&res);
                             }
                         }
@@ -585,7 +592,7 @@ pub fn main() {
 
     for arg in env::args().skip(1) {
         let mut command_list = String::new();
-        if let Some(mut file) = File::open(arg) {
+        if let Ok(mut file) = File::open(arg) {
             file.read_to_string(&mut command_list);
         }
 

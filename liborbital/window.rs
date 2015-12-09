@@ -36,12 +36,12 @@ impl Window {
     /// Create a new window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
         let mut font = Vec::new();
-        if let Some(mut font_file) = File::open("file:/ui/unifont.font") {
+        if let Ok(mut font_file) = File::open("file:/ui/unifont.font") {
             font_file.read_to_end(&mut font);
         }
 
         match File::open(&format!("orbital:///{}/{}/{}/{}/{}", x, y, w, h, title)) {
-            Some(file) => Some(box Window {
+            Ok(file) => Some(box Window {
                 x: x,
                 y: y,
                 w: w,
@@ -51,13 +51,13 @@ impl Window {
                 font: font,
                 data: vec![0; w * h * 4],
             }),
-            None => None
+            Err(_) => None
         }
     }
 
     //TODO: Replace with smarter mechanism, maybe a move event?
     pub fn sync_path(&mut self) {
-        if let Some(path) = self.file.path() {
+        if let Ok(path) = self.file.path() {
             //orbital://x/y/w/h/t
             let parts: Vec<&str> = path.split('/').collect();
             if let Some(x) = parts.get(3) {
@@ -181,9 +181,9 @@ impl Window {
             match self.file.read(&mut unsafe {
                 slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
             }) {
-                Some(0) => unsafe { sys_yield() },
-                Some(_) => return Some(event),
-                None => return None,
+                Ok(0) => unsafe { sys_yield() },
+                Ok(_) => return Some(event),
+                Err(_) => return None,
             }
         }
     }
@@ -194,7 +194,7 @@ impl Window {
         self.file.write(& unsafe {
             slice::from_raw_parts(self.data.as_ptr() as *const u8, self.data.len() * mem::size_of::<u32>())
         });
-        return self.file.sync();
+        return self.file.sync_all().is_ok();
     }
 
     /// Return a iterator over events

@@ -117,10 +117,11 @@ pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
     if let Some(mut current) = contexts.get_mut(context_i) {
         *current.cwd.get() =
             current.canonicalize(&str::from_utf8_unchecked(&c_string_to_slice(path)));
-        return 0;
+        0
+    } else {
+        //ESRCH.sys_value()
+        usize::MAX
     }
-
-    usize::MAX
 }
 
 #[cold]

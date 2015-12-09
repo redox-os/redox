@@ -3,11 +3,12 @@
 use alloc::boxed::Box;
 
 use fs::File;
+use io::Result;
 use slice::Iter;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::sys_chdir;
+use syscall::{SysError, sys_chdir};
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
@@ -30,33 +31,36 @@ pub unsafe fn args_destroy() {
 
 /// Method to return the current directory
 /// If the current directory cannot be found, None will be returned
-pub fn current_dir() -> Result<String, ()> {
+pub fn current_dir() -> Result<String> {
     // Return the current path
-    if let Some(file) = File::open("") {
-        if let Some(path) = file.path() {
-            return Ok(path);
-        }
+    match File::open("") {
+        Ok(file) => match file.path() {
+            Ok(path) => Ok(path),
+            Err(err) => Err(err)
+        },
+        Err(err) => Err(err)
     }
-
-    Err(())
 }
 
 /// Set the current directory
-pub fn set_current_dir(path: &str) -> Result<(), ()> {
-    let file_option = if path.is_empty() || path.ends_with('/') {
+pub fn set_current_dir(path: &str) -> Result<()> {
+    let file_result = if path.is_empty() || path.ends_with('/') {
         File::open(path)
     } else {
         File::open(&(path.to_string() + "/"))
     };
 
-    if let Some(file) = file_option {
-        if let Some(file_path) = file.path() {
-            let path_c = file_path + "\0";
-            if unsafe { sys_chdir(path_c.as_ptr()) } == 0 {
-                return Ok(());
-            }
-        }
+    match file_result {
+        Ok(file) => match file.path() {
+            Ok(path) => {
+                let path_c = path + "\0";
+                match SysError::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
+                    Ok(_) => Ok(()),
+                    Err(err) => Err(err)
+                }
+            },
+            Err(err) => Err(err)
+        },
+        Err(err) => Err(err)
     }
-
-    Err(())
 }

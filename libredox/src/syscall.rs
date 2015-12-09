@@ -1,7 +1,60 @@
+use error::Error;
+use fmt;
+
 use syscall::common::*;
 
 #[path="../../kernel/syscall/common.rs"]
 pub mod common;
+
+pub struct SysError {
+    errno: isize,
+}
+
+impl SysError {
+    pub fn new(errno: isize) -> SysError {
+        SysError {
+            errno: errno
+        }
+    }
+
+    pub fn mux(result: Result<usize, SysError>) -> usize {
+        match result {
+            Ok(value) => value,
+            Err(error) => -error.errno as usize
+        }
+    }
+
+    pub fn demux(value: usize) -> Result<usize, SysError> {
+        let errno = -(value as isize);
+        if errno >= 1 && errno < STR_ERROR.len() as isize {
+            Err(SysError::new(errno))
+        } else {
+            Ok(value)
+        }
+    }
+}
+
+impl fmt::Debug for SysError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        f.write_str(self.description())
+    }
+}
+
+impl fmt::Display for SysError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        f.write_str(self.description())
+    }
+}
+
+impl Error for SysError {
+    fn description(&self) -> &str {
+        if let Some(description) = STR_ERROR.get(self.errno as usize) {
+            description
+        } else {
+            "Unknown Error"
+        }
+    }
+}
 
 #[cold]
 #[inline(never)]
@@ -49,7 +102,7 @@ pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd, 0, 0)
 }
 
-pub unsafe fn sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize{
+pub unsafe fn sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
     syscall(SYS_CLOCK_GETTIME, clock, tp as usize, 0)
 }
 
@@ -95,11 +148,11 @@ pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd, offset as usize, whence)
 }
 
-pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> usize{
+pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> usize {
     syscall(SYS_MKDIR, path as usize, 0, mode)
 }
 
-pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
+pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
     syscall(SYS_NANOSLEEP, req as usize, rem as usize, 0)
 }
 

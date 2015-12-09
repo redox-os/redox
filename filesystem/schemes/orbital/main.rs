@@ -4,6 +4,8 @@ use std::get_slice::GetSlice;
 use std::io::*;
 use std::process::Command;
 use std::ops::DerefMut;
+use std::syscall::SysError;
+use std::syscall::common::ENOENT;
 use std::to_num::ToNum;
 
 use orbital::event::Event;
@@ -31,8 +33,8 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Resource>> {
-        Some(box Resource {
+    pub fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box Resource {
             window: Window::new(self.window.point,
                                 self.window.size,
                                 self.window.title.clone()),
@@ -41,8 +43,8 @@ impl Resource {
     }
 
     /// Return the url of this resource
-    pub fn path(&self) -> Option<String> {
-        Some(format!("orbital:///{}/{}/{}/{}/{}",
+    pub fn path(&self) -> Result<String> {
+        Ok(format!("orbital:///{}/{}/{}/{}/{}",
                      self.window.point.x,
                      self.window.point.y,
                      self.window.size.width,
@@ -51,7 +53,7 @@ impl Resource {
     }
 
     /// Read data to buffer
-    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         // Read events from window
         let mut i = 0;
         while buf.len() - i >= mem::size_of::<Event>() {
@@ -64,11 +66,11 @@ impl Resource {
             }
         }
 
-        Some(i)
+        Ok(i)
     }
 
     /// Write to resource
-    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let content = &mut self.window.content;
 
         let size = cmp::min(content.size - self.seek, buf.len());
@@ -77,27 +79,26 @@ impl Resource {
         }
         self.seek += size;
 
-        return Some(size);
+        Ok(size)
     }
 
     /// Seek
-    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
+    pub fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         let end = self.window.content.size;
 
         self.seek = match pos {
-            SeekFrom::Start(offset) => cmp::min(end, cmp::max(0, offset)),
-            SeekFrom::Current(offset) =>
-                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
-            SeekFrom::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
+            SeekFrom::Start(offset) => cmp::min(end as u64, cmp::max(0, offset)) as usize,
+            SeekFrom::Current(offset) => cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
+            SeekFrom::End(offset) => cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
         };
 
-        return Some(self.seek);
+        Ok(self.seek as u64)
     }
 
     /// Sync the resource, should flip
-    pub fn sync(&mut self) -> bool {
+    pub fn sync(&mut self) -> Result<()> {
         self.window.redraw();
-        true
+        Ok(())
     }
 }
 
@@ -122,7 +123,7 @@ impl Scheme {
         ret
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
         // window://host/path/path/path is the path type we're working with.
         let url = Url::from_str(url_str);
 
@@ -170,7 +171,7 @@ impl Scheme {
                 pointy = self.next_y;
             }
 
-            Some(box Resource {
+            Ok(box Resource {
                 window: Window::new(Point::new(pointx, pointy),
                                     Size::new(size_width, size_height),
                                     title),
@@ -204,9 +205,9 @@ impl Scheme {
                 scheduler::end_no_ints(reenable);
             }
 
-            None
+            Err(SysError::new(ENOENT))
         } else {
-            None
+            Err(SysError::new(ENOENT))
         }
     }
 

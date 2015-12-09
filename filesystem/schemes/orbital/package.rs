@@ -47,7 +47,7 @@ impl Package {
 
         let mut info = String::new();
 
-        if let Some(mut file) = File::open(&(url.to_string() + "_REDOX")) {
+        if let Ok(mut file) = File::open(&(url.to_string() + "_REDOX")) {
             file.read_to_string(&mut info);
         }
 
