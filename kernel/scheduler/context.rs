@@ -374,7 +374,7 @@ impl Context {
 
             kernel_stack: 0,
             sp: 0,
-            flags: 0,
+            flags: 1 << 9,
             fx: memory::alloc(512),
             stack: None,
             loadable: false,
@@ -402,7 +402,7 @@ impl Context {
 
             kernel_stack: kernel_stack,
             sp: kernel_stack + CONTEXT_STACK_SIZE - 128,
-            flags: 0,
+            flags: 1 << 9,
             fx: kernel_stack + CONTEXT_STACK_SIZE,
             stack: None,
             loadable: false,
