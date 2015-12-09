@@ -493,7 +493,7 @@ impl Scheme {
                                (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                                TCP_SYN {
                                 if let Ok(path) = ip.path() {
-                                    let url = Url::from_string(path);
+                                    let url = Url::from_string(path.to_string());
 
                                     let peer_addr = IPv4Addr::from_string(&url.host());
 

@@ -141,7 +141,7 @@
     pub mod io;
     pub mod net;
     // TODO pub mod os;
-    // TODO pub mod path;
+    pub mod path;
     pub mod process;
     pub mod sync;
     pub mod time;

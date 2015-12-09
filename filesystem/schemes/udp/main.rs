@@ -184,7 +184,7 @@ impl Scheme {
                         if let Some(datagram) = Udp::from_bytes(bytes) {
                             if datagram.header.dst.get() as usize == host_port {
                                 if let Ok(path) = ip.path() {
-                                    let url = Url::from_string(path);
+                                    let url = Url::from_string(path.to_string());
 
                                     return Ok(box Resource {
                                         ip: ip,

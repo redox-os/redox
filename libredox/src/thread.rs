@@ -38,6 +38,13 @@ pub fn sleep(duration: Duration) {
     //Duration::new(rem.tv_sec, rem.tv_nsec)
 }
 
+// Sleep for a number of milliseconds
+pub fn sleep_ms(ms: u32) {
+    let secs = ms as i64 / 1000;
+    let nanos = (ms % 1000) as i32 * 1000000;
+    sleep(Duration::new(secs, nanos))
+}
+
 //TODO: Catch panic
 pub fn spawn<F, T>(f: F) -> JoinHandle<T> where F: FnOnce() -> T, F: Send + 'static, T: Send + 'static {
     unsafe {

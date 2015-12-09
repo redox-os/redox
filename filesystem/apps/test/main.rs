@@ -21,7 +21,7 @@ macro_rules! readln {
     });
 }
 
-fn main() {
+#[no_mangle] pub fn main() {
     println!("Type help for a command list");
     loop {
         print!("# ");

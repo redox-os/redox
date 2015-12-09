@@ -59,18 +59,20 @@ impl Window {
     pub fn sync_path(&mut self) {
         if let Ok(path) = self.file.path() {
             //orbital://x/y/w/h/t
-            let parts: Vec<&str> = path.split('/').collect();
-            if let Some(x) = parts.get(3) {
-                self.x = x.to_num_signed();
-            }
-            if let Some(y) = parts.get(4) {
-                self.y = y.to_num_signed();
-            }
-            if let Some(w) = parts.get(5) {
-                self.w = w.to_num();
-            }
-            if let Some(h) = parts.get(6) {
-                self.h = h.to_num();
+            if let Some(path_str) = path.to_str() {
+                let parts: Vec<&str> = path_str.split('/').collect();
+                if let Some(x) = parts.get(3) {
+                    self.x = x.to_num_signed();
+                }
+                if let Some(y) = parts.get(4) {
+                    self.y = y.to_num_signed();
+                }
+                if let Some(w) = parts.get(5) {
+                    self.w = w.to_num();
+                }
+                if let Some(h) = parts.get(6) {
+                    self.h = h.to_num();
+                }
             }
         }
     }

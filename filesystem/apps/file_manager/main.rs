@@ -248,10 +248,13 @@ impl FileManager {
 
     // TODO: would this make more sense in the fs module?
     fn get_parent_directory() -> Option<String> {
-        match File::open("../") {
-            Ok(parent_dir) => parent_dir.path().ok(),
-            Err(_) => None,
+        if let Ok(parent_dir) = File::open("../") {
+            if let Ok(path) = parent_dir.path() {
+                return Some(path.to_string());
+            }
         }
+
+        None
     }
 
     fn get_num_entries(path: &str) -> String {
@@ -280,12 +283,13 @@ impl FileManager {
             }
             for entry_result in readdir {
                 if let Ok(entry) = entry_result {
-                    self.files.push(entry.path().to_string());
+                    let entry_path = entry.path().to_string();
+                    self.files.push(entry_path.clone());
                     self.file_sizes.push(// When the entry is a folder
-                                         if entry.path().ends_with('/') {
-                        FileManager::get_num_entries(&(path.to_string() + entry.path()))
+                                         if entry_path.ends_with('/') {
+                        FileManager::get_num_entries(&(path.to_string() + &entry_path))
                     } else {
-                        match File::open(&entry.path()) {
+                        match File::open(&entry_path) {
                             Ok(mut file) => match file.seek(SeekFrom::End(0)) {
                                 Ok(size) => {
                                     if size >= 1_000_000_000 {
@@ -305,8 +309,8 @@ impl FileManager {
                     });
                     // Unwrapping the last file size will not panic since it has
                     // been at least pushed once in the vector
-                    let description = self.file_types_info.description_for(entry.path());
-                    width[0] = cmp::max(width[0], 48 + (entry.path().len()) * 8);
+                    let description = self.file_types_info.description_for(&entry_path);
+                    width[0] = cmp::max(width[0], 48 + (entry_path.len()) * 8);
                     width[1] = cmp::max(width[1], 8 + (self.file_sizes.last().unwrap().len()) * 8);
                     width[2] = cmp::max(width[2], 8 + (description.len()) * 8);
                 }
@@ -477,7 +481,7 @@ impl FileManager {
     }
 }
 
-fn main() {
+#[no_mangle] pub fn main() {
     match env::args().nth(1) {
         Some(arg) => FileManager::new().main(arg),
         None => FileManager::new().main("file:/"),

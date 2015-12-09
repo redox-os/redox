@@ -1,7 +1,7 @@
 use std::io::{stdin, stdout, Read, Write};
 use std::process::Command;
 
-fn main() {
+#[no_mangle] pub fn main() {
     loop {
         print!("redox login: ");
         stdout().flush();

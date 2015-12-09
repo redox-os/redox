@@ -1,4 +1,5 @@
 use io::{Read, Result, Write, Seek, SeekFrom};
+use path::PathBuf;
 use str;
 use string::{String, ToString};
 use vec::Vec;
@@ -46,10 +47,10 @@ impl File {
     }
 
     /// Get the canonical path of the file
-    pub fn path(&self) -> Result<String> {
+    pub fn path(&self) -> Result<PathBuf> {
         let mut buf: [u8; 4096] = [0; 4096];
         match SysError::demux(unsafe { sys_fpath(self.fd, buf.as_mut_ptr(), buf.len()) }) {
-            Ok(count) => Ok(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) }),
+            Ok(count) => Ok(PathBuf::from(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) })),
             Err(err) => Err(err)
         }
     }
@@ -116,11 +117,11 @@ impl Drop for File {
 }
 
 pub struct DirEntry {
-    path: String
+    path: PathBuf
 }
 
 impl DirEntry {
-    pub fn path(&self) -> &str {
+    pub fn path(&self) -> &PathBuf {
         &self.path
     }
 }
@@ -151,7 +152,7 @@ impl Iterator for ReadDir {
             None
         }else {
             Some(Ok(DirEntry {
-                path: path
+                path: PathBuf::from(path)
             }))
         }
     }
