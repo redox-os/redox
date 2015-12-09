@@ -13,7 +13,7 @@ pub fn main() {
     };
 
     let mut vec: Vec<u8> = Vec::new();
-    if let Some(mut file) = File::open(&url) {
+    if let Ok(mut file) = File::open(&url) {
         file.read_to_end(&mut vec);
     }
 
@@ -22,8 +22,10 @@ pub fn main() {
 
     let wav = WavFile::from_data(&vec);
 
-    if let Some(mut audio) = File::open("audio://") {
-        audio.write(&wav.data);
+    if ! wav.data.is_empty() {
+        if let Ok(mut audio) = File::open("audio://") {
+            audio.write(&wav.data);
+        }
     }
 
     while let Some(event) = window.poll() {

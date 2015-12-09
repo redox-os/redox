@@ -5,8 +5,8 @@ macro_rules! readln {
     () => ({
         let mut buffer = String::new();
         match std::io::stdin().read_to_string(&mut buffer) {
-            Some(_) => Some(buffer),
-            None => None
+            Ok(_) => Some(buffer),
+            Err(_) => None
         }
     });
 }
