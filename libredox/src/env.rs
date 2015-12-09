@@ -3,12 +3,13 @@
 use alloc::boxed::Box;
 
 use fs::File;
+use path::PathBuf;
 use io::Result;
 use slice::Iter;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{SysError, sys_chdir};
+use syscall::{SysError, sys_chdir, ENOENT};
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
@@ -31,9 +32,9 @@ pub unsafe fn args_destroy() {
 
 /// Method to return the current directory
 /// If the current directory cannot be found, None will be returned
-pub fn current_dir() -> Result<String> {
+pub fn current_dir() -> Result<PathBuf> {
     // Return the current path
-    match File::open("") {
+    match File::open(".") {
         Ok(file) => match file.path() {
             Ok(path) => Ok(path),
             Err(err) => Err(err)
@@ -53,10 +54,14 @@ pub fn set_current_dir(path: &str) -> Result<()> {
     match file_result {
         Ok(file) => match file.path() {
             Ok(path) => {
-                let path_c = path + "\0";
-                match SysError::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
-                    Ok(_) => Ok(()),
-                    Err(err) => Err(err)
+                if let Some(path_str) = path.to_str() {
+                    let path_c = path_str.to_string() + "\0";
+                    match SysError::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
+                        Ok(_) => Ok(()),
+                        Err(err) => Err(err)
+                    }
+                } else {
+                    Err(SysError::new(ENOENT))
                 }
             },
             Err(err) => Err(err)

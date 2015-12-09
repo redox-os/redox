@@ -268,11 +268,8 @@ impl Command {
             name: "sleep",
             help: "Make a sleep in the current session\n    sleep <number_of_seconds>",
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
-                let secs = args.get(1).map_or(0, |arg| arg.to_num() as u64);
-                let nanos = args.get(2).map_or(0, |arg| arg.to_num() as u32);
-                println!("Sleep: {} {}", secs, nanos);
-
-                thread::sleep(Duration::new(secs, nanos));
+                let secs = args.get(1).map_or(0, |arg| arg.to_num());
+                thread::sleep_ms(secs as u32 * 1000);
             }),
         });
 
@@ -594,7 +591,7 @@ pub fn set_var(variables: &mut Vec<Variable>, name: &str, value: &str) {
     }
 }
 
-fn main() {
+#[no_mangle] pub fn main() {
     let commands = Command::vec();
     let mut variables: Vec<Variable> = vec![];
     let mut modes: Vec<Mode> = vec![];
