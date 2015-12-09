@@ -1,7 +1,8 @@
 use alloc::boxed::Box;
 
-use syscall::{sys_clone, sys_exit, sys_yield};
-use syscall::common::{CLONE_VM, CLONE_FS, CLONE_FILES};
+use syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, CLONE_VM, CLONE_FS, CLONE_FILES, TimeSpec};
+
+use time::Duration;
 
 //TODO: Mutex the result
 pub struct JoinHandle<T> {
@@ -18,6 +19,23 @@ impl<T> JoinHandle<T> {
             * Box::from_raw(self.result_ptr)
         }
     }
+}
+
+// Sleep for a duration
+pub fn sleep(duration: Duration) {
+    let req = TimeSpec {
+        tv_sec: duration.secs,
+        tv_nsec: duration.nanos,
+    };
+
+    let mut rem = TimeSpec {
+        tv_sec: 0,
+        tv_nsec: 0
+    };
+
+    unsafe { sys_nanosleep(&req, &mut rem) };
+
+    //Duration::new(rem.tv_sec, rem.tv_nsec)
 }
 
 //TODO: Catch panic

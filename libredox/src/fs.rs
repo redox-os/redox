@@ -1,5 +1,3 @@
-use core::usize;
-
 use io::{Read, Result, Write, Seek, SeekFrom};
 use str;
 use string::{String, ToString};
@@ -125,22 +123,6 @@ impl DirEntry {
     pub fn path(&self) -> &str {
         &self.path
     }
-
-    /// Create a new directory, using a path
-    /// The default mode of the directory is 744
-    pub fn create(path: &str) -> Option<DirEntry> {
-        unsafe {
-            let dir = sys_mkdir((path.to_string() + "\0").as_ptr(), 744);
-            if dir == usize::MAX {
-                None
-            } else {
-                Some(DirEntry {
-                    path: path.to_string()
-                })
-            }
-        }
-    }
-
 }
 
 pub struct ReadDir {
@@ -172,6 +154,16 @@ impl Iterator for ReadDir {
                 path: path
             }))
         }
+    }
+}
+
+/// Create a new directory, using a path
+/// The default mode of the directory is 744
+pub fn create_dir(path: &str) -> Result<()> {
+    let path_c = path.to_string() + "\0";
+    match SysError::demux(unsafe { sys_mkdir(path_c.as_ptr(), 755) }) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err)
     }
 }
 
