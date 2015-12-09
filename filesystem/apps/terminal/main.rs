@@ -15,18 +15,20 @@ pub fn main() {
     let stderr = stdout.dup().unwrap();
 
     let path = "file:/apps/shell/main.bin";
-    if let Some(mut child) = Command::new(path).spawn() {
-        if let Some(status) = child.wait() {
-            if let Some(code) = status.code() {
-                println!("{}: Child exited with exit code: {}", path, code);
-            } else {
-                println!("{}: No child exit code", path);
+    match Command::new(path).spawn() {
+        Ok(mut child) => {
+            match child.wait() {
+                Ok(status) => {
+                    if let Some(code) = status.code() {
+                        println!("{}: Child exited with exit code: {}", path, code);
+                    } else {
+                        println!("{}: No child exit code", path);
+                    }
+                },
+                Err(err) => println!("{}: Failed to wait: {}", path, err)
             }
-        } else {
-            println!("{}: Failed to wait", path);
-        }
-    } else {
-        println!("{}: Failed to execute", path);
+        },
+        Err(err) => println!("{}: Failed to execute: {}", path, err)
     }
 
     drop(stderr);

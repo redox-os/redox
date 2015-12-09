@@ -2,11 +2,12 @@ use std::collections::BTreeMap;
 use std::string::String;
 use std::vec::Vec;
 use std::boxed::Box;
-use std::fs::{self, DirEntry, File};
-use std::io::{Read, Write};
+use std::fs::{self, File};
+use std::io::{stdout, stdin, Read, Write};
 use std::env;
-use std::time::Duration;
 use std::process;
+use std::thread;
+use std::time::Duration;
 
 use self::to_num::ToNum;
 
@@ -15,7 +16,7 @@ pub mod to_num;
 macro_rules! readln {
     () => ({
         let mut buffer = String::new();
-        match std::io::stdin().read_to_string(&mut buffer) {
+        match stdin().read_line(&mut buffer) {
             Ok(_) => Some(buffer),
             Err(_) => None
         }
@@ -100,7 +101,7 @@ impl Command {
         commands.push(Command {
             name: "exec",
             help: "To execute a binary in the output\n    exec <my_binary>",
-            main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+            main: Box::new(|args: &Vec<String>, variables: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 if let Some(path) = args.get(1) {
                     let mut command = process::Command::new(path);
                     for i in 2 .. args.len() {
@@ -109,18 +110,20 @@ impl Command {
                         }
                     }
 
-                    if let Some(mut child) = command.spawn() {
-                        if let Some(status) = child.wait() {
-                            if let Some(code) = status.code() {
-                                //set_var(variables, "?", &format!("{}", code));
-                            } else {
-                                println!("{}: No child exit code", path);
+                    match command.spawn() {
+                        Ok(mut child) => {
+                            match child.wait() {
+                                Ok(status) => {
+                                    if let Some(code) = status.code() {
+                                        set_var(variables, "?", &format!("{}", code));
+                                    } else {
+                                        println!("{}: No child exit code", path);
+                                    }
+                                },
+                                Err(err) => println!("{}: Failed to wait: {}", path, err)
                             }
-                        } else {
-                            println!("{}: Failed to wait", path);
-                        }
-                    } else {
-                        println!("{}: Failed to execute", path);
+                        },
+                        Err(err) => println!("{}: Failed to execute: {}", path, err)
                     }
                 }
             }),
@@ -165,13 +168,19 @@ impl Command {
             name: "ls",
             help: "To list the content of the current directory\n    ls",
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
-                let path = args.get(1).map_or(String::new(), |arg| arg.clone());
+                let path = args.get(1).map_or(".".to_string(), |arg| arg.clone());
 
                 match fs::read_dir(&path) {
                     Ok(dir) => {
                         for entry_result in dir {
-                            if let Ok(entry) = entry_result {
-                                println!("{}", entry.path());
+                            match entry_result {
+                                Ok(entry) => {
+                                    match entry.path().to_str() {
+                                        Some(path_str) => println!("{}", path_str),
+                                        None => println!("?")
+                                    }
+                                },
+                                Err(err) => println!("Failed to read entry: {}", err)
                             }
                         }
                     },
@@ -185,8 +194,8 @@ impl Command {
             help: "To create a directory in the current directory\n    mkdir <my_new_directory>",
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 match args.get(1) {
-                    Some(dir_name) => if DirEntry::create(dir_name).is_none() {
-                        println!("Failed to create {}", dir_name);
+                    Some(dir_name) => if let Err(err) = fs::create_dir(dir_name) {
+                        println!("Failed to create: {}: {}", dir_name, err);
                     },
                     None => println!("No name provided"),
                 }
@@ -215,7 +224,10 @@ impl Command {
             help: "To output the path of the current directory\n    pwd",
             main: Box::new(|_: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
                 match env::current_dir() {
-                    Ok(path) => println!("{}", path),
+                    Ok(path) => match path.to_str() {
+                        Some(path_str) => println!("{}", path_str),
+                        None => println!("?")
+                    },
                     Err(err) => println!("Failed to get current dir: {}", err)
                 }
             }),
@@ -229,6 +241,7 @@ impl Command {
                     if let Some(arg_original) = args.get(i) {
                         let arg = arg_original.trim();
                         print!("{}=", arg);
+                        stdout().flush();
                         if let Some(value_original) = readln!() {
                             let value = value_original.trim();
                             set_var(variables, arg, value);
@@ -255,12 +268,11 @@ impl Command {
             name: "sleep",
             help: "Make a sleep in the current session\n    sleep <number_of_seconds>",
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
-                let secs = args.get(1).map_or(0, |arg| arg.to_num() as i64);
-                let nanos = args.get(2).map_or(0, |arg| arg.to_num() as i32);
+                let secs = args.get(1).map_or(0, |arg| arg.to_num() as u64);
+                let nanos = args.get(2).map_or(0, |arg| arg.to_num() as u32);
                 println!("Sleep: {} {}", secs, nanos);
 
-                let remaining = Duration::new(secs, nanos).sleep();
-                println!("Remaining: {} {}", remaining.secs, remaining.nanos);
+                thread::sleep(Duration::new(secs, nanos));
             }),
         });
 
@@ -278,8 +290,6 @@ impl Command {
 
                 match File::open(&path) {
                     Ok(mut file) => {
-                        println!("URL: {:?}", file.path());
-
                         let string: String = args.iter()
                                                  .skip(2)
                                                  .fold(String::new(), |s, arg| s + " " + arg) +
@@ -584,8 +594,7 @@ pub fn set_var(variables: &mut Vec<Variable>, name: &str, value: &str) {
     }
 }
 
-#[no_mangle]
-pub fn main() {
+fn main() {
     let commands = Command::vec();
     let mut variables: Vec<Variable> = vec![];
     let mut modes: Vec<Mode> = vec![];
@@ -611,12 +620,16 @@ pub fn main() {
             }
         }
 
-        let cwd =  match env::current_dir() {
-            Ok(path) => format!("{}", &path),
+        let cwd = match env::current_dir() {
+            Ok(path) => match path.to_str() {
+                Some(path_str) => path_str.to_string(),
+                None => "?".to_string()
+            },
             Err(_) => "?".to_string()
         };
 
         print!("user@redox:{}# ", cwd);
+        stdout().flush();
 
         if let Some(command_original) = readln!() {
             let command = command_original.trim();

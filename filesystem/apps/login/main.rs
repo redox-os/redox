@@ -1,35 +1,29 @@
-use std::io::*;
+use std::io::{stdin, stdout, Read, Write};
 use std::process::Command;
 
-macro_rules! readln {
-    () => ({
-        let mut buffer = String::new();
-        match std::io::stdin().read_to_string(&mut buffer) {
-            Ok(_) => Some(buffer),
-            Err(_) => None
-        }
-    });
-}
-
-#[no_mangle]
-pub fn main() {
+fn main() {
     loop {
         print!("redox login: ");
-        readln!();
+        stdout().flush();
+
+        let mut buffer = String::new();
+        stdin().read_line(&mut buffer);
 
         let path = "file:/apps/shell/main.bin";
-        if let Some(mut child) = Command::new(path).spawn() {
-            if let Some(status) = child.wait() {
-                if let Some(code) = status.code() {
-                    println!("{}: Child exited with exit code: {}", path, code);
-                } else {
-                    println!("{}: No child exit code", path);
+        match Command::new(path).spawn() {
+            Ok(mut child) => {
+                match child.wait() {
+                    Ok(status) => {
+                        if let Some(code) = status.code() {
+                            println!("{}: Child exited with exit code: {}", path, code);
+                        } else {
+                            println!("{}: No child exit code", path);
+                        }
+                    },
+                    Err(err) => println!("{}: Failed to wait: {}", path, err)
                 }
-            } else {
-                println!("{}: Failed to wait", path);
-            }
-        } else {
-            println!("{}: Failed to execute", path);
+            },
+            Err(err) => println!("{}: Failed to execute: {}", path, err)
         }
     }
 }
