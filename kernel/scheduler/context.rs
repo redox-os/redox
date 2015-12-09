@@ -60,37 +60,35 @@ pub unsafe fn context_switch(interrupted: bool) {
         }
 
         if context_i != current_i {
-            if let Some(current) = contexts.get(current_i) {
-                if let Some(next) = contexts.get(context_i) {
-                    let current_ptr: *mut Context = mem::transmute(current.deref());
-                    let next_ptr: *mut Context = mem::transmute(next.deref());
+            if let Some(mut current) = contexts.get_mut(current_i) {
+                current.interrupted = interrupted;
+                
+                current.save();
+                current.unmap();
+            }
 
-                    (*current_ptr).interrupted = interrupted;
-                    (*next_ptr).interrupted = false;
-                    (*next_ptr).slices = if interrupted {
-                        CONTEXT_SLICES
-                    } else {
-                        CONTEXT_SLICES + 1
-                    };
+            if let Some(mut next) = contexts.get_mut(context_i) {
+                next.interrupted = false;
+                next.slices = if interrupted {
+                    CONTEXT_SLICES
+                } else {
+                    CONTEXT_SLICES + 1
+                };
 
-                    (*current_ptr).save();
-                    (*current_ptr).unmap();
-
-                    if (*next_ptr).kernel_stack > 0 {
-                        match ::TSS_PTR {
-                            Some(ref mut tss) => tss.sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128,
-                            None => unreachable!(),
-                        }
-                    } else {
-                        match ::TSS_PTR {
-                            Some(ref mut tss) => tss.sp0 = 0x200000 - 128,
-                            None => unreachable!(),
-                        }
+                if next.kernel_stack > 0 {
+                    match ::TSS_PTR {
+                        Some(ref mut tss) => tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128,
+                        None => unreachable!(),
                     }
-
-                    (*next_ptr).map();
-                    (*next_ptr).restore();
+                } else {
+                    match ::TSS_PTR {
+                        Some(ref mut tss) => tss.sp0 = 0x200000 - 128,
+                        None => unreachable!(),
+                    }
                 }
+
+                next.map();
+                next.restore();
             }
         }
     }
