@@ -1,7 +1,7 @@
 use error::Error;
 use fmt;
 
-use syscall::common::*;
+pub use self::common::*;
 
 #[path="../../kernel/syscall/common.rs"]
 pub mod common;

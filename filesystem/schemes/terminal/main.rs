@@ -5,7 +5,7 @@ use std::rc::Rc;
 use std::str;
 use std::string::{String, ToString};
 use std::syscall::SysError;
-use std::syscall::common::{EINVAL, ESPIPE};
+use std::syscall::{EINVAL, ESPIPE};
 
 use orbital::Color;
 use self::window::ConsoleWindow;

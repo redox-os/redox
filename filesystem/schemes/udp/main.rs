@@ -8,7 +8,7 @@ use std::rand;
 use std::slice;
 use std::{String, ToString};
 use std::syscall::SysError;
-use std::syscall::common::{ENOENT, ESPIPE};
+use std::syscall::{ENOENT, ESPIPE};
 use std::to_num::*;
 use std::Vec;
 use std::Url;

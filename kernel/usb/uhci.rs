@@ -9,7 +9,6 @@ use scheduler::context::{self, Context};
 use common::debug;
 use common::event::MouseEvent;
 use common::memory::{self, Memory};
-use scheduler;
 use common::time::{self, Duration};
 
 use drivers::pciconfig::PciConfig;

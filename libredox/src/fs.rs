@@ -6,7 +6,7 @@ use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{SysError, sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
-use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
 pub struct File {
