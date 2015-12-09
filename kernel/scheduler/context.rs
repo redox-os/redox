@@ -8,7 +8,7 @@ use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
 use core::{mem, ptr};
-use core::ops::Deref;
+use core::ops::DerefMut;
 
 use common::memory;
 use common::paging::Page;
@@ -31,6 +31,9 @@ pub static mut context_pid: usize = 0;
 ///
 /// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
 pub unsafe fn context_switch(interrupted: bool) {
+    let mut current_ptr: *mut Context = 0 as *mut Context;
+    let mut next_ptr: *mut Context = 0 as *mut Context;
+
     let mut contexts = ::env().contexts.lock();
     if context_enabled {
         let current_i = context_i;
@@ -62,9 +65,10 @@ pub unsafe fn context_switch(interrupted: bool) {
         if context_i != current_i {
             if let Some(mut current) = contexts.get_mut(current_i) {
                 current.interrupted = interrupted;
-                
-                current.save();
+
                 current.unmap();
+
+                current_ptr = current.deref_mut();
             }
 
             if let Some(mut next) = contexts.get_mut(context_i) {
@@ -76,21 +80,24 @@ pub unsafe fn context_switch(interrupted: bool) {
                 };
 
                 if next.kernel_stack > 0 {
-                    match ::TSS_PTR {
-                        Some(ref mut tss) => tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128,
-                        None => unreachable!(),
+                    if let Some(ref mut tss) = ::TSS_PTR {
+                        tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
                     }
                 } else {
-                    match ::TSS_PTR {
-                        Some(ref mut tss) => tss.sp0 = 0x200000 - 128,
-                        None => unreachable!(),
+                    if let Some(ref mut tss) = ::TSS_PTR {
+                        tss.sp0 = 0x200000 - 128;
                     }
                 }
 
                 next.map();
-                next.restore();
+
+                next_ptr = next.deref_mut();
             }
         }
+    }
+
+    if current_ptr as usize > 0 && next_ptr as usize > 0 {
+        (*current_ptr).switch_to(&mut *next_ptr);
     }
 }
 
@@ -432,8 +439,7 @@ impl Context {
 
             ret = context.pid;
 
-            let mut contexts = ::env().contexts.lock();
-            contexts.push(context);
+            ::env().contexts.lock().push(context);
         }
 
         ret
@@ -605,7 +611,7 @@ impl Context {
     #[cfg(target_arch = "x86")]
     #[cold]
     #[inline(never)]
-    pub unsafe fn save(&mut self) {
+    pub unsafe fn switch_to(&mut self, next: &mut Context) {
         asm!("pushfd
             pop $0"
             : "=r"(self.flags)
@@ -626,24 +632,18 @@ impl Context {
             : "intel", "volatile");
 
         self.loadable = true;
-    }
 
-    // This function must not push or pop
-    #[cfg(target_arch = "x86")]
-    #[cold]
-    #[inline(never)]
-    pub unsafe fn restore(&mut self) {
-        if self.loadable {
+        if next.loadable {
             asm!("fxrstor [$0]"
                 :
-                : "r"(self.fx)
+                : "r"(next.fx)
                 : "memory"
                 : "intel", "volatile");
         }
 
         asm!(""
             :
-            : "{esp}"(self.sp)
+            : "{esp}"(next.sp)
             : "memory"
             : "intel", "volatile");
 
@@ -651,7 +651,7 @@ impl Context {
         asm!("push $0
             popfd"
             :
-            : "r"(self.flags)
+            : "r"(next.flags)
             : "memory"
             : "intel", "volatile");
     }
@@ -660,7 +660,7 @@ impl Context {
     #[cfg(target_arch = "x86_64")]
     #[cold]
     #[inline(never)]
-    pub unsafe fn save(&mut self) {
+    pub unsafe fn switch_to(&mut self, next: &mut Context) {
         asm!("pushfq
             pop $0"
             : "=r"(self.flags)
@@ -681,24 +681,18 @@ impl Context {
             : "intel", "volatile");
 
         self.loadable = true;
-    }
 
-    // This function must not push or pop
-    #[cfg(target_arch = "x86_64")]
-    #[cold]
-    #[inline(never)]
-    pub unsafe fn restore(&mut self) {
-        if self.loadable {
+        if next.loadable {
             asm!("fxrstor [$0]"
                 :
-                : "r"(self.fx)
+                : "r"(next.fx)
                 : "memory"
                 : "intel", "volatile");
         }
 
         asm!(""
             :
-            : "{rsp}"(self.sp)
+            : "{rsp}"(next.sp)
             : "memory"
             : "intel", "volatile");
 
@@ -706,7 +700,7 @@ impl Context {
         asm!("push $0
             popfq"
             :
-            : "r"(self.flags)
+            : "r"(next.flags)
             : "memory"
             : "intel", "volatile");
     }
