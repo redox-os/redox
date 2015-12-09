@@ -68,6 +68,10 @@ pub trait Write {
             Err(err) => Err(err)
         }
     }
+
+    fn flush(&mut self) -> Result<()> {
+        Ok(())
+    }
 }
 
 /// Seek Location
