@@ -6,10 +6,11 @@ use drivers::pciconfig::PciConfig;
 
 use common::debug;
 use common::memory;
-use schemes::{Resource, ResourceSeek, Url};
 use common::time::{self, Duration};
 
-use schemes::KScheme;
+use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
+
+use syscall::{SysError, EBADF};
 
 #[repr(packed)]
 struct Stream {
@@ -47,19 +48,19 @@ struct IntelHDAResource {
 }
 
 impl Resource for IntelHDAResource {
-    fn dup(&self) -> Option<Box<Resource>> {
-        Some(box IntelHDAResource { base: self.base })
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box IntelHDAResource { base: self.base })
     }
 
     fn url(&self) -> Url {
         Url::from_str("audio:")
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
-        None
+    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         unsafe {
             debug::d("Write HDA");
 
@@ -190,16 +191,16 @@ impl Resource for IntelHDAResource {
             // memory::unalloc(bdl as usize);
             //
 
-            Some(buf.len())
+            Ok(buf.len())
         }
     }
 
-    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
-        None
+    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
 
-    fn sync(&mut self) -> bool {
-        false
+    fn sync(&mut self) -> Result<()> {
+        Err(SysError::new(EBADF))
     }
 }
 
@@ -215,8 +216,8 @@ impl KScheme for IntelHDA {
         "hda"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(box IntelHDAResource { base: self.base })
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(box IntelHDAResource { base: self.base })
     }
 
     fn on_irq(&mut self, irq: u8) {

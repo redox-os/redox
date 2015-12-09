@@ -8,7 +8,9 @@ use core::ops::DerefMut;
 use scheduler::context::context_switch;
 use common::debug;
 
-use schemes::{Resource, ResourceSeek, Url};
+use schemes::{Result, Resource, ResourceSeek, Url};
+
+use syscall::{SysError, EBADF};
 
 use sync::Intex;
 
@@ -45,7 +47,7 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
-    fn dup(&self) -> Option<Box<Resource>> {
+    fn dup(&self) -> Result<Box<Resource>> {
         let mut ret = box NetworkResource {
             nic: self.nic,
             ptr: 0 as *mut NetworkResource,
@@ -59,19 +61,19 @@ impl Resource for NetworkResource {
             (*ret.nic).add(ret.ptr);
         }
 
-        Some(ret)
+        Ok(ret)
     }
 
     fn url(&self) -> Url {
         Url::from_str("network:")
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
         debug::d("TODO: Implement read for RTL8139\n");
-        None
+        Err(SysError::new(EBADF))
     }
 
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
         loop {
             unsafe {
                 {
@@ -81,7 +83,7 @@ impl Resource for NetworkResource {
 
                     if let Some(bytes) = option {
                         vec.push_all(&bytes);
-                        return Some(bytes.len());
+                        return Ok(bytes.len());
                     }
                 }
 
@@ -90,22 +92,25 @@ impl Resource for NetworkResource {
         }
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         unsafe {
             (*self.ptr).outbound.lock().push_back(Vec::from(buf));
 
             (*self.nic).sync();
         }
 
-        Some(buf.len())
+        Ok(buf.len())
     }
 
-    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
-        None
+    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
 
-    fn sync(&mut self) -> bool {
-        false
+    fn sync(&mut self) -> Result<()> {
+        unsafe {
+            (*self.nic).sync();
+        }
+        Ok(())
     }
 }
 

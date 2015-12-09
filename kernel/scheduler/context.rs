@@ -181,7 +181,7 @@ pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                 } else {
                     let mut files: Vec<ContextFile> = Vec::new();
                     for file in (*parent.files.get()).iter() {
-                        if let Some(resource) = file.resource.dup() {
+                        if let Ok(resource) = file.resource.dup() {
                             files.push(ContextFile {
                                 fd: file.fd,
                                 resource: resource,

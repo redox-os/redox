@@ -4,7 +4,7 @@ use collections::string::String;
 
 use scheduler::context;
 
-use schemes::{KScheme, Resource, Url, VecResource};
+use schemes::{Result, KScheme, Resource, Url, VecResource};
 
 pub struct ContextScheme;
 
@@ -13,7 +13,7 @@ impl KScheme for ContextScheme {
         "context"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
         let mut string = format!("{:<6}{:<6}{:<8}{:<8}{:<6}{:<6}{}",
                                  "PID",
                                  "PPID",
@@ -74,6 +74,6 @@ impl KScheme for ContextScheme {
             }
         }
 
-        Some(box VecResource::new(Url::from_str("context:"), string.into_bytes()))
+        Ok(box VecResource::new(Url::from_str("context:"), string.into_bytes()))
     }
 }
