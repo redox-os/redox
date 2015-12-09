@@ -164,7 +164,7 @@ impl Window {
 
         let mut caught = false;
 
-        if allow_catch && (active_window || Window::mouse_button_pressed(&mouse_event)) {
+        if allow_catch && (active_window || (Window::mouse_button_pressed(&mouse_event) && !Window::mouse_button_pressed(&self.last_mouse_event))) {
             if self.on_window_body(mouse_event.x, mouse_event.y) {
                 caught = true;
             } else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
