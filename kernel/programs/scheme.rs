@@ -15,10 +15,11 @@ use common::memory;
 
 use scheduler::context::{context_i, context_switch, Context, ContextMemory};
 
-use schemes::{KScheme, Resource, ResourceSeek, Url};
+use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
 use sync::Intex;
 
+use syscall::SysError;
 use syscall::handle::*;
 
 pub enum Msg {
@@ -82,40 +83,36 @@ pub struct SchemeResource {
 }
 
 impl SchemeResource {
-    pub fn send(&self, msg: Msg) -> usize {
+    pub fn send(&self, msg: Msg) -> Result<usize> {
         unsafe { (*self.parent).send(msg) }
     }
 }
 
 impl Resource for SchemeResource {
     /// Duplicate the resource
-    fn dup(&self) -> Option<Box<Resource>> {
-        let fd = self.send(Msg::Dup(self.handle));
-        if fd != usize::MAX {
-            // TODO: Count number of handles, don't allow drop until 0
-            return Some(box SchemeResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        match self.send(Msg::Dup(self.handle)) {
+            Ok(fd) => Ok(box SchemeResource {
                 parent: self.parent,
                 handle: fd,
-            });
+            }),
+            Err(err) => Err(err)
         }
-
-        None
     }
 
     /// Return the url of this resource
     fn url(&self) -> Url {
         let mut buf: [u8; 4096] = [0; 4096];
-        let result = self.send(Msg::Path(self.handle, buf.as_mut_ptr(), buf.len()));
-        if result != usize::MAX {
-            return Url::from_string(unsafe {
+        match self.send(Msg::Path(self.handle, buf.as_mut_ptr(), buf.len())) {
+            Ok(result) => Url::from_string(unsafe {
                 String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result))))
-            });
+            }),
+            Err(err) => Url::new()
         }
-        Url::new()
     }
 
     /// Read data to buffer
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut ptr = buf.as_mut_ptr();
 
         let contexts = ::env().contexts.lock();
@@ -125,16 +122,11 @@ impl Resource for SchemeResource {
             }
         }
 
-        let result = self.send(Msg::Read(self.handle, ptr, buf.len()));
-        if result != usize::MAX {
-            Some(result)
-        } else {
-            None
-        }
+        self.send(Msg::Read(self.handle, ptr, buf.len()))
     }
 
     /// Write to resource
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let mut ptr = buf.as_ptr();
 
         let contexts = ::env().contexts.lock();
@@ -144,16 +136,11 @@ impl Resource for SchemeResource {
             }
         }
 
-        let result = self.send(Msg::Write(self.handle, ptr, buf.len()));
-        if result != usize::MAX {
-            Some(result)
-        } else {
-            None
-        }
+        self.send(Msg::Write(self.handle, ptr, buf.len()))
     }
 
     /// Seek
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
         let offset;
         let whence;
         match pos {
@@ -171,20 +158,22 @@ impl Resource for SchemeResource {
             }
         }
 
-        let result = self.send(Msg::Seek(self.handle, offset, whence));
-        if result != usize::MAX {
-            return Some(result);
-        }
-        None
+        self.send(Msg::Seek(self.handle, offset, whence))
     }
 
     /// Sync the resource
-    fn sync(&mut self) -> bool {
-        self.send(Msg::Sync(self.handle)) == 0
+    fn sync(&mut self) -> Result<()> {
+        match self.send(Msg::Sync(self.handle)) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 
-    fn truncate(&mut self, len: usize) -> bool {
-        self.send(Msg::Truncate(self.handle, len)) == 0
+    fn truncate(&mut self, len: usize) -> Result<()> {
+        match self.send(Msg::Truncate(self.handle, len)) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 }
 
@@ -251,7 +240,7 @@ impl SchemeItem {
         }
 
         let mut memory = Vec::new();
-        if let Some(mut resource) = scheme_item.binary.open() {
+        if let Ok(mut resource) = scheme_item.binary.open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 
@@ -323,7 +312,10 @@ impl SchemeItem {
                            }
                        });
 
-        scheme_item.handle = scheme_item.send(Msg::Start);
+        scheme_item.handle = match scheme_item.send(Msg::Start) {
+            Ok(handle) => handle,
+            Err(_) => 0
+        };
 
         scheme_item
     }
@@ -339,18 +331,15 @@ impl KScheme for SchemeItem {
         self.send(Msg::Event(event));
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.to_string() + "\0";
-        let fd = self.send(Msg::Open(c_str.as_ptr(), flags));
-        if fd != usize::MAX {
-            // TODO: Count number of handles, don't allow drop until 0
-            return Some(box SchemeResource {
+        match self.send(Msg::Open(c_str.as_ptr(), flags)) {
+            Ok(fd) => Ok(box SchemeResource {
                 parent: self,
                 handle: fd,
-            });
+            }),
+            Err(err) => Err(err)
         }
-
-        None
     }
 }
 
@@ -361,12 +350,12 @@ impl Drop for SchemeItem {
 }
 
 impl SchemeItem {
-    pub fn send(&mut self, msg: Msg) -> usize {
+    pub fn send(&mut self, msg: Msg) -> Result<usize> {
         let mut response = Response::new(msg);
 
         self.responses.lock().push_back(response.deref_mut());
 
-        response.get()
+        SysError::demux(response.get())
     }
 
     // TODO: More advanced check

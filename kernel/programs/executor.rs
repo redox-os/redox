@@ -30,7 +30,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
     };
 
     Context::spawn("kexec ".to_string() + &url.string, box move || {
-        if let Some(mut resource) = url.open() {
+        if let Ok(mut resource) = url.open() {
             let mut vec: Vec<u8> = Vec::new();
             resource.read_to_end(&mut vec);
 

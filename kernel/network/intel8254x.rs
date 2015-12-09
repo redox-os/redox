@@ -13,7 +13,7 @@ use drivers::pciconfig::PciConfig;
 use network::common::*;
 use network::scheme::*;
 
-use schemes::{KScheme, Resource, Url};
+use schemes::{Result, KScheme, Resource, Url};
 
 use sync::Intex;
 
@@ -116,8 +116,8 @@ impl KScheme for Intel8254x {
         "network"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(NetworkResource::new(self))
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {

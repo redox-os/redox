@@ -16,13 +16,13 @@ use drivers::pciconfig::PciConfig;
 use common::debug;
 use common::memory::Memory;
 
-use schemes::{KScheme, Resource, ResourceSeek, Url, VecResource};
+use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
 
 use scheduler::context::context_switch;
 
 use sync::Intex;
 
-use syscall::O_CREAT;
+use syscall::{SysError, O_CREAT, ENOENT, EIO};
 
 const PIO: bool = false;
 
@@ -240,8 +240,8 @@ pub struct FileResource {
 }
 
 impl Resource for FileResource {
-    fn dup(&self) -> Option<Box<Resource>> {
-        Some(box FileResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box FileResource {
             scheme: self.scheme,
             node: self.node.clone(),
             vec: self.vec.clone(),
@@ -254,7 +254,7 @@ impl Resource for FileResource {
         Url::from_string("file:/".to_string() + &self.node.name)
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
@@ -264,10 +264,10 @@ impl Resource for FileResource {
             self.seek += 1;
             i += 1;
         }
-        Some(i)
+        Ok(i)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             self.vec[self.seek] = buf[i];
@@ -282,10 +282,10 @@ impl Resource for FileResource {
         if i > 0 {
             self.dirty = true;
         }
-        Some(i)
+        Ok(i)
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = offset,
             ResourceSeek::Current(offset) =>
@@ -296,13 +296,13 @@ impl Resource for FileResource {
         while self.vec.len() < self.seek {
             self.vec.push(0);
         }
-        Some(self.seek)
+        Ok(self.seek)
     }
 
     // TODO: Rename to sync
     // TODO: Check to make sure proper amount of bytes written. See Disk::write
     // TODO: Allow reallocation
-    fn sync(&mut self) -> bool {
+    fn sync(&mut self) -> Result<()> {
         if self.dirty {
             let block_size: usize = 512;
 
@@ -472,20 +472,20 @@ impl Resource for FileResource {
                 debug::d("Need to defragment file, extra: ");
                 debug::ds(remaining);
                 debug::dl();
-                return false;
+                return Err(SysError::new(EIO));
             }
         }
-        true
+        Ok(())
     }
 
-    fn truncate(&mut self, len: usize) -> bool {
+    fn truncate(&mut self, len: usize) -> Result<()> {
         while len > self.vec.len() {
             self.vec.push(0);
         }
         self.vec.truncate(len);
         self.seek = cmp::min(self.seek, self.vec.len());
         self.dirty = true;
-        true
+        Ok(())
     }
 }
 
@@ -554,7 +554,7 @@ impl KScheme for FileScheme {
         "file"
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let mut path = url.reference();
         while path.starts_with('/') {
             path = &path[1..];
@@ -595,9 +595,9 @@ impl KScheme for FileScheme {
             }
 
             if list.len() > 0 {
-                Some(box VecResource::new(url.clone(), list.into_bytes()))
+                Ok(box VecResource::new(url.clone(), list.into_bytes()))
             } else {
-                None
+                Err(SysError::new(ENOENT))
             }
         } else {
             match self.fs.node(path) {
@@ -669,7 +669,7 @@ impl KScheme for FileScheme {
                         }
                     }
 
-                    Some(box FileResource {
+                    Ok(box FileResource {
                         scheme: self,
                         node: node,
                         vec: vec,
@@ -698,7 +698,7 @@ impl KScheme for FileScheme {
 
                         self.fs.nodes.push(node.clone());
 
-                        Some(box FileResource {
+                        Ok(box FileResource {
                             scheme: self,
                             node: node,
                             vec: Vec::new(),
@@ -706,15 +706,15 @@ impl KScheme for FileScheme {
                             dirty: false,
                         })
                     } else {
-                        None
+                        Err(SysError::new(ENOENT))
                     }
                 }
             }
         }
     }
 
-    fn unlink(&mut self, url: &Url) -> bool {
-        let mut ret = false;
+    fn unlink(&mut self, url: &Url) -> Result<()> {
+        let mut ret = Err(SysError::new(ENOENT));
 
         let mut path = url.reference();
         while path.starts_with('/') {
@@ -731,7 +731,7 @@ impl KScheme for FileScheme {
 
             if remove {
                 self.fs.nodes.remove(i);
-                ret = true;
+                ret = Ok(());
             } else {
                 i += 1;
             }

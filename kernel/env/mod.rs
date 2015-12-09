@@ -13,10 +13,9 @@ use core::cell::UnsafeCell;
 
 use scheduler::context::Context;
 
-use schemes::KScheme;
-use schemes::Resource;
-use schemes::VecResource;
-use schemes::Url;
+use schemes::{Result, KScheme, Resource, VecResource, Url};
+
+use syscall::{SysError, ENOENT};
 
 use self::console::Console;
 
@@ -68,7 +67,7 @@ impl Environment {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: &Url, flags: usize) -> Option<Box<Resource>> {
+    pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
             let mut list = String::new();
@@ -84,7 +83,7 @@ impl Environment {
                 }
             }
 
-            Some(box VecResource::new(Url::new(), list.into_bytes()))
+            Ok(box VecResource::new(Url::new(), list.into_bytes()))
         } else {
             for scheme in self.schemes.iter() {
                 let scheme_str = unsafe { (*scheme.get()).scheme() };
@@ -92,12 +91,12 @@ impl Environment {
                     return unsafe { (*scheme.get()).open(url, flags) };
                 }
             }
-            None
+            Err(SysError::new(ENOENT))
         }
     }
 
     /// Unlink a resource
-    pub fn unlink(&self, url: &Url) -> bool {
+    pub fn unlink(&self, url: &Url) -> Result<()> {
         let url_scheme = url.scheme();
         if !url_scheme.is_empty() {
             for scheme in self.schemes.iter() {
@@ -107,6 +106,6 @@ impl Environment {
                 }
             }
         }
-        false
+        Err(SysError::new(ENOENT))
     }
 }

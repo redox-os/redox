@@ -8,7 +8,6 @@ use collections::vec_deque::VecDeque;
 use core::ptr;
 
 use common::{debug, memory};
-use schemes::{Resource, Url};
 
 use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
@@ -16,7 +15,7 @@ use drivers::pio::*;
 use network::common::*;
 use network::scheme::*;
 
-use schemes::KScheme;
+use schemes::{Result, KScheme, Resource, Url};
 
 use sync::Intex;
 
@@ -208,8 +207,8 @@ impl KScheme for Rtl8139 {
         "network"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(NetworkResource::new(self))
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -240,7 +239,7 @@ impl NetworkScheme for Rtl8139 {
 
     fn remove(&mut self, resource: *mut NetworkResource) {
         let mut resources = self.resources.lock();
-        
+
         let mut i = 0;
         while i < resources.len() {
             let mut remove = false;
