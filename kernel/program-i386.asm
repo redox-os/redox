@@ -1,10 +1,14 @@
-extern _start_stack
+extern _start
 section .text
-global _start
-_start:
-	push esp
-	call _start_stack
-	add esp, 4
+global __libc_csu_init
+__libc_csu_init:
+	ret
+global __libc_csu_fini
+__libc_csu_fini:
+	ret
+global __libc_start_main
+__libc_start_main:
+	call _start
+	mov ebx, eax
 	mov eax, 1
-	xor ebx, ebx
 	int 0x80
