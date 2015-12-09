@@ -15,7 +15,7 @@ use self::vdev::VdevLabel;
 macro_rules! readln {
     () => ({
         let mut buffer = String::new();
-        match std::io::stdin().read_to_string(&mut buffer) {
+        match std::io::stdin().read_line(&mut buffer) {
             Ok(_) => Some(buffer),
             Err(_) => None
         }
@@ -399,8 +399,7 @@ impl Zfs {
 }
 
 // TODO: Find a way to remove all the to_string's
-#[no_mangle]
-pub fn main() {
+fn main() {
     println!("Type open zfs.img to open the image file");
 
     let mut zfs_option: Option<Zfs> = None;

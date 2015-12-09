@@ -2,8 +2,7 @@ use std::fs::File;
 use std::process::Command;
 use std::syscall::sys_close;
 
-#[no_mangle]
-pub fn main() {
+fn main() {
     unsafe {
         sys_close(2);
         sys_close(1);
