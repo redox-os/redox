@@ -196,8 +196,6 @@
     #[path="../../kernel/externs.rs"]
     pub mod externs;
 
-    pub mod start;
-
     /// A module for system calls
     pub mod syscall;
 
