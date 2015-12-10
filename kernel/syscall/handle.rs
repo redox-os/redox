@@ -226,16 +226,21 @@ pub fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
 
     SysError::mux(
         if tp as usize > 0 {
-            let env = ::env();
             match clock {
                 CLOCK_REALTIME => {
-                    unsafe {(*tp).tv_sec = env.clock_realtime.secs;}
-                    unsafe {(*tp).tv_nsec = env.clock_realtime.nanos;}
+                    let clock_realtime = ::env().clock_realtime.lock();
+                    unsafe {
+                        (*tp).tv_sec = clock_realtime.secs;
+                        (*tp).tv_nsec = clock_realtime.nanos;
+                    }
                     Ok(0)
                 }
                 CLOCK_MONOTONIC => {
-                    unsafe {(*tp).tv_sec = env.clock_monotonic.secs;}
-                    unsafe {(*tp).tv_nsec = env.clock_monotonic.nanos;}
+                    let clock_monotonic = ::env().clock_monotonic.lock();
+                    unsafe {
+                        (*tp).tv_sec = clock_monotonic.secs;
+                        (*tp).tv_nsec = clock_monotonic.nanos;
+                    }
                     Ok(0)
                 }
                 _ => Err(SysError::new(EINVAL)),

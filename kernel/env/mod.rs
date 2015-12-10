@@ -28,9 +28,9 @@ pub struct Environment {
     pub contexts: Intex<ContextManager>,
 
     /// Clock realtime (default)
-    pub clock_realtime: Duration,
+    pub clock_realtime: Intex<Duration>,
     /// Monotonic clock
-    pub clock_monotonic: Duration,
+    pub clock_monotonic: Intex<Duration>,
 
     /// Default console
     pub console: Intex<Console>,
@@ -45,8 +45,8 @@ impl Environment {
         box Environment {
             contexts: Intex::new(ContextManager::new()),
 
-            clock_realtime: Duration::new(0, 0),
-            clock_monotonic: Duration::new(0, 0),
+            clock_realtime: Intex::new(Duration::new(0, 0)),
+            clock_monotonic: Intex::new(Duration::new(0, 0)),
 
             console: Intex::new(Console::new()),
             events: Mutex::new(VecDeque::new()),

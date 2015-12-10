@@ -3,8 +3,6 @@ use core::ops::{Add, Sub};
 
 use scheduler::context;
 
-use sync::Intex;
-
 pub const NANOS_PER_MICRO: i32 = 1000;
 pub const NANOS_PER_MILLI: i32 = 1000000;
 pub const NANOS_PER_SEC: i32 = 1000000000;
@@ -39,16 +37,12 @@ impl Duration {
 
     /// Get the current duration
     pub fn monotonic() -> Self {
-        let _intex = Intex::static_lock();
-
-        ::env().clock_monotonic
+        ::env().clock_monotonic.lock().clone()
     }
 
     /// Get the realtime
     pub fn realtime() -> Self {
-        let _intex = Intex::static_lock();
-
-        ::env().clock_realtime
+        ::env().clock_realtime.lock().clone()
     }
 
     /// Sleep the duration
