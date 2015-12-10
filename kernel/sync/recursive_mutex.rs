@@ -4,8 +4,7 @@ use core::usize;
 
 use sync::Mutex;
 
-use scheduler;
-use scheduler::context::{context_switch, Context};
+use scheduler::context::context_switch;
 
 struct RecursiveMutexInner {
     owner: usize,

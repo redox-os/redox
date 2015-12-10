@@ -10,7 +10,6 @@ use core::{mem, ptr};
 use common::elf::Elf;
 use common::memory;
 
-use scheduler;
 use scheduler::context::{CONTEXT_STACK_SIZE, CONTEXT_STACK_ADDR, context_switch,
 context_userspace, Context, ContextMemory};
 

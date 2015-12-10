@@ -11,7 +11,7 @@ use common::time::Duration;
 
 use core::cell::UnsafeCell;
 
-use scheduler::context::{ContextManager, Context};
+use scheduler::context::ContextManager;
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 

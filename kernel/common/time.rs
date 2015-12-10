@@ -1,7 +1,6 @@
 use core::cmp::Ordering;
 use core::ops::{Add, Sub};
 
-use scheduler;
 use scheduler::context;
 
 use sync::Intex;
@@ -42,14 +41,14 @@ impl Duration {
     pub fn monotonic() -> Self {
         let _intex = Intex::static_lock();
 
-        unsafe { ::env().clock_monotonic }
+        ::env().clock_monotonic
     }
 
     /// Get the realtime
     pub fn realtime() -> Self {
         let _intex = Intex::static_lock();
 
-        unsafe { ::env().clock_realtime }
+        ::env().clock_realtime
     }
 
     /// Sleep the duration
