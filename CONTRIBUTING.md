@@ -89,7 +89,13 @@ It's completely fine to just submit a small pull request without first making an
 #### Style Guidelines
 
 <!-- TODO improve this section -->
+
+**Rust:**
 Since Rust is a relatively small and new language compared to others like C, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
+
+**Git:**
+- Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`".
+- Try to remove duplicate commits from PRs as these clutter up history.
 
 #### Interactions with Other Projects
 
