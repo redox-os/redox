@@ -14,6 +14,7 @@
 #### Other links
 
 - [redox-os.org](http://redox-os.org)
+
 <!-- TODO add more links here -->
 
 <a name="slack" />
