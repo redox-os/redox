@@ -34,7 +34,6 @@ use core::cell::UnsafeCell;
 use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
-use common::debug;
 use common::event::{self, EVENT_KEY, EventOption};
 use common::memory;
 use common::paging::Page;
@@ -405,7 +404,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             exception_inner!($name);
 
             loop {
-                unsafe { do_sys_exit(usize::MAX) };
+                do_sys_exit(usize::MAX);
             }
         })
     };
@@ -424,7 +423,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    ERR: {:08X}", error);
 
             loop {
-                unsafe { do_sys_exit(usize::MAX) };
+                do_sys_exit(usize::MAX);
             }
         })
     };
@@ -480,7 +479,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x2D => env().on_irq(0xD), //coprocessor
         0x2E => env().on_irq(0xE), //disk
         0x2F => env().on_irq(0xF), //disk
-        0x80 => if !unsafe { syscall_handle(regs) } {
+        0x80 => if ! syscall_handle(regs) {
             exception!("Unknown Syscall");
         },
         0xFF => {

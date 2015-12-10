@@ -1,9 +1,6 @@
 use audio::ac97::AC97;
 use audio::intelhda::IntelHDA;
 
-use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
-
 use core::cell::UnsafeCell;
 
 use common::debug;
