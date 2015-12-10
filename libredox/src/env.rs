@@ -34,7 +34,7 @@ pub unsafe fn args_destroy() {
 /// If the current directory cannot be found, None will be returned
 pub fn current_dir() -> Result<PathBuf> {
     // Return the current path
-    match File::open(".") {
+    match File::open("./") {
         Ok(file) => match file.path() {
             Ok(path) => Ok(path),
             Err(err) => Err(err)

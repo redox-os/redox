@@ -98,14 +98,16 @@ pub fn stdin() -> Stdin {
 
 impl Stdin {
     pub fn read_line(&mut self, string: &mut String) -> Result<usize> {
-        let mut bytes = [0; 1024];
-        match self.read(&mut bytes) {
-            Err(err) => return Err(err),
-            Ok(count) => {
-                for i in 0..count {
-                    string.push(bytes[i] as char); //TODO Allow UTF8
+        let mut read = 0;
+        loop {
+            let mut bytes = [0; 4096];
+            match self.read(&mut bytes) {
+                Ok(0) => return Ok(read),
+                Err(err) => return Err(err),
+                Ok(count) => {
+                    string.push_str(unsafe { &str::from_utf8_unchecked(&bytes[0..count]) });
+                    read += count;
                 }
-                return Ok(count);
             }
         }
     }
