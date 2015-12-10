@@ -233,30 +233,41 @@ fn event_loop() -> ! {
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
+    //Make sure interrupts are disabled
+    asm!("cli" : : : : "intel", "volatile");
+
+    //Zero BSS, this initializes statics that are set to 0
+    {
+        extern {
+            static mut __bss_start: u8;
+            static mut __bss_end: u8;
+        }
+
+        let start_ptr: *mut u8 = &mut __bss_start;
+        let end_ptr: *mut u8 = &mut __bss_end;
+
+        if start_ptr as usize <= end_ptr as usize {
+            let size = end_ptr as usize - start_ptr as usize;
+            memset(start_ptr, 0, size);
+        }
+    }
+
+    //Setup paging, this allows for memory allocation
     Page::init();
     memory::cluster_init();
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    sync::intex::intex_count = 0;
-
     display::fonts = font_data;
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
-
-    context_pid = 1;
-    context_i = 0;
-    context_enabled = false;
 
     match ENV_PTR {
         Some(ref mut env) => {
             env.contexts.lock().push(Context::root());
             env.console.lock().draw = true;
 
-            debug!("Redox ");
-            debug::dd(mem::size_of::<usize>() * 8);
-            debug!(" bits");
-            debug::dl();
+            debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
 
             env.clock_realtime = Rtc::new().time();
 
