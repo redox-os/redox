@@ -2,7 +2,8 @@
 use std::{mem, str, File, Read, ToNum};
 
 use self::arcache::ArCache;
-use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
+use self::dnode::{DNodePhys, ObjectType};
+use self::dmu_objset::ObjectSetPhys;
 use self::block_ptr::BlockPtr;
 use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
@@ -25,9 +26,11 @@ macro_rules! readln {
 pub mod arcache;
 pub mod avl;
 pub mod block_ptr;
+pub mod dmu_objset;
 pub mod dnode;
 pub mod dsl_dataset;
 pub mod dsl_dir;
+pub mod dsl_pool;
 pub mod dvaddr;
 pub mod from_bytes;
 pub mod lzjb;
@@ -36,6 +39,8 @@ pub mod nvpair;
 pub mod nvstream;
 pub mod spa;
 pub mod space_map;
+pub mod taskq;
+pub mod txg;
 pub mod uberblock;
 pub mod util;
 pub mod vdev;

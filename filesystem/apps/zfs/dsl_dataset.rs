@@ -37,3 +37,58 @@ pub struct DslDatasetPhys {
 }
 
 impl FromBytes for DslDatasetPhys { }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/*struct DslDataset {
+	dmu_buf_user_t ds_dbu,
+
+	// Immutable:
+	dsl_dir *ds_dir,
+	dmu_buf_t *ds_dbuf,
+	object: u64,
+	fsid_guid: u64,
+	is_snapshot: bool,
+
+	// only used in syncing context, only valid for non-snapshots:
+	dsl_dataset *ds_prev,
+	bookmarks: u64,  // DMU_OTN_ZAP_METADATA
+	large_blocks: bool,
+	need_large_blocks: bool,
+
+	// has internal locking:
+	dsl_deadlist_t ds_deadlist,
+	bplist_t ds_pending_deadlist,
+
+	// protected by lock on pool's dp_dirty_datasets list
+	txg_node_t ds_dirty_link,
+	list_node_t ds_synced_link,
+
+	// ds_phys->ds_<accounting> is also protected by ds_lock.
+	// Protected by ds_lock:
+	kmutex_t ds_lock,
+	objset_t *ds_objset,
+	ds_userrefs: u64,
+	void *ds_owner,
+
+	// Long holds prevent the ds from being destroyed, they allow the
+	// ds to remain held even after dropping the dp_config_rwlock.
+	// Owning counts as a long hold.  See the comments above
+	// dsl_pool_hold() for details.
+	refcount_t ds_longholds,
+
+	// no locking, only for making guesses
+	ds_trysnap_txg: u64,
+
+	// for objset_open()
+	kmutex_t ds_opening_lock,
+
+	ds_reserved: u64,	// cached refreservation
+	ds_quota: u64,	// cached refquota
+
+	kmutex_t ds_sendstream_lock,
+	list_t ds_sendstreams,
+
+	// Protected by ds_lock, keep at end of struct for better locality
+	char ds_snapname[MAXNAMELEN],
+}*/

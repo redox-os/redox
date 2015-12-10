@@ -1,10 +1,11 @@
+use std::{Box, String, ToString, Vec, cmp, mem};
+
 use super::from_bytes::FromBytes;
 use super::metaslab::{Metaslab, MetaslabGroup};
 use super::nvpair::{NvList, NvValue};
 use super::util;
 use super::vdev_file::VdevFile;
 use super::zfs;
-use super::zio;
 
 #[repr(packed)]
 pub struct VdevLabel {
@@ -100,18 +101,18 @@ pub enum State {
 
 // Stuff that only top level vdevs have
 pub struct Top {
-    ms_array_object: u64,
-    ms_shift: u64,
-    ms_group: MetaslabGroup,
-    metaslabs: Vec<Metaslab>,
+    ms_array: u64,            // object ID of metaslab array in MOS
+    ms_shift: u64,            // metaslab shift
+    ms_group: MetaslabGroup,  // metaslab group
+    metaslabs: Vec<Metaslab>, // in-memory metaslab array
     is_hole: bool,
 }
 
 impl Top {
-    pub fn new() -> Self {
+    pub fn new(ms_array: u64, ms_shift: u64) -> Self {
         Top {
-            ms_array_object: 0,
-            ms_shift: 0,
+            ms_array: ms_array,
+            ms_shift: ms_shift,
             ms_group: MetaslabGroup,
             metaslabs: vec![],
             is_hole: false, /* TODO: zol checks vdev_ops for this, but idk what to do yet */
@@ -156,11 +157,15 @@ pub struct Vdev {
 }
 
 impl Vdev {
-    pub fn new(id: u64, guid: Option<u64>, ashift: u64, ops: VdevOps, create_txg: u64) -> Self {
+    pub fn new(id: u64, guid: Option<u64>, ashift: u64, ops: VdevOps,
+               create_txg: u64, vdev_top: Option<Top>) -> Self {
         let guid = guid.unwrap_or_else(|| {
             // TODO: generate a guid
             0
         });
+
+        // TODO vdev_queue_init
+
         Vdev {
             id: id,
             guid: guid,
@@ -178,7 +183,7 @@ impl Vdev {
             children: Vec::new(),
             create_txg: create_txg,
 
-            top: None,
+            top: vdev_top,
             leaf: None,
         }
     }
@@ -214,7 +219,32 @@ impl Vdev {
         let create_txg = try!(nv.get("create_txg").ok_or(zfs::Error::Invalid));
         let ashift = try!(nv.get("ashift").ok_or(zfs::Error::Invalid));
 
-        let mut vdev = Self::new(id, guid, ashift, ops, create_txg);
+        let mut vdev_top = None;
+
+        // If we're a top-level vdev, try to load the allocation parameters, create the vdev::Top,
+        // and create the metaslab group
+        if parent && !parent.parent {
+            if alloc_type == AllocType::Load || alloc_type == AllocType::Split {
+                let ms_array = try!(nv.get("metaslab_array").ok_or(zfs::Error::Invalid));
+                let ms_shift = try!(nv.get("metaslab_shift").ok_or(zfs::Error::Invalid));
+                let asize = try!(nv.get("asize").ok_or(zfs::Error::Invalid));
+                //let removing = try!(nv.get("removing").ok_or(zfs::Error::Invalid));
+
+                vdev_top = Some(Top::new(ms_array, ms_shift));
+                /*nvlist_lookup_uint64(nv, ZPOOL_CONFIG_METASLAB_ARRAY, &vd->vdev_ms_array);
+                nvlist_lookup_uint64(nv, ZPOOL_CONFIG_METASLAB_SHIFT, &vd->vdev_ms_shift);
+                nvlist_lookup_uint64(nv, ZPOOL_CONFIG_ASIZE, &vd->vdev_asize);
+                nvlist_lookup_uint64(nv, ZPOOL_CONFIG_REMOVING, &vd->vdev_removing);*/
+            }
+            
+            if alloc_type != VDEV_ALLOC_ATTACH {
+                assert!(alloc_type == AllocType::Load || alloc_type == AllocType::Add ||
+                        alloc_type == AllocType::Split || alloc_type == AllocType::RootPool);
+                //vd.vdev_mg = metaslab_group_create(islog ? spa_log_class(spa) : spa_normal_class(spa), vd);
+            }
+        }
+
+        let mut vdev = Self::new(id, guid, ashift, ops, create_txg, vdev_top);
         vdev.parent = parent;
 
         Ok(vdev)
@@ -225,7 +255,14 @@ impl Vdev {
     }
 
     fn metaslab_init(&mut self, txg: u64) -> zfs::Result<()> {
-        let ref top = try!(self.top.as_ref().ok_or(zfs::Error::Invalid));
+        spa_t *spa = self.spa;
+        //objset_t *mos = spa->spa_meta_objset;
+
+        // We assume this is a top-level vdev
+        let ref mut top = try!(self.top.as_mut().ok_or(zfs::Error::Invalid));
+
+        let old_count = top.metaslabs.len();
+        let new_count = self.asize >> top.ms_shift;
 
         //assert!(txg == 0 || spa_config_held(spa, SCL_ALLOC, RW_WRITER));
 
@@ -233,11 +270,39 @@ impl Vdev {
         if top.ms_shift == 0 {
             return Ok(());
         }
-        //assert!(!vdev.is_hole); // Must not be a hole
+        assert!(!top.is_hole); // Must not be a hole
 
-        // We assume this is a top-level vdev
-        let old_count = top.metaslabs.len();
-        let new_count = self.asize >> top.ms_shift;
+        // Compute the raidz-deflation ratio.  Note, we hard-code
+        // in 128k (1 << 17) because it is the "typical" blocksize.
+        // Even though SPA_MAXBLOCKSIZE changed, this algorithm can not change,
+        // otherwise it would inconsistently account for existing bp's.
+        //vd->vdev_deflate_ratio = (1 << 17) / (vdev_psize_to_asize(vd, 1 << 17) >> SPA_MINBLOCKSHIFT);
+
+        assert!(old_count <= new_count);
+
+        for m in old_count..new_count {
+            let object: u64 = 0;
+
+            if txg == 0 {
+                /*try!(dmu_read(mos, top.ms_array, m * mem::size_of::<u64>(),
+                              mem::size_of::<u64>(), &object, DMU_READ_PREFETCH));*/
+            }
+
+            top.metaslabs.push(try!(Metaslab::init(&mut top.ms_group, m, object, txg)));
+        }
+
+        //if (txg == 0)
+        //    spa_config_enter(spa, SCL_ALLOC, FTAG, RW_WRITER);
+
+        // If the vdev is being removed we don't activate
+        // the metaslabs since we want to ensure that no new
+        // allocations are performed on this device.
+        if old_count == 0 && !vd.removing {
+            metaslab_group_activate(vd.mg);
+        }
+
+        //if (txg == 0)
+        //    spa_config_exit(spa, SCL_ALLOC, FTAG);
 
         Ok(())
     }
@@ -269,6 +334,42 @@ impl Vdev {
 
         //pvd->vdev_min_asize
     }*/
+
+    /*pub fn dirty(&mut self, flags: u64, void *arg, txg: u64) {
+        // We assume this is a top-level vdev
+        let ref top = self.top.unwrap();
+
+        //assert!(self == self.top_vdev);
+        assert!(!self.is_hole);
+        assert!(util::is_p2(flags));
+        //assert!(spa_writeable(self.spa));
+
+        if flags & DIRTY_METASLAB {
+            txg_list_add(&self.ms_list, arg, txg);
+        }
+
+        if flags & DIRTY_DTL {
+            txg_list_add(&self.dtl_list, arg, txg);
+        }
+
+        txg_list_add(&self.spa.vdev_txg_list, self, txg);
+    }*/
+
+    pub fn uberblock_shift(&self) -> u64 {
+        cmp::min(cmp::max(self.top_vdev.ashift, uberblock::UBERBLOCK_SHIFT), MAX_UBERBLOCK_SHIFT)
+    }
+
+    pub fn uberblock_count(&self) -> u64 {
+        UBERBLOCK_RING >> self.uberblock_shift()
+    }
+
+    /*pub fn uberblock_offset(&self, n) -> u64 {
+        offsetof(vdev_label_t, vl_uberblock[n << self.uberblock_shift()])
+    }*/
+
+    pub fn uberblock_size(&self) -> u64 {
+        1 << self.uberblock_shift()
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -365,7 +466,7 @@ impl Tree {
             }
 
             // Load metaslabs for top-level vdevs
-            if vdev.top.is_some() /*&& !vdev.is_hole*/ {
+            if vdev.top.is_some() && !vdev.is_hole {
                 if vdev.ashift == 0 || vdev.asize == 0 || vdev.metaslab_init(0).is_err() {
                     // TODO: Set vdev state to error
                 }
@@ -375,3 +476,19 @@ impl Tree {
         }
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const DIRTY_METASLAB: u64 = 0x01;
+const DIRTY_DTL: u64 =  0x02;
+
+const VDEV_RAIDZ_MAXPARITY: usize = 3;
+
+const VDEV_PAD_SIZE: u64 = 8 << 10;
+/* 2 padding areas (vl_pad1 and vl_pad2) to skip */
+const VDEV_SKIP_SIZE: u64 = VDEV_PAD_SIZE * 2;
+const VDEV_PHYS_SIZE: u64 = 112 << 10;
+const VDEV_UBERBLOCK_RING: u64 = 128 << 10;
+
+// The largest uberblock we support is 8k.
+const MAX_UBERBLOCK_SHIFT: u64 = 13;
