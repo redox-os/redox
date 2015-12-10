@@ -24,6 +24,7 @@ pub struct Console {
     pub point: Point,
     pub foreground: Color,
     pub background: Color,
+    pub instant: bool,
     pub draw: bool,
     pub redraw: bool,
     pub command: Option<String>,
@@ -39,6 +40,7 @@ impl Console {
             point: Point::new(0, 0),
             foreground: WHITE,
             background: BLACK,
+            instant: true,
             draw: false,
             redraw: true,
             command: None,
@@ -187,7 +189,7 @@ impl Console {
             }
         }
         // If contexts disabled, probably booting up
-        if !unsafe { ::scheduler::context::context_enabled } && self.draw && self.redraw {
+        if self.instant && self.draw && self.redraw {
             self.redraw = false;
             self.display.flip();
         }

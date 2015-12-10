@@ -13,7 +13,7 @@ use common::event::Event;
 use common::get_slice::GetSlice;
 use common::memory;
 
-use scheduler::context::{context_i, context_switch, Context, ContextMemory};
+use scheduler::context::{context_switch, Context, ContextMemory};
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
@@ -116,7 +116,7 @@ impl Resource for SchemeResource {
         let mut ptr = buf.as_mut_ptr();
 
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.get(Context::current_i()) {
+        if let Some(current) = contexts.current() {
             if let Some(translated) = unsafe { current.translate(ptr as usize) } {
                 ptr = translated as *mut u8;
             }
@@ -130,7 +130,7 @@ impl Resource for SchemeResource {
         let mut ptr = buf.as_ptr();
 
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.get(Context::current_i()) {
+        if let Some(current) = contexts.current() {
             if let Some(translated) = unsafe { current.translate(ptr as usize) } {
                 ptr = translated as *const u8;
             }
@@ -301,7 +301,7 @@ impl SchemeItem {
                                    do_sys_open(stdio_c.as_ptr(), 0);
 
                                    let mut contexts = ::env().contexts.lock();
-                                   if let Some(mut current) = contexts.get_mut(Context::current_i()) {
+                                   if let Some(mut current) = contexts.current_mut() {
                                        current.unmap();
                                        (*current.memory.get()) = memory;
                                        current.map();

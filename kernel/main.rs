@@ -56,7 +56,7 @@ use programs::executor::execute;
 use programs::scheme::*;
 
 use scheduler::{Context, Regs, TSS};
-use scheduler::context::{context_enabled, context_switch, context_i, context_pid};
+use scheduler::context::context_switch;
 
 use schemes::Url;
 use schemes::arp::*;
@@ -162,6 +162,11 @@ fn poll_loop() -> ! {
 
 /// Event loop
 fn event_loop() -> ! {
+    {
+        let mut console = env().console.lock();
+        console.instant = false;
+    }
+
     let mut cmd = String::new();
     loop {
         loop {
@@ -221,6 +226,7 @@ fn event_loop() -> ! {
 
         {
             let mut console = env().console.lock();
+            console.instant = false;
             if console.draw && console.redraw {
                 console.redraw = false;
                 console.display.flip();
@@ -308,7 +314,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 IcmpScheme::reply_loop();
             });
 
-            context_enabled = true;
+            env.contexts.lock().enabled = true;
 
             if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
@@ -360,7 +366,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         ($name:expr) => ({
             {
                 let contexts = ::env().contexts.lock();
-                if let Some(context) = contexts.get(Context::current_i()) {
+                if let Some(context) = contexts.current() {
                     debugln!("PID {}: {}", context.pid, context.name);
                 }
             }
@@ -441,7 +447,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
                         let switch = {
                             let mut contexts = ::env().contexts.lock();
-                            if let Some(mut context) = contexts.get_mut(Context::current_i()) {
+                            if let Some(mut context) = contexts.current_mut() {
                                 context.slices -= 1;
                                 context.slice_total += 1;
                                 context.slices == 0

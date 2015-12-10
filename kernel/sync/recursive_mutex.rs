@@ -35,7 +35,7 @@ impl<T: ?Sized> RecursiveMutex<T> {
     pub fn lock(&self) -> RecursiveMutexGuard<T> {
         let pid = {
             let contexts = ::env().contexts.lock();
-            if let Some(current) = contexts.get(Context::current_i()) {
+            if let Some(current) = contexts.current() {
                 current.pid
             } else {
                 usize::MAX
