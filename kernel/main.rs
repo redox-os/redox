@@ -31,7 +31,7 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
-use core::{mem, usize};
+use core::{ptr, mem, usize};
 use core::slice::SliceExt;
 
 use common::debug;
@@ -371,6 +371,15 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 asm!("mov $0, cr4" : "=r"(cr4) : : : "intel", "volatile");
             }
             debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
+
+            let sp = regs.sp as *const u32;
+            for y in 0..8 {
+                debug!("    {:02X}:", y * 8);
+                for x in 0..8 {
+                    debug!("  {:08X}", unsafe { ptr::read(sp.offset(-(x + y * 8))) });
+                }
+                debug!("\n");
+            }
         })
     };
 
