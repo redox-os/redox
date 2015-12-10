@@ -341,7 +341,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 do_sys_open(stdio_c.as_ptr(), 0);
                 do_sys_open(stdio_c.as_ptr(), 0);
 
-                let path_string = "file:/apps/shell/main.bin";
+                let path_string = "file:/apps/login/main.bin";
                 let path = Url::from_str(path_string);
 
                 debug!("INIT: Executing {}\n", path_string);
@@ -445,6 +445,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                         env.clock_realtime = env.clock_realtime + PIT_DURATION;
                         env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
 
+                        /*
                         let switch = {
                             let mut contexts = ::env().contexts.lock();
                             if let Some(mut context) = contexts.current_mut() {
@@ -459,6 +460,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                         if switch {
                             context_switch(true);
                         }
+                        */
                     },
                     None => unreachable!(),
                 }
