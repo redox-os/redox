@@ -14,7 +14,7 @@ use drivers::pio::*;
 use programs::executor::execute;
 
 use scheduler::{self, Regs};
-use scheduler::context::{context_clone, context_i, context_switch, Context, ContextMemory, ContextFile,
+use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile,
                          ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
@@ -78,7 +78,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
     let mut ret = 0;
 
     let mut contexts = ::env().contexts.lock();
-    if let Some(mut current) = contexts.get_mut(context_i) {
+    if let Some(mut current) = contexts.current_mut() {
         current.unmap();
 
         ret = current.next_mem();
@@ -115,7 +115,7 @@ pub unsafe fn do_sys_brk(addr: usize) -> usize {
 pub unsafe extern "cdecl" fn do_sys_chdir(path: *const u8) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             *current.cwd.get() =
                 current.canonicalize(&str::from_utf8_unchecked(&c_string_to_slice(path)));
             Ok(0)
@@ -134,7 +134,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
     {
         let mut contexts = ::env().contexts.lock();
 
-        let child_option = if let Some(parent) = contexts.get(context_i) {
+        let child_option = if let Some(parent) = contexts.current() {
             clone_pid = Context::next_pid();
             mem_count = Arc::strong_count(&parent.memory);
 
@@ -163,7 +163,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
     SysError::mux(
         if clone_pid != usize::MAX {
             let contexts = ::env().contexts.lock();
-            if let Some(current) = contexts.get(context_i) {
+            if let Some(current) = contexts.current() {
                 if current.pid == clone_pid {
                     Ok(0)
                 } else {
@@ -186,7 +186,7 @@ pub unsafe fn do_sys_clone(flags: usize) -> usize {
 pub unsafe fn do_sys_close(fd: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             let mut ret = Err(SysError::new(EBADF));
 
             for i in 0..(*current.files.get()).len() {
@@ -243,7 +243,7 @@ pub unsafe fn do_sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
 pub unsafe fn do_sys_dup(fd: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             if let Some(resource) = current.get_file(fd) {
                 match resource.dup() {
                     Ok(new_resource) => {
@@ -271,7 +271,7 @@ pub unsafe fn do_sys_execve(path: *const u8, args: *const *const u8) -> usize {
     let mut args_vec = Vec::new();
     let path_url = {
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.get(context_i) {
+        if let Some(current) = contexts.current() {
             for arg in c_array_to_slice(args) {
                 args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
             }
@@ -291,7 +291,7 @@ pub unsafe fn do_sys_spawnve(path: *const u8, args: *const *const u8) -> usize {
     let mut args_vec = Vec::new();
     let path_url = {
         let contexts = ::env().contexts.lock();
-        if let Some(current) = contexts.get(context_i) {
+        if let Some(current) = contexts.current() {
             for arg in c_array_to_slice(args) {
                 args_vec.push(str::from_utf8_unchecked(c_string_to_slice(*arg)).to_string());
             }
@@ -327,7 +327,7 @@ pub unsafe fn do_sys_exit(status: usize) {
 
         let mut statuses = Vec::new();
         let (pid, ppid) = {
-            if let Some(mut current) = contexts.get_mut(context_i) {
+            if let Some(mut current) = contexts.current_mut() {
                 current.exited = true;
                 mem::swap(&mut statuses, &mut current.statuses);
                 (current.pid, current.ppid)
@@ -366,7 +366,7 @@ pub unsafe fn do_sys_exit(status: usize) {
 pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
     let contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(current) = contexts.get(context_i) {
+        if let Some(current) = contexts.current() {
             if let Some(resource) = current.get_file(fd) {
                 let mut ret = 0;
                 // TODO: Improve performance
@@ -392,7 +392,7 @@ pub unsafe fn do_sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
 pub unsafe fn do_sys_fsync(fd: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             if let Some(mut resource) = current.get_file_mut(fd) {
                 match resource.sync() {
                     Ok(_) => Ok(0),
@@ -410,7 +410,7 @@ pub unsafe fn do_sys_fsync(fd: usize) -> usize {
 pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             if let Some(mut resource) = current.get_file_mut(fd) {
                 match resource.truncate(len) {
                     Ok(_) => Ok(0),
@@ -428,7 +428,7 @@ pub unsafe fn do_sys_ftruncate(fd: usize, len: usize) -> usize {
 pub unsafe fn do_sys_getpid() -> usize {
     let contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(current) = contexts.get(context_i) {
+        if let Some(current) = contexts.current() {
             Ok(current.pid)
         } else {
             Err(SysError::new(ESRCH))
@@ -441,7 +441,7 @@ pub unsafe fn do_sys_getpid() -> usize {
 pub unsafe fn do_sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             if let Some(mut resource) = current.get_file_mut(fd) {
                 match whence {
                     SEEK_SET => resource.seek(ResourceSeek::Start(offset as usize)),
@@ -484,7 +484,7 @@ pub unsafe fn do_sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usiz
 pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             let path_string = current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
             match (::env()).open(&Url::from_string(path_string), flags) {
@@ -509,7 +509,7 @@ pub unsafe fn do_sys_open(path: *const u8, flags: usize) -> usize {
 pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             if let Some(resource) = current.get_file_mut(fd) {
                 resource.read(slice::from_raw_parts_mut(buf, count))
             } else {
@@ -524,7 +524,7 @@ pub unsafe fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
 pub unsafe fn do_sys_unlink(path: *const u8) -> usize {
     let contexts = ::env().contexts.lock();
     SysError::mux(
-        if let Some(current) = contexts.get(context_i) {
+        if let Some(current) = contexts.current() {
             let path_string = current.canonicalize(str::from_utf8_unchecked(c_string_to_slice(path)));
 
             match (::env()).unlink(&Url::from_string(path_string)) {
@@ -543,7 +543,7 @@ pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> 
     loop {
         {
             let mut contexts = ::env().contexts.lock();
-            if let Some(mut current) = contexts.get_mut(context_i) {
+            if let Some(mut current) = contexts.current_mut() {
                 let mut found = false;
                 let mut i = 0;
                 while i < current.statuses.len() {
@@ -590,7 +590,7 @@ pub unsafe fn do_sys_waitpid(pid: isize, status: *mut usize, options: usize) -> 
 pub unsafe fn do_sys_write(fd: usize, buf: *const u8, count: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux (
-        if let Some(mut current) = contexts.get_mut(context_i) {
+        if let Some(mut current) = contexts.current_mut() {
             if let Some(resource) = current.get_file_mut(fd) {
                 resource.write(slice::from_raw_parts(buf, count))
             } else {
@@ -606,7 +606,7 @@ pub unsafe fn do_sys_alloc(size: usize) -> usize {
     let mut ret = 0;
 
     let mut contexts = ::env().contexts.lock();
-    if let Some(mut current) = contexts.get_mut(context_i) {
+    if let Some(mut current) = contexts.current_mut() {
         current.unmap();
         let physical_address = memory::alloc(size);
         if physical_address > 0 {
@@ -629,7 +629,7 @@ pub unsafe fn do_sys_realloc(ptr: usize, size: usize) -> usize {
     let mut ret = 0;
 
     let mut contexts = ::env().contexts.lock();
-    if let Some(mut current) = contexts.get_mut(context_i) {
+    if let Some(mut current) = contexts.current_mut() {
         current.unmap();
         if let Some(mut mem) = current.get_mem_mut(ptr) {
             let physical_address = memory::realloc(mem.physical_address, size);
@@ -652,7 +652,7 @@ pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
     let mut ret = 0;
 
     let mut contexts = ::env().contexts.lock();
-    if let Some(mut current) = contexts.get_mut(context_i) {
+    if let Some(mut current) = contexts.current_mut() {
         current.unmap();
         if let Some(mut mem) = current.get_mem_mut(ptr) {
             mem.virtual_size = memory::realloc_inplace(mem.physical_address, size);
@@ -667,7 +667,7 @@ pub unsafe fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
 
 pub unsafe fn do_sys_unalloc(ptr: usize) {
     let mut contexts = ::env().contexts.lock();
-    if let Some(mut current) = contexts.get_mut(context_i) {
+    if let Some(mut current) = contexts.current_mut() {
         current.unmap();
         if let Some(mut mem) = current.get_mem_mut(ptr) {
             mem.virtual_size = 0;

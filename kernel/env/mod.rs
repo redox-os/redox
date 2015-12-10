@@ -11,7 +11,7 @@ use common::time::Duration;
 
 use core::cell::UnsafeCell;
 
-use scheduler::context::Context;
+use scheduler::context::{ContextManager, Context};
 
 use schemes::{Result, KScheme, Resource, VecResource, Url};
 
@@ -25,7 +25,7 @@ pub mod console;
 /// The kernel environment
 pub struct Environment {
     /// Contexts
-    pub contexts: Intex<Vec<Box<Context>>>,
+    pub contexts: Intex<ContextManager>,
 
     /// Clock realtime (default)
     pub clock_realtime: Duration,
@@ -43,7 +43,7 @@ pub struct Environment {
 impl Environment {
     pub fn new() -> Box<Environment> {
         box Environment {
-            contexts: Intex::new(Vec::new()),
+            contexts: Intex::new(ContextManager::new()),
 
             clock_realtime: Duration::new(0, 0),
             clock_monotonic: Duration::new(0, 0),

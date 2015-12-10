@@ -7,6 +7,7 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
+use core::slice::{Iter, IterMut};
 use core::{mem, ptr};
 use core::ops::DerefMut;
 
@@ -22,9 +23,91 @@ pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_SLICES: usize = 4;
 
-pub static mut context_i: usize = 0;
-pub static mut context_enabled: bool = false;
-pub static mut context_pid: usize = 0;
+pub struct ContextManager {
+    pub inner: Vec<Box<Context>>,
+    pub enabled: bool,
+    pub i: usize,
+    pub next_pid: usize,
+}
+
+impl ContextManager {
+    pub fn new() -> ContextManager {
+        ContextManager {
+            inner: Vec::new(),
+            enabled: false,
+            i: 0,
+            next_pid: 1,
+        }
+    }
+
+    pub fn current(&self) -> Option<& Box<Context>> {
+        let i = self.i;
+        self.get(i)
+    }
+
+    pub fn current_mut(&mut self) -> Option<&mut Box<Context>> {
+        let i = self.i;
+        self.get_mut(i)
+    }
+
+    pub fn iter(&self) -> Iter<Box<Context>> {
+        self.inner.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<Box<Context>> {
+        self.inner.iter_mut()
+    }
+
+    pub fn get(&self, i: usize) -> Option<& Box<Context>> {
+        if self.enabled {
+            self.inner.get(i)
+        } else{
+            None
+        }
+    }
+
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut Box<Context>> {
+        if self.enabled {
+            self.inner.get_mut(i)
+        } else{
+            None
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+
+    pub unsafe fn push(&mut self, context: Box<Context>) {
+        self.inner.push(context);
+    }
+
+    pub unsafe fn clean(&mut self) {
+        loop {
+            if self.i >= self.len() {
+                self.i -= self.len();
+            }
+
+            let mut remove = false;
+            if let Some(next) = self.current() {
+                if next.exited {
+                    remove = true;
+                }
+            }
+
+            if remove {
+                let i = self.i;
+                drop(self.inner.remove(i));
+            } else {
+                break;
+            }
+        }
+
+        if self.i >= self.len() {
+            self.i -= self.len();
+        }
+    }
+}
 
 /// Switch context
 ///
@@ -34,34 +117,12 @@ pub unsafe fn context_switch(interrupted: bool) {
     let mut next_ptr: *mut Context = 0 as *mut Context;
 
     let mut contexts = ::env().contexts.lock();
-    if context_enabled {
-        let current_i = context_i;
-        context_i += 1;
-        // The only garbage collection in Redox
-        loop {
-            if context_i >= contexts.len() {
-                context_i -= contexts.len();
-            }
+    if contexts.enabled {
+        let current_i = contexts.i;
+        contexts.i += 1;
+        contexts.clean();
 
-            let mut remove = false;
-            if let Some(next) = contexts.get(context_i) {
-                if next.exited {
-                    remove = true;
-                }
-            }
-
-            if remove {
-                drop(contexts.remove(context_i));
-            } else {
-                break;
-            }
-        }
-
-        if context_i >= contexts.len() {
-            context_i -= contexts.len();
-        }
-
-        if context_i != current_i {
+        if contexts.i != current_i {
             if let Some(mut current) = contexts.get_mut(current_i) {
                 current.interrupted = interrupted;
 
@@ -70,7 +131,7 @@ pub unsafe fn context_switch(interrupted: bool) {
                 current_ptr = current.deref_mut();
             }
 
-            if let Some(mut next) = contexts.get_mut(context_i) {
+            if let Some(mut next) = contexts.current_mut() {
                 next.interrupted = false;
                 next.slices = if interrupted {
                     CONTEXT_SLICES
@@ -337,26 +398,30 @@ pub struct Context {
 
 impl Context {
     pub unsafe fn next_pid() -> usize {
-        let contexts = ::env().contexts.lock();
+        let mut contexts = ::env().contexts.lock();
+
+        let mut next_pid = contexts.next_pid;
 
         let mut collision = true;
         while collision {
             collision = false;
             for context in contexts.iter() {
-                if context_pid == context.pid {
-                    context_pid += 1;
+                if next_pid == context.pid {
+                    next_pid += 1;
                     collision = true;
                     break;
                 }
             }
         }
 
-        let ret = context_pid;
-        context_pid += 1;
+        let ret = next_pid;
+        next_pid += 1;
 
-        if context_pid >= 65536 {
-            context_pid = 1;
+        if next_pid >= 65536 {
+            next_pid = 1;
         }
+
+        contexts.next_pid = next_pid;
 
         ret
     }
@@ -442,10 +507,6 @@ impl Context {
         }
 
         ret
-    }
-
-    pub fn current_i() -> usize {
-        unsafe { context_i }
     }
 
     pub unsafe fn canonicalize(&self, path: &str) -> String {
