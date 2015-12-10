@@ -373,10 +373,10 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
 
             let sp = regs.sp as *const u32;
-            for y in 0..8 {
-                debug!("    {:02X}:", y * 8);
+            for y in -3..4 {
+                debug!("    {:>3}:", y * 8 * 4);
                 for x in 0..8 {
-                    debug!("  {:08X}", unsafe { ptr::read(sp.offset(-(x + y * 8))) });
+                    debug!(" {:08X}", unsafe { ptr::read(sp.offset(-(x + y * 8))) });
                 }
                 debug!("\n");
             }
