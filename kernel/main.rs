@@ -274,7 +274,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
 
-            env.clock_realtime = Rtc::new().time();
+            *(env.clock_realtime.lock()) = Rtc::new().time();
 
             env.schemes.push(UnsafeCell::new(Ps2::new()));
             env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
@@ -438,32 +438,31 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
     match interrupt {
         0x20 => {
-            unsafe {
-                match ENV_PTR {
-                    Some(ref mut env) => {
-                        env.clock_realtime = env.clock_realtime + PIT_DURATION;
-                        env.clock_monotonic = env.clock_monotonic + PIT_DURATION;
-
-                        /*
-                        let switch = {
-                            let mut contexts = ::env().contexts.lock();
-                            if let Some(mut context) = contexts.current_mut() {
-                                context.slices -= 1;
-                                context.slice_total += 1;
-                                context.slices == 0
-                            } else {
-                                false
-                            }
-                        };
-
-                        if switch {
-                            context_switch(true);
-                        }
-                        */
-                    },
-                    None => unreachable!(),
-                }
+            {
+                let mut clock_monotonic = env().clock_monotonic.lock();
+                *clock_monotonic = *clock_monotonic + PIT_DURATION;
             }
+            {
+                let mut clock_realtime = env().clock_realtime.lock();
+                *clock_realtime = *clock_realtime + PIT_DURATION;
+            }
+
+            /*
+            let switch = {
+                let mut contexts = ::env().contexts.lock();
+                if let Some(mut context) = contexts.current_mut() {
+                    context.slices -= 1;
+                    context.slice_total += 1;
+                    context.slices == 0
+                } else {
+                    false
+                }
+            };
+
+            if switch {
+                context_switch(true);
+            }
+            */
         }
         0x21 => env().on_irq(0x1), // keyboard
         0x23 => env().on_irq(0x3), // serial 2 and 4
