@@ -79,7 +79,7 @@ impl Drop for StaticIntexGuard {
         unsafe {
             intex_count -= 1;
             if intex_count == 0 {
-                asm!("sti");
+                //asm!("sti");
             }
         }
     }
