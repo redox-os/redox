@@ -12,7 +12,8 @@ use std::process::Command;
         let path = "/apps/shell/main.bin";
         match Command::new(path).spawn() {
             Ok(mut child) => {
-                match child.wait() {
+                child.wait();
+                /*match  {
                     Ok(status) => {
                         if let Some(code) = status.code() {
                             println!("{}: Child exited with exit code: {}", path, code);
@@ -21,7 +22,7 @@ use std::process::Command;
                         }
                     },
                     Err(err) => println!("{}: Failed to wait: {}", path, err)
-                }
+                }*/
             },
             Err(err) => println!("{}: Failed to execute: {}", path, err)
         }
