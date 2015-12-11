@@ -4,7 +4,7 @@ use collections::string::String;
 
 use scheduler::context::context_switch;
 
-use schemes::{KScheme, Resource, Url};
+use schemes::{Result, KScheme, Resource, Url};
 
 /// A debug resource
 pub struct DebugResource {
@@ -13,8 +13,8 @@ pub struct DebugResource {
 }
 
 impl Resource for DebugResource {
-    fn dup(&self) -> Option<Box<Resource>> {
-        Some(box DebugResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box DebugResource {
             command: self.command.clone(),
             line_toggle: self.line_toggle,
         })
@@ -24,10 +24,10 @@ impl Resource for DebugResource {
         return Url::from_str("debug:");
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if self.line_toggle {
             self.line_toggle = false;
-            return Some(0);
+            return Ok(0);
         }
 
         if self.command.is_empty() {
@@ -59,16 +59,16 @@ impl Resource for DebugResource {
             self.line_toggle = true;
         }
 
-        Some(i)
+        Ok(i)
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         ::env().console.lock().write(buf);
-        return Some(buf.len());
+        Ok(buf.len())
     }
 
-    fn sync(&mut self) -> bool {
-        true
+    fn sync(&mut self) -> Result<()> {
+        Ok(())
     }
 }
 
@@ -85,8 +85,8 @@ impl KScheme for DebugScheme {
         "debug"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(box DebugResource {
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(box DebugResource {
             command: String::new(),
             line_toggle: false,
         })

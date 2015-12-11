@@ -65,8 +65,8 @@ impl Editor {
             println!("Save: {:?}", file.path());
             println!("  Seek: {:?}", file.seek(SeekFrom::Start(0)));
             println!("  Write: {:?}", file.write(&self.string.as_bytes()));
-            println!("  Set length: {}", file.set_len(self.string.len()));
-            println!("  Sync: {}", file.sync());
+            println!("  Set length: {:?}", file.set_len(self.string.len()));
+            println!("  Sync: {:?}", file.sync_all());
         } else {
             println!("File not open");
         }
@@ -165,7 +165,7 @@ impl Editor {
                              .unwrap();
 
         self.url = url.to_string();
-        self.file = File::open(&self.url);
+        self.file = File::open(&self.url).ok();
 
         self.reload();
         self.draw_content(&mut window);
@@ -243,8 +243,7 @@ impl Editor {
     }
 }
 
-#[no_mangle]
-pub fn main() {
+#[no_mangle] pub fn main() {
     match env::args().nth(1) {
         Some(arg) => Editor::new().main(&arg),
         None => Editor::new().main("none:"),

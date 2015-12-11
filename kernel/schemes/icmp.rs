@@ -60,10 +60,10 @@ impl KScheme for IcmpScheme {
 
 impl IcmpScheme {
     pub fn reply_loop() {
-        while let Some(mut ip) = Url::from_str("ip:/1").open() {
+        while let Ok(mut ip) = Url::from_str("ip:/1").open() {
             loop {
                 let mut bytes: Vec<u8> = Vec::new();
-                if let Some(_) = ip.read_to_end(&mut bytes) {
+                if let Ok(_) = ip.read_to_end(&mut bytes) {
                     if let Some(message) = Icmp::from_bytes(bytes) {
                         if message.header._type == 0x08 {
                             let mut response = Icmp {
