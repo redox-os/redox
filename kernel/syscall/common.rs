@@ -1,3 +1,5 @@
+use core::fmt;
+
 pub const SYS_DEBUG: usize = 0;
 
 // Linux compatible
@@ -94,6 +96,18 @@ impl SysError {
         } else {
             "Unknown Error"
         }
+    }
+}
+
+impl fmt::Debug for SysError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        f.write_str(self.text())
+    }
+}
+
+impl fmt::Display for SysError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        f.write_str(self.text())
     }
 }
 

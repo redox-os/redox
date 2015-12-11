@@ -287,10 +287,10 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             // session.items.push(box RandomScheme);
             // session.items.push(box TimeScheme);
 
-            // env.schemes.push(UnsafeCell::new(box EthernetScheme));
-            // env.schemes.push(UnsafeCell::new(box ArpScheme));
-            // env.schemes.push(UnsafeCell::new(box IcmpScheme));
-            // env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
+            env.schemes.push(UnsafeCell::new(box EthernetScheme));
+            env.schemes.push(UnsafeCell::new(box ArpScheme));
+            env.schemes.push(UnsafeCell::new(box IcmpScheme));
+            env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
             // session.items.push(box DisplayScheme);
 
             Context::spawn("kpoll".to_string(),
@@ -303,7 +303,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 event_loop();
             });
 
-            /*
             Context::spawn("karp".to_string(),
             box move || {
                 ArpScheme::reply_loop();
@@ -313,11 +312,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             box move || {
                 IcmpScheme::reply_loop();
             });
-            */
 
             env.contexts.lock().enabled = true;
 
-            /*
             if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
@@ -332,7 +329,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                     }
                 }
             }
-            */
 
             Context::spawn("kinit".to_string(),
             box move || {
@@ -391,7 +387,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             debugln!("    CR0: {:08X}    CR2: {:08X}    CR3: {:08X}    CR4: {:08X}", cr0, cr2, cr3, cr4);
 
             let sp = regs.sp as *const u32;
-            for y in -3..4 {
+            for y in -15..16 {
                 debug!("    {:>3}:", y * 8 * 4);
                 for x in 0..8 {
                     debug!(" {:08X}", unsafe { ptr::read(sp.offset(-(x + y * 8))) });
@@ -452,17 +448,16 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             let switch = {
                 let mut contexts = ::env().contexts.lock();
                 if let Some(mut context) = contexts.current_mut() {
-                    //context.slices -= 1;
+                    context.slices -= 1;
                     context.slice_total += 1;
-                    //context.slices == 0
-                    false
+                    context.slices == 0
                 } else {
                     false
                 }
             };
 
             if switch {
-                //context_switch(true);
+                unsafe { context_switch(true) };
             }
         }
         0x21 => env().on_irq(0x1), // keyboard

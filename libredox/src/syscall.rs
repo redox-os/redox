@@ -1,22 +1,9 @@
 use error::Error;
-use fmt;
 
 pub use self::common::*;
 
 #[path="../../kernel/syscall/common.rs"]
 pub mod common;
-
-impl fmt::Debug for SysError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        f.write_str(self.text())
-    }
-}
-
-impl fmt::Display for SysError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        f.write_str(self.text())
-    }
-}
 
 impl Error for SysError {
     fn description(&self) -> &str {
