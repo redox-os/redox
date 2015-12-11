@@ -11,7 +11,9 @@ use common::to_num::ToNum;
 use network::common::*;
 use network::ethernet::*;
 
-use schemes::{KScheme, Resource, Url};
+use schemes::{Result, KScheme, Resource, Url};
+
+use syscall::{SysError, EBADF, ENOENT};
 
 /// A ethernet resource
 pub struct EthernetResource {
@@ -26,15 +28,15 @@ pub struct EthernetResource {
 }
 
 impl Resource for EthernetResource {
-    fn dup(&self) -> Option<Box<Resource>> {
+    fn dup(&self) -> Result<Box<Resource>> {
         match self.network.dup() {
-            Some(network) => Some(box EthernetResource {
+            Ok(network) => Ok(box EthernetResource {
                 network: network,
                 data: self.data.clone(),
                 peer_addr: self.peer_addr,
                 ethertype: self.ethertype,
             }),
-            None => None,
+            Err(err) => Err(err),
         }
     }
 
@@ -44,23 +46,23 @@ impl Resource for EthernetResource {
                                  self.ethertype))
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
         debug::d("TODO: Implement read for ethernet:\n");
-        None
+        Err(SysError::new(EBADF))
     }
 
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
         if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
             vec.push_all(&bytes);
-            return Some(bytes.len());
+            return Ok(bytes.len());
         }
 
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.network.read_to_end(&mut bytes) {
-                Some(_) => {
+                Ok(_) => {
                     if let Some(frame) = EthernetII::from_bytes(bytes) {
                         if frame.header.ethertype.get() == self.ethertype &&
                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
@@ -68,16 +70,16 @@ impl Resource for EthernetResource {
                            (frame.header.src.equals(self.peer_addr) ||
                             self.peer_addr.equals(BROADCAST_MAC_ADDR)) {
                             vec.push_all(&frame.data);
-                            return Some(frame.data.len());
+                            return Ok(frame.data.len());
                         }
                     }
                 }
-                None => return None,
+                Err(err) => return Err(err),
             }
         }
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let data = Vec::from(buf);
 
         match self.network.write(&EthernetII {
@@ -89,12 +91,12 @@ impl Resource for EthernetResource {
                                       data: data,
                                   }
                                   .to_bytes()) {
-            Some(_) => Some(buf.len()),
-            None => None,
+            Ok(_) => Ok(buf.len()),
+            Err(err) => Err(err),
         }
     }
 
-    fn sync(&mut self) -> bool {
+    fn sync(&mut self) -> Result<()> {
         self.network.sync()
     }
 }
@@ -106,15 +108,15 @@ impl KScheme for EthernetScheme {
         "ethernet"
     }
 
-    fn open(&mut self, url: &Url, _: usize) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, _: usize) -> Result<Box<Resource>> {
         let parts: Vec<&str> = url.reference().split("/").collect();
         if let Some(host_string) = parts.get(0) {
             if let Some(ethertype_string) = parts.get(1) {
-                if let Some(mut network) = Url::from_str("network:").open() {
+                if let Ok(mut network) = Url::from_str("network:").open() {
                     let ethertype = ethertype_string.to_num_radix(16) as u16;
 
                     if !host_string.is_empty() {
-                        return Some(box EthernetResource {
+                        return Ok(box EthernetResource {
                             network: network,
                             data: Vec::new(),
                             peer_addr: MacAddr::from_str(host_string),
@@ -124,12 +126,12 @@ impl KScheme for EthernetScheme {
                         loop {
                             let mut bytes: Vec<u8> = Vec::new();
                             match network.read_to_end(&mut bytes) {
-                                Some(_) => {
+                                Ok(_) => {
                                     if let Some(frame) = EthernetII::from_bytes(bytes) {
                                         if frame.header.ethertype.get() == ethertype &&
                                            (unsafe { frame.header.dst.equals(MAC_ADDR) } ||
                                             frame.header.dst.equals(BROADCAST_MAC_ADDR)) {
-                                            return Some(box EthernetResource {
+                                            return Ok(box EthernetResource {
                                                 network: network,
                                                 data: frame.data,
                                                 peer_addr: frame.header.src,
@@ -138,7 +140,7 @@ impl KScheme for EthernetScheme {
                                         }
                                     }
                                 }
-                                None => break,
+                                Err(_) => break,
                             }
                         }
                     }
@@ -152,6 +154,6 @@ impl KScheme for EthernetScheme {
             debug::d("Ethernet: No host provided\n");
         }
 
-        None
+        Err(SysError::new(ENOENT))
     }
 }

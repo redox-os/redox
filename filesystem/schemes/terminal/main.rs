@@ -1,9 +1,11 @@
 use std::Box;
 use std::cell::UnsafeCell;
-use std::io::SeekFrom;
+use std::io::{Result, SeekFrom};
 use std::rc::Rc;
 use std::str;
 use std::string::{String, ToString};
+use std::syscall::SysError;
+use std::syscall::{EINVAL, ESPIPE};
 
 use orbital::Color;
 use self::window::ConsoleWindow;
@@ -24,21 +26,21 @@ impl Resource {
         unsafe { &mut *self.console_window.get() }
     }
 
-    pub fn dup(&self) -> Option<Box<Self>> {
-        Some(box Resource {
+    pub fn dup(&self) -> Result<Box<Self>> {
+        Ok(box Resource {
             console_window: self.console_window.clone(),
             line_end_toggle: false,
         })
     }
 
-    pub fn path(&self) -> Option<String> {
-        Some("terminal:".to_string() + &self.inner().window.title())
+    pub fn path(&self) -> Result<String> {
+        Ok("terminal:".to_string() + &self.inner().window.title())
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if self.line_end_toggle {
             self.line_end_toggle = false;
-            Some(0)
+            Ok(0)
         } else {
             match self.inner_mut().read() {
                 Some(string) => {
@@ -55,28 +57,28 @@ impl Resource {
                         }
                     }
 
-                    Some(i)
+                    Ok(i)
                 }
-                None => None,
+                None => Err(SysError::new(EINVAL)),
             }
         }
     }
 
-    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         self.inner_mut().print(unsafe { &str::from_utf8_unchecked(buf) },
                                Color::rgba(224, 224, 224, 255));
         self.sync();
 
-        Some(buf.len())
+        Ok(buf.len())
     }
 
-    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
-        None
+    pub fn seek(&mut self, _: SeekFrom) -> Result<usize> {
+        Err(SysError::new(ESPIPE))
     }
 
-    pub fn sync(&mut self) -> bool {
+    pub fn sync(&mut self) -> Result<()> {
         self.inner_mut().sync();
-        true
+        Ok(())
     }
 }
 
@@ -87,10 +89,10 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, path: &str, _: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, path: &str, _: usize) -> Result<Box<Resource>> {
         let (_, title) = path.split_at(path.find(':').unwrap_or(path.len() - 1) + 1);
 
-        Some(box Resource {
+        Ok(box Resource {
             console_window: Rc::new(UnsafeCell::new(ConsoleWindow::new(-1, -1, 640, 480, title))),
             line_end_toggle: false,
         })

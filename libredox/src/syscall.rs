@@ -1,7 +1,15 @@
-use syscall::common::*;
+use error::Error;
+
+pub use self::common::*;
 
 #[path="../../kernel/syscall/common.rs"]
 pub mod common;
+
+impl Error for SysError {
+    fn description(&self) -> &str {
+        self.text()
+    }
+}
 
 #[cold]
 #[inline(never)]
@@ -49,7 +57,7 @@ pub unsafe fn sys_close(fd: usize) -> usize {
     syscall(SYS_CLOSE, fd, 0, 0)
 }
 
-pub unsafe fn sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize{
+pub unsafe fn sys_clock_gettime(clock: usize, tp: *mut TimeSpec) -> usize {
     syscall(SYS_CLOCK_GETTIME, clock, tp as usize, 0)
 }
 
@@ -95,11 +103,11 @@ pub unsafe fn sys_lseek(fd: usize, offset: isize, whence: usize) -> usize {
     syscall(SYS_LSEEK, fd, offset as usize, whence)
 }
 
-pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> usize{
+pub unsafe fn sys_mkdir(path: *const u8, mode: usize) -> usize {
     syscall(SYS_MKDIR, path as usize, 0, mode)
 }
 
-pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize{
+pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
     syscall(SYS_NANOSLEEP, req as usize, rem as usize, 0)
 }
 

@@ -7,92 +7,157 @@ use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use core::cell::UnsafeCell;
+use core::slice::{Iter, IterMut};
 use core::{mem, ptr};
-use core::ops::Deref;
+use core::ops::DerefMut;
 
 use common::memory;
 use common::paging::Page;
-use scheduler;
 
 use schemes::Resource;
 
-use syscall::common::{CLONE_FILES, CLONE_FS, CLONE_VM};
+use syscall::{CLONE_FILES, CLONE_FS, CLONE_VM};
 use syscall::handle::do_sys_exit;
 
 pub const CONTEXT_STACK_SIZE: usize = 1024 * 1024;
 pub const CONTEXT_STACK_ADDR: usize = 0x70000000;
 pub const CONTEXT_SLICES: usize = 4;
 
-pub static mut context_i: usize = 0;
-pub static mut context_enabled: bool = false;
-pub static mut context_pid: usize = 0;
+pub struct ContextManager {
+    pub inner: Vec<Box<Context>>,
+    pub enabled: bool,
+    pub i: usize,
+    pub next_pid: usize,
+}
 
-/// Switch context
-///
-/// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
-pub unsafe fn context_switch(interrupted: bool) {
-    let mut contexts = ::env().contexts.lock();
-    if context_enabled {
-        let current_i = context_i;
-        context_i += 1;
-        // The only garbage collection in Redox
+impl ContextManager {
+    pub fn new() -> ContextManager {
+        ContextManager {
+            inner: Vec::new(),
+            enabled: false,
+            i: 0,
+            next_pid: 1,
+        }
+    }
+
+    pub fn current(&self) -> Option<& Box<Context>> {
+        let i = self.i;
+        self.get(i)
+    }
+
+    pub fn current_mut(&mut self) -> Option<&mut Box<Context>> {
+        let i = self.i;
+        self.get_mut(i)
+    }
+
+    pub fn iter(&self) -> Iter<Box<Context>> {
+        self.inner.iter()
+    }
+
+    pub fn iter_mut(&mut self) -> IterMut<Box<Context>> {
+        self.inner.iter_mut()
+    }
+
+    pub fn get(&self, i: usize) -> Option<& Box<Context>> {
+        if self.enabled {
+            self.inner.get(i)
+        } else{
+            None
+        }
+    }
+
+    pub fn get_mut(&mut self, i: usize) -> Option<&mut Box<Context>> {
+        if self.enabled {
+            self.inner.get_mut(i)
+        } else{
+            None
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        self.inner.len()
+    }
+
+    pub unsafe fn push(&mut self, context: Box<Context>) {
+        self.inner.push(context);
+    }
+
+    pub unsafe fn clean(&mut self) {
         loop {
-            if context_i >= contexts.len() {
-                context_i -= contexts.len();
+            if self.i >= self.len() {
+                self.i -= self.len();
             }
 
             let mut remove = false;
-            if let Some(next) = contexts.get(context_i) {
+            if let Some(next) = self.current() {
                 if next.exited {
                     remove = true;
                 }
             }
 
             if remove {
-                drop(contexts.remove(context_i));
+                let i = self.i;
+                drop(self.inner.remove(i));
             } else {
                 break;
             }
         }
 
-        if context_i >= contexts.len() {
-            context_i -= contexts.len();
+        if self.i >= self.len() {
+            self.i -= self.len();
         }
+    }
+}
 
-        if context_i != current_i {
-            if let Some(current) = contexts.get(current_i) {
-                if let Some(next) = contexts.get(context_i) {
-                    let current_ptr: *mut Context = mem::transmute(current.deref());
-                    let next_ptr: *mut Context = mem::transmute(next.deref());
+/// Switch context
+///
+/// Unsafe due to interrupt disabling, raw pointers, and unsafe Context functions
+pub unsafe fn context_switch(interrupted: bool) {
+    let mut current_ptr: *mut Context = 0 as *mut Context;
+    let mut next_ptr: *mut Context = 0 as *mut Context;
 
-                    (*current_ptr).interrupted = interrupted;
-                    (*next_ptr).interrupted = false;
-                    (*next_ptr).slices = if interrupted {
-                        CONTEXT_SLICES
-                    } else {
-                        CONTEXT_SLICES + 1
-                    };
+    let mut contexts = ::env().contexts.lock();
+    if contexts.enabled {
+        let current_i = contexts.i;
+        contexts.i += 1;
+        contexts.clean();
 
-                    (*current_ptr).save();
-                    (*current_ptr).unmap();
+        if contexts.i != current_i {
+            if let Some(mut current) = contexts.get_mut(current_i) {
+                current.interrupted = interrupted;
 
-                    if (*next_ptr).kernel_stack > 0 {
-                        match ::TSS_PTR {
-                            Some(ref mut tss) => tss.sp0 = (*next_ptr).kernel_stack + CONTEXT_STACK_SIZE - 128,
-                            None => unreachable!(),
-                        }
-                    } else {
-                        match ::TSS_PTR {
-                            Some(ref mut tss) => tss.sp0 = 0x200000 - 128,
-                            None => unreachable!(),
-                        }
+                current.unmap();
+
+                current_ptr = current.deref_mut();
+            }
+
+            if let Some(mut next) = contexts.current_mut() {
+                next.interrupted = false;
+                next.slices = if interrupted {
+                    CONTEXT_SLICES
+                } else {
+                    CONTEXT_SLICES + 1
+                };
+
+                if next.kernel_stack > 0 {
+                    if let Some(ref mut tss) = ::TSS_PTR {
+                        tss.sp0 = next.kernel_stack + CONTEXT_STACK_SIZE - 128;
                     }
-
-                    (*next_ptr).map();
-                    (*next_ptr).restore();
+                } else {
+                    if let Some(ref mut tss) = ::TSS_PTR {
+                        tss.sp0 = 0x200000 - 128;
+                    }
                 }
+
+                next.map();
+
+                next_ptr = next.deref_mut();
             }
         }
+    }
+
+    if current_ptr as usize > 0 && next_ptr as usize > 0 {
+        (*current_ptr).switch_to(&mut *next_ptr);
     }
 }
 
@@ -102,98 +167,97 @@ pub unsafe fn context_switch(interrupted: bool) {
 pub unsafe extern "cdecl" fn context_clone(parent_ptr: *const Context,
                                            flags: usize,
                                            clone_pid: usize) {
-    let reenable = scheduler::start_no_ints();
+    {
+        let mut contexts = ::env().contexts.lock();
 
-    let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
-    if kernel_stack > 0 {
-        let parent = &*parent_ptr;
+        let kernel_stack = memory::alloc(CONTEXT_STACK_SIZE + 512);
+        if kernel_stack > 0 {
+            let parent = &*parent_ptr;
 
-        ::memcpy(kernel_stack as *mut u8,
-                 parent.kernel_stack as *const u8,
-                 CONTEXT_STACK_SIZE + 512);
+            ::memcpy(kernel_stack as *mut u8,
+                     parent.kernel_stack as *const u8,
+                     CONTEXT_STACK_SIZE + 512);
 
-        let context = box Context {
-            pid: clone_pid,
-            ppid: parent.pid,
-            name: parent.name.clone(),
-            interrupted: parent.interrupted,
-            exited: parent.exited,
-            slices: CONTEXT_SLICES,
-            slice_total: 0,
+            let context = box Context {
+                pid: clone_pid,
+                ppid: parent.pid,
+                name: parent.name.clone(),
+                interrupted: parent.interrupted,
+                exited: parent.exited,
+                slices: CONTEXT_SLICES,
+                slice_total: 0,
 
-            kernel_stack: kernel_stack,
-            sp: parent.sp - parent.kernel_stack + kernel_stack,
-            flags: parent.flags,
-            fx: kernel_stack + CONTEXT_STACK_SIZE,
-            stack: if let Some(ref entry) = parent.stack {
-                let physical_address = memory::alloc(entry.virtual_size);
-                if physical_address > 0 {
-                    ::memcpy(physical_address as *mut u8,
-                             entry.physical_address as *const u8,
-                             entry.virtual_size);
-                    Some(ContextMemory {
-                        physical_address: physical_address,
-                        virtual_address: entry.virtual_address,
-                        virtual_size: entry.virtual_size,
-                        writeable: true,
-                    })
-                } else {
-                    None
-                }
-            } else {
-                None
-            },
-            loadable: parent.loadable,
-
-            args: parent.args.clone(),
-            cwd: if flags & CLONE_FS == CLONE_FS {
-                parent.cwd.clone()
-            } else {
-                Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
-            },
-            memory: if flags & CLONE_VM == CLONE_VM {
-                parent.memory.clone()
-            } else {
-                let mut mem: Vec<ContextMemory> = Vec::new();
-                for entry in (*parent.memory.get()).iter() {
+                kernel_stack: kernel_stack,
+                sp: parent.sp - parent.kernel_stack + kernel_stack,
+                flags: parent.flags,
+                fx: kernel_stack + CONTEXT_STACK_SIZE,
+                stack: if let Some(ref entry) = parent.stack {
                     let physical_address = memory::alloc(entry.virtual_size);
                     if physical_address > 0 {
                         ::memcpy(physical_address as *mut u8,
                                  entry.physical_address as *const u8,
                                  entry.virtual_size);
-                        mem.push(ContextMemory {
+                        Some(ContextMemory {
                             physical_address: physical_address,
                             virtual_address: entry.virtual_address,
                             virtual_size: entry.virtual_size,
                             writeable: entry.writeable,
-                        });
+                        })
+                    } else {
+                        None
                     }
-                }
-                Arc::new(UnsafeCell::new(mem))
-            },
-            files: if flags & CLONE_FILES == CLONE_FILES {
-                parent.files.clone()
-            } else {
-                let mut files: Vec<ContextFile> = Vec::new();
-                for file in (*parent.files.get()).iter() {
-                    if let Some(resource) = file.resource.dup() {
-                        files.push(ContextFile {
-                            fd: file.fd,
-                            resource: resource,
-                        });
+                } else {
+                    None
+                },
+                loadable: parent.loadable,
+
+                args: parent.args.clone(),
+                cwd: if flags & CLONE_FS == CLONE_FS {
+                    parent.cwd.clone()
+                } else {
+                    Arc::new(UnsafeCell::new((*parent.cwd.get()).clone()))
+                },
+                memory: if flags & CLONE_VM == CLONE_VM {
+                    parent.memory.clone()
+                } else {
+                    let mut mem: Vec<ContextMemory> = Vec::new();
+                    for entry in (*parent.memory.get()).iter() {
+                        let physical_address = memory::alloc(entry.virtual_size);
+                        if physical_address > 0 {
+                            ::memcpy(physical_address as *mut u8,
+                                     entry.physical_address as *const u8,
+                                     entry.virtual_size);
+                            mem.push(ContextMemory {
+                                physical_address: physical_address,
+                                virtual_address: entry.virtual_address,
+                                virtual_size: entry.virtual_size,
+                                writeable: entry.writeable,
+                            });
+                        }
                     }
-                }
-                Arc::new(UnsafeCell::new(files))
-            },
+                    Arc::new(UnsafeCell::new(mem))
+                },
+                files: if flags & CLONE_FILES == CLONE_FILES {
+                    parent.files.clone()
+                } else {
+                    let mut files: Vec<ContextFile> = Vec::new();
+                    for file in (*parent.files.get()).iter() {
+                        if let Ok(resource) = file.resource.dup() {
+                            files.push(ContextFile {
+                                fd: file.fd,
+                                resource: resource,
+                            });
+                        }
+                    }
+                    Arc::new(UnsafeCell::new(files))
+                },
 
-            statuses: Vec::new(),
-        };
+                statuses: Vec::new(),
+            };
 
-        let mut contexts = ::env().contexts.lock();
-        contexts.push(context);
+            contexts.push(context);
+        }
     }
-
-    scheduler::end_no_ints(reenable);
 
     do_sys_exit(0);
 }
@@ -334,26 +398,30 @@ pub struct Context {
 
 impl Context {
     pub unsafe fn next_pid() -> usize {
-        let contexts = ::env().contexts.lock();
+        let mut contexts = ::env().contexts.lock();
+
+        let mut next_pid = contexts.next_pid;
 
         let mut collision = true;
         while collision {
             collision = false;
             for context in contexts.iter() {
-                if context_pid == context.pid {
-                    context_pid += 1;
+                if next_pid == context.pid {
+                    next_pid += 1;
                     collision = true;
                     break;
                 }
             }
         }
 
-        let ret = context_pid;
-        context_pid += 1;
+        let ret = next_pid;
+        next_pid += 1;
 
-        if context_pid >= 65536 {
-            context_pid = 1;
+        if next_pid >= 65536 {
+            next_pid = 1;
         }
+
+        contexts.next_pid = next_pid;
 
         ret
     }
@@ -435,45 +503,10 @@ impl Context {
 
             ret = context.pid;
 
-            let mut contexts = ::env().contexts.lock();
-            contexts.push(context);
+            ::env().contexts.lock().push(context);
         }
 
         ret
-    }
-
-    pub unsafe fn current_i() -> usize {
-        return context_i;
-    }
-
-    // TODO: Do not cheat
-    pub unsafe fn current<'a>() -> Option<&'a Box<Context>> {
-        if context_enabled {
-            let contexts = ::env().contexts.lock();
-            if let Some(context) = contexts.get(context_i) {
-                let context_ptr: *const Box<Context> = context;
-                Some(&*context_ptr)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
-    }
-
-    // TODO: Do not cheat
-    pub unsafe fn current_mut<'a>() -> Option<&'a mut Box<Context>> {
-        if context_enabled {
-            let mut contexts = ::env().contexts.lock();
-            if let Some(mut context) = contexts.get_mut(context_i) {
-                let context_ptr: *mut Box<Context> = context;
-                Some(&mut *context_ptr)
-            } else {
-                None
-            }
-        } else {
-            None
-        }
     }
 
     pub unsafe fn canonicalize(&self, path: &str) -> String {
@@ -638,7 +671,7 @@ impl Context {
     #[cfg(target_arch = "x86")]
     #[cold]
     #[inline(never)]
-    pub unsafe fn save(&mut self) {
+    pub unsafe fn switch_to(&mut self, next: &mut Context) {
         asm!("pushfd
             pop $0"
             : "=r"(self.flags)
@@ -659,24 +692,18 @@ impl Context {
             : "intel", "volatile");
 
         self.loadable = true;
-    }
 
-    // This function must not push or pop
-    #[cfg(target_arch = "x86")]
-    #[cold]
-    #[inline(never)]
-    pub unsafe fn restore(&mut self) {
-        if self.loadable {
+        if next.loadable {
             asm!("fxrstor [$0]"
                 :
-                : "r"(self.fx)
+                : "r"(next.fx)
                 : "memory"
                 : "intel", "volatile");
         }
 
         asm!(""
             :
-            : "{esp}"(self.sp)
+            : "{esp}"(next.sp)
             : "memory"
             : "intel", "volatile");
 
@@ -684,7 +711,7 @@ impl Context {
         asm!("push $0
             popfd"
             :
-            : "r"(self.flags)
+            : "r"(next.flags)
             : "memory"
             : "intel", "volatile");
     }
@@ -693,7 +720,7 @@ impl Context {
     #[cfg(target_arch = "x86_64")]
     #[cold]
     #[inline(never)]
-    pub unsafe fn save(&mut self) {
+    pub unsafe fn switch_to(&mut self, next: &mut Context) {
         asm!("pushfq
             pop $0"
             : "=r"(self.flags)
@@ -714,24 +741,18 @@ impl Context {
             : "intel", "volatile");
 
         self.loadable = true;
-    }
 
-    // This function must not push or pop
-    #[cfg(target_arch = "x86_64")]
-    #[cold]
-    #[inline(never)]
-    pub unsafe fn restore(&mut self) {
-        if self.loadable {
+        if next.loadable {
             asm!("fxrstor [$0]"
                 :
-                : "r"(self.fx)
+                : "r"(next.fx)
                 : "memory"
                 : "intel", "volatile");
         }
 
         asm!(""
             :
-            : "{rsp}"(self.sp)
+            : "{rsp}"(next.sp)
             : "memory"
             : "intel", "volatile");
 
@@ -739,7 +760,7 @@ impl Context {
         asm!("push $0
             popfq"
             :
-            : "r"(self.flags)
+            : "r"(next.flags)
             : "memory"
             : "intel", "volatile");
     }

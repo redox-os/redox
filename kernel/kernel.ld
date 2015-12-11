@@ -10,12 +10,20 @@ SECTIONS {
 	} >lowmem
 
 	.rodata : {
-                *(.rodata*)
-        } >lowmem
+            *(.rodata*)
+    } >lowmem
 
-        .data : {
-                *(.data*)
-        } >lowmem
+    .data : {
+            *(.data*)
+    } >lowmem
+
+	.bss : {
+		. = ALIGN(4);
+		__bss_start = .;
+		*(.bss*)
+		. = ALIGN(4);
+		__bss_end = .;
+	} >lowmem
 
 	/DISCARD/ : {
 		*(.comment)

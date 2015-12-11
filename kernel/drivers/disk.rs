@@ -6,9 +6,10 @@ use core::ptr;
 use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::memory::Memory;
-use scheduler;
 
 use drivers::pio::*;
+
+use sync::Intex;
 
 /// An disk extent
 #[derive(Copy, Clone)]
@@ -173,8 +174,8 @@ pub struct Disk {
     base: u16,
     ctrl: u16,
     master: bool,
-    request: Option<Request>,
-    requests: VecDeque<Request>,
+    request: Intex<Option<Request>>,
+    requests: Intex<VecDeque<Request>>,
     cmd: Pio8,
     sts: Pio8,
     prdt: Option<Prdt>,
@@ -188,8 +189,8 @@ impl Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: true,
-            request: None,
-            requests: VecDeque::new(),
+            request: Intex::new(None),
+            requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base),
             sts: Pio8::new(base + 2),
             prdt: Prdt::new(base + 4),
@@ -203,8 +204,8 @@ impl Disk {
             base: 0x1F0,
             ctrl: 0x3F4,
             master: false,
-            request: None,
-            requests: VecDeque::new(),
+            request: Intex::new(None),
+            requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base),
             sts: Pio8::new(base + 2),
             prdt: Prdt::new(base + 4),
@@ -218,8 +219,8 @@ impl Disk {
             base: 0x170,
             ctrl: 0x374,
             master: true,
-            request: None,
-            requests: VecDeque::new(),
+            request: Intex::new(None),
+            requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base + 8),
             sts: Pio8::new(base + 0xA),
             prdt: Prdt::new(base + 0xC),
@@ -233,8 +234,8 @@ impl Disk {
             base: 0x170,
             ctrl: 0x374,
             master: false,
-            request: None,
-            requests: VecDeque::new(),
+            request: Intex::new(None),
+            requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base + 8),
             sts: Pio8::new(base + 0xA),
             prdt: Prdt::new(base + 0xC),
@@ -432,17 +433,11 @@ impl Disk {
     }
 
     /// Send request
-    pub fn request(&mut self, request: Request) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
+    pub fn request(&mut self, new_request: Request) {
+        self.requests.lock().push_back(new_request);
 
-            self.requests.push_back(request);
-
-            if self.request.is_none() {
-                self.next_request();
-            }
-
-            scheduler::end_no_ints(reenable);
+        if self.request.lock().is_none() {
+            unsafe { self.next_request() };
         }
     }
 
@@ -459,20 +454,21 @@ impl Disk {
     }
 
     unsafe fn next_request(&mut self) {
-        let reenable = scheduler::start_no_ints();
+        let mut requests = self.requests.lock();
+        let mut request = self.request.lock();
 
         self.cmd.write(CMD_DIR);
         if let Some(ref mut prdt) = self.prdt {
             prdt.reg.write(0 as u32);
         }
 
-        if let Some(ref mut req) = self.request {
+        if let Some(ref mut req) = *request {
             req.complete.store(true, Ordering::SeqCst);
         }
 
-        self.request = self.requests.pop_front();
+        *request = requests.pop_front();
 
-        if let Some(ref req) = self.request {
+        if let Some(ref req) = *request {
             if req.mem > 0 {
                 let sectors = (req.extent.length + 511) / 512;
                 let mut prdt_set = false;
@@ -574,7 +570,5 @@ impl Disk {
                 debug!("IDE Request mem is 0\n");
             }
         }
-
-        scheduler::end_no_ints(reenable);
     }
 }

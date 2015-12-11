@@ -8,8 +8,6 @@ use collections::vec_deque::VecDeque;
 use core::ptr;
 
 use common::{debug, memory};
-use schemes::{Resource, Url};
-use scheduler;
 
 use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
@@ -17,7 +15,9 @@ use drivers::pio::*;
 use network::common::*;
 use network::scheme::*;
 
-use schemes::KScheme;
+use schemes::{Result, KScheme, Resource, Url};
+
+use sync::Intex;
 
 #[repr(packed)]
 struct Txd {
@@ -31,7 +31,7 @@ pub struct Rtl8139 {
     base: usize,
     memory_mapped: bool,
     irq: u8,
-    resources: Vec<*mut NetworkResource>,
+    resources: Intex<Vec<*mut NetworkResource>>,
     inbound: VecDeque<Vec<u8>>,
     outbound: VecDeque<Vec<u8>>,
     txds: Vec<Txd>,
@@ -48,7 +48,7 @@ impl Rtl8139 {
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
             irq: irq,
-            resources: Vec::new(),
+            resources: Intex::new(Vec::new()),
             inbound: VecDeque::new(),
             outbound: VecDeque::new(),
             txds: Vec::new(),
@@ -207,8 +207,8 @@ impl KScheme for Rtl8139 {
         "network"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(NetworkResource::new(self))
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
@@ -234,44 +234,40 @@ impl KScheme for Rtl8139 {
 
 impl NetworkScheme for Rtl8139 {
     fn add(&mut self, resource: *mut NetworkResource) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.resources.push(resource);
-            scheduler::end_no_ints(reenable);
-        }
+        self.resources.lock().push(resource);
     }
 
     fn remove(&mut self, resource: *mut NetworkResource) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            let mut i = 0;
-            while i < self.resources.len() {
-                let mut remove = false;
+        let mut resources = self.resources.lock();
 
-                match self.resources.get(i) {
-                    Some(ptr) => if *ptr == resource {
-                        remove = true;
-                    } else {
-                        i += 1;
-                    },
-                    None => break,
-                }
+        let mut i = 0;
+        while i < resources.len() {
+            let mut remove = false;
 
-                if remove {
-                    self.resources.remove(i);
-                }
+            match resources.get(i) {
+                Some(ptr) => if *ptr == resource {
+                    remove = true;
+                } else {
+                    i += 1;
+                },
+                None => break,
             }
-            scheduler::end_no_ints(reenable);
+
+            if remove {
+                resources.remove(i);
+            }
         }
     }
 
     fn sync(&mut self) {
         unsafe {
-            let reenable = scheduler::start_no_ints();
+            {
+                let resources = self.resources.lock();
 
-            for resource in self.resources.iter() {
-                while let Some(bytes) = (**resource).outbound.pop_front() {
-                    self.outbound.push_back(bytes);
+                for resource in resources.iter() {
+                    while let Some(bytes) = (**resource).outbound.lock().pop_front() {
+                        self.outbound.push_back(bytes);
+                    }
                 }
             }
 
@@ -279,13 +275,15 @@ impl NetworkScheme for Rtl8139 {
 
             self.receive_inbound();
 
-            while let Some(bytes) = self.inbound.pop_front() {
-                for resource in self.resources.iter() {
-                    (**resource).inbound.push_back(bytes.clone());
+            {
+                let resources = self.resources.lock();
+
+                while let Some(bytes) = self.inbound.pop_front() {
+                    for resource in resources.iter() {
+                        (**resource).inbound.lock().push_back(bytes.clone());
+                    }
                 }
             }
-
-            scheduler::end_no_ints(reenable);
         }
     }
 }

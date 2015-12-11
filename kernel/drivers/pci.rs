@@ -1,9 +1,6 @@
 use audio::ac97::AC97;
 use audio::intelhda::IntelHDA;
 
-use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
-
 use core::cell::UnsafeCell;
 
 use common::debug;
@@ -59,35 +56,20 @@ pub unsafe fn pci_device(env: &mut Environment,
         } else if interface_id == 0x10 {
             let base = pci.read(0x10) as usize;
 
-            debug!("OHCI Controller on {}\n", base & 0xFFFFFFF0);
+            debug!("OHCI Controller on {:X}\n", base & 0xFFFFFFF0);
         } else if interface_id == 0x00 {
             env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
         } else {
-            debug!("Unknown USB interface version\n");
+            debug!("Unknown USB interface version {:X}\n", interface_id);
         }
     } else {
         match vendor_code {
             0x10EC => match device_code { // REALTEK
-                0x8139 => {
-                    env.schemes.push(UnsafeCell::new(Rtl8139::new(pci)));
-                }
+                0x8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
                 _ => (),
             },
             0x8086 => match device_code { // INTEL
-                0x100E => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box Intel8254x {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                        resources: Vec::new(),
-                        inbound: VecDeque::new(),
-                        outbound: VecDeque::new(),
-                    };
-                    module.init();
-                    env.schemes.push(UnsafeCell::new(module));
-                }
+                0x100E => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
                 0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
                 0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
                 0x2668 => {

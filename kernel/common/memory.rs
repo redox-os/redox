@@ -4,9 +4,9 @@ use core::{cmp, intrinsics, mem};
 use core::ops::{Index, IndexMut};
 use core::ptr;
 
-use scheduler;
-
 use common::paging::PAGE_END;
+
+use sync::Intex;
 
 pub const CLUSTER_ADDRESS: usize = PAGE_END;
 pub const CLUSTER_COUNT: usize = 1024 * 1024; // 4 GiB
@@ -181,10 +181,8 @@ pub unsafe fn cluster_init() {
 
 /// Allocate memory
 pub unsafe fn alloc(size: usize) -> usize {
-    let mut ret = 0;
-
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
 
     if size > 0 {
         let mut number = 0;
@@ -211,21 +209,16 @@ pub unsafe fn alloc(size: usize) -> usize {
             for i in number..number + count {
                 set_cluster(i, address);
             }
-            ret = address;
+            return address;
         }
     }
 
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
-
-    ret
+    0
 }
 
 pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
-    let mut ret = 0;
-
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
 
     if size > 0 {
         let mut number = 0;
@@ -252,14 +245,11 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
             for i in number..number + count {
                 set_cluster(i, address);
             }
-            ret = address;
+            return address;
         }
     }
 
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
-
-    ret
+    0
 }
 
 pub unsafe fn alloc_type<T>() -> *mut T {
@@ -267,10 +257,10 @@ pub unsafe fn alloc_type<T>() -> *mut T {
 }
 
 pub unsafe fn alloc_size(ptr: usize) -> usize {
-    let mut size = 0;
-
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
+
+    let mut size = 0;
 
     if ptr > 0 {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
@@ -282,15 +272,12 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
         }
     }
 
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
-
     size
 }
 
 pub unsafe fn unalloc(ptr: usize) {
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
 
     if ptr > 0 {
         for i in address_to_cluster(ptr)..CLUSTER_COUNT {
@@ -301,16 +288,13 @@ pub unsafe fn unalloc(ptr: usize) {
             }
         }
     }
-
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
 }
 
 pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
-    let mut ret = 0;
-
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
+
+    let mut ret = 0;
 
     if size == 0 {
         if ptr > 0 {
@@ -333,8 +317,6 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
         }
     }
 
-    scheduler::end_no_ints(reenable);
-
     ret
 }
 
@@ -348,37 +330,35 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
 }
 
 pub fn memory_used() -> usize {
-    let mut ret = 0;
-    unsafe {
-        // Memory allocation must be atomic
-        let reenable = scheduler::start_no_ints();
+    // Memory allocation must be atomic
+    let _intex = Intex::static_lock();
 
+    let mut ret = 0;
+
+    unsafe {
         for i in 0..CLUSTER_COUNT {
             if cluster(i) != 0 && cluster(i) != 0xFFFFFFFF {
                 ret += CLUSTER_SIZE;
             }
         }
-
-        // Memory allocation must be atomic
-        scheduler::end_no_ints(reenable);
     }
+
     ret
 }
 
 pub fn memory_free() -> usize {
-    let mut ret = 0;
-    unsafe {
-        // Memory allocation must be atomic
-        let reenable = scheduler::start_no_ints();
+    // Memory allocation must be atomic
+    let _intex = Intex::static_lock();
 
+    let mut ret = 0;
+
+    unsafe {
         for i in 0..CLUSTER_COUNT {
             if cluster(i) == 0 {
                 ret += CLUSTER_SIZE;
             }
         }
-
-        // Memory allocation must be atomic
-        scheduler::end_no_ints(reenable);
     }
+
     ret
 }

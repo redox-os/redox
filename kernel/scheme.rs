@@ -38,7 +38,7 @@ pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usize) -> *mut Resource {
+pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usize) -> usize {
     let mut len = 0;
     for i in 0..4096 {
         len = i as usize;
@@ -48,8 +48,8 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usiz
     }
 
     match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len)), flags) {
-        Some(resource) => return Box::into_raw(resource),
-        None => return usize::MAX as *mut Resource
+        Ok(resource) => Box::into_raw(resource) as usize,
+        Err(_) => usize::MAX
     }
 }
 
@@ -57,10 +57,10 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usiz
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
+pub unsafe extern "C" fn _dup(resource: *mut Resource) -> usize {
     match (*resource).dup() {
-        Some(resource) => return Box::into_raw(resource),
-        None => return usize::MAX as *mut Resource
+        Ok(resource) => Box::into_raw(resource) as usize,
+        Err(_) => usize::MAX
     }
 }
 
@@ -69,7 +69,7 @@ pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
 #[no_mangle]
 pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
     match (*resource).path() {
-        Some(string) => {
+        Ok(string) => {
             let mut buf = slice::from_raw_parts_mut(buf, len);
 
             let mut i = 0;
@@ -84,7 +84,7 @@ pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usiz
 
             return i;
         },
-        None => return usize::MAX
+        Err(_) => return usize::MAX
     }
 }
 
@@ -93,8 +93,8 @@ pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usiz
 #[no_mangle]
 pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
     match (*resource).read(slice::from_raw_parts_mut(buf, len)) {
-        Some(bytes) => return bytes,
-        None => return usize::MAX
+        Ok(bytes) => return bytes,
+        Err(_) => return usize::MAX
     }
 }
 
@@ -103,8 +103,8 @@ pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize
 #[no_mangle]
 pub unsafe extern "C" fn _write(resource: *mut Resource, buf: *const u8, len: usize) -> usize {
     match (*resource).write(slice::from_raw_parts(buf, len)) {
-        Some(bytes) => return bytes,
-        None => return usize::MAX
+        Ok(bytes) => return bytes,
+        Err(_) => return usize::MAX
     }
 }
 
@@ -116,16 +116,16 @@ const SEEK_END: isize = 2;
 #[no_mangle]
 pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: isize) -> usize {
     if whence == SEEK_SET {
-        if let Some(bytes) = (*resource).seek(SeekFrom::Start(offset as usize)) {
-            return bytes;
+        if let Ok(bytes) = (*resource).seek(SeekFrom::Start(offset as u64)) {
+            return bytes as usize;
         }
     } else if whence == SEEK_CUR {
-        if let Some(bytes) = (*resource).seek(SeekFrom::Current(offset)) {
-            return bytes;
+        if let Ok(bytes) = (*resource).seek(SeekFrom::Current(offset as i64)) {
+            return bytes as usize;
         }
     } else if whence == SEEK_END {
-        if let Some(bytes) = (*resource).seek(SeekFrom::End(offset)) {
-            return bytes;
+        if let Ok(bytes) = (*resource).seek(SeekFrom::End(offset as i64)) {
+            return bytes as usize;
         }
     }
 
@@ -136,10 +136,9 @@ pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: 
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fsync(resource: *mut Resource) -> usize {
-    if (*resource).sync() {
-        0
-    } else {
-        usize::MAX
+    match (*resource).sync() {
+        Ok(_) => 0,
+        Err(_) => usize::MAX
     }
 }
 

@@ -9,7 +9,6 @@ use scheduler::context::{self, Context};
 use common::debug;
 use common::event::MouseEvent;
 use common::memory::{self, Memory};
-use scheduler;
 use common::time::{self, Duration};
 
 use drivers::pciconfig::PciConfig;
@@ -18,6 +17,8 @@ use drivers::pio::*;
 use graphics::display::VBEMODEINFO;
 
 use schemes::KScheme;
+
+use sync::Intex;
 
 pub struct Uhci {
     pub base: usize,
@@ -357,20 +358,12 @@ impl Uhci {
             if setup_td.load(0).ctrl_sts & (1 << 23) == 0 {
                 break;
             }
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
         }
 
         loop {
             if in_td.load(0).ctrl_sts & (1 << 23) == 0 {
                 break;
             }
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
         }
 
         ptr::write(frame_list.offset(frame as isize), 1);
@@ -439,30 +432,18 @@ impl Uhci {
             if setup_td.load(0).ctrl_sts & (1 << 23) == 0 {
                 break;
             }
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
         }
 
         loop {
             if in_td.load(0).ctrl_sts & (1 << 23) == 0 {
                 break;
             }
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
         }
 
         loop {
-            if out_td[0].ctrl_sts & (1 << 23) == 0 {
+            if out_td.load(0).ctrl_sts & (1 << 23) == 0 {
                 break;
             }
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
         }
 
         ptr::write(frame_list.offset(frame as isize), 1);
@@ -479,7 +460,7 @@ impl Uhci {
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        // (*desc_dev).d();
+        (*desc_dev).d();
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -495,7 +476,7 @@ impl Uhci {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            // desc_cfg.d();
+            desc_cfg.d();
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
@@ -503,13 +484,13 @@ impl Uhci {
                 let descriptor_type = ptr::read(desc_cfg_buf.offset(i + 1));
                 match descriptor_type {
                     DESC_INT => {
-                        // let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        // desc_int.d();
+                        let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
+                        desc_int.d();
                     }
                     DESC_END => {
                         let desc_end =
                             ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        // desc_end.d();
+                        desc_end.d();
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -537,15 +518,20 @@ impl Uhci {
                                                buffer: in_ptr as u32,
                                            });
 
-                                let reenable = scheduler::start_no_ints();
-                                let frame = (inw(frnum) + 2) & 0x3FF;
-                                volatile_store(frame_list.offset(frame as isize), in_td as u32);
-                                scheduler::end_no_ints(reenable);
+                                let frame = {
+                                    let _intex = Intex::static_lock();
+
+                                    let frame = (inw(frnum) + 2) & 0x3FF;
+                                    volatile_store(frame_list.offset(frame as isize), in_td as u32);
+                                    frame
+                                };
 
                                 loop {
-                                    let ctrl_sts = volatile_load(in_td).ctrl_sts;
-                                    if ctrl_sts & (1 << 23) == 0 {
-                                        break;
+                                    {
+                                        let ctrl_sts = volatile_load(in_td).ctrl_sts;
+                                        if ctrl_sts & (1 << 23) == 0 {
+                                            break;
+                                        }
                                     }
 
                                     context::context_switch(false);
@@ -619,9 +605,7 @@ impl Uhci {
         outw(usbcmd, 1 << 2 | 1 << 1);
         debug::d(" to ");
         debug::dh(inw(usbcmd) as usize);
-        let disable = scheduler::start_ints();
-        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-        scheduler::end_ints(disable);
+
         outw(usbcmd, 0);
         debug::d(" to ");
         debug::dh(inw(usbcmd) as usize);
@@ -656,10 +640,6 @@ impl Uhci {
 
         debug::dl();
 
-        let disable = scheduler::start_ints();
-        Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-        scheduler::end_ints(disable);
-
         {
             debug::d(" PORTSC1 ");
             debug::dh(inw(portsc1) as usize);
@@ -668,17 +648,9 @@ impl Uhci {
             debug::d(" to ");
             debug::dh(inw(portsc1) as usize);
 
-            let disable = scheduler::start_ints();
-            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
-
             outw(portsc1, 0);
             debug::d(" to ");
             debug::dh(inw(portsc1) as usize);
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
 
             debug::dl();
 
@@ -690,10 +662,6 @@ impl Uhci {
                 debug::d(" to ");
                 debug::dh(inw(portsc1) as usize);
                 debug::dl();
-
-                let disable = scheduler::start_ints();
-                Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-                scheduler::end_ints(disable);
 
                 self.device(frame_list, 1);
             }
@@ -707,17 +675,9 @@ impl Uhci {
             debug::d(" to ");
             debug::dh(inw(portsc2) as usize);
 
-            let disable = scheduler::start_ints();
-            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
-
             outw(portsc2, 0);
             debug::d(" to ");
             debug::dh(inw(portsc2) as usize);
-
-            let disable = scheduler::start_ints();
-            Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-            scheduler::end_ints(disable);
 
             debug::dl();
 
@@ -729,10 +689,6 @@ impl Uhci {
                 debug::d(" to ");
                 debug::dh(inw(portsc2) as usize);
                 debug::dl();
-
-                let disable = scheduler::start_ints();
-                Duration::new(0, 100 * time::NANOS_PER_MILLI).sleep();
-                scheduler::end_ints(disable);
 
                 self.device(frame_list, 2);
             }

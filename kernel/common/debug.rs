@@ -13,22 +13,16 @@ macro_rules! debug {
 /// Debug new line to console
 #[macro_export]
 macro_rules! debugln {
-    ($($arg:tt)*) => ({
-        debug!($($arg)*);
-        $crate::common::debug::dl();
-    });
+    ($fmt:expr) => (debug!(concat!($fmt, "\n")));
+    ($fmt:expr, $($arg:tt)*) => (debug!(concat!($fmt, "\n"), $($arg)*));
 }
 
 pub fn d(msg: &str) {
-    unsafe {
-        do_sys_debug(msg.as_ptr(), msg.len());
-    }
+    do_sys_debug(msg.as_ptr(), msg.len());
 }
 
 pub fn db(byte: u8) {
-    unsafe {
-        do_sys_debug(&byte, 1);
-    }
+    do_sys_debug(&byte, 1);
 }
 
 pub fn dbh(byte: u8) {

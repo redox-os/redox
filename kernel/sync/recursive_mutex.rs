@@ -4,8 +4,7 @@ use core::usize;
 
 use sync::Mutex;
 
-use scheduler;
-use scheduler::context::{context_switch, Context};
+use scheduler::context::context_switch;
 
 struct RecursiveMutexInner {
     owner: usize,
@@ -33,16 +32,14 @@ impl<T> RecursiveMutex<T> {
 impl<T: ?Sized> RecursiveMutex<T> {
     /// Lock mutex
     pub fn lock(&self) -> RecursiveMutexGuard<T> {
-        let pid;
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            if let Some(current) = Context::current() {
-                pid = current.pid;
+        let pid = {
+            let contexts = ::env().contexts.lock();
+            if let Some(current) = contexts.current() {
+                current.pid
             } else {
-                pid = usize::MAX;
+                usize::MAX
             }
-            scheduler::end_no_ints(reenable);
-        }
+        };
 
         loop {
             {

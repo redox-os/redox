@@ -58,7 +58,6 @@ pub use self::exec::*;
 
 pub mod invert;
 
-#[no_mangle]
-pub fn main() {
+#[no_mangle] pub fn main() {
     Editor::init();
 }
