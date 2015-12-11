@@ -7,7 +7,6 @@ use std::io::{stdout, stdin, Read, Write};
 use std::env;
 use std::process;
 use std::thread;
-use std::time::Duration;
 
 use self::to_num::ToNum;
 
@@ -605,9 +604,10 @@ pub fn set_var(variables: &mut Vec<Variable>, name: &str, value: &str) {
         for command in command_list.split('\n') {
             on_command(&command, &commands, &mut variables, &mut modes);
         }
+
+        return;
     }
 
-    println!("Type help for a command list");
     loop {
         for mode in modes.iter().rev() {
             if mode.value {

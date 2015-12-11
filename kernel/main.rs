@@ -287,10 +287,10 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             // session.items.push(box RandomScheme);
             // session.items.push(box TimeScheme);
 
-            env.schemes.push(UnsafeCell::new(box EthernetScheme));
-            env.schemes.push(UnsafeCell::new(box ArpScheme));
-            env.schemes.push(UnsafeCell::new(box IcmpScheme));
-            env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
+            // env.schemes.push(UnsafeCell::new(box EthernetScheme));
+            // env.schemes.push(UnsafeCell::new(box ArpScheme));
+            // env.schemes.push(UnsafeCell::new(box IcmpScheme));
+            // env.schemes.push(UnsafeCell::new(box IpScheme { arp: Vec::new() }));
             // session.items.push(box DisplayScheme);
 
             Context::spawn("kpoll".to_string(),
@@ -303,6 +303,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                 event_loop();
             });
 
+            /*
             Context::spawn("karp".to_string(),
             box move || {
                 ArpScheme::reply_loop();
@@ -312,9 +313,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             box move || {
                 IcmpScheme::reply_loop();
             });
+            */
 
             env.contexts.lock().enabled = true;
 
+            /*
             if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
                 resource.read_to_end(&mut vec);
@@ -329,22 +332,21 @@ unsafe fn init(font_data: usize, tss_data: usize) {
                     }
                 }
             }
+            */
 
             Context::spawn("kinit".to_string(),
             box move || {
-                let wd_c = "file:/\0";
-                do_sys_chdir(wd_c.as_ptr());
+                {
+                    let wd_c = "file:/\0";
+                    do_sys_chdir(wd_c.as_ptr());
 
-                let stdio_c = "debug:\0";
-                do_sys_open(stdio_c.as_ptr(), 0);
-                do_sys_open(stdio_c.as_ptr(), 0);
-                do_sys_open(stdio_c.as_ptr(), 0);
+                    let stdio_c = "debug:\0";
+                    do_sys_open(stdio_c.as_ptr(), 0);
+                    do_sys_open(stdio_c.as_ptr(), 0);
+                    do_sys_open(stdio_c.as_ptr(), 0);
+                }
 
-                let path_string = "file:/apps/login/main.bin";
-                let path = Url::from_str(path_string);
-
-                debug!("INIT: Executing {}\n", path_string);
-                execute(path, Vec::new());
+                execute(Url::from_str("file:/apps/login/main.bin"), Vec::new());
                 debug!("INIT: Failed to execute\n");
 
                 loop {
@@ -447,22 +449,21 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 *clock_realtime = *clock_realtime + PIT_DURATION;
             }
 
-            /*
             let switch = {
                 let mut contexts = ::env().contexts.lock();
                 if let Some(mut context) = contexts.current_mut() {
-                    context.slices -= 1;
+                    //context.slices -= 1;
                     context.slice_total += 1;
-                    context.slices == 0
+                    //context.slices == 0
+                    false
                 } else {
                     false
                 }
             };
 
             if switch {
-                context_switch(true);
+                //context_switch(true);
             }
-            */
         }
         0x21 => env().on_irq(0x1), // keyboard
         0x23 => env().on_irq(0x3), // serial 2 and 4
