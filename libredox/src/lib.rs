@@ -17,7 +17,6 @@
 #![feature(core)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
-#![feature(core_simd)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -70,8 +69,6 @@
     pub use core::ops;
     pub use core::ptr;
     pub use core::raw;
-    #[allow(deprecated)]
-    pub use core::simd;
     pub use core::result;
     pub use core::option;
     pub mod error;
