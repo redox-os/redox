@@ -2,7 +2,6 @@
 #![feature(slice_concat_ext)]
 
 use std::Box;
-use std::io::Read;
 use std::rand;
 use std::ptr;
 use std::slice::SliceConcatExt;
@@ -14,7 +13,7 @@ use std::Vec;
 macro_rules! readln {
     () => ({
         let mut buffer = String::new();
-        match std::io::stdin().read_to_string(&mut buffer) {
+        match std::io::stdin().read_line(&mut buffer) {
             Ok(_) => Some(buffer),
             Err(_) => None
         }

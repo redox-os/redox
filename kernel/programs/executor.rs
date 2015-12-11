@@ -33,22 +33,31 @@ pub fn execute(url: Url, mut args: Vec<String>) {
             for segment in executable.load_segment().iter() {
                 let virtual_address = segment.vaddr as usize;
                 let virtual_size = segment.mem_len as usize;
-                let physical_address = memory::alloc(virtual_size);
+
+                //TODO: Warning: Investigate this hack!
+                let hack = virtual_address % 4096;
+
+                let physical_address = memory::alloc(virtual_size + hack);
 
                 if physical_address > 0 {
+                    debugln!("VADDR: {:X} OFF: {:X} FLG: {:X} HACK: {:X}", segment.vaddr, segment.off, segment.flags, hack);
+
                     // Copy progbits
-                    ::memcpy(physical_address as *mut u8,
+                    ::memcpy((physical_address + hack) as *mut u8,
                              (executable.data + segment.off as usize) as *const u8,
                              segment.file_len as usize);
                     // Zero bss
-                    ::memset((physical_address + segment.file_len as usize) as *mut u8,
-                    0,
-                    segment.mem_len as usize - segment.file_len as usize);
+                    if segment.mem_len > segment.file_len {
+                        debugln!("BSS: {:X} {}", segment.vaddr + segment.file_len, segment.mem_len - segment.file_len);
+                        ::memset((physical_address + hack + segment.file_len as usize) as *mut u8,
+                                0,
+                                segment.mem_len as usize - segment.file_len as usize);
+                    }
 
                     memory.push(ContextMemory {
                         physical_address: physical_address,
-                        virtual_address: virtual_address,
-                        virtual_size: virtual_size,
+                        virtual_address: virtual_address - hack,
+                        virtual_size: virtual_size + hack,
                         writeable: segment.flags & 2 == 2
                     });
                 }
@@ -60,13 +69,12 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
             let mut contexts = ::env().contexts.lock();
             if let Some(mut context) = contexts.current_mut() {
-                unsafe { context.unmap() };
-
                 context.name = url.string;
                 context.args = Arc::new(UnsafeCell::new(args));
                 context.cwd = Arc::new(UnsafeCell::new(unsafe { (*context.cwd.get()).clone() }));
-                context.memory = Arc::new(UnsafeCell::new(memory));
 
+                unsafe { context.unmap() };
+                context.memory = Arc::new(UnsafeCell::new(memory));
                 unsafe { context.map() };
 
                 context_ptr = context.deref_mut();

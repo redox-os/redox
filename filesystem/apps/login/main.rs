@@ -1,4 +1,4 @@
-use std::io::{stdin, stdout, Read, Write};
+use std::io::{stdin, stdout, Write};
 use std::process::Command;
 
 #[no_mangle] pub fn main() {
@@ -12,17 +12,9 @@ use std::process::Command;
         let path = "/apps/shell/main.bin";
         match Command::new(path).spawn() {
             Ok(mut child) => {
-                child.wait();
-                /*match  {
-                    Ok(status) => {
-                        if let Some(code) = status.code() {
-                            println!("{}: Child exited with exit code: {}", path, code);
-                        } else {
-                            println!("{}: No child exit code", path);
-                        }
-                    },
-                    Err(err) => println!("{}: Failed to wait: {}", path, err)
-                }*/
+                if let Err(err) = child.wait() {
+                    println!("{}: Failed to wait: {}", path, err)
+                }
             },
             Err(err) => println!("{}: Failed to execute: {}", path, err)
         }

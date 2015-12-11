@@ -264,6 +264,37 @@ impl Command {
         });
 
         commands.push(Command {
+            name: "run",
+            help: "Run a script\n    run <script>",
+            main: Box::new(|args: &Vec<String>, variables: &mut Vec<Variable>, _: &mut Vec<Mode>| {
+                let path = "/apps/shell/main.bin";
+
+                let mut command = process::Command::new(path);
+                for i in 1 .. args.len() {
+                    if let Some(arg) = args.get(i){
+                        command.arg(arg);
+                    }
+                }
+
+                match command.spawn() {
+                    Ok(mut child) => {
+                        match child.wait() {
+                            Ok(status) => {
+                                if let Some(code) = status.code() {
+                                    set_var(variables, "?", &format!("{}", code));
+                                } else {
+                                    println!("{}: No child exit code", path);
+                                }
+                            },
+                            Err(err) => println!("{}: Failed to wait: {}", path, err)
+                        }
+                    },
+                    Err(err) => println!("{}: Failed to execute: {}", path, err)
+                }
+            })
+        });
+
+        commands.push(Command {
             name: "sleep",
             help: "Make a sleep in the current session\n    sleep <number_of_seconds>",
             main: Box::new(|args: &Vec<String>, _: &mut Vec<Variable>, _: &mut Vec<Mode>| {
