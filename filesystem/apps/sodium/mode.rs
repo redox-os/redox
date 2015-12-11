@@ -1,4 +1,5 @@
-use super::*;
+use insert::InsertOptions;
+use editor::Editor;
 
 #[derive(Clone, PartialEq, Copy)]
 /// A mode. Modes determine which set of commands that will be used. Modes comes in two flavors:

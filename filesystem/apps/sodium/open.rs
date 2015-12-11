@@ -1,6 +1,7 @@
-use super::*;
+use editor::Editor;
 use std::fs::File;
 use std::io::Read;
+use std::collections::VecDeque;
 
 pub enum OpenStatus {
     Ok,
