@@ -250,6 +250,7 @@ impl Ps2 {
         self.layout = match layout {
             0 => layouts::Layout::ENGLISH,
             1 => layouts::Layout::FRENCH,
+            2 => layouts::Layout::GERMAN,
             _ => layouts::Layout::ENGLISH,
         }
     }
