@@ -1,5 +1,8 @@
-use super::*;
-use orbital::*;
+use key::{Cmd, Key};
+use editor::Editor;
+use orbital::{EventOption, Event};
+use redraw::RedrawTask;
+use mode::Mode;
 
 #[derive(Copy, Clone)]
 /// An instruction, i.e. a command and a numeral parameter

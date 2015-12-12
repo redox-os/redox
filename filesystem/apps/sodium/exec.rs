@@ -1,14 +1,21 @@
-use super::*;
+use editor::Editor;
+use parse::{Inst, Parameter};
+use key::Key;
+use mode::{Mode, CommandMode, PrimitiveMode};
+use insert::{InsertOptions, InsertMode};
+use redraw::RedrawTask;
+
+use std::collections::VecDeque;
 use std::iter::FromIterator;
 
 // TODO: Move the command definitions outta here
 impl Editor {
     /// Execute an instruction
     pub fn exec(&mut self, Inst(para, cmd): Inst) {
-        use super::Key::*;
-        use super::Mode::*;
-        use super::PrimitiveMode::*;
-        use super::CommandMode::*;
+        use key::Key::*;
+        use mode::Mode::*;
+        use mode::PrimitiveMode::*;
+        use mode::CommandMode::*;
 
         let n = para.d();
         let bef = self.pos();

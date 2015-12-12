@@ -1,4 +1,4 @@
-use super::*;
+use editor::Editor;
 
 impl Editor {
     pub fn invert_chars(&mut self, n: usize) {
@@ -7,7 +7,7 @@ impl Editor {
             let current = self.current();
             if let Some(c) = self.text[y].get_mut(x) {
                 if let Some(cur) = current {
-                    *c = invert::invert(cur);
+                    *c = invert(cur);
                 }
             }
             if let Some(m) = self.next(1) {

@@ -1,4 +1,5 @@
-use super::*;
+use editor::Editor;
+use redraw::RedrawTask;
 
 impl Editor {
     /// Delete a character
