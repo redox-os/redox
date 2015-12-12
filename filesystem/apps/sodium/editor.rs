@@ -1,5 +1,10 @@
-use super::*;
-use orbital::*;
+use cursor::Cursor;
+use std::collections::VecDeque;
+use orbital::Window;
+use graphics::StatusBar;
+use options::Options;
+use key_state::KeyState;
+use redraw::RedrawTask;
 
 /// The current state of the editor, including the file, the cursor, the scrolling info, etc.
 pub struct Editor {

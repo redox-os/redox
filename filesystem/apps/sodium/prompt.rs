@@ -1,4 +1,5 @@
-use super::*;
+use editor::Editor;
+use open::OpenStatus;
 
 impl Editor {
     /// Invoke a command in the prompt

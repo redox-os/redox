@@ -1,5 +1,9 @@
-use super::*;
-use orbital::*;
+use editor::Editor;
+use orbital::Color;
+use redraw::RedrawTask;
+use mode::Mode;
+use mode::PrimitiveMode;
+use mode::CommandMode;
 
 impl Editor {
     /// Redraw the window

@@ -1,4 +1,4 @@
-use super::*;
+use editor::Editor;
 
 impl Editor {
     /// Goto a given position. Does not automatically bound.

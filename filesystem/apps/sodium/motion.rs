@@ -1,4 +1,6 @@
-use super::*;
+use editor::Editor;
+use parse::Inst;
+use position::to_signed_pos;
 
 impl Editor {
     /// Convert an instruction to a motion (new coordinate). Returns None if the instructions given
@@ -9,7 +11,7 @@ impl Editor {
     /// d deletes the text given by the motion following. Other commands can make use of motions,
     /// using this method.
     pub fn to_motion(&mut self, Inst(n, cmd): Inst) -> Option<(usize, usize)> {
-        use super::Key::*;
+        use key::Key::*;
         match cmd.key {
             Char('h') => Some(self.left(n.d())),
             Char('l') => Some(self.right(n.d())),
@@ -54,7 +56,7 @@ impl Editor {
     /// cases it's a position which is out of bounds. This is useful when commands want to mesure
     /// the relative movement over the movement.
     pub fn to_motion_unbounded(&mut self, Inst(n, cmd): Inst) -> Option<(isize, isize)> {
-        use super::Key::*;
+        use key::Key::*;
         match cmd.key {
             Char('h') => Some(self.left_unbounded(n.d())),
             Char('l') => Some(self.right_unbounded(n.d())),
