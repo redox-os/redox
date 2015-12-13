@@ -40,6 +40,7 @@ It's completely fine to just submit a small pull request without first making an
     - HTTPS:`git clone https://github.com/redox-os/redox.git`
     - SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
     - Then rebase: `git rebase upstream master`
+
     Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
 3. Add your fork with
     - HTTPS:`git remote add origin https://github.com/your-username/redox.git`
@@ -48,7 +49,7 @@ It's completely fine to just submit a small pull request without first making an
     - Fetch the upstream:`git fetch upstream master` 
     - Rebase with local commits:`git rebase upstream master`
     - Update the submodules:`git submodule update --init`
-5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously)
+5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
 8. Optionally run `rustfmt` on the files you changed and commit again if it did anything.
