@@ -1,6 +1,8 @@
-use super::{Rect};
+use super::Rect;
 
-pub trait Widget {
+use std::any::Any;
+
+pub trait Widget : Any {
     fn rect(&self) -> Rect {
         Rect::default()
     }
