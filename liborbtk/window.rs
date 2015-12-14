@@ -35,12 +35,12 @@ pub struct Window {
 }
 
 impl Window {
-    pub fn new(rect: Rect, title: &str) -> Box<Window> {
-        box Window {
+    pub fn new(rect: Rect, title: &str) -> Box<Self> {
+        Box::new(Window {
             inner: orbital::Window::new(rect.x, rect.y, rect.width, rect.height, title).unwrap(),
             widgets: Vec::new(),
             bg: Color::rgb(237, 233, 227),
-        }
+        })
     }
 
     pub fn draw(&mut self) {
