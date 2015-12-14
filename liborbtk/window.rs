@@ -39,7 +39,7 @@ impl Window {
         box Window {
             inner: orbital::Window::new(rect.x, rect.y, rect.width, rect.height, title).unwrap(),
             widgets: Vec::new(),
-            bg: Color::rgb(255, 255, 255),
+            bg: Color::rgb(237, 233, 227),
         }
     }
 
