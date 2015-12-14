@@ -2,7 +2,7 @@
 
 **Redox** is a operating system written in pure Rust, designed to be modular and secure. The development blog can be found at http://www.redox-os.org.
 
-Docs can be found [here](http://ticki.github.io/redocs/redox/).
+Documentation (the Redocs) can be found [here](http://ticki.github.io/redocs/redox/).
 
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
@@ -20,7 +20,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <a name="compile-help"/>
 ## Help! Redox won't compile!
 
-Sometimes things goes wrong when compiling. Try the following before opening an issue:
+Sometimes things go wrong when compiling. Try the following before opening an issue:
 
 1. Run `make clean`.
 2. Run `git clean -X -f -d`.
@@ -31,9 +31,13 @@ Sometimes things goes wrong when compiling. Try the following before opening an 
 and then rebuild!
 
 When you have completed these steps, done a full rebuild, you can open an issue. **Make sure you answer the following questions**:
+
 - Have you followed the steps in "Help! Redox won't compile!"? (confirmation)
 - What host OS are you building Redox on?
+- What is the output of `rustc -V`?
 - Have you made any changes?
+- Is it a build problem or a launch problem? On some systems, VirtualBox/QEMU may have problems. Try `make virtualbox`, `make qemu`, and `make qemu`.
+
 Else, your issue may be closed.
 
 ## Contributing to Redox
