@@ -88,47 +88,47 @@ pub fn execute(url: Url, mut args: Vec<String>) {
 
     if context_ptr as usize > 0 {
         Context::spawn("kexec".to_string(), box move || {
-            unsafe {
-                let _intex = Intex::static_lock();
+            let _intex = Intex::static_lock();
 
-                let context = &mut *context_ptr;
+            let context = unsafe { &mut *context_ptr };
 
-                let mut context_args: Vec<usize> = Vec::new();
-                context_args.push(0); // ENVP
-                context_args.push(0); // ARGV NULL
-                let mut argc = 0;
-                for i in 0..(*context.args.get()).len() {
-                    let reverse_i = (*context.args.get()).len() - i - 1;
-                    if let Some(ref mut arg) = (*context.args.get()).get_mut(reverse_i) {
-                        if ! arg.ends_with('\0') {
-                            arg.push('\0');
-                        }
-                        context_args.push(arg.as_ptr() as usize);
-                        argc += 1;
+            let mut context_args: Vec<usize> = Vec::new();
+            context_args.push(0); // ENVP
+            context_args.push(0); // ARGV NULL
+            let mut argc = 0;
+            for i in 0..unsafe { (*context.args.get()).len() } {
+                let reverse_i = unsafe { (*context.args.get()).len() } - i - 1;
+                if let Some(ref mut arg) = unsafe { (*context.args.get()).get_mut(reverse_i) } {
+                    if ! arg.ends_with('\0') {
+                        arg.push('\0');
                     }
+                    context_args.push(arg.as_ptr() as usize);
+                    argc += 1;
                 }
-                context_args.push(argc);
+            }
+            context_args.push(argc);
 
-                context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
+            context.sp = context.kernel_stack + CONTEXT_STACK_SIZE - 128;
 
-                context.stack = Some(ContextMemory {
-                    physical_address: memory::alloc(CONTEXT_STACK_SIZE),
-                    virtual_address: CONTEXT_STACK_ADDR,
-                    virtual_size: CONTEXT_STACK_SIZE,
-                    writeable: true
-                });
+            context.stack = Some(ContextMemory {
+                physical_address: unsafe { memory::alloc(CONTEXT_STACK_SIZE) },
+                virtual_address: CONTEXT_STACK_ADDR,
+                virtual_size: CONTEXT_STACK_SIZE,
+                writeable: true
+            });
 
-                let user_sp = if let Some(ref stack) = context.stack {
-                    let mut sp = stack.physical_address + stack.virtual_size - 128;
-                    for arg in context_args.iter() {
-                        sp -= mem::size_of::<usize>();
-                        ptr::write(sp as *mut usize, *arg);
-                    }
-                    sp - stack.physical_address + stack.virtual_address
-                } else {
-                    0
-                };
+            let user_sp = if let Some(ref stack) = context.stack {
+                let mut sp = stack.physical_address + stack.virtual_size - 128;
+                for arg in context_args.iter() {
+                    sp -= mem::size_of::<usize>();
+                    unsafe { ptr::write(sp as *mut usize, *arg) };
+                }
+                sp - stack.physical_address + stack.virtual_address
+            } else {
+                0
+            };
 
+            unsafe {
                 context.push(0x20 | 3);
                 context.push(user_sp);
                 context.push(/*1 << 9*/ 0);
