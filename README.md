@@ -7,6 +7,7 @@ Docs can be found [here](http://ticki.github.io/redocs/redox/).
 Please make sure you use the **latest nightly** of `rustc` before building (for more troubleshooting, see ["Help! Redox won't compile!"](#compile-help)).
 
 ![travis](https://api.travis-ci.org/redox-os/redox.svg)
+[![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
 
 ## What it looks like
 
