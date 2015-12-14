@@ -1,6 +1,6 @@
 # Contributing to Redox
 
-<!-- TODO Write an introduction here -->
+Thank you for your interest in contributing to Redox! This document is a guide to help newcomers contribute. There are many ways to help us out and we appreciate all of them.
 
 #### Index
 
