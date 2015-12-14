@@ -17,6 +17,27 @@ Thank you for your interest in contributing to Redox! This document is a guide t
 
 <!-- TODO add more links here -->
 
+<a name="easy-targets" />
+## Low-Hanging Fruit - Easy Targets for Newbies
+
+<!-- TODO improve this section -->
+
+- If you're not fluent in Rust:
+    - Writing documentation
+    - Using/testing Redox, filing issues for bugs and needed features
+    - Web development (Redox website, separate repo)
+    - Unit tests (may require minimal knowledge of rust)
+
+- If you are fluent in Rust, but not OS Development:
+    - Apps
+    - Shell (Ion) development
+    - Package manager (Oxide) development
+    - High-level code
+
+- If you are fluent in Rust, and have experience with OS Dev:
+    - Familiarize yourself with the repository and codebase
+    - Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
+
 <a name="slack" />
 ## Slack Chat
 
@@ -105,24 +126,3 @@ Since Rust is a relatively small and new language compared to others like C, the
 #### Applications vs Kernel
 
 <!-- TODO fill out this section -->
-
-<a name="easy-targets" />
-## Low-Hanging Fruit - Easy Targets for Newbies
-
-<!-- TODO improve this section -->
-
-- If you're not fluent in Rust:
-    - Writing documentation
-    - Using/testing Redox, filing issues for bugs and needed features
-    - Web development (Redox website, separate repo)
-    - Unit tests (may require minimal knowledge of rust)
-
-- If you are fluent in Rust, but not OS Development:
-    - Apps
-    - Shell (Ion) development
-    - Package manager (Oxide) development
-    - High-level code
-
-- If you are fluent in Rust, and have experience with OS Dev:
-    - Familiarize yourself with the repository and codebase
-    - Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
