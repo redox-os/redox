@@ -3,6 +3,7 @@ use std::{Box, String, ToString, Vec, cmp, mem};
 use super::from_bytes::FromBytes;
 use super::metaslab::{Metaslab, MetaslabGroup};
 use super::nvpair::{NvList, NvValue};
+use super::uberblock;
 use super::util;
 use super::vdev_file::VdevFile;
 use super::zfs;
@@ -106,16 +107,18 @@ pub struct Top {
     ms_group: MetaslabGroup,  // metaslab group
     metaslabs: Vec<Metaslab>, // in-memory metaslab array
     is_hole: bool,
+    removing: bool,  // device is being removed?
 }
 
 impl Top {
-    pub fn new(ms_array: u64, ms_shift: u64) -> Self {
+    pub fn new(ms_array: u64, ms_shift: u64, ms_group: MetaslabGroup) -> Self {
         Top {
             ms_array: ms_array,
             ms_shift: ms_shift,
-            ms_group: MetaslabGroup,
+            ms_group: ms_group,
             metaslabs: vec![],
-            is_hole: false, /* TODO: zol checks vdev_ops for this, but idk what to do yet */
+            is_hole: false, // TODO: zol checks vdev_ops for this, but idk what to do yet
+            removing: false,
         }
     }
 }
@@ -221,26 +224,24 @@ impl Vdev {
 
         let mut vdev_top = None;
 
-        // If we're a top-level vdev, try to load the allocation parameters, create the vdev::Top,
-        // and create the metaslab group
+        // If we're a top-level vdev, try to load the allocation parameters,
+        // create the metaslab group, and create the vdev::Top
         if parent && !parent.parent {
+            let mut ms_array = 0;
+            let mut ms_shift = 0;
             if alloc_type == AllocType::Load || alloc_type == AllocType::Split {
-                let ms_array = try!(nv.get("metaslab_array").ok_or(zfs::Error::Invalid));
-                let ms_shift = try!(nv.get("metaslab_shift").ok_or(zfs::Error::Invalid));
+                ms_array = try!(nv.get("metaslab_array").ok_or(zfs::Error::Invalid));
+                ms_shift = try!(nv.get("metaslab_shift").ok_or(zfs::Error::Invalid));
                 let asize = try!(nv.get("asize").ok_or(zfs::Error::Invalid));
                 //let removing = try!(nv.get("removing").ok_or(zfs::Error::Invalid));
-
-                vdev_top = Some(Top::new(ms_array, ms_shift));
-                /*nvlist_lookup_uint64(nv, ZPOOL_CONFIG_METASLAB_ARRAY, &vd->vdev_ms_array);
-                nvlist_lookup_uint64(nv, ZPOOL_CONFIG_METASLAB_SHIFT, &vd->vdev_ms_shift);
-                nvlist_lookup_uint64(nv, ZPOOL_CONFIG_ASIZE, &vd->vdev_asize);
-                nvlist_lookup_uint64(nv, ZPOOL_CONFIG_REMOVING, &vd->vdev_removing);*/
             }
             
-            if alloc_type != VDEV_ALLOC_ATTACH {
+            if alloc_type != AllocType::Attach {
                 assert!(alloc_type == AllocType::Load || alloc_type == AllocType::Add ||
                         alloc_type == AllocType::Split || alloc_type == AllocType::RootPool);
-                //vd.vdev_mg = metaslab_group_create(islog ? spa_log_class(spa) : spa_normal_class(spa), vd);
+                let ms_group = MetaslabGroup::create(spa.normal_class());
+
+                vdev_top = Some(Top::new(ms_array, ms_shift, ms_group));
             }
         }
 
@@ -255,7 +256,7 @@ impl Vdev {
     }
 
     fn metaslab_init(&mut self, txg: u64) -> zfs::Result<()> {
-        spa_t *spa = self.spa;
+        //spa_t *spa = self.spa;
         //objset_t *mos = spa->spa_meta_objset;
 
         // We assume this is a top-level vdev
@@ -297,8 +298,8 @@ impl Vdev {
         // If the vdev is being removed we don't activate
         // the metaslabs since we want to ensure that no new
         // allocations are performed on this device.
-        if old_count == 0 && !vd.removing {
-            metaslab_group_activate(vd.mg);
+        if old_count == 0 && !top.removing {
+            //metaslab_group_activate(vd.mg);
         }
 
         //if (txg == 0)
@@ -482,13 +483,13 @@ impl Tree {
 const DIRTY_METASLAB: u64 = 0x01;
 const DIRTY_DTL: u64 =  0x02;
 
-const VDEV_RAIDZ_MAXPARITY: usize = 3;
+const RAIDZ_MAXPARITY: usize = 3;
 
-const VDEV_PAD_SIZE: u64 = 8 << 10;
-/* 2 padding areas (vl_pad1 and vl_pad2) to skip */
-const VDEV_SKIP_SIZE: u64 = VDEV_PAD_SIZE * 2;
-const VDEV_PHYS_SIZE: u64 = 112 << 10;
-const VDEV_UBERBLOCK_RING: u64 = 128 << 10;
+const PAD_SIZE: u64 = 8 << 10;
+// 2 padding areas (vl_pad1 and vl_pad2) to skip
+const SKIP_SIZE: u64 = PAD_SIZE * 2;
+const PHYS_SIZE: u64 = 112 << 10;
+const UBERBLOCK_RING: u64 = 128 << 10;
 
 // The largest uberblock we support is 8k.
 const MAX_UBERBLOCK_SHIFT: u64 = 13;

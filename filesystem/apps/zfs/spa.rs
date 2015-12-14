@@ -2,6 +2,7 @@ use std::{Box, String, ToString, Vec};
 use std::cmp;
 
 use super::avl;
+use super::dsl_pool;
 use super::nvpair::{NvList, NvValue};
 use super::txg;
 use super::uberblock::Uberblock;
@@ -21,6 +22,9 @@ pub struct Spa {
     state: zfs::PoolState,
     load_state: zfs::SpaLoadState,
     zio_taskq: [[SpaTaskqs; zio::NUM_TASKQ_TYPES]; zio::NUM_TYPES],
+    //dsl_pool: DslPool,
+    normal_class: MetaslabClass, // normal data class
+    log_class: MetaslabClass,    // intent log data class
     first_txg: u64,
     vdev_tree: vdev::Tree,
     root_vdev: vdev::TreeIndex,
@@ -67,12 +71,18 @@ impl Spa {
             let nvroot: &NvList = try!(config.get("vdev_tree").ok_or(zfs::Error::Invalid));
             try!(vdev_tree.parse(nvroot, None, vdev_alloc_type))
         };
+        
+        let normal_class = MetaslabClass::create(self, metaslab::zfs_metaslab_ops);
+        let log_class = MetaslabClass::create(self, metaslab::zfs_metaslab_ops);
 
         Ok(Spa {
             name: name,
             config: config,
             state: zfs::PoolState::Uninitialized,
             load_state: zfs::SpaLoadState::None,
+            //dsl_pool: blah,
+            normal_class: normal_class,
+            log_class: log_class,
             first_txg: 0,
             vdev_tree: vdev_tree,
             root_vdev: root_vdev,
@@ -162,9 +172,6 @@ impl Spa {
         // assert!(self.state == zfs::PoolState::Uninitialized);
 
         self.state = zfs::PoolState::Active;
-
-        // self.normal_class = MetaslabClass::create(self, zfs_metaslab_ops);
-        // self.log_class = MetaslabClass::create(self, zfs_metaslab_ops);
 
         // TODO: maybe start the spa thread
 

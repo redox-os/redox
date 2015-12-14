@@ -3,6 +3,8 @@ use std::cmp;
 //use std::sync::mpsc::{channel, Sender, Receiver};
 use std::thread;
 
+use super::zfs;
+
 const TQENT_FLAG_PREALLOC: u64 = 0x1; // taskq_dispatch_ent used
 
 const TASKQ_PREPOPULATE: u64 = 0x0001;
@@ -203,9 +205,9 @@ impl Taskq {
         return 0;
     }*/
 
-    pub fn empty_ent(&self) -> bool {
+    /*pub fn empty_ent(&self) -> bool {
         self.next == NULL
-    }
+    }*/
 
     /*fn taskq_init_ent(taskq_ent_t *t) {
         t.next = NULL;

@@ -94,6 +94,7 @@ impl Reader {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
 pub struct Zio {
     // Core information about this IO
     //bookmark: ZBookmarkPhys,
@@ -249,7 +250,7 @@ impl Zio {
         }
 
         if zb != NULL {
-            zio->bookmark = *zb;
+            zio.bookmark = *zb;
         }
 
         if let Some(pio) = pio {
@@ -946,3 +947,5 @@ const CLAIM_PIPELINE = INTERLOCK_STAGES | STAGE_DVA_CLAIM;
 const IOCTL_PIPELINE = INTERLOCK_STAGES | STAGE_VDEV_IO_START | STAGE_VDEV_IO_ASSESS;
 
 const BLOCKING_STAGES = STAGE_DVA_ALLOCATE | STAGE_DVA_CLAIM | STAGE_VDEV_IO_START;
+
+*/
