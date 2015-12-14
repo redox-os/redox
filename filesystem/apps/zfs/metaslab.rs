@@ -1,3 +1,5 @@
+use std::cmp;
+
 use super::avl;
 use super::space_map;
 use super::taskq::{self, Taskq};
@@ -53,7 +55,7 @@ struct MetaslabGroup {
     bias: i64,
     activation_count: i64,
     ms_class: MetaslabClass,
-    vdev: vdev::TreeIndex,
+    //vdev: vdev::TreeIndex,
     taskq: Taskq,
     //prev: *MetaslabGroup,
     //next: *MetaslabGroup,
@@ -62,7 +64,7 @@ struct MetaslabGroup {
 }
 
 impl MetaslabGroup {
-    pub fn create(ms_class: metaslab_class_t, vdev: vdev::TreeIndex) -> Self {
+    pub fn create(ms_class: MetaslabClass) -> Self {
         let metaslab_key = Box::new(|ms| (ms.weight, ms.start));
         let taskq = Taskq::new("metaslab_group_taskq".to_string(), metaslab_load_pct,
                                maxclsyspri, 10, std::u64::MAX, TASKQ_THREADS_CPU_PCT | TASKQ_DYNAMIC);
@@ -76,7 +78,7 @@ impl MetaslabGroup {
             bias: 0,
             activation_count: 0,
             ms_class: ms_class,
-            vdev: vdev,
+            //vdev: vdev,
             taskq: taskq,
             //prev: *MetaslabGroup,
             //next: *MetaslabGroup,
@@ -89,6 +91,36 @@ impl MetaslabGroup {
         self.metaslab_tree.insert(MetaslabAvlNode { index: index,
                                                     start: m.start,
                                                     weight: m.weight });
+    }
+
+    pub fn activate(&mut self) {
+        /*metaslab_class_t *mc = self.class;
+        metaslab_group_t *mgprev, *mgnext;
+
+        //assert!(spa_config_held(ms_class.spa, SCL_ALLOC, RW_WRITER));
+
+        assert!(ms_class.rotor != mg);
+        assert!(self.prev == NULL);
+        assert!(self.next == NULL);
+        assert!(self.activation_count <= 0);
+
+        if (++self.activation_count <= 0)
+            return;
+
+        self.aliquot = metaslab_aliquot * cmp::max(1, self.vdev->vdev_children);
+        metaslab_group_alloc_update(mg);
+
+        if (mgprev = ms_class.rotor) == NULL {
+            self.prev = mg;
+            self.next = mg;
+        } else {
+            mgnext = mgprev->mg_next;
+            self.prev = mgprev;
+            self.next = mgnext;
+            mgprev->mg_next = mg;
+            mgnext->mg_prev = mg;
+        }
+        ms_class.rotor = mg;*/
     }
 }
 
@@ -309,6 +341,26 @@ impl Metaslab {
             //cv_wait(&msp->ms_load_cv, &msp->ms_lock);
         }
     }
+
+    fn activate(&mut self, activation_weight: u64) -> zfs::Result<()> {
+        assert!(MUTEX_HELD(&self.lock));
+
+        if self.weight & METASLAB_ACTIVE_MASK == 0 {
+            self.load_wait();
+            if !self.loaded {
+                if let Err(e) = self.load() {
+                    metaslab_group_sort(self.group, msp, 0);
+                    return e;
+                }
+            }
+
+            metaslab_group_sort(self.group, self, self.weight | activation_weight);
+        }
+        assert!(self.loaded);
+        assert!(self.weight & METASLAB_ACTIVE_MASK);
+
+        Ok(())
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -321,7 +373,7 @@ struct MetaslabOps {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // The first-fit block allocator
-/*fn metaslab_ff_alloc(ms: &mut Metaslab, size: u64) -> u64 {
+fn metaslab_ff_alloc(ms: &mut Metaslab, size: u64) -> u64 {
     // Find the largest power of 2 block size that evenly divides the
     // requested size. This is used to try to allocate blocks with similar
     // alignment from the same area of the metaslab (i.e. same cursor
@@ -331,8 +383,13 @@ struct MetaslabOps {
     let ref mut cursor = ms.lbas[util::highbit64(align) - 1];
     let ref mut tree = ms.tree;
 
-    return metaslab_block_picker(tree, cursor, size, align);
-}*/
+    //return metaslab_block_picker(tree, cursor, size, align);
+    return 0;
+}
+
+static metaslab_ff_ops: MetaslabOps = MetaslabOps { alloc: metaslab_ff_alloc };
+
+static zfs_metaslab_ops: MetaslabOps = metaslab_ff_ops;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
