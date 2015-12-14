@@ -22,6 +22,7 @@ use sync::Intex;
 use syscall::SysError;
 use syscall::handle::*;
 
+#[derive(Copy, Clone, Debug)]
 pub enum Msg {
     Start,
     Stop,
@@ -372,97 +373,101 @@ impl SchemeItem {
         call > 0
     }
 
-    pub unsafe fn run(&mut self) {
+    pub fn run(&mut self) {
         let mut running = true;
         while running {
             let response_option = self.responses.lock().pop_front();
 
             if let Some(response_ptr) = response_option {
-                let ret = match (*response_ptr).msg {
+                let ret = match unsafe { (*response_ptr).msg } {
                     Msg::Start => if self.valid(self._start) {
                         let fn_ptr: *const usize = &self._start;
-                        (*(fn_ptr as *const extern "C" fn() -> usize))()
+                        unsafe { (*(fn_ptr as *const extern "C" fn() -> usize))() }
                     } else {
                         0
                     },
                     Msg::Stop => if self.valid(self._stop) {
                         running = false;
                         let fn_ptr: *const usize = &self._stop;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle) }
                     } else {
                         usize::MAX
                     },
                     Msg::Open(path, flags) => if self.valid(self._open) {
                         let fn_ptr: *const usize = &self._open;
-                        (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, path, flags)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, path, flags) }
                     } else {
                         usize::MAX
                     },
                     Msg::Event(event_ptr) => if self.valid(self._event) {
                         let fn_ptr: *const usize = &self._event;
-                        (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle, event_ptr as usize)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle, event_ptr as usize) }
                     } else {
                         usize::MAX
                     },
                     Msg::Dup(fd) => if self.valid(self._dup) {
                         let fn_ptr: *const usize = &self._dup;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd) }
                     } else {
                         usize::MAX
                     },
                     Msg::Path(fd, ptr, len) => if self.valid(self._fpath) {
                         let fn_ptr: *const usize = &self._fpath;
-                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
-                                                                                            ptr,
-                                                                                            len)
+                        unsafe {
+                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
+                                                                                                ptr,
+                                                                                                len)
+                        }
                     } else {
                         usize::MAX
                     },
                     Msg::Read(fd, ptr, len) => if self.valid(self._read) {
                         let fn_ptr: *const usize = &self._read;
-                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
-                                                                                            ptr,
-                                                                                            len)
+                        unsafe {
+                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
+                                                                                                ptr,
+                                                                                                len)
+                        }
                     } else {
                         usize::MAX
                     },
                     Msg::Write(fd, ptr, len) =>
                         if self.valid(self._write) {
                             let fn_ptr: *const usize = &self._write;
-                            (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(fd, ptr, len)
+                            unsafe { (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(fd, ptr, len) }
                         } else {
                             usize::MAX
                         },
                     Msg::Seek(fd, offset, whence) =>
                         if self.valid(self._lseek) {
                             let fn_ptr: *const usize = &self._lseek;
-                            (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(fd, offset, whence)
+                            unsafe { (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(fd, offset, whence) }
                         } else {
                             usize::MAX
                         },
                     Msg::Sync(fd) => if self.valid(self._fsync) {
                         let fn_ptr: *const usize = &self._fsync;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd) }
                     } else {
                         usize::MAX
                     },
                     Msg::Truncate(fd, len) => if self.valid(self._ftruncate) {
                         let fn_ptr: *const usize = &self._ftruncate;
-                        (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(fd, len)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(fd, len) }
                     } else {
                         usize::MAX
                     },
                     Msg::Close(fd) => if self.valid(self._close) {
                         let fn_ptr: *const usize = &self._close;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd) }
                     } else {
                         usize::MAX
                     },
                 };
 
-                (*response_ptr).set(ret);
+                unsafe { (*response_ptr).set(ret); }
             } else {
-                context_switch(false);
+                unsafe { context_switch(false); }
             }
         }
     }
