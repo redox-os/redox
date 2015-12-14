@@ -132,6 +132,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/login/main.bin \
+	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
@@ -186,7 +187,7 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/liborbtk.rlib: liborbtk/lib.rs liborbtk/*.rs liborbtk/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+$(BUILD)/liborbtk.rlib: liborbtk/lib.rs liborbtk/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbtk -o $@ $<
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
