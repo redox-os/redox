@@ -1,21 +1,25 @@
-use super::{Point, Size};
+use super::Point;
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct Rect {
-    pub pos: Point,
-    pub size: Size,
+    pub x: isize,
+    pub y: isize,
+    pub width: usize,
+    pub height: usize,
 }
 
 impl Rect {
-    pub fn new(pos: Point, size: Size) -> Rect {
+    pub fn new(x: isize, y: isize, width: usize, height: usize) -> Rect {
         Rect {
-            pos: pos,
-            size: size,
+            x: x,
+            y: y,
+            width: width,
+            height: height,
         }
     }
 
     pub fn contains(&self, p: Point) -> bool {
-        p.x >= self.pos.x && p.x < self.pos.x + self.size.width &&
-        p.y >= self.pos.y && p.y < self.pos.y + self.size.height
+        p.x >= self.x && p.x < self.x + self.width as isize &&
+        p.y >= self.y && p.y < self.y + self.height as isize
     }
 }

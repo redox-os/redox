@@ -1,7 +1,7 @@
 use std::ops::{Add, Sub};
 
 /// A point
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Point {
     pub x: isize,
     pub y: isize,

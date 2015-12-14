@@ -16,4 +16,4 @@ impl ProgressBar {
     }
 }
 
-impl Widget for ProgressBar {}
+//impl Widget for ProgressBar {}
