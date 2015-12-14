@@ -1,3 +1,6 @@
 [submodule "rust"]
 	path = rust
 	url = https://github.com/redox-os/rust.git
+[submodule "liborbtk"]
+	path = liborbtk
+	url = https://github.com/redox-os/orbtk.git
