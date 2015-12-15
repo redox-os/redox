@@ -1,21 +1,42 @@
 # Contributing to Redox
 
-<!-- TODO Write an introduction here -->
+Thank you for your interest in contributing to Redox! This document is a guide to help newcomers contribute. There are many ways to help us out and we appreciate all of them.
 
 #### Index
 
+- [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
 - [Slack Chat](#slack)
 - [GitHub Issues](#gh-issues)
 - [Pull Requests](#prs)
 - [Creating a Pull Request](#creating-a-pr)
 - [Best Practices/Guidelines](#best-practices)
-- [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
 
 #### Other links
 
 - [redox-os.org](http://redox-os.org)
 
 <!-- TODO add more links here -->
+
+<a name="easy-targets" />
+## Low-Hanging Fruit - Easy Targets for Newbies
+
+<!-- TODO improve this section -->
+
+- If you're not fluent in Rust:
+    - Writing documentation
+    - Using/testing Redox, filing issues for bugs and needed features
+    - Web development (Redox website, separate repo)
+    - Unit tests (may require minimal knowledge of rust)
+
+- If you are fluent in Rust, but not OS Development:
+    - Apps
+    - Shell (Ion) development
+    - Package manager (Oxide) development
+    - High-level code
+
+- If you are fluent in Rust, and have experience with OS Dev:
+    - Familiarize yourself with the repository and codebase
+    - Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
 
 <a name="slack" />
 ## Slack Chat
@@ -40,6 +61,7 @@ It's completely fine to just submit a small pull request without first making an
     - HTTPS:`git clone https://github.com/redox-os/redox.git`
     - SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
     - Then rebase: `git rebase upstream master`
+
     Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
 3. Add your fork with
     - HTTPS:`git remote add origin https://github.com/your-username/redox.git`
@@ -48,12 +70,12 @@ It's completely fine to just submit a small pull request without first making an
     - Fetch the upstream:`git fetch upstream master` 
     - Rebase with local commits:`git rebase upstream master`
     - Update the submodules:`git submodule update --init`
-5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously)
+5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
 8. Optionally run `rustfmt` on the files you changed and commit again if it did anything.
-9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)
-10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories, although it is fine in some cases.)
+9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
+10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
 11. Repeat step 9 to make sure the rebase still works
 12. Push to your fork (`git push origin my-branch`)
 13. Create a pull request
@@ -61,7 +83,7 @@ It's completely fine to just submit a small pull request without first making an
 15. Submit!
 
 <a name="best-practices" />
-## Best Practices/Guidelines
+## Best Practices and Guidelines
 
 <!-- TODO add this section to the index/TOC -->
 
@@ -104,24 +126,3 @@ Since Rust is a relatively small and new language compared to others like C, the
 #### Applications vs Kernel
 
 <!-- TODO fill out this section -->
-
-<a name="easy-targets" />
-## Low-Hanging Fruit - Easy Targets for Newbies
-
-<!-- TODO improve this section -->
-
-- If you're not fluent in Rust:
-    - Writing documentation
-    - Using/testing Redox, filing issues for bugs and needed features
-    - Web development (Redox website, separate repo)
-    - Unit tests (may require minimal knowledge of rust)
-
-- If you are fluent in Rust, but not OS Development:
-    - Apps
-    - Shell (Ion) development
-    - Package manager (Oxide) development
-    - High-level code
-
-- If you are fluent in Rust, and have experience with OS Dev:
-    - Familiarize yourself with the repository and codebase
-    - Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
