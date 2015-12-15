@@ -75,9 +75,9 @@ git submodule update --init
 
 ## <a name="installation"></a>Installation
 
-### <a name="building_running"></a> Building and running
+### <a name="building_running"></a>Building and running
 
-#### <a name="debian_ubuntu"></a> Debian/Ubuntu family
+#### <a name="debian_ubuntu"></a>Debian/Ubuntu family
 
 ##### Building
 
@@ -113,7 +113,7 @@ sudo apt-get install qemu-system-x86 qemu-kvm
 make qemu
 ```
 
-#### <a name="archlinux"></a> Archlinux
+#### <a name="archlinux"></a>Archlinux
 
 ##### Building
 * Run the setup script and enter your password when prompted (to install the Rust compiler and its dependencies)
@@ -146,7 +146,7 @@ $ sudo pacman -S qemu
 $ make qemu
 ```
 
-#### <a name="fedora"></a> Fedora
+#### <a name="fedora"></a>Fedora
 
 ##### Building
 
@@ -172,7 +172,7 @@ sudo yum install qemu-system-x86 qemu-kvm
 make qemu
 ```
 
-#### <a name="suse"></a> Suse
+#### <a name="suse"></a>Suse
 
 ##### Building
 
@@ -198,7 +198,7 @@ sudo zypper install qemu-x86 qemu-kvm
 make qemu
 ```
 
-#### <a name="nixos"></a> NixOS
+#### <a name="nixos"></a>NixOS
 
 ##### Building and running (Qemu, Advanced)
 
@@ -208,7 +208,7 @@ make all
 make qemu
 ```
 
-#### <a name="osx"></a> OS X
+#### <a name="osx"></a>OS X
 
 ##### Building
 
@@ -235,7 +235,7 @@ make all
 make virtualbox
 ```
 
-#### <a name="windows"></a> Windows
+#### <a name="windows"></a>Windows
 
 ##### Building
 * Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
