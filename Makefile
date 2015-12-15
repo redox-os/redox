@@ -151,9 +151,6 @@ tests: tests/success tests/failure
 clean:
 	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
 
-osmium:
-	$(RM) -f build/i386/osmium*; make qemu; $(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
-
 FORCE:
 
 tests/%: FORCE
@@ -161,9 +158,6 @@ tests/%: FORCE
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/osmium.rlib: crates/os/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
@@ -190,6 +184,9 @@ $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 $(BUILD)/liborbtk.rlib: liborbtk/src/lib.rs liborbtk/src/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbtk -o $@ $<
 
+$(BUILD)/osmium.rlib: crates/os/lib.rs crates/os/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
@@ -211,6 +208,10 @@ ifeq ($(ARCH),x86_64)
 else
 	$(AS) -f elf -o $@ $<
 endif
+
+filesystem/apps/shell/main.bin: crates/ion/src/main.rs crates/ion/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
+	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
