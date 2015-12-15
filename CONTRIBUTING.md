@@ -4,12 +4,12 @@ Thank you for your interest in contributing to Redox! This document is a guide t
 
 #### Index
 
+- [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
 - [Slack Chat](#slack)
 - [GitHub Issues](#gh-issues)
 - [Pull Requests](#prs)
 - [Creating a Pull Request](#creating-a-pr)
 - [Best Practices/Guidelines](#best-practices)
-- [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
 
 #### Other links
 
