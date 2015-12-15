@@ -1,4 +1,5 @@
 use table::NodeTable;
+use ptr::DataPtr;
 
 /// A data node (file/dir)
 pub enum Data {
@@ -62,16 +63,11 @@ impl Dir {
             n += 256;
         }
 
-        let nodes = b[n..].to_vec().iter().splitn(16).map(|x| DataPtr::from_bytes(x)).collect();
+        let nodes = b[n..].to_vec().chunks(16).map(|x| DataPtr::from_bytes(x).unwrap()).collect();
 
         Dir {
             name: name,
             nodes: nodes,
         }
-    }
-
-    /// Get the table represented by this directory
-    pub fn get_table<'a>(&'a self) -> NodeTable<'a> {
-        NodeTable::from_bytes(&self.data[..])
     }
 }

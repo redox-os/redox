@@ -233,7 +233,6 @@ impl Display {
         }
     }
 
-    // TODO: Move to orbital?
 
     /// Draw an line (without antialiasing) with width 1
     /// (using Bresenham's algorithm)
