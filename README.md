@@ -9,7 +9,24 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 ![travis](https://api.travis-ci.org/redox-os/redox.svg)
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE.md)
 
-## What it looks like
+## Contents
+
+* [What it looks like](#what_it_looks_like)
+* [HELP! Redox won't compile](#compile-help)
+* [Contributing to Redox](#contributing)
+* [Cloning the repository](#cloning)
+* [Installation](#installation)
+  * [Building and running](#bulding_running)
+    * [Debian and Ubuntu family](#debian_ubuntu)
+    * [Archlinux](#archlinux)
+    * [Fedora](#fedora)
+    * [Suse](#suse)
+    * [NixOS](#nixos)
+    * [OS X](#osx)
+    * [Windows](#windows)
+
+
+## <a name="what_it_looks_like"></a>What it looks like
 
 <img alt="Redox" height="170" src="img/screenshots/Desktop.png">
 <img alt="Redox" height="170" src="img/screenshots/Fancy_opacity.png">
@@ -18,8 +35,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="170" src="img/screenshots/Boot.png">
 <img alt="Redox" height="170" src="img/screenshots/start.png">
 
-<a name="compile-help"/>
-## Help! Redox won't compile!
+## <a name="compile_help"></a>Help! Redox won't compile!
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
@@ -41,10 +57,10 @@ When you have completed these steps, done a full rebuild, you can open an issue.
 
 Else, your issue may be closed.
 
-## Contributing to Redox
+## <a name="contributing"></a>Contributing to Redox
 If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
 
-## Cloning the repository
+## <a name="cloning"></a>Cloning the repository
 
 Make sure you get submodules when you clone the repository.
 ```bash
@@ -52,115 +68,139 @@ git clone --recursive
 ```
 
 If you already have a copy of the repository locally without submodules, you
-can download them with: 
+can download them with:
 ```bash
 git submodule update --init
 ```
 
-## Building on Debian/Ubuntu
-- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+## <a name="installation"></a>Installation
+
+### <a name="building_running"></a> Building and running
+
+#### <a name="debian_ubuntu"></a> Debian/Ubuntu family
+
+##### Building
+
+* Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
 ./ubuntu.sh
 ./binary.sh
 ```
-- Make the project
+* Make the project
 ```bash
 make all
 ```
 
-## Running on Debian/Ubuntu
-- Install VirtualBox
+##### Running
+
+* Install VirtualBox
 ```bash
 sudo apt-get install virtualbox
 ```
-- Run VirtualBox
+* Run VirtualBox
 ```bash
 make virtualbox
 ```
 
-## Running on Debian/Ubuntu (Qemu, Advanced)
-- Install Qemu
+##### Running (Qemu, Advanced)
+* Install Qemu
 ```bash
 sudo apt-get install qemu-system-x86 qemu-kvm
 ```
-- Run Qemu
+* Run Qemu
 ```bash
 make qemu
 ```
-## Building on Arch Linux
-- Run the setup script and enter your password when prompted (to install the Rust compiler and its dependencies)
+
+#### <a name="archlinux"></a> Archlinux
+
+##### Building
+* Run the setup script and enter your password when prompted (to install the Rust compiler and its dependencies)
 ```bash
 cd setup
 ./arch.sh
 ./binary.sh
 ```
-- Make the project
+* Make the project
 ```bash
 make
 ```
-## Running on Arch Linux
-- Virtualbox was completely setup as part of the script.
-- Run Virtualbox
+
+##### Running
+
+* Virtualbox was completely setup as part of the script.
+* Run Virtualbox
 ```bash
 make virtualbox
 ```
 
+##### Running (Qemu, Advanced)
 
-## Running on Arch Linux (Qemu)
-
-- Install Qemu
+* Install Qemu
 ```bash
 $ sudo pacman -S qemu
 ```
-- Run redox
+* Run redox
 ```bash
 $ make qemu
 ```
 
-## Building on Fedora
-- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+#### <a name="fedora"></a> Fedora
+
+##### Building
+
+* Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
 ./fedora.sh
 ./binary.sh
 ```
-- Make the project
+* Make the project
 ```bash
 make all
 ```
-## Running on Fedora (Qemu, Advanced)
-- Install Qemu
+
+##### Running (Qemu, Advanced)
+
+* Install Qemu
 ```bash
 sudo yum install qemu-system-x86 qemu-kvm
 ```
-- Run Qemu
+* Run Qemu
 ```bash
 make qemu
 ```
 
-## Building on SUSE
-- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+#### <a name="suse"></a> Suse
+
+##### Building
+
+* Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
 ./suse.sh
 ./binary.sh
 ```
-- Make the project
+* Make the project
 ```bash
 make all
 ```
-## Running on SUSE (Qemu, Advanced)
-- Install Qemu
+
+##### Running (Qemu, Advanced)
+
+* Install Qemu
 ```bash
 sudo zypper install qemu-x86 qemu-kvm
 ```
-- Run Qemu
+* Run Qemu
 ```bash
 make qemu
 ```
 
-## Building and Running on NixOS
+#### <a name="nixos"></a> NixOS
+
+##### Building and running (Qemu, Advanced)
 
 ```bash
 nix-shell setup/dev-env.nix
@@ -168,9 +208,12 @@ make all
 make qemu
 ```
 
-## Building on OS X
-- Install MacPorts or Homebrew
-- Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
+#### <a name="osx"></a> OS X
+
+##### Building
+
+* Install MacPorts or Homebrew
+* Run the setup script and enter your password when prompted (to install Rust compiler and its dependencies)
 ```bash
 cd setup
 # MacPorts
@@ -179,31 +222,33 @@ cd setup
 ./osx-homebrew.sh
 ./binary.sh
 ```
-- Make the project
+* Make the project
 ```bash
 make all
 ```
 
-## Running on OS X
-- Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
-- Make sure it is installed for all users, in /Applications/ or edit the Makefile VBM path
-- Run VirtualBox
+##### Running
+* Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
+* Make sure it is installed for all users, in /Applications/ or edit the Makefile VBM path
+* Run VirtualBox
 ```bash
 make virtualbox
 ```
 
-## Building on Windows
-- Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
-- The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
-- Open the Rust nightly shell in the redox repository
+#### <a name="windows"></a> Windows
+
+##### Building
+* Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
+* The direct link to the 32-bit nightly is https://static.rust-lang.org/dist/rust-nightly-i686-pc-windows-gnu.msi
+* Open the Rust nightly shell in the redox repository
 ```bash
 make all
 ```
 
-## Running on Windows
-- Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
-- Make sure to install to C:\Program Files\Oracle\VirtualBox or edit the Makefile VBM path
-- Run VirtualBox
+##### Running
+* Install VirtualBox from https://www.virtualbox.org/wiki/Downloads
+* Make sure to install to C:\Program Files\Oracle\VirtualBox or edit the Makefile VBM path
+* Run VirtualBox
 ```bash
 make virtualbox
 ```
