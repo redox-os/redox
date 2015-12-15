@@ -53,7 +53,7 @@ When you have completed these steps, done a full rebuild, you can open an issue.
 - What host OS are you building Redox on?
 - What is the output of `rustc -V`?
 - Have you made any changes?
-- Is it a build problem or a launch problem? On some systems, VirtualBox/QEMU may have problems. Try `make virtualbox`, `make qemu`, and `make qemu`.
+- Is it a build problem or a launch problem? On some systems, VirtualBox/QEMU may have problems. Try `make virtualbox`, `make qemu`, and `make qemu_no_kvm`.
 
 Else, your issue may be closed.
 
