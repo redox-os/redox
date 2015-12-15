@@ -4,3 +4,6 @@
 [submodule "liborbtk"]
 	path = liborbtk
 	url = https://github.com/redox-os/orbtk.git
+[submodule "crates/ion"]
+	path = crates/ion
+	url = https://github.com/redox-os/ion.git
