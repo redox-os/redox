@@ -74,8 +74,8 @@ It's completely fine to just submit a small pull request without first making an
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
 8. Optionally run `rustfmt` on the files you changed and commit again if it did anything.
-9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`)
-10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge`, which is not usually preferred for local repositories, although it is fine in some cases.)
+9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
+10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
 11. Repeat step 9 to make sure the rebase still works
 12. Push to your fork (`git push origin my-branch`)
 13. Create a pull request
@@ -83,7 +83,7 @@ It's completely fine to just submit a small pull request without first making an
 15. Submit!
 
 <a name="best-practices" />
-## Best Practices/Guidelines
+## Best Practices and Guidelines
 
 <!-- TODO add this section to the index/TOC -->
 
