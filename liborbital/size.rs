@@ -2,7 +2,7 @@ use std::cmp;
 use std::ops::{Add, Sub};
 
 /// A size
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug, Default)]
 pub struct Size {
     pub width: usize,
     pub height: usize,
