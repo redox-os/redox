@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to Redox
 
 Thank you for your interest in contributing to Redox! This document is a guide to help newcomers contribute!  
 There are many ways to help us out and we appreciate all of them.
@@ -25,6 +25,7 @@ There are many ways to help us out and we appreciate all of them.
 
 * [redox-os.org](http://redox-os.org)
 * [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
+* [rust-lang.org](http://rust-lang.org)
 
 <!-- TODO add more links here -->
 
