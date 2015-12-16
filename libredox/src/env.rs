@@ -6,7 +6,7 @@ use fs::File;
 use path::PathBuf;
 use io::Result;
 use slice::Iter;
-use string::{String, ToString};
+use string::ToString;
 use vec::Vec;
 
 use syscall::{SysError, sys_chdir, ENOENT};
