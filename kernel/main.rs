@@ -237,9 +237,6 @@ fn event_loop() -> ! {
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
-    //Make sure interrupts are disabled
-    asm!("cli" : : : : "intel", "volatile");
-
     //Zero BSS, this initializes statics that are set to 0
     {
         extern {
@@ -460,6 +457,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
         }
         0x21 => env().on_irq(0x1), // keyboard
+        0x22 => env().on_irq(0x2), // cascade
         0x23 => env().on_irq(0x3), // serial 2 and 4
         0x24 => env().on_irq(0x4), // serial 1 and 3
         0x25 => env().on_irq(0x5), //parallel 2
