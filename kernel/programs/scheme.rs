@@ -271,15 +271,12 @@ impl SchemeItem {
                     let physical_address = memory::alloc(virtual_size + hack);
 
                     if physical_address > 0 {
-                        debugln!("VADDR: {:X} OFF: {:X} FLG: {:X} HACK: {:X}", segment.vaddr, segment.off, segment.flags, hack);
-
                         // Copy progbits
                         ::memcpy((physical_address + hack) as *mut u8,
                                  (executable.data + segment.off as usize) as *const u8,
                                  segment.file_len as usize);
                         // Zero bss
                         if segment.mem_len > segment.file_len {
-                            debugln!("BSS: {:X} {}", segment.vaddr + segment.file_len, segment.mem_len - segment.file_len);
                             ::memset((physical_address + hack + segment.file_len as usize) as *mut u8,
                                     0,
                                     segment.mem_len as usize - segment.file_len as usize);
