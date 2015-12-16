@@ -4,6 +4,7 @@ use super::avl;
 use super::space_map;
 use super::taskq::{self, Taskq};
 use super::txg;
+use util;
 use super::vdev;
 
 /*

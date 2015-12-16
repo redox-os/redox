@@ -30,6 +30,10 @@ fn is_p2(x: u64) -> bool { x & (x - 1) == 0 }
 
 fn is_p2_aligned(v: u64, a: u64) { v & (a - 1) == 0 }
 
+pub fn highbit64(u: u64) -> u32 {
+    63 - u.leading_zeros()
+}
+
 /*
  * Typed version of the P2* macros.  These macros should be used to ensure
  * that the result is correctly calculated based on the data type of (x),
