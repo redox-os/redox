@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to Redox
 
 Thank you for your interest in contributing to Redox! This document is a guide to help newcomers contribute!  
 There are many ways to help us out and we appreciate all of them.
@@ -8,7 +8,7 @@ There are many ways to help us out and we appreciate all of them.
 * [Communication](#communication)
   * [Slack Chat](#slack)
   * [Reddit](#reddit)
-* [How to contribute](#how-to-contribute)
+* [Direct Contributing](#direct-contributing)
   * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
   * [GitHub Issues](#gh-issues)
   * [Pull Requests](#prs)
@@ -17,16 +17,17 @@ There are many ways to help us out and we appreciate all of them.
   * [General](#general)
   * [Kernel](#kernel)
   * [Testing pratices](#testing-practices)
-* [Style guidelines](#style-guidelines)
+* [Style Guidelines](#style-guidelines)
   * [Rust](#rust-style-guidelines)
   * [Git](#git-style-guidelines)
 * [Interactions with other projects](#interactions-with-other-projects)
 * [Applications vs Kernel](#applications-vs-kernel)
 
-### External links
+### Other External Links
 
 * [redox-os.org](http://redox-os.org)
 * [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
+* [rust-lang.org](http://rust-lang.org)
 
 <!-- TODO add more links here -->
 
@@ -41,10 +42,10 @@ The quickest and most open way to communicate with the Redox team is with [Slack
 <a name="reddit" />
 ### Reddit
 
-Don't forget to talk about the RedoxOS in [Reddit](https://www.reddit.com/r/rust/), especially when the new RedoxOS weekly news has been edited!
+You can find Redox on reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [/r/redox/](https://www.reddit.com/r/redox/). The weekly update news is posted on the former.
 
-<a name="how-to-contribute" />
-## How to contribute ?
+<a name="direct-contributing" />
+## Direct Contributing
 
 <a name="easy-targets" />
 ### Low-Hanging Fruit - Easy Targets for Newbies
@@ -96,7 +97,7 @@ It's completely fine to just submit a small pull request without first making an
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
-8. Optionally run `rustfmt` on the files you changed and commit again if it did anything.
+8. Optionally run `rustfmt` on the files you changed and commit again if it did anything (check with `git diff` first)
 9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
 10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
 11. Repeat step 9 to make sure the rebase still works
@@ -154,13 +155,3 @@ Since Rust is a relatively small and new language compared to others like C, the
 
 * Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`". This logically makes more sense because, say you're scrolling through history, and you see a commit named "`create file X`". You immediately know that this is what this commit will do to your working directory. It also generally is just more consistent and conventional.
 * Try to remove duplicate commits from PRs as these clutter up history.
-
-<a name="interactions-with-other-projects" />
-## Interactions with Other Projects
-
-<!-- TODO fill out this section -->
-
-<a name="applications-vs-kernel" />
-## Applications vs Kernel
-
-<!-- TODO fill out this section -->
