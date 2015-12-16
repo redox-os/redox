@@ -24,7 +24,7 @@ use sync::Intex;
 
 use syscall::{SysError, O_CREAT, ENOENT, EIO};
 
-const PIO: bool = false;
+const PIO: bool = true;
 
 /// The header of the fs
 #[repr(packed)]
