@@ -1,4 +1,4 @@
-use core::{fmt, ptr, mem, slice, str};
+use core::{fmt, ptr, slice, str};
 use panic::panic_impl;
 use env::{args_init, args_destroy};
 use vec::Vec;
