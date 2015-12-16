@@ -11,7 +11,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 ## Contents
 
-* [What it looks like](#what_it_looks_like)
+* [What it looks like](#what-it-looks-like)
 * [Help! Redox won't compile](#compile-help)
 * [Contributing to Redox](#contributing)
 * [Cloning the repository](#cloning)
@@ -26,7 +26,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
     * [Windows](#windows)
 
 
-## <a name="what_it_looks_like" />What it looks like
+## <a name="what-it-looks-like" />What it looks like
 
 <img alt="Redox" height="150" src="img/screenshots/Desktop.png">
 <img alt="Redox" height="150" src="img/screenshots/Fancy_opacity.png">
@@ -65,7 +65,7 @@ git submodule update --init
 
 ## <a name="installation" />Installation
 
-### <a name="building_running" />Building and running
+### <a name="building-running" />Building and running
 
 #### <a name="debian_ubuntu" />Debian/Ubuntu family
 
