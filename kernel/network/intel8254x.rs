@@ -122,10 +122,7 @@ impl KScheme for Intel8254x {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            unsafe {
-                debug::dh(self.read(ICR) as usize);
-                debug::dl();
-            }
+            unsafe { self.read(ICR) };
 
             self.sync();
         }

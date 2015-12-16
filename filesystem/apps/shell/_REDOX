@@ -1,4 +1,3 @@
 name=Shell
-icon=file:/ui/mimetypes/application-x-executable-script.bmp
 author=Jeremy Soller
 description=Shell for Redox
