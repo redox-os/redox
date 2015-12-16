@@ -6,20 +6,20 @@ There are many ways to help us out and we appreciate all of them.
 ### Index
 
 * [Communication](#communication)
-  * [Slack Chat](#slack)
-  * [Reddit](#reddit)
+ * [Slack Chat](#slack)
+ * [Reddit](#reddit)
 * [Direct Contributing](#direct-contributing)
-  * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
-  * [GitHub Issues](#gh-issues)
-  * [Pull Requests](#prs)
-  * [Creating a Pull Request](#creating-a-pr)
+ * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
+ * [GitHub Issues](#gh-issues)
+ * [Pull Requests](#prs)
+ * [Creating a Pull Request](#creating-a-pr)
 * [Best Practices/Guidelines](#best-practices)
-  * [General](#general)
-  * [Kernel](#kernel)
-  * [Testing pratices](#testing-practices)
+ * [General](#general)
+ * [Kernel](#kernel)
+ * [Testing Practices](#testing-practices)
 * [Style Guidelines](#style-guidelines)
-  * [Rust](#rust-style-guidelines)
-  * [Git](#git-style-guidelines)
+ * [Rust](#rust-style-guidelines)
+ * [Git](#git-style-guidelines)
 * [Interactions with other projects](#interactions-with-other-projects)
 * [Applications vs Kernel](#applications-vs-kernel)
 
@@ -53,20 +53,20 @@ You can find Redox on reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [
 <!-- TODO improve this section -->
 
 * If you're not fluent in [Rust](https://www.rust-lang.org/):
-    * Writing documentation
-    * Using/testing Redox, filing issues for bugs and needed features
-    * Web development (Redox website, separate repo)
-    * Unit tests (may require minimal knowledge of rust)
+ * Writing documentation
+ * Using/testing Redox, filing issues for bugs and needed features
+ * Web development (Redox website, separate repo)
+ * Unit tests (may require minimal knowledge of rust)
 
 * If you are fluent in Rust, but not OS Development:
-    * Apps
-    * Shell (Ion) development
-    * Package manager (Oxide) development
-    * High-level code
+ * Apps
+ * Shell (Ion) development
+ * Package manager (Oxide) development
+ * High-level code
 
 * If you are fluent in Rust, and have experience with OS Dev:
-    * Familiarize yourself with the repository and codebase
-    * Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
+ * Familiarize yourself with the repository and codebase
+ * Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
 
 <a name="gh-issues" />
 ### GitHub Issues
@@ -83,17 +83,17 @@ It's completely fine to just submit a small pull request without first making an
 
 1. Fork the repository
 2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
-    * HTTPS:`git clone https://github.com/redox-os/redox.git`
-    * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
-    * Then rebase: `git rebase upstream master`  
-    Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
+ * HTTPS:`git clone https://github.com/redox-os/redox.git`
+ * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
+ * Then rebase: `git rebase upstream master`  
+ Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
 3. Add your fork with
-    * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
-    * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
+ * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
+ * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
 4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
-    * Fetch the upstream:`git fetch upstream master`
-    * Rebase with local commits:`git rebase upstream master`
-    * Update the submodules:`git submodule update --init`
+ * Fetch the upstream:`git fetch upstream master`
+ * Rebase with local commits:`git rebase upstream master`
+ * Update the submodules:`git submodule update --init`
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
@@ -155,3 +155,5 @@ Since Rust is a relatively small and new language compared to others like C, the
 
 * Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`". This logically makes more sense because, say you're scrolling through history, and you see a commit named "`create file X`". You immediately know that this is what this commit will do to your working directory. It also generally is just more consistent and conventional.
 * Try to remove duplicate commits from PRs as these clutter up history.
+* Generally, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
+* When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to. 
