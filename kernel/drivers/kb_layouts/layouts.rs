@@ -2,6 +2,7 @@
 /// The layout can be:
 /// *   ENGLISH
 /// *   FRENCH
+/// *   GERMAN
 pub enum Layout {
     ENGLISH,
     FRENCH,
@@ -15,9 +16,9 @@ pub enum Layout {
 /// ```
 /// let layout = Layout::ENGLISH;
 /// //Get the scancode 'EN'
-/// let sc : [[char; 2]; 58] = get_scancode_from_layout(layout);
+/// let sc : [[char; 3]; 58] = get_scancode_from_layout(layout);
 /// ```
-pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 2] {
+pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
     match *layout {
         Layout::ENGLISH => SCANCODES_EN[scancode as usize],
         Layout::FRENCH => SCANCODES_FR[scancode as usize],
@@ -25,18 +26,34 @@ pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 2] {
     }
 }
 
+fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
+    let keys : &[(u8, [char; 3])] = match *layout {
+        Layout::ENGLISH => SCANCODES_EXTRA_EN,
+        Layout::FRENCH => SCANCODES_EXTRA_FR,
+        Layout::GERMAN => SCANCODES_EXTRA_DE,
+    };
+    match keys.iter().filter(|&&(code, keys)| code == scancode).next() {
+        Some(&(code, keys)) => keys,
+        None => ['\0', '\0', '\0']
+    }
+}
+
+
 /// Function to return the character associated with the scancode, and the layout
 pub fn char_for_scancode(scancode: u8, shift: bool, altgr: bool, layout: &Layout) -> char {
     let mut character = '\x00';
+    let mut characters: [char; 3] = ['\0', '\0', '\0'];
     if scancode < 58 {
-        let characters: [char; 3] = get_scancode_from_layout(layout, scancode);
-        if altgr {
-            character = characters[2];
-        } else if shift {
-            character = characters[1];
-        } else {
-            character = characters[0];
-        }
+        characters = get_scancode_from_layout(layout, scancode);
+    } else {
+        characters = get_special_keys_from_layout(layout, scancode);
+    }
+    if altgr {
+        character = characters[2];
+    } else if shift {
+        character = characters[1];
+    } else {
+        character = characters[0];
     }
     character
 }
@@ -103,8 +120,11 @@ static SCANCODES_EN: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         ['\0', '\0', '\0'],
                                         [' ', ' ', ' ']];
 
+/// Special keys, not present on every keyboard
+static SCANCODES_EXTRA_EN: &'static[(u8, [char; 3])] = &[];
+
 /// Scancodes for French keyboards
-static SCANCODES_FR: [[char; 2]; 58] = [['\0', '\0', '\0'],
+static SCANCODES_FR: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         ['\x1B', '\x1B', '\0'],
                                         ['1', '&', '1'],
                                         ['2', 'é', '2'],
@@ -163,6 +183,9 @@ static SCANCODES_FR: [[char; 2]; 58] = [['\0', '\0', '\0'],
                                         ['\0', '\0', '\0'],
                                         [' ', ' ', ' ']];
 
+/// Special keys, not present on every keyboard
+static SCANCODES_EXTRA_FR: &'static[(u8, [char; 3])] = &[];
+
 /// Scancodes for German keyboards
 static SCANCODES_DE: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         ['\x1B', '\x1B', '\x1B'],
@@ -175,7 +198,7 @@ static SCANCODES_DE: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         ['7', '/', '{'],
                                         ['8', '(', '['],
                                         ['9', ')', ']'],
-                                        ['0', '=', '{'],
+                                        ['0', '=', '}'],
                                         ['ß', '?', '\\'],
                                         ['\'', '`', '\''],
                                         ['\0', '\0', '\0'],
@@ -205,9 +228,9 @@ static SCANCODES_DE: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         ['l', 'L', 'l'],
                                         ['ö', 'Ö', 'ö'],
                                         ['ä', 'Ä', 'ä'],
-                                        ['#', '\'', '#'],
+                                        ['^', '°', '^'],
                                         ['\0', '\0', '\0'],
-                                        ['<', '>', '|'],
+                                        ['#', '\'', '#'],
                                         ['y', 'Y', 'y'],
                                         ['x', 'X', 'x'],
                                         ['c', 'C', 'c'],
@@ -222,4 +245,7 @@ static SCANCODES_DE: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         ['\0', '\0', '\0'],
                                         ['\0', '\0', '\0'],
                                         [' ', ' ', ' ']];
+
+/// Special keys, not present on every keyboard
+static SCANCODES_EXTRA_DE: &'static[(u8, [char; 3])] = &[(0x56, ['<', '>', '|'])];
 

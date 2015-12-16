@@ -145,13 +145,10 @@ impl Ps2 {
             }
         } else if scancode == 0xE0 {
             let scancode_byte_2 = unsafe { self.data.read() };
-            if scancode_byte_2 == 0x11 {
+            if scancode_byte_2 == 0x38 {
                 self.altgr = true;
-            } else if scancode_byte_2 == 0xF0 {
-                let scancode_byte_3 = unsafe { self.data.read() };
-                if scancode_byte_3 == 0x11 {
-                    self.altgr = false;
-                }
+            } else if scancode_byte_2 == 0xB8 {
+                self.altgr = false;
             }
         }
 
