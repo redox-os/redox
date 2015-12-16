@@ -1,4 +1,4 @@
-<img alt="Redox" height="190" src="img/logo.png">
+<img alt="Redox" height="150" src="img/logo.png">
 
 **Redox** is a operating system written in pure Rust, designed to be modular and secure. The development blog can be found at http://www.redox-os.org.
 
@@ -11,14 +11,14 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 
 ## Contents
 
-* [What it looks like](#what_it_looks_like)
-* [HELP! Redox won't compile](#compile-help)
+* [What it looks like](#what-it-looks-like)
+* [Help! Redox won't compile](#compile-help)
 * [Contributing to Redox](#contributing)
 * [Cloning the repository](#cloning)
 * [Installation](#installation)
-  * [Building and running](#bulding_running)
-    * [Debian and Ubuntu family](#debian_ubuntu)
-    * [Archlinux](#archlinux)
+  * [Building and running](#bulding-running)
+    * [Debian and Ubuntu family](#debian-ubuntu)
+    * [Archlinux](#arch-linux)
     * [Fedora](#fedora)
     * [Suse](#suse)
     * [NixOS](#nixos)
@@ -26,41 +26,31 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
     * [Windows](#windows)
 
 
-## <a name="what_it_looks_like"></a>What it looks like
+## <a name="what-it-looks-like" />What it looks like
 
-<img alt="Redox" height="170" src="img/screenshots/Desktop.png">
-<img alt="Redox" height="170" src="img/screenshots/Fancy_opacity.png">
-<img alt="Redox" height="170" src="img/screenshots/File_manager.png">
-<img alt="Redox" height="170" src="img/screenshots/Sodium_v1.png">
-<img alt="Redox" height="170" src="img/screenshots/Boot.png">
-<img alt="Redox" height="170" src="img/screenshots/start.png">
+<img alt="Redox" height="150" src="img/screenshots/Desktop.png">
+<img alt="Redox" height="150" src="img/screenshots/Fancy_opacity.png">
+<img alt="Redox" height="150" src="img/screenshots/File_manager.png">
+<img alt="Redox" height="150" src="img/screenshots/Sodium_v1.png">
+<img alt="Redox" height="150" src="img/screenshots/Boot.png">
+<img alt="Redox" height="150" src="img/screenshots/start.png">
 
-## <a name="compile_help"></a>Help! Redox won't compile!
+## <a name="compile-help" />Help! Redox won't compile!
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
 1. Run `make clean`.
 2. Run `git clean -X -f -d`.
-3. Make sure you have **the latest version of Rust nightly!** (`multirust` is recommended for managing Rust versions).
+3. Make sure you have **the latest version of Rust nightly!** ([multirust](https://github.com/brson/multirust) is recommended for managing Rust versions).
 4. Update **LLVM**, **GNU Make**, **nasm** and **QEMU/VirtualBox**.
 5. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
 
 and then rebuild!
 
-When you have completed these steps, done a full rebuild, you can open an issue. **Make sure you answer the following questions**:
-
-- Have you followed the steps in "Help! Redox won't compile!"? (confirmation)
-- What host OS are you building Redox on?
-- What is the output of `rustc -V`?
-- Have you made any changes?
-- Is it a build problem or a launch problem? On some systems, VirtualBox/QEMU may have problems. Try `make virtualbox`, `make qemu`, and `make qemu_no_kvm`.
-
-Else, your issue may be closed.
-
-## <a name="contributing"></a>Contributing to Redox
+## <a name="contributing" />Contributing to Redox
 If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
 
-## <a name="cloning"></a>Cloning the repository
+## <a name="cloning" />Cloning the Repository
 
 Make sure you get submodules when you clone the repository.
 ```bash
@@ -73,11 +63,11 @@ can download them with:
 git submodule update --init
 ```
 
-## <a name="installation"></a>Installation
+## <a name="installation" />Installation
 
-### <a name="building_running"></a>Building and running
+### <a name="building-running" />Building and running
 
-#### <a name="debian_ubuntu"></a>Debian/Ubuntu family
+#### <a name="debian_ubuntu" />Debian/Ubuntu family
 
 ##### Building
 
@@ -113,7 +103,7 @@ sudo apt-get install qemu-system-x86 qemu-kvm
 make qemu
 ```
 
-#### <a name="archlinux"></a>Archlinux
+#### <a name="arch-linux"></a>Arch Linux
 
 ##### Building
 * Run the setup script and enter your password when prompted (to install the Rust compiler and its dependencies)
@@ -172,7 +162,7 @@ sudo yum install qemu-system-x86 qemu-kvm
 make qemu
 ```
 
-#### <a name="suse"></a>Suse
+#### <a name="suse" />SUSE
 
 ##### Building
 
@@ -198,7 +188,7 @@ sudo zypper install qemu-x86 qemu-kvm
 make qemu
 ```
 
-#### <a name="nixos"></a>NixOS
+#### <a name="nixos" />NixOS
 
 ##### Building and running (Qemu, Advanced)
 
@@ -208,7 +198,7 @@ make all
 make qemu
 ```
 
-#### <a name="osx"></a>OS X
+#### <a name="osx" />OS X
 
 ##### Building
 
@@ -235,7 +225,7 @@ make all
 make virtualbox
 ```
 
-#### <a name="windows"></a>Windows
+#### <a name="windows" />Windows
 
 ##### Building
 * Download and install the latest 32-bit Rust nightly from http://www.rust-lang.org/install.html
