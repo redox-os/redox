@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to Redox
 
 Thank you for your interest in contributing to Redox! This document is a guide to help newcomers contribute!  
 There are many ways to help us out and we appreciate all of them.
@@ -6,161 +6,142 @@ There are many ways to help us out and we appreciate all of them.
 ### Index
 
 * [Communication](#communication)
-  * [Slack Chat](#slack)
-  * [Reddit](#reddit)
-* [How to contribute?](#how-to-contribute)
-  * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
-  * [GitHub Issues](#gh-issues)
-  * [Pull Requests](#prs)
-  * [Creating a Pull Request](#creating-a-pr)
+ * [Slack Chat](#slack)
+ * [Reddit](#reddit)
+* [Direct Contributing](#direct-contributing)
+ * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
+ * [GitHub Issues](#gh-issues)
+ * [Pull Requests](#prs)
+ * [Creating a Pull Request](#creating-a-pr)
 * [Best Practices/Guidelines](#best-practices)
-  * [General](#general)
-  * [Kernel](#kernel)
-  * [Testing pratices](#testing-practices)
-* [Style guidelines](#style-guidelines)
-  * [Rust](#rust-style-guidelines)
-  * [Git](#git-style-guidelines)
+ * [General](#general)
+ * [Kernel](#kernel)
+ * [Testing Practices](#testing-practices)
+* [Style Guidelines](#style-guidelines)
+ * [Rust](#rust-style-guidelines)
+ * [Git](#git-style-guidelines)
 * [Interactions with other projects](#interactions-with-other-projects)
 * [Applications vs Kernel](#applications-vs-kernel)
 
-### External links
+### <a name="extern-links" /> Other External Links
 
 * [redox-os.org](http://redox-os.org)
 * [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
+* [rust-lang.org](http://rust-lang.org)
 
 <!-- TODO add more links here -->
 
-<a name="communication" />
-## Communication
+## <a name="communication" /> Communication
 
-<a name="slack" />
-### Slack Chat
+### <a name="slack" /> Slack Chat
 
 The quickest and most open way to communicate with the Redox team is with [Slack](https://slack.com/). Currently, the only way to join our slack team is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
 
-<a name="reddit" />
-### Reddit
+### <a name="reddit" /> Reddit
 
-Don't forget to talk about the RedoxOS in [Reddit](https://www.reddit.com/r/rust/), especially when the new RedoxOS weekly news has been edited!
+You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [/r/redox/](https://www.reddit.com/r/redox/). The weekly update news is posted on the former.
 
-<a name="how-to-contribute" />
-## How to contribute ?
+## <a name="direct-contributing" /> Direct Contributing
 
-<a name="easy-targets" />
-### Low-Hanging Fruit - Easy Targets for Newbies
+### <a name="easy-targets" /> Low-Hanging Fruit - Easy Targets for Newbies
 
 <!-- TODO improve this section -->
 
-* If you're not fluent in [Rust](https://www.rust-lang.org/):
-    * Writing documentation
-    * Using/testing Redox, filing issues for bugs and needed features
-    * Web development (Redox website, separate repo)
-    * Unit tests (may require minimal knowledge of rust)
+* If you're not fluent in Rust:
+
+ * Writing documentation
+ * Using/testing Redox, filing issues for bugs and needed features
+ * Web development (Redox website, separate repo)
+ * Writing unit tests (may require minimal knowledge of rust)
 
 * If you are fluent in Rust, but not OS Development:
-    * Apps
-    * Shell (Ion) development
-    * Package manager (Oxide) development
-    * High-level code
+
+ * Apps development
+ * Shell ((Ion)[https://github.com/redox-os/ion]) development
+ * Package manager ((Oxide)[https://github.com/redox-os/oxide]) development
+ * Other high-level code tasks
 
 * If you are fluent in Rust, and have experience with OS Dev:
-    * Familiarize yourself with the repository and codebase
-    * Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
 
-<a name="gh-issues" />
-### GitHub Issues
+ * Familiarize yourself with the repository and codebase
+ * Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
+ * Improve and optimize code, especially in the kernel
 
-A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics, simply put, issues try to state something more than ask.
+### <a name="gh-issues" /> GitHub Issues
 
-<a name="prs" />
-### Pull Requests
+A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
 
-It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first.
+### <a name="prs" /> Pull Requests
+
+It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first. Also see (git guidelines)[#git-style-guidelines]
 
 <a name="creating-a-pr" />
 ### Creating a Pull Request
 
 1. Fork the repository
 2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
-    * HTTPS:`git clone https://github.com/redox-os/redox.git`
-    * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
-    * Then rebase: `git rebase upstream master`  
-    Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
+ * HTTPS:`git clone https://github.com/redox-os/redox.git`
+ * SSH:`git clone git@github.com:redox-os/redox.git --origin upstream --recursive`
+ * Then rebase: `git rebase upstream master`  
+ Use HTTPS if you don't know which one to use. (Recommended: learn about SSH if you don't want to have to login every time you push/pull!)
 3. Add your fork with
-    * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
-    * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
+ * HTTPS:`git remote add origin https://github.com/your-username/redox.git`
+ * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
 4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
-    * Fetch the upstream:`git fetch upstream master`
-    * Rebase with local commits:`git rebase upstream master`
-    * Update the submodules:`git submodule update --init`
+ * Fetch the upstream:`git fetch upstream master`
+ * Rebase with local commits:`git rebase upstream master`
+ * Update the submodules:`git submodule update --init`
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
-8. Optionally run `rustfmt` on the files you changed and commit again if it did anything.
+8. Optionally run (rustfmt)[https://github.com/rust-lang-nursery/rustfmt] on the files you changed and commit again if it did anything (check with `git diff` first)
 9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
 10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
-11. Repeat step 9 to make sure the rebase still works
+11. Repeat step 9 to make sure the rebase still builds and starts
 12. Push to your fork (`git push origin my-branch`)
 13. Create a pull request
 14. Describe your changes
 15. Submit!
 
-<a name="best-practices" />
-## Best Practices and Guidelines
+## <a name="best-practices" /> Best Practices and Guidelines
 
-<!-- TODO add this section to the index/TOC -->
-
-<a name="general" />
-### General
+### <a name="general" /> General
 
 * Follow the style conventions
 * Use `.into()` and `.to_owned()` over `.to_string()`.
 * Prefer passing references to the data over owned data. (Don't take `String`, take `&str`. Don't take `Vec<T>` take `&[T]`).
 * Use generics, traits, and other abstractions Rust provides.
 * Be sure to mark parts that need work with `TODO`, `FIXME`, `BUG`, and `UNOPTIMIZED`.
-* Don't forget to look after news in [Reddit](https://www.reddit.com/r/rust/).
+* Check (Slack)[#slack], (the Website)[#], and **the Subreddit** frequently.
 
-<a name="kernel" />
-### Kernel
+### <a name="kernel" /> Kernel
 
 * When trying to access a slice, **always** use the `common::GetSlice` trait and the `.get_slice()` method to get a slice without causing the kernel to panic.  
   The problem with slicing in regular Rust, e.g. `foo[a..b]`, is that if someone tries to access with a range that is out of bounds of an array/string/slice, it will cause a panic at runtime, as a safety measure. Same thing when accessing an element.  
   Always use `foo.get(n)` instead of `foo[n]` and try to cover for the possibility of `Option::None`. Doing the regular way may work fine for applications, but never in the kernel. No possible panics should ever exist in kernel space, because then the whole OS would just stop working.
 
-<a name="testing-practices" />
-### Testing Practices
+### <a name="testing-practices" /> Testing Practices
 
 * It's always better to test boot (`make qemu` or `make virtualbox`) every time you make a change, because it is important to see how the OS boots and works after it compiles.  
   Even though Rust is a safety-oriented language, something as unstable as an in-dev operating system will have problems in many cases and may completely break on even the slightest critical change.  
   Also, make sure you check how the unmodified version runs on your machine before making any changes. Else, you won't have anything to compare to, and it will generally just lead to confusion. TLDR: Rebuild and test boot often.
 
 * To run the ZFS tests:
-    * Create the zfs.img only once. If one has not been created, run `make filesystem/apps/zfs/zfs.img` before booting into Redox.
-    * Run `open zfs.img` to open the created ZFS image.
-    * Run `file /home/LICENSE.md` twice to ensure ARC isn't broken.
+ * Create the zfs.img only once. If one has not been created, run `make filesystem/apps/zfs/zfs.img` before booting into Redox.
+ * Run `open zfs.img` to open the created ZFS image.
+ * Run `file /home/LICENSE.md` twice to ensure ARC isn't broken.
 
 <a name="style-guidelines" />
 ## Style Guidelines
-
-<!-- TODO improve this section -->
 
 <a name="rust-style-guidelines" />
 ### Rust
 
 Since Rust is a relatively small and new language compared to others like C, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
 
-<a name="git-style-guidelines" />
-### Git
+### <a name="git-style-guidelines" /> Git
 
 * Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`". This logically makes more sense because, say you're scrolling through history, and you see a commit named "`create file X`". You immediately know that this is what this commit will do to your working directory. It also generally is just more consistent and conventional.
 * Try to remove duplicate commits from PRs as these clutter up history.
-
-<a name="interactions-with-other-projects" />
-## Interactions with Other Projects
-
-<!-- TODO fill out this section -->
-
-<a name="applications-vs-kernel" />
-## Applications vs Kernel
-
-<!-- TODO fill out this section -->
+* Generally, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
+* When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to. 
