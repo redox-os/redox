@@ -23,6 +23,7 @@ There are many ways to help us out and we appreciate all of them.
 * [Interactions with other projects](#interactions-with-other-projects)
 * [Applications vs Kernel](#applications-vs-kernel)
 
+<a name="extern-links" />
 ### Other External Links
 
 * [redox-os.org](http://redox-os.org)
@@ -42,7 +43,7 @@ The quickest and most open way to communicate with the Redox team is with [Slack
 <a name="reddit" />
 ### Reddit
 
-You can find Redox on reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [/r/redox/](https://www.reddit.com/r/redox/). The weekly update news is posted on the former.
+You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [/r/redox/](https://www.reddit.com/r/redox/). The weekly update news is posted on the former.
 
 <a name="direct-contributing" />
 ## Direct Contributing
@@ -52,31 +53,35 @@ You can find Redox on reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [
 
 <!-- TODO improve this section -->
 
-* If you're not fluent in [Rust](https://www.rust-lang.org/):
+* If you're not fluent in Rust:
+
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
  * Web development (Redox website, separate repo)
- * Unit tests (may require minimal knowledge of rust)
+ * Writing unit tests (may require minimal knowledge of rust)
 
 * If you are fluent in Rust, but not OS Development:
- * Apps
- * Shell (Ion) development
- * Package manager (Oxide) development
- * High-level code
+
+ * Apps development
+ * Shell ((Ion)[https://github.com/redox-os/ion]) development
+ * Package manager ((Oxide)[https://github.com/redox-os/oxide]) development
+ * Other high-level code tasks
 
 * If you are fluent in Rust, and have experience with OS Dev:
+
  * Familiarize yourself with the repository and codebase
  * Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
+ * Improve and optimize code, especially in the kernel
 
 <a name="gh-issues" />
 ### GitHub Issues
 
-A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics, simply put, issues try to state something more than ask.
+A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
 
 <a name="prs" />
 ### Pull Requests
 
-It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first.
+It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first. Also see (git guidelines)[#git-style-guidelines]
 
 <a name="creating-a-pr" />
 ### Creating a Pull Request
@@ -97,10 +102,10 @@ It's completely fine to just submit a small pull request without first making an
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
-8. Optionally run `rustfmt` on the files you changed and commit again if it did anything (check with `git diff` first)
+8. Optionally run (rustfmt)[https://github.com/rust-lang-nursery/rustfmt] on the files you changed and commit again if it did anything (check with `git diff` first)
 9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
 10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
-11. Repeat step 9 to make sure the rebase still works
+11. Repeat step 9 to make sure the rebase still builds and starts
 12. Push to your fork (`git push origin my-branch`)
 13. Create a pull request
 14. Describe your changes
@@ -108,8 +113,6 @@ It's completely fine to just submit a small pull request without first making an
 
 <a name="best-practices" />
 ## Best Practices and Guidelines
-
-<!-- TODO add this section to the index/TOC -->
 
 <a name="general" />
 ### General
@@ -119,7 +122,7 @@ It's completely fine to just submit a small pull request without first making an
 * Prefer passing references to the data over owned data. (Don't take `String`, take `&str`. Don't take `Vec<T>` take `&[T]`).
 * Use generics, traits, and other abstractions Rust provides.
 * Be sure to mark parts that need work with `TODO`, `FIXME`, `BUG`, and `UNOPTIMIZED`.
-* Don't forget to look after news in [Reddit](https://www.reddit.com/r/rust/).
+* Check (Slack)[#slack], (the Website)[#], and **the Subreddit** frequently.
 
 <a name="kernel" />
 ### Kernel
@@ -142,8 +145,6 @@ It's completely fine to just submit a small pull request without first making an
 
 <a name="style-guidelines" />
 ## Style Guidelines
-
-<!-- TODO improve this section -->
 
 <a name="rust-style-guidelines" />
 ### Rust
