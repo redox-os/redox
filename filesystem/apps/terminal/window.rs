@@ -33,7 +33,7 @@ pub struct ConsoleWindow {
 impl ConsoleWindow {
     /// Create a new console window
     pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Box<Self> {
-        box ConsoleWindow {
+        Box::new(ConsoleWindow {
             window: Window::new(x, y, w, h, title).unwrap(),
             output: Vec::new(),
             history: vec!["".to_string()],
@@ -42,7 +42,7 @@ impl ConsoleWindow {
             scroll_x: 0,
             scroll_y: 0,
             wrap: true,
-        }
+        })
     }
 
     /// Set the window title
@@ -69,13 +69,14 @@ impl ConsoleWindow {
                 color: color,
             });
         }
+        self.sync();
     }
 
     /// Read input
     pub fn read(&mut self) -> Option<String> {
         while let Some(event) = self.poll() {
-            if let EventOption::Key(key_event) = event.to_option() {
-                if key_event.pressed {
+            match event.to_option() {
+                EventOption::Key(key_event) => if key_event.pressed {
                     match key_event.scancode {
                         K_BKSP =>
                             if self.offset > 0 {
@@ -136,8 +137,10 @@ impl ConsoleWindow {
                             }
                         },
                     }
-                }
-                self.sync();
+                    self.sync();
+                },
+                EventOption::Quit(_quit_event) => break,
+                _ => ()
             }
         }
 

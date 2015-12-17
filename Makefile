@@ -143,7 +143,6 @@ apps: filesystem/apps/editor/main.bin \
 
 schemes: filesystem/schemes/orbital/main.bin \
   	  	 filesystem/schemes/tcp/main.bin \
-         filesystem/schemes/terminal/main.bin \
 	  	 filesystem/schemes/udp/main.bin
 
 tests: tests/success tests/failure
