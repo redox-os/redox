@@ -49,17 +49,16 @@ ubuntu()
 {
 	echo "Detected Ubuntu/Debian"
 	echo "Updating system..."
-	sudo apt-get upgrade
-	echo "Installing git..."
-	sudo apt-get -y install git
-    if [ "$2" == "qemu" ]; then
-        echo "Installing QEMU..."
-        sudo apt-get -y install qemu-system-x86 qemu-kvm
-    fi
+	sudo $3 update
+	echo "Installing required packages..."
+	sudo $3 install build-essential libc6-dev-i386 nasm curl file git
+  if [ "$2" == "qemu" ]; then
+      echo "Installing QEMU..."
+      sudo $3 install qemu-system-x86 qemu-kvm
+  fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
-    sudo apt-get -y install build-essential libc6-dev-i386 nasm curl file
-    sh redox/setup/binary.sh
+  sh redox/setup/binary.sh
 }
 
 fedora()
@@ -105,15 +104,17 @@ usage()
     echo "------------------------"
     echo "|Redox bootstrap script|"
     echo "------------------------"
-	echo "Usage: ./bootstrap.sh"
-	echo "OPTIONS:"
-	echo
-	echo "   -h,--help      Show this prompt"
+		echo "Usage: ./bootstrap.sh"
+		echo "OPTIONS:"
+		echo
+		echo "   -h,--help      Show this prompt"
     echo "   -b [branch]    Specify a branch of redox to clone"
-	echo "   -u [branch]    Update git repo and update rust"
-	echo "                  If blank defaults to master"
-	echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
-    echo "EXAMPLES:"
+		echo "   -u [branch]    Update git repo and update rust"
+		echo "                  If blank defaults to master"
+		echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
+		echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
+		echo "       manager]   aptitude"
+		echo "EXAMPLES:"
     echo
     echo "./bootstrap.sh -b buddy -e qemu"
 	exit
@@ -153,12 +154,13 @@ fi
 
 branch="master"
 emulator="virtualbox"
-
-while getopts ":b:e:" opt
+defpackman="apt-get"
+while getopts ":b:e:p:" opt
 do
     case "$opt" in
         b) branch="$OPTARG";;
         e) emulator="$OPTARG";;
+				p) defpackman="$OPTARG";;
         \?) echo "I don't know what to do with that option..."; exit;;
     esac
 done
@@ -169,7 +171,7 @@ if [ "$kernel" == "Darwin" ]; then
 	osx $branch
 else
     which pacman && { archLinux $branch $emulator; endMessage; }
-    which apt-get && { ubuntu $branch $emulator; endMessage; }
+    which apt-get && { ubuntu $branch $emulator $defpackman; endMessage; }
     which yum && { fedora $branch $emulator; endMessage; }
     which zypper && { suse $branch $emulator; endMessage; }
 fi
