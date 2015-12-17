@@ -1,8 +1,0 @@
-[package]
-authors = ["Ticki <Ticki@users.noreply.github.com>"]
-name = "ox"
-version = "0.1.0"
-
-[dependencies]
-octavo = "*"
-redox = { path = "../libredox" }
