@@ -36,10 +36,10 @@ archLinux()
 	echo "Installing git..."
 	sudo pacman -S git
 	echo "Cloning Redox repo"
-    if [ "$2" == "qemu" ]; then
-        echo "Installing QEMU..."
-        sudo pacman -S qemu
-    fi
+	if [ "$2" == "qemu" ]; then
+		echo "Installing QEMU..."
+		sudo pacman -S qemu
+	fi
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
 	sh redox/setup/arch.sh
 	sh redox/setup/binary.sh
@@ -52,31 +52,31 @@ ubuntu()
 	sudo $3 update
 	echo "Installing required packages..."
 	sudo $3 install build-essential libc6-dev-i386 nasm curl file git
-  if [ "$2" == "qemu" ]; then
-      echo "Installing QEMU..."
-      sudo $3 install qemu-system-x86 qemu-kvm
-  fi
+	if [ "$2" == "qemu" ]; then
+		echo "Installing QEMU..."
+		sudo $3 install qemu-system-x86 qemu-kvm
+	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
-  sh redox/setup/binary.sh
+	sh redox/setup/binary.sh
 }
 
 fedora()
 {
-    echo "Detected Fedora"
-    echo "Installing git..."
-    sudo yum install git-all
-    if [ "$2" == "qemu" ]; then
-        echo "Installing QEMU..."
-        sudo yum install qemu-system-x86 qemu-kvm
-    else
-        echo "Installing virtualbox..."
-        sudo yum install virtualbox
-    fi
-    echo "Cloning Redox repo"
-    git clone -b $1 --recursive https://github.com/redox-os/redox.git
-    sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make
-    sh redox/setup/binary.sh
+	echo "Detected Fedora"
+	echo "Installing git..."
+	sudo yum install git-all
+	if [ "$2" == "qemu" ]; then
+		echo "Installing QEMU..."
+		sudo yum install qemu-system-x86 qemu-kvm
+	else
+		echo "Installing virtualbox..."
+		sudo yum install virtualbox
+	fi
+	echo "Cloning Redox repo"
+	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make
+	sh redox/setup/binary.sh
 }
 
 suse()
@@ -101,22 +101,22 @@ suse()
 
 usage()
 {
-    echo "------------------------"
-    echo "|Redox bootstrap script|"
-    echo "------------------------"
-		echo "Usage: ./bootstrap.sh"
-		echo "OPTIONS:"
-		echo
-		echo "   -h,--help      Show this prompt"
-    echo "   -b [branch]    Specify a branch of redox to clone"
-		echo "   -u [branch]    Update git repo and update rust"
-		echo "                  If blank defaults to master"
-		echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
-		echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
-		echo "       manager]   aptitude"
-		echo "EXAMPLES:"
-    echo
-    echo "./bootstrap.sh -b buddy -e qemu"
+	echo "------------------------"
+	echo "|Redox bootstrap script|"
+	echo "------------------------"
+	echo "Usage: ./bootstrap.sh"
+	echo "OPTIONS:"
+	echo
+	echo "   -h,--help      Show this prompt"
+	echo "   -b [branch]    Specify a branch of redox to clone"
+	echo "   -u [branch]    Update git repo and update rust"
+	echo "                  If blank defaults to master"
+	echo "   -e [emulator]  Install specific emulator, virtualbox or qemu"
+	echo "   -p [package    Choose an Ubuntu package manager, apt-fast or"
+	echo "       manager]   aptitude"
+	echo "EXAMPLES:"
+	echo
+	echo "./bootstrap.sh -b buddy -e qemu"
 	exit
 }
 
@@ -124,11 +124,13 @@ update()
 {
 	git pull origin $1
 	sh setup/binary.sh
-  exit
+	exit
 }
 
 endMessage()
 {
+	echo "Cleaning up..."
+	rm bootstrap.sh
 	echo "---------------------------------------"
 	echo "Well it looks like you are ready to go!"
 	echo "---------------------------------------"
@@ -157,12 +159,12 @@ emulator="virtualbox"
 defpackman="apt-get"
 while getopts ":b:e:p:" opt
 do
-    case "$opt" in
-        b) branch="$OPTARG";;
-        e) emulator="$OPTARG";;
+	case "$opt" in
+		b) branch="$OPTARG";;
+		e) emulator="$OPTARG";;
 				p) defpackman="$OPTARG";;
-        \?) echo "I don't know what to do with that option..."; exit;;
-    esac
+		\?) echo "I don't know what to do with that option..."; exit;;
+	esac
 done
 
 banner
@@ -170,8 +172,8 @@ kernel=$(uname -s)
 if [ "$kernel" == "Darwin" ]; then
 	osx $branch
 else
-    which pacman && { archLinux $branch $emulator; endMessage; }
-    which apt-get && { ubuntu $branch $emulator $defpackman; endMessage; }
-    which yum && { fedora $branch $emulator; endMessage; }
-    which zypper && { suse $branch $emulator; endMessage; }
+	which pacman && { archLinux $branch $emulator; endMessage; }
+	which apt-get && { ubuntu $branch $emulator $defpackman; endMessage; }
+	which yum && { fedora $branch $emulator; endMessage; }
+	which zypper && { suse $branch $emulator; endMessage; }
 fi
