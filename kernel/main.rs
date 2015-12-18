@@ -235,6 +235,9 @@ fn event_loop() -> ! {
     }
 }
 
+static BSS_TEST_ZERO: usize = 0;
+static BSS_TEST_NONZERO: usize = usize::MAX;
+
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
     //Zero BSS, this initializes statics that are set to 0
@@ -251,6 +254,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             let size = end_ptr as usize - start_ptr as usize;
             memset(start_ptr, 0, size);
         }
+
+        assert_eq!(BSS_TEST_ZERO, 0);
+        assert_eq!(BSS_TEST_NONZERO, usize::MAX);
     }
 
     //Setup paging, this allows for memory allocation
