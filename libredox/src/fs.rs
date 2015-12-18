@@ -14,35 +14,35 @@ pub struct File {
 }
 
 impl File {
-    /// Open a new file using a path
-    pub fn open(path: &str) -> Result<File> {
-        let path_c = path.to_string() + "\0";
-        match SysError::demux(unsafe { sys_open(path_c.as_ptr(), O_RDWR, 0) }) {
+    pub unsafe fn from_fd(fd_muxed: usize) -> Result<File> {
+        match SysError::demux(fd_muxed) {
             Ok(fd) => Ok(File {
                 fd: fd
             }),
             Err(err) => Err(err)
+        }
+    }
+
+    /// Open a new file using a path
+    pub fn open(path: &str) -> Result<File> {
+        let path_c = path.to_string() + "\0";
+        unsafe {
+            File::from_fd(sys_open(path_c.as_ptr(), O_RDWR, 0))
         }
     }
 
     /// Create a new file using a path
     pub fn create(path: &str) -> Result<File> {
         let path_c = path.to_string() + "\0";
-        match SysError::demux(unsafe { sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0) }) {
-            Ok(fd) => Ok(File {
-                fd: fd
-            }),
-            Err(err) => Err(err)
+        unsafe {
+            File::from_fd(sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0))
         }
     }
 
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
-        match SysError::demux(unsafe { sys_dup(self.fd) }) {
-            Ok(fd) => Ok(File {
-                fd: fd
-            }),
-            Err(err) => Err(err)
+        unsafe {
+            File::from_fd(sys_dup(self.fd))
         }
     }
 
