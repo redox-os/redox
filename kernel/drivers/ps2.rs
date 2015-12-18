@@ -26,6 +26,8 @@ pub struct Ps2 {
     caps_lock: bool,
     /// Caps lock toggle
     caps_lock_toggle: bool,
+    /// AltGr?
+    altgr: bool,
     /// The mouse packet
     mouse_packet: [u8; 4],
     /// Mouse packet index
@@ -49,6 +51,7 @@ impl Ps2 {
             rshift: false,
             caps_lock: false,
             caps_lock_toggle: false,
+            altgr: false,
             mouse_packet: [0; 4],
             mouse_i: 0,
             mouse_x: 0,
@@ -140,17 +143,19 @@ impl Ps2 {
             if self.caps_lock && !self.caps_lock_toggle {
                 self.caps_lock = false;
             }
+        } else if scancode == 0xE0 {
+            let scancode_byte_2 = unsafe { self.data.read() };
+            if scancode_byte_2 == 0x38 {
+                self.altgr = true;
+            } else if scancode_byte_2 == 0xB8 {
+                self.altgr = false;
+            }
         }
 
-        let shift;
-        if self.caps_lock {
-            shift = !(self.lshift || self.rshift);
-        } else {
-            shift = self.lshift || self.rshift;
-        }
+        let shift = self.caps_lock != (self.lshift || self.rshift);
 
         return Some(KeyEvent {
-            character: layouts::char_for_scancode(scancode & 0x7F, shift, &self.layout),
+            character: layouts::char_for_scancode(scancode & 0x7F, shift, self.altgr, &self.layout),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
         });
