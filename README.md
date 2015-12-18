@@ -14,16 +14,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 * [What it looks like](#what-it-looks-like)
 * [Help! Redox won't compile](#compile-help)
 * [Contributing to Redox](#contributing)
-* [Cloning the repository](#cloning)
-* [Installation](#installation)
-  * [Building and running](#building-running)
-    * [Debian and Ubuntu family](#debian-ubuntu)
-    * [Archlinux](#arch-linux)
-    * [Fedora](#fedora)
-    * [Suse](#suse)
-    * [NixOS](#nixos)
-    * [OS X](#osx)
-    * [Windows](#windows)
+* [Cloning, Building and running](#cloning-building-running)
 
 
 ## <a name="what-it-looks-like" /> What it looks like
@@ -53,9 +44,22 @@ If you're interested in this project, and you'd like to help us out, [here](CONT
 
 ## <a name="cloning-building-running" /> Cloning, Building, and Running
 
+### <a name="quick-setup" /> Quick Setup
+
+```bash
+$ cd path/to/your/projects/folder/
+$ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh | sh # Run bootstrap setup
+$ make all # Build Redox
+$ make virtualbox # Launch using VirtualBox
+$ make qemu # Launch using QEMU
+$ make qemu_no_kvm # Launch using QEMU without KVM (Kernel Virtual Machine?). Try if QEMU gives an error.
+```
+
+### <a name="manual-setup" /> Manual Setup
+
 To manually clone, build and run Redox using a Linux host, run the following commands (with exceptions, be sure to read the comments):
 ```bash
-$ cd my-projects-folder/
+$ cd path/to/your/projects/folder/
 $ git clone --recursive https://github.com/redox-os/redox.git # HTTPS
 $ git clone --recursive git@github.com:redox-os/redox.git # SSH
 $ cd redox/
