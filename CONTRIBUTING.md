@@ -20,8 +20,8 @@ There are many ways to help us out and we appreciate all of them.
 * [Style Guidelines](#style-guidelines)
  * [Rust](#rust-style-guidelines)
  * [Git](#git-style-guidelines)
-* [Interactions with other projects](#interactions-with-other-projects)
-* [Applications vs Kernel](#applications-vs-kernel)
+* [Other Ways to Contribute](#other)
+ * [Graphic Design](#graphic-design)
 
 ### <a name="extern-links" /> Other External Links
 
@@ -131,11 +131,9 @@ It's completely fine to just submit a small pull request without first making an
  * Run `open zfs.img` to open the created ZFS image.
  * Run `file /home/LICENSE.md` twice to ensure ARC isn't broken.
 
-<a name="style-guidelines" />
-## Style Guidelines
+## <a name="style-guidelines" /> Style Guidelines
 
-<a name="rust-style-guidelines" />
-### Rust
+### <a name="rust-style-guidelines" /> Rust
 
 Since Rust is a relatively small and new language compared to others like C, there's really only one standard. Just follow the official Rust standards for formatting, and maybe run `rustfmt` on your changes, until we setup the CI system to do it automatically.
 
@@ -145,3 +143,9 @@ Since Rust is a relatively small and new language compared to others like C, the
 * Try to remove duplicate commits from PRs as these clutter up history.
 * Generally, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
 * When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to. 
+
+## <a name="other" /> Other Ways to Contribute
+
+### <a name="graphic-design" /> Graphic Design
+
+If you're a good designer, you can help with logos, UI design, app icons, other graphics (e.g. stock desktop backgrounds), etc. More information to come on this, for now just join the [Slack](#slack) chat and ask about graphic design.
