@@ -18,6 +18,7 @@ use scheduler::context::{context_clone, context_switch, Context, ContextMemory, 
                          ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
+use schemes::pipe::{PipeRead, PipeWrite};
 
 use sync::Intex;
 
@@ -522,11 +523,33 @@ pub fn do_sys_open(path: *const u8, flags: usize) -> usize {
 }
 
 pub fn do_sys_pipe2(fds: *mut usize, flags: usize) -> usize {
+    let mut contexts = ::env().contexts.lock();
     SysError::mux(
-        if fds as usize > 0 {
-            Err(SysError::new(EINVAL))
+        if let Some(current) = contexts.current() {
+            if fds as usize > 0 {
+                let read = box PipeRead::new();
+                let write = box PipeWrite::new(&read);
+
+                unsafe {
+                    *fds.offset(0) = current.next_fd();
+                    (*current.files.get()).push(ContextFile {
+                        fd: *fds.offset(0),
+                        resource: read,
+                    });
+
+                    *fds.offset(1) = current.next_fd();
+                    (*current.files.get()).push(ContextFile {
+                        fd: *fds.offset(1),
+                        resource: write,
+                    });
+                }
+
+                Ok(0)
+            } else {
+                Err(SysError::new(EFAULT))
+            }
         } else {
-            Err(SysError::new(EFAULT))
+            Err(SysError::new(ESRCH))
         }
     )
 }
