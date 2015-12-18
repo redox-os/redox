@@ -16,7 +16,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 * [Contributing to Redox](#contributing)
 * [Cloning the repository](#cloning)
 * [Installation](#installation)
-  * [Building and running](#bulding-running)
+  * [Building and running](#building-running)
     * [Debian and Ubuntu family](#debian-ubuntu)
     * [Archlinux](#arch-linux)
     * [Fedora](#fedora)
@@ -26,7 +26,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
     * [Windows](#windows)
 
 
-## <a name="what-it-looks-like" />What it looks like
+## <a name="what-it-looks-like" /> What it looks like
 
 <img alt="Redox" height="150" src="img/screenshots/Desktop.png">
 <img alt="Redox" height="150" src="img/screenshots/Fancy_opacity.png">
@@ -35,7 +35,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="150" src="img/screenshots/Boot.png">
 <img alt="Redox" height="150" src="img/screenshots/start.png">
 
-## <a name="compile-help" />Help! Redox won't compile!
+## <a name="compile-help" /> Help! Redox won't compile!
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
@@ -47,5 +47,23 @@ Sometimes things go wrong when compiling. Try the following before opening an is
 
 and then rebuild!
 
-## <a name="contributing" />Contributing to Redox
+## <a name="contributing" /> Contributing to Redox
+
 If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
+
+## <a name="cloning-building-running" /> Cloning, Building, and Running
+
+To manually clone, build and run Redox using a Linux host, run the following commands (with exceptions, be sure to read the comments):
+```bash
+$ cd my-projects-folder/
+$ git clone --recursive https://github.com/redox-os/redox.git # HTTPS
+$ git clone --recursive git@github.com:redox-os/redox.git # SSH
+$ cd redox/
+$ sudo <your package manager> install llvm make nasm virtualbox virtualbox-dkms qemu qemu-kvm # Install/update dependencies
+$ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh # Install multirust
+$ multirust override nightly # Set override toolchain to nightly build
+$ make all # Build Redox
+$ make virtualbox # Launch using VirtualBox
+$ make qemu # Launch using QEMU
+$ make qemu_no_kvm # Launch using QEMU without KVM (Kernel Virtual Machine?). Try if QEMU gives an error.
+```
