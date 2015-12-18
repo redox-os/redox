@@ -12,8 +12,10 @@ osx()
 	if [ -n "$temp" ]; then
 		echo "Homebrew detected! Now updating..."
 		brew update
-		echo "Now installing git..."
-		brew install git
+		if [ -z "$(which git)" ]; then
+			echo "Now installing git..."
+			brew install git
+		fi
 		echo "Now installing virtualbox..."
 		brew cask install virtualbox
 	else
@@ -33,13 +35,15 @@ archLinux()
 	echo "Detected Arch Linux, mah fav"
 	echo "Updating system..."
 	sudo pacman -Syu
-	echo "Installing git..."
-	sudo pacman -S git
-	echo "Cloning Redox repo"
+	if [ -z "$( which git)" ]; then
+		echo "Installing git..."
+		sudo pacman -S git
+	fi
 	if [ "$2" == "qemu" ]; then
 		echo "Installing QEMU..."
 		sudo pacman -S qemu
 	fi
+	echo "Cloning redox repo..."
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
 	sh redox/setup/arch.sh
 	sh redox/setup/binary.sh
@@ -64,8 +68,10 @@ ubuntu()
 fedora()
 {
 	echo "Detected Fedora"
-	echo "Installing git..."
-	sudo yum install git-all
+    if [ -z "$(which git)" ]; then
+        echo "Installing git..."
+	    sudo yum install git-all
+    fi
 	if [ "$2" == "qemu" ]; then
 		echo "Installing QEMU..."
 		sudo yum install qemu-system-x86 qemu-kvm
@@ -82,8 +88,10 @@ fedora()
 suse()
 {
 	echo "Detected a suse"
-	echo "Installing git..."
-	zypper install git
+    if [ -z "$(which git)" ]; then
+        echo "Installing git..."
+	    zypper install git
+    fi
 	if [ "$2" == "qemu" ]; then
 		echo "Installing QEMU..."
 		sudo zypper install qemu-x86 qemu-kvm
