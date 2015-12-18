@@ -163,7 +163,7 @@ if [ "$1" == "-u" ]; then
 fi
 
 branch="master"
-emulator="virtualbox"
+emulator="qemu"
 defpackman="apt-get"
 while getopts ":b:e:p:" opt
 do
