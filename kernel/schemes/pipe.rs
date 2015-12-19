@@ -14,12 +14,14 @@ use syscall::{SysError, EPIPE};
 /// Read side of a pipe
 pub struct PipeRead {
     vec: Arc<Intex<VecDeque<u8>>>,
+    eof_toggle: bool,
 }
 
 impl PipeRead {
     pub fn new() -> Self {
         PipeRead {
             vec: Arc::new(Intex::new(VecDeque::new())),
+            eof_toggle: false,
         }
     }
 }
@@ -28,6 +30,7 @@ impl Resource for PipeRead {
     fn dup(&self) -> Result<Box<Resource>> {
         Ok(box PipeRead {
             vec: self.vec.clone(),
+            eof_toggle: self.eof_toggle,
         })
     }
 
@@ -36,25 +39,37 @@ impl Resource for PipeRead {
     }
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        if Arc::weak_count(&self.vec) > 1 {
-            while self.vec.lock().is_empty() {
-                unsafe { context_switch(false) };
-            }
+        if self.eof_toggle {
+            debugln!("EOF");
+            self.eof_toggle = false;
+            return Ok(0);
+        }
 
-            let mut i = 0;
-            let mut vec = self.vec.lock();
-            while i < buf.len() {
-                match vec.pop_front() {
-                    Some(b) => {
-                        buf[i] = b;
-                        i += 1;
-                    },
-                    None => break
+        loop {
+            {
+                let mut vec = self.vec.lock();
+                if vec.is_empty() {
+                    if Arc::weak_count(&self.vec) == 0 {
+                        return Ok(0);
+                    }
+                } else {
+                    debugln!("Reading {}", vec.len());
+                    let mut i = 0;
+                    while i < buf.len() {
+                        match vec.pop_front() {
+                            Some(b) => {
+                                buf[i] = b;
+                                i += 1;
+                            },
+                            None => break
+                        }
+                    }
+                    self.eof_toggle = true;
+                    return Ok(i);
                 }
             }
-            Ok(i)
-        } else {
-            Ok(0)
+
+            unsafe { context_switch(false) };
         }
     }
 }
@@ -86,10 +101,11 @@ impl Resource for PipeWrite {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
         match self.vec.upgrade() {
             Some(vec_intex) => {
-                let mut i = 0;
                 let mut vec = vec_intex.lock();
+                let mut i = 0;
                 while i < buf.len() {
                     vec.push_back(buf[i]);
+                    i += 1;
                 }
                 Ok(i)
             },
