@@ -112,6 +112,9 @@ impl Window {
                 cursor.x += 8;
             }
 
+            cursor.x = self.point.x + self.size.width as isize - 8;
+            display.char(cursor, 'X', self.title_color, font);
+
             display.rect(Point::new(self.point.x - 2, self.point.y),
                          Size::new(2, self.size.height),
                          self.border_color);
@@ -151,7 +154,7 @@ impl Window {
     }
 
     fn mouse_button_pressed(mouse_event: &MouseEvent) -> bool {
-        mouse_event.left_button || mouse_event.middle_button || mouse_event.right_button 
+        mouse_event.left_button || mouse_event.middle_button || mouse_event.right_button
     }
 
     /// Called on mouse movement
@@ -173,6 +176,14 @@ impl Window {
                     if !self.last_mouse_event.left_button {
                         self.dragging = true;
                     }
+                    
+                    if mouse_event.x >= self.size.width as isize - 8 {
+                        unsafe {
+                            let reenable = scheduler::start_no_ints();
+                            self.events.push_back(QuitEvent.to_event());
+                            scheduler::end_no_ints(reenable);
+                        }
+                    }
                 } else {
                     self.dragging = false;
                 }
@@ -191,7 +202,7 @@ impl Window {
                     }
                 }
             }
-            
+
             if self.dragging {
                 self.point.x += orig_mouse_event.x - self.last_mouse_event.x;
                 self.point.y += orig_mouse_event.y - self.last_mouse_event.y;

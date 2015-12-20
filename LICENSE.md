@@ -1,4 +1,4 @@
-Copyright (c) 2015 Jeremy Soller (Redox), 2013 Charlie Somerville (Rustboot)
+Copyright (c) 2015 Jeremy Soller
 
 MIT License
 

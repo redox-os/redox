@@ -14,7 +14,6 @@
 #![feature(box_syntax)]
 #![feature(collections)]
 #![feature(collections_bound)]
-#![feature(core)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
 #![feature(int_error_internals)]
@@ -28,9 +27,6 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(box_patterns)]
 #![feature(vec_push_all)]
-#![feature(wrapping)]
-#![feature(zero_one)]
-#![feature(no_std)]
 #![feature(prelude_import)]
 #![no_std]
 

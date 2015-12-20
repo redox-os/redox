@@ -1,5 +1,0 @@
-name=SDL Test
-binary=sdl
-icon=file:/apps/sdl/sdl.bmp
-author=Jeremy Soller
-description=SDL for Redox

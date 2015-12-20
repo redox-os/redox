@@ -73,12 +73,36 @@ idtr:
 
 idt:
 %assign i 0
-%rep 256	;fill in overrideable functions
+
+;Below system call
+%rep 128
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 		at IDTEntry.selector, dw gdt.kernel_code
         at IDTEntry.zero, db 0
-		at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt32 ;TODO: Use ring 3 only for 0x80 and 0xFF, disable 0xFF after boot
+		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
+        at IDTEntry.offseth, dw 0
+	iend
+%assign i i+1
+%endrep
+
+;System call
+istruc IDTEntry
+	at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+	at IDTEntry.selector, dw gdt.kernel_code
+    at IDTEntry.zero, db 0
+	at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt32
+    at IDTEntry.offseth, dw 0
+iend
+%assign i i+1
+
+;Above system call
+%rep 127
+	istruc IDTEntry
+		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+		at IDTEntry.selector, dw gdt.kernel_code
+        at IDTEntry.zero, db 0
+		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
         at IDTEntry.offseth, dw 0
 	iend
 %assign i i+1
