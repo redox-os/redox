@@ -1,6 +1,5 @@
 // use core::simd::*;
 
-use std::Box;
 use std::{cmp, mem};
 use std::syscall::{sys_alloc, sys_unalloc};
 

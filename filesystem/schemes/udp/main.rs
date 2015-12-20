@@ -1,4 +1,3 @@
-use std::Box;
 use std::fs::File;
 use std::io::{Result, Read, Write, SeekFrom};
 use std::mem;
@@ -6,12 +5,10 @@ use std::net::*;
 use std::ptr;
 use std::rand;
 use std::slice;
-use std::{String, ToString};
 use std::syscall::SysError;
 use std::syscall::{ENOENT, ESPIPE};
 use std::to_num::*;
-use std::Vec;
-use std::Url;
+use std::url::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]

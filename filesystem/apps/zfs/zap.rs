@@ -1,4 +1,5 @@
-use std::{fmt, mem, ptr, str, Seek};
+use std::{fmt, mem, ptr, str};
+use std::io::Seek;
 
 use super::from_bytes::FromBytes;
 

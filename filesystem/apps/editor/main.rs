@@ -1,8 +1,10 @@
 extern crate orbital;
 
-use std::*;
+use std::fs::File;
 
 use orbital::*;
+use std::io::*;
+use std::env;
 
 pub struct Editor {
     url: String,
