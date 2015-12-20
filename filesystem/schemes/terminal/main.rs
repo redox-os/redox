@@ -1,4 +1,3 @@
-use std::Box;
 use std::cell::UnsafeCell;
 use std::io::{Result, SeekFrom};
 use std::rc::Rc;

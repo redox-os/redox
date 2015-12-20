@@ -1,4 +1,4 @@
-use std::{Box, String, ToString, Vec, Url};
+use std::url::Url;
 use std::fs::File;
 use std::io::Read;
 use std::process::Command;

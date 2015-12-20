@@ -1,4 +1,4 @@
-use std::{Box, String, Url};
+use std::url::Url;
 use std::{cmp, mem, ptr};
 use std::get_slice::GetSlice;
 use std::io::*;

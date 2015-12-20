@@ -1,5 +1,8 @@
 //To use this, please install zfs-fuse
-use std::{mem, str, File, Read, ToNum};
+use std::{mem, str};
+use std::to_num::ToNum;
+use std::fs::File;
+use std::io::Read;
 
 use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};

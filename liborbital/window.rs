@@ -1,13 +1,9 @@
-use std::Box;
 use std::fs::File;
 use std::io::*;
 use std::mem;
 use std::slice;
 use std::syscall::sys_yield;
-use std::String;
-use std::ToString;
 use std::to_num::ToNum;
-use std::Vec;
 
 use super::Event;
 use super::Color;

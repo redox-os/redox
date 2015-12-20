@@ -1,4 +1,5 @@
-use std::{Box, GetSlice, String, ToString, Vec, Url};
+use std::get_slice::GetSlice;
+use std::url::Url;
 use std::fs::File;
 use std::io::Read;
 

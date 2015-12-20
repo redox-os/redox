@@ -10,7 +10,7 @@ use std::syscall::SysError;
 use std::syscall::{ENOENT, EPIPE, ESPIPE};
 use std::to_num::*;
 use std::vec::Vec;
-use std::Url;
+use std::url::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
