@@ -1,36 +1,20 @@
-use std::fs::File;
-use std::process::Command;
-use std::syscall::sys_close;
+extern crate orbital;
+
+use orbital::Color;
+
+use window::ConsoleWindow;
+
+mod window;
 
 #[no_mangle] pub fn main() {
-    unsafe {
-        sys_close(2);
-        sys_close(1);
-        sys_close(0);
+    let mut window = ConsoleWindow::new(-1, -1, 576, 400, "Terminal");
+
+    loop {
+        window.print("# ", Color::rgb(255, 255, 255));
+        if let Some(line) = window.read() {
+            window.print(&format!("{}\n", line), Color::rgb(224, 224, 224));
+        } else {
+            break;
+        }
     }
-
-    let stdin = File::open("terminal:Terminal").unwrap();
-    let stdout = stdin.dup().unwrap();
-    let stderr = stdout.dup().unwrap();
-
-    let path = "file:/apps/shell/main.bin";
-    match Command::new(path).spawn() {
-        Ok(mut child) => {
-            match child.wait() {
-                Ok(status) => {
-                    if let Some(code) = status.code() {
-                        println!("{}: Child exited with exit code: {}", path, code);
-                    } else {
-                        println!("{}: No child exit code", path);
-                    }
-                },
-                Err(err) => println!("{}: Failed to wait: {}", path, err)
-            }
-        },
-        Err(err) => println!("{}: Failed to execute: {}", path, err)
-    }
-
-    drop(stderr);
-    drop(stdout);
-    drop(stdin);
 }

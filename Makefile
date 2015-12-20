@@ -132,6 +132,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/login/main.bin \
+	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
@@ -142,16 +143,12 @@ apps: filesystem/apps/editor/main.bin \
 
 schemes: filesystem/schemes/orbital/main.bin \
   	  	 filesystem/schemes/tcp/main.bin \
-         filesystem/schemes/terminal/main.bin \
 	  	 filesystem/schemes/udp/main.bin
 
 tests: tests/success tests/failure
 
 clean:
 	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
-
-osmium:
-	$(RM) -f build/i386/osmium*; make qemu; $(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
 
 FORCE:
 
@@ -160,9 +157,6 @@ tests/%: FORCE
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/osmium.rlib: crates/os/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
@@ -186,6 +180,12 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
+$(BUILD)/liborbtk.rlib: liborbtk/src/lib.rs liborbtk/src/*.rs liborbtk/src/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name orbtk -o $@ $<
+
+$(BUILD)/osmium.rlib: crates/os/lib.rs crates/os/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
@@ -208,11 +208,15 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+filesystem/apps/shell/main.bin: crates/ion/src/main.rs crates/ion/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
 	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
-filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
+	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
+
+filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
 	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/schemes_$*.rlib
