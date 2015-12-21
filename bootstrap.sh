@@ -36,6 +36,7 @@ osx()
 	echo "Everything looks good to go!"
 	echo "Compiling for qemu complaings about kvm"
 	echo "You need to run make qemu_no_kvm"
+	rm bootstrap.sh
 }
 
 archLinux()
