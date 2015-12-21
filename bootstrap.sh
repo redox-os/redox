@@ -44,7 +44,7 @@ archLinux()
 	echo "Detected Arch Linux"
 	echo "Updating system..."
 	sudo pacman -Syu
-	if [ -z "$( which git)" ]; then
+	if [ -z "$(which git)" ]; then
 		echo "Installing git..."
 		sudo pacman -S git
 	fi
