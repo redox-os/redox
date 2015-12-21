@@ -33,9 +33,9 @@ pub struct Ps2 {
     /// Mouse packet index
     mouse_i: usize,
     /// Mouse point x
-    mouse_x: isize,
+    mouse_x: i32,
     /// Mouse point y
-    mouse_y: isize,
+    mouse_y: i32,
     /// Layout for keyboard
     /// Default: English
     layout: layouts::Layout,
@@ -214,16 +214,16 @@ impl Ps2 {
 
             let x;
             if (self.mouse_packet[0] & 0x40) != 0x40 && self.mouse_packet[1] != 0 {
-                x = self.mouse_packet[1] as isize -
-                    (((self.mouse_packet[0] as isize) << 4) & 0x100);
+                x = (self.mouse_packet[1] as isize -
+                    (((self.mouse_packet[0] as isize) << 4) & 0x100)) as i32;
             } else {
                 x = 0;
             }
 
             let y;
             if (self.mouse_packet[0] & 0x80) != 0x80 && self.mouse_packet[2] != 0 {
-                y = (((self.mouse_packet[0] as isize) << 3) & 0x100) -
-                    self.mouse_packet[2] as isize;
+                y = ((((self.mouse_packet[0] as isize) << 3) & 0x100) -
+                    self.mouse_packet[2] as isize) as i32;
             } else {
                 y = 0;
             }
@@ -231,9 +231,9 @@ impl Ps2 {
             unsafe {
                 let mode_info = &*VBEMODEINFO;
                 self.mouse_x = cmp::max(0,
-                                        cmp::min(mode_info.xresolution as isize, self.mouse_x + x));
+                                        cmp::min(mode_info.xresolution as i32, self.mouse_x + x));
                 self.mouse_y = cmp::max(0,
-                                        cmp::min(mode_info.yresolution as isize, self.mouse_y + y));
+                                        cmp::min(mode_info.yresolution as i32, self.mouse_y + y));
             }
 
             self.mouse_i = 0;

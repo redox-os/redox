@@ -161,14 +161,14 @@ impl FileManager {
             if i == self.selected {
                 let width = self.window.width();
                 self.window.rect(0,
-                                 32 * row as isize,
+                                 32 * row as i32,
                                  width,
                                  32,
                                  Color::rgba(224, 224, 224, 255));
             }
 
             let icon = self.file_types_info.icon_for(&file_name);
-            self.window.image(0, 32 * row as isize, icon.width(), icon.height(), &icon);
+            self.window.image(0, 32 * row as i32, icon.width() as u32, icon.height() as u32, &icon);
 
             let mut col = 0;
             for c in file_name.chars() {
@@ -179,8 +179,8 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as isize + 40,
-                                         32 * row as isize + 8,
+                        self.window.char(8 * col as i32 + 40,
+                                         32 * row as i32 + 8,
                                          c,
                                          Color::BLACK);
                         col += 1;
@@ -192,7 +192,7 @@ impl FileManager {
                 }
             }
 
-            col = column[0];
+            col = column[0] as u32;
 
             for c in file_size.chars() {
                 if c == '\n' {
@@ -202,8 +202,8 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as isize + 40,
-                                         32 * row as isize + 8,
+                        self.window.char(8 * col as i32 + 40,
+                                         32 * row as i32 + 8,
                                          c,
                                          Color::BLACK);
                         col += 1;
@@ -215,7 +215,7 @@ impl FileManager {
                 }
             }
 
-            col = column[1];
+            col = column[1] as u32;
 
             let description = self.file_types_info.description_for(&file_name);
             for c in description.chars() {
@@ -226,8 +226,8 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as isize + 40,
-                                         32 * row as isize + 8,
+                        self.window.char(8 * col as i32 + 40,
+                                         32 * row as i32 + 8,
                                          c,
                                          Color::BLACK);
                         col += 1;
@@ -324,8 +324,8 @@ impl FileManager {
         self.window.sync_path();
         self.window = Window::new(self.window.x(),
                                   self.window.y(),
-                                  width.iter().sum(),
-                                  height,
+                                  width.iter().sum::<usize>() as u32,
+                                  height as u32,
                                   &path)
                           .unwrap();
         self.draw_content();
@@ -391,8 +391,8 @@ impl FileManager {
                     for file in self.files.iter() {
                         let mut col = 0;
                         for c in file.chars() {
-                            if mouse_event.y >= 32 * row as isize &&
-                               mouse_event.y < 32 * row as isize + 32 {
+                            if mouse_event.y >= 32 * row as i32 &&
+                               mouse_event.y < 32 * row as i32 + 32 {
                                 self.selected = i;
                             }
 
