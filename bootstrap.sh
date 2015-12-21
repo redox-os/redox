@@ -47,13 +47,7 @@ osx()
 	sh redox/setup/osx-homebrew.sh
 	echo "Running rust install script"
 	sh redox/setup/binary.sh
-	echo
-	echo "Cleaning up..."
-	rm bootstrap.sh
-	echo "--------------"
-	echo "Everything looks good to go!"
-	echo "Compiling for qemu complaings about kvm"
-	echo "You need to run make qemu_no_kvm"
+	endMessage
 }
 
 archLinux()
@@ -208,6 +202,9 @@ endMessage()
 	echo "		cd redox"
 	echo "		make all"
 	echo "		make virtualbox or qemu"
+	echo
+	echo "If make qemu fails complaining about kvm"
+	echo "run \'make qemu_no_kvm\'"
 	echo
 	echo "      Good luck!"
 
