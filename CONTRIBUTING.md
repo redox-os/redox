@@ -3,7 +3,7 @@
 Thank you for your interest in contributing to Redox! This document is a guide to help newcomers contribute!  
 There are many ways to help us out and we appreciate all of them.
 
-### Index
+## Index
 
 * [Communication](#communication)
  * [Slack Chat](#slack)
@@ -23,7 +23,7 @@ There are many ways to help us out and we appreciate all of them.
 * [Other Ways to Contribute](#other)
  * [Graphic Design](#graphic-design)
 
-### <a name="extern-links" /> Other External Links
+## <a name="extern-links" /> Other External Links
 
 * [redox-os.org](http://redox-os.org)
 * [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
@@ -35,11 +35,11 @@ There are many ways to help us out and we appreciate all of them.
 
 ### <a name="slack" /> Slack Chat
 
-The quickest and most open way to communicate with the Redox team is with [Slack](https://slack.com/). Currently, the only way to join our slack team is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
+The quickest and most open way to communicate with the Redox team is with [Slack](https://slack.com). Currently, the only way to join our slack team is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
 
 ### <a name="reddit" /> Reddit
 
-You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [/r/redox/](https://www.reddit.com/r/redox/). The weekly update news is posted on the former.
+You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/r/redox/](https://www.reddit.com/r/redox). The weekly update news is posted on the former.
 
 ## <a name="direct-contributing" /> Direct Contributing
 
@@ -57,8 +57,8 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust/) and [
 * If you are fluent in Rust, but not OS Development:
 
  * Apps development
- * Shell ((Ion)[https://github.com/redox-os/ion]) development
- * Package manager ((Oxide)[https://github.com/redox-os/oxide]) development
+ * Shell ([Ion](https://github.com/redox-os/ion)) development
+ * Package manager ([Oxide](https://github.com/redox-os/oxide)) development
  * Other high-level code tasks
 
 * If you are fluent in Rust, and have experience with OS Dev:
@@ -73,10 +73,9 @@ A bit more formal way of communication with fellow Redox devs, but a little less
 
 ### <a name="prs" /> Pull Requests
 
-It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first. Also see (git guidelines)[#git-style-guidelines]
+It's completely fine to just submit a small pull request without first making an issue or something, but if it's a big change that will require a lot of planning and reviewing, it's best you start with writing an issue first. Also see [git guidelines](#git-style-guidelines)
 
-<a name="creating-a-pr" />
-### Creating a Pull Request
+### <a name="creating-a-pr" /> Creating a Pull Request
 
 1. Fork the repository
 2. Clone the original repository to your local PC using one of the following commands based on the protocol you are using:
@@ -94,7 +93,7 @@ It's completely fine to just submit a small pull request without first making an
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
-8. Optionally run (rustfmt)[https://github.com/rust-lang-nursery/rustfmt] on the files you changed and commit again if it did anything (check with `git diff` first)
+8. Optionally run [`rustfmt`](https://github.com/rust-lang-nursery/rustfmt) on the files you changed and commit again if it did anything (check with `git diff` first)
 9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
 10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
 11. Repeat step 9 to make sure the rebase still builds and starts
@@ -112,7 +111,7 @@ It's completely fine to just submit a small pull request without first making an
 * Prefer passing references to the data over owned data. (Don't take `String`, take `&str`. Don't take `Vec<T>` take `&[T]`).
 * Use generics, traits, and other abstractions Rust provides.
 * Be sure to mark parts that need work with `TODO`, `FIXME`, `BUG`, and `UNOPTIMIZED`.
-* Check (Slack)[#slack], (the Website)[#], and **the Subreddit** frequently.
+* Check [Slack](#slack), [the Website](http://redox-os.org), and [the Subreddit](https://www.reddit.com/r/redox) frequently.
 
 ### <a name="kernel" /> Kernel
 
@@ -139,10 +138,11 @@ Since Rust is a relatively small and new language compared to others like C, the
 
 ### <a name="git-style-guidelines" /> Git
 
-* Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`". This logically makes more sense because, say you're scrolling through history, and you see a commit named "`create file X`". You immediately know that this is what this commit will do to your working directory. It also generally is just more consistent and conventional.
-* Try to remove duplicate commits from PRs as these clutter up history.
-* Generally, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
-* When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to. 
+* Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`". This makes more sense because of the way Git works, and it's also generally just more consistent and conventional.
+* Try to remove useless duplicate/merge commits from PRs as these clutter up history, and may make it hard to read.
+* Usually, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
+* When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to.
+* You should have a fork of the repository on GitHub and a local copy on your computer. The local copy should have two remotes; `upstream` and `origin`, `upstream` should be set to the main repository and `origin` should be your fork. 
 
 ## <a name="other" /> Other Ways to Contribute
 

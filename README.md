@@ -33,7 +33,7 @@ Sometimes things go wrong when compiling. Try the following before opening an is
 1. Run `make clean`.
 2. Run `git clean -X -f -d`.
 3. Make sure you have **the latest version of Rust nightly!** ([multirust](https://github.com/brson/multirust) is recommended for managing Rust versions).
-4. Update **GNU Make**, **nasm** and **QEMU/VirtualBox**.
+4. Update **GNU Make**, **NASM** and **QEMU/VirtualBox**.
 5. Pull the upstream master branch (`git remote add upstream git@github.com:redox-os/redox.git; git pull upstream master`).
 
 and then rebuild!
@@ -71,9 +71,9 @@ To manually clone, build and run Redox using a Linux host, run the following com
 $ cd path/to/your/projects/folder/
 
 # HTTPS
-$ git clone --recursive https://github.com/redox-os/redox.git
+$ git clone https://github.com/redox-os/redox.git --origin upstream --recursive
 # SSH
-$ git clone --recursive git@github.com:redox-os/redox.git
+$ git clone git@github.com:redox-os/redox.git --origin upstream --recursive
 
 $ cd redox/
 
