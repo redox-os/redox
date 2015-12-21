@@ -191,7 +191,7 @@ usage()
 	exit
 }
 
-update()
+updater()
 {
 	git pull origin "$1"
 	sh setup/binary.sh
@@ -219,9 +219,9 @@ fi
 
 if [ "$1" == "-u" ]; then
 	if [ -n "$2" ]; then
-		update "$2"
+		updater "$2"
 	else
-		update "master"
+		updater "master"
 	fi
 fi
 
