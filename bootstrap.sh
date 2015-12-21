@@ -124,7 +124,7 @@ fedora()
 			echo "QEMU already installed!"
 		fi
 	else
-		if [ -z "$(which virtualbox" ]; then
+		if [ -z "$(which virtualbox)" ]; then
 			echo "Installing virtualbox..."
 			sudo yum install virtualbox
 		else
