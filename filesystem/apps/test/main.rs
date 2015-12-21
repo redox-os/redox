@@ -1,14 +1,12 @@
 #![feature(asm)]
 #![feature(slice_concat_ext)]
 
-use std::Box;
 use std::rand;
 use std::ptr;
 use std::slice::SliceConcatExt;
 use std::string::*;
 use std::syscall::sys_exit;
 use std::thread;
-use std::Vec;
 
 macro_rules! readln {
     () => ({

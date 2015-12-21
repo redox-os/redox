@@ -53,6 +53,8 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
  * Using/testing Redox, filing issues for bugs and needed features
  * Web development (Redox website, separate repo)
  * Writing unit tests (may require minimal knowledge of rust)
+ * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
+
 
 * If you are fluent in Rust, but not OS Development:
 
@@ -106,12 +108,27 @@ It's completely fine to just submit a small pull request without first making an
 
 ### <a name="general" /> General
 
+* **Remember to do a `git rebase -i HEAD~40` before you send your patch!**
+* **Make sure your code is readable, commented, and well-documented.**
+* **Don't hesitate to ask for help!**
+* **Before implementing something, discuss it! Open an issue, or join the chat.**
+
+On the more technical side:
+* Test, test, and test!
 * Follow the style conventions
+* Use `std::mem::replace` and `std::mem::swap` when you can.
+* `libredox` should be 1-to-1 with the official `libstd`.
 * Use `.into()` and `.to_owned()` over `.to_string()`.
 * Prefer passing references to the data over owned data. (Don't take `String`, take `&str`. Don't take `Vec<T>` take `&[T]`).
 * Use generics, traits, and other abstractions Rust provides.
-* Be sure to mark parts that need work with `TODO`, `FIXME`, `BUG`, and `UNOPTIMIZED`.
-* Check [Slack](#slack), [the Website](http://redox-os.org), and [the Subreddit](https://www.reddit.com/r/redox) frequently.
+* Avoid using lossy conversions (for example: don't do `my_u32 as u16 == my_u16`, prefer `my_u32 == my_u16 as my_u32`).
+* Prefer in place (`box` keyword) when doing heap allocations.
+* Prefer platform independently sized integer over pointer sized integer (`u32` over `usize`, for example).
+* Follow the usual idioms of programming, such as "composition over inheritance", "let your program be divided in smaller pieces", and "resource acquisition is initialization".
+* When `unsafe` is unnecessary, don't use it. 10 lines longer safe code is better than more compact unsafe code!
+* Be sure to mark parts that need work with `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME`.
+* Use the compiler hint attributes, such as `#[inline]`, `#[cold]`, etc. when it makes sense to do so.
+* Check [Slack](#slack), [the Website](http://redox-os.org), and [the Rust subreddit](https://www.reddit.com/r/rust) frequently.
 
 ### <a name="kernel" /> Kernel
 

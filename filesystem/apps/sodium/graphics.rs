@@ -20,14 +20,14 @@ impl Editor {
 
         if self.options.line_marker {
             self.window.rect(0,
-                             (pos_y - self.scroll_y) as isize * 16,
+                             (pos_y - self.scroll_y) as i32 * 16,
                              w,
                              16,
                              Color::rgb(45, 45, 45));
         }
 
-        self.window.rect(8 * (pos_x - self.scroll_x) as isize,
-                         16 * (pos_y - self.scroll_y) as isize,
+        self.window.rect(8 * (pos_x - self.scroll_x) as i32,
+                         16 * (pos_y - self.scroll_y) as i32,
                          8,
                          16,
                          Color::WHITE);
@@ -78,13 +78,13 @@ impl Editor {
                 };
 
                 if pos_x == x && pos_y == y {
-                    self.window.char(8 * (x - self.scroll_x) as isize,
-                                     16 * (y - self.scroll_y) as isize,
+                    self.window.char(8 * (x - self.scroll_x) as i32,
+                                     16 * (y - self.scroll_y) as i32,
                                      c,
                                      Color::rgb(color.0 / 3, color.1 / 3, color.2 / 3));
                 } else {
-                    self.window.char(8 * (x - self.scroll_x) as isize,
-                                     16 * (y - self.scroll_y) as isize,
+                    self.window.char(8 * (x - self.scroll_x) as i32,
+                                     16 * (y - self.scroll_y) as i32,
                                      c,
                                      Color::rgb(color.0, color.1, color.2));
                 }
@@ -104,7 +104,7 @@ impl Editor {
         let w = self.window.width();
         let mode = self.cursor().mode;
         self.window.rect(0,
-                         h as isize - 18 -
+                         h as i32 - 18 -
                          {
                              if mode == Mode::Primitive(PrimitiveMode::Prompt) {
                                  18
@@ -126,30 +126,30 @@ impl Editor {
         status_bar(self, sb_msg, 3, 4);
 
         for (n, c) in self.prompt.chars().enumerate() {
-            self.window.char(n as isize * 8, h as isize - 16 - 1, c, Color::WHITE);
+            self.window.char(n as i32 * 8, h as i32 - 16 - 1, c, Color::WHITE);
         }
 
         self.window.sync();
     }
 }
 
-fn status_bar(editor: &mut Editor, text: String, a: usize, b: usize) {
+fn status_bar(editor: &mut Editor, text: String, a: u32, b: u32) {
 
     let h = editor.window.height();
     let w = editor.window.width();
     // let y = editor.y();
     let mode = editor.cursor().mode;
 
-    for (n, c) in (if text.len() > w / (8 * b) {
-                      text.chars().take(w / (8 * b) - 5).chain(vec!['.'; 3]).collect::<Vec<_>>()
+    for (n, c) in (if text.len() > (w / (8 * b)) as usize {
+                      text.chars().take((w / (8 * b) - 5) as usize).chain(vec!['.'; 3]).collect::<Vec<_>>()
                   } else {
                       text.chars().collect()
                   })
                   .into_iter()
                   .enumerate() {
 
-        editor.window.char(((w * a) / b) as isize + (n as isize * 8),
-                           h as isize - 16 - 1 -
+        editor.window.char(((w * a) / b) as i32 + (n as i32 * 8),
+                           h as i32 - 16 - 1 -
                            {
                                if mode == Mode::Primitive(PrimitiveMode::Prompt) {
                                    16 + 1 + 1

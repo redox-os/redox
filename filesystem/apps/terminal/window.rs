@@ -1,4 +1,3 @@
-use std::{Box, String, ToString, Vec};
 
 use orbital::*;
 
@@ -19,20 +18,20 @@ pub struct ConsoleWindow {
     /// Previous commands
     pub history: Vec<String>,
     /// History index
-    pub history_i: usize,
+    pub history_i: u32,
     /// Offset
     pub offset: usize,
     /// Scroll distance x
-    pub scroll_x: isize,
+    pub scroll_x: i32,
     /// Scroll distance y
-    pub scroll_y: isize,
+    pub scroll_y: i32,
     /// Wrap the text, if true
     pub wrap: bool,
 }
 
 impl ConsoleWindow {
     /// Create a new console window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Box<Self> {
+    pub fn new(x: i32, y: i32, w: u32, h: u32, title: &str) -> Box<Self> {
         Box::new(ConsoleWindow {
             window: Window::new(x, y, w, h, title).unwrap(),
             output: Vec::new(),
@@ -80,41 +79,41 @@ impl ConsoleWindow {
                     match key_event.scancode {
                         K_BKSP =>
                             if self.offset > 0 {
-                                self.history[self.history_i] =
-                                    self.history[self.history_i][0..self.offset - 1].to_string() +
-                                    &self.history[self.history_i][self.offset..];
+                                self.history[self.history_i as usize] =
+                                    self.history[self.history_i as usize][0..self.offset - 1].to_string() +
+                                    &self.history[self.history_i as usize][self.offset..];
                                 self.offset -= 1;
                             },
                         K_DEL =>
-                            if self.offset < self.history[self.history_i].len() {
-                                self.history[self.history_i] =
-                                self.history[self.history_i][0 .. self.offset].to_string() +
-                                &self.history[self.history_i][self.offset + 1 .. self.history[self.history_i].len() - 1];
+                            if (self.offset) < self.history[self.history_i as usize].len() {
+                                self.history[self.history_i as usize] =
+                                self.history[self.history_i as usize][0..self.offset].to_string() +
+                                &self.history[self.history_i as usize][self.offset + 1..self.history[self.history_i as usize].len() - 1];
                             },
                         K_HOME => self.offset = 0,
                         K_UP => {
-                            if self.history_i + 1 < self.history.len() {
+                            if self.history_i as usize + 1 < self.history.len() {
                                 self.history_i += 1;
                             }
-                            self.offset = self.history[self.history_i].len();
+                            self.offset = self.history[self.history_i as usize].len();
                         }
                         K_LEFT => if self.offset > 0 {
                             self.offset -= 1;
                         },
-                        K_RIGHT => if self.offset < self.history[self.history_i].len() {
+                        K_RIGHT => if (self.offset) < self.history[self.history_i as usize].len() {
                             self.offset += 1;
                         },
-                        K_END => self.offset = self.history[self.history_i].len(),
+                        K_END => self.offset = self.history[self.history_i as usize].len(),
                         K_DOWN => {
                             if self.history_i > 0 {
                                 self.history_i -= 1;
                             }
-                            self.offset = self.history[self.history_i].len();
+                            self.offset = self.history[self.history_i as usize].len();
                         }
                         _ => match key_event.character {
                             '\x00' => (),
                             '\n' => {
-                                let command = self.history[self.history_i].clone();
+                                let command = self.history[self.history_i as usize].clone();
                                 self.offset = 0;
                                 self.history_i = 0;
                                 if !self.history[0].is_empty() {
@@ -129,10 +128,10 @@ impl ConsoleWindow {
                             }
                             '\x1B' => break,
                             _ => {
-                                self.history[self.history_i] =
-                                    self.history[self.history_i][0..self.offset].to_string() +
+                                self.history[self.history_i as usize] =
+                                    self.history[self.history_i as usize][0..self.offset].to_string() +
                                     &key_event.character.to_string() +
-                                    &self.history[self.history_i][self.offset..];
+                                    &self.history[self.history_i as usize][self.offset..];
                                 self.offset += 1;
                             }
                         },
@@ -153,9 +152,9 @@ impl ConsoleWindow {
         let scroll_y = self.scroll_y;
 
         let mut col = -scroll_x;
-        let cols = self.window.width() as isize / 8;
+        let cols = self.window.width() as i32 / 8;
         let mut row = -scroll_y;
-        let rows = self.window.height() as isize / 16;
+        let rows = self.window.height() as i32 / 16;
 
         {
             self.window.set(Color::BLACK);
@@ -180,7 +179,7 @@ impl ConsoleWindow {
             }
 
             let mut i = 0;
-            for c in self.history[self.history_i].chars() {
+            for c in self.history[self.history_i as usize].chars() {
                 if self.wrap && col >= cols {
                     col = -scroll_x;
                     row += 1;
