@@ -12,7 +12,6 @@ use scheme::{Resource, Scheme};
 #[path="SCHEME_PATH"]
 pub mod scheme;
 
-use std::Box;
 use std::io::{Read, Write, Seek, SeekFrom};
 use std::{ptr, slice, str};
 use std::syscall::{SysError, EINVAL};

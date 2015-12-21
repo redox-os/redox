@@ -549,8 +549,8 @@ impl Uhci {
                                    let mouse_y = (y * mode_info.yresolution as usize) / 32768;
 
                                    let mouse_event = MouseEvent {
-                                       x: cmp::max(0, cmp::min(mode_info.xresolution as isize - 1, mouse_x as isize)),
-                                       y: cmp::max(0, cmp::min(mode_info.yresolution as isize - 1, mouse_y as isize)),
+                                       x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
+                                       y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
                                        left_button: buttons & 1 == 1,
                                        middle_button: buttons & 4 == 4,
                                        right_button: buttons & 2 == 2,

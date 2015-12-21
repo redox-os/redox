@@ -1,4 +1,4 @@
-use std::{Box, String, Url};
+use std::url::Url;
 use std::{cmp, mem, ptr};
 use std::get_slice::GetSlice;
 use std::io::*;
@@ -162,13 +162,13 @@ impl Scheme {
                     self.next_x = 0;
                 }
                 self.next_x += 32;
-                pointx = self.next_x;
+                pointx = self.next_x as i32;
 
                 if self.next_y > self.session.display.height as isize - size_height as isize {
                     self.next_y = 0;
                 }
                 self.next_y += 32;
-                pointy = self.next_y;
+                pointy = self.next_y as i32;
             }
 
             Ok(box Resource {

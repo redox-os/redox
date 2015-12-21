@@ -1,4 +1,6 @@
-use std::{mem, ptr, File, Read, Seek, SeekFrom, Write};
+use std::{mem, ptr};
+use std::fs::File;
+use std::io::{Read, Seek, SeekFrom, Write};
 
 use super::block_ptr::BlockPtr;
 use super::dvaddr::DVAddr;
