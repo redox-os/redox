@@ -33,7 +33,7 @@ osx()
 	else
 		echo "Homebrew does not appear to be installed! Would you like me to install it?"
 		printf "(Y/n): "
-		read installit
+		read -r installit
 		if [ "$installit" == "Y" ]; then
 			ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		else
@@ -42,7 +42,7 @@ osx()
 		fi
 	fi
 	echo "Cloning Redox repo"
-	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Running Redox setup script..."
 	sh redox/setup/osx-homebrew.sh
 	echo "Running rust install script"
@@ -74,7 +74,7 @@ archLinux()
 		fi
 	fi
 	echo "Cloning redox repo..."
-	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Running Redox setup scripts..."
 	sh redox/setup/arch.sh
 	echo "Running rust installer..."
@@ -85,26 +85,26 @@ ubuntu()
 {
 	echo "Detected Ubuntu/Debian"
 	echo "Updating system..."
-	sudo $3 update
+	sudo "$3" update
 	echo "Installing required packages..."
-	sudo $3 install build-essential libc6-dev-i386 nasm curl file git
+	sudo "$3" install build-essential libc6-dev-i386 nasm curl file git
 	if [ "$2" == "qemu" ]; then
 		if [ -z "$(which qemu)" ]; then
 			echo "Installing QEMU..."
-			sudo $3 install qemu-system-x86 qemu-kvm
+			sudo "$3" install qemu-system-x86 qemu-kvm
 		else
 			echo "QEMU already installed!"
 		fi
 	else
 		if [ -z "$(which virtualbox)" ]; then
 			echo "Installing Virtualbox..."
-			sudo $3 install virtualbox
+			sudo "$3" install virtualbox
 		else
 			echo "Virtualbox already installed!"
 		fi
 	fi
 	echo "Cloning Redox repo"
-	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Running rust installer..."
 	sh redox/setup/binary.sh
 }
@@ -132,7 +132,7 @@ fedora()
 		fi
 	fi
 	echo "Cloning Redox repo"
-	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Installing necessary build tools..."
 	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make
 	echo "Running rust installer"
@@ -160,7 +160,7 @@ suse()
 		exit
 	fi
 	echo "Cloning Redox repo..."
-	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
 	echo "Installing necessary build tools..."
 	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make
 	echo "Running rust installer"
@@ -190,7 +190,7 @@ usage()
 
 update()
 {
-	git pull origin $1
+	git pull origin "$1"
 	sh setup/binary.sh
 	exit
 }
@@ -216,7 +216,7 @@ fi
 
 if [ "$1" == "-u" ]; then
 	if [ -n "$2" ]; then
-		update $2
+		update "$2"
 	else
 		update "master"
 	fi
