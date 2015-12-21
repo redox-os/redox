@@ -11,13 +11,13 @@ use super::Color;
 /// A window
 pub struct Window {
     /// The x coordinate of the window
-    x: isize,
+    x: i32,
     /// The y coordinate of the window
-    y: isize,
+    y: i32,
     /// The width of the window
-    w: usize,
+    w: u32,
     /// The height of the window
-    h: usize,
+    h: u32,
     /// The title of the window
     t: String,
     /// The input scheme
@@ -30,7 +30,7 @@ pub struct Window {
 
 impl Window {
     /// Create a new window
-    pub fn new(x: isize, y: isize, w: usize, h: usize, title: &str) -> Option<Box<Self>> {
+    pub fn new(x: i32, y: i32, w: u32, h: u32, title: &str) -> Option<Box<Self>> {
         let mut font = Vec::new();
         if let Ok(mut font_file) = File::open("file:/ui/unifont.font") {
             font_file.read_to_end(&mut font);
@@ -45,7 +45,7 @@ impl Window {
                 t: title.to_string(),
                 file: file,
                 font: font,
-                data: vec![0; w * h * 4],
+                data: vec![0; (w * h * 4) as usize],
             }),
             Err(_) => None
         }
@@ -75,23 +75,23 @@ impl Window {
 
     /// Get x
     //TODO: Sync with window movements
-    pub fn x(&self) -> isize {
+    pub fn x(&self) -> i32 {
         self.x
     }
 
     /// Get y
     //TODO: Sync with window movements
-    pub fn y(&self) -> isize {
+    pub fn y(&self) -> i32 {
         self.y
     }
 
     /// Get width
-    pub fn width(&self) -> usize {
+    pub fn width(&self) -> u32 {
         self.w
     }
 
     /// Get height
-    pub fn height(&self) -> usize {
+    pub fn height(&self) -> u32 {
         self.h
     }
 
@@ -106,15 +106,15 @@ impl Window {
     }
 
     /// Draw a pixel
-    pub fn pixel(&mut self, x: isize, y: isize, color: Color) {
-        if x >= 0 && y >= 0 && x < self.w as isize && y < self.h as isize {
-            let offset = y as usize * self.w + x as usize;
-            self.data[offset] = color.data;
+    pub fn pixel(&mut self, x: i32, y: i32, color: Color) {
+        if x >= 0 && y >= 0 && x < self.w as i32 && y < self.h as i32 {
+            let offset = y as u32 * self.w + x as u32;
+            self.data[offset as usize] = color.data;
         }
     }
 
     /// Draw a character, using the loaded font
-    pub fn char(&mut self, x: isize, y: isize, c: char, color: Color) {
+    pub fn char(&mut self, x: i32, y: i32, c: char, color: Color) {
         let mut offset = (c as usize) * 16;
         for row in 0..16 {
             let row_data;
@@ -127,7 +127,7 @@ impl Window {
             for col in 0..8 {
                 let pixel = (row_data >> (7 - col)) & 1;
                 if pixel > 0 {
-                    self.pixel(x + col as isize, y + row as isize, color);
+                    self.pixel(x + col as i32, y + row as i32, color);
                 }
             }
             offset += 1;
@@ -148,9 +148,9 @@ impl Window {
     /// Draw rectangle
     // TODO: Improve speed
     #[allow(unused_variables)]
-    pub fn rect(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, color: Color) {
-        for y in start_y..start_y + h as isize {
-            for x in start_x..start_x + w as isize {
+    pub fn rect(&mut self, start_x: i32, start_y: i32, w: u32, h: u32, color: Color) {
+        for y in start_y..start_y + h as i32 {
+            for x in start_x..start_x + w as i32 {
                 self.pixel(x, y, color);
             }
         }
@@ -158,10 +158,10 @@ impl Window {
 
     /// Display an image
     //TODO: Improve speed
-    pub fn image(&mut self, start_x: isize, start_y: isize, w: usize, h: usize, data: &[Color]) {
+    pub fn image(&mut self, start_x: i32, start_y: i32, w: u32, h: u32, data: &[Color]) {
         let mut i = 0;
-        for y in start_y..start_y + h as isize {
-            for x in start_x..start_x + w as isize {
+        for y in start_y..start_y + h as i32 {
+            for x in start_x..start_x + w as i32 {
                 if i < data.len() {
                     self.pixel(x, y, data[i])
                 }

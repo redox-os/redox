@@ -58,9 +58,9 @@ impl Event {
 #[derive(Copy, Clone, Debug)]
 pub struct MouseEvent {
     /// The x coordinate of the mouse
-    pub x: isize,
+    pub x: i32,
     /// The y coordinate of the mouse
-    pub y: isize,
+    pub y: i32,
     /// Was the left button pressed?
     pub left_button: bool,
     /// Was the middle button pressed?
@@ -84,8 +84,8 @@ impl MouseEvent {
     /// Convert an `Event` to a `MouseEvent`
     pub fn from_event(event: Event) -> MouseEvent {
         MouseEvent {
-            x: event.a as isize,
-            y: event.b as isize,
+            x: event.a as i32,
+            y: event.b as i32,
             left_button: event.c & 1 == 1,
             middle_button: event.c & 2 == 2,
             right_button: event.c & 4 == 4,

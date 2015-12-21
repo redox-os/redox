@@ -10,13 +10,12 @@ pub struct Editor {
     url: String,
     file: Option<File>,
     string: String,
-    offset: usize,
-    scroll_x: isize,
-    scroll_y: isize,
+    offset: u32,
+    scroll_x: i32,
+    scroll_y: i32,
 }
 
 impl Editor {
-    #[inline(never)]
     pub fn new() -> Self {
         Editor {
             url: String::new(),
@@ -87,10 +86,10 @@ impl Editor {
             let mut offset = 0;
 
             let mut col = -scroll_x;
-            let cols = window.width() as isize / 8;
+            let cols = window.width() as i32 / 8;
 
             let mut row = -scroll_y;
-            let rows = window.height() as isize / 16;
+            let rows = window.height() as i32 / 16;
 
             for c in self.string.chars() {
                 if offset == self.offset {
@@ -178,13 +177,13 @@ impl Editor {
                     match key_event.scancode {
                         K_ESC => break,
                         K_BKSP => if self.offset > 0 {
-                            self.string = self.string[0..self.offset - 1].to_string() +
-                                          &self.string[self.offset..self.string.len()];
+                            self.string = self.string[0..self.offset as usize - 1].to_string() +
+                                          &self.string[self.offset as usize..self.string.len()];
                             self.offset -= 1;
                         },
-                        K_DEL => if self.offset < self.string.len() {
-                            self.string = self.string[0..self.offset].to_string() +
-                                          &self.string[self.offset + 1..self.string.len() - 1];
+                        K_DEL => if (self.offset as usize) < self.string.len() {
+                            self.string = self.string[0..self.offset as usize].to_string() +
+                                          &self.string[self.offset as usize + 1..self.string.len() - 1];
                         },
                         K_F5 => self.reload(),
                         K_F6 => self.save(&window),
@@ -192,7 +191,7 @@ impl Editor {
                         K_UP => {
                             let mut new_offset = 0;
                             for i in 2..self.offset {
-                                match self.string.as_bytes()[self.offset - i] {
+                                match self.string.as_bytes()[(self.offset - i) as usize] {
                                     0 => break,
                                     10 => {
                                         new_offset = self.offset - i + 1;
@@ -206,13 +205,13 @@ impl Editor {
                         K_LEFT => if self.offset > 0 {
                             self.offset -= 1;
                         },
-                        K_RIGHT => if self.offset < self.string.len() {
+                        K_RIGHT => if (self.offset as usize) < self.string.len() {
                             self.offset += 1;
                         },
-                        K_END => self.offset = self.string.len(),
+                        K_END => self.offset = self.string.len() as u32,
                         K_DOWN => {
                             let mut new_offset = self.string.len();
-                            for i in self.offset..self.string.len() {
+                            for i in self.offset as usize..self.string.len() {
                                 match self.string.as_bytes()[i] {
                                     0 => break,
                                     10 => {
@@ -222,14 +221,14 @@ impl Editor {
                                     _ => (),
                                 }
                             }
-                            self.offset = new_offset;
+                            self.offset = new_offset as u32;
                         }
                         _ => match key_event.character {
                             '\0' => (),
                             _ => {
-                                self.string = self.string[0..self.offset].to_string() +
+                                self.string = self.string[0..self.offset as usize].to_string() +
                                               &key_event.character.to_string() +
-                                              &self.string[self.offset..self.string.len()];
+                                              &self.string[self.offset as usize..self.string.len()];
                                 self.offset += 1;
                             }
                         },
