@@ -50,7 +50,7 @@ If you're interested in this project, and you'd like to help us out, [here](CONT
 $ cd path/to/your/projects/folder/
 
 # Run bootstrap setup
-$ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh -o bootstrap.sh && bash -e bootstrap.sh && rm -rf bootstrap.sh
+$ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh -o bootstrap.sh && bash -e bootstrap.sh
 
 # Build Redox
 $ make all
