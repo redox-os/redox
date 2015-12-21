@@ -196,7 +196,7 @@ do
 		b) branch="$OPTARG";;
 		e) emulator="$OPTARG";;
 				p) defpackman="$OPTARG";;
-		\?) echo "I don't know what to do with that option..."; exit;;
+		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
 	esac
 done
 
