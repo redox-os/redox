@@ -48,11 +48,20 @@ If you're interested in this project, and you'd like to help us out, [here](CONT
 
 ```bash
 $ cd path/to/your/projects/folder/
-$ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh | sh # Run bootstrap setup
-$ make all # Build Redox
-$ make virtualbox # Launch using VirtualBox
-$ make qemu # Launch using QEMU
-$ make qemu_no_kvm # Launch using QEMU without KVM (Kernel Virtual Machine?). Try if QEMU gives an error.
+
+# Run bootstrap setup
+$ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh | sh 
+
+# Build Redox
+$ make all
+
+# Launch using VirtualBox
+$ make virtualbox
+
+# Launch using QEMU
+$ make qemu
+# Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
+$ make qemu_no_kvm
 ```
 
 ### <a name="manual-setup" /> Manual Setup
@@ -60,14 +69,31 @@ $ make qemu_no_kvm # Launch using QEMU without KVM (Kernel Virtual Machine?). Tr
 To manually clone, build and run Redox using a Linux host, run the following commands (with exceptions, be sure to read the comments):
 ```bash
 $ cd path/to/your/projects/folder/
-$ git clone --recursive https://github.com/redox-os/redox.git # HTTPS
-$ git clone --recursive git@github.com:redox-os/redox.git # SSH
+
+# HTTPS
+$ git clone --recursive https://github.com/redox-os/redox.git
+# SSH
+$ git clone --recursive git@github.com:redox-os/redox.git
+
 $ cd redox/
-$ sudo <your package manager> install llvm make nasm virtualbox virtualbox-dkms qemu qemu-kvm # Install/update dependencies
-$ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh # Install multirust
-$ multirust override nightly # Set override toolchain to nightly build
-$ make all # Build Redox
-$ make virtualbox # Launch using VirtualBox
-$ make qemu # Launch using QEMU
-$ make qemu_no_kvm # Launch using QEMU without KVM (Kernel Virtual Machine?). Try if QEMU gives an error.
+
+# Install/update dependencies
+$ sudo <your package manager> install llvm make nasm virtualbox virtualbox-dkms qemu qemu-kvm
+
+# Install multirust
+$ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh
+
+# Set override toolchain to nightly build
+$ multirust override nightly
+
+# Build Redox
+$ make all
+
+# Launch using VirtualBox
+$ make virtualbox
+
+# Launch using QEMU
+$ make qemu
+# Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
+$ make qemu_no_kvm
 ```
