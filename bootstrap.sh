@@ -8,16 +8,20 @@ banner() {
 osx()
 {
 	echo "Detected OSX!"
-	temp=$(brew --version)
-	if [ -n "$temp" ]; then
+	if [ ! -z "$(whcih brew)" ]; then
 		echo "Homebrew detected! Now updating..."
 		brew update
 		if [ -z "$(which git)" ]; then
 			echo "Now installing git..."
 			brew install git
 		fi
-		echo "Now installing virtualbox..."
-		brew cask install virtualbox
+		if [ "$2" == "qemu" ]; then
+			echo "Installing qemu..."
+			brew install qemu
+		else
+			echo "Now installing virtualbox..."
+			brew cask install virtualbox
+		fi
 	else
 		echo "Homebrew does not appear to be installed! Would you like me to install it?"
 		printf "(Y/n): "
@@ -28,11 +32,15 @@ osx()
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
 	sh redox/setup/osx-homebrew.sh
 	sh redox/setup/binary.sh
+	echo
+	echo "Everything looks good to go!"
+	echo "Compiling for qemu complaings about kvm"
+	echo "You need to run make qemu_no_kvm"
 }
 
 archLinux()
 {
-	echo "Detected Arch Linux, mah fav"
+	echo "Detected Arch Linux"
 	echo "Updating system..."
 	sudo pacman -Syu
 	if [ -z "$( which git)" ]; then
@@ -59,6 +67,9 @@ ubuntu()
 	if [ "$2" == "qemu" ]; then
 		echo "Installing QEMU..."
 		sudo $3 install qemu-system-x86 qemu-kvm
+	else
+		echo "Installing Virtualbox..."
+		sudo $3 install virtualbox
 	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
@@ -178,7 +189,7 @@ done
 banner
 kernel=$(uname -s)
 if [ "$kernel" == "Darwin" ]; then
-	osx $branch
+	osx $branch $emulator
 else
 	which pacman && { archLinux $branch $emulator; endMessage; }
 	which apt-get && { ubuntu $branch $emulator $defpackman; endMessage; }
