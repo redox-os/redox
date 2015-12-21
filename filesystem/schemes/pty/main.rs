@@ -1,6 +1,6 @@
 use std::io::{Result, SeekFrom};
 use std::syscall::*;
-use std::Url;
+use std::url::Url;
 
 pub struct Resource;
 
