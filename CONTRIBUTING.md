@@ -43,7 +43,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
 ## <a name="direct-contributing"> Direct Contributing</a>
 
-### <a name="easy-targets" /> Low-Hanging Fruit - Easy Targets for Newbies
+### <a name="easy-targets"> Low-Hanging Fruit - Easy Targets for Newbies </a>
 
 <!-- TODO improve this section -->
 
