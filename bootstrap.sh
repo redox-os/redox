@@ -25,12 +25,18 @@ osx()
 	else
 		echo "Homebrew does not appear to be installed! Would you like me to install it?"
 		printf "(Y/n): "
-		#For now assume yes
-		ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+		read installit
+		if ["$installit" == "Y"]; then
+			ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+		else
+			echo "Will not install, now exiting..."
+		fi
 	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	echo "Running Redox setup script..."
 	sh redox/setup/osx-homebrew.sh
+	echo "Running rust install script"
 	sh redox/setup/binary.sh
 	echo
 	echo "Everything looks good to go!"
@@ -54,7 +60,9 @@ archLinux()
 	fi
 	echo "Cloning redox repo..."
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	echo "Running Redox setup scripts..."
 	sh redox/setup/arch.sh
+	echo "Running rust installer..."
 	sh redox/setup/binary.sh
 }
 
@@ -74,16 +82,17 @@ ubuntu()
 	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	echo "Running rust installer..."
 	sh redox/setup/binary.sh
 }
 
 fedora()
 {
 	echo "Detected Fedora"
-    if [ -z "$(which git)" ]; then
-        echo "Installing git..."
-	    sudo yum install git-all
-    fi
+    	if [ -z "$(which git)" ]; then
+		echo "Installing git..."
+		sudo yum install git-all
+	fi
 	if [ "$2" == "qemu" ]; then
 		echo "Installing QEMU..."
 		sudo yum install qemu-system-x86 qemu-kvm
@@ -93,17 +102,19 @@ fedora()
 	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	echo "Installing necessary build tools..."
 	sudo dnf install gcc gcc-c++ glibc-devel.i686 nasm make
+	echo "Running rust installer"
 	sh redox/setup/binary.sh
 }
 
 suse()
 {
 	echo "Detected a suse"
-    if [ -z "$(which git)" ]; then
-        echo "Installing git..."
-	    zypper install git
-    fi
+	if [ -z "$(which git)" ]; then
+		echo "Installing git..."
+		zypper install git
+	fi
 	if [ "$2" == "qemu" ]; then
 		echo "Installing QEMU..."
 		sudo zypper install qemu-x86 qemu-kvm
@@ -115,7 +126,9 @@ suse()
 	fi
 	echo "Cloning Redox repo..."
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
+	echo "Installing necessary build tools..."
 	sudo zypper install gcc gcc-c++ glibc-devel-32bit nasm make
+	echo "Running rust installer"
 	sh redox/setup/binary.sh
 }
 
