@@ -26,7 +26,7 @@ osx()
 		echo "Homebrew does not appear to be installed! Would you like me to install it?"
 		printf "(Y/n): "
 		read installit
-		if ["$installit" == "Y"]; then
+		if [ "$installit" == "Y" ]; then
 			ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		else
 			echo "Will not install, now exiting..."
