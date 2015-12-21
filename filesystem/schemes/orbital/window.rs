@@ -1,4 +1,3 @@
-use std::{Box, String};
 use std::collections::VecDeque;
 use std::ops::DerefMut;
 
@@ -38,7 +37,7 @@ impl Window {
             point: point,
             size: size,
             title: title,
-            content: Display::new(size.width, size.height),
+            content: Display::new(size.width as usize, size.height as usize),
             title_color: Color::rgb(255, 255, 255),
             border_color: Color::rgba(64, 64, 64, 128),
             focused: false,
@@ -107,22 +106,22 @@ impl Window {
 
             let mut cursor = Point::new(self.point.x, self.point.y - 17);
             for c in self.title.chars() {
-                if cursor.x + 8 <= self.point.x + self.size.width as isize {
+                if cursor.x + 8 <= self.point.x + self.size.width as i32 {
                     display.char(cursor, c, self.title_color, font);
                 }
                 cursor.x += 8;
             }
 
-            cursor.x = self.point.x + self.size.width as isize - 8;
+            cursor.x = self.point.x + self.size.width as i32 - 8;
             display.char(cursor, 'X', self.title_color, font);
 
             display.rect(Point::new(self.point.x - 2, self.point.y),
                          Size::new(2, self.size.height),
                          self.border_color);
-            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as isize),
+            display.rect(Point::new(self.point.x - 2, self.point.y + self.size.height as i32),
                          Size::new(self.size.width + 4, 2),
                          self.border_color);
-            display.rect(Point::new(self.point.x + self.size.width as isize, self.point.y),
+            display.rect(Point::new(self.point.x + self.size.width as i32, self.point.y),
                          Size::new(2, self.size.height),
                          self.border_color);
 
@@ -130,7 +129,7 @@ impl Window {
                 let reenable = scheduler::start_no_ints();
                 display.image(self.point,
                               self.content.onscreen as *const Color,
-                              Size::new(self.content.width, self.content.height));
+                              Size::new(self.content.width as u32, self.content.height as u32));
                 scheduler::end_no_ints(reenable);
             }
         }
@@ -162,15 +161,15 @@ impl Window {
     pub fn on_mouse(&mut self, orig_mouse_event: MouseEvent, allow_catch: bool, active_window: bool) -> bool {
         let mut mouse_event = orig_mouse_event;
 
-        mouse_event.x -= self.point.x;
-        mouse_event.y -= self.point.y;
+        mouse_event.x -= self.point.x as i32;
+        mouse_event.y -= self.point.y as i32;
 
         let mut caught = false;
 
         if allow_catch && (active_window || (Window::mouse_button_pressed(&mouse_event) && !Window::mouse_button_pressed(&self.last_mouse_event))) {
-            if self.on_window_body(mouse_event.x, mouse_event.y) {
+            if self.on_window_body(mouse_event.x as isize, mouse_event.y as isize) {
                 caught = true;
-            } else if self.on_window_decoration(mouse_event.x, mouse_event.y) {
+            } else if self.on_window_decoration(mouse_event.x as isize, mouse_event.y as isize) {
                 caught = true;
 
                 if mouse_event.left_button {
@@ -178,7 +177,7 @@ impl Window {
                         self.dragging = true;
                     }
                     
-                    if mouse_event.x >= self.size.width as isize - 8 {
+                    if mouse_event.x >= self.size.width as i32 - 8 {
                         unsafe {
                             let reenable = scheduler::start_no_ints();
                             self.events.push_back(QuitEvent.to_event());

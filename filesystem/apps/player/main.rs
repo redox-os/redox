@@ -1,7 +1,9 @@
 extern crate orbital;
 
-use std::*;
 use std::audio::*;
+use std::fs::File;
+use std::env;
+use std::io::{Read, Write};
 
 use orbital::*;
 
