@@ -20,7 +20,7 @@ pub struct ConsoleWindow {
     /// History index
     pub history_i: u32,
     /// Offset
-    pub offset: u32,
+    pub offset: usize,
     /// Scroll distance x
     pub scroll_x: i32,
     /// Scroll distance y
@@ -80,35 +80,35 @@ impl ConsoleWindow {
                         K_BKSP =>
                             if self.offset > 0 {
                                 self.history[self.history_i as usize] =
-                                    self.history[self.history_i as usize][0..self.offset as usize - 1].to_string() +
-                                    &self.history[self.history_i as usize][self.offset as usize..];
+                                    self.history[self.history_i as usize][0..self.offset - 1].to_string() +
+                                    &self.history[self.history_i as usize][self.offset..];
                                 self.offset -= 1;
                             },
                         K_DEL =>
-                            if (self.offset as usize) < self.history[self.history_i as usize].len() {
+                            if (self.offset) < self.history[self.history_i as usize].len() {
                                 self.history[self.history_i as usize] =
-                                self.history[self.history_i as usize][0..self.offset as usize].to_string() +
-                                &self.history[self.history_i as usize][self.offset as usize + 1..self.history[self.history_i as usize].len() - 1];
+                                self.history[self.history_i as usize][0..self.offset].to_string() +
+                                &self.history[self.history_i as usize][self.offset + 1..self.history[self.history_i as usize].len() - 1];
                             },
                         K_HOME => self.offset = 0,
                         K_UP => {
                             if self.history_i as usize + 1 < self.history.len() {
                                 self.history_i += 1;
                             }
-                            self.offset = self.history[self.history_i as usize].len() as u32;
+                            self.offset = self.history[self.history_i as usize].len();
                         }
                         K_LEFT => if self.offset > 0 {
                             self.offset -= 1;
                         },
-                        K_RIGHT => if (self.offset as usize) < self.history[self.history_i as usize].len() {
+                        K_RIGHT => if (self.offset) < self.history[self.history_i as usize].len() {
                             self.offset += 1;
                         },
-                        K_END => self.offset = self.history[self.history_i as usize].len() as u32,
+                        K_END => self.offset = self.history[self.history_i as usize].len(),
                         K_DOWN => {
                             if self.history_i > 0 {
                                 self.history_i -= 1;
                             }
-                            self.offset = self.history[self.history_i as usize].len() as u32;
+                            self.offset = self.history[self.history_i as usize].len();
                         }
                         _ => match key_event.character {
                             '\x00' => (),
@@ -129,9 +129,9 @@ impl ConsoleWindow {
                             '\x1B' => break,
                             _ => {
                                 self.history[self.history_i as usize] =
-                                    self.history[self.history_i as usize][0..self.offset as usize].to_string() +
+                                    self.history[self.history_i as usize][0..self.offset].to_string() +
                                     &key_event.character.to_string() +
-                                    &self.history[self.history_i as usize][self.offset as usize..];
+                                    &self.history[self.history_i as usize][self.offset..];
                                 self.offset += 1;
                             }
                         },
