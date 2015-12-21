@@ -66,7 +66,7 @@ archLinux()
 		sudo pacman -S git
 	fi
 	if [ "$2" == "qemu" ]; then
-		if [ -z "$(which qemu)" ]; then
+		if [ -z "$(which qemu-system-i386)" ]; then
 			echo "Installing QEMU..."
 			sudo pacman -S qemu
 		else
