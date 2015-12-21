@@ -8,7 +8,7 @@ banner() {
 osx()
 {
 	echo "Detected OSX!"
-	if [ ! -z "$(whcih brew)" ]; then
+	if [ ! -z "$(which brew)" ]; then
 		echo "Homebrew detected! Now updating..."
 		brew update
 		if [ -z "$(which git)" ]; then
