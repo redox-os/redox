@@ -240,10 +240,10 @@ done
 
 banner
 if [ "Darwin" == "$(uname -s)" ]; then
-	osx $branch $emulator
+	osx "$branch" "$emulator"
 else
-	which pacman && { archLinux $branch $emulator; endMessage; }
-	which apt-get && { ubuntu $branch $emulator $defpackman; endMessage; }
-	which yum && { fedora $branch $emulator; endMessage; }
-	which zypper && { suse $branch $emulator; endMessage; }
+	which pacman && { archLinux "$branch" "$emulator"; endMessage; }
+	which apt-get && { ubuntu "$branch" "$emulator" "$defpackman"; endMessage; }
+	which yum && { fedora "$branch" "$emulator"; endMessage; }
+	which zypper && { suse "$branch" "$emulator"; endMessage; }
 fi
