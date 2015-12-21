@@ -179,7 +179,7 @@ impl Scheme {
                     let mut bytes: Vec<u8> = Vec::new();
                     if let Ok(_) = ip.read_to_end(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(bytes) {
-                            if datagram.header.dst.get() as usize == host_port {
+                            if datagram.header.dst.get() as u32 == host_port {
                                 if let Ok(path) = ip.path() {
                                     let url = Url::from_string(path.to_string());
 

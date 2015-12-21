@@ -1,3 +1,5 @@
+// TODO Calm down on those `as` integer converts (especially the lossy ones).
+
 use std::url::Url;
 use std::fs::File;
 use std::io::Read;
@@ -156,17 +158,17 @@ impl Session {
     fn on_mouse(&mut self, mouse_event: MouseEvent) {
         let mut catcher = -1;
 
-        if mouse_event.y >= self.display.height as isize - 32 {
+        if mouse_event.y >= self.display.height as i32 - 32 {
             if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
                 for package in self.packages.iter() {
                     if !(&package.icon).is_empty() {
-                        if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as isize {
+                        if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as i32 {
                             if Command::new(&package.binary).spawn_scheme().is_none() {
                                 println!("{}: Failed to launch", package.binary);
                             }
                         }
-                        x = x + package.icon.width() as isize;
+                        x = x + package.icon.width() as i32;
                     }
                 }
 
@@ -180,7 +182,7 @@ impl Session {
                 x += 4;
                 for window_ptr in self.windows_ordered.iter() {
                     let w = (chars * 8 + 2 * 4) as usize;
-                    if mouse_event.x >= x && mouse_event.x < x + w as isize {
+                    if mouse_event.x >= x && mouse_event.x < x + w as i32 {
                         for j in 0..self.windows.len() {
                             match self.windows.get(j) {
                                 Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
@@ -200,7 +202,7 @@ impl Session {
                         self.redraw = true;
                         break;
                     }
-                    x += w as isize;
+                    x += w as i32;
                 }
             }
         } else {
@@ -240,14 +242,14 @@ impl Session {
             let mouse_point = Point::new(self.last_mouse_event.x, self.last_mouse_event.y);
             self.display.set(Color::rgb(75, 163, 253));
             if self.background.has_data() {
-                self.display.image(Point::new((self.display.width as isize -
-                                               self.background.width() as isize) /
+                self.display.image(Point::new((self.display.width as i32 -
+                                               self.background.width() as i32) /
                                               2,
-                                              (self.display.height as isize -
-                                               self.background.height() as isize) /
+                                              (self.display.height as i32 -
+                                               self.background.height() as i32) /
                                               2),
                                    (&self.background).as_ptr(),
-                                   Size::new(self.background.width(), self.background.height()));
+                                   Size::new(self.background.width() as u32, self.background.height() as u32));
             }
 
             for i in 0..self.windows.len() {
@@ -260,28 +262,28 @@ impl Session {
                 }
             }
 
-            self.display.rect(Point::new(0, self.display.height as isize - 32),
-                              Size::new(self.display.width, 32),
+            self.display.rect(Point::new(0, self.display.height as i32 - 32),
+                              Size::new(self.display.width as u32, 32),
                               Color::rgba(0, 0, 0, 128));
 
             let mut x = 0;
             for package in self.packages.iter() {
                 if !(&package.icon).is_empty() {
                     let y = self.display.height as isize - package.icon.height() as isize;
-                    if mouse_point.y >= y && mouse_point.x >= x &&
-                       mouse_point.x < x + package.icon.width() as isize {
-                        self.display.rect(Point::new(x, y),
-                                          Size::new(package.icon.width(), package.icon.height()),
+                    if mouse_point.y >= y as i32 && mouse_point.x >= x &&
+                       mouse_point.x < x + package.icon.width() as i32 {
+                        self.display.rect(Point::new(x as i32, y as i32),
+                                          Size::new(package.icon.width() as u32, package.icon.height() as u32),
                                           Color::rgba(128, 128, 128, 128));
 
-                        self.display.rect(Point::new(x, y - 16),
-                                          Size::new(package.name.len() * 8, 16),
+                        self.display.rect(Point::new(x as i32, y as i32 - 16),
+                                          Size::new(package.name.len() as u32 * 8, 16),
                                           Color::rgba(0, 0, 0, 128));
 
                         let mut c_x = x;
                         for c in package.name.chars() {
                             self.display
-                                .char(Point::new(c_x, y - 16),
+                                .char(Point::new(c_x as i32, y as i32 - 16),
                                       c,
                                       Color::rgb(255, 255, 255),
                                       self.font.as_ptr() as usize);
@@ -289,11 +291,11 @@ impl Session {
                         }
                     }
 
-                    self.display.image_alpha(Point::new(x, y),
+                    self.display.image_alpha(Point::new(x as i32, y as i32),
                                              (&package.icon).as_ptr(),
-                                             Size::new(package.icon.width(),
-                                                       package.icon.height()));
-                    x = x + package.icon.width() as isize;
+                                             Size::new(package.icon.width() as u32,
+                                                       package.icon.height() as u32));
+                    x = x + package.icon.width() as i32;
                 }
             }
 
@@ -307,15 +309,15 @@ impl Session {
             x += 4;
             for window_ptr in self.windows_ordered.iter() {
                 let w = (chars * 8 + 2 * 4) as usize;
-                self.display.rect(Point::new(x, self.display.height as isize - 32),
-                                  Size::new(w, 32),
+                self.display.rect(Point::new(x, self.display.height as i32 - 32),
+                                  Size::new(w as u32, 32),
                                   (**window_ptr).border_color);
                 x += 4;
 
                 let mut i = 0;
                 for c in (**window_ptr).title.chars() {
                     if c != '\0' {
-                        self.display.char(Point::new(x, self.display.height as isize - 24),
+                        self.display.char(Point::new(x, self.display.height as i32 - 24),
                                           c,
                                           (**window_ptr).title_color,
                                           self.font.as_ptr() as usize);
@@ -336,7 +338,7 @@ impl Session {
             if self.cursor.has_data() {
                 self.display.image_alpha(mouse_point,
                                          (&self.cursor).as_ptr(),
-                                         Size::new(self.cursor.width(), self.cursor.height()));
+                                         Size::new(self.cursor.width() as u32, self.cursor.height() as u32));
             } else {
                 self.display.char(Point::new(mouse_point.x - 3, mouse_point.y - 9),
                                   'X',

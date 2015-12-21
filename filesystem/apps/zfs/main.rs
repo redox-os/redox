@@ -552,7 +552,7 @@ impl Zfs {
                                 let sector = arg.to_num();
                                 println!("Dump sector: {}", sector);
 
-                                let data = zfs.reader.zio.read(sector, 1);
+                                let data = zfs.reader.zio.read(sector as usize, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);
