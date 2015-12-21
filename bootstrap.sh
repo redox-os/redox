@@ -154,10 +154,13 @@ suse()
 			echo "QEMU already installed!"
 		fi
 	else
-		which virtualbox && { "Virtualbox already installed!"; break; }
-		echo "Please install Virtualbox and re-run this script,"
-		echo "or run with -e qemu"
-		exit
+		if [ -z "$(which virtualbox)" ]; then
+			echo "Please install Virtualbox and re-run this script,"
+			echo "or run with -e qemu"
+			exit
+		else
+			echo "Virtualbox already installed!"
+		fi
 	fi
 	echo "Cloning Redox repo..."
 	git clone -b "$1" --recursive https://github.com/redox-os/redox.git
