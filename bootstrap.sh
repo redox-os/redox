@@ -16,11 +16,19 @@ osx()
 			brew install git
 		fi
 		if [ "$2" == "qemu" ]; then
-			echo "Installing qemu..."
-			brew install qemu
+			if [ -z "$(which qemu)" ]; then
+				echo "Installing qemu..."
+				brew install qemu
+			else
+				echo "QEMU already installed!"
+			fi
 		else
-			echo "Now installing virtualbox..."
-			brew cask install virtualbox
+			if [ -z "$(which virtualbox)" ]; then
+				echo "Now installing virtualbox..."
+				brew cask install virtualbox
+			else
+				echo "Virtualbox already installed!"
+			fi
 		fi
 	else
 		echo "Homebrew does not appear to be installed! Would you like me to install it?"
@@ -30,6 +38,7 @@ osx()
 			ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
 		else
 			echo "Will not install, now exiting..."
+			exit
 		fi
 	fi
 	echo "Cloning Redox repo"
@@ -39,10 +48,12 @@ osx()
 	echo "Running rust install script"
 	sh redox/setup/binary.sh
 	echo
+	echo "Cleaning up..."
+	rm bootstrap.sh
+	echo "--------------"
 	echo "Everything looks good to go!"
 	echo "Compiling for qemu complaings about kvm"
 	echo "You need to run make qemu_no_kvm"
-	rm bootstrap.sh
 }
 
 archLinux()
@@ -55,8 +66,12 @@ archLinux()
 		sudo pacman -S git
 	fi
 	if [ "$2" == "qemu" ]; then
-		echo "Installing QEMU..."
-		sudo pacman -S qemu
+		if [ -z "$(which qemu)" ]; then
+			echo "Installing QEMU..."
+			sudo pacman -S qemu
+		else
+			echo "QEMU already installed!"
+		fi
 	fi
 	echo "Cloning redox repo..."
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
@@ -74,11 +89,19 @@ ubuntu()
 	echo "Installing required packages..."
 	sudo $3 install build-essential libc6-dev-i386 nasm curl file git
 	if [ "$2" == "qemu" ]; then
-		echo "Installing QEMU..."
-		sudo $3 install qemu-system-x86 qemu-kvm
+		if [ -z "$(which qemu)" ]; then
+			echo "Installing QEMU..."
+			sudo $3 install qemu-system-x86 qemu-kvm
+		else
+			echo "QEMU already installed!"
+		fi
 	else
-		echo "Installing Virtualbox..."
-		sudo $3 install virtualbox
+		if [ -z "$(which virtualbox)" ]; then
+			echo "Installing Virtualbox..."
+			sudo $3 install virtualbox
+		else
+			echo "Virtualbox already installed!"
+		fi
 	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
@@ -94,11 +117,19 @@ fedora()
 		sudo yum install git-all
 	fi
 	if [ "$2" == "qemu" ]; then
-		echo "Installing QEMU..."
-		sudo yum install qemu-system-x86 qemu-kvm
+		if [ -z "$(which qemu)" ]; then
+			echo "Installing QEMU..."
+			sudo yum install qemu-system-x86 qemu-kvm
+		else
+			echo "QEMU already installed!"
+		fi
 	else
-		echo "Installing virtualbox..."
-		sudo yum install virtualbox
+		if [ -z "$(which virtualbox" ]; then
+			echo "Installing virtualbox..."
+			sudo yum install virtualbox
+		else
+			echo "Virtualbox already installed!"
+		fi
 	fi
 	echo "Cloning Redox repo"
 	git clone -b $1 --recursive https://github.com/redox-os/redox.git
@@ -116,10 +147,14 @@ suse()
 		zypper install git
 	fi
 	if [ "$2" == "qemu" ]; then
-		echo "Installing QEMU..."
-		sudo zypper install qemu-x86 qemu-kvm
+		if [ -z "$(which qemu)" ]; then
+			echo "Installing QEMU..."
+			sudo zypper install qemu-x86 qemu-kvm
+		else
+			echo "QEMU already installed!"
+		fi
 	else
-		which virtualbox && { "Virtualbox installed!"; break; }
+		which virtualbox && { "Virtualbox already installed!"; break; }
 		echo "Please install Virtualbox and re-run this script,"
 		echo "or run with -e qemu"
 		exit
@@ -195,14 +230,13 @@ do
 	case "$opt" in
 		b) branch="$OPTARG";;
 		e) emulator="$OPTARG";;
-				p) defpackman="$OPTARG";;
+		p) defpackman="$OPTARG";;
 		\?) echo "I don't know what to do with that option, try -h for help"; exit;;
 	esac
 done
 
 banner
-kernel=$(uname -s)
-if [ "$kernel" == "Darwin" ]; then
+if [ "Darwin" == "$(uname -s)" ]; then
 	osx $branch $emulator
 else
 	which pacman && { archLinux $branch $emulator; endMessage; }
