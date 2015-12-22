@@ -22,6 +22,7 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 <img alt="Redox" height="150" src="img/screenshots/Desktop.png">
 <img alt="Redox" height="150" src="img/screenshots/Fancy_opacity.png">
 <img alt="Redox" height="150" src="img/screenshots/File_manager.png">
+
 <img alt="Redox" height="150" src="img/screenshots/Sodium_v1.png">
 <img alt="Redox" height="150" src="img/screenshots/Boot.png">
 <img alt="Redox" height="150" src="img/screenshots/start.png">
