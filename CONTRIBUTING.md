@@ -29,8 +29,6 @@ There are many ways to help us out and we appreciate all of them.
 * [rust-os-comparison](https://github.com/jackpot51/rust-os-comparison)
 * [rust-lang.org](http://rust-lang.org)
 
-<!-- TODO add more links here -->
-
 ## <a name="communication"> Communication </a>
 
 ### <a name="slack"> Slack Chat </a>
@@ -45,16 +43,12 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
 ### <a name="easy-targets"> Low-Hanging Fruit - Easy Targets for Newbies </a>
 
-<!-- TODO improve this section -->
-
 * If you're not fluent in Rust:
 
  * Writing documentation
  * Using/testing Redox, filing issues for bugs and needed features
  * Web development (Redox website, separate repo)
  * Writing unit tests (may require minimal knowledge of rust)
- * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
-
 
 * If you are fluent in Rust, but not OS Development:
 
@@ -66,7 +60,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 * If you are fluent in Rust, and have experience with OS Dev:
 
  * Familiarize yourself with the repository and codebase
- * Find tags in comments like `TODO`, `FIXME` etc. and complete those tasks
+ * Grep for `TODO`, `FIXME`, `BUG`, `UNOPTIMIZED`, `REWRITEME`, `DOCME`, and `PRETTYFYME` and fix the code you find.
  * Improve and optimize code, especially in the kernel
 
 ### <a name="gh-issues"> GitHub Issues </a>
