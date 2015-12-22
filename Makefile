@@ -142,6 +142,7 @@ apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/zfs/main.bin
 
 schemes: filesystem/schemes/orbital/main.bin \
+		 filesystem/schemes/pty/main.bin \
   	  	 filesystem/schemes/tcp/main.bin \
 	  	 filesystem/schemes/udp/main.bin
 
