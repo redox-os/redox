@@ -50,8 +50,6 @@ pub fn pipe() -> [usize; 2] {
             sys_close(from_shell_fds[0]);
             sys_close(from_shell_fds[1]);
 
-            println!("Test");
-
             //Execute the shell
             let shell = "file:/apps/shell/main.bin\0";
             sys_execve(shell.as_ptr(), 0 as *const *const u8);
@@ -63,29 +61,12 @@ pub fn pipe() -> [usize; 2] {
         }
     };
 
-    let window_read = Arc::new(Mutex::new(ConsoleWindow::new(-1, -1, 576, 400, "Terminal")));
-    let window_write = window_read.clone();
-
-    thread::spawn(move || {
-        let mut to_shell = unsafe { File::from_fd(to_shell_fds[1]).unwrap() };
-        loop {
-            if let Some(line) = window_read.lock().read() {
-                if line.is_empty() {
-                    unsafe { sys_yield() };
-                } else {
-                    to_shell.write(line.as_bytes()).unwrap();
-                }
-            } else {
-                break;
-            }
-        }
-    });
+    let mut window = ConsoleWindow::new(-1, -1, 576, 400, "Terminal");
 
     let mut from_shell = unsafe { File::from_fd(from_shell_fds[0]).unwrap() };
     loop {
         let mut output = String::new();
         if let Ok(_) = from_shell.read_to_string(&mut output) {
-            let mut window = window_write.lock();
             window.print(&output, Color::rgb(255, 255, 255));
             window.sync();
         } else {
