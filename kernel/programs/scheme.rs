@@ -411,9 +411,7 @@ impl SchemeItem {
                     Msg::Path(fd, ptr, len) => if self.valid(self._fpath) {
                         let fn_ptr: *const usize = &self._fpath;
                         unsafe {
-                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
-                                                                                                ptr,
-                                                                                                len)
+                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd, ptr, len)
                         }
                     } else {
                         usize::MAX
@@ -421,9 +419,7 @@ impl SchemeItem {
                     Msg::Read(fd, ptr, len) => if self.valid(self._read) {
                         let fn_ptr: *const usize = &self._read;
                         unsafe {
-                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
-                                                                                                ptr,
-                                                                                                len)
+                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd, ptr, len)
                         }
                     } else {
                         usize::MAX
