@@ -40,7 +40,6 @@ impl Resource for PipeRead {
 
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if self.eof_toggle {
-            debugln!("EOF");
             self.eof_toggle = false;
             return Ok(0);
         }
@@ -53,7 +52,6 @@ impl Resource for PipeRead {
                         return Ok(0);
                     }
                 } else {
-                    debugln!("Reading {}", vec.len());
                     let mut i = 0;
                     while i < buf.len() {
                         match vec.pop_front() {
