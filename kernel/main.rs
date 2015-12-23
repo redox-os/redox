@@ -2,6 +2,7 @@
 #![feature(alloc)]
 #![feature(allocator)]
 #![feature(arc_counts)]
+#![feature(augmented_assignments)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
@@ -12,10 +13,12 @@
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
+#![feature(op_assign_traits)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
+#![feature(zero_one)]
 #![no_std]
 
 #[macro_use]
@@ -23,6 +26,8 @@ extern crate alloc;
 
 #[macro_use]
 extern crate collections;
+
+use acpi::Acpi;
 
 use alloc::boxed::Box;
 
@@ -71,6 +76,8 @@ use syscall::handle::*;
 /// Common std-like functionality
 #[macro_use]
 pub mod common;
+/// ACPI
+pub mod acpi;
 /// Allocation
 pub mod alloc_system;
 /// Audio
@@ -275,6 +282,8 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             env.console.lock().draw = true;
 
             debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
+
+            Acpi::new();
 
             *(env.clock_realtime.lock()) = Rtc::new().time();
 

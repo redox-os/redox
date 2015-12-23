@@ -280,7 +280,7 @@ bochs: $(BUILD)/harddrive.bin
 qemu: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
+			-device pci-ohci,id=ohci -device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 
@@ -293,7 +293,7 @@ qemu_bare_no_vga: $(BUILD)/harddrive.bin
 qemu_no_kvm: $(BUILD)/harddrive.bin
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
+			-device pci-ohci,id=ohci -device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -hda $<
 
@@ -307,7 +307,7 @@ qemu_tap: $(BUILD)/harddrive.bin
 	sudo ifconfig tap_redox 10.85.85.1 up
 	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
+			-device pci-ohci,id=ohci -device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down
@@ -318,7 +318,7 @@ qemu_tap_8254x: $(BUILD)/harddrive.bin
 	sudo ifconfig tap_redox 10.85.85.1 up
 	-qemu-system-$(ARCH) -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
 			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
+			-device pci-ohci,id=ohci -device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
 			-soundhw ac97 -vga std \
 			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
 	sudo ifconfig tap_redox down

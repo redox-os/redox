@@ -37,6 +37,7 @@ impl KScheme for Uhci {
 }
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct Setup {
     request_type: u8,
     request: u8,
@@ -46,6 +47,7 @@ struct Setup {
 }
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct Td {
     link_ptr: u32,
     ctrl_sts: u32,
@@ -54,6 +56,7 @@ struct Td {
 }
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct Qh {
     head_ptr: u32,
     element_ptr: u32,
@@ -61,6 +64,7 @@ struct Qh {
 
 const DESC_DEV: u8 = 1;
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct DeviceDescriptor {
     length: u8,
     descriptor_type: u8,
@@ -78,51 +82,9 @@ struct DeviceDescriptor {
     configurations: u8,
 }
 
-impl DeviceDescriptor {
-    fn new() -> Self {
-        return DeviceDescriptor {
-            length: 0,
-            descriptor_type: 0,
-            usb_version: 0,
-            class: 0,
-            sub_class: 0,
-            protocol: 0,
-            max_packet_size: 0,
-            vendor: 0,
-            product: 0,
-            release: 0,
-            manufacturer_string: 0,
-            product_string: 0,
-            serial_string: 0,
-            configurations: 0,
-        };
-    }
-
-    fn d(&self) {
-        debug::d("Device Descriptor Length ");
-        debug::dd(self.length as usize);
-        debug::d(" Type ");
-        debug::dh(self.descriptor_type as usize);
-        debug::d(" USB ");
-        debug::dh(self.usb_version as usize);
-        debug::d(" Class ");
-        debug::dh(self.class as usize);
-        debug::d(" Subclass ");
-        debug::dh(self.sub_class as usize);
-        debug::d(" Protocol ");
-        debug::dh(self.protocol as usize);
-        debug::d(" Vendor ");
-        debug::dh(self.vendor as usize);
-        debug::d(" Product ");
-        debug::dh(self.product as usize);
-        debug::d(" Configurations ");
-        debug::dh(self.configurations as usize);
-        debug::dl();
-    }
-}
-
 const DESC_CFG: u8 = 2;
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct ConfigDescriptor {
     length: u8,
     descriptor_type: u8,
@@ -134,41 +96,9 @@ struct ConfigDescriptor {
     max_power: u8,
 }
 
-impl ConfigDescriptor {
-    fn new() -> Self {
-        return ConfigDescriptor {
-            length: 0,
-            descriptor_type: 0,
-            total_length: 0,
-            interfaces: 0,
-            number: 0,
-            string: 0,
-            attributes: 0,
-            max_power: 0,
-        };
-    }
-
-    fn d(&self) {
-        debug::d("Config Descriptor Length ");
-        debug::dd(self.length as usize);
-        debug::d(" Type ");
-        debug::dh(self.descriptor_type as usize);
-        debug::d(" Total Length ");
-        debug::dd(self.total_length as usize);
-        debug::d(" Interfaces ");
-        debug::dd(self.interfaces as usize);
-        debug::d(" Number ");
-        debug::dd(self.number as usize);
-        debug::d(" Attributes ");
-        debug::dh(self.attributes as usize);
-        debug::d(" Max Power ");
-        debug::dd(self.max_power as usize);
-        debug::dl();
-    }
-}
-
 const DESC_INT: u8 = 4;
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct InterfaceDescriptor {
     length: u8,
     descriptor_type: u8,
@@ -181,42 +111,9 @@ struct InterfaceDescriptor {
     string: u8,
 }
 
-impl InterfaceDescriptor {
-    fn new() -> Self {
-        return InterfaceDescriptor {
-            length: 0,
-            descriptor_type: 0,
-            number: 0,
-            alternate: 0,
-            endpoints: 0,
-            class: 0,
-            sub_class: 0,
-            protocol: 0,
-            string: 0,
-        };
-    }
-
-    fn d(&self) {
-        debug::d("Interface Descriptor Length ");
-        debug::dd(self.length as usize);
-        debug::d(" Type ");
-        debug::dh(self.descriptor_type as usize);
-        debug::d(" Number ");
-        debug::dd(self.number as usize);
-        debug::d(" Endpoints ");
-        debug::dd(self.endpoints as usize);
-        debug::d(" Class ");
-        debug::dh(self.class as usize);
-        debug::d(" Subclass ");
-        debug::dh(self.sub_class as usize);
-        debug::d(" Protocol ");
-        debug::dh(self.protocol as usize);
-        debug::dl();
-    }
-}
-
 const DESC_END: u8 = 5;
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct EndpointDescriptor {
     length: u8,
     descriptor_type: u8,
@@ -226,35 +123,9 @@ struct EndpointDescriptor {
     interval: u8,
 }
 
-impl EndpointDescriptor {
-    fn new() -> Self {
-        return EndpointDescriptor {
-            length: 0,
-            descriptor_type: 0,
-            address: 0,
-            attributes: 0,
-            max_packet_size: 0,
-            interval: 0,
-        };
-    }
-
-    fn d(&self) {
-        debug::d("Endpoint Descriptor Length ");
-        debug::dd(self.length as usize);
-        debug::d(" Type ");
-        debug::dh(self.descriptor_type as usize);
-        debug::d(" Address ");
-        debug::dh(self.address as usize);
-        debug::d(" Attributes ");
-        debug::dh(self.attributes as usize);
-        debug::d(" Interval ");
-        debug::dh(self.interval as usize);
-        debug::dl();
-    }
-}
-
 const DESC_HID: u8 = 0x21;
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct HIDDescriptor {
     length: u8,
     descriptor_type: u8,
@@ -263,38 +134,6 @@ struct HIDDescriptor {
     descriptors: u8,
     sub_descriptor_type: u8,
     sub_descriptor_length: u16,
-}
-
-impl HIDDescriptor {
-    fn new() -> Self {
-        return HIDDescriptor {
-            length: 0,
-            descriptor_type: 0,
-            hid_version: 0,
-            country_code: 0,
-            descriptors: 0,
-            sub_descriptor_type: 0,
-            sub_descriptor_length: 0,
-        };
-    }
-
-    fn d(&self) {
-        debug::d("HID Descriptor Length ");
-        debug::dd(self.length as usize);
-        debug::d(" Type ");
-        debug::dh(self.descriptor_type as usize);
-        debug::d(" HID Version ");
-        debug::dh(self.hid_version as usize);
-        debug::d(" Country Code ");
-        debug::dh(self.country_code as usize);
-        debug::d(" Descriptors ");
-        debug::dh(self.descriptors as usize);
-        debug::d(" Sub Type ");
-        debug::dh(self.sub_descriptor_type as usize);
-        debug::d(" Sub Length ");
-        debug::dd(self.sub_descriptor_length as usize);
-        debug::dl();
-    }
 }
 
 impl Uhci {
@@ -453,14 +292,14 @@ impl Uhci {
         self.set_address(frame_list, address);
 
         let desc_dev: *mut DeviceDescriptor = memory::alloc_type();
-        ptr::write(desc_dev, DeviceDescriptor::new());
+        ptr::write(desc_dev, DeviceDescriptor::default());
         self.descriptor(frame_list,
                         address,
                         DESC_DEV,
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        (*desc_dev).d();
+        debugln!("{:?}", *desc_dev);
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -476,7 +315,7 @@ impl Uhci {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            desc_cfg.d();
+            debugln!("{:?}", desc_cfg);
 
             let mut i = desc_cfg.length as isize;
             while i < desc_cfg.total_length as isize {
@@ -485,12 +324,11 @@ impl Uhci {
                 match descriptor_type {
                     DESC_INT => {
                         let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        desc_int.d();
+                        debugln!("{:?}", desc_int);
                     }
                     DESC_END => {
-                        let desc_end =
-                            ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        desc_end.d();
+                        let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
+                        debugln!("{:?}", desc_end);
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -566,7 +404,7 @@ impl Uhci {
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        desc_hid.d();
+                        debugln!("{:?}", desc_hid);
                     }
                     _ => {
                         debug::d("Unknown Descriptor Length ");
