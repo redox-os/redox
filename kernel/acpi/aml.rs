@@ -23,6 +23,7 @@ const ROOT_PREFIX: u8 = 0x5C;
 const PARENT_PREFIX: u8 = 0x5E;
 
 //EXT
+const MUTEX_OP: u8 = 0x01;
 const OP_REGION_OP: u8 = 0x80;
 const FIELD_OP: u8 = 0x81;
 const DEVICE_OP: u8 = 0x82;
@@ -406,6 +407,12 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                     *i += 1;
 
                     match ext_op {
+                        MUTEX_OP => {
+                            let name = parse_name(bytes, i);
+                            let flags = parse_num::<u8>(bytes, i);
+
+                            debugln!("    Mutex ({}, {})", name, flags);
+                        },
                         OP_REGION_OP => {
                             let name = parse_name(bytes, i);
                             let space = parse_num::<u8>(bytes, i);
