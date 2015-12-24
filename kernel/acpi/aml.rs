@@ -7,12 +7,15 @@ use core::ops::{BitOrAssign, ShlAssign};
 const ZERO_OP: u8 = 0x00;
 const ONE_OP: u8 = 0x01;
 const NAME_OP: u8 = 0x08;
-const METHOD_OP: u8 = 0x14;
 const BYTE_PREFIX: u8 = 0x0A;
 const WORD_PREFIX: u8 = 0x0B;
 const DWORD_PREFIX: u8 = 0x0C;
+const STRING_PREFIX: u8 = 0x0D;
 const QWORD_PREFIX: u8 = 0x0E;
 const SCOPE_OP: u8 = 0x10;
+const BUFFER_OP: u8 = 0x11;
+const PACKAGE_OP: u8 = 0x12;
+const METHOD_OP: u8 = 0x14;
 const DUAL_NAME_PREFIX: u8 = 0x2E;
 const MULTI_NAME_PREFIX: u8 = 0x2F;
 const EXT_OP_PREFIX: u8 = 0x5B;
@@ -23,6 +26,7 @@ const PARENT_PREFIX: u8 = 0x5E;
 const OP_REGION_OP: u8 = 0x80;
 const FIELD_OP: u8 = 0x81;
 const DEVICE_OP: u8 = 0x82;
+const PROCESSOR_OP: u8 = 0x83;
 
 pub fn parse_string(bytes: &[u8], i: &mut usize) -> String {
     let mut string = String::new();
@@ -185,6 +189,156 @@ pub fn parse_int(bytes: &[u8], i: &mut usize) -> u64{
     return 0;
 }
 
+pub fn parse_package(bytes: &[u8], i: &mut usize) {
+
+        let end = *i + parse_length(bytes, i);
+        let elements = parse_num::<u8>(bytes, i);
+
+        debugln!("    Package ({})", elements);
+        debugln!("    {{");
+        while *i < bytes.len() && *i < end {
+            let op = bytes[*i];
+            *i += 1;
+
+            match op {
+                ZERO_OP => {
+                    debugln!("        Zero");
+                },
+                ONE_OP => {
+                    debugln!("        One");
+                },
+                BYTE_PREFIX => {
+                    debugln!("        {:02X}", parse_num::<u8>(bytes, i));
+                },
+                WORD_PREFIX => {
+                    debugln!("        {:04X}", parse_num::<u16>(bytes, i));
+                },
+                DWORD_PREFIX => {
+                    debugln!("        {:08X}", parse_num::<u32>(bytes, i));
+                },
+                QWORD_PREFIX => {
+                    debugln!("        {:016X}", parse_num::<u64>(bytes, i));
+                },
+                PACKAGE_OP => {
+                    parse_package(bytes, i);
+                },
+                _ => {
+                    *i -= 1;
+                    debugln!("        {}", parse_name(bytes, i));
+                    //debugln!("        parse_package: unknown: {:02X}", op);
+                }
+            }
+        }
+        debugln!("    }}");
+
+        *i = end;
+}
+
+pub fn parse_device(bytes: &[u8], i: &mut usize) {
+    let end = *i + parse_length(bytes, i);
+    let name = parse_name(bytes, i);
+
+    debugln!("    Device ({})", name);
+    debugln!("    {{");
+    while *i < bytes.len() && *i < end {
+        let op = bytes[*i];
+        *i += 1;
+
+        match op {
+            ZERO_OP => {
+                debugln!("        Zero");
+            },
+            ONE_OP => {
+                debugln!("        One");
+            },
+            BYTE_PREFIX => {
+                debugln!("        {:02X}", parse_num::<u8>(bytes, i));
+            },
+            WORD_PREFIX => {
+                debugln!("        {:04X}", parse_num::<u16>(bytes, i));
+            },
+            DWORD_PREFIX => {
+                debugln!("        {:08X}", parse_num::<u32>(bytes, i));
+            },
+            STRING_PREFIX => {
+                debugln!("        {}", parse_string(bytes, i));
+            },
+            QWORD_PREFIX => {
+                debugln!("        {:016X}", parse_num::<u64>(bytes, i));
+            },
+            NAME_OP => {
+                debugln!("        Name({})", parse_string(bytes, i));
+            },
+            METHOD_OP => {
+                let end = *i + parse_length(bytes, i);
+                let name = parse_name(bytes, i);
+                let flags = parse_num::<u8>(bytes, i);
+
+                debugln!("        Method ({}, {})", name, flags);
+                debugln!("        {{");
+                debugln!("        }}");
+
+                *i = end;
+            },
+            BUFFER_OP => {
+                let end = *i + parse_length(bytes, i);
+
+                let count = parse_int(bytes, i);
+
+                debugln!("        Buffer ({})", count);
+
+                *i = end;
+            },
+            PACKAGE_OP => {
+                parse_package(bytes, i);
+            },
+            EXT_OP_PREFIX => {
+                if *i < bytes.len() {
+                    let ext_op = bytes[*i];
+                    *i += 1;
+
+                    match ext_op {
+                        OP_REGION_OP => {
+                            let name = parse_name(bytes, i);
+                            let space = parse_num::<u8>(bytes, i);
+                            let offset = parse_int(bytes, i);
+                            let size = parse_int(bytes, i);
+
+                            debugln!("        OperationRegion ({}, {}, {}, {})", name, space, offset, size);
+                        },
+                        FIELD_OP => {
+                            let end = *i + parse_length(bytes, i);
+
+                            let name = parse_name(bytes, i);
+                            let flags = parse_num::<u8>(bytes, i);
+
+                            debugln!("        Field ({}, {})", name, flags);
+                            debugln!("        {{");
+                            while *i < bytes.len() && *i < end {
+                                let name = parse_name(bytes, i);
+                                let length = parse_length(bytes, i);
+
+                                debugln!("            {}, {}", name, length);
+                            }
+                            debugln!("        }}");
+
+                            *i = end;
+                        },
+                        _ => debugln!("        Unknown EXT: {:02X}", ext_op)
+                    }
+                }
+            },
+            _ => {
+                debugln!("        parse_device: unknown: {:02X}", op);
+                break;
+            }
+        }
+    }
+    debugln!("    }}");
+
+    *i = end;
+}
+
 pub fn parse_scope(bytes: &[u8], i: &mut usize) {
     let end = *i + parse_length(bytes, i);
     let name = parse_name(bytes, i);
@@ -196,8 +350,32 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
         *i += 1;
 
         match op {
+            ZERO_OP => {
+                debugln!("    Zero");
+            },
+            ONE_OP => {
+                debugln!("    One");
+            },
+            BYTE_PREFIX => {
+                debugln!("    {:02X}", parse_num::<u8>(bytes, i));
+            },
+            WORD_PREFIX => {
+                debugln!("    {:04X}", parse_num::<u16>(bytes, i));
+            },
+            DWORD_PREFIX => {
+                debugln!("    {:08X}", parse_num::<u32>(bytes, i));
+            },
+            STRING_PREFIX => {
+                debugln!("    {}", parse_string(bytes, i));
+            }
+            QWORD_PREFIX => {
+                debugln!("    {:016X}", parse_num::<u64>(bytes, i));
+            },
+            SCOPE_OP => {
+                parse_scope(bytes, i);
+            },
             NAME_OP => {
-                debugln!("    Name: {}", parse_string(bytes, i));
+                debugln!("    Name({})", parse_string(bytes, i));
             },
             METHOD_OP => {
                 let end = *i + parse_length(bytes, i);
@@ -209,6 +387,18 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                 debugln!("    }}");
 
                 *i = end;
+            },
+            BUFFER_OP => {
+                let end = *i + parse_length(bytes, i);
+
+                let count = parse_int(bytes, i);
+
+                debugln!("    Buffer ({})", count);
+
+                *i = end;
+            },
+            PACKAGE_OP => {
+                parse_package(bytes, i);
             },
             EXT_OP_PREFIX => {
                 if *i < bytes.len() {
@@ -243,11 +433,17 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                             *i = end;
                         },
                         DEVICE_OP => {
+                            parse_device(bytes, i);
+                        },
+                        PROCESSOR_OP => {
                             let end = *i + parse_length(bytes, i);
 
                             let name = parse_name(bytes, i);
+                            let id = parse_num::<u8>(bytes, i);
+                            let blk = parse_num::<u32>(bytes, i);
+                            let blklen = parse_num::<u8>(bytes, i);
 
-                            debugln!("    Device ({})", name);
+                            debugln!("    Processor ({})", name);
 
                             *i = end;
                         },
