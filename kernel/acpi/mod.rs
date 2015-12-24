@@ -47,8 +47,8 @@ impl Acpi {
                         }
                         acpi.fadt = Some(fadt);
                     } else if let Some(ssdt) = SSDT::new(header) {
-                        //debugln!("SSDT:");
-                        //aml::parse(ssdt.data);
+                        debugln!("SSDT:");
+                        aml::parse(ssdt.data);
                         acpi.ssdt = Some(ssdt);
                     } else {
                         //debugln!("{:X}: {:#?}", addr, unsafe { *header });
