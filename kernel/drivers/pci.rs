@@ -15,6 +15,7 @@ use network::rtl8139::Rtl8139;
 use schemes::file::FileScheme;
 
 use usb::ehci::Ehci;
+use usb::ohci::Ohci;
 use usb::uhci::Uhci;
 use usb::xhci::Xhci;
 
@@ -54,9 +55,7 @@ pub unsafe fn pci_device(env: &mut Environment,
             module.init();
             env.schemes.push(UnsafeCell::new(module));
         } else if interface_id == 0x10 {
-            let base = pci.read(0x10) as usize;
-
-            debug!("OHCI Controller on {:X}\n", base & 0xFFFFFFF0);
+            env.schemes.push(UnsafeCell::new(Ohci::new(pci)));
         } else if interface_id == 0x00 {
             env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
         } else {
