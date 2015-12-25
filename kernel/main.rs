@@ -283,7 +283,9 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
 
-            Acpi::new();
+            if let Some(acpi) = Acpi::new() {
+                env.schemes.push(UnsafeCell::new(acpi));
+            }
 
             *(env.clock_realtime.lock()) = Rtc::new().time();
 
