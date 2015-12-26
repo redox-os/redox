@@ -377,9 +377,14 @@ impl Disk {
             }
         }
 
-        let sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
+        let mut sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
                       ((destination.read(102) as u64) << 32) |
                       ((destination.read(103) as u64) << 48);
+
+        if sectors == 0 {
+            sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
+        }
+
         debug!(" Size: {} MB", (sectors / 2048) as usize);
 
         true
