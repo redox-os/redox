@@ -338,6 +338,45 @@ impl Disk {
             destination.write(word, data.read());
         }
 
+        debug!(" Serial: ");
+        for word in 10..20 {
+            let d = destination.read(word);
+            let a = ((d >> 8) as u8) as char;
+            if a != ' ' {
+                debug!("{}", a);
+            }
+            let b = (d as u8) as char;
+            if b != ' ' {
+                debug!("{}", b);
+            }
+        }
+
+        debug!(" Firmware: ");
+        for word in 23..27 {
+            let d = destination.read(word);
+            let a = ((d >> 8) as u8) as char;
+            if a != ' ' {
+                debug!("{}", a);
+            }
+            let b = (d as u8) as char;
+            if b != ' ' {
+                debug!("{}", b);
+            }
+        }
+
+        debug!(" Model: ");
+        for word in 27..47 {
+            let d = destination.read(word);
+            let a = ((d >> 8) as u8) as char;
+            if a != ' ' {
+                debug!("{}", a);
+            }
+            let b = (d as u8) as char;
+            if b != ' ' {
+                debug!("{}", b);
+            }
+        }
+
         let sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
                       ((destination.read(102) as u64) << 32) |
                       ((destination.read(103) as u64) << 48);
