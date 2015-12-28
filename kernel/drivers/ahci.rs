@@ -1,8 +1,16 @@
 use alloc::boxed::Box;
 
+use core::intrinsics::atomic_singlethreadfence;
+use core::u32;
+
 use schemes::KScheme;
 
 use super::pciconfig::PciConfig;
+
+const HBA_PxCMD_CR: u32 = 1 << 15;
+const HBA_PxCMD_FR: u32 = 1 << 14;
+const HBA_PxCMD_FRE: u32 = 1 << 4;
+const HBA_PxCMD_ST: u32 = 1;
 
 #[repr(packed)]
 struct HBAPort {
@@ -25,6 +33,63 @@ struct HBAPort {
     fbs: u32,
     rsv1: [u32; 11],
     vendor: [u32; 4]
+}
+
+#[derive(Debug)]
+enum HBAPortType {
+    None,
+    Unknown(u32),
+    SATA,
+    SATAPI,
+    PM,
+    SEMB,
+}
+
+const HBA_PORT_PRESENT: u32 = 0x13;
+const SATA_SIG_ATA: u32 = 0x00000101;
+const SATA_SIG_ATAPI: u32 = 0xEB140101;
+const SATA_SIG_PM: u32 = 0x96690101;
+const SATA_SIG_SEMB: u32 = 0xC33C0101;
+
+impl HBAPort {
+    pub fn probe(&self) -> HBAPortType {
+        if self.ssts & HBA_PORT_PRESENT != HBA_PORT_PRESENT {
+            HBAPortType::None
+        } else {
+            match self.sig {
+                SATA_SIG_ATA => HBAPortType::SATA,
+                SATA_SIG_ATAPI => HBAPortType::SATAPI,
+                SATA_SIG_PM => HBAPortType::PM,
+                SATA_SIG_SEMB => HBAPortType::SEMB,
+                _ => HBAPortType::Unknown(self.sig)
+            }
+        }
+    }
+
+    pub fn start(&mut self) {
+        loop {
+            if self.cmd & HBA_PxCMD_CR == 0 {
+                break;
+            }
+            unsafe { atomic_singlethreadfence() };
+        }
+
+        self.cmd |= HBA_PxCMD_FRE;
+        self.cmd |= HBA_PxCMD_ST;
+    }
+
+    pub fn stop(&mut self) {
+    	self.cmd &= u32::MAX - HBA_PxCMD_ST;
+
+    	loop {
+    		if self.cmd & (HBA_PxCMD_FR | HBA_PxCMD_CR) == 0 {
+                break;
+            }
+            unsafe { atomic_singlethreadfence() };
+    	}
+
+    	self.cmd &= u32::MAX - HBA_PxCMD_FRE;
+    }
 }
 
 #[repr(packed)]
@@ -74,7 +139,7 @@ impl Ahci {
 
         for i in 0..32 {
             if mem.pi & 1 << i == 1 << i {
-                debugln!("Port {}: {:X}", i, mem.ports[i].ssts);
+                debugln!("Port {}: {:X} {:?}", i, mem.ports[i].ssts, mem.ports[i].probe());
             }
         }
     }
