@@ -1,12 +1,12 @@
 /// Public keyboard layouts
 /// The layout can be:
-/// *   ENGLISH
-/// *   FRENCH
-/// *   GERMAN
+/// *   English
+/// *   French
+/// *   German
 pub enum Layout {
-    ENGLISH,
-    FRENCH,
-    GERMAN,
+    English,
+    French,
+    German,
 }
 
 /// Function to get the scancode from the current layout
@@ -14,26 +14,26 @@ pub enum Layout {
 /// # Example
 ///
 /// ```
-/// let layout = Layout::ENGLISH;
+/// let layout = Layout::English;
 /// //Get the scancode 'EN'
 /// let sc : [[char; 3]; 58] = get_scancode_from_layout(layout);
 /// ```
 pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
     match *layout {
-        Layout::ENGLISH => SCANCODES_EN[scancode as usize],
-        Layout::FRENCH => SCANCODES_FR[scancode as usize],
-        Layout::GERMAN => SCANCODES_DE[scancode as usize],
+        Layout::English => SCANCODES_EN[scancode as usize],
+        Layout::French => SCANCODES_FR[scancode as usize],
+        Layout::German => SCANCODES_DE[scancode as usize],
     }
 }
 
 fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
     let keys : &[(u8, [char; 3])] = match *layout {
-        Layout::ENGLISH => SCANCODES_EXTRA_EN,
-        Layout::FRENCH => SCANCODES_EXTRA_FR,
-        Layout::GERMAN => SCANCODES_EXTRA_DE,
+        Layout::English => SCANCODES_EXTRA_EN,
+        Layout::French => SCANCODES_EXTRA_FR,
+        Layout::German => SCANCODES_EXTRA_DE,
     };
-    match keys.iter().filter(|&&(code, keys)| code == scancode).next() {
-        Some(&(code, keys)) => keys,
+    match keys.iter().filter(|&&(code, _)| code == scancode).next() {
+        Some(&(_, keys)) => keys,
         None => ['\0', '\0', '\0']
     }
 }
@@ -41,7 +41,7 @@ fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
 
 /// Function to return the character associated with the scancode, and the layout
 pub fn char_for_scancode(scancode: u8, shift: bool, altgr: bool, layout: &Layout) -> char {
-    let mut character = '\x00';
+    let character;
     let mut characters: [char; 3] = ['\0', '\0', '\0'];
     if scancode < 58 {
         characters = get_scancode_from_layout(layout, scancode);

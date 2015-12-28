@@ -108,7 +108,7 @@ impl Resource for SchemeResource {
             Ok(result) => Url::from_string(unsafe {
                 String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result))))
             }),
-            Err(err) => Url::new()
+            Err(_) => Url::new()
         }
     }
 
@@ -180,7 +180,7 @@ impl Resource for SchemeResource {
 
 impl Drop for SchemeResource {
     fn drop(&mut self) {
-        self.send(Msg::Close(self.handle));
+        let _ = self.send(Msg::Close(self.handle));
     }
 }
 
@@ -243,7 +243,7 @@ impl SchemeItem {
         let mut memory = Vec::new();
         if let Ok(mut resource) = scheme_item.binary.open() {
             let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
+            let _ = resource.read_to_end(&mut vec);
 
             unsafe {
                 let executable = Elf::from_data(vec.as_ptr() as usize);
@@ -335,7 +335,7 @@ impl KScheme for SchemeItem {
 
     // TODO: Hack for orbital
     fn event(&mut self, event: &Event) {
-        self.send(Msg::Event(event));
+        let _ = self.send(Msg::Event(event));
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {

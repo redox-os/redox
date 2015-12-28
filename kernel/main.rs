@@ -330,7 +330,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
-                resource.read_to_end(&mut vec);
+                let _ = resource.read_to_end(&mut vec);
 
                 for folder in String::from_utf8_unchecked(vec).lines() {
                     if folder.ends_with('/') {

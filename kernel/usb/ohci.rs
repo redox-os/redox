@@ -1,24 +1,7 @@
 use alloc::boxed::Box;
-
-use collections::string::ToString;
-
-use core::intrinsics::{volatile_load, volatile_store};
-use core::{cmp, mem, ptr};
-
-use scheduler::context::{self, Context};
 use common::debug;
-use common::event::MouseEvent;
-use common::memory::{self, Memory};
-use common::time::{self, Duration};
-
 use drivers::pciconfig::PciConfig;
-use drivers::pio::*;
-
-use graphics::display::VBEMODEINFO;
-
 use schemes::KScheme;
-
-use sync::Intex;
 
 pub struct Ohci {
     pub base: usize,

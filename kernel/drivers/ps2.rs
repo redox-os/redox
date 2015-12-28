@@ -56,7 +56,7 @@ impl Ps2 {
             mouse_i: 0,
             mouse_x: 0,
             mouse_y: 0,
-            layout: layouts::Layout::ENGLISH,
+            layout: layouts::Layout::English,
         };
 
         unsafe {
@@ -253,10 +253,10 @@ impl Ps2 {
     /// Function to change the layout of the keyboard
     pub fn change_layout(&mut self, layout: usize) {
         self.layout = match layout {
-            0 => layouts::Layout::ENGLISH,
-            1 => layouts::Layout::FRENCH,
-            2 => layouts::Layout::GERMAN,
-            _ => layouts::Layout::ENGLISH,
+            0 => layouts::Layout::English,
+            1 => layouts::Layout::French,
+            2 => layouts::Layout::German,
+            _ => layouts::Layout::English,
         }
     }
 }
