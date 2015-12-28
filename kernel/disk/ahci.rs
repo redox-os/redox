@@ -13,7 +13,7 @@ const HBA_PxCMD_FRE: u32 = 1 << 4;
 const HBA_PxCMD_ST: u32 = 1;
 
 #[repr(packed)]
-struct HBAPort {
+struct HbaPort {
     clb: u32,
     clbu: u32,
     fb: u32,
@@ -36,7 +36,7 @@ struct HBAPort {
 }
 
 #[derive(Debug)]
-enum HBAPortType {
+enum HbaPortType {
     None,
     Unknown(u32),
     SATA,
@@ -51,17 +51,17 @@ const SATA_SIG_ATAPI: u32 = 0xEB140101;
 const SATA_SIG_PM: u32 = 0x96690101;
 const SATA_SIG_SEMB: u32 = 0xC33C0101;
 
-impl HBAPort {
-    pub fn probe(&self) -> HBAPortType {
+impl HbaPort {
+    pub fn probe(&self) -> HbaPortType {
         if self.ssts & HBA_PORT_PRESENT != HBA_PORT_PRESENT {
-            HBAPortType::None
+            HbaPortType::None
         } else {
             match self.sig {
-                SATA_SIG_ATA => HBAPortType::SATA,
-                SATA_SIG_ATAPI => HBAPortType::SATAPI,
-                SATA_SIG_PM => HBAPortType::PM,
-                SATA_SIG_SEMB => HBAPortType::SEMB,
-                _ => HBAPortType::Unknown(self.sig)
+                SATA_SIG_ATA => HbaPortType::SATA,
+                SATA_SIG_ATAPI => HbaPortType::SATAPI,
+                SATA_SIG_PM => HbaPortType::PM,
+                SATA_SIG_SEMB => HbaPortType::SEMB,
+                _ => HbaPortType::Unknown(self.sig)
             }
         }
     }
@@ -103,7 +103,7 @@ impl HBAPort {
 }
 
 #[repr(packed)]
-struct HBAMem {
+struct HbaMem {
     cap: u32,
     ghc: u32,
     is: u32,
@@ -117,7 +117,7 @@ struct HBAMem {
     bohc: u32,
     rsv: [u8; 116],
     vendor: [u8; 96],
-    ports: [HBAPort; 32]
+    ports: [HbaPort; 32]
 }
 
 const FIS_TYPE_REG_H2D: u8 = 0x27;	// Register FIS - host to device
@@ -196,7 +196,7 @@ struct FisRegD2H {
 
 #[repr(packed)]
 #[derive(Copy, Clone, Debug, Default)]
-struct FisData {
+struct FisData<T> {
 	// DWORD 0
 	fis_type: u8,	// FIS_TYPE_DATA
 
@@ -205,7 +205,7 @@ struct FisData {
 	rsv1: [u8; 2],	// Reserved
 
 	// DWORD 1 ~ N
-	data: u32,      // Payload
+	data: T,      // Payload
 }
 
 #[repr(packed)]
@@ -268,9 +268,34 @@ struct FisDmaSetup {
     rsv6: u32,          //Reserved
 }
 
+
+#[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
+struct HbaPrdtEntry {
+   dba: u32,		// Data base address
+   dbau: u32,		// Data base address upper 32 bits
+   rsv0: u32,		// Reserved
+   dbc: u32,		// Byte count, 4M max, interrupt = 1
+}
+
+#[repr(packed)]
+struct HbaCmdTable <T> {
+	// 0x00
+	cfis: [u8; 64],	// Command FIS
+
+	// 0x40
+	acmd: [u8; 16],	// ATAPI command, 12 or 16 bytes
+
+	// 0x50
+	rsv: [u8; 48],	// Reserved
+
+	// 0x80
+	prdt_entry: T,	// Physical region descriptor table entries, 0 ~ 65535
+}
+
 pub struct Ahci {
     pci: PciConfig,
-    mem: *mut HBAMem,
+    mem: *mut HbaMem,
     irq: u8,
 }
 
@@ -281,7 +306,7 @@ impl Ahci {
 
         let mut module = box Ahci {
             pci: pci,
-            mem: base as *mut HBAMem,
+            mem: base as *mut HbaMem,
             irq: irq,
         };
 
