@@ -299,7 +299,7 @@ impl Uhci {
                         0,
                         desc_dev as u32,
                         mem::size_of_val(&*desc_dev) as u32);
-        debugln!("{:?}", *desc_dev);
+        debugln!("{:#?}", *desc_dev);
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;
@@ -315,7 +315,7 @@ impl Uhci {
                             desc_cfg_len as u32);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
-            debugln!("{:?}", desc_cfg);
+            debugln!("{:#?}", desc_cfg);
 
             let mut hid = false;
 
@@ -326,11 +326,11 @@ impl Uhci {
                 match descriptor_type {
                     DESC_INT => {
                         let desc_int = ptr::read(desc_cfg_buf.offset(i) as *const InterfaceDescriptor);
-                        debugln!("{:?}", desc_int);
+                        debugln!("{:#?}", desc_int);
                     }
                     DESC_END => {
                         let desc_end = ptr::read(desc_cfg_buf.offset(i) as *const EndpointDescriptor);
-                        debugln!("{:?}", desc_end);
+                        debugln!("{:#?}", desc_end);
 
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
@@ -410,7 +410,7 @@ impl Uhci {
                     }
                     DESC_HID => {
                         let desc_hid = &*(desc_cfg_buf.offset(i) as *const HIDDescriptor);
-                        debugln!("{:?}", desc_hid);
+                        debugln!("{:#?}", desc_hid);
                         hid = true;
                     }
                     _ => {

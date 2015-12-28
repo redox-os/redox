@@ -309,6 +309,8 @@ endif
 
 ifeq ($(storage),ahci)
 	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-drive,drive=disk,bus=ahci.0
+else ifeq ($(storage),usb)
+	QFLAGS += -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=disk
 else
 	QFLAGS += -hda $(BUILD)/harddrive.bin
 endif
