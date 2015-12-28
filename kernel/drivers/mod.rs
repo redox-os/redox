@@ -1,7 +1,3 @@
-/// AHCI
-pub mod ahci;
-/// Disk
-pub mod disk;
 /// MMIO
 pub mod mmio;
 /// PCI
