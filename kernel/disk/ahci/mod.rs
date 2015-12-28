@@ -1,0 +1,56 @@
+use alloc::boxed::Box;
+
+use drivers::pciconfig::PciConfig;
+
+use schemes::KScheme;
+
+use self::hba::HbaMem;
+
+pub mod fis;
+pub mod hba;
+
+pub struct Ahci {
+    pci: PciConfig,
+    mem: *mut HbaMem,
+    irq: u8,
+}
+
+impl Ahci {
+    pub fn new(mut pci: PciConfig) -> Box<Self> {
+        let base = unsafe { (pci.read(0x24) & 0xFFFFFFF0) as usize };
+        let irq = unsafe { (pci.read(0x3C) & 0xF) as u8 };
+
+        let mut module = box Ahci {
+            pci: pci,
+            mem: base as *mut HbaMem,
+            irq: irq,
+        };
+
+        module.init();
+
+        module
+    }
+
+    fn init(&mut self) {
+        debugln!("AHCI on: {:X} IRQ: {:X}", self.mem as usize, self.irq);
+
+        let mem = unsafe { &mut * self.mem };
+
+        for i in 0..32 {
+            if mem.pi & 1 << i == 1 << i {
+                debugln!("Port {}: {:X} {:?}", i, mem.ports[i].ssts, mem.ports[i].probe());
+            }
+        }
+    }
+}
+
+impl KScheme for Ahci {
+    fn on_irq(&mut self, irq: u8) {
+        if irq == self.irq {
+            debugln!("AHCI IRQ");
+        }
+    }
+
+    fn on_poll(&mut self) {
+    }
+}
