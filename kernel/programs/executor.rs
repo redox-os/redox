@@ -128,7 +128,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
             unsafe {
                 context.push(0x20 | 3);
                 context.push(user_sp);
-                context.push(/*1 << 9*/ 0);
+                context.push(1 << 9);
                 context.push(0x18 | 3);
                 context.push(entry);
                 context.push(context_userspace as usize);

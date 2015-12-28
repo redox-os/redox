@@ -4,6 +4,8 @@ ARCH?=i386
 
 BUILD=build/$(ARCH)
 
+QEMU?=qemu-system-$(ARCH)
+
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
@@ -277,86 +279,62 @@ virtualbox: $(BUILD)/harddrive.bin
 bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)
 
+QFLAGS := -serial mon:stdio -m 1024 -d guest_errors
+ifneq ($(kvm),no)
+	QFLAGS += -enable-kvm
+endif
+
+ifeq ($(vga),no)
+	QFLAGS += -vga none -nographic
+else
+	QFLAGS += -vga std
+endif
+
+ifneq ($(usb),no)
+	QFLAGS += -usb
+
+	ifeq ($(usb),ohci)
+		QFLAGS += -device pci-ohci,id=ohci
+   		QFLAGS += -device usb-tablet,bus=ohci.0
+	else ifeq ($(usb),ehci)
+		QFLAGS += -device usb-ehci,id=ehci
+   		QFLAGS += -device usb-tablet,bus=ehci.0
+	else ifeq ($(usb),xhci)
+		QFLAGS += -device nec-usb-xhci,id=xhci
+		QFLAGS += -device usb-tablet,bus=xhci.0
+	else
+		QFLAGS += -device usb-tablet
+	endif
+endif
+
+ifeq ($(storage),ahci)
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-drive,drive=disk,bus=ahci.0
+else ifeq ($(storage),usb)
+	QFLAGS += -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=disk
+else
+	QFLAGS += -hda $(BUILD)/harddrive.bin
+endif
+
+ifeq ($(net),no)
+	QFLAGS += -net none
+else ifeq ($(net),tap)
+	QFLAGS += -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap
+else
+	QFLAGS += -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap
+endif
+
 qemu: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_bare: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net none -vga std -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_bare_no_vga: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net none -vga none -nographic -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_no_kvm: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -hda $<
-
-qemu_no_vga: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-vga none -nographic \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_tap: $(BUILD)/harddrive.bin
-	sudo tunctl -t tap_redox -u "${USER}"
-	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-	sudo ifconfig tap_redox down
-	sudo tunctl -d tap_redox
-
-qemu_tap_8254x: $(BUILD)/harddrive.bin
-	sudo tunctl -t tap_redox -u "${USER}"
-	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-$(ARCH) -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-	sudo ifconfig tap_redox down
-	sudo tunctl -d tap_redox
-
-virtualbox_tap: $(BUILD)/harddrive.bin
-	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
-	echo "Delete Disk"
-	-$(RM) harddrive.vdi
-	echo "Create VM"
-	$(VBM) createvm --name Redox --register
-	echo "Create Bridge"
-	sudo tunctl -t tap_redox -u "${USER}"
-	sudo ifconfig tap_redox 10.85.85.1 up
-	echo "Set Configuration"
-	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 64
-	$(VBM) modifyvm Redox --nic1 bridged
-	$(VBM) modifyvm Redox --nictype1 82540EM
-	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 network.pcap
-	$(VBM) modifyvm Redox --bridgeadapter1 tap_redox
-	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
-	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
-	echo "Create Disk"
-	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
-	echo "Attach Disk"
-	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
-	echo "Run VM"
-	-$(VB) --startvm Redox --dbg
-	echo "Delete Bridge"
-	sudo ifconfig tap_redox down
-	sudo tunctl -d tap_redox
+	if [ "$(net)" = "tap" ]; \
+	then \
+		sudo tunctl -t tap_redox -u "${USER}"; \
+		sudo ifconfig tap_redox 10.85.85.1 up; \
+	fi
+	-$(QEMU) $(QFLAGS)
+	if [ "$(net)" = "tap" ]; \
+	then \
+		sudo ifconfig tap_redox down; \
+		sudo tunctl -d tap_redox; \
+	fi
 
 arping:
 	arping -I tap_redox 10.85.85.2

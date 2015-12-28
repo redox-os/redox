@@ -2,7 +2,7 @@ use string::String;
 
 #[derive(Debug)]
 pub struct PathBuf {
-    inner: String
+    pub inner: String
 }
 
 impl From<String> for PathBuf {

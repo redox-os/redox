@@ -5,7 +5,7 @@ use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{SysError, sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
-use syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END, EACCES};
 
 /// A Unix-style file
 pub struct File {
@@ -14,35 +14,35 @@ pub struct File {
 }
 
 impl File {
-    /// Open a new file using a path
-    pub fn open(path: &str) -> Result<File> {
-        let path_c = path.to_string() + "\0";
-        match SysError::demux(unsafe { sys_open(path_c.as_ptr(), O_RDWR, 0) }) {
+    pub unsafe fn from_fd(fd_muxed: usize) -> Result<File> {
+        match SysError::demux(fd_muxed) {
             Ok(fd) => Ok(File {
                 fd: fd
             }),
             Err(err) => Err(err)
+        }
+    }
+
+    /// Open a new file using a path
+    pub fn open(path: &str) -> Result<File> {
+        let path_c = path.to_string() + "\0";
+        unsafe {
+            File::from_fd(sys_open(path_c.as_ptr(), O_RDWR, 0))
         }
     }
 
     /// Create a new file using a path
     pub fn create(path: &str) -> Result<File> {
         let path_c = path.to_string() + "\0";
-        match SysError::demux(unsafe { sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0) }) {
-            Ok(fd) => Ok(File {
-                fd: fd
-            }),
-            Err(err) => Err(err)
+        unsafe {
+            File::from_fd(sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0))
         }
     }
 
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
-        match SysError::demux(unsafe { sys_dup(self.fd) }) {
-            Ok(fd) => Ok(File {
-                fd: fd
-            }),
-            Err(err) => Err(err)
+        unsafe {
+            File::from_fd(sys_dup(self.fd))
         }
     }
 
@@ -116,11 +116,39 @@ impl Drop for File {
     }
 }
 
+pub struct FileType {
+    dir: bool,
+    file: bool,
+}
+
+impl FileType {
+    pub fn is_dir(&self) -> bool {
+        self.dir
+    }
+
+    pub fn is_file(&self) -> bool {
+        self.file
+    }
+}
+
 pub struct DirEntry {
-    path: PathBuf
+    path: PathBuf,
+    dir: bool,
+    file: bool,
 }
 
 impl DirEntry {
+    pub fn file_name(&self) -> &PathBuf {
+        &self.path
+    }
+
+    pub fn file_type(&self) -> Result<FileType> {
+        Ok(FileType {
+            dir: self.dir,
+            file: self.file
+        })
+    }
+
     pub fn path(&self) -> &PathBuf {
         &self.path
     }
@@ -151,8 +179,14 @@ impl Iterator for ReadDir {
         if path.is_empty() {
             None
         }else {
+            let dir = path.ends_with('/');
+            if dir {
+                path.pop();
+            }
             Some(Ok(DirEntry {
-                path: PathBuf::from(path)
+                path: PathBuf::from(path),
+                dir: dir,
+                file: ! dir,
             }))
         }
     }
@@ -181,6 +215,10 @@ pub fn read_dir(path: &str) -> Result<ReadDir> {
         }),
         Err(err) => Err(err)
     }
+}
+
+pub fn remove_dir(path: &str) -> Result<()> {
+    Err(SysError::new(EACCES))
 }
 
 pub fn remove_file(path: &str) -> Result<()> {
