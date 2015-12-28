@@ -6,7 +6,8 @@ use window::ConsoleWindow;
 
 mod window;
 
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     let mut window = ConsoleWindow::new(-1, -1, 576, 400, "Terminal");
 
     loop {

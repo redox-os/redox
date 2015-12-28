@@ -60,8 +60,8 @@ impl Session {
                 let mut vec = Vec::new();
                 file.read_to_end(&mut vec);
                 ret.font = vec;
-            },
-            Err(err) => println!("Failed to open font: {}", err)
+            }
+            Err(err) => println!("Failed to open font: {}", err),
         }
 
         ret.cursor = BmpFile::from_path("file:/ui/cursor.bmp");
@@ -87,8 +87,8 @@ impl Session {
                                                                      &folder)));
                     }
                 }
-            },
-            Err(err) => println!("Failed to open apps: {}", err)
+            }
+            Err(err) => println!("Failed to open apps: {}", err),
         }
 
         ret
@@ -242,14 +242,15 @@ impl Session {
             let mouse_point = Point::new(self.last_mouse_event.x, self.last_mouse_event.y);
             self.display.set(Color::rgb(75, 163, 253));
             if self.background.has_data() {
-                self.display.image(Point::new((self.display.width as i32 -
-                                               self.background.width() as i32) /
-                                              2,
-                                              (self.display.height as i32 -
-                                               self.background.height() as i32) /
-                                              2),
-                                   (&self.background).as_ptr(),
-                                   Size::new(self.background.width() as u32, self.background.height() as u32));
+                self.display
+                    .image(Point::new((self.display.width as i32 - self.background.width() as i32) /
+                                      2,
+                                      (self.display.height as i32 -
+                                       self.background.height() as i32) /
+                                      2),
+                           (&self.background).as_ptr(),
+                           Size::new(self.background.width() as u32,
+                                     self.background.height() as u32));
             }
 
             for i in 0..self.windows.len() {
@@ -273,7 +274,8 @@ impl Session {
                     if mouse_point.y >= y as i32 && mouse_point.x >= x &&
                        mouse_point.x < x + package.icon.width() as i32 {
                         self.display.rect(Point::new(x as i32, y as i32),
-                                          Size::new(package.icon.width() as u32, package.icon.height() as u32),
+                                          Size::new(package.icon.width() as u32,
+                                                    package.icon.height() as u32),
                                           Color::rgba(128, 128, 128, 128));
 
                         self.display.rect(Point::new(x as i32, y as i32 - 16),
@@ -338,7 +340,8 @@ impl Session {
             if self.cursor.has_data() {
                 self.display.image_alpha(mouse_point,
                                          (&self.cursor).as_ptr(),
-                                         Size::new(self.cursor.width() as u32, self.cursor.height() as u32));
+                                         Size::new(self.cursor.width() as u32,
+                                                   self.cursor.height() as u32));
             } else {
                 self.display.char(Point::new(mouse_point.x - 3, mouse_point.y - 9),
                                   'X',
