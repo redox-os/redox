@@ -244,7 +244,8 @@ impl Editor {
     }
 }
 
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     match env::args().nth(1) {
         Some(arg) => Editor::new().main(&arg),
         None => Editor::new().main("none:"),

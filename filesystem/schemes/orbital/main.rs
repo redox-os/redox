@@ -45,11 +45,11 @@ impl Resource {
     /// Return the url of this resource
     pub fn path(&self) -> Result<String> {
         Ok(format!("orbital:///{}/{}/{}/{}/{}",
-                     self.window.point.x,
-                     self.window.point.y,
-                     self.window.size.width,
-                     self.window.size.height,
-                     self.window.title))
+                   self.window.point.x,
+                   self.window.point.y,
+                   self.window.size.width,
+                   self.window.size.height,
+                   self.window.title))
     }
 
     /// Read data to buffer
@@ -88,8 +88,10 @@ impl Resource {
 
         self.seek = match pos {
             SeekFrom::Start(offset) => cmp::min(end as u64, cmp::max(0, offset)) as usize,
-            SeekFrom::Current(offset) => cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
-            SeekFrom::End(offset) => cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
+            SeekFrom::Current(offset) =>
+                cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
+            SeekFrom::End(offset) =>
+                cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
         };
 
         Ok(self.seek as u64)

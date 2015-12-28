@@ -158,7 +158,11 @@ impl Window {
     }
 
     /// Called on mouse movement
-    pub fn on_mouse(&mut self, orig_mouse_event: MouseEvent, allow_catch: bool, active_window: bool) -> bool {
+    pub fn on_mouse(&mut self,
+                    orig_mouse_event: MouseEvent,
+                    allow_catch: bool,
+                    active_window: bool)
+                    -> bool {
         let mut mouse_event = orig_mouse_event;
 
         mouse_event.x -= self.point.x as i32;
@@ -166,7 +170,10 @@ impl Window {
 
         let mut caught = false;
 
-        if allow_catch && (active_window || (Window::mouse_button_pressed(&mouse_event) && !Window::mouse_button_pressed(&self.last_mouse_event))) {
+        if allow_catch &&
+           (active_window ||
+            (Window::mouse_button_pressed(&mouse_event) &&
+             !Window::mouse_button_pressed(&self.last_mouse_event))) {
             if self.on_window_body(mouse_event.x as isize, mouse_event.y as isize) {
                 caught = true;
             } else if self.on_window_decoration(mouse_event.x as isize, mouse_event.y as isize) {
@@ -176,7 +183,7 @@ impl Window {
                     if !self.last_mouse_event.left_button {
                         self.dragging = true;
                     }
-                    
+
                     if mouse_event.x >= self.size.width as i32 - 8 {
                         unsafe {
                             let reenable = scheduler::start_no_ints();

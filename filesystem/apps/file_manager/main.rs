@@ -168,7 +168,11 @@ impl FileManager {
             }
 
             let icon = self.file_types_info.icon_for(&file_name);
-            self.window.image(0, 32 * row as i32, icon.width() as u32, icon.height() as u32, &icon);
+            self.window.image(0,
+                              32 * row as i32,
+                              icon.width() as u32,
+                              icon.height() as u32,
+                              &icon);
 
             let mut col = 0;
             for c in file_name.chars() {
@@ -179,10 +183,7 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40,
-                                         32 * row as i32 + 8,
-                                         c,
-                                         Color::BLACK);
+                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::BLACK);
                         col += 1;
                     }
                 }
@@ -202,10 +203,7 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40,
-                                         32 * row as i32 + 8,
-                                         c,
-                                         Color::BLACK);
+                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::BLACK);
                         col += 1;
                     }
                 }
@@ -226,10 +224,7 @@ impl FileManager {
                     col += 8 - col % 8;
                 } else {
                     if col < self.window.width() / 8 && row < self.window.height() / 32 {
-                        self.window.char(8 * col as i32 + 40,
-                                         32 * row as i32 + 8,
-                                         c,
-                                         Color::BLACK);
+                        self.window.char(8 * col as i32 + 40, 32 * row as i32 + 8, c, Color::BLACK);
                         col += 1;
                     }
                 }
@@ -302,9 +297,9 @@ impl FileManager {
                                         format!("{:.1} bytes", size)
                                     }
                                 }
-                                Err(err) => format!("Failed to seek: {}", err)
+                                Err(err) => format!("Failed to seek: {}", err),
                             },
-                            Err(err) => format!("Failed to open: {}", err)
+                            Err(err) => format!("Failed to open: {}", err),
                         }
                     });
                     // Unwrapping the last file size will not panic since it has
@@ -481,7 +476,8 @@ impl FileManager {
     }
 }
 
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     match env::args().nth(1) {
         Some(arg) => FileManager::new().main(arg),
         None => FileManager::new().main("file:/"),

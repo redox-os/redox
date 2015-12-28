@@ -141,7 +141,10 @@ fn status_bar(editor: &mut Editor, text: String, a: u32, b: u32) {
     let mode = editor.cursor().mode;
 
     for (n, c) in (if text.len() > (w / (8 * b)) as usize {
-                      text.chars().take((w / (8 * b) - 5) as usize).chain(vec!['.'; 3]).collect::<Vec<_>>()
+                      text.chars()
+                          .take((w / (8 * b) - 5) as usize)
+                          .chain(vec!['.'; 3])
+                          .collect::<Vec<_>>()
                   } else {
                       text.chars().collect()
                   })
