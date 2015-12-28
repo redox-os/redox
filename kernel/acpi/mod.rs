@@ -1,11 +1,6 @@
 use alloc::boxed::Box;
-
-use core::str;
-
 use schemes::{Result, KScheme, Resource, Url};
-
 use syscall::{SysError, O_CREAT, ENOENT};
-
 pub use self::dsdt::DSDT;
 pub use self::fadt::FADT;
 pub use self::rsdt::RSDT;

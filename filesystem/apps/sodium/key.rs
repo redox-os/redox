@@ -13,6 +13,7 @@ pub enum Key {
     Down,
     Tab,
     Null,
+    Quit,
     Unknown(u8),
 }
 

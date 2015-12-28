@@ -28,34 +28,35 @@ pub fn pipe() -> [usize; 2] {
     fds
 }
 
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     let to_shell_fds = pipe();
     let from_shell_fds = pipe();
 
     unsafe {
-        if SysError::demux(sys_clone(0)).unwrap() == 0{
-            //Close STDIO
+        if SysError::demux(sys_clone(0)).unwrap() == 0 {
+            // Close STDIO
             sys_close(2);
             sys_close(1);
             sys_close(0);
 
-            //Create piped STDIO
+            // Create piped STDIO
             sys_dup(to_shell_fds[0]);
             sys_dup(from_shell_fds[1]);
             sys_dup(from_shell_fds[1]);
 
-            //Close extra pipes
+            // Close extra pipes
             sys_close(to_shell_fds[0]);
             sys_close(to_shell_fds[1]);
             sys_close(from_shell_fds[0]);
             sys_close(from_shell_fds[1]);
 
-            //Execute the shell
+            // Execute the shell
             let shell = "file:/apps/shell/main.bin\0";
             sys_execve(shell.as_ptr(), 0 as *const *const u8);
             panic!("Shell not found");
-        } else{
-            //Close extra pipes
+        } else {
+            // Close extra pipes
             sys_close(to_shell_fds[0]);
             sys_close(from_shell_fds[1]);
         }

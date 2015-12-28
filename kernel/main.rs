@@ -255,11 +255,11 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             static mut __bss_end: u8;
         }
 
-        let start_ptr: *mut u8 = &mut __bss_start;
-        let end_ptr: *mut u8 = &mut __bss_end;
+        let start_ptr = &mut __bss_start;
+        let end_ptr = &mut __bss_end;
 
-        if start_ptr as usize <= end_ptr as usize {
-            let size = end_ptr as usize - start_ptr as usize;
+        if start_ptr as *const _ as usize <= end_ptr as *const _ as usize {
+            let size = end_ptr as *const _ as usize - start_ptr as *const _ as usize;
             memset(start_ptr, 0, size);
         }
 
@@ -331,7 +331,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
-                resource.read_to_end(&mut vec);
+                let _ = resource.read_to_end(&mut vec);
 
                 for folder in String::from_utf8_unchecked(vec).lines() {
                     if folder.ends_with('/') {

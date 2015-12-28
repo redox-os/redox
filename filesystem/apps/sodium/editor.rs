@@ -5,6 +5,8 @@ use graphics::StatusBar;
 use options::Options;
 use key_state::KeyState;
 use redraw::RedrawTask;
+use parse::Inst;
+use key::{Cmd, Key};
 
 /// The current state of the editor, including the file, the cursor, the scrolling info, etc.
 pub struct Editor {
@@ -60,6 +62,9 @@ impl Editor {
 
         loop {
             let inp = editor.get_inst();
+            if let Inst(_, Cmd { key: Key::Quit }) = inp {
+                break;
+            }
             editor.exec(inp);
             editor.redraw();
             editor.status_bar.mode = editor.cursor().mode.to_string();

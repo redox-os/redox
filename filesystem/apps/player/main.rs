@@ -7,7 +7,8 @@ use std::io::{Read, Write};
 
 use orbital::*;
 
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     let url = match env::args().nth(1) {
         Some(arg) => arg.clone(),
         None => "none:",
@@ -23,7 +24,7 @@ use orbital::*;
 
     let wav = WavFile::from_data(&vec);
 
-    if ! wav.data.is_empty() {
+    if !wav.data.is_empty() {
         if let Ok(mut audio) = File::open("audio://") {
             audio.write(&wav.data);
         }
