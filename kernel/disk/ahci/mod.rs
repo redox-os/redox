@@ -4,7 +4,7 @@ use drivers::pciconfig::PciConfig;
 
 use schemes::KScheme;
 
-use self::hba::HbaMem;
+use self::hba::{HbaMem, HbaPortType};
 
 pub mod fis;
 pub mod hba;
@@ -38,7 +38,15 @@ impl Ahci {
 
         for i in 0..32 {
             if mem.pi & 1 << i == 1 << i {
-                debugln!("Port {}: {:X} {:?}", i, mem.ports[i].ssts, mem.ports[i].probe());
+                let port = &mut mem.ports[i];
+                let port_type = port.probe();
+                debugln!("Port {}: {:?}", i, port_type);
+                match port_type {
+                    HbaPortType::SATA => {
+                        port.init();
+                    },
+                    _ => ()
+                }
             }
         }
     }
