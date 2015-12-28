@@ -12,10 +12,10 @@ struct RSDP {
     addr: u32
 }
 
+const SIGNATURE: &'static [u8] = b"RSD PTR ";
+
 impl RSDP {
     pub fn new() -> Option<Self> {
-        let signature = "RSD PTR ".as_bytes();
-
         //Search top of bios region
         let mut search_ptr = 0xE0000;
         while search_ptr < 0xFFFFF {
@@ -31,7 +31,7 @@ impl RSDP {
 
     //TODO: Checksum validation
     pub fn valid(&self) -> bool {
-        if self.signature == "RSD PTR ".as_bytes() {
+        if self.signature == SIGNATURE {
             let mut sum = 0;
 
             let ptr = (self as *const Self) as *const u8;

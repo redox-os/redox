@@ -522,7 +522,7 @@ pub fn do_sys_open(path: *const u8, flags: usize) -> usize {
     )
 }
 
-pub fn do_sys_pipe2(fds: *mut usize, flags: usize) -> usize {
+pub fn do_sys_pipe2(fds: *mut usize, _flags: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
         if let Some(current) = contexts.current() {
