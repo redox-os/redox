@@ -100,17 +100,17 @@ impl Display {
         //
         // // Only use 16 byte transfer if possible
         // if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
-            // // Align 16
-            // while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
-                // *((dst + i) as *mut u32) = data;
-                // i += mem::size_of::<u32>();
-            // }
-            // While 16 byte transfers
-                // let simd: u32x4 = u32x4(data, data, data, data);
-            // while len - i >= mem::size_of::<u32x4>() {
-                // *((dst + i) as *mut u32x4) = simd;
-                // i += mem::size_of::<u32x4>();
-            // }
+        // // Align 16
+        // while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
+        // *((dst + i) as *mut u32) = data;
+        // i += mem::size_of::<u32>();
+        // }
+        // While 16 byte transfers
+        // let simd: u32x4 = u32x4(data, data, data, data);
+        // while len - i >= mem::size_of::<u32x4>() {
+        // *((dst + i) as *mut u32x4) = simd;
+        // i += mem::size_of::<u32x4>();
+        // }
         // }
         // //
         // // Everything after last 16 byte transfer
@@ -125,16 +125,16 @@ impl Display {
         //
         // Only use 16 byte transfer if possible
         // if (src + i) % 16 == (dst + i) % 16 {
-            // Align 16
-                // while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
-                    // *((dst + i) as *mut u32) = *((src + i) as *const u32);
-                    // i += mem::size_of::<u32>();
-                // }
-            // While 16 byte transfers
-                // while len - i >= mem::size_of::<u32x4>() {
-                    // *((dst + i) as *mut u32x4) = *((src + i) as *const u32x4);
-                    // i += mem::size_of::<u32x4>();
-                // }
+        // Align 16
+        // while (dst + i) % 16 != 0 && len - i >= mem::size_of::<u32>() {
+        // *((dst + i) as *mut u32) = *((src + i) as *const u32);
+        // i += mem::size_of::<u32>();
+        // }
+        // While 16 byte transfers
+        // while len - i >= mem::size_of::<u32x4>() {
+        // *((dst + i) as *mut u32x4) = *((src + i) as *const u32x4);
+        // i += mem::size_of::<u32x4>();
+        // }
         // }
 
         // Everything after last 16 byte transfer
@@ -182,7 +182,9 @@ impl Display {
         let alpha = (color.data & 0xFF000000) >> 24;
 
         if alpha > 0 {
-            let start_y = cmp::max(0, cmp::min(self.height as isize - 1, point.y as isize)) as usize;
+            let start_y = cmp::max(0,
+                                   cmp::min(self.height as isize - 1,
+                                            point.y as isize)) as usize;
             let end_y = cmp::max(0,
                                  cmp::min(self.height as i32 - 1,
                                           point.y +
@@ -337,7 +339,8 @@ impl Display {
     /// Draw an image
     pub unsafe fn image(&self, point: Point, data: *const Color, size: Size) {
         let start_y = cmp::max(0, point.y) as usize;
-        let end_y = cmp::min(self.height as isize, point.y as isize + size.height as isize) as usize;
+        let end_y = cmp::min(self.height as isize,
+                             point.y as isize + size.height as isize) as usize;
 
         let start_x = cmp::max(0, point.x) as usize;
         let len = cmp::min(self.width as i32, point.x as i32 + size.width as i32) as usize * 4 -
@@ -359,12 +362,14 @@ impl Display {
     /// Draw a image with opacity
     pub unsafe fn image_alpha(&self, point: Point, data: *const Color, size: Size) {
         let start_y = cmp::max(0, point.y) as usize;
-        let end_y = cmp::min(self.height as isize, point.y as isize + size.height as isize) as i32;
+        let end_y = cmp::min(self.height as isize,
+                             point.y as isize + size.height as isize) as i32;
 
         let start_x = cmp::max(0, point.x as isize) as i32;
-        let len = cmp::min(self.width as isize, point.x as isize + size.width as isize) as usize * 4 -
+        let len = cmp::min(self.width as isize, point.x as isize + size.width as isize) as usize *
+                  4 -
                   start_x as usize * 4;
-        let offscreen_offset = self.offscreen + start_x as usize  * 4;
+        let offscreen_offset = self.offscreen + start_x as usize * 4;
 
         let bytesperrow = size.width as usize * 4;
         let data_offset = data as usize - start_y * bytesperrow -

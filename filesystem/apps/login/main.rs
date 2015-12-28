@@ -1,7 +1,8 @@
 use std::io::{stdin, stdout, Write};
 use std::process::Command;
 
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     loop {
         print!("redox login: ");
         stdout().flush();
@@ -15,8 +16,8 @@ use std::process::Command;
                 if let Err(err) = child.wait() {
                     println!("{}: Failed to wait: {}", path, err)
                 }
-            },
-            Err(err) => println!("{}: Failed to execute: {}", path, err)
+            }
+            Err(err) => println!("{}: Failed to execute: {}", path, err),
         }
     }
 }

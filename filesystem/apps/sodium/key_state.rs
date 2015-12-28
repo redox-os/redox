@@ -1,11 +1,5 @@
 use key::Key;
-use orbital::{
-    KeyEvent,
-    K_ALT,
-    K_CTRL,
-    K_LEFT_SHIFT,
-    K_RIGHT_SHIFT
-};
+use orbital::{KeyEvent, K_ALT, K_CTRL, K_LEFT_SHIFT, K_RIGHT_SHIFT};
 
 /// Key state
 pub struct KeyState {

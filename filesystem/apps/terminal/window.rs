@@ -77,19 +77,18 @@ impl ConsoleWindow {
             match event.to_option() {
                 EventOption::Key(key_event) => if key_event.pressed {
                     match key_event.scancode {
-                        K_BKSP =>
-                            if self.offset > 0 {
-                                self.history[self.history_i as usize] =
-                                    self.history[self.history_i as usize][0..self.offset - 1].to_string() +
-                                    &self.history[self.history_i as usize][self.offset..];
-                                self.offset -= 1;
-                            },
-                        K_DEL =>
-                            if (self.offset) < self.history[self.history_i as usize].len() {
-                                self.history[self.history_i as usize] =
+                        K_BKSP => if self.offset > 0 {
+                            self.history[self.history_i as usize] =
+                                self.history[self.history_i as usize][0..self.offset - 1]
+                                    .to_string() +
+                                &self.history[self.history_i as usize][self.offset..];
+                            self.offset -= 1;
+                        },
+                        K_DEL => if (self.offset) < self.history[self.history_i as usize].len() {
+                            self.history[self.history_i as usize] =
                                 self.history[self.history_i as usize][0..self.offset].to_string() +
                                 &self.history[self.history_i as usize][self.offset + 1..self.history[self.history_i as usize].len() - 1];
-                            },
+                        },
                         K_HOME => self.offset = 0,
                         K_UP => {
                             if self.history_i as usize + 1 < self.history.len() {
@@ -129,7 +128,8 @@ impl ConsoleWindow {
                             '\x1B' => (),
                             _ => {
                                 self.history[self.history_i as usize] =
-                                    self.history[self.history_i as usize][0..self.offset].to_string() +
+                                    self.history[self.history_i as usize][0..self.offset]
+                                        .to_string() +
                                     &key_event.character.to_string() +
                                     &self.history[self.history_i as usize][self.offset..];
                                 self.offset += 1;
@@ -139,13 +139,13 @@ impl ConsoleWindow {
                     self.sync();
                 },
                 EventOption::Quit(_quit_event) => return None,
-                _ => ()
+                _ => (),
             }
         } else {
             return None;
         }
 
-        return Some(String::new());
+        Some(String::new())
     }
 
     /// Redraw the window

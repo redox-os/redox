@@ -1,5 +1,3 @@
-use core::ptr;
-
 use super::SDTHeader;
 
 

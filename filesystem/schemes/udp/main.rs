@@ -76,9 +76,9 @@ impl Resource {
 
     pub fn path(&self) -> Result<String> {
         Ok(format!("udp://{}:{}/{}",
-                     self.peer_addr.to_string(),
-                     self.peer_port,
-                     self.host_port))
+                   self.peer_addr.to_string(),
+                   self.peer_port,
+                   self.host_port))
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
