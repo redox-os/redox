@@ -5,7 +5,7 @@ use core::cell::UnsafeCell;
 
 use common::debug;
 
-use drivers::ahci::Ahci;
+use disk::ahci::Ahci;
 use drivers::pciconfig::PciConfig;
 
 use env::Environment;
@@ -40,7 +40,7 @@ pub unsafe fn pci_device(env: &mut Environment,
         if interface_id == 0x30 {
             let base = pci.read(0x10) as usize;
 
-            let module = box Xhci {
+            let mut module = box Xhci {
                 pci: pci,
                 base: base & 0xFFFFFFF0,
                 memory_mapped: base & 1 == 0,

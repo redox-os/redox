@@ -10,7 +10,8 @@ use collections::vec::Vec;
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use drivers::disk::{Disk, Extent, Request};
+use disk::ide::{Disk, Extent, Request};
+
 use drivers::pciconfig::PciConfig;
 
 use common::debug;

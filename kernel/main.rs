@@ -82,8 +82,9 @@ pub mod acpi;
 pub mod alloc_system;
 /// Audio
 pub mod audio;
+/// Disk drivers
+pub mod disk;
 /// Various drivers
-/// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
 /// Environment
 pub mod env;

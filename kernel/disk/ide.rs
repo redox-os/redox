@@ -145,7 +145,6 @@ const ATA_IDENT_MAX_LBA_EXT: u8 = 200;
 const ATA_MASTER: u8 = 0x00;
 const ATA_SLAVE: u8 = 0x01;
 
-
 // Types
 const IDE_ATA: u8 = 0x00;
 const IDE_ATAPI: u8 = 0x01;

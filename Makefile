@@ -308,9 +308,9 @@ ifneq ($(usb),no)
 endif
 
 ifeq ($(storage),ahci)
-	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-drive,drive=disk,bus=ahci.0
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-hd,drive=disk,bus=ahci.0
 else ifeq ($(storage),usb)
-	QFLAGS += -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=disk
+	QFLAGS += -device nec-usb-xhci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 else
 	QFLAGS += -hda $(BUILD)/harddrive.bin
 endif
