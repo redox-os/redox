@@ -130,6 +130,7 @@ const FIS_TYPE_PIO_SETUP: u8 = 0x5F;	// PIO setup FIS - device to host
 const FIS_TYPE_DEV_BITS: u8 = 0xA1;	// Set device bits FIS - device to host
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct FisRegH2D{
 	// DWORD 0
 	fis_type: u8,	// FIS_TYPE_REG_H2D
@@ -162,6 +163,7 @@ struct FisRegH2D{
 }
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct FisRegD2H {
 	// DWORD 0
 	fis_type: u8,    // FIS_TYPE_REG_D2H
@@ -193,6 +195,7 @@ struct FisRegD2H {
 }
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct FisData {
 	// DWORD 0
 	fis_type: u8,	// FIS_TYPE_DATA
@@ -206,6 +209,7 @@ struct FisData {
 }
 
 #[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct FisPioSetup {
 	// DWORD 0
 	fis_type: u8,	// FIS_TYPE_PIO_SETUP
@@ -238,6 +242,8 @@ struct FisPioSetup {
 	rsv4: [u8; 2],	// Reserved
 }
 
+#[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
 struct FisDmaSetup {
 	// DWORD 0
 	fis_type: u8,	     // FIS_TYPE_DMA_SETUP
