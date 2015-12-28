@@ -5,29 +5,11 @@ const HBA_PxCMD_CR: u32 = 1 << 15;
 const HBA_PxCMD_FR: u32 = 1 << 14;
 const HBA_PxCMD_FRE: u32 = 1 << 4;
 const HBA_PxCMD_ST: u32 = 1;
-
-#[repr(packed)]
-pub struct HbaPort {
-    pub clb: u32,
-    pub clbu: u32,
-    pub fb: u32,
-    pub fbu: u32,
-    pub is: u32,
-    pub ie: u32,
-    pub cmd: u32,
-    pub rsv0: u32,
-    pub tfd: u32,
-    pub sig: u32,
-    pub ssts: u32,
-    pub sctl: u32,
-    pub serr: u32,
-    pub sact: u32,
-    pub ci: u32,
-    pub sntf: u32,
-    pub fbs: u32,
-    pub rsv1: [u32; 11],
-    pub vendor: [u32; 4]
-}
+const HBA_SSTS_PRESENT: u32 = 0x13;
+const HBA_SIG_ATA: u32 = 0x00000101;
+const HBA_SIG_ATAPI: u32 = 0xEB140101;
+const HBA_SIG_PM: u32 = 0x96690101;
+const HBA_SIG_SEMB: u32 = 0xC33C0101;
 
 #[derive(Debug)]
 pub enum HbaPortType {
@@ -39,25 +21,45 @@ pub enum HbaPortType {
     SEMB,
 }
 
-const HBA_PORT_PRESENT: u32 = 0x13;
-const SATA_SIG_ATA: u32 = 0x00000101;
-const SATA_SIG_ATAPI: u32 = 0xEB140101;
-const SATA_SIG_PM: u32 = 0x96690101;
-const SATA_SIG_SEMB: u32 = 0xC33C0101;
+#[repr(packed)]
+pub struct HbaPort {
+    pub clb: u32,   // 0x00, command list base address, 1K-byte aligned
+    pub clbu: u32,  // 0x04, command list base address upper 32 bits
+    pub fb: u32,    // 0x08, FIS base address, 256-byte aligned
+    pub fbu: u32,   // 0x0C, FIS base address upper 32 bits
+    pub is: u32,    // 0x10, interrupt status
+    pub ie: u32,    // 0x14, interrupt enable
+    pub cmd: u32,   // 0x18, command and status
+    pub rsv0: u32,  // 0x1C, Reserved
+    pub tfd: u32,   // 0x20, task file data
+    pub sig: u32,   // 0x24, signature
+    pub ssts: u32,  // 0x28, SATA status (SCR0:SStatus)
+    pub sctl: u32,  // 0x2C, SATA control (SCR2:SControl)
+    pub serr: u32,  // 0x30, SATA error (SCR1:SError)
+    pub sact: u32,  // 0x34, SATA active (SCR3:SActive)
+    pub ci: u32,    // 0x38, command issue
+    pub sntf: u32,  // 0x3C, SATA notification (SCR4:SNotification)
+    pub fbs: u32,   // 0x40, FIS-based switch control
+    pub rsv1: [u32; 11],    // 0x44 ~ 0x6F, Reserved
+    pub vendor: [u32; 4]    // 0x70 ~ 0x7F, vendor specific
+}
 
 impl HbaPort {
     pub fn probe(&self) -> HbaPortType {
-        if self.ssts & HBA_PORT_PRESENT != HBA_PORT_PRESENT {
+        if self.ssts & HBA_SSTS_PRESENT != HBA_SSTS_PRESENT {
             HbaPortType::None
         } else {
             match self.sig {
-                SATA_SIG_ATA => HbaPortType::SATA,
-                SATA_SIG_ATAPI => HbaPortType::SATAPI,
-                SATA_SIG_PM => HbaPortType::PM,
-                SATA_SIG_SEMB => HbaPortType::SEMB,
+                HBA_SIG_ATA => HbaPortType::SATA,
+                HBA_SIG_ATAPI => HbaPortType::SATAPI,
+                HBA_SIG_PM => HbaPortType::PM,
+                HBA_SIG_SEMB => HbaPortType::SEMB,
                 _ => HbaPortType::Unknown(self.sig)
             }
         }
+    }
+
+    pub fn init(&mut self) {
     }
 
     pub fn start(&mut self) {
@@ -98,20 +100,20 @@ impl HbaPort {
 
 #[repr(packed)]
 pub struct HbaMem {
-    pub cap: u32,
-    pub ghc: u32,
-    pub is: u32,
-    pub pi: u32,
-    pub vs: u32,
-    pub ccc_ctl: u32,
-    pub ccc_pts: u32,
-    pub em_loc: u32,
-    pub em_ctl: u32,
-    pub cap2: u32,
-    pub bohc: u32,
-    pub rsv: [u8; 116],
-    pub vendor: [u8; 96],
-    pub ports: [HbaPort; 32]
+    pub cap: u32,       // 0x00, Host capability
+    pub ghc: u32,       // 0x04, Global host control
+    pub is: u32,        // 0x08, Interrupt status
+    pub pi: u32,        // 0x0C, Port implemented
+    pub vs: u32,        // 0x10, Version
+    pub ccc_ctl: u32,   // 0x14, Command completion coalescing control
+    pub ccc_pts: u32,   // 0x18, Command completion coalescing ports
+    pub em_loc: u32,    // 0x1C, Enclosure management location
+    pub em_ctl: u32,    // 0x20, Enclosure management control
+    pub cap2: u32,      // 0x24, Host capabilities extended
+    pub bohc: u32,      // 0x28, BIOS/OS handoff control and status
+    pub rsv: [u8; 116],         // 0x2C - 0x9F, Reserved
+    pub vendor: [u8; 96],       // 0xA0 - 0xFF, Vendor specific registers
+    pub ports: [HbaPort; 32]    // 0x100 - 0x10FF, Port control registers
 }
 
 #[repr(packed)]
@@ -124,7 +126,7 @@ struct HbaPrdtEntry {
 }
 
 #[repr(packed)]
-struct HbaCmdTable <T> {
+struct HbaCmdTable {
 	// 0x00
 	cfis: [u8; 64],	// Command FIS
 
@@ -135,5 +137,25 @@ struct HbaCmdTable <T> {
 	rsv: [u8; 48],	// Reserved
 
 	// 0x80
-	prdt_entry: T,	// Physical region descriptor table entries, 0 ~ 65535
+	prdt_entry: [HbaPrdtEntry; 65536],	// Physical region descriptor table entries, 0 ~ 65535
+}
+
+#[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
+struct HbaCmdHeader {
+	// DW0
+	cfl: u8,		// Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1
+	pm: u8,		    // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier
+
+	prdtl: u16,		// Physical region descriptor table length in entries
+
+	// DW1
+	prdbc: u32,		// Physical region descriptor byte count transferred
+
+	// DW2, 3
+	ctba: u32,		// Command table descriptor base address
+	ctbau: u32,		// Command table descriptor base address upper 32 bits
+
+	// DW4 - 7
+	rsv1: [u32; 4],	// Reserved
 }

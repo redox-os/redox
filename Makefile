@@ -324,13 +324,13 @@ else
 endif
 
 qemu: $(BUILD)/harddrive.bin
-	if [ "$(net)" = "tap" ]; \
+	@if [ "$(net)" = "tap" ]; \
 	then \
 		sudo tunctl -t tap_redox -u "${USER}"; \
 		sudo ifconfig tap_redox 10.85.85.1 up; \
 	fi
 	-$(QEMU) $(QFLAGS)
-	if [ "$(net)" = "tap" ]; \
+	@if [ "$(net)" = "tap" ]; \
 	then \
 		sudo ifconfig tap_redox down; \
 		sudo tunctl -d tap_redox; \
