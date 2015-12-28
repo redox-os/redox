@@ -18,6 +18,7 @@ use scheduler::context::{context_clone, context_switch, Context, ContextMemory, 
                          ContextStatus};
 
 use schemes::{Resource, ResourceSeek, Url};
+use schemes::pipe::{PipeRead, PipeWrite};
 
 use sync::Intex;
 
@@ -521,6 +522,38 @@ pub fn do_sys_open(path: *const u8, flags: usize) -> usize {
     )
 }
 
+pub fn do_sys_pipe2(fds: *mut usize, flags: usize) -> usize {
+    let mut contexts = ::env().contexts.lock();
+    SysError::mux(
+        if let Some(current) = contexts.current() {
+            if fds as usize > 0 {
+                let read = box PipeRead::new();
+                let write = box PipeWrite::new(&read);
+
+                unsafe {
+                    *fds.offset(0) = current.next_fd();
+                    (*current.files.get()).push(ContextFile {
+                        fd: *fds.offset(0),
+                        resource: read,
+                    });
+
+                    *fds.offset(1) = current.next_fd();
+                    (*current.files.get()).push(ContextFile {
+                        fd: *fds.offset(1),
+                        resource: write,
+                    });
+                }
+
+                Ok(0)
+            } else {
+                Err(SysError::new(EFAULT))
+            }
+        } else {
+            Err(SysError::new(ESRCH))
+        }
+    )
+}
+
 pub fn do_sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     let mut contexts = ::env().contexts.lock();
     SysError::mux(
@@ -723,9 +756,9 @@ pub fn syscall_handle(regs: &mut Regs) -> bool {
         // TODO: link
         SYS_LSEEK => regs.ax = do_sys_lseek(regs.bx, regs.cx as isize, regs.dx),
         SYS_MKDIR => regs.ax = do_sys_mkdir(regs.bx as *const u8, regs.cx),
-        SYS_NANOSLEEP =>
-            regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
+        SYS_NANOSLEEP => regs.ax = do_sys_nanosleep(regs.bx as *const TimeSpec, regs.cx as *mut TimeSpec),
         SYS_OPEN => regs.ax = do_sys_open(regs.bx as *const u8, regs.cx), //regs.cx as isize, regs.dx as isize),
+        SYS_PIPE2 => regs.ax = do_sys_pipe2(regs.bx as *mut usize, regs.cx),
         SYS_READ => regs.ax = do_sys_read(regs.bx, regs.cx as *mut u8, regs.dx),
         SYS_UNLINK => regs.ax = do_sys_unlink(regs.bx as *const u8),
         SYS_WAITPID => regs.ax = do_sys_waitpid(regs.bx as isize, regs.cx as *mut usize, regs.dx),

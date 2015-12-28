@@ -73,7 +73,7 @@ impl ConsoleWindow {
 
     /// Read input
     pub fn read(&mut self) -> Option<String> {
-        while let Some(event) = self.poll() {
+        if let Some(event) = self.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => if key_event.pressed {
                     match key_event.scancode {
@@ -125,7 +125,7 @@ impl ConsoleWindow {
                                 self.print("\n", Color::WHITE);
                                 return Some(command);
                             }
-                            '\x1B' => break,
+                            '\x1B' => (),
                             _ => {
                                 self.history[self.history_i as usize] =
                                     self.history[self.history_i as usize][0..self.offset]
@@ -138,12 +138,14 @@ impl ConsoleWindow {
                     }
                     self.sync();
                 },
-                EventOption::Quit(_quit_event) => break,
+                EventOption::Quit(_quit_event) => return None,
                 _ => (),
             }
+        } else {
+            return None;
         }
 
-        return None;
+        Some(String::new())
     }
 
     /// Redraw the window

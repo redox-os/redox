@@ -20,6 +20,8 @@ pub struct Session {
     pub font: Vec<u8>,
     /// The cursor icon
     pub cursor: BmpFile,
+    /// The shutdown icon
+    pub shutdown: BmpFile,
     /// The background image
     pub background: BmpFile,
     /// The last mouse event
@@ -41,6 +43,7 @@ impl Session {
             display: unsafe { Display::root() },
             font: Vec::new(),
             cursor: BmpFile::default(),
+            shutdown: BmpFile::default(),
             background: BmpFile::default(),
             last_mouse_event: MouseEvent {
                 x: 0,
@@ -69,6 +72,10 @@ impl Session {
             println!("Failed to read cursor");
         }
 
+        ret.shutdown = BmpFile::from_path("file:/ui/actions/system-shutdown.bmp");
+        if !ret.shutdown.has_data() {
+            println!("Failed to read shutdown icon");
+        }
 
         ret.background = BmpFile::from_path("file:/ui/background.bmp");
         if !ret.background.has_data() {
@@ -175,7 +182,7 @@ impl Session {
                 let mut chars = 32;
                 while chars > 4 &&
                       (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
-                      self.display.width + 32 {
+                      self.display.width {
                     chars -= 1;
                 }
 
@@ -203,6 +210,16 @@ impl Session {
                         break;
                     }
                     x += w as i32;
+                }
+
+
+                if self.shutdown.has_data() {
+                    x = self.display.width as i32 - self.shutdown.width() as i32;
+                    let y = self.display.height as isize - self.shutdown.height() as isize;
+                    if mouse_event.y >= y as i32 && mouse_event.x >= x &&
+                       mouse_event.x < x + self.shutdown.width() as i32 {
+                           File::create("acpi:off");
+                    }
                 }
             }
         } else {
@@ -304,7 +321,7 @@ impl Session {
             let mut chars = 32;
             while chars > 4 &&
                   (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
-                  self.display.width + 32 {
+                  self.display.width {
                 chars -= 1;
             }
 
@@ -335,6 +352,23 @@ impl Session {
                     i += 1;
                 }
                 x += 8;
+            }
+
+            if self.shutdown.has_data() {
+                x = self.display.width as i32 - self.shutdown.width() as i32;
+                let y = self.display.height as isize - self.shutdown.height() as isize;
+                if mouse_point.y >= y as i32 && mouse_point.x >= x &&
+                   mouse_point.x < x + self.shutdown.width() as i32 {
+                    self.display.rect(Point::new(x as i32, y as i32),
+                                      Size::new(self.shutdown.width() as u32, self.shutdown.height() as u32),
+                                      Color::rgba(128, 128, 128, 128));
+                }
+
+                self.display.image_alpha(Point::new(x as i32, y as i32),
+                                         (&self.shutdown).as_ptr(),
+                                         Size::new(self.shutdown.width() as u32,
+                                                   self.shutdown.height() as u32));
+                x = x + self.shutdown.width() as i32;
             }
 
             if self.cursor.has_data() {

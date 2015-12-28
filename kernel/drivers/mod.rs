@@ -1,3 +1,5 @@
+/// AHCI
+pub mod ahci;
 /// Disk
 pub mod disk;
 /// MMIO

@@ -15,6 +15,8 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
 * [Help! Redox won't compile](#compile-help)
 * [Contributing to Redox](#contributing)
 * [Cloning, Building and running](#cloning-building-running)
+ * [Quick Setup](#quick-setup)
+ * [Manual Setup](#manual-setup)
 
 
 ## <a name="what-it-looks-like" /> What it looks like

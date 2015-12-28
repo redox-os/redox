@@ -28,6 +28,8 @@ pub mod icmp;
 pub mod ip;
 /// Memory scheme
 pub mod memory;
+/// Pipes
+pub mod pipe;
 
 pub type Result<T> = ::core::result::Result<T, SysError>;
 
