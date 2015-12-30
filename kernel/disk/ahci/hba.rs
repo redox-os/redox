@@ -15,6 +15,7 @@ const HBA_PxCMD_CR: u32 = 1 << 15;
 const HBA_PxCMD_FR: u32 = 1 << 14;
 const HBA_PxCMD_FRE: u32 = 1 << 4;
 const HBA_PxCMD_ST: u32 = 1;
+const HBA_PxIS_TFES: u32 = 1 << 30;
 const HBA_SSTS_PRESENT: u32 = 0x13;
 const HBA_SIG_ATA: u32 = 0x00000101;
 const HBA_SIG_ATAPI: u32 = 0xEB140101;
@@ -88,14 +89,6 @@ impl HbaPort {
         }
 
         self.start();
-
-        let mut buffer = [0; 512];
-        self.read(0, &mut buffer);
-
-        for b in buffer.iter() {
-            debug!("{:02X} ", *b);
-        }
-        debugln!("");
     }
 
     pub fn start(&mut self) {
@@ -127,9 +120,8 @@ impl HbaPort {
         None
     }
 
-    pub fn read(&mut self, lba: u64, buffer: &mut [u8]) -> bool {
-        let buf = buffer.as_ptr() as usize;
-        let sectors = buffer.len()/512;
+    pub fn read(&mut self, lba: u64, buf: usize, len: usize) -> bool {
+        let sectors = len/512;
         let entries = 1;
 
         debugln!("LBA: {:X} BUF: {:X}, SECTORS: {}", lba, buf, sectors);
@@ -146,6 +138,7 @@ impl HbaPort {
             cmdheader.prdtl.write(entries);
 
             let ctba = cmdheader.ctba.read() as usize;
+            unsafe { ::memset(ctba as *mut u8, 0, size_of::<HbaCmdTable>()) };
             let cmdtbl = unsafe { &mut * (ctba as *mut HbaCmdTable) };
 
             let prdt_entry = &mut cmdtbl.prdt_entry[0];
@@ -177,7 +170,19 @@ impl HbaPort {
             self.ci.write(1 << slot);
 
             debugln!("Completion Wait");
-            while self.ci.readf(1 << slot) {}
+            while self.ci.readf(1 << slot) {
+                if self.is.readf(HBA_PxIS_TFES) {
+        			debugln!("Read disk error");
+        			return false;
+        		}
+            }
+
+            debugln!("Return");
+
+            if self.is.readf(HBA_PxIS_TFES) {
+    			debugln!("Read disk error");
+    			return false;
+    		}
 
             return true;
         }
