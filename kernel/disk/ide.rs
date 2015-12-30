@@ -394,8 +394,8 @@ impl Disk {
         }
 
         let mut sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
-                      ((destination.read(102) as u64) << 32) |
-                      ((destination.read(103) as u64) << 48);
+                          ((destination.read(102) as u64) << 32) |
+                          ((destination.read(103) as u64) << 48);
 
         if sectors == 0 {
             sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
@@ -552,7 +552,11 @@ impl Disk {
                                            eot: eot,
                                        });
 
-                        self.dma_requests.lock().push_back(DMARequest { lba: req.extent.block + (i as u64) * 128, sectors: 128, read: req.read });
+                        self.dma_requests.lock().push_back(DMARequest {
+                            lba: req.extent.block + (i as u64) * 128,
+                            sectors: 128,
+                            read: req.read,
+                        });
 
                         size -= 65536;
                         i += 1;
@@ -565,7 +569,11 @@ impl Disk {
                                            eot: PRD_EOT,
                                        });
 
-                       self.dma_requests.lock().push_back(DMARequest { lba: req.extent.block + (i as u64) * 128, sectors: (size / 512) as u16, read: req.read });
+                        self.dma_requests.lock().push_back(DMARequest {
+                            lba: req.extent.block + (i as u64) * 128,
+                            sectors: (size / 512) as u16,
+                            read: req.read,
+                        });
                         size = 0;
                         i += 1;
                     }
@@ -611,7 +619,7 @@ impl Disk {
         }
 
         if let Some(ref req) = *self.dma_request.lock() {
-             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
 
             }
 
