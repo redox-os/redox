@@ -127,7 +127,7 @@ impl HbaPort {
         None
     }
 
-    fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
+    pub fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
         debugln!("AHCI DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         let entries = 1;
@@ -202,16 +202,6 @@ impl HbaPort {
             debugln!("Empty request");
             Err(SysError::new(EIO))
         }
-    }
-}
-
-impl Disk for HbaPort {
-    fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
-        self.ata_dma(block, buffer.len()/512, buffer.as_ptr() as usize, false)
-    }
-
-    fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
-        self.ata_dma(block, buffer.len()/512, buffer.as_ptr() as usize, true)
     }
 }
 

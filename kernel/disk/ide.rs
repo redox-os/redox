@@ -1,5 +1,7 @@
 use alloc::arc::Arc;
+use alloc::boxed::Box;
 
+use collections::vec::Vec;
 use collections::vec_deque::VecDeque;
 
 use core::ptr;
@@ -9,6 +11,7 @@ use common::memory::Memory;
 
 use disk::Disk;
 
+use drivers::pciconfig::PciConfig;
 use drivers::pio::*;
 
 use schemes::Result;
@@ -175,8 +178,47 @@ const ATA_REG_CONTROL: u16 = 0x0C;
 const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
 
+pub struct Ide;
+
+impl Ide {
+    pub fn disks(mut pci: PciConfig) -> Vec<Box<Disk>> {
+        let mut ret: Vec<Box<Disk>> = Vec::new();
+
+        unsafe { pci.flag(4, 4, true) }; // Bus mastering
+
+        let busmaster = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
+
+        debugln!("IDE on {:X}", busmaster);
+
+        debug!("Primary Master:");
+        if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, true) {
+            ret.push(box disk);
+        }
+
+        debug!("Primary Slave:");
+        if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, false) {
+            ret.push(box disk);
+        }
+        debugln!("");
+
+        debug!("Secondary Master:");
+        if let Some(disk) = IdeDisk::new(busmaster + 8, 0x170, 0x374, 0xF, true) {
+            ret.push(box disk);
+        }
+        debugln!("");
+
+        debug!("Secondary Slave:");
+        if let Some(disk) = IdeDisk::new(busmaster + 8, 0x170, 0x374, 0xF, false) {
+            ret.push(box disk);
+        }
+        debugln!("");
+
+        ret
+    }
+}
+
 /// A disk (data storage)
-pub struct IdePort {
+pub struct IdeDisk {
     base: u16,
     ctrl: u16,
     master: bool,
@@ -188,9 +230,9 @@ pub struct IdePort {
     pub irq: u8,
 }
 
-impl IdePort {
+impl IdeDisk {
     pub fn new(busmaster: u16, base: u16, ctrl: u16, irq: u8, master: bool) -> Option<Self> {
-        let ret = IdePort {
+        let ret = IdeDisk {
             base: base,
             ctrl: ctrl,
             master: master,
@@ -207,26 +249,6 @@ impl IdePort {
         } else {
             None
         }
-    }
-
-    /// Get the primary master
-    pub fn primary_master(busmaster: u16) -> Option<Self> {
-        IdePort::new(busmaster, 0x1F0, 0x3F4, 0xE, true)
-    }
-
-    /// Get the primary slave
-    pub fn primary_slave(busmaster: u16) -> Option<Self> {
-        IdePort::new(busmaster, 0x1F0, 0x3F4, 0xE, false)
-    }
-
-    /// Get the secondary master
-    pub fn secondary_master(busmaster: u16) -> Option<Self> {
-        IdePort::new(busmaster + 8, 0x170, 0x374, 0xF, true)
-    }
-
-    /// Get the secondary slave
-    pub fn secondary_slave(busmaster: u16) -> Option<Self> {
-        IdePort::new(busmaster + 8, 0x170, 0x374, 0xF, false)
     }
 
     unsafe fn ide_read(&self, reg: u16) -> u8 {
@@ -590,7 +612,7 @@ impl IdePort {
     }
 }
 
-impl Disk for IdePort {
+impl Disk for IdeDisk {
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
         self.ata_pio(block, buffer.len()/512, buffer.as_ptr() as usize, false)
     }
