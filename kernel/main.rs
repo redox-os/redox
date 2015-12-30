@@ -90,6 +90,8 @@ pub mod drivers;
 pub mod env;
 /// Externs
 pub mod externs;
+/// Filesystems
+pub mod fs;
 /// Various graphical methods
 pub mod graphics;
 /// Network
