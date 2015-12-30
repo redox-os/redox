@@ -244,6 +244,9 @@ impl IdeDisk {
             irq: irq,
         };
 
+        //Disable IRQs
+        unsafe { ret.ide_write(ATA_REG_CONTROL, 2) };
+
         if unsafe { ret.identify() } {
             Some(ret)
         } else {
