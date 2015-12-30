@@ -60,13 +60,14 @@ const STS_ERR: u8 = 2;
 const STS_ACT: u8 = 1;
 
 /// PRDT End of Table
-const PRD_EOT: u32 = 0x80000000;
+const PRD_EOT: u16 = 0x8000;
 
 /// Physical Region Descriptor
 #[repr(packed)]
 struct Prd {
     addr: u32,
-    size: u32,
+    size: u16,
+    eot: u16,
 }
 
 struct Prdt {
@@ -377,8 +378,8 @@ impl Disk {
         }
 
         let mut sectors = (destination.read(100) as u64) | ((destination.read(101) as u64) << 16) |
-                      ((destination.read(102) as u64) << 32) |
-                      ((destination.read(103) as u64) << 48);
+                          ((destination.read(102) as u64) << 32) |
+                          ((destination.read(103) as u64) << 48);
 
         if sectors == 0 {
             sectors = (destination.read(60) as u64) | ((destination.read(61) as u64) << 16);
@@ -398,9 +399,9 @@ impl Disk {
             }
 
             if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
             } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
             }
 
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
@@ -439,9 +440,9 @@ impl Disk {
             }
 
             if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
             } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
             }
 
             self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
@@ -489,10 +490,7 @@ impl Disk {
         if sts & STS_INT == STS_INT {
             self.sts.write(sts);
 
-            let cmd = self.cmd.read();
-            if cmd & CMD_ACT == CMD_ACT {
-                self.next_request();
-            }
+            self.next_request();
         }
     }
 
@@ -500,18 +498,26 @@ impl Disk {
         let mut requests = self.requests.lock();
         let mut request = self.request.lock();
 
-        self.cmd.write(CMD_DIR);
-        if let Some(ref mut prdt) = self.prdt {
-            prdt.reg.write(0 as u32);
-        }
-
         if let Some(ref mut req) = *request {
+            let cmd = self.cmd.read();
+            self.cmd.write(cmd & !0x1);
             req.complete.store(true, Ordering::SeqCst);
         }
 
         *request = requests.pop_front();
 
         if let Some(ref req) = *request {
+            let mut cmd = self.cmd.read();
+            if req.read {
+                self.cmd.write(CMD_DIR);
+            } else {
+                self.cmd.write(0);
+            }
+
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+            }
+
             if req.mem > 0 {
                 let sectors = (req.extent.length + 511) / 512;
                 let mut prdt_set = false;
@@ -529,7 +535,8 @@ impl Disk {
                         prdt.mem.store(i,
                                        Prd {
                                            addr: (req.mem + i * 65536) as u32,
-                                           size: eot,
+                                           size: 0,
+                                           eot: eot,
                                        });
 
                         size -= 65536;
@@ -539,7 +546,8 @@ impl Disk {
                         prdt.mem.store(i,
                                        Prd {
                                            addr: (req.mem + i * 65536) as u32,
-                                           size: size as u32 | PRD_EOT,
+                                           size: size as u16,
+                                           eot: PRD_EOT,
                                        });
 
                         size = 0;
@@ -561,51 +569,36 @@ impl Disk {
                 }
 
                 if prdt_set {
+                    if self.master {
+                        self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                    } else {
+                        self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                    }
+
+                    self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
+
+                    self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
+
+                    let mut status = self.ide_read(ATA_REG_STATUS);
+                    while (status & ATA_SR_BSY == ATA_SR_BSY) || (status & ATA_SR_DRDY != ATA_SR_DRDY)  {
+
+                    }
+
                     if req.read {
-                        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-                        }
-
-                        if self.master {
-                            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
-                        } else {
-                            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
-                        }
-
-                        self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
-
-                        self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
                         self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+                    } else {
+                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
+                    }
 
+                    if req.read {
                         self.cmd.write(CMD_ACT | CMD_DIR);
                     } else {
-                        while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-                        }
-
-                        if self.master {
-                            self.ide_write(ATA_REG_HDDEVSEL, 0xE0);
-                        } else {
-                            self.ide_write(ATA_REG_HDDEVSEL, 0xF0);
-                        }
-
-                        self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
-
-                        self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
-                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
-
                         self.cmd.write(CMD_ACT);
                     }
                 }

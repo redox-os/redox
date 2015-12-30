@@ -610,7 +610,7 @@ impl KScheme for FileScheme {
                             if let Some(data) = Memory::<u8>::new(extent.length as usize) {
                                 let sectors = (extent.length as usize + 511) / 512;
                                 let mut sector: usize = 0;
-                                while sectors - sector >= 65536 {
+                                while sectors - sector >= 128 {
                                     if PIO {
                                         unsafe {
                                             self.fs.disk.read(extent.block + sector as u64,
@@ -621,7 +621,7 @@ impl KScheme for FileScheme {
                                         let request = Request {
                                             extent: Extent {
                                                 block: extent.block + sector as u64,
-                                                length: 65536 * 512,
+                                                length: 65536,
                                             },
                                             mem: unsafe { data.address() } + sector * 512,
                                             read: true,
@@ -635,7 +635,7 @@ impl KScheme for FileScheme {
                                         }
                                     }
 
-                                    sector += 65535;
+                                    sector += 128;
                                 }
                                 if sector < sectors {
                                     if PIO {
