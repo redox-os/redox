@@ -169,12 +169,6 @@ const ATA_REG_CONTROL: u16 = 0x0C;
 const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
 
-struct DMARequest {
-    lba: u64,
-    sectors: u16,
-    read: bool,
-}
-
 /// A disk (data storage)
 pub struct Disk {
     base: u16,
@@ -182,8 +176,6 @@ pub struct Disk {
     master: bool,
     request: Intex<Option<Request>>,
     requests: Intex<VecDeque<Request>>,
-    dma_request: Intex<Option<DMARequest>>,
-    dma_requests: Intex<VecDeque<DMARequest>>,
     cmd: Pio8,
     sts: Pio8,
     prdt: Option<Prdt>,
@@ -199,8 +191,6 @@ impl Disk {
             master: true,
             request: Intex::new(None),
             requests: Intex::new(VecDeque::new()),
-            dma_request: Intex::new(None),
-            dma_requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base),
             sts: Pio8::new(base + 2),
             prdt: Prdt::new(base + 4),
@@ -216,8 +206,6 @@ impl Disk {
             master: false,
             request: Intex::new(None),
             requests: Intex::new(VecDeque::new()),
-            dma_request: Intex::new(None),
-            dma_requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base),
             sts: Pio8::new(base + 2),
             prdt: Prdt::new(base + 4),
@@ -233,8 +221,6 @@ impl Disk {
             master: true,
             request: Intex::new(None),
             requests: Intex::new(VecDeque::new()),
-            dma_request: Intex::new(None),
-            dma_requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base + 8),
             sts: Pio8::new(base + 0xA),
             prdt: Prdt::new(base + 0xC),
@@ -250,8 +236,6 @@ impl Disk {
             master: false,
             request: Intex::new(None),
             requests: Intex::new(VecDeque::new()),
-            dma_request: Intex::new(None),
-            dma_requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(base + 8),
             sts: Pio8::new(base + 0xA),
             prdt: Prdt::new(base + 0xC),
@@ -506,34 +490,37 @@ impl Disk {
         if sts & STS_INT == STS_INT {
             self.sts.write(sts);
 
-            let cmd = self.cmd.read();
-            if cmd & CMD_ACT == CMD_ACT {
-                self.next_dma_request();
-            }
+            self.next_request();
         }
     }
 
     unsafe fn next_request(&mut self) {
-        {
-            let mut requests = self.requests.lock();
-            let mut request = self.request.lock();
+        let mut requests = self.requests.lock();
+        let mut request = self.request.lock();
 
-            self.cmd.write(CMD_DIR);
-            if let Some(ref mut prdt) = self.prdt {
-                prdt.reg.write(0 as u32);
-            }
-
-            if let Some(ref mut req) = *request {
-                req.complete.store(true, Ordering::SeqCst);
-            }
-
-            *request = requests.pop_front();
+        if let Some(ref mut req) = *request {
+            let cmd = self.cmd.read();
+            self.cmd.write(cmd & !0x1);
+            req.complete.store(true, Ordering::SeqCst);
         }
 
-        let mut prdt_set = false;
-        if let Some(ref req) = *self.request.lock() {
+        *request = requests.pop_front();
+
+        if let Some(ref req) = *request {
+            let mut cmd = self.cmd.read();
+            if req.read {
+                self.cmd.write(CMD_DIR);
+            } else {
+                self.cmd.write(0);
+            }
+
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
+
+            }
+
             if req.mem > 0 {
                 let sectors = (req.extent.length + 511) / 512;
+                let mut prdt_set = false;
                 if let Some(ref mut prdt) = self.prdt {
                     let mut size = sectors * 512;
                     let mut i = 0;
@@ -552,12 +539,6 @@ impl Disk {
                                            eot: eot,
                                        });
 
-                        self.dma_requests.lock().push_back(DMARequest {
-                            lba: req.extent.block + (i as u64) * 128,
-                            sectors: 128,
-                            read: req.read,
-                        });
-
                         size -= 65536;
                         i += 1;
                     }
@@ -569,11 +550,6 @@ impl Disk {
                                            eot: PRD_EOT,
                                        });
 
-                        self.dma_requests.lock().push_back(DMARequest {
-                            lba: req.extent.block + (i as u64) * 128,
-                            sectors: (size / 512) as u16,
-                            read: req.read,
-                        });
                         size = 0;
                         i += 1;
                     }
@@ -593,6 +569,33 @@ impl Disk {
                 }
 
                 if prdt_set {
+                    if self.master {
+                        self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+                    } else {
+                        self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+                    }
+
+                    self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
+
+                    self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
+                    self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
+
+                    let mut status = self.ide_read(ATA_REG_STATUS);
+                    while (status & ATA_SR_BSY == ATA_SR_BSY) || (status & ATA_SR_DRDY != ATA_SR_DRDY)  {
+
+                    }
+
+                    if req.read {
+                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+                    } else {
+                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
+                    }
+
                     if req.read {
                         self.cmd.write(CMD_ACT | CMD_DIR);
                     } else {
@@ -603,52 +606,5 @@ impl Disk {
                 debug!("IDE Request mem is 0\n");
             }
         }
-
-        if prdt_set {
-            // Start the first DMA request
-            self.next_dma_request();
-        }
-    }
-
-    unsafe fn next_dma_request(&mut self) {
-        {
-            let mut dma_requests = self.dma_requests.lock();
-            let mut dma_request = self.dma_request.lock();
-
-            *dma_request = dma_requests.pop_front();
-        }
-
-        if let Some(ref req) = *self.dma_request.lock() {
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-            }
-
-            if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
-            }
-
-            self.ide_write(ATA_REG_SECCOUNT1, ((req.sectors >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA3, ((req.lba >> 24) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA4, ((req.lba >> 32) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA5, ((req.lba >> 40) & 0xFF) as u8);
-
-            self.ide_write(ATA_REG_SECCOUNT0, (req.sectors & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA0, (req.lba & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA1, ((req.lba >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA2, ((req.lba >> 16) & 0xFF) as u8);
-
-            if req.read {
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
-            } else {
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
-            }
-
-            return;
-        }
-
-        // We are done with this set of requests
-        self.next_request();
     }
 }
