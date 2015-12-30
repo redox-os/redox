@@ -9,7 +9,6 @@ use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEv
 
 use super::display::Display;
 use super::package::*;
-use super::scheduler;
 use super::window::Window;
 
 /// A session
@@ -383,13 +382,9 @@ impl Session {
                                   self.font.as_ptr() as usize);
             }
 
-            let reenable = scheduler::start_no_ints();
-
             self.display.flip();
 
             self.redraw = false;
-
-            scheduler::end_no_ints(reenable);
         }
     }
 
