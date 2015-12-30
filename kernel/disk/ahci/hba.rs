@@ -3,7 +3,13 @@ use common::memory;
 use core::mem::size_of;
 use core::u32;
 
+use disk::Disk;
+
 use drivers::mmio::Mmio;
+
+use schemes::Result;
+
+use syscall::{SysError, EIO};
 
 use super::fis::{FIS_TYPE_REG_H2D, FisRegH2D};
 
@@ -72,16 +78,16 @@ impl HbaPort {
     pub fn init(&mut self) {
         self.stop();
 
-        debugln!("Port Command List");
+        //debugln!("Port Command List");
         let clb = unsafe { memory::alloc_aligned(size_of::<HbaCmdHeader>(), 1024) };
         self.clb.write(clb as u64);
 
-        debugln!("Port FIS");
+        //debugln!("Port FIS");
         let fb = unsafe { memory::alloc_aligned(256, 256) };
         self.fb.write(fb as u64);
 
         for i in 0..32 {
-            debugln!("Port Command Table {}", i);
+            //debugln!("Port Command Table {}", i);
             let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(i) };
             let ctba = unsafe { memory::alloc_aligned(256, 256) };
             cmdheader.ctba.write(ctba as u64);
@@ -92,7 +98,7 @@ impl HbaPort {
     }
 
     pub fn start(&mut self) {
-        debugln!("Starting port");
+        //debugln!("Starting port");
 
         while self.cmd.readf(HBA_PxCMD_CR) {}
 
@@ -101,7 +107,7 @@ impl HbaPort {
     }
 
     pub fn stop(&mut self) {
-        debugln!("Stopping port");
+        //debugln!("Stopping port");
 
     	self.cmd.writef(HBA_PxCMD_ST, false);
 
@@ -120,16 +126,15 @@ impl HbaPort {
         None
     }
 
-    pub fn read(&mut self, lba: u64, buf: usize, len: usize) -> bool {
-        let sectors = len/512;
+    fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
         let entries = 1;
 
-        debugln!("LBA: {:X} BUF: {:X} SECTORS: {}", lba, buf, sectors);
+        debugln!("BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         self.is.write(u32::MAX);
 
         if let Some(slot) = self.slot() {
-            debugln!("Slot {}", slot);
+            //debugln!("Slot {}", slot);
 
             let clb = self.clb.read() as usize;
             let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(slot as isize) };
@@ -151,43 +156,54 @@ impl HbaPort {
             cmdfis.pm.write(1 << 7);
             cmdfis.command.write(ATA_CMD_READ_DMA_EXT);
 
-            cmdfis.lba0.write(lba as u8);
-            cmdfis.lba1.write((lba >> 8) as u8);
-            cmdfis.lba2.write((lba >> 16) as u8);
+            cmdfis.lba0.write(block as u8);
+            cmdfis.lba1.write((block >> 8) as u8);
+            cmdfis.lba2.write((block >> 16) as u8);
 
             cmdfis.device.write(1 << 6);
 
-            cmdfis.lba3.write((lba >> 24) as u8);
-            cmdfis.lba4.write((lba >> 32) as u8);
-            cmdfis.lba5.write((lba >> 40) as u8);
+            cmdfis.lba3.write((block >> 24) as u8);
+            cmdfis.lba4.write((block >> 32) as u8);
+            cmdfis.lba5.write((block >> 40) as u8);
 
             cmdfis.countl.write(sectors as u8);
             cmdfis.counth.write((sectors >> 8) as u8);
 
-            debugln!("Busy Wait");
+            //debugln!("Busy Wait");
             while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
 
             self.ci.write(1 << slot);
 
-            debugln!("Completion Wait");
+            //debugln!("Completion Wait");
             while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PxIS_TFES) {
-        			debugln!("Read disk error");
-        			return false;
-        		}
+                    debugln!("Read disk error");
+                    return Err(SysError::new(EIO));
+                }
             }
 
-            debugln!("Return");
+            //debugln!("Return");
 
             if self.is.readf(HBA_PxIS_TFES) {
-    			debugln!("Read disk error");
-    			return false;
-    		}
+                debugln!("Read disk error");
+                return Err(SysError::new(EIO));
+            }
 
-            return true;
+            Ok(sectors * 512)
+        } else {
+            debugln!("No Command Slots");
+            Err(SysError::new(EIO))
         }
+    }
+}
 
-        false
+impl Disk for HbaPort {
+    fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
+        self.ata_dma(block, buffer.len()/512, buffer.as_ptr() as usize, false)
+    }
+
+    fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
+        self.ata_dma(block, buffer.len()/512, buffer.as_ptr() as usize, true)
     }
 }
 
