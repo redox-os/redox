@@ -37,7 +37,7 @@ impl Ahci {
         let mem = unsafe { &mut * self.mem };
 
         for i in 0..32 {
-            if mem.pi & 1 << i == 1 << i {
+            if mem.pi.read() & 1 << i == 1 << i {
                 let port = &mut mem.ports[i];
                 let port_type = port.probe();
                 debugln!("Port {}: {:?}", i, port_type);
