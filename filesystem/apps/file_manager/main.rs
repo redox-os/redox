@@ -278,7 +278,25 @@ impl FileManager {
             }
             for entry_result in readdir {
                 if let Ok(entry) = entry_result {
-                    let entry_path = entry.path().to_string();
+                    let directory = match entry.file_type() {
+                        Ok(file_type) => file_type.is_dir(),
+                        Err(err) => {
+                            println!("Failed to read file type: {}", err);
+                            false
+                        }
+                    };
+
+                    let entry_path = match entry.file_name().to_str() {
+                        Some(path_str) => {
+                            if directory {
+                                path_str.to_string() + "/"
+                            } else {
+                                path_str.to_string()
+                            }
+                        },
+                        None => "Failed to convert path to string".to_string()
+                    };
+
                     self.files.push(entry_path.clone());
                     self.file_sizes.push(// When the entry is a folder
                                          if entry_path.ends_with('/') {

@@ -226,7 +226,6 @@ pub struct FileScheme {
 }
 
 impl FileScheme {
-    ///TODO Allow busmaster for secondary
     /// Create a new file scheme from a PCI configuration
     pub fn new(mut pci: PciConfig) -> Option<Box<Self>> {
         unsafe { pci.flag(4, 4, true) }; // Bus mastering
@@ -293,7 +292,6 @@ impl KScheme for FileScheme {
             let mut list = String::new();
             let mut dirs: Vec<String> = Vec::new();
 
-            // Hmm... no deref coercions in libcollections ;(
             for file in self.fs.list(path).iter() {
                 let mut line = String::new();
                 match file.find('/') {

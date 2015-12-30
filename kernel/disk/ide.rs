@@ -509,8 +509,6 @@ impl IdePort {
     }
 
     unsafe fn ata_pio_small(&mut self, block: u64, sectors: u16, buf: usize, write: bool) -> Result<usize> {
-        debugln!("IDE PIO SMALL BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
-
         if buf > 0 {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {}
 
