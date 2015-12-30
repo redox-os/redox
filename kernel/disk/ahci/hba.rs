@@ -14,6 +14,7 @@ use syscall::{SysError, EIO};
 use super::fis::{FIS_TYPE_REG_H2D, FisRegH2D};
 
 const ATA_CMD_READ_DMA_EXT: u8 = 0x25;
+const ATA_CMD_WRITE_DMA_EXT: u8 = 0x35;
 const ATA_DEV_BUSY: u8 = 0x80;
 const ATA_DEV_DRQ: u8 = 0x08;
 
@@ -140,6 +141,8 @@ impl HbaPort {
             let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(slot as isize) };
 
             cmdheader.cfl.write(((size_of::<FisRegH2D>()/size_of::<u32>()) as u8));
+            cmdheader.cfl.writef(1 << 6, write);
+
             cmdheader.prdtl.write(entries);
 
             let ctba = cmdheader.ctba.read() as usize;
@@ -154,7 +157,11 @@ impl HbaPort {
 
             cmdfis.fis_type.write(FIS_TYPE_REG_H2D);
             cmdfis.pm.write(1 << 7);
-            cmdfis.command.write(ATA_CMD_READ_DMA_EXT);
+            if write {
+                cmdfis.command.write(ATA_CMD_WRITE_DMA_EXT);
+            } else {
+                cmdfis.command.write(ATA_CMD_READ_DMA_EXT);
+            }
 
             cmdfis.lba0.write(block as u8);
             cmdfis.lba1.write((block >> 8) as u8);
@@ -177,15 +184,11 @@ impl HbaPort {
             //debugln!("Completion Wait");
             while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PxIS_TFES) {
-                    debugln!("Read disk error");
                     return Err(SysError::new(EIO));
                 }
             }
 
-            //debugln!("Return");
-
             if self.is.readf(HBA_PxIS_TFES) {
-                debugln!("Read disk error");
                 return Err(SysError::new(EIO));
             }
 
