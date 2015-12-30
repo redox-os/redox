@@ -1,12 +1,14 @@
+use alloc::boxed::Box;
+
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
 use common::get_slice::GetSlice;
 use common::memory::Memory;
 
-use core::mem;
+use core::{cmp, mem, ptr, slice};
 
-use disk::ide::Disk;
+use disk::Disk;
 
 pub use self::header::Header;
 pub use self::node::{Node, NodeData};
@@ -16,99 +18,51 @@ pub mod node;
 
 /// A file system
 pub struct FileSystem {
-    pub disk: Disk,
+    pub disk: Box<Disk>,
     pub header: Header,
     pub nodes: Vec<Node>,
 }
 
 impl FileSystem {
     /// Create a file system from a disk
-    pub fn from_disk(disk: Disk) -> Option<Self> {
-        unsafe {
-            if disk.identify() {
-                debug!(" Disk Found");
+    pub fn from_disk(mut disk: Box<Disk>) -> Option<Self> {
+        if let Some(data) = Memory::<u8>::new(512) {
+            let mut buffer = unsafe { slice::from_raw_parts_mut(data.ptr, 512) };
+            disk.read(1, &mut buffer);
 
-                let header_ptr = Memory::<Header>::new(1).unwrap();
-                disk.read(1, 1, header_ptr.address());
-                let header = header_ptr.read(0);
-                drop(header_ptr);
+            let header = unsafe { ptr::read(data.ptr as *const Header) };
+            if header.valid() {
+                debugln!(" Redox Filesystem");
 
-                if header.valid() {
-                    debugln!(" Redox Filesystem");
+                let mut nodes = Vec::new();
+                for extent in &header.extents {
+                    if extent.block > 0 && extent.length > 0 {
+                        let current_sectors = (extent.length as usize + 511) / 512;
+                        let max_size = current_sectors * 512;
 
-                    let mut nodes = Vec::new();
-                    for extent in &header.extents {
-                        if extent.block > 0 && extent.length > 0 {
-                            if let Some(data) =
-                                   Memory::<NodeData>::new(extent.length as usize /
-                                                           mem::size_of::<NodeData>()) {
-                                let sectors = (extent.length as usize + 511) / 512;
-                                let mut sector: usize = 0;
-                                while sectors - sector >= 65536 {
-                                    disk.read(extent.block + sector as u64,
-                                              0,
-                                              data.address() + sector * 512);
+                        let size = cmp::min(extent.length as usize, max_size);
 
-                                    //
-                                    // let request = Request {
-                                    // extent: Extent {
-                                    // block: extent.block + sector as u64,
-                                    // length: 65536 * 512,
-                                    // },
-                                    // mem: data.address() + sector * 512,
-                                    // read: true,
-                                    // complete: Arc::new(AtomicBool::new(false)),
-                                    // };
-                                    //
-                                    // disk.request(request.clone());
-                                    //
-                                    // while request.complete.load(Ordering::SeqCst) == false {
-                                    // disk.on_poll();
-                                    // }
-                                    //
+                        if let Some(data) = Memory::<u8>::new(max_size) {
+                            let mut buffer = unsafe { slice::from_raw_parts_mut(data.ptr, max_size) };
+                            disk.read(extent.block, &mut buffer);
 
-                                    sector += 65535;
-                                }
-                                if sector < sectors {
-                                    disk.read(extent.block + sector as u64,
-                                              (sectors - sector) as u16,
-                                              data.address() + sector * 512);
-                                    //
-                                    // let request = Request {
-                                    // extent: Extent {
-                                    // block: extent.block + sector as u64,
-                                    // length: (sectors - sector) as u64 * 512,
-                                    // },
-                                    // mem: data.address() + sector * 512,
-                                    // read: true,
-                                    // complete: Arc::new(AtomicBool::new(false)),
-                                    // };
-                                    //
-                                    // disk.request(request.clone());
-                                    //
-                                    // while request.complete.load(Ordering::SeqCst) == false {
-                                    // disk.on_poll();
-                                    // }
-                                    //
-                                }
-
-                                for i in 0..extent.length as usize / mem::size_of::<NodeData>() {
-                                    nodes.push(Node::new(extent.block + i as u64, &data[i]));
-                                }
+                            for i in 0..size/512 {
+                                nodes.push(Node::new(
+                                    extent.block + i as u64,
+                                    unsafe { &*(data.ptr.offset(i as isize * 512) as *const NodeData) }
+                                ));
                             }
                         }
                     }
-
-                    return Some(FileSystem {
-                        disk: disk,
-                        header: header,
-                        nodes: nodes,
-                    });
-                } else {
-                    debugln!(" Unknown Filesystem");
                 }
+
+                return Some(FileSystem {
+                    disk: disk,
+                    header: header,
+                    nodes: nodes,
+                });
             } else {
-                debugln!(" Disk Not Found");
+                debugln!(" Unknown Filesystem");
             }
         }
 

@@ -7,7 +7,13 @@ use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::memory::Memory;
 
+use disk::Disk;
+
 use drivers::pio::*;
+
+use schemes::Result;
+
+use syscall::{SysError, EIO};
 
 use sync::Intex;
 
@@ -170,7 +176,7 @@ const ATA_REG_ALTSTATUS: u16 = 0x0C;
 const ATA_REG_DEVADDRESS: u16 = 0x0D;
 
 /// A disk (data storage)
-pub struct Disk {
+pub struct IdePort {
     base: u16,
     ctrl: u16,
     master: bool,
@@ -182,65 +188,45 @@ pub struct Disk {
     pub irq: u8,
 }
 
-impl Disk {
-    /// Get the primary master
-    pub fn primary_master(base: u16) -> Self {
-        Disk {
-            base: 0x1F0,
-            ctrl: 0x3F4,
-            master: true,
+impl IdePort {
+    pub fn new(busmaster: u16, base: u16, ctrl: u16, irq: u8, master: bool) -> Option<Self> {
+        let ret = IdePort {
+            base: base,
+            ctrl: ctrl,
+            master: master,
             request: Intex::new(None),
             requests: Intex::new(VecDeque::new()),
-            cmd: Pio8::new(base),
-            sts: Pio8::new(base + 2),
-            prdt: Prdt::new(base + 4),
-            irq: 0xE,
+            cmd: Pio8::new(busmaster),
+            sts: Pio8::new(busmaster + 2),
+            prdt: Prdt::new(busmaster + 4),
+            irq: irq,
+        };
+
+        if unsafe { ret.identify() } {
+            Some(ret)
+        } else {
+            None
         }
+    }
+
+    /// Get the primary master
+    pub fn primary_master(busmaster: u16) -> Option<Self> {
+        IdePort::new(busmaster, 0x1F0, 0x3F4, 0xE, true)
     }
 
     /// Get the primary slave
-    pub fn primary_slave(base: u16) -> Self {
-        Disk {
-            base: 0x1F0,
-            ctrl: 0x3F4,
-            master: false,
-            request: Intex::new(None),
-            requests: Intex::new(VecDeque::new()),
-            cmd: Pio8::new(base),
-            sts: Pio8::new(base + 2),
-            prdt: Prdt::new(base + 4),
-            irq: 0xE,
-        }
+    pub fn primary_slave(busmaster: u16) -> Option<Self> {
+        IdePort::new(busmaster, 0x1F0, 0x3F4, 0xE, false)
     }
 
     /// Get the secondary master
-    pub fn secondary_master(base: u16) -> Self {
-        Disk {
-            base: 0x170,
-            ctrl: 0x374,
-            master: true,
-            request: Intex::new(None),
-            requests: Intex::new(VecDeque::new()),
-            cmd: Pio8::new(base + 8),
-            sts: Pio8::new(base + 0xA),
-            prdt: Prdt::new(base + 0xC),
-            irq: 0xF,
-        }
+    pub fn secondary_master(busmaster: u16) -> Option<Self> {
+        IdePort::new(busmaster + 8, 0x170, 0x374, 0xF, true)
     }
 
     /// Get the secondary slave
-    pub fn secondary_slave(base: u16) -> Self {
-        Disk {
-            base: 0x170,
-            ctrl: 0x374,
-            master: false,
-            request: Intex::new(None),
-            requests: Intex::new(VecDeque::new()),
-            cmd: Pio8::new(base + 8),
-            sts: Pio8::new(base + 0xA),
-            prdt: Prdt::new(base + 0xC),
-            irq: 0xF,
-        }
+    pub fn secondary_slave(busmaster: u16) -> Option<Self> {
+        IdePort::new(busmaster + 8, 0x170, 0x374, 0xF, false)
     }
 
     unsafe fn ide_read(&self, reg: u16) -> u8 {
@@ -390,92 +376,6 @@ impl Disk {
         true
     }
 
-    /// Read from the disk
-    // TODO: Make sure count is not zero!
-    pub unsafe fn read(&self, lba: u64, count: u16, destination: usize) -> u8 {
-        if destination > 0 {
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-            }
-
-            if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
-            }
-
-            self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
-
-            self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA0, (lba & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-            self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_PIO_EXT);
-
-            for sector in 0..count as usize {
-                let err = self.ide_poll(true);
-                if err > 0 {
-                    return err;
-                }
-
-                for word in 0..256 {
-                    ptr::write((destination + sector * 512 + word * 2) as *mut u16,
-                               inw(self.base + ATA_REG_DATA));
-                }
-            }
-        }
-
-        0
-    }
-
-    /// Write to the disk
-    // TODO: Fix and make sure count is not zero!
-    pub unsafe fn write(&self, lba: u64, count: u16, source: usize) -> u8 {
-        if source > 0 {
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-            }
-
-            if self.master {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-            } else {
-                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
-            }
-
-            self.ide_write(ATA_REG_SECCOUNT1, ((count >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA3, ((lba >> 24) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA4, ((lba >> 32) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA5, ((lba >> 40) & 0xFF) as u8);
-
-            self.ide_write(ATA_REG_SECCOUNT0, ((count >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA0, ((lba >> 0) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA1, ((lba >> 8) & 0xFF) as u8);
-            self.ide_write(ATA_REG_LBA2, ((lba >> 16) & 0xFF) as u8);
-
-            self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_PIO_EXT);
-
-            for sector in 0..count as usize {
-                let err = self.ide_poll(true);
-                if err > 0 {
-                    return err;
-                }
-
-                for word in 0..256 {
-                    outw(self.base + ATA_REG_DATA,
-                         ptr::read((source + sector * 512 + word * 2) as *const u16));
-                }
-
-                self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
-                self.ide_poll(false);
-            }
-        }
-
-        0
-    }
-
     /// Send request
     pub fn request(&mut self, new_request: Request) {
         self.requests.lock().push_back(new_request);
@@ -606,5 +506,98 @@ impl Disk {
                 debug!("IDE Request mem is 0\n");
             }
         }
+    }
+
+    unsafe fn ata_pio_small(&mut self, block: u64, sectors: u16, buf: usize, write: bool) -> Result<usize> {
+        debugln!("IDE PIO SMALL BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+
+        if buf > 0 {
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {}
+
+            if self.master {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            } else {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            }
+
+            self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA3, ((block >> 24) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA4, ((block >> 32) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA5, ((block >> 40) & 0xFF) as u8);
+
+            self.ide_write(ATA_REG_SECCOUNT0, ((sectors >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA0, ((block >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA1, ((block >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA2, ((block >> 16) & 0xFF) as u8);
+
+            if write {
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_PIO_EXT);
+            } else {
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_PIO_EXT);
+            }
+
+            for sector in 0..sectors as usize {
+                let err = self.ide_poll(true);
+                if err > 0 {
+                    debugln!("IDE Error: {:X}", err);
+                    return Err(SysError::new(EIO));
+                }
+
+                if write {
+                    for word in 0..256 {
+                        outw(self.base + ATA_REG_DATA,
+                             ptr::read((buf + sector * 512 + word * 2) as *const u16));
+                    }
+
+                    self.ide_write(ATA_REG_COMMAND, ATA_CMD_CACHE_FLUSH_EXT);
+                    self.ide_poll(false);
+                } else {
+                    for word in 0..256 {
+                        ptr::write((buf + sector * 512 + word * 2) as *mut u16,
+                                   inw(self.base + ATA_REG_DATA));
+                    }
+                }
+            }
+
+            Ok(sectors as usize * 512)
+        } else {
+            debugln!("Invalid request");
+            Err(SysError::new(EIO))
+        }
+    }
+
+    fn ata_pio(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
+        debugln!("IDE PIO BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+
+        if buf > 0 && sectors > 0 {
+            let mut sector: usize = 0;
+            while sectors - sector >= 65536 {
+                if let Err(err) = unsafe { self.ata_pio_small(block + sector as u64, 0, buf + sector * 512, write) } {
+                    return Err(err);
+                }
+
+                sector += 65536;
+            }
+            if sector < sectors {
+                if let Err(err) = unsafe { self.ata_pio_small(block + sector as u64, (sectors - sector) as u16, buf + sector * 512, write) } {
+                    return Err(err);
+                }
+            }
+
+            Ok(sectors * 512)
+        } else {
+            debugln!("Invalid request");
+            Err(SysError::new(EIO))
+        }
+    }
+}
+
+impl Disk for IdePort {
+    fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
+        self.ata_pio(block, buffer.len()/512, buffer.as_ptr() as usize, false)
+    }
+
+    fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
+        self.ata_pio(block, buffer.len()/512, buffer.as_ptr() as usize, true)
     }
 }

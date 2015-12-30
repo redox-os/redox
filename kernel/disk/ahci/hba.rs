@@ -128,73 +128,78 @@ impl HbaPort {
     }
 
     fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
+        debugln!("AHCI DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+
         let entries = 1;
 
-        debugln!("BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        if buf > 0 && sectors > 0 {
+            self.is.write(u32::MAX);
 
-        self.is.write(u32::MAX);
+            if let Some(slot) = self.slot() {
+                //debugln!("Slot {}", slot);
 
-        if let Some(slot) = self.slot() {
-            //debugln!("Slot {}", slot);
+                let clb = self.clb.read() as usize;
+                let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(slot as isize) };
 
-            let clb = self.clb.read() as usize;
-            let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(slot as isize) };
+                cmdheader.cfl.write(((size_of::<FisRegH2D>()/size_of::<u32>()) as u8));
+                cmdheader.cfl.writef(1 << 6, write);
 
-            cmdheader.cfl.write(((size_of::<FisRegH2D>()/size_of::<u32>()) as u8));
-            cmdheader.cfl.writef(1 << 6, write);
+                cmdheader.prdtl.write(entries);
 
-            cmdheader.prdtl.write(entries);
+                let ctba = cmdheader.ctba.read() as usize;
+                unsafe { ::memset(ctba as *mut u8, 0, size_of::<HbaCmdTable>()) };
+                let cmdtbl = unsafe { &mut * (ctba as *mut HbaCmdTable) };
 
-            let ctba = cmdheader.ctba.read() as usize;
-            unsafe { ::memset(ctba as *mut u8, 0, size_of::<HbaCmdTable>()) };
-            let cmdtbl = unsafe { &mut * (ctba as *mut HbaCmdTable) };
+                let prdt_entry = &mut cmdtbl.prdt_entry[0];
+                prdt_entry.dba.write(buf as u64);
+                prdt_entry.dbc.write(((sectors * 512) as u32) | 1);
 
-            let prdt_entry = &mut cmdtbl.prdt_entry[0];
-            prdt_entry.dba.write(buf as u64);
-            prdt_entry.dbc.write(((sectors * 512) as u32) | 1);
+                let cmdfis = unsafe { &mut * (cmdtbl.cfis.as_ptr() as *mut FisRegH2D) };
 
-            let cmdfis = unsafe { &mut * (cmdtbl.cfis.as_ptr() as *mut FisRegH2D) };
+                cmdfis.fis_type.write(FIS_TYPE_REG_H2D);
+                cmdfis.pm.write(1 << 7);
+                if write {
+                    cmdfis.command.write(ATA_CMD_WRITE_DMA_EXT);
+                } else {
+                    cmdfis.command.write(ATA_CMD_READ_DMA_EXT);
+                }
 
-            cmdfis.fis_type.write(FIS_TYPE_REG_H2D);
-            cmdfis.pm.write(1 << 7);
-            if write {
-                cmdfis.command.write(ATA_CMD_WRITE_DMA_EXT);
-            } else {
-                cmdfis.command.write(ATA_CMD_READ_DMA_EXT);
-            }
+                cmdfis.lba0.write(block as u8);
+                cmdfis.lba1.write((block >> 8) as u8);
+                cmdfis.lba2.write((block >> 16) as u8);
 
-            cmdfis.lba0.write(block as u8);
-            cmdfis.lba1.write((block >> 8) as u8);
-            cmdfis.lba2.write((block >> 16) as u8);
+                cmdfis.device.write(1 << 6);
 
-            cmdfis.device.write(1 << 6);
+                cmdfis.lba3.write((block >> 24) as u8);
+                cmdfis.lba4.write((block >> 32) as u8);
+                cmdfis.lba5.write((block >> 40) as u8);
 
-            cmdfis.lba3.write((block >> 24) as u8);
-            cmdfis.lba4.write((block >> 32) as u8);
-            cmdfis.lba5.write((block >> 40) as u8);
+                cmdfis.countl.write(sectors as u8);
+                cmdfis.counth.write((sectors >> 8) as u8);
 
-            cmdfis.countl.write(sectors as u8);
-            cmdfis.counth.write((sectors >> 8) as u8);
+                //debugln!("Busy Wait");
+                while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
 
-            //debugln!("Busy Wait");
-            while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
+                self.ci.write(1 << slot);
 
-            self.ci.write(1 << slot);
+                //debugln!("Completion Wait");
+                while self.ci.readf(1 << slot) {
+                    if self.is.readf(HBA_PxIS_TFES) {
+                        return Err(SysError::new(EIO));
+                    }
+                }
 
-            //debugln!("Completion Wait");
-            while self.ci.readf(1 << slot) {
                 if self.is.readf(HBA_PxIS_TFES) {
                     return Err(SysError::new(EIO));
                 }
-            }
 
-            if self.is.readf(HBA_PxIS_TFES) {
-                return Err(SysError::new(EIO));
+                Ok(sectors * 512)
+            } else {
+                debugln!("No Command Slots");
+                Err(SysError::new(EIO))
             }
-
-            Ok(sectors * 512)
         } else {
-            debugln!("No Command Slots");
+            debugln!("Empty request");
             Err(SysError::new(EIO))
         }
     }
