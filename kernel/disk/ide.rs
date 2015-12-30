@@ -34,49 +34,27 @@ impl Extent {
     }
 }
 
-/// A disk request
-pub struct Request {
-    /// The disk extent
-    pub extent: Extent,
-    /// The memory location
-    pub mem: usize,
-    /// The request type
-    pub read: bool,
-    /// Completion indicator
-    pub complete: Arc<AtomicBool>,
-}
-
-impl Clone for Request {
-    fn clone(&self) -> Self {
-        Request {
-            extent: self.extent,
-            mem: self.mem,
-            read: self.read,
-            complete: self.complete.clone(),
-        }
-    }
-}
-
 /// Direction of DMA, set if moving from disk to memory, not set if moving from memory to disk
-const CMD_DIR: u8 = 8;
+const CMD_DIR: u8 = 1 << 3;
 /// DMA should process PRDT
 const CMD_ACT: u8 = 1;
 /// DMA interrupt occured
-const STS_INT: u8 = 4;
+const STS_INT: u8 = 1 << 2;
 /// DMA error occured
-const STS_ERR: u8 = 2;
+const STS_ERR: u8 = 1 << 1;
 /// DMA is processing PRDT
 const STS_ACT: u8 = 1;
 
 /// PRDT End of Table
-const PRD_EOT: u16 = 0x8000;
+const PRD_EOT: u8 = 1 << 7;
 
 /// Physical Region Descriptor
 #[repr(packed)]
 struct Prd {
     addr: u32,
     size: u16,
-    eot: u16,
+    rsv: u8,
+    eot: u8,
 }
 
 struct Prdt {
@@ -85,15 +63,14 @@ struct Prdt {
 }
 
 impl Prdt {
-    fn new(port: u16) -> Option<Self> {
-        if let Some(mem) = Memory::new_align(8192, 65536) {
-            return Some(Prdt {
-                reg: Pio32::new(port),
-                mem: mem,
-            });
-        }
+    fn new(port: u16) -> Self {
+        let mut reg = Pio32::new(port);
+        unsafe { reg.write(0) };
 
-        None
+        Prdt {
+            reg: reg,
+            mem: Memory::new_align(512, 65536).unwrap(),
+        }
     }
 }
 
@@ -219,33 +196,26 @@ impl Ide {
 
 /// A disk (data storage)
 pub struct IdeDisk {
-    base: u16,
-    ctrl: u16,
-    master: bool,
-    request: Intex<Option<Request>>,
-    requests: Intex<VecDeque<Request>>,
     cmd: Pio8,
     sts: Pio8,
-    prdt: Option<Prdt>,
-    pub irq: u8,
+    prdt: Prdt,
+    base: u16,
+    ctrl: u16,
+    irq: u8,
+    master: bool,
 }
 
 impl IdeDisk {
     pub fn new(busmaster: u16, base: u16, ctrl: u16, irq: u8, master: bool) -> Option<Self> {
         let ret = IdeDisk {
-            base: base,
-            ctrl: ctrl,
-            master: master,
-            request: Intex::new(None),
-            requests: Intex::new(VecDeque::new()),
             cmd: Pio8::new(busmaster),
             sts: Pio8::new(busmaster + 2),
             prdt: Prdt::new(busmaster + 4),
+            base: base,
+            ctrl: ctrl,
             irq: irq,
+            master: master,
         };
-
-        //Disable IRQs
-        unsafe { ret.ide_write(ATA_REG_CONTROL, 2) };
 
         if unsafe { ret.identify() } {
             Some(ret)
@@ -401,138 +371,6 @@ impl IdeDisk {
         true
     }
 
-    /// Send request
-    pub fn request(&mut self, new_request: Request) {
-        self.requests.lock().push_back(new_request);
-
-        if self.request.lock().is_none() {
-            unsafe { self.next_request() };
-        }
-    }
-
-    pub unsafe fn on_poll(&mut self) {
-        let sts = self.sts.read();
-        if sts & STS_INT == STS_INT {
-            self.sts.write(sts);
-
-            self.next_request();
-        }
-    }
-
-    unsafe fn next_request(&mut self) {
-        let mut requests = self.requests.lock();
-        let mut request = self.request.lock();
-
-        if let Some(ref mut req) = *request {
-            let cmd = self.cmd.read();
-            self.cmd.write(cmd & !0x1);
-            req.complete.store(true, Ordering::SeqCst);
-        }
-
-        *request = requests.pop_front();
-
-        if let Some(ref req) = *request {
-            let mut cmd = self.cmd.read();
-            if req.read {
-                self.cmd.write(CMD_DIR);
-            } else {
-                self.cmd.write(0);
-            }
-
-            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {
-
-            }
-
-            if req.mem > 0 {
-                let sectors = (req.extent.length + 511) / 512;
-                let mut prdt_set = false;
-                if let Some(ref mut prdt) = self.prdt {
-                    let mut size = sectors * 512;
-                    let mut i = 0;
-                    while size >= 65536 && i < 8192 {
-                        let eot;
-                        if size == 65536 {
-                            eot = PRD_EOT;
-                        } else {
-                            eot = 0;
-                        }
-
-                        prdt.mem.store(i,
-                                       Prd {
-                                           addr: (req.mem + i * 65536) as u32,
-                                           size: 0,
-                                           eot: eot,
-                                       });
-
-                        size -= 65536;
-                        i += 1;
-                    }
-                    if size > 0 && i < 8192 {
-                        prdt.mem.store(i,
-                                       Prd {
-                                           addr: (req.mem + i * 65536) as u32,
-                                           size: size as u16,
-                                           eot: PRD_EOT,
-                                       });
-
-                        size = 0;
-                        i += 1;
-                    }
-
-                    if i > 0 {
-                        if size == 0 {
-                            prdt.reg.write(prdt.mem.ptr as u32);
-                            prdt_set = true;
-                        } else {
-                            debug!("IDE Request too large: {} remaining\n", size);
-                        }
-                    } else {
-                        debug!("IDE Request size is 0\n");
-                    }
-                } else {
-                    debug!("PRDT not allocated\n");
-                }
-
-                if prdt_set {
-                    if self.master {
-                        self.ide_write(ATA_REG_HDDEVSEL, 0x40);
-                    } else {
-                        self.ide_write(ATA_REG_HDDEVSEL, 0x50);
-                    }
-
-                    self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
-                    self.ide_write(ATA_REG_LBA3, ((req.extent.block >> 24) & 0xFF) as u8);
-                    self.ide_write(ATA_REG_LBA4, ((req.extent.block >> 32) & 0xFF) as u8);
-                    self.ide_write(ATA_REG_LBA5, ((req.extent.block >> 40) & 0xFF) as u8);
-
-                    self.ide_write(ATA_REG_SECCOUNT0, (sectors & 0xFF) as u8);
-                    self.ide_write(ATA_REG_LBA0, (req.extent.block & 0xFF) as u8);
-                    self.ide_write(ATA_REG_LBA1, ((req.extent.block >> 8) & 0xFF) as u8);
-                    self.ide_write(ATA_REG_LBA2, ((req.extent.block >> 16) & 0xFF) as u8);
-
-                    let mut status = self.ide_read(ATA_REG_STATUS);
-                    while (status & ATA_SR_BSY == ATA_SR_BSY) || (status & ATA_SR_DRDY != ATA_SR_DRDY)  {
-
-                    }
-
-                    if req.read {
-                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
-                    } else {
-                        self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
-                    }
-
-                    if req.read {
-                        self.cmd.write(CMD_ACT | CMD_DIR);
-                    } else {
-                        self.cmd.write(CMD_ACT);
-                    }
-                }
-            } else {
-                debug!("IDE Request mem is 0\n");
-            }
-        }
-    }
-
     unsafe fn ata_pio_small(&mut self, block: u64, sectors: u16, buf: usize, write: bool) -> Result<usize> {
         if buf > 0 {
             while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {}
@@ -590,7 +428,7 @@ impl IdeDisk {
     }
 
     fn ata_pio(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        debugln!("IDE PIO BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+        //debugln!("IDE PIO BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
 
         if buf > 0 && sectors > 0 {
             let mut sector: usize = 0;
@@ -613,14 +451,131 @@ impl IdeDisk {
             Err(SysError::new(EIO))
         }
     }
+
+    unsafe fn ata_dma_small(&mut self, block: u64, sectors: u16, buf: usize, write: bool) -> Result<usize> {
+        if buf > 0 {
+            self.cmd.writef(CMD_ACT, false);
+
+            self.prdt.reg.write(0);
+
+            let status = self.sts.read();
+            self.sts.write(status);
+
+            let entries = if sectors == 0 {
+                512
+            } else {
+                sectors as usize/128
+            };
+
+            let remainder = (sectors % 128) * 512;
+
+            let mut offset = 0;
+            for i in 0..entries {
+                self.prdt.mem.write(i, Prd {
+                    addr: buf as u32 + offset,
+                    size: 0,
+                    rsv: 0,
+                    eot: if i == entries - 1 && remainder == 0 {
+                        PRD_EOT
+                    } else {
+                        0
+                    }
+                });
+                offset += 65536
+            }
+
+            if remainder > 0 {
+                self.prdt.mem.write(entries, Prd {
+                    addr: buf as u32 + offset,
+                    size: remainder,
+                    rsv: 0,
+                    eot: PRD_EOT
+                });
+            }
+
+            self.prdt.reg.write(self.prdt.mem.address() as u32);
+
+            self.cmd.writef(CMD_DIR, !write);
+
+            while self.ide_read(ATA_REG_STATUS) & ATA_SR_BSY == ATA_SR_BSY {}
+
+            if self.master {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x40);
+            } else {
+                self.ide_write(ATA_REG_HDDEVSEL, 0x50);
+            }
+
+            self.ide_write(ATA_REG_SECCOUNT1, ((sectors >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA3, ((block >> 24) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA4, ((block >> 32) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA5, ((block >> 40) & 0xFF) as u8);
+
+            self.ide_write(ATA_REG_SECCOUNT0, ((sectors >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA0, ((block >> 0) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA1, ((block >> 8) & 0xFF) as u8);
+            self.ide_write(ATA_REG_LBA2, ((block >> 16) & 0xFF) as u8);
+
+            if write {
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_WRITE_DMA_EXT);
+            } else {
+                self.ide_write(ATA_REG_COMMAND, ATA_CMD_READ_DMA_EXT);
+            }
+
+            self.cmd.writef(CMD_ACT, true);
+
+            while self.sts.readf(STS_ACT) && ! self.sts.readf(STS_INT) && ! self.sts.readf(STS_ERR) {}
+
+            self.cmd.writef(CMD_ACT, false);
+
+            self.prdt.reg.write(0);
+
+            let status = self.sts.read();
+            self.sts.write(status);
+
+            if status & STS_ERR == STS_ERR {
+                debugln!("IDE DMA Read Error");
+                return Err(SysError::new(EIO));
+            }
+
+            Ok(sectors as usize * 512)
+        } else {
+            debugln!("Invalid request");
+            Err(SysError::new(EIO))
+        }
+    }
+
+    fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
+        //debugln!("IDE DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", block, sectors, buf, write);
+
+        if buf > 0 && sectors > 0 {
+            let mut sector: usize = 0;
+            while sectors - sector >= 65536 {
+                if let Err(err) = unsafe { self.ata_dma_small(block + sector as u64, 0, buf + sector * 512, write) } {
+                    return Err(err);
+                }
+
+                sector += 65536;
+            }
+            if sector < sectors {
+                if let Err(err) = unsafe { self.ata_dma_small(block + sector as u64, (sectors - sector) as u16, buf + sector * 512, write) } {
+                    return Err(err);
+                }
+            }
+
+            Ok(sectors * 512)
+        } else {
+            debugln!("Invalid request");
+            Err(SysError::new(EIO))
+        }
+    }
 }
 
 impl Disk for IdeDisk {
     fn read(&mut self, block: u64, buffer: &mut [u8]) -> Result<usize> {
-        self.ata_pio(block, buffer.len()/512, buffer.as_ptr() as usize, false)
+        self.ata_dma(block, buffer.len()/512, buffer.as_ptr() as usize, false)
     }
 
     fn write(&mut self, block: u64, buffer: &[u8]) -> Result<usize> {
-        self.ata_pio(block, buffer.len()/512, buffer.as_ptr() as usize, true)
+        self.ata_dma(block, buffer.len()/512, buffer.as_ptr() as usize, true)
     }
 }
