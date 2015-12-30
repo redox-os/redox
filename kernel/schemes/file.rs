@@ -10,7 +10,8 @@ use collections::vec::Vec;
 use core::{cmp, mem};
 use core::sync::atomic::{AtomicBool, Ordering};
 
-use disk::ide::{IdePort, Extent, Request};
+use disk::Disk;
+use disk::ide::Extent;
 
 use drivers::pciconfig::PciConfig;
 
@@ -221,46 +222,15 @@ impl Drop for FileResource {
 
 /// A file scheme (pci + fs)
 pub struct FileScheme {
-    pci: PciConfig,
     fs: FileSystem,
 }
 
 impl FileScheme {
-    /// Create a new file scheme from a PCI configuration
-    pub fn new(mut pci: PciConfig) -> Option<Box<Self>> {
-        unsafe { pci.flag(4, 4, true) }; // Bus mastering
-
-        let busmaster = unsafe { pci.read(0x20) } as u16 & 0xFFF0;
-
-        debug::d("IDE on ");
-        debug::dh(busmaster as usize);
-        debug::dl();
-
-        debug::d("Primary Master:");
-        if let Some(disk) = IdePort::primary_master(busmaster) {
-            if let Some(fs) = FileSystem::from_disk(box disk) {
-                return Some(box FileScheme { pci: pci, fs: fs });
-            }
-        }
-
-        debug::d("Primary Slave:");
-        if let Some(disk) = IdePort::primary_slave(busmaster) {
-            if let Some(fs) = FileSystem::from_disk(box disk) {
-                return Some(box FileScheme { pci: pci, fs: fs });
-            }
-        }
-
-        debug::d("Secondary Master:");
-        if let Some(disk) = IdePort::secondary_master(busmaster) {
-            if let Some(fs) = FileSystem::from_disk(box disk) {
-                return Some(box FileScheme { pci: pci, fs: fs });
-            }
-        }
-
-        debug::d("Secondary Slave:");
-        if let Some(disk) = IdePort::secondary_slave(busmaster) {
-            if let Some(fs) = FileSystem::from_disk(box disk) {
-                return Some(box FileScheme { pci: pci, fs: fs });
+    /// Create a new file scheme from an array of Disks
+    pub fn new(mut disks: Vec<Box<Disk>>) -> Option<Box<Self>> {
+        while ! disks.is_empty() {
+            if let Some(fs) = FileSystem::from_disk(disks.remove(0)) {
+                return Some(box FileScheme { fs: fs });
             }
         }
 
