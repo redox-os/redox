@@ -26,18 +26,12 @@ impl Ahci {
 
         debugln!("AHCI on: {:X} IRQ: {:X}", base as usize, irq);
 
-        let pi = {
-            let mem = unsafe { &mut * (base as *mut HbaMem) };
-            mem.pi.read()
-        };
+        let pi = unsafe { &mut * (base as *mut HbaMem) }.pi.read();
 
         for i in 0..32 {
             if pi & 1 << i == 1 << i {
-                let disk = AhciDisk {
-                    port: {
-                        let mem = unsafe { &mut * (base as *mut HbaMem) };
-                        &mut mem.ports[i]
-                    }
+                let mut disk = box AhciDisk {
+                    port: &mut unsafe { &mut * (base as *mut HbaMem) }.ports[i]
                 };
 
                 let port_type = disk.port.probe();
@@ -45,7 +39,7 @@ impl Ahci {
                 match port_type {
                     HbaPortType::SATA => {
                         disk.port.init();
-                        ret.push(box disk);
+                        ret.push(disk);
                     },
                     _ => ()
                 }
