@@ -6,6 +6,8 @@ use core::cell::UnsafeCell;
 use common::debug;
 
 use disk::ahci::Ahci;
+use disk::ide::Ide;
+
 use drivers::pciconfig::PciConfig;
 
 use env::Environment;
@@ -30,11 +32,13 @@ pub unsafe fn pci_device(env: &mut Environment,
                          device_code: u32) {
     if class_id == 0x01 {
         if subclass_id == 0x01 {
-            if let Some(module) = FileScheme::new(pci) {
+            if let Some(module) = FileScheme::new(Ide::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
         } else if subclass_id == 0x06 {
-            env.schemes.push(UnsafeCell::new(Ahci::new(pci)));
+            if let Some(module) = FileScheme::new(Ahci::disks(pci)) {
+                env.schemes.push(UnsafeCell::new(module));
+            }
         }
     } else if class_id == 0x0C && subclass_id == 0x03 {
         if interface_id == 0x30 {
