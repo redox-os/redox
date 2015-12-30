@@ -18,7 +18,6 @@ use self::window::Window;
 
 pub mod display;
 pub mod package;
-pub mod scheduler;
 pub mod session;
 pub mod window;
 
@@ -182,29 +181,23 @@ impl Scheme {
         } else if host == "launch" {
             let path = url.path();
 
-            unsafe {
-                let reenable = scheduler::start_no_ints();
-
-                for package in self.session.packages.iter() {
-                    let mut accepted = false;
-                    for accept in package.accepts.iter() {
-                        if (accept.starts_with('*') &&
-                            path.ends_with(&accept.get_slice(Some(1), None))) ||
-                           (accept.ends_with('*') &&
-                            path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
-                            accepted = true;
-                            break;
-                        }
-                    }
-                    if accepted {
-                        if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                            println!("{}: Failed to launch", package.binary);
-                        }
+            for package in self.session.packages.iter() {
+                let mut accepted = false;
+                for accept in package.accepts.iter() {
+                    if (accept.starts_with('*') &&
+                        path.ends_with(&accept.get_slice(Some(1), None))) ||
+                       (accept.ends_with('*') &&
+                        path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
+                        accepted = true;
                         break;
                     }
                 }
-
-                scheduler::end_no_ints(reenable);
+                if accepted {
+                    if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
+                        println!("{}: Failed to launch", package.binary);
+                    }
+                    break;
+                }
             }
 
             Err(SysError::new(ENOENT))
@@ -214,15 +207,9 @@ impl Scheme {
     }
 
     pub fn event(&mut self, event: &Event) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
+        self.session.event(event);
 
-            self.session.event(event);
-
-            scheduler::end_no_ints(reenable);
-
-            self.session.redraw();
-        }
+        unsafe { self.session.redraw() };
     }
 }
 

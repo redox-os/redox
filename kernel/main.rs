@@ -67,6 +67,7 @@ use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
 use schemes::icmp::*;
+use schemes::interrupt::*;
 use schemes::ip::*;
 use schemes::memory::*;
 // use schemes::display::*;
@@ -299,6 +300,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             env.schemes.push(UnsafeCell::new(DebugScheme::new()));
             env.schemes.push(UnsafeCell::new(box ContextScheme));
+            env.schemes.push(UnsafeCell::new(box InterruptScheme));
             env.schemes.push(UnsafeCell::new(box MemoryScheme));
             // session.items.push(box RandomScheme);
             // session.items.push(box TimeScheme);
@@ -448,6 +450,11 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         }
 
         unsafe { Pio8::new(0x20).write(0x20) };
+    }
+
+    //Do not catch init interrupt
+    if interrupt < 0xFF {
+        env().interrupts.lock()[interrupt as usize] += 1;
     }
 
     match interrupt {
