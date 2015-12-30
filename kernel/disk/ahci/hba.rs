@@ -124,7 +124,7 @@ impl HbaPort {
         let sectors = len/512;
         let entries = 1;
 
-        debugln!("LBA: {:X} BUF: {:X}, SECTORS: {}", lba, buf, sectors);
+        debugln!("LBA: {:X} BUF: {:X} SECTORS: {}", lba, buf, sectors);
 
         self.is.write(u32::MAX);
 
@@ -134,7 +134,7 @@ impl HbaPort {
             let clb = self.clb.read() as usize;
             let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(slot as isize) };
 
-            cmdheader.cfl.write(((size_of::<FisRegH2D>()/size_of::<u32>()) as u8) << 3);
+            cmdheader.cfl.write(((size_of::<FisRegH2D>()/size_of::<u32>()) as u8));
             cmdheader.prdtl.write(entries);
 
             let ctba = cmdheader.ctba.read() as usize;
@@ -143,12 +143,12 @@ impl HbaPort {
 
             let prdt_entry = &mut cmdtbl.prdt_entry[0];
             prdt_entry.dba.write(buf as u64);
-            prdt_entry.dbc.write(((sectors * 512) as u32) << 10 | 1);
+            prdt_entry.dbc.write(((sectors * 512) as u32) | 1);
 
             let cmdfis = unsafe { &mut * (cmdtbl.cfis.as_ptr() as *mut FisRegH2D) };
 
             cmdfis.fis_type.write(FIS_TYPE_REG_H2D);
-            cmdfis.pm.writef(1, true);
+            cmdfis.pm.write(1 << 7);
             cmdfis.command.write(ATA_CMD_READ_DMA_EXT);
 
             cmdfis.lba0.write(lba as u8);
