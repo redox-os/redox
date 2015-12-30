@@ -2,6 +2,8 @@ use alloc::boxed::Box;
 
 use common::memory;
 
+use disk::Disk;
+
 use drivers::pciconfig::PciConfig;
 
 use schemes::KScheme;
@@ -47,15 +49,17 @@ impl Ahci {
                     HbaPortType::SATA => {
                         port.init();
 
-                        let buffer = unsafe { memory::alloc(1024) };
-                        if buffer as usize > 0 {
-                            if port.read(0, buffer, 1024) {
-                                for i in 0..1024 {
-                                    debug!("{:02X} ", unsafe { *(buffer as *const u8).offset(i) });
+                        let mut buffer = [0; 1024];
+                        match port.read(0, &mut buffer) {
+                            Ok(count) => {
+                                for i in 0..count {
+                                    if let Some(b) = buffer.get(i) {
+                                        debug!("{:02X} ", b);
+                                    }
                                 }
                                 debugln!("");
-                            }
-                            unsafe { memory::unalloc(buffer) };
+                            },
+                            Err(err) => debugln!("{:?}", err)
                         }
                     },
                     _ => ()
