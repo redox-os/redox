@@ -86,7 +86,7 @@ impl<T> Memory<T> {
     }
 
     /// Convert into a raw pointer
-    pub unsafe fn into_raw(&mut self) -> *mut T {
+    pub unsafe fn into_raw(mut self) -> *mut T {
         let ptr = self.ptr;
         self.ptr = 0 as *mut T;
         ptr
