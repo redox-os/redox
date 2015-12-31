@@ -90,9 +90,9 @@ impl HbaPort {
         for i in 0..32 {
             //debugln!("Port Command Table {}", i);
             let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(i) };
-            let ctba = unsafe { memory::alloc_aligned(256, 256) };
+            let ctba = unsafe { memory::alloc_aligned(size_of::<HbaCmdTable>(), 256) };
             cmdheader.ctba.write(ctba as u64);
-            cmdheader.prdtl.write(8);
+            cmdheader.prdtl.write(0);
         }
 
         self.start();
@@ -180,7 +180,7 @@ impl HbaPort {
                 //debugln!("Busy Wait");
                 while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
 
-                self.ci.write(1 << slot);
+                self.ci.writef(1 << slot, true);
 
                 //debugln!("Completion Wait");
                 while self.ci.readf(1 << slot) {
