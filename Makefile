@@ -271,8 +271,11 @@ virtualbox: $(BUILD)/harddrive.bin
 	echo "Create Disk"
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
-	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
+	#PATA
+	$(VBM) storagectl Redox --name ATA --add ide --controller PIIX4 --bootable on
+	#SATA
+	#$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
+	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
