@@ -1,4 +1,4 @@
-use std::ops::{Index, IndexMut, Deref, DerefMut, Range, RangeFrom, RangeTo};
+use std::ops::{Index, IndexMut, Deref, DerefMut, RangeArguments};
 
 pub struct UnboundedVec<T> {
     // Evil hack
@@ -51,6 +51,10 @@ impl<T: PartialEq<T>> UnboundedVec<T> {
         } else {
             self.vec.push(item);
         }
+    }
+
+    pub fn take<R: RangeArgument<usize>>(&mut self, range: R) {
+        for _ in self.vec.drain(range) {}
     }
 }
 
