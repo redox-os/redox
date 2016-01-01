@@ -21,7 +21,7 @@ impl RSDP {
         while search_ptr < 0xFFFFF {
             let rsdp = search_ptr as *const RSDP;
             if unsafe { (*rsdp).valid() } {
-                return Some(unsafe { (*rsdp).clone() });
+                return Some(unsafe { *rsdp });
             }
             search_ptr += 16;
         }
@@ -32,12 +32,8 @@ impl RSDP {
     //TODO: Checksum validation
     pub fn valid(&self) -> bool {
         if self.signature == SIGNATURE {
-            let mut sum = 0;
-
             let ptr = (self as *const Self) as *const u8;
-            for i in 0..size_of::<Self>() as isize {
-                sum += unsafe { *ptr.offset(i) }
-            }
+            let sum = (0..size_of::<Self>() as isize).fold(0, |sum, i| sum + unsafe { *ptr.offset(i) });
 
             sum == 0
         } else {
@@ -47,7 +43,7 @@ impl RSDP {
 }
 
 #[repr(packed)]
-#[derive(Debug)]
+#[derive(Clone, Debug, Default)]
 pub struct RSDT {
     pub header: SDTHeader,
     pub addrs: &'static [u32]
