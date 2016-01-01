@@ -110,11 +110,11 @@ impl HbaPort {
     pub fn stop(&mut self) {
         //debugln!("Stopping port");
 
-    	self.cmd.writef(HBA_PxCMD_ST, false);
+        self.cmd.writef(HBA_PxCMD_ST, false);
 
-    	while self.cmd.readf(HBA_PxCMD_FR | HBA_PxCMD_CR) {}
+        while self.cmd.readf(HBA_PxCMD_FR | HBA_PxCMD_CR) {}
 
-    	self.cmd.writef(HBA_PxCMD_FRE, false);
+        self.cmd.writef(HBA_PxCMD_FRE, false);
     }
 
     pub fn slot(&self) -> Option<u32> {
@@ -208,58 +208,58 @@ impl HbaPort {
 
 #[repr(packed)]
 pub struct HbaMem {
-    pub cap: Mmio<u32>,       // 0x00, Host capability
-    pub ghc: Mmio<u32>,       // 0x04, Global host control
-    pub is: Mmio<u32>,        // 0x08, Interrupt status
-    pub pi: Mmio<u32>,        // 0x0C, Port implemented
-    pub vs: Mmio<u32>,        // 0x10, Version
-    pub ccc_ctl: Mmio<u32>,   // 0x14, Command completion coalescing control
-    pub ccc_pts: Mmio<u32>,   // 0x18, Command completion coalescing ports
-    pub em_loc: Mmio<u32>,    // 0x1C, Enclosure management location
-    pub em_ctl: Mmio<u32>,    // 0x20, Enclosure management control
-    pub cap2: Mmio<u32>,      // 0x24, Host capabilities extended
-    pub bohc: Mmio<u32>,      // 0x28, BIOS/OS handoff control and status
-    pub rsv: [Mmio<u8>; 116],         // 0x2C - 0x9F, Reserved
-    pub vendor: [Mmio<u8>; 96],       // 0xA0 - 0xFF, Vendor specific registers
+    pub cap: Mmio<u32>,         // 0x00, Host capability
+    pub ghc: Mmio<u32>,         // 0x04, Global host control
+    pub is: Mmio<u32>,          // 0x08, Interrupt status
+    pub pi: Mmio<u32>,          // 0x0C, Port implemented
+    pub vs: Mmio<u32>,          // 0x10, Version
+    pub ccc_ctl: Mmio<u32>,     // 0x14, Command completion coalescing control
+    pub ccc_pts: Mmio<u32>,     // 0x18, Command completion coalescing ports
+    pub em_loc: Mmio<u32>,      // 0x1C, Enclosure management location
+    pub em_ctl: Mmio<u32>,      // 0x20, Enclosure management control
+    pub cap2: Mmio<u32>,        // 0x24, Host capabilities extended
+    pub bohc: Mmio<u32>,        // 0x28, BIOS/OS handoff control and status
+    pub rsv: [Mmio<u8>; 116],   // 0x2C - 0x9F, Reserved
+    pub vendor: [Mmio<u8>; 96], // 0xA0 - 0xFF, Vendor specific registers
     pub ports: [HbaPort; 32]    // 0x100 - 0x10FF, Port control registers
 }
 
 #[repr(packed)]
 struct HbaPrdtEntry {
-   dba: Mmio<u64>,		// Data base address
-   rsv0: Mmio<u32>,		// Reserved
-   dbc: Mmio<u32>,		// Byte count, 4M max, interrupt = 1
+   dba: Mmio<u64>,  // Data base address
+   rsv0: Mmio<u32>, // Reserved
+   dbc: Mmio<u32>,  // Byte count, 4M max, interrupt = 1
 }
 
 #[repr(packed)]
 struct HbaCmdTable {
-	// 0x00
-	cfis: [Mmio<u8>; 64],	// Command FIS
+    // 0x00
+    cfis: [Mmio<u8>; 64], // Command FIS
 
-	// 0x40
-	acmd: [Mmio<u8>; 16],	// ATAPI command, 12 or 16 bytes
+    // 0x40
+    acmd: [Mmio<u8>; 16], // ATAPI command, 12 or 16 bytes
 
-	// 0x50
-	rsv: [Mmio<u8>; 48],	// Reserved
+    // 0x50
+    rsv: [Mmio<u8>; 48], // Reserved
 
-	// 0x80
-	prdt_entry: [HbaPrdtEntry; 65536],	// Physical region descriptor table entries, 0 ~ 65535
+    // 0x80
+    prdt_entry: [HbaPrdtEntry; 65536], // Physical region descriptor table entries, 0 ~ 65535
 }
 
 #[repr(packed)]
 struct HbaCmdHeader {
-	// DW0
-	cfl: Mmio<u8>,		    // Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1
-	pm: Mmio<u8>,		    // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier
+    // DW0
+    cfl: Mmio<u8>, // Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1
+    pm: Mmio<u8>,  // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier
 
-	prdtl: Mmio<u16>,		// Physical region descriptor table length in entries
+    prdtl: Mmio<u16>, // Physical region descriptor table length in entries
 
-	// DW1
-	prdbc: Mmio<u32>,		// Physical region descriptor byte count transferred
+    // DW1
+    prdbc: Mmio<u32>, // Physical region descriptor byte count transferred
 
-	// DW2, 3
-	ctba: Mmio<u64>,		// Command table descriptor base address
+    // DW2, 3
+    ctba: Mmio<u64>, // Command table descriptor base address
 
-	// DW4 - 7
-	rsv1: [Mmio<u32>; 4],	// Reserved
+    // DW4 - 7
+    rsv1: [Mmio<u32>; 4], // Reserved
 }

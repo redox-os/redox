@@ -2,7 +2,6 @@ use core::ptr;
 
 use super::SDTHeader;
 
-
 #[repr(packed)]
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SSDT {
@@ -15,7 +14,7 @@ impl SSDT {
     pub fn new(header: *const SDTHeader) -> Option<Self> {
         if unsafe { (*header).valid("SSDT") } {
             Some(SSDT {
-                header: unsafe { (*header).clone() },
+                header: unsafe { *header },
                 data: unsafe { (*header).data() }
             })
         } else {
