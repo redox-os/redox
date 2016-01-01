@@ -19,32 +19,27 @@ pub struct Ahci;
 
 impl Ahci {
     pub fn disks(mut pci: PciConfig) -> Vec<Box<Disk>> {
-        let mut ret: Vec<Box<Disk>> = Vec::new();
-
         let base = unsafe { (pci.read(0x24) & 0xFFFFFFF0) as usize };
         let irq = unsafe { (pci.read(0x3C) & 0xF) as u8 };
 
         debugln!("AHCI on: {:X} IRQ: {:X}", base as usize, irq);
 
         let pi = unsafe { &mut * (base as *mut HbaMem) }.pi.read();
-
-        for i in 0..32 {
-            if pi & 1 << i == 1 << i {
-                let mut disk = box AhciDisk {
-                    port: &mut unsafe { &mut * (base as *mut HbaMem) }.ports[i]
-                };
-
+        let ret: Vec<Box<Disk>> = (0..32)
+            .filter(|&i| pi & 1 << i as i32 == 1 << i as i32)
+            .filter_map(|i| {
+                let mut disk = box AhciDisk::new(base, i);
                 let port_type = disk.port.probe();
                 debugln!("Port {}: {:?}", i, port_type);
                 match port_type {
                     HbaPortType::SATA => {
                         disk.port.init();
-                        ret.push(disk);
+                        Some(disk as Box<Disk>)
                     },
-                    _ => ()
+                    _ => None
                 }
-            }
-        }
+            })
+            .collect();
 
         ret
     }
@@ -52,6 +47,14 @@ impl Ahci {
 
 pub struct AhciDisk {
     port: &'static mut HbaPort
+}
+
+impl AhciDisk {
+    fn new(base: usize, port_index: usize) -> Self {
+        AhciDisk {
+            port: &mut unsafe { &mut * (base as *mut HbaMem) }.ports[port_index]
+        }
+    }
 }
 
 impl Disk for AhciDisk {

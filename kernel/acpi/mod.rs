@@ -14,6 +14,7 @@ pub mod rsdt;
 pub mod sdt;
 pub mod ssdt;
 
+#[derive(Clone, Debug, Default)]
 pub struct Acpi {
     rsdt: RSDT,
     fadt: Option<FADT>,
