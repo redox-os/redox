@@ -19,12 +19,9 @@ pub struct SDTHeader {
 impl SDTHeader {
     pub fn valid(&self, signature: &str) -> bool {
         if self.signature == signature.as_bytes() {
-            let mut sum: u8 = 0;
 
             let ptr = (self as *const Self) as *const u8;
-            for i in 0..self.length as isize {
-                sum += unsafe { ptr::read(ptr.offset(i)) };
-            }
+            let sum: u8 = (0..self.length as isize).fold(0, |sum, i| sum + unsafe { ptr::read(ptr.offset(i)) });
 
             sum == 0
         } else {
