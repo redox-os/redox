@@ -64,7 +64,7 @@ $ make virtualbox
 # Launch using QEMU
 $ make qemu
 # Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
-$ make qemu_no_kvm
+$ make qemu kvm=no
 ```
 
 ### <a name="manual-setup" /> Manual Setup
@@ -98,5 +98,5 @@ $ make virtualbox
 # Launch using QEMU
 $ make qemu
 # Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
-$ make qemu_no_kvm
+$ make qemu kvm=no
 ```
