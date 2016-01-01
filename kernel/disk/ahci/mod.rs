@@ -30,10 +30,7 @@ impl Ahci {
 
         for i in 0..32 {
             if pi & 1 << i == 1 << i {
-                let mut disk = box AhciDisk {
-                    port: &mut unsafe { &mut * (base as *mut HbaMem) }.ports[i]
-                };
-
+                let mut disk = box AhciDisk::new(base, i);
                 let port_type = disk.port.probe();
                 debugln!("Port {}: {:?}", i, port_type);
                 match port_type {
@@ -52,6 +49,14 @@ impl Ahci {
 
 pub struct AhciDisk {
     port: &'static mut HbaPort
+}
+
+impl AhciDisk {
+    fn new(base: usize, port_index: usize) -> Self {
+        AhciDisk {
+            port: &mut unsafe { &mut * (base as *mut HbaMem) }.ports[port_index]
+        }
+    }
 }
 
 impl Disk for AhciDisk {
