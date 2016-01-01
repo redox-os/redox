@@ -2,7 +2,7 @@ use alloc::boxed::Box;
 
 use collections::string::ToString;
 
-use core::intrinsics::{volatile_load, volatile_store};
+use core::intrinsics::volatile_store;
 use core::{cmp, mem, ptr};
 
 use scheduler::context::{self, Context};
@@ -121,17 +121,9 @@ impl Uhci {
         ptr::write(frame_list.offset(frame as isize),
                    queue_head.address() as u32 | 2);
 
-        loop {
-            if setup_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                break;
-            }
-        }
+        while setup_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
 
-        loop {
-            if in_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                break;
-            }
-        }
+        while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
 
         ptr::write(frame_list.offset(frame as isize), 1);
     }
@@ -195,23 +187,11 @@ impl Uhci {
         ptr::write(frame_list.offset(frame as isize),
                    queue_head.address() as u32 | 2);
 
-        loop {
-            if setup_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                break;
-            }
-        }
+        while setup_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
 
-        loop {
-            if in_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                break;
-            }
-        }
+        while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
 
-        loop {
-            if out_td.load(0).ctrl_sts & (1 << 23) == 0 {
-                break;
-            }
-        }
+        while out_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
 
         ptr::write(frame_list.offset(frame as isize), 1);
     }
@@ -271,14 +251,14 @@ impl Uhci {
                                 debugln!("Starting HID driver");
 
                                 let in_ptr = memory::alloc(in_len) as *mut u8;
-                                let in_td: *mut Td = memory::alloc_type();
+                                let mut in_td = Memory::<Td>::new(1).unwrap();
 
                                 loop {
                                     for i in 0..in_len as isize {
                                         volatile_store(in_ptr.offset(i), 0);
                                     }
 
-                                    ptr::write(in_td,
+                                    in_td.store(0,
                                                Td {
                                                    link_ptr: 1,
                                                    ctrl_sts: 1 << 25 | 1 << 23,
@@ -293,24 +273,17 @@ impl Uhci {
                                         let _intex = Intex::static_lock();
 
                                         let frame = (inw(frnum) + 2) & 0x3FF;
-                                        volatile_store(frame_list.offset(frame as isize), in_td as u32);
+                                        volatile_store(frame_list.offset(frame as isize), in_td.address() as u32);
                                         frame
                                     };
 
-                                    loop {
-                                        {
-                                            let ctrl_sts = volatile_load(in_td).ctrl_sts;
-                                            if ctrl_sts & (1 << 23) == 0 {
-                                                break;
-                                            }
-                                        }
-
+                                    while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {
                                         context::context_switch(false);
                                     }
 
                                     volatile_store(frame_list.offset(frame as isize), 1);
 
-                                    if volatile_load(in_td).ctrl_sts & 0x7FF > 0 {
+                                    if in_td.load(0).ctrl_sts & 0x7FF > 0 {
                                        let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
                                        let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
                                        let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
@@ -331,8 +304,6 @@ impl Uhci {
 
                                     Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
                                 }
-
-                            // memory::unalloc(in_td as usize);
                             });
                         }
                     }
