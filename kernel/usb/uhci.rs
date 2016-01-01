@@ -20,6 +20,8 @@ use schemes::KScheme;
 
 use sync::Intex;
 
+use super::desc::*;
+
 pub struct Uhci {
     pub base: usize,
     pub irq: u8,
@@ -60,80 +62,6 @@ struct Td {
 struct Qh {
     head_ptr: u32,
     element_ptr: u32,
-}
-
-const DESC_DEV: u8 = 1;
-#[repr(packed)]
-#[derive(Copy, Clone, Debug, Default)]
-struct DeviceDescriptor {
-    length: u8,
-    descriptor_type: u8,
-    usb_version: u16,
-    class: u8,
-    sub_class: u8,
-    protocol: u8,
-    max_packet_size: u8,
-    vendor: u16,
-    product: u16,
-    release: u16,
-    manufacturer_string: u8,
-    product_string: u8,
-    serial_string: u8,
-    configurations: u8,
-}
-
-const DESC_CFG: u8 = 2;
-#[repr(packed)]
-#[derive(Copy, Clone, Debug, Default)]
-struct ConfigDescriptor {
-    length: u8,
-    descriptor_type: u8,
-    total_length: u16,
-    interfaces: u8,
-    number: u8,
-    string: u8,
-    attributes: u8,
-    max_power: u8,
-}
-
-const DESC_INT: u8 = 4;
-#[repr(packed)]
-#[derive(Copy, Clone, Debug, Default)]
-struct InterfaceDescriptor {
-    length: u8,
-    descriptor_type: u8,
-    number: u8,
-    alternate: u8,
-    endpoints: u8,
-    class: u8,
-    sub_class: u8,
-    protocol: u8,
-    string: u8,
-}
-
-const DESC_END: u8 = 5;
-#[repr(packed)]
-#[derive(Copy, Clone, Debug, Default)]
-struct EndpointDescriptor {
-    length: u8,
-    descriptor_type: u8,
-    address: u8,
-    attributes: u8,
-    max_packet_size: u16,
-    interval: u8,
-}
-
-const DESC_HID: u8 = 0x21;
-#[repr(packed)]
-#[derive(Copy, Clone, Debug, Default)]
-struct HIDDescriptor {
-    length: u8,
-    descriptor_type: u8,
-    hid_version: u16,
-    country_code: u8,
-    descriptors: u8,
-    sub_descriptor_type: u8,
-    sub_descriptor_length: u16,
 }
 
 impl Uhci {
