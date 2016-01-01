@@ -171,6 +171,7 @@ impl Ide {
         if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, true) {
             ret.push(box disk);
         }
+        debugln!("");
 
         debug!("Primary Slave:");
         if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, false) {
