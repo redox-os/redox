@@ -1,3 +1,4 @@
+pub mod desc;
 pub mod ehci;
 pub mod ohci;
 pub mod uhci;
