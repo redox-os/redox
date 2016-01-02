@@ -21,6 +21,7 @@ use schemes::KScheme;
 use sync::Intex;
 
 use super::desc::*;
+use super::setup::Setup;
 
 pub struct Uhci {
     pub base: usize,
@@ -36,16 +37,6 @@ impl KScheme for Uhci {
 
     fn on_poll(&mut self) {
     }
-}
-
-#[repr(packed)]
-#[derive(Copy, Clone, Debug, Default)]
-struct Setup {
-    request_type: u8,
-    request: u8,
-    value: u16,
-    index: u16,
-    len: u16,
 }
 
 #[repr(packed)]
@@ -91,15 +82,7 @@ impl Uhci {
                         buffer: 0,
                     });
 
-        let mut setup = Memory::<Setup>::new(1).unwrap();
-        setup.store(0,
-                    Setup {
-                        request_type: 0b00000000,
-                        request: 5,
-                        value: address as u16,
-                        index: 0,
-                        len: 0,
-                    });
+        let setup = box Setup::set_address(address);
 
         let mut setup_td = Memory::<Td>::new(1).unwrap();
         setup_td.store(0,
@@ -107,7 +90,7 @@ impl Uhci {
                            link_ptr: in_td.address() as u32 | 4,
                            ctrl_sts: 1 << 23,
                            token: (mem::size_of::<Setup>() as u32 - 1) << 21 | 0x2D,
-                           buffer: setup.address() as u32,
+                           buffer: (&*setup as *const Setup) as u32,
                        });
 
         let mut queue_head = Memory::<Qh>::new(1).unwrap();
@@ -156,15 +139,7 @@ impl Uhci {
                         buffer: descriptor_ptr,
                     });
 
-        let mut setup = Memory::<Setup>::new(1).unwrap();
-        setup.store(0,
-                    Setup {
-                        request_type: 0b10000000,
-                        request: 6,
-                        value: (descriptor_type as u16) << 8 | (descriptor_index as u16),
-                        index: 0,
-                        len: descriptor_len as u16,
-                    });
+        let setup = box Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16);
 
         let mut setup_td = Memory::<Td>::new(1).unwrap();
         setup_td.store(0,
@@ -173,7 +148,7 @@ impl Uhci {
                            ctrl_sts: 1 << 23,
                            token: (mem::size_of::<Setup>() as u32 - 1) << 21 |
                                   (address as u32) << 8 | 0x2D,
-                           buffer: setup.address() as u32,
+                           buffer: (&*setup as *const Setup) as u32,
                        });
 
         let mut queue_head = Memory::<Qh>::new(1).unwrap();
@@ -269,13 +244,8 @@ impl Uhci {
                                                    buffer: in_ptr as u32,
                                                });
 
-                                    let frame = {
-                                        let _intex = Intex::static_lock();
-
-                                        let frame = (inw(frnum) + 2) & 0x3FF;
-                                        volatile_store(frame_list.offset(frame as isize), in_td.address() as u32);
-                                        frame
-                                    };
+                                    let frame = (inw(frnum) + 2) & 0x3FF;
+                                    volatile_store(frame_list.offset(frame as isize), in_td.address() as u32);
 
                                     while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {
                                         context::context_switch(false);
