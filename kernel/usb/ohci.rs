@@ -6,7 +6,7 @@ use core::intrinsics::volatile_load;
 use core::{mem, slice};
 
 use drivers::mmio::Mmio;
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 
 use schemes::KScheme;
 
