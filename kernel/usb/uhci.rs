@@ -10,7 +10,7 @@ use scheduler::context::context_switch;
 use common::debug;
 use common::memory::Memory;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 use drivers::pio::*;
 
 

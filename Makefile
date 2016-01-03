@@ -78,7 +78,7 @@ endif
 
 .PHONY: help all docs apps schemes tests clean \
 	bochs \
-	qemu qemu_bare qemu_no_kvm qemu_tap \
+	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -106,7 +106,7 @@ help:
 	@echo "    make qemu"
 	@echo "        Build Redox and run it inside KVM machine."
 	@echo
-	@echo "    make qemu_no_kvm"
+	@echo "    make qemu kvm=no"
 	@echo "        Build Redox and run it inside Qemu machine without KVM support."
 	@echo
 	@echo "    make apps"
