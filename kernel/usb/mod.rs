@@ -11,5 +11,7 @@ pub mod xhci;
 pub enum UsbMsg<'a> {
     Setup(&'a Setup),
     In(&'a mut [u8]),
+    InIso(&'a mut [u8]),
     Out(&'a [u8]),
+    OutIso(&'a [u8]),
 }

@@ -92,9 +92,21 @@ impl Uhci {
                     token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
                     buffer: data.as_ptr() as u32,
                 }),
+                UsbMsg::InIso(ref data) => tds.push(Td {
+                    link_ptr: link_ptr,
+                    ctrl_sts: 1 << 25 | 1 << 23,
+                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
+                    buffer: data.as_ptr() as u32,
+                }),
                 UsbMsg::Out(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
                     ctrl_sts: 1 << 23,
+                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1,
+                    buffer: data.as_ptr() as u32,
+                }),
+                UsbMsg::OutIso(ref data) => tds.push(Td {
+                    link_ptr: link_ptr,
+                    ctrl_sts: 1 << 25 | 1 << 23,
                     token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1,
                     buffer: data.as_ptr() as u32,
                 })
@@ -103,30 +115,21 @@ impl Uhci {
 
         let mut count = 0;
 
-        if tds.len() > 1 {
+        if ! tds.is_empty() {
             let queue_head = box Qh {
                  head_ptr: 1,
                  element_ptr: (tds.last().unwrap() as *const Td) as u32,
             };
 
-            let frnum = Pio16::new(self.base as u16 + 6);
-            let frame = (unsafe { frnum.read() } + 1) & 0x3FF;
-            unsafe { self.frame_list.write(frame as usize, (&*queue_head as *const Qh) as u32 | 2) };
-
-            for td in tds.iter().rev() {
-                while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
-                    unsafe { context_switch(false) };
-                }
-                count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
-            }
-
-            unsafe { self.frame_list.write(frame as usize, 1) };
-        } else if tds.len() == 1 {
-            tds[0].ctrl_sts |= 1 << 25;
+            let frame_ptr = if tds.len() == 1 {
+                (&tds[0] as *const Td) as u32
+            } else {
+                (&*queue_head as *const Qh) as u32 | 2
+            };
 
             let frnum = Pio16::new(self.base as u16 + 6);
             let frame = (unsafe { frnum.read() } + 1) & 0x3FF;
-            unsafe { self.frame_list.write(frame as usize, (&tds[0] as *const Td) as u32) };
+            unsafe { self.frame_list.write(frame as usize, frame_ptr) };
 
             for td in tds.iter().rev() {
                 while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
@@ -214,7 +217,7 @@ impl Uhci {
                                     }
 
                                     if (*this).msg(address, endpoint, &[
-                                        UsbMsg::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
+                                        UsbMsg::InIso(&mut slice::from_raw_parts_mut(in_ptr, in_len))
                                     ]) > 0 {
                                         let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
                                         let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
