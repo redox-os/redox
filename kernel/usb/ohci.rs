@@ -1,5 +1,4 @@
 use alloc::boxed::Box;
-use common::debug;
 use drivers::pciconfig::PciConfig;
 use schemes::KScheme;
 
@@ -23,7 +22,7 @@ impl Ohci {
     pub unsafe fn new(mut pci: PciConfig) -> Box<Self> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let module = box Ohci {
+        let mut module = box Ohci {
             base: pci.read(0x10) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
         };
@@ -33,11 +32,7 @@ impl Ohci {
         return module;
     }
 
-    pub unsafe fn init(&self) {
-        debug::d("OHCI on: ");
-        debug::dh(self.base);
-        debug::d(", IRQ: ");
-        debug::dbh(self.irq);
-        debug::dl();
+    pub unsafe fn init(&mut self) {
+        debugln!("OHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
     }
 }

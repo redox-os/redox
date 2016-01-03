@@ -53,16 +53,7 @@ pub unsafe fn pci_device(env: &mut Environment,
             module.init();
             env.schemes.push(UnsafeCell::new(module));
         } else if interface_id == 0x20 {
-            let base = pci.read(0x10) as usize;
-
-            let mut module = box Ehci {
-                pci: pci,
-                base: base & 0xFFFFFFF0,
-                memory_mapped: base & 1 == 0,
-                irq: pci.read(0x3C) as u8 & 0xF,
-            };
-            module.init();
-            env.schemes.push(UnsafeCell::new(module));
+            env.schemes.push(UnsafeCell::new(Ehci::new(pci)));
         } else if interface_id == 0x10 {
             env.schemes.push(UnsafeCell::new(Ohci::new(pci)));
         } else if interface_id == 0x00 {
