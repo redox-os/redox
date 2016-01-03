@@ -13,8 +13,6 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use disk::Disk;
 use disk::ide::Extent;
 
-use drivers::pciconfig::PciConfig;
-
 use fs::redoxfs::{FileSystem, Header, Node, NodeData};
 
 use common::debug;

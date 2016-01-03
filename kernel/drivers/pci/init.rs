@@ -8,8 +8,6 @@ use common::debug;
 use disk::ahci::Ahci;
 use disk::ide::Ide;
 
-use drivers::pciconfig::PciConfig;
-
 use env::Environment;
 
 use network::intel8254x::Intel8254x;
@@ -22,26 +20,31 @@ use usb::ohci::Ohci;
 use usb::uhci::Uhci;
 use usb::xhci::Xhci;
 
+use super::config::PciConfig;
+use super::common::class::*;
+use super::common::subclass::*;
+use super::common::programming_interface::*;
+
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
                          mut pci: PciConfig,
-                         class_id: u32,
-                         subclass_id: u32,
-                         interface_id: u32,
-                         vendor_code: u32,
-                         device_code: u32) {
-    if class_id == 0x01 {
-        if subclass_id == 0x01 {
+                         class_id: u8,
+                         subclass_id: u8,
+                         interface_id: u8,
+                         vendor_code: u16,
+                         device_code: u16) {
+    if class_id == MASS_STORAGE {
+        if subclass_id == IDE {
             if let Some(module) = FileScheme::new(Ide::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
-        } else if subclass_id == 0x06 {
+        } else if subclass_id == SATA && interface_id == AHCI {
             if let Some(module) = FileScheme::new(Ahci::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
         }
-    } else if class_id == 0x0C && subclass_id == 0x03 {
-        if interface_id == 0x30 {
+    } else if class_id == SERIAL_BUS && subclass_id == USB {
+        if interface_id == XHCI {
             let base = pci.read(0x10) as usize;
 
             let mut module = box Xhci {
@@ -52,11 +55,11 @@ pub unsafe fn pci_device(env: &mut Environment,
             };
             module.init();
             env.schemes.push(UnsafeCell::new(module));
-        } else if interface_id == 0x20 {
+        } else if interface_id == EHCI {
             env.schemes.push(UnsafeCell::new(Ehci::new(pci)));
-        } else if interface_id == 0x10 {
+        } else if interface_id == OHCI {
             env.schemes.push(UnsafeCell::new(Ohci::new(pci)));
-        } else if interface_id == 0x00 {
+        } else if interface_id == UHCI {
             env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
         } else {
             debug!("Unknown USB interface version {:X}\n", interface_id);
@@ -126,11 +129,11 @@ pub unsafe fn pci_init(env: &mut Environment) {
 
                     pci_device(env,
                                pci,
-                               (class_id >> 24) & 0xFF,
-                               (class_id >> 16) & 0xFF,
-                               (class_id >> 8) & 0xFF,
-                               id & 0xFFFF,
-                               (id >> 16) & 0xFFFF);
+                               ((class_id >> 24) & 0xFF) as u8,
+                               ((class_id >> 16) & 0xFF) as u8,
+                               ((class_id >> 8) & 0xFF) as u8,
+                               (id & 0xFFFF) as u16,
+                               ((id >> 16) & 0xFFFF) as u16);
                 }
             }
         }
