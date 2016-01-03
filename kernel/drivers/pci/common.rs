@@ -97,3 +97,21 @@ pub mod programming_interface {
     pub const EHCI: u8 = 0x20;
     pub const XHCI: u8 = 0x30;
 }
+
+pub mod vendorid {
+    pub const INTEL: u16 = 0x8086;
+    pub const REALTEK: u16 = 0x10EC;
+    pub const REDHAT: u16 = 0x1AF4;
+    pub const ILLEGAL: u16 = 0xFFFF;
+}
+
+pub mod deviceid {
+    // Realtek
+    pub const RTL8139: u16 = 0x8139;        // RTL-8100/8101L/8139 PCI Fast Ethernet Adapter
+
+    // Intel
+    pub const GBE_82540EM: u16 = 0x100E;    // 82540EM Gigabit Ethernet Controller
+    pub const AC97_82801AA: u16 = 0x2415;   // 82801AA AC'97 Audio Controller
+    pub const AC97_ICH4: u16 = 0x24C5;      // 82801DB/DBL/DBM (ICH4/ICH4-L/ICH4-M) AC'97 Audio
+    pub const INTELHDA_ICH6: u16 = 0x2668;  // 82801FB/FBM/FR/FW/FRW High Definition Audio
+}
