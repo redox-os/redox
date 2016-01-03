@@ -260,18 +260,20 @@ impl UsbHci for Ehci {
                     qtd: *tds.last().unwrap()
                 };
 
+                //TODO: Calculate actual bytes
+                for td in tds.iter().rev() {
+                    count += (td.token as usize >> 16) & 0x7FFF;
+                }
+
                 async_list.write((&*queuehead as *const QueueHead) as u32 | 2);
                 usb_cmd.writef(1 << 5 | 1, true);
 
-                /*
+                let mut i = 0;
                 for td in tds.iter().rev() {
                     while unsafe { volatile_load(td as *const Qtd).token } & 1 << 7 == 1 << 7 {
                         //unsafe { context_switch(false) };
                     }
                 }
-                */
-
-                while usb_sts.readf(0xA000) {}
 
                 usb_cmd.writef(1 << 5 | 1, false);
                 async_list.write(0);
