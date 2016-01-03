@@ -214,6 +214,10 @@ filesystem/apps/shell/main.bin: crates/ion/src/main.rs crates/ion/src/*.rs $(BUI
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
 	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
+filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+	$(RUSTC) $(RUSTCFLAGS) --cfg "feature = \"orbital\"" -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
+	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
+
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
 	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
@@ -347,3 +351,4 @@ ping:
 
 wireshark:
 	wireshark $(BUILD)/network.pcap
+
