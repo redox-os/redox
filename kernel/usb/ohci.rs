@@ -231,7 +231,9 @@ impl UsbHci for Ohci {
             }
 
             for td in tds.iter().rev() {
-                while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 {
+                let mut spin = 1000000;
+                while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 && spin > 0 {
+                    spin -= 1;
                     //unsafe { context_switch(false) };
                 }
                 let condition = (unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28) >> 28;
@@ -241,9 +243,11 @@ impl UsbHci for Ohci {
                 }
             }
 
+            /*
             while self.regs.cmd_sts.readf(CMD_STS_CLF) {
                 self.regs.cmd_sts.writef(CMD_STS_CLF, false);
             }
+            */
             while self.regs.control.readf(CTRL_CLE) {
                 self.regs.control.writef(CTRL_CLE, false);
             }
