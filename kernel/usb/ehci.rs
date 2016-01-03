@@ -350,13 +350,7 @@ impl UsbHci for Ehci {
 
                 let USBCMD = opbase as *mut u32;
                 let USBSTS = (opbase + 4) as *mut u32;
-                let USBINTR = (opbase + 8) as *mut u32;
-                let FRINDEX = (opbase + 0xC) as *mut u32;
-                let CTRLDSSEGMENT = (opbase + 0x10) as *mut u32;
-                let PERIODICLISTBASE = (opbase + 0x14) as *mut u32;
                 let ASYNCLISTADDR = (opbase + 0x18) as *mut u32;
-                let CONFIGFLAG = (opbase + 0x40) as *mut u32;
-                let PORTSC = (opbase + 0x44) as *mut u32;
 
                 let queuehead = box QueueHead {
                     next: 1,
@@ -366,65 +360,21 @@ impl UsbHci for Ehci {
                     qtd: *tds.last().unwrap()
                 };
 
-                debug::d("Prepare");
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" PTR ");
-                debug::dh((&*queuehead as *const QueueHead) as usize);
-                debug::dl();
-
-                debug::d("Send");
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" STS ");
-                debug::dh(*USBSTS as usize);
-
                 volatile_store(ASYNCLISTADDR, (&*queuehead as *const QueueHead) as u32 | 2);
-                volatile_store(USBCMD, volatile_load(USBCMD) | 1 << 5);
+                volatile_store(USBCMD, volatile_load(USBCMD) | 1 << 5 | 1);
 
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" STS ");
-                debug::dh(*USBSTS as usize);
-
-                volatile_store(USBCMD, volatile_load(USBCMD) | 1);
-
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" STS ");
-                debug::dh(*USBSTS as usize);
-                debug::dl();
-
-                debug::d("Wait");
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" STS ");
-                debug::dh(*USBSTS as usize);
-                debug::dl();
+                /*
+                for td in tds.iter().rev() {
+                    while unsafe { volatile_load(td as *const Qtd).token } & 1 << 7 == 1 << 7 {
+                        //unsafe { context_switch(false) };
+                    }
+                }
+                */
 
                 while volatile_load(USBSTS) & 0xA000 == 0xA000 {}
 
-                debug::d("Stop");
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" STS ");
-                debug::dh(*USBSTS as usize);
-
-                volatile_store(USBCMD, volatile_load(USBCMD) & 0xFFFFFFFF - 1 << 5);
+                volatile_store(USBCMD, volatile_load(USBCMD) & (0xFFFFFFFF - (1 << 5 | 1)));
                 volatile_store(ASYNCLISTADDR, 0);
-
-                debug::d(" CMD ");
-                debug::dh(*USBCMD as usize);
-
-                debug::d(" STS ");
-                debug::dh(*USBSTS as usize);
-                debug::dl();
             }
         }
 
