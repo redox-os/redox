@@ -5,11 +5,13 @@ use collections::vec::Vec;
 use core::intrinsics::{volatile_load, volatile_store};
 use core::mem::size_of;
 use core::ptr::{self, read, write};
+use core::slice;
 
 use common::debug;
 use common::memory;
 use common::time::{self, Duration};
 
+use drivers::mmio::Mmio;
 use drivers::pciconfig::PciConfig;
 
 use schemes::KScheme;
@@ -48,20 +50,20 @@ impl KScheme for Ehci {
             // debug::d("EHCI handle");
 
             unsafe {
-                let CAPLENGTH = self.base as *mut u8;
+                let cap_length = &mut *(self.base as *mut Mmio<u8>);
 
-                let opbase = self.base + read(CAPLENGTH) as usize;
+                let op_base = self.base + cap_length.read() as usize;
 
-                let USBSTS = (opbase + 4) as *mut u32;
-                // debug::d(" USBSTS ");
-                // debug::dh(*USBSTS as usize);
+                let usb_sts = &mut *((op_base + 4) as *mut Mmio<u32>);
+                // debug::d(" usb_sts ");
+                // debug::dh(*usb_sts as usize);
 
-                write(USBSTS, 0b111111);
+                usb_sts.writef(0b111111, true);
 
-                // debug::d(" USBSTS ");
-                // debug::dh(*USBSTS as usize);
+                // debug::d(" usb_sts ");
+                // debug::dh(*usb_sts as usize);
 
-                // let FRINDEX = (opbase + 0xC) as *mut u32;
+                // let FRINDEX = (opbase + 0xC) as *mut Mmio<u32>;
                 // debug::d(" FRINDEX ");
                 // debug::dh(*FRINDEX as usize);
             }
@@ -90,24 +92,15 @@ impl Ehci {
 
         self.pci.flag(4, 4, true); // Bus master
 
-        let CAPLENGTH = self.base as *mut u8;
-        let HCSPARAMS = (self.base + 4) as *mut u32;
-        let HCCPARAMS = (self.base + 8) as *mut u32;
+        let cap_length = &mut *(self.base as *mut Mmio<u8>);
+        let hcs_params = &mut *((self.base + 4) as *mut Mmio<u32>);
+        let hcc_params = &mut *((self.base + 8) as *mut Mmio<u32>);
 
-        debug::d(" CAPLENGTH ");
-        debug::dd(read(CAPLENGTH) as usize);
-
-        debug::d(" HCSPARAMS ");
-        debug::dh(read(HCSPARAMS) as usize);
-
-        debug::d(" HCCPARAMS ");
-        debug::dh(read(HCCPARAMS) as usize);
-
-        let ports = (read(HCSPARAMS) & 0b1111) as usize;
+        let ports = (hcs_params.read() & 0b1111) as usize;
         debug::d(" PORTS ");
         debug::dd(ports);
 
-        let eecp = ((read(HCCPARAMS) >> 8) & 0xFF) as u8;
+        let eecp = (hcc_params.read() >> 8) as u8;
         debug::d(" EECP ");
         debug::dh(eecp as usize);
 
@@ -137,159 +130,66 @@ impl Ehci {
             }
         }
 
-        let opbase = self.base + *CAPLENGTH as usize;
+        let op_base = self.base + cap_length.read() as usize;
 
-        let USBCMD = opbase as *mut u32;
-        let USBSTS = (opbase + 4) as *mut u32;
-        let USBINTR = (opbase + 8) as *mut u32;
-        let FRINDEX = (opbase + 0xC) as *mut u32;
-        let CTRLDSSEGMENT = (opbase + 0x10) as *mut u32;
-        let PERIODICLISTBASE = (opbase + 0x14) as *mut u32;
-        let ASYNCLISTADDR = (opbase + 0x18) as *mut u32;
-        let CONFIGFLAG = (opbase + 0x40) as *mut u32;
-        let PORTSC = (opbase + 0x44) as *mut u32;
+        let usb_cmd = &mut *(op_base as *mut Mmio<u32>);
+        let usb_sts = &mut *((op_base + 4) as *mut Mmio<u32>);
+        let usb_intr = &mut *((op_base + 8) as *mut Mmio<u32>);
+        let config_flag = &mut *((op_base + 0x40) as *mut Mmio<u32>);
+        let port_scs = &mut slice::from_raw_parts_mut((op_base + 0x44) as *mut Mmio<u32>, ports);
 
-        if read(USBSTS) & (1 << 12) == 0 {
-            debug::d("Halting");
-            debug::d(" CMD ");
-            debug::dh(read(USBCMD) as usize);
+        /*
+        let FRINDEX = (opbase + 0xC) as *mut Mmio<u32>;
+        let CTRLDSSEGMENT = (opbase + 0x10) as *mut Mmio<u32>;
+        let PERIODICLISTBASE = (opbase + 0x14) as *mut Mmio<u32>;
+        let ASYNCLISTADDR = (opbase + 0x18) as *mut Mmio<u32>;
+        */
 
-            debug::d(" STS ");
-            debug::dh(read(USBSTS) as usize);
-
-            write(USBCMD, read(USBCMD) & 0xFFFFFFF0);
-
-            debug::d(" CMD ");
-            debug::dh(*USBCMD as usize);
-
-            debug::d(" STS ");
-            debug::dh(*USBSTS as usize);
-            debug::dl();
-
-            debug::d("Waiting");
-            while volatile_load(USBSTS) & (1 << 12) != (1 << 12) {}
-
-            debug::d(" CMD ");
-            debug::dh(read(USBCMD) as usize);
-
-            debug::d(" STS ");
-            debug::dh(read(USBSTS) as usize);
-            debug::dl();
+        //Halt
+        if usb_sts.read() & 1 << 12 == 0 {
+            usb_cmd.writef(0xF, false);
+            while ! usb_sts.readf(1 << 12) {}
         }
 
-        debug::d("Resetting");
-        debug::d(" CMD ");
-        debug::dh(read(USBCMD) as usize);
+        //Reset
+        usb_cmd.writef(1 << 1, true);
+        while usb_cmd.readf(1 << 1) {}
 
-        debug::d(" STS ");
-        debug::dh(read(USBSTS) as usize);
+        //Enable
+        usb_intr.write(0b111111);
+        usb_cmd.writef(1, true);
+        config_flag.write(1);
+        while usb_sts.readf(1 << 12) {}
 
-        write(USBCMD, read(USBCMD) | (1 << 1));
+        for i in 0..port_scs.len() {
+            let port_sc = &mut port_scs[i];
+            if port_sc.readf(1) {
+                debugln!("Device on port {}: {:X}", i, port_sc.read());
 
-        debug::d(" CMD ");
-        debug::dh(read(USBCMD) as usize);
+                if port_sc.readf(1 << 1) {
+                    debugln!("Connection Change");
 
-        debug::d(" STS ");
-        debug::dh(read(USBSTS) as usize);
-        debug::dl();
-
-        debug::d("Waiting");
-        while volatile_load(USBCMD) & 1 << 1 == 1 << 1 {}
-
-        debug::d(" CMD ");
-        debug::dh(read(USBCMD) as usize);
-
-        debug::d(" STS ");
-        debug::dh(read(USBSTS) as usize);
-        debug::dl();
-
-        debug::d("Enabling");
-        debug::d(" CMD ");
-        debug::dh(read(USBCMD) as usize);
-
-        debug::d(" STS ");
-        debug::dh(read(USBSTS) as usize);
-
-        write(USBINTR, 0b111111);
-
-        write(USBCMD, read(USBCMD) | 1);
-        write(CONFIGFLAG, 1);
-
-        debug::d(" CMD ");
-        debug::dh(read(USBCMD) as usize);
-
-        debug::d(" STS ");
-        debug::dh(read(USBSTS) as usize);
-        debug::dl();
-
-        debug::d("Waiting");
-        while volatile_load(USBSTS) & 1 << 12 == 1 << 12 {}
-
-        debug::d(" CMD ");
-        debug::dh(read(USBCMD) as usize);
-
-        debug::d(" STS ");
-        debug::dh(read(USBSTS) as usize);
-        debug::dl();
-
-        for i in 0..ports as isize {
-            debug::dd(i as usize);
-            debug::d(": ");
-            debug::dh(read(PORTSC.offset(i)) as usize);
-            debug::dl();
-
-            if read(PORTSC.offset(i)) & 1 == 1 {
-                debug::d("Device on port ");
-                debug::dd(i as usize);
-                debug::d(" ");
-                debug::dh(read(PORTSC.offset(i)) as usize);
-                debug::dl();
-
-                if read(PORTSC.offset(i)) & 1 << 1 == 1 << 1 {
-                    debug::d("Connection Change");
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
-
-                    write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 1));
-
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
-                    debug::dl();
+                    port_sc.writef(1 << 1, true);
                 }
 
-                if read(PORTSC.offset(i)) & 1 << 2 == 0 {
-                    debug::d("Reset");
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
+                if ! port_sc.readf(1 << 2) {
+                    debugln!("Reset");
 
-                    write(PORTSC.offset(i), read(PORTSC.offset(i)) | (1 << 8));
-
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
-
-                    write(PORTSC.offset(i),
-                    read(PORTSC.offset(i)) & 0xFFFFFEFF);
-
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
-                    debug::dl();
-
-                    debug::d("Wait");
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
-
-                    while volatile_load(PORTSC.offset(i)) & 1 << 8 == 1 << 8 {
-                        volatile_store(PORTSC.offset(i), volatile_load(PORTSC.offset(i)) & 0xFFFFFEFF);
+                    while ! port_sc.readf(1 << 8) {
+                        port_sc.writef(1 << 8, true);
                     }
 
-                    debug::d(" ");
-                    debug::dh(read(PORTSC.offset(i)) as usize);
-                    debug::dl();
+                    let mut spin = 1000000000;
+                    while spin > 0 {
+                        spin -= 1;
+                    }
+
+                    while port_sc.readf(1 << 8) {
+                        port_sc.writef(1 << 8, false);
+                    }
                 }
 
-                debug::d("Port Enabled ");
-                debug::dh(read(PORTSC.offset(i)) as usize);
-                debug::dl();
+                debugln!("Port Enabled {:X}", port_sc.read());
 
                 self.device(i as u8 + 1);
             }
@@ -344,13 +244,13 @@ impl UsbHci for Ehci {
 
         if ! tds.is_empty() {
             unsafe {
-                let CAPLENGTH = self.base as *mut u8;
+                let cap_length = &mut *(self.base as *mut Mmio<u8>);
 
-                let opbase = self.base + *CAPLENGTH as usize;
+                let op_base = self.base + cap_length.read() as usize;
 
-                let USBCMD = opbase as *mut u32;
-                let USBSTS = (opbase + 4) as *mut u32;
-                let ASYNCLISTADDR = (opbase + 0x18) as *mut u32;
+                let usb_cmd = &mut *(op_base as *mut Mmio<u32>);
+                let usb_sts = &mut *((op_base + 4) as *mut Mmio<u32>);
+                let async_list = &mut *((op_base + 0x18) as *mut Mmio<u32>);
 
                 let queuehead = box QueueHead {
                     next: 1,
@@ -360,8 +260,8 @@ impl UsbHci for Ehci {
                     qtd: *tds.last().unwrap()
                 };
 
-                volatile_store(ASYNCLISTADDR, (&*queuehead as *const QueueHead) as u32 | 2);
-                volatile_store(USBCMD, volatile_load(USBCMD) | 1 << 5 | 1);
+                async_list.write((&*queuehead as *const QueueHead) as u32 | 2);
+                usb_cmd.writef(1 << 5 | 1, true);
 
                 /*
                 for td in tds.iter().rev() {
@@ -371,10 +271,10 @@ impl UsbHci for Ehci {
                 }
                 */
 
-                while volatile_load(USBSTS) & 0xA000 == 0xA000 {}
+                while usb_sts.readf(0xA000) {}
 
-                volatile_store(USBCMD, volatile_load(USBCMD) & (0xFFFFFFFF - (1 << 5 | 1)));
-                volatile_store(ASYNCLISTADDR, 0);
+                usb_cmd.writef(1 << 5 | 1, false);
+                async_list.write(0);
             }
         }
 
