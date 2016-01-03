@@ -12,7 +12,7 @@ use common::memory;
 use common::time::{self, Duration};
 
 use drivers::mmio::Mmio;
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 
 use schemes::KScheme;
 

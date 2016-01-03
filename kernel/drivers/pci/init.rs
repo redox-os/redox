@@ -8,7 +8,7 @@ use common::debug;
 use disk::ahci::Ahci;
 use disk::ide::Ide;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 
 use env::Environment;
 
