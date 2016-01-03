@@ -120,8 +120,29 @@ impl Ohci {
     pub unsafe fn init(&mut self) {
         debugln!("OHCI on: {:X}, IRQ: {:X}", (self.regs as *mut OhciRegs) as usize, self.irq);
 
-        let ctrl = self.regs.control.read();
-        self.regs.control.write(ctrl & (0xFFFFFFFF - CTRL_HCFS) | 0b10 << 6);
+        debugln!("Reset: {:X}", self.regs.control.read());
+        loop {
+            let ctrl = self.regs.control.read();
+            let desired_ctrl = ctrl & (0xFFFFFFFF - CTRL_HCFS);
+            if ctrl != desired_ctrl {
+                self.regs.control.write(desired_ctrl);
+            } else {
+                break;
+            }
+        }
+
+        debugln!("Enable: {:X}", self.regs.control.read());
+        loop {
+            let ctrl = self.regs.control.read();
+            let desired_ctrl = (ctrl & (0xFFFFFFFF - CTRL_HCFS)) | 0b10 << 6;
+            if ctrl != desired_ctrl {
+                self.regs.control.write(desired_ctrl);
+            } else {
+                break;
+            }
+        }
+
+        debugln!("Port Enumeration: {:X}", self.regs.control.read());
 
         let ndp = self.regs.rh_desc_a.read() & 0xF;
         for i in 0..ndp as usize {
@@ -189,7 +210,8 @@ impl UsbHci for Ohci {
 
         if ! tds.is_empty() {
             let ed = box Ed {
-                flags: 1024 << 16 | (endpoint as u32) << 7 | address as u32,
+                //TODO: Remove 1 << 13, it sets it to low speed
+                flags: 0x3FF << 16 | 1 << 13 | (endpoint as u32) << 7 | address as u32,
                 tail: 0,
                 head: (tds.last().unwrap() as *const Gtd) as u32,
                 next: 0
@@ -200,7 +222,6 @@ impl UsbHci for Ohci {
                 count += (td.end - td.buffer) as usize;
             }
 
-            /*
             self.regs.control_head.write((&*ed as *const Ed) as u32);
             while ! self.regs.control.readf(CTRL_CLE) {
                 self.regs.control.writef(CTRL_CLE, true);
@@ -213,6 +234,11 @@ impl UsbHci for Ohci {
                 while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 {
                     //unsafe { context_switch(false) };
                 }
+                let condition = (unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28) >> 28;
+                if condition != 0 {
+                    debugln!("Condition: {:X}", condition);
+                    break;
+                }
             }
 
             while self.regs.cmd_sts.readf(CMD_STS_CLF) {
@@ -222,7 +248,6 @@ impl UsbHci for Ohci {
                 self.regs.control.writef(CTRL_CLE, false);
             }
             self.regs.control_head.write(0);
-            */
         }
 
         count
