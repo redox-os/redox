@@ -6,7 +6,7 @@ use common::memory;
 
 use disk::Disk;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 
 use schemes::Result;
 
