@@ -89,8 +89,9 @@ It's completely fine to just submit a small pull request without first making an
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
 7. Commit (`git add . --all; git commit -m "my commit"`)
-8. Optionally run [`rustfmt`](https://github.com/rust-lang-nursery/rustfmt) on the files you changed and commit again if it did anything (check with `git diff` first)
-9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu_no_kvm`) (see [Best Practices and Guidelines])
+8. Optionally run [rustfmt](https://github.com/rust-lang-nursery/rustfmt) on the files you changed and commit again if it did anything (check with `git diff` first)
+9. Test your changes with `make qemu` or `make virtualbox` (you might have to use `make qemu kvm=no`, formerly `make qemu_no_kvm`) 
+(see [Best Practices and Guidelines](#best-practices))
 10. Pull from upstream (`git fetch upstream; git rebase upstream/master`) (Note: try not to use `git pull`, it is equivalent to doing `git fetch upstream; git merge master upstream/master`, which is not usually preferred for local/fork repositories, although it is fine in some cases.)
 11. Repeat step 9 to make sure the rebase still builds and starts
 12. Push to your fork (`git push origin my-branch`)
