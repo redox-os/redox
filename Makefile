@@ -262,7 +262,7 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 64
+	$(VBM) modifyvm Redox --vram 16
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --nictrace1 on
@@ -270,8 +270,9 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --mouse usbtablet
+	#$(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	#$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
@@ -351,4 +352,3 @@ ping:
 
 wireshark:
 	wireshark $(BUILD)/network.pcap
-
