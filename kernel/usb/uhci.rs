@@ -1,9 +1,10 @@
 use alloc::boxed::Box;
 
 use collections::string::ToString;
+use collections::vec::Vec;
 
-use core::intrinsics::volatile_store;
-use core::{cmp, mem, ptr};
+use core::intrinsics::{volatile_load, volatile_store};
+use core::{cmp, mem, ptr, slice};
 
 use scheduler::context::{self, Context};
 use common::debug;
@@ -18,8 +19,7 @@ use graphics::display::VBEMODEINFO;
 
 use schemes::KScheme;
 
-use sync::Intex;
-
+use super::UsbMsg;
 use super::desc::*;
 use super::setup::Setup;
 
@@ -45,7 +45,7 @@ struct Td {
     link_ptr: u32,
     ctrl_sts: u32,
     token: u32,
-    buffer: u32, // reserved: [u32; 4]
+    buffer: u32,
 }
 
 #[repr(packed)]
@@ -69,46 +69,71 @@ impl Uhci {
         return module;
     }
 
+    unsafe fn msg(&self, frame_list: *mut u32, address: u8, msgs: &[UsbMsg]) {
+        debugln!("{}: {} Messages", address, msgs.len());
+
+        for msg in msgs.iter() {
+            debugln!("{:#?}", msg);
+        }
+
+        let mut tds = Vec::new();
+        for msg in msgs.iter().rev() {
+            let link_ptr = match tds.get(0) {
+                Some(td) => (td as *const Td) as u32 | 4,
+                None => 1
+            };
+
+            match *msg {
+                UsbMsg::Setup(setup) => tds.push(Td {
+                    link_ptr: link_ptr,
+                    ctrl_sts: 1 << 23,
+                    token: (mem::size_of::<Setup>() as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
+                    buffer: (&*setup as *const Setup) as u32,
+                }),
+                UsbMsg::In(ref data) => tds.push(Td {
+                    link_ptr: link_ptr,
+                    ctrl_sts: 1 << 23,
+                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (address as u32) << 8 | 0x69,
+                    buffer: data.as_ptr() as u32,
+                }),
+                UsbMsg::Out(ref data) => tds.push(Td {
+                    link_ptr: link_ptr,
+                    ctrl_sts: 1 << 23,
+                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (address as u32) << 8 | 0xE1,
+                    buffer: data.as_ptr() as u32,
+                })
+            }
+        }
+
+        if ! tds.is_empty() {
+            let queue_head = box Qh {
+                 head_ptr: 1,
+                 element_ptr: (tds.last().unwrap() as *const Td) as u32,
+            };
+
+            let frnum = Pio16::new(self.base as u16 + 6);
+            let frame = (frnum.read() + 2) & 0x3FF;
+            ptr::write(frame_list.offset(frame as isize),
+                       (&*queue_head as *const Qh) as u32 | 2);
+
+            for td in tds.iter().rev() {
+                debugln!("Start {:#?}", volatile_load(td as *const Td));
+                let mut i = 1000000;
+                while volatile_load(td as *const Td).ctrl_sts & 1 << 23 == 1 << 23 && i > 0 {
+                    i -= 1;
+                }
+                debugln!("End {:#?}", volatile_load(td as *const Td));
+            }
+
+            ptr::write(frame_list.offset(frame as isize), 1);
+        }
+    }
+
     unsafe fn set_address(&self, frame_list: *mut u32, address: u8) {
-        let base = self.base as u16;
-        let frnum = Pio16::new(base + 6);
-
-        let mut in_td = Memory::<Td>::new(1).unwrap();
-        in_td.store(0,
-                    Td {
-                        link_ptr: 1,
-                        ctrl_sts: 1 << 23,
-                        token: 0x7FF << 21 | 0x69,
-                        buffer: 0,
-                    });
-
-        let setup = box Setup::set_address(address);
-
-        let mut setup_td = Memory::<Td>::new(1).unwrap();
-        setup_td.store(0,
-                       Td {
-                           link_ptr: in_td.address() as u32 | 4,
-                           ctrl_sts: 1 << 23,
-                           token: (mem::size_of::<Setup>() as u32 - 1) << 21 | 0x2D,
-                           buffer: (&*setup as *const Setup) as u32,
-                       });
-
-        let mut queue_head = Memory::<Qh>::new(1).unwrap();
-        queue_head.store(0,
-                         Qh {
-                             head_ptr: 1,
-                             element_ptr: setup_td.address() as u32,
-                         });
-
-        let frame = (frnum.read() + 2) & 0x3FF;
-        ptr::write(frame_list.offset(frame as isize),
-                   queue_head.address() as u32 | 2);
-
-        while setup_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
-
-        while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
-
-        ptr::write(frame_list.offset(frame as isize), 1);
+        self.msg(frame_list, 0, &[
+            UsbMsg::Setup(&Setup::set_address(address)),
+            UsbMsg::In(&mut [])
+        ]);
     }
 
     unsafe fn descriptor(&self,
@@ -116,72 +141,25 @@ impl Uhci {
                          address: u8,
                          descriptor_type: u8,
                          descriptor_index: u8,
-                         descriptor_ptr: u32,
-                         descriptor_len: u32) {
-        let base = self.base as u16;
-        let frnum = Pio16::new(base + 6);
-
-        let mut out_td = Memory::<Td>::new(1).unwrap();
-        out_td.store(0,
-                     Td {
-                         link_ptr: 1,
-                         ctrl_sts: 1 << 23,
-                         token: 0x7FF << 21 | (address as u32) << 8 | 0xE1,
-                         buffer: 0,
-                     });
-
-        let mut in_td = Memory::<Td>::new(1).unwrap();
-        in_td.store(0,
-                    Td {
-                        link_ptr: out_td.address() as u32 | 4,
-                        ctrl_sts: 1 << 23,
-                        token: (descriptor_len - 1) << 21 | (address as u32) << 8 | 0x69,
-                        buffer: descriptor_ptr,
-                    });
-
-        let setup = box Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16);
-
-        let mut setup_td = Memory::<Td>::new(1).unwrap();
-        setup_td.store(0,
-                       Td {
-                           link_ptr: in_td.address() as u32 | 4,
-                           ctrl_sts: 1 << 23,
-                           token: (mem::size_of::<Setup>() as u32 - 1) << 21 |
-                                  (address as u32) << 8 | 0x2D,
-                           buffer: (&*setup as *const Setup) as u32,
-                       });
-
-        let mut queue_head = Memory::<Qh>::new(1).unwrap();
-        queue_head.store(0,
-                         Qh {
-                             head_ptr: 1,
-                             element_ptr: setup_td.address() as u32,
-                         });
-
-        let frame = (frnum.read() + 2) & 0x3FF;
-        ptr::write(frame_list.offset(frame as isize),
-                   queue_head.address() as u32 | 2);
-
-        while setup_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
-
-        while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
-
-        while out_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {}
-
-        ptr::write(frame_list.offset(frame as isize), 1);
+                         descriptor_ptr: usize,
+                         descriptor_len: usize) {
+        self.msg(frame_list, address, &[
+            UsbMsg::Setup(&Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16)),
+            UsbMsg::In(&mut slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize)),
+            UsbMsg::Out(&[])
+        ]);
     }
 
     unsafe fn device(&self, frame_list: *mut u32, address: u8) {
         self.set_address(frame_list, address);
 
-        let desc_dev: *mut DeviceDescriptor = memory::alloc_type();
-        ptr::write(desc_dev, DeviceDescriptor::default());
+        let mut desc_dev = box DeviceDescriptor::default();
         self.descriptor(frame_list,
                         address,
                         DESC_DEV,
                         0,
-                        desc_dev as u32,
-                        mem::size_of_val(&*desc_dev) as u32);
+                        (&mut *desc_dev as *mut DeviceDescriptor) as usize,
+                        mem::size_of_val(&*desc_dev));
         debugln!("{:#?}", *desc_dev);
 
         for configuration in 0..(*desc_dev).configurations {
@@ -194,8 +172,8 @@ impl Uhci {
                             address,
                             DESC_CFG,
                             configuration,
-                            desc_cfg_buf as u32,
-                            desc_cfg_len as u32);
+                            desc_cfg_buf as usize,
+                            desc_cfg_len);
 
             let desc_cfg = ptr::read(desc_cfg_buf as *const ConfigDescriptor);
             debugln!("{:#?}", desc_cfg);
@@ -295,8 +273,6 @@ impl Uhci {
 
             memory::unalloc(desc_cfg_buf as usize);
         }
-
-        memory::unalloc(desc_dev as usize);
     }
 
     pub unsafe fn init(&self) {
