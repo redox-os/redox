@@ -4,7 +4,7 @@ use collections::vec::Vec;
 
 use core::mem;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 
 use schemes::KScheme;
 

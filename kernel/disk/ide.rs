@@ -11,7 +11,7 @@ use common::memory::Memory;
 
 use disk::Disk;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 use drivers::pio::*;
 
 use schemes::Result;
