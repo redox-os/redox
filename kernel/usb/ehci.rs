@@ -163,8 +163,10 @@ impl Ehci {
 
         for i in 0..port_scs.len() {
             let port_sc = &mut port_scs[i];
+            debugln!("Port {}: {:X}", i, port_sc.read());
+
             if port_sc.readf(1) {
-                debugln!("Device on port {}: {:X}", i, port_sc.read());
+                debugln!("Device Found");
 
                 if port_sc.readf(1 << 1) {
                     debugln!("Connection Change");
@@ -249,7 +251,6 @@ impl UsbHci for Ehci {
                 let op_base = self.base + cap_length.read() as usize;
 
                 let usb_cmd = &mut *(op_base as *mut Mmio<u32>);
-                let usb_sts = &mut *((op_base + 4) as *mut Mmio<u32>);
                 let async_list = &mut *((op_base + 0x18) as *mut Mmio<u32>);
 
                 let queuehead = box QueueHead {
