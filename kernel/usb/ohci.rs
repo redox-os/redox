@@ -210,8 +210,7 @@ impl UsbHci for Ohci {
 
         if ! tds.is_empty() {
             let ed = box Ed {
-                //TODO: Remove 1 << 13, it sets it to low speed
-                flags: 0x3FF << 16 | 1 << 13 | (endpoint as u32) << 7 | address as u32,
+                flags: 0x3FF << 16 | (endpoint as u32) << 7 | address as u32,
                 tail: 0,
                 head: (tds.last().unwrap() as *const Gtd) as u32,
                 next: 0
@@ -231,7 +230,7 @@ impl UsbHci for Ohci {
             }
 
             for td in tds.iter().rev() {
-                let mut spin = 1000000;
+                let mut spin = 1000000000;
                 while unsafe { volatile_load(td as *const Gtd).flags } & 0b1111 << 28 == 0b1111 << 28 && spin > 0 {
                     spin -= 1;
                     //unsafe { context_switch(false) };
