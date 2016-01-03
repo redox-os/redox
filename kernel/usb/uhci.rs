@@ -3,10 +3,10 @@ use alloc::boxed::Box;
 use collections::string::ToString;
 use collections::vec::Vec;
 
-use core::intrinsics::{volatile_load, volatile_store};
+use core::intrinsics::volatile_load;
 use core::{cmp, mem, ptr, slice};
 
-use scheduler::context::{self, Context};
+use scheduler::context::{context_switch, Context};
 use common::debug;
 use common::event::MouseEvent;
 use common::memory::{self, Memory};
@@ -26,6 +26,7 @@ use super::setup::Setup;
 pub struct Uhci {
     pub base: usize,
     pub irq: u8,
+    pub frame_list: Memory<u32>,
 }
 
 impl KScheme for Uhci {
@@ -59,9 +60,10 @@ impl Uhci {
     pub unsafe fn new(mut pci: PciConfig) -> Box<Self> {
         pci.flag(4, 4, true); // Bus mastering
 
-        let module = box Uhci {
+        let mut module = box Uhci {
             base: pci.read(0x20) as usize & 0xFFFFFFF0,
             irq: pci.read(0x3C) as u8 & 0xF,
+            frame_list: Memory::new(1024).unwrap(),
         };
 
         module.init();
@@ -69,16 +71,10 @@ impl Uhci {
         return module;
     }
 
-    unsafe fn msg(&self, frame_list: *mut u32, address: u8, msgs: &[UsbMsg]) {
-        debugln!("{}: {} Messages", address, msgs.len());
-
-        for msg in msgs.iter() {
-            debugln!("{:#?}", msg);
-        }
-
+    fn msg(&mut self, address: u8, endpoint: u8, msgs: &[UsbMsg]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
-            let link_ptr = match tds.get(0) {
+            let link_ptr = match tds.last() {
                 Some(td) => (td as *const Td) as u32 | 4,
                 None => 1
             };
@@ -87,75 +83,85 @@ impl Uhci {
                 UsbMsg::Setup(setup) => tds.push(Td {
                     link_ptr: link_ptr,
                     ctrl_sts: 1 << 23,
-                    token: (mem::size_of::<Setup>() as u32 - 1) << 21 | (address as u32) << 8 | 0x2D,
+                    token: (mem::size_of::<Setup>() as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x2D,
                     buffer: (&*setup as *const Setup) as u32,
                 }),
                 UsbMsg::In(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
                     ctrl_sts: 1 << 23,
-                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (address as u32) << 8 | 0x69,
+                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
                     buffer: data.as_ptr() as u32,
                 }),
                 UsbMsg::Out(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
                     ctrl_sts: 1 << 23,
-                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (address as u32) << 8 | 0xE1,
+                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1,
                     buffer: data.as_ptr() as u32,
                 })
             }
         }
 
-        if ! tds.is_empty() {
+        let mut count = 0;
+
+        if tds.len() > 1 {
             let queue_head = box Qh {
                  head_ptr: 1,
                  element_ptr: (tds.last().unwrap() as *const Td) as u32,
             };
 
             let frnum = Pio16::new(self.base as u16 + 6);
-            let frame = (frnum.read() + 2) & 0x3FF;
-            ptr::write(frame_list.offset(frame as isize),
-                       (&*queue_head as *const Qh) as u32 | 2);
+            let frame = (unsafe { frnum.read() } + 1) & 0x3FF;
+            unsafe { self.frame_list.write(frame as usize, (&*queue_head as *const Qh) as u32 | 2) };
 
             for td in tds.iter().rev() {
-                debugln!("Start {:#?}", volatile_load(td as *const Td));
-                let mut i = 1000000;
-                while volatile_load(td as *const Td).ctrl_sts & 1 << 23 == 1 << 23 && i > 0 {
-                    i -= 1;
+                while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
+                    unsafe { context_switch(false) };
                 }
-                debugln!("End {:#?}", volatile_load(td as *const Td));
+                count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
             }
 
-            ptr::write(frame_list.offset(frame as isize), 1);
+            unsafe { self.frame_list.write(frame as usize, 1) };
+        } else if tds.len() == 1 {
+            tds[0].ctrl_sts |= 1 << 25;
+
+            let frnum = Pio16::new(self.base as u16 + 6);
+            let frame = (unsafe { frnum.read() } + 1) & 0x3FF;
+            unsafe { self.frame_list.write(frame as usize, (&tds[0] as *const Td) as u32) };
+
+            for td in tds.iter().rev() {
+                while unsafe { volatile_load(td as *const Td).ctrl_sts } & 1 << 23 == 1 << 23 {
+                    unsafe { context_switch(false) };
+                }
+                count += (unsafe { volatile_load(td as *const Td).ctrl_sts } & 0x7FF) as usize;
+            }
+
+            unsafe { self.frame_list.write(frame as usize, 1) };
         }
+
+        count
     }
 
-    unsafe fn set_address(&self, frame_list: *mut u32, address: u8) {
-        self.msg(frame_list, 0, &[
-            UsbMsg::Setup(&Setup::set_address(address)),
-            UsbMsg::In(&mut [])
-        ]);
-    }
-
-    unsafe fn descriptor(&self,
-                         frame_list: *mut u32,
+    fn descriptor(&mut self,
                          address: u8,
                          descriptor_type: u8,
                          descriptor_index: u8,
                          descriptor_ptr: usize,
                          descriptor_len: usize) {
-        self.msg(frame_list, address, &[
+        self.msg(address, 0, &[
             UsbMsg::Setup(&Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16)),
-            UsbMsg::In(&mut slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize)),
+            UsbMsg::In(&mut unsafe { slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize) }),
             UsbMsg::Out(&[])
         ]);
     }
 
-    unsafe fn device(&self, frame_list: *mut u32, address: u8) {
-        self.set_address(frame_list, address);
+    unsafe fn device(&mut self, address: u8) {
+        self.msg(0, 0, &[
+            UsbMsg::Setup(&Setup::set_address(address)),
+            UsbMsg::In(&mut [])
+        ]);
 
         let mut desc_dev = box DeviceDescriptor::default();
-        self.descriptor(frame_list,
-                        address,
+        self.descriptor(address,
                         DESC_DEV,
                         0,
                         (&mut *desc_dev as *mut DeviceDescriptor) as usize,
@@ -168,8 +174,7 @@ impl Uhci {
             for i in 0..desc_cfg_len as isize {
                 ptr::write(desc_cfg_buf.offset(i), 0);
             }
-            self.descriptor(frame_list,
-                            address,
+            self.descriptor(address,
                             DESC_CFG,
                             configuration,
                             desc_cfg_buf as usize,
@@ -196,58 +201,37 @@ impl Uhci {
                         let endpoint = desc_end.address & 0xF;
                         let in_len = desc_end.max_packet_size as usize;
 
-                        let base = self.base as u16;
-                        let frnum = base + 0x6;
-
                         if hid {
+                            let this = self as *mut Uhci;
                             Context::spawn("kuhci_hid".to_string(), box move || {
                                 debugln!("Starting HID driver");
 
                                 let in_ptr = memory::alloc(in_len) as *mut u8;
-                                let mut in_td = Memory::<Td>::new(1).unwrap();
 
                                 loop {
                                     for i in 0..in_len as isize {
-                                        volatile_store(in_ptr.offset(i), 0);
+                                        ptr::write(in_ptr.offset(i), 0);
                                     }
 
-                                    in_td.store(0,
-                                               Td {
-                                                   link_ptr: 1,
-                                                   ctrl_sts: 1 << 25 | 1 << 23,
-                                                   token: (in_len as u32 - 1) << 21 |
-                                                          (endpoint as u32) << 15 |
-                                                          (address as u32) << 8 |
-                                                          0x69,
-                                                   buffer: in_ptr as u32,
-                                               });
+                                    if (*this).msg(address, endpoint, &[
+                                        UsbMsg::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
+                                    ]) > 0 {
+                                        let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
+                                        let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
+                                        let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
 
-                                    let frame = (inw(frnum) + 2) & 0x3FF;
-                                    volatile_store(frame_list.offset(frame as isize), in_td.address() as u32);
+                                        let mode_info = &*VBEMODEINFO;
+                                        let mouse_x = (x * mode_info.xresolution as usize) / 32768;
+                                        let mouse_y = (y * mode_info.yresolution as usize) / 32768;
 
-                                    while in_td.load(0).ctrl_sts & 1 << 23 == 1 << 23 {
-                                        context::context_switch(false);
-                                    }
-
-                                    volatile_store(frame_list.offset(frame as isize), 1);
-
-                                    if in_td.load(0).ctrl_sts & 0x7FF > 0 {
-                                       let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
-                                       let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;
-                                       let y = ptr::read(in_ptr.offset(3) as *const u16) as usize;
-
-                                       let mode_info = &*VBEMODEINFO;
-                                       let mouse_x = (x * mode_info.xresolution as usize) / 32768;
-                                       let mouse_y = (y * mode_info.yresolution as usize) / 32768;
-
-                                       let mouse_event = MouseEvent {
-                                           x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
-                                           y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
-                                           left_button: buttons & 1 == 1,
-                                           middle_button: buttons & 4 == 4,
-                                           right_button: buttons & 2 == 2,
-                                       };
-                                       ::env().events.lock().push_back(mouse_event.to_event());
+                                        let mouse_event = MouseEvent {
+                                            x: cmp::max(0, cmp::min(mode_info.xresolution as i32 - 1, mouse_x as i32)),
+                                            y: cmp::max(0, cmp::min(mode_info.yresolution as i32 - 1, mouse_y as i32)),
+                                            left_button: buttons & 1 == 1,
+                                            middle_button: buttons & 4 == 4,
+                                            right_button: buttons & 2 == 2,
+                                        };
+                                        ::env().events.lock().push_back(mouse_event.to_event());
                                     }
 
                                     Duration::new(0, 10 * time::NANOS_PER_MILLI).sleep();
@@ -261,11 +245,7 @@ impl Uhci {
                         hid = true;
                     }
                     _ => {
-                        debug::d("Unknown Descriptor Length ");
-                        debug::dd(length as usize);
-                        debug::d(" Type ");
-                        debug::dh(descriptor_type as usize);
-                        debug::dl();
+                        debugln!("Unknown Descriptor Length {} Type {:X}", length as usize, descriptor_type);
                     }
                 }
                 i += length as isize;
@@ -275,11 +255,8 @@ impl Uhci {
         }
     }
 
-    pub unsafe fn init(&self) {
-        debug::d("UHCI on: ");
-        debug::dh(self.base);
-        debug::d(", IRQ: ");
-        debug::dbh(self.irq);
+    pub unsafe fn init(&mut self) {
+        debugln!("UHCI on: {:X}, IRQ: {:X}", self.base, self.irq);
 
         let base = self.base as u16;
         let usbcmd = base;
@@ -314,11 +291,10 @@ impl Uhci {
 
         debug::d(" FLBASEADD ");
         debug::dh(ind(flbaseadd) as usize);
-        let frame_list = memory::alloc(1024 * 4) as *mut u32;
         for i in 0..1024 {
-            ptr::write(frame_list.offset(i), 1);
+            self.frame_list.write(i, 1);
         }
-        outd(flbaseadd, frame_list as u32);
+        outd(flbaseadd, self.frame_list.address() as u32);
         debug::d(" to ");
         debug::dh(ind(flbaseadd) as usize);
 
@@ -353,7 +329,7 @@ impl Uhci {
                 debug::dh(inw(portsc1) as usize);
                 debug::dl();
 
-                self.device(frame_list, 1);
+                self.device(1);
             }
         }
 
@@ -380,7 +356,7 @@ impl Uhci {
                 debug::dh(inw(portsc2) as usize);
                 debug::dl();
 
-                self.device(frame_list, 2);
+                self.device(2);
             }
         }
     }
