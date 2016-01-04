@@ -84,7 +84,7 @@ It's completely fine to just submit a small pull request without first making an
  * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
 4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
  * Fetch the upstream:`git fetch upstream master`
- * Rebase with local commits:`git rebase upstream master`
+ * Rebase with local commits:`git rebase upstream/master`
  * Update the submodules:`git submodule update --init`
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes
