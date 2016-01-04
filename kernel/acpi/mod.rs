@@ -36,7 +36,7 @@ impl Acpi {
                 };
 
                 for addr in acpi.rsdt.addrs.iter() {
-                    let header = *addr as *const SDTHeader;
+                    let header = unsafe { &*(*addr as *const SDTHeader) };
 
                     if let Some(fadt) = FADT::new(header) {
                         //Why does this hang? debugln!("{:#?}", fadt);
@@ -51,7 +51,11 @@ impl Acpi {
                         //aml::parse(ssdt.data);
                         acpi.ssdt = Some(ssdt);
                     } else {
-                        //debugln!("{:X}: {:#?}", addr, unsafe { *header });
+                        debug!("Unknown ACPI Table: ");
+                        for b in header.signature.iter() {
+                            debug!("{}", *b as char);
+                        }
+                        debugln!("");
                     }
                 }
 
