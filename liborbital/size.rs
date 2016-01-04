@@ -4,13 +4,13 @@ use std::ops::{Add, Sub};
 /// A size
 #[derive(Copy, Clone, Debug, Default)]
 pub struct Size {
-    pub width: usize,
-    pub height: usize,
+    pub width: u32,
+    pub height: u32,
 }
 
 impl Size {
     /// Create a new size
-    pub fn new(width: usize, height: usize) -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         Size {
             width: width,
             height: height,

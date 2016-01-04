@@ -115,6 +115,10 @@ pub unsafe fn sys_open(path: *const u8, flags: usize, mode: usize) -> usize {
     syscall(SYS_OPEN, path as usize, flags, mode)
 }
 
+pub unsafe fn sys_pipe2(fds: *mut usize, flags: usize) -> usize {
+    syscall(SYS_PIPE2, fds as usize, flags, 0)
+}
+
 pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {
     syscall(SYS_READ, fd, buf as usize, count)
 }

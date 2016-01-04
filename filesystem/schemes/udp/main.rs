@@ -1,4 +1,3 @@
-use std::Box;
 use std::fs::File;
 use std::io::{Result, Read, Write, SeekFrom};
 use std::mem;
@@ -6,12 +5,10 @@ use std::net::*;
 use std::ptr;
 use std::rand;
 use std::slice;
-use std::{String, ToString};
 use std::syscall::SysError;
 use std::syscall::{ENOENT, ESPIPE};
 use std::to_num::*;
-use std::Vec;
-use std::Url;
+use std::url::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -79,9 +76,9 @@ impl Resource {
 
     pub fn path(&self) -> Result<String> {
         Ok(format!("udp://{}:{}/{}",
-                     self.peer_addr.to_string(),
-                     self.peer_port,
-                     self.host_port))
+                   self.peer_addr.to_string(),
+                   self.peer_port,
+                   self.host_port))
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -182,7 +179,7 @@ impl Scheme {
                     let mut bytes: Vec<u8> = Vec::new();
                     if let Ok(_) = ip.read_to_end(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(bytes) {
-                            if datagram.header.dst.get() as usize == host_port {
+                            if datagram.header.dst.get() as u32 == host_port {
                                 if let Ok(path) = ip.path() {
                                     let url = Url::from_string(path.to_string());
 

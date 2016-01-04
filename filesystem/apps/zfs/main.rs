@@ -1,7 +1,10 @@
 #![feature(negate_unsigned)]
 
 //To use this, please install zfs-fuse
-use std::{mem, str, File, Read, ToNum};
+use std::{mem, str};
+use std::to_num::ToNum;
+use std::fs::File;
+use std::io::Read;
 use std::rc::Rc;
 
 use self::arcache::ArCache;
@@ -408,7 +411,8 @@ impl Zfs {
 }
 
 // TODO: Find a way to remove all the to_string's
-#[no_mangle] pub fn main() {
+#[no_mangle]
+pub fn main() {
     println!("Type open zfs.img to open the image file");
 
     let mut zfs_option: Option<Zfs> = None;
@@ -557,7 +561,7 @@ impl Zfs {
                                 let sector = arg.to_num();
                                 println!("Dump sector: {}", sector);
 
-                                let data = zfs.reader.zio.read(sector, 1);
+                                let data = zfs.reader.zio.read(sector as usize, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);

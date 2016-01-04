@@ -166,18 +166,7 @@
     }
 /* } STD COPY */
 
-/* Additional Stuff { */
-    pub use boxed::Box;
-    pub use env::*;
-    pub use fs::*;
-    pub use io::*;
     pub use rand_old::*;
-    pub use string::*;
-    pub use vec::Vec;
-
-    pub use url::*;
-    pub use get_slice::*;
-    pub use to_num::*;
 
     pub mod alloc_system;
 

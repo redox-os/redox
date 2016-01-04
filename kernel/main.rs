@@ -2,6 +2,7 @@
 #![feature(alloc)]
 #![feature(allocator)]
 #![feature(arc_counts)]
+#![feature(augmented_assignments)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(collections)]
@@ -12,10 +13,12 @@
 #![feature(fnbox)]
 #![feature(fundamental)]
 #![feature(lang_items)]
+#![feature(op_assign_traits)]
 #![feature(unboxed_closures)]
 #![feature(unsafe_no_drop_flag)]
 #![feature(unwind_attributes)]
 #![feature(vec_push_all)]
+#![feature(zero_one)]
 #![no_std]
 
 #[macro_use]
@@ -23,6 +26,8 @@ extern crate alloc;
 
 #[macro_use]
 extern crate collections;
+
+use acpi::Acpi;
 
 use alloc::boxed::Box;
 
@@ -38,7 +43,7 @@ use common::memory;
 use common::paging::Page;
 use common::time::Duration;
 
-use drivers::pci::*;
+use drivers::pci;
 use drivers::pio::*;
 use drivers::ps2::*;
 use drivers::rtc::*;
@@ -62,6 +67,7 @@ use schemes::context::*;
 use schemes::debug::*;
 use schemes::ethernet::*;
 use schemes::icmp::*;
+use schemes::interrupt::*;
 use schemes::ip::*;
 use schemes::memory::*;
 // use schemes::display::*;
@@ -71,17 +77,22 @@ use syscall::handle::*;
 /// Common std-like functionality
 #[macro_use]
 pub mod common;
+/// ACPI
+pub mod acpi;
 /// Allocation
 pub mod alloc_system;
 /// Audio
 pub mod audio;
+/// Disk drivers
+pub mod disk;
 /// Various drivers
-/// TODO: Move out of kernel space (like other microkernels)
 pub mod drivers;
 /// Environment
 pub mod env;
 /// Externs
 pub mod externs;
+/// Filesystems
+pub mod fs;
 /// Various graphical methods
 pub mod graphics;
 /// Network
@@ -235,6 +246,9 @@ fn event_loop() -> ! {
     }
 }
 
+static BSS_TEST_ZERO: usize = 0;
+static BSS_TEST_NONZERO: usize = usize::MAX;
+
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
     //Zero BSS, this initializes statics that are set to 0
@@ -244,13 +258,16 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             static mut __bss_end: u8;
         }
 
-        let start_ptr: *mut u8 = &mut __bss_start;
-        let end_ptr: *mut u8 = &mut __bss_end;
+        let start_ptr = &mut __bss_start;
+        let end_ptr = &mut __bss_end;
 
-        if start_ptr as usize <= end_ptr as usize {
-            let size = end_ptr as usize - start_ptr as usize;
+        if start_ptr as *const _ as usize <= end_ptr as *const _ as usize {
+            let size = end_ptr as *const _ as usize - start_ptr as *const _ as usize;
             memset(start_ptr, 0, size);
         }
+
+        assert_eq!(BSS_TEST_ZERO, 0);
+        assert_eq!(BSS_TEST_NONZERO, usize::MAX);
     }
 
     //Setup paging, this allows for memory allocation
@@ -270,15 +287,20 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             debug!("Redox {} bits\n", mem::size_of::<usize>() * 8);
 
+            if let Some(acpi) = Acpi::new() {
+                env.schemes.push(UnsafeCell::new(acpi));
+            }
+
             *(env.clock_realtime.lock()) = Rtc::new().time();
 
             env.schemes.push(UnsafeCell::new(Ps2::new()));
             env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
 
-            pci_init(env);
+            pci::pci_init(env);
 
             env.schemes.push(UnsafeCell::new(DebugScheme::new()));
             env.schemes.push(UnsafeCell::new(box ContextScheme));
+            env.schemes.push(UnsafeCell::new(box InterruptScheme));
             env.schemes.push(UnsafeCell::new(box MemoryScheme));
             // session.items.push(box RandomScheme);
             // session.items.push(box TimeScheme);
@@ -313,7 +335,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
 
             if let Ok(mut resource) = Url::from_str("file:/schemes/").open() {
                 let mut vec: Vec<u8> = Vec::new();
-                resource.read_to_end(&mut vec);
+                let _ = resource.read_to_end(&mut vec);
 
                 for folder in String::from_utf8_unchecked(vec).lines() {
                     if folder.ends_with('/') {
@@ -428,6 +450,11 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         }
 
         unsafe { Pio8::new(0x20).write(0x20) };
+    }
+
+    //Do not catch init interrupt
+    if interrupt < 0xFF {
+        env().interrupts.lock()[interrupt as usize] += 1;
     }
 
     match interrupt {

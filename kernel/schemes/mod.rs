@@ -24,10 +24,14 @@ pub mod ethernet;
 pub mod file;
 /// ICMP scheme
 pub mod icmp;
+/// Interrupt scheme
+pub mod interrupt;
 /// IP scheme
 pub mod ip;
 /// Memory scheme
 pub mod memory;
+/// Pipes
+pub mod pipe;
 
 pub type Result<T> = ::core::result::Result<T, SysError>;
 

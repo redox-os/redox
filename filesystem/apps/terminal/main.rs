@@ -1,36 +1,77 @@
+extern crate orbital;
+
+use orbital::Color;
+
 use std::fs::File;
-use std::process::Command;
-use std::syscall::sys_close;
+use std::io::{Read, Write};
+use std::sync::{Arc, Mutex};
+use std::syscall::*;
+use std::thread;
 
-#[no_mangle] pub fn main() {
+use window::ConsoleWindow;
+
+mod window;
+
+macro_rules! readln {
+    () => ({
+        let mut buffer = String::new();
+        match std::io::stdin().read_line(&mut buffer) {
+            Ok(_) => Some(buffer),
+            Err(_) => None
+        }
+    });
+}
+
+pub fn pipe() -> [usize; 2] {
+    let mut fds = [0; 2];
+    SysError::demux(unsafe { sys_pipe2(fds.as_mut_ptr(), 0) }).unwrap();
+    fds
+}
+
+#[no_mangle]
+pub fn main() {
+    let to_shell_fds = pipe();
+    let from_shell_fds = pipe();
+
     unsafe {
-        sys_close(2);
-        sys_close(1);
-        sys_close(0);
+        if SysError::demux(sys_clone(0)).unwrap() == 0 {
+            // Close STDIO
+            sys_close(2);
+            sys_close(1);
+            sys_close(0);
+
+            // Create piped STDIO
+            sys_dup(to_shell_fds[0]);
+            sys_dup(from_shell_fds[1]);
+            sys_dup(from_shell_fds[1]);
+
+            // Close extra pipes
+            sys_close(to_shell_fds[0]);
+            sys_close(to_shell_fds[1]);
+            sys_close(from_shell_fds[0]);
+            sys_close(from_shell_fds[1]);
+
+            // Execute the shell
+            let shell = "file:/apps/shell/main.bin\0";
+            sys_execve(shell.as_ptr(), 0 as *const *const u8);
+            panic!("Shell not found");
+        } else {
+            // Close extra pipes
+            sys_close(to_shell_fds[0]);
+            sys_close(from_shell_fds[1]);
+        }
+    };
+
+    let mut window = ConsoleWindow::new(-1, -1, 576, 400, "Terminal");
+
+    let mut from_shell = unsafe { File::from_fd(from_shell_fds[0]).unwrap() };
+    loop {
+        let mut output = String::new();
+        if let Ok(_) = from_shell.read_to_string(&mut output) {
+            window.print(&output, Color::rgb(255, 255, 255));
+            window.sync();
+        } else {
+            break;
+        }
     }
-
-    let stdin = File::open("terminal:Terminal").unwrap();
-    let stdout = stdin.dup().unwrap();
-    let stderr = stdout.dup().unwrap();
-
-    let path = "file:/apps/shell/main.bin";
-    match Command::new(path).spawn() {
-        Ok(mut child) => {
-            match child.wait() {
-                Ok(status) => {
-                    if let Some(code) = status.code() {
-                        println!("{}: Child exited with exit code: {}", path, code);
-                    } else {
-                        println!("{}: No child exit code", path);
-                    }
-                },
-                Err(err) => println!("{}: Failed to wait: {}", path, err)
-            }
-        },
-        Err(err) => println!("{}: Failed to execute: {}", path, err)
-    }
-
-    drop(stderr);
-    drop(stdout);
-    drop(stdin);
 }

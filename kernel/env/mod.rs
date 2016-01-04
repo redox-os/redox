@@ -38,6 +38,9 @@ pub struct Environment {
     pub events: Mutex<VecDeque<Event>>,
     /// Schemes
     pub schemes: Vec<UnsafeCell<Box<KScheme>>>,
+
+    /// Interrupt stats
+    pub interrupts: Intex<[u64; 256]>
 }
 
 impl Environment {
@@ -51,6 +54,8 @@ impl Environment {
             console: Intex::new(Console::new()),
             events: Mutex::new(VecDeque::new()),
             schemes: Vec::new(),
+
+            interrupts: Intex::new([0; 256])
         }
     }
 
