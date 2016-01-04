@@ -50,22 +50,21 @@ pub struct RSDT {
 }
 
 impl RSDT {
-    pub fn new() -> Option<Self> {
+    pub fn new() -> Result<Self, &'static str> {
         match RSDP::new() {
             Some(rsdp) => {
                 let header = rsdp.addr as *const SDTHeader;
                 if unsafe { (*header).valid("RSDT") } {
-                    Some(RSDT {
+                    Ok(RSDT {
                         header: unsafe { (*header).clone() },
                         addrs: unsafe { (*header).data() }
                     })
                 } else {
-                    None
+                    Err("Did not find RSDT")
                 }
             },
             None => {
-                debugln!("Did not find RSDP");
-                None
+                Err("Did not find RSDP")
             }
         }
     }
