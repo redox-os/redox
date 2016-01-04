@@ -12,10 +12,11 @@ pub struct SSDT {
 
 impl SSDT {
     pub fn new(header: *const SDTHeader) -> Option<Self> {
-        if unsafe { (*header).valid("SSDT") } {
+        let header = unsafe { *header };
+        if header.valid("SSDT") {
             Some(SSDT {
-                header: unsafe { *header },
-                data: unsafe { (*header).data() }
+                header: header,
+                data: header.data(),
             })
         } else {
             None
