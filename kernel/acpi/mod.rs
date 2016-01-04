@@ -40,7 +40,7 @@ impl Acpi {
 
                     if let Some(fadt) = FADT::new(header) {
                         //Why does this hang? debugln!("{:#?}", fadt);
-                        if let Some(dsdt) = DSDT::new(fadt.Dsdt as *const SDTHeader) {
+                        if let Some(dsdt) = DSDT::new(fadt.dsdt as *const SDTHeader) {
                             //debugln!("DSDT:");
                             //aml::parse(dsdt.data);
                             acpi.dsdt = Some(dsdt);
@@ -75,7 +75,7 @@ impl KScheme for Acpi {
             match self.fadt {
                 Some(fadt) => {
                     debugln!("Powering Off");
-                    unsafe { asm!("out dx, ax" : : "{edx}"(fadt.PM1aControlBlock), "{ax}"(0 | 1 << 13) : : "intel", "volatile") };
+                    unsafe { asm!("out dx, ax" : : "{edx}"(fadt.pm1a_control_block), "{ax}"(0 | 1 << 13) : : "intel", "volatile") };
                 },
                 None => {
                     debugln!("Unable to power off: No FADT");
