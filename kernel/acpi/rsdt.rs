@@ -56,7 +56,7 @@ impl RSDT {
                 let header = rsdp.addr as *const SDTHeader;
                 if unsafe { (*header).valid("RSDT") } {
                     Ok(RSDT {
-                        header: unsafe { (*header).clone() },
+                        header: unsafe { *header },
                         addrs: unsafe { (*header).data() }
                     })
                 } else {
