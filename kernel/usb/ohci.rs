@@ -3,15 +3,14 @@ use alloc::boxed::Box;
 use collections::vec::Vec;
 
 use core::intrinsics::volatile_load;
-use core::{mem, slice};
+use core::mem;
 
 use drivers::mmio::Mmio;
 use drivers::pci::config::PciConfig;
 
 use schemes::KScheme;
 
-use super::hci::{UsbHci, UsbMsg};
-use super::setup::Setup;
+use super::{Hci, Packet, Pipe, Setup};
 
 #[repr(packed)]
 #[derive(Copy, Clone, Debug, Default)]
@@ -163,8 +162,8 @@ impl Ohci {
 }
 
 
-impl UsbHci for Ohci {
-    fn msg(&mut self, address: u8, endpoint: u8, msgs: &[UsbMsg]) -> usize {
+impl Hci for Ohci {
+    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
             let link_ptr = match tds.last() {
@@ -173,31 +172,19 @@ impl UsbHci for Ohci {
             };
 
             match *msg {
-                UsbMsg::Setup(setup) => tds.push(Gtd {
+                Packet::Setup(setup) => tds.push(Gtd {
                     flags: 0b1111 << 28 | 0b00 << 19,
                     buffer: (setup as *const Setup) as u32,
                     next: link_ptr,
                     end: (setup as *const Setup) as u32 + mem::size_of::<Setup>() as u32
                 }),
-                UsbMsg::In(ref data) => tds.push(Gtd {
+                Packet::In(ref data) => tds.push(Gtd {
                     flags: 0b1111 << 28 | 0b10 << 19,
                     buffer: data.as_ptr() as u32,
                     next: link_ptr,
                     end: data.as_ptr() as u32 + data.len() as u32
                 }),
-                UsbMsg::InIso(ref data) => tds.push(Gtd {
-                    flags: 0b1111 << 28 | 0b10 << 19,
-                    buffer: data.as_ptr() as u32,
-                    next: link_ptr,
-                    end: data.as_ptr() as u32 + data.len() as u32
-                }),
-                UsbMsg::Out(ref data) => tds.push(Gtd {
-                    flags: 0b1111 << 28 | 0b01 << 19,
-                    buffer: data.as_ptr() as u32,
-                    next: link_ptr,
-                    end: data.as_ptr() as u32 + data.len() as u32
-                }),
-                UsbMsg::OutIso(ref data) => tds.push(Gtd {
+                Packet::Out(ref data) => tds.push(Gtd {
                     flags: 0b1111 << 28 | 0b01 << 19,
                     buffer: data.as_ptr() as u32,
                     next: link_ptr,

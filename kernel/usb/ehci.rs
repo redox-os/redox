@@ -2,22 +2,18 @@ use alloc::boxed::Box;
 
 use collections::vec::Vec;
 
-use core::intrinsics::{volatile_load, volatile_store};
+use core::intrinsics::volatile_load;
 use core::mem::size_of;
-use core::ptr::{self, read, write};
 use core::slice;
 
 use common::debug;
-use common::memory;
-use common::time::{self, Duration};
 
 use drivers::mmio::Mmio;
 use drivers::pci::config::PciConfig;
 
 use schemes::KScheme;
 
-use super::hci::{UsbHci, UsbMsg};
-use super::setup::Setup;
+use super::{Hci, Packet, Pipe, Setup};
 
 #[repr(packed)]
 #[derive(Copy, Clone, Debug, Default)]
@@ -199,8 +195,8 @@ impl Ehci {
     }
 }
 
-impl UsbHci for Ehci {
-    fn msg(&mut self, address: u8, endpoint: u8, msgs: &[UsbMsg]) -> usize {
+impl Hci for Ehci {
+    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
             let link_ptr = match tds.last() {
@@ -209,31 +205,19 @@ impl UsbHci for Ehci {
             };
 
             match *msg {
-                UsbMsg::Setup(setup) => tds.push(Qtd {
+                Packet::Setup(setup) => tds.push(Qtd {
                     next: link_ptr,
                     next_alt: 1,
                     token: (size_of::<Setup>() as u32) << 16 | 0b10 << 8 | 1 << 7,
                     buffers: [(setup as *const Setup) as u32, 0, 0, 0, 0]
                 }),
-                UsbMsg::In(ref data) => tds.push(Qtd {
+                Packet::In(ref data) => tds.push(Qtd {
                     next: link_ptr,
                     next_alt: 1,
                     token: ((data.len() as u32) & 0x7FFF) << 16 | 0b01 << 8 | 1 << 7,
                     buffers: [data.as_ptr() as u32, 0, 0, 0, 0]
                 }),
-                UsbMsg::InIso(ref data) => tds.push(Qtd {
-                    next: link_ptr,
-                    next_alt: 1,
-                    token: ((data.len() as u32) & 0x7FFF) << 16 | 0b01 << 8 | 1 << 7,
-                    buffers: [data.as_ptr() as u32, 0, 0, 0, 0]
-                }),
-                UsbMsg::Out(ref data) => tds.push(Qtd {
-                    next: link_ptr,
-                    next_alt: 1,
-                    token: ((data.len() as u32) & 0x7FFF) << 16 | 0b00 << 8 | 1 << 7,
-                    buffers: [data.as_ptr() as u32, 0, 0, 0, 0]
-                }),
-                UsbMsg::OutIso(ref data) => tds.push(Qtd {
+                Packet::Out(ref data) => tds.push(Qtd {
                     next: link_ptr,
                     next_alt: 1,
                     token: ((data.len() as u32) & 0x7FFF) << 16 | 0b00 << 8 | 1 << 7,
@@ -269,7 +253,6 @@ impl UsbHci for Ehci {
                 async_list.write((&*queuehead as *const QueueHead) as u32 | 2);
                 usb_cmd.writef(1 << 5 | 1, true);
 
-                let mut i = 0;
                 for td in tds.iter().rev() {
                     while unsafe { volatile_load(td as *const Qtd).token } & 1 << 7 == 1 << 7 {
                         //unsafe { context_switch(false) };

@@ -6,7 +6,7 @@ use collections::vec::Vec;
 use common::get_slice::GetSlice;
 use common::memory::Memory;
 
-use core::{cmp, mem, ptr, slice};
+use core::{cmp, ptr, slice};
 
 use disk::Disk;
 
