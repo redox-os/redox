@@ -24,6 +24,8 @@ use super::config::PciConfig;
 use super::common::class::*;
 use super::common::subclass::*;
 use super::common::programming_interface::*;
+use super::common::vendorid::*;
+use super::common::deviceid::*;
 
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
@@ -65,28 +67,22 @@ pub unsafe fn pci_device(env: &mut Environment,
             debug!("Unknown USB interface version {:X}\n", interface_id);
         }
     } else {
-        match vendor_code {
-            0x10EC => match device_code { // REALTEK
-                0x8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
-                _ => (),
-            },
-            0x8086 => match device_code { // INTEL
-                0x100E => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
-                0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x2668 => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box IntelHDA {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                    };
-                    module.init();
-                    env.schemes.push(UnsafeCell::new(module));
-                }
-                _ => (),
-            },
+        match (vendor_code, device_code) {
+            (REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
+            (INTEL, GBE_82540EM) => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
+            (INTEL, AC97_82801AA) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+            (INTEL, AC97_ICH4) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+            (INTEL, INTELHDA_ICH6) => {
+                let base = pci.read(0x10) as usize;
+                let mut module = box IntelHDA {
+                    pci: pci,
+                    base: base & 0xFFFFFFF0,
+                    memory_mapped: base & 1 == 0,
+                    irq: pci.read(0x3C) as u8 & 0xF,
+                };
+                module.init();
+                env.schemes.push(UnsafeCell::new(module));
+            }
             _ => (),
         }
     }
