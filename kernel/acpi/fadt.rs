@@ -81,9 +81,9 @@ pub struct FADT {
 }
 
 impl FADT {
-    pub fn new(header: *const SDTHeader) -> Option<Self> {
-        if unsafe { (*header).valid("FACP") } {
-            Some(unsafe { ptr::read(header as *const FADT) })
+    pub fn new(header: &'static SDTHeader) -> Option<Self> {
+        if header.valid("FACP") {
+            Some(unsafe { ptr::read((header as *const SDTHeader) as *const FADT) })
         } else {
             None
         }
