@@ -4,7 +4,7 @@ use common::event::MouseEvent;
 use common::memory;
 use common::time::{self, Duration};
 
-use core::{cmp, mem, ptr, slice};
+use core::{cmp, mem, ptr, slice, str};
 
 use graphics::display::VBEMODEINFO;
 
@@ -42,6 +42,36 @@ pub trait Hci {
                         (&mut *desc_dev as *mut DeviceDescriptor) as usize,
                         mem::size_of_val(&*desc_dev));
         debugln!("{:#?}", *desc_dev);
+
+        {
+            let mut desc_str = box StringDescriptor::default();
+            self.descriptor(address,
+                            DESC_STR,
+                            desc_dev.manufacturer_string,
+                            (&mut *desc_str as *mut StringDescriptor) as usize,
+                            mem::size_of_val(&*desc_str));
+            debugln!("Manufacturer: {}", desc_str.str());
+        }
+
+        {
+            let mut desc_str = box StringDescriptor::default();
+            self.descriptor(address,
+                            DESC_STR,
+                            desc_dev.product_string,
+                            (&mut *desc_str as *mut StringDescriptor) as usize,
+                            mem::size_of_val(&*desc_str));
+            debugln!("Product: {}", desc_str.str());
+        }
+
+        {
+            let mut desc_str = box StringDescriptor::default();
+            self.descriptor(address,
+                            DESC_STR,
+                            desc_dev.serial_string,
+                            (&mut *desc_str as *mut StringDescriptor) as usize,
+                            mem::size_of_val(&*desc_str));
+            debugln!("Serial: {}", desc_str.str());
+        }
 
         for configuration in 0..(*desc_dev).configurations {
             let desc_cfg_len = 1023;

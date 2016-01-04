@@ -11,6 +11,8 @@ use common::debug;
 use drivers::mmio::Mmio;
 use drivers::pci::config::PciConfig;
 
+use scheduler::context::context_switch;
+
 use schemes::KScheme;
 
 use super::{Hci, Packet, Pipe, Setup};
@@ -255,7 +257,7 @@ impl Hci for Ehci {
 
                 for td in tds.iter().rev() {
                     while unsafe { volatile_load(td as *const Qtd).token } & 1 << 7 == 1 << 7 {
-                        //unsafe { context_switch(false) };
+                        unsafe { context_switch(false) };
                     }
                 }
 

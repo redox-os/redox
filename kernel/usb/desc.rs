@@ -1,3 +1,5 @@
+use core::{cmp, str};
+
 pub const DESC_DEV: u8 = 1;
 #[repr(packed)]
 #[derive(Copy, Clone, Debug, Default)]
@@ -30,6 +32,22 @@ pub struct ConfigDescriptor {
     pub string: u8,
     pub attributes: u8,
     pub max_power: u8,
+}
+
+pub const DESC_STR: u8 = 3;
+#[repr(packed)]
+#[derive(Copy, Clone, Debug, Default)]
+pub struct StringDescriptor {
+    pub length: u8,
+    pub descriptor_type: u8,
+    //TODO: Support longer strings
+    pub data: [u8; 32],
+}
+
+impl StringDescriptor {
+    pub fn str<'a>(&'a self) -> &'a str {
+        unsafe { str::from_utf8_unchecked(&self.data[.. cmp::min(self.length as usize, self.data.len())]) }
+    }
 }
 
 pub const DESC_INT: u8 = 4;
