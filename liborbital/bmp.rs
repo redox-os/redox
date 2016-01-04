@@ -3,8 +3,6 @@ use super::Color;
 use std::fs::File;
 use std::io::Read;
 use std::ops::Deref;
-use std::String;
-use std::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap

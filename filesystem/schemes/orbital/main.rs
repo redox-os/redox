@@ -1,4 +1,4 @@
-use std::{Box, String, Url};
+use std::url::Url;
 use std::{cmp, mem, ptr};
 use std::get_slice::GetSlice;
 use std::io::*;
@@ -18,7 +18,6 @@ use self::window::Window;
 
 pub mod display;
 pub mod package;
-pub mod scheduler;
 pub mod session;
 pub mod window;
 
@@ -45,11 +44,11 @@ impl Resource {
     /// Return the url of this resource
     pub fn path(&self) -> Result<String> {
         Ok(format!("orbital:///{}/{}/{}/{}/{}",
-                     self.window.point.x,
-                     self.window.point.y,
-                     self.window.size.width,
-                     self.window.size.height,
-                     self.window.title))
+                   self.window.point.x,
+                   self.window.point.y,
+                   self.window.size.width,
+                   self.window.size.height,
+                   self.window.title))
     }
 
     /// Read data to buffer
@@ -88,8 +87,10 @@ impl Resource {
 
         self.seek = match pos {
             SeekFrom::Start(offset) => cmp::min(end as u64, cmp::max(0, offset)) as usize,
-            SeekFrom::Current(offset) => cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
-            SeekFrom::End(offset) => cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
+            SeekFrom::Current(offset) =>
+                cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
+            SeekFrom::End(offset) =>
+                cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
         };
 
         Ok(self.seek as u64)
@@ -162,13 +163,13 @@ impl Scheme {
                     self.next_x = 0;
                 }
                 self.next_x += 32;
-                pointx = self.next_x;
+                pointx = self.next_x as i32;
 
                 if self.next_y > self.session.display.height as isize - size_height as isize {
                     self.next_y = 0;
                 }
                 self.next_y += 32;
-                pointy = self.next_y;
+                pointy = self.next_y as i32;
             }
 
             Ok(box Resource {
@@ -180,29 +181,23 @@ impl Scheme {
         } else if host == "launch" {
             let path = url.path();
 
-            unsafe {
-                let reenable = scheduler::start_no_ints();
-
-                for package in self.session.packages.iter() {
-                    let mut accepted = false;
-                    for accept in package.accepts.iter() {
-                        if (accept.starts_with('*') &&
-                            path.ends_with(&accept.get_slice(Some(1), None))) ||
-                           (accept.ends_with('*') &&
-                            path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
-                            accepted = true;
-                            break;
-                        }
-                    }
-                    if accepted {
-                        if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                            println!("{}: Failed to launch", package.binary);
-                        }
+            for package in self.session.packages.iter() {
+                let mut accepted = false;
+                for accept in package.accepts.iter() {
+                    if (accept.starts_with('*') &&
+                        path.ends_with(&accept.get_slice(Some(1), None))) ||
+                       (accept.ends_with('*') &&
+                        path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
+                        accepted = true;
                         break;
                     }
                 }
-
-                scheduler::end_no_ints(reenable);
+                if accepted {
+                    if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
+                        println!("{}: Failed to launch", package.binary);
+                    }
+                    break;
+                }
             }
 
             Err(SysError::new(ENOENT))
@@ -212,15 +207,9 @@ impl Scheme {
     }
 
     pub fn event(&mut self, event: &Event) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
+        self.session.event(event);
 
-            self.session.event(event);
-
-            scheduler::end_no_ints(reenable);
-
-            self.session.redraw();
-        }
+        unsafe { self.session.redraw() };
     }
 }
 

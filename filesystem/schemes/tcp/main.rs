@@ -10,7 +10,7 @@ use std::syscall::SysError;
 use std::syscall::{ENOENT, EPIPE, ESPIPE};
 use std::to_num::*;
 use std::vec::Vec;
-use std::Url;
+use std::url::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -95,9 +95,9 @@ impl Resource {
 
     pub fn path(&self) -> Result<String> {
         Ok(format!("tcp://{}:{}/{}",
-                     self.peer_addr.to_string(),
-                     self.peer_port,
-                     self.host_port as usize))
+                   self.peer_addr.to_string(),
+                   self.peer_port,
+                   self.host_port as usize))
     }
 
     pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
@@ -478,8 +478,8 @@ impl Scheme {
                     if ret.client_establish() {
                         return Ok(ret);
                     }
-                },
-                Err(err) => return Err(err)
+                }
+                Err(err) => return Err(err),
             }
         } else if !url.path().is_empty() {
             let host_port = url.path().to_num() as u16;

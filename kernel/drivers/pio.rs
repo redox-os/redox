@@ -1,3 +1,5 @@
+use core::{u8, u16, u32};
+
 /// PIO8
 #[derive(Copy, Clone)]
 pub struct Pio8 {
@@ -20,6 +22,20 @@ impl Pio8 {
     /// Write
     pub unsafe fn write(&mut self, value: u8) {
         asm!("out $1, $0" : : "{al}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+    }
+
+    pub unsafe fn readf(&self, flags: u8) -> bool {
+        self.read() & flags == flags
+    }
+
+    pub unsafe fn writef(&mut self, flags: u8, value: bool) {
+        if value {
+            let value = self.read() | flags;
+            self.write(value);
+        } else{
+            let value = self.read() & (u8::MAX - flags);
+            self.write(value);
+        }
     }
 }
 
@@ -56,6 +72,20 @@ impl Pio16 {
     pub unsafe fn write(&mut self, value: u16) {
         asm!("out $1, $0" : : "{ax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
     }
+
+    pub unsafe fn readf(&self, flags: u16) -> bool {
+        self.read() & flags == flags
+    }
+
+    pub unsafe fn writef(&mut self, flags: u16, value: bool) {
+        if value {
+            let value = self.read() | flags;
+            self.write(value);
+        } else{
+            let value = self.read() & (u16::MAX - flags);
+            self.write(value);
+        }
+    }
 }
 
 // TODO: Remove
@@ -90,6 +120,20 @@ impl Pio32 {
     /// Write
     pub unsafe fn write(&mut self, value: u32) {
         asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+    }
+
+    pub unsafe fn readf(&self, flags: u32) -> bool {
+        self.read() & flags == flags
+    }
+
+    pub unsafe fn writef(&mut self, flags: u32, value: bool) {
+        if value {
+            let value = self.read() | flags;
+            self.write(value);
+        } else{
+            let value = self.read() & (u32::MAX - flags);
+            self.write(value);
+        }
     }
 }
 

@@ -17,14 +17,17 @@ use schemes::Url;
 
 use sync::Intex;
 
-/// Execute an executable
-pub fn execute(url: Url, mut args: Vec<String>) {
+/// Execute an executable (return true if successful)
+pub fn execute(url: Url, mut args: Vec<String>) -> bool {
     let mut context_ptr: *mut Context = 0 as *mut Context;
     let mut entry: usize = 0;
 
     if let Ok(mut resource) = url.open() {
         let mut vec: Vec<u8> = Vec::new();
-        resource.read_to_end(&mut vec);
+        if let Err(_) = resource.read_to_end(&mut vec) {
+            debugln!("Failed to read executable, aborting execution");
+            return false;
+        }
 
         let executable = Elf::from_data(vec.as_ptr() as usize);
         entry = unsafe { executable.entry() };
@@ -128,7 +131,7 @@ pub fn execute(url: Url, mut args: Vec<String>) {
             unsafe {
                 context.push(0x20 | 3);
                 context.push(user_sp);
-                context.push(/*1 << 9*/ 0);
+                context.push(1 << 9);
                 context.push(0x18 | 3);
                 context.push(entry);
                 context.push(context_userspace as usize);
@@ -139,4 +142,5 @@ pub fn execute(url: Url, mut args: Vec<String>) {
             unsafe { context_switch(false) };
         }
     }
+    false
 }
