@@ -68,26 +68,30 @@ pub unsafe fn pci_device(env: &mut Environment,
         }
     } else {
         match vendor_code {
-            REALTEK => match device_code {
-                RTL8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
-                _ => (),
-            },
-            INTEL => match device_code {
-                GBE_82540EM => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
-                AC97_82801AA | AC97_ICH4 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                INTELHDA_ICH6 => {
-                    let base = pci.read(0x10) as usize;
-                    let mut module = box IntelHDA {
-                        pci: pci,
-                        base: base & 0xFFFFFFF0,
-                        memory_mapped: base & 1 == 0,
-                        irq: pci.read(0x3C) as u8 & 0xF,
-                    };
-                    module.init();
-                    env.schemes.push(UnsafeCell::new(module));
+            REALTEK => {
+                match device_code {
+                    RTL8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
+                    _ => (),
                 }
-                _ => (),
-            },
+            }
+            INTEL => {
+                match device_code {
+                    GBE_82540EM => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
+                    AC97_82801AA | AC97_ICH4 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                    INTELHDA_ICH6 => {
+                        let base = pci.read(0x10) as usize;
+                        let mut module = box IntelHDA {
+                            pci: pci,
+                            base: base & 0xFFFFFFF0,
+                            memory_mapped: base & 1 == 0,
+                            irq: pci.read(0x3C) as u8 & 0xF,
+                        };
+                        module.init();
+                        env.schemes.push(UnsafeCell::new(module));
+                    }
+                    _ => (),
+                }
+            }
             _ => (),
         }
     }
