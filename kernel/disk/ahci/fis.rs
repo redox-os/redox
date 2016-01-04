@@ -128,16 +128,16 @@ pub struct FisDmaSetup {
     pub rsv1: [Mmio<u8>; 2], // Reserved
 
     //DWORD 1&2
-    pub DMAbufferID: Mmio<u64>, // DMA Buffer Identifier. Used to Identify DMA buffer in host memory. SATA Spec says host specific and not in Spec. Trying AHCI spec might work.
+    pub dma_buffer_id: Mmio<u64>, // DMA Buffer Identifier. Used to Identify DMA buffer in host memory. SATA Spec says host specific and not in Spec. Trying AHCI spec might work.
 
     //DWORD 3
     pub rsv3: Mmio<u32>, //More reserved
 
     //DWORD 4
-    pub DMAbufOffset: Mmio<u32>, //Byte offset into buffer. First 2 bits must be 0
+    pub dma_buffer_offset: Mmio<u32>, //Byte offset into buffer. First 2 bits must be 0
 
     //DWORD 5
-    pub TransferCount: Mmio<u32>, //Number of bytes to transfer. Bit 0 must be 0
+    pub transfer_count: Mmio<u32>, //Number of bytes to transfer. Bit 0 must be 0
 
     //DWORD 6
     pub rsv6: Mmio<u32>, //Reserved

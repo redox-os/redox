@@ -10,20 +10,11 @@ use graphics::display::VBEMODEINFO;
 
 use scheduler::Context;
 
+use super::{Packet, Pipe, Setup};
 use super::desc::*;
-use super::setup::Setup;
 
-#[derive(Debug)]
-pub enum UsbMsg<'a> {
-    Setup(&'a Setup),
-    In(&'a mut [u8]),
-    InIso(&'a mut [u8]),
-    Out(&'a [u8]),
-    OutIso(&'a [u8]),
-}
-
-pub trait UsbHci {
-    fn msg(&mut self, address: u8, endpoint: u8, msgs: &[UsbMsg]) -> usize;
+pub trait Hci {
+    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize;
 
     fn descriptor(&mut self,
                          address: u8,
@@ -31,17 +22,17 @@ pub trait UsbHci {
                          descriptor_index: u8,
                          descriptor_ptr: usize,
                          descriptor_len: usize) {
-        self.msg(address, 0, &[
-            UsbMsg::Setup(&Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16)),
-            UsbMsg::In(&mut unsafe { slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize) }),
-            UsbMsg::Out(&[])
+        self.msg(address, 0, Pipe::Control, &[
+            Packet::Setup(&Setup::get_descriptor(descriptor_type, descriptor_index, 0, descriptor_len as u16)),
+            Packet::In(&mut unsafe { slice::from_raw_parts_mut(descriptor_ptr as *mut u8, descriptor_len as usize) }),
+            Packet::Out(&[])
         ]);
     }
 
     unsafe fn device(&mut self, address: u8) where Self: Sized + 'static {
-        self.msg(0, 0, &[
-            UsbMsg::Setup(&Setup::set_address(address)),
-            UsbMsg::In(&mut [])
+        self.msg(0, 0, Pipe::Control, &[
+            Packet::Setup(&Setup::set_address(address)),
+            Packet::In(&mut [])
         ]);
 
         let mut desc_dev = box DeviceDescriptor::default();
@@ -86,7 +77,7 @@ pub trait UsbHci {
                         let in_len = desc_end.max_packet_size as usize;
 
                         if hid {
-                            let this = self as *mut UsbHci;
+                            let this = self as *mut Hci;
                             Context::spawn("kuhci_hid".to_string(), box move || {
                                 debugln!("Starting HID driver");
 
@@ -97,8 +88,8 @@ pub trait UsbHci {
                                         ptr::write(in_ptr.offset(i), 0);
                                     }
 
-                                    if (*this).msg(address, endpoint, &[
-                                        UsbMsg::InIso(&mut slice::from_raw_parts_mut(in_ptr, in_len))
+                                    if (*this).msg(address, endpoint, Pipe::Isochronous, &[
+                                        Packet::In(&mut slice::from_raw_parts_mut(in_ptr, in_len))
                                     ]) > 0 {
                                         let buttons = ptr::read(in_ptr.offset(0) as *const u8) as usize;
                                         let x = ptr::read(in_ptr.offset(1) as *const u16) as usize;

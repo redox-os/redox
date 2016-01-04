@@ -1,11 +1,8 @@
-use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
 
 use core::ptr;
-use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::memory::Memory;
 
@@ -17,8 +14,6 @@ use drivers::pio::*;
 use schemes::Result;
 
 use syscall::{SysError, EIO};
-
-use sync::Intex;
 
 /// An disk extent
 #[derive(Copy, Clone)]
