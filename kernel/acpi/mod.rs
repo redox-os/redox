@@ -25,7 +25,7 @@ pub struct Acpi {
 impl Acpi {
     pub fn new() -> Option<Box<Self>> {
         match RSDT::new() {
-            Some(rsdt) => {
+            Ok(rsdt) => {
                 //debugln!("{:#?}", rsdt);
 
                 let mut acpi = box Acpi {
@@ -57,8 +57,8 @@ impl Acpi {
 
                 Some(acpi)
             },
-            None => {
-                debugln!("Did not find RSDT");
+            Err(e) => {
+                debugln!("{}", e);
                 None
             }
         }

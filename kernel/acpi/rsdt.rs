@@ -15,18 +15,18 @@ struct RSDP {
 const SIGNATURE: &'static [u8] = b"RSD PTR ";
 
 impl RSDP {
-    pub fn new() -> Option<Self> {
+    pub fn new() -> Result<Self, &'static str> {
         //Search top of bios region
         let mut search_ptr = 0xE0000;
         while search_ptr < 0xFFFFF {
             let rsdp = search_ptr as *const RSDP;
             if unsafe { (*rsdp).valid() } {
-                return Some(unsafe { *rsdp });
+                return Ok(unsafe { *rsdp });
             }
             search_ptr += 16;
         }
 
-        None
+        Err("Did not find RSDP")
     }
 
     //TODO: Checksum validation
@@ -50,23 +50,20 @@ pub struct RSDT {
 }
 
 impl RSDT {
-    pub fn new() -> Option<Self> {
+    pub fn new() -> Result<Self, &'static str> {
         match RSDP::new() {
-            Some(rsdp) => {
+            Ok(rsdp) => {
                 let header = rsdp.addr as *const SDTHeader;
                 if unsafe { (*header).valid("RSDT") } {
-                    Some(RSDT {
-                        header: unsafe { (*header).clone() },
+                    Ok(RSDT {
+                        header: unsafe { *header },
                         addrs: unsafe { (*header).data() }
                     })
                 } else {
-                    None
+                    Err("Did not find RSDT")
                 }
             },
-            None => {
-                debugln!("Did not find RSDP");
-                None
-            }
+            Err(e) => Err(e),
         }
     }
 }
