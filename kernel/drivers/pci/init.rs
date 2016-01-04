@@ -24,6 +24,8 @@ use super::config::PciConfig;
 use super::common::class::*;
 use super::common::subclass::*;
 use super::common::programming_interface::*;
+use super::common::vendorid::*;
+use super::common::deviceid::*;
 
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
@@ -66,15 +68,14 @@ pub unsafe fn pci_device(env: &mut Environment,
         }
     } else {
         match vendor_code {
-            0x10EC => match device_code { // REALTEK
-                0x8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
+            REALTEK => match device_code {
+                RTL8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
                 _ => (),
             },
-            0x8086 => match device_code { // INTEL
-                0x100E => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
-                0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x2668 => {
+            INTEL => match device_code {
+                GBE_82540EM => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
+                AC97_82801AA | AC97_ICH4 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                INTELHDA_ICH6 => {
                     let base = pci.read(0x10) as usize;
                     let mut module = box IntelHDA {
                         pci: pci,
