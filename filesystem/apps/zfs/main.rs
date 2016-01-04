@@ -1,5 +1,8 @@
+#![feature(negate_unsigned)]
+
 //To use this, please install zfs-fuse
 use std::{mem, str, File, Read, ToNum};
+use std::rc::Rc;
 
 use self::arcache::ArCache;
 use self::dnode::{DNodePhys, ObjectType};
@@ -495,7 +498,7 @@ impl Zfs {
                                                     // println!("got space map: {:?}", &space_map.unwrap()[0..64]);
 
                                                     let mut range_tree: avl::Tree<space_map::Entry, u64> =
-                                                        avl::Tree::new(Box::new(|x| x.offset()));
+                                                        avl::Tree::new(Rc::new(|x| x.offset()));
                                                     /*space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
                                                                                   &mut range_tree,
                                                                                   &space_map.unwrap(),

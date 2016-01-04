@@ -1,7 +1,9 @@
 use std::{String, ToString, fmt, mem};
 
 use super::avl;
+use super::dmu_objset::ObjectSet;
 use super::from_bytes::FromBytes;
+use super::zfs;
 
 const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
 
@@ -42,19 +44,27 @@ pub struct SpaceMap {
 
 impl SpaceMap {
     /// Returns SpaceMapPhys, Dbuf, and block size
-    fn open_impl(os: &mut ObjectSet, object: u64) -> zfs::Result<(SpaceMapPhys, dmu::Dbuf, u64)> {
+    // TODO
+    /*fn open_impl(os: &mut ObjectSet, object: u64) -> zfs::Result<(SpaceMapPhys, dmu::Dbuf, u64)> {
         let dbuf = try!(dmu_bonus_hold(os, object, sm));
 
         let (block_size, num_blocks) = dmu_object_size_from_db(dbuf);
         let phys = SpaceMapPhys::from_bytes(dbuf.data);
 
         Ok((phys, dbuf, block_size))
-    }
+    }*/
 
-    fn open(os: &mut ObjectSet, object: u64, start: u64, size: u64, shift: u8) -> zfs::Result<Self> {
+    pub fn open(os: &mut ObjectSet, object: u64, start: u64, size: u64, shift: u8) -> zfs::Result<Self> {
         assert!(object != 0);
 
-        let (phys, dbuf, block_size) = try!(Self::open_impl(os, object));
+        // TODO
+        //let (phys, dbuf, block_size) = try!(Self::open_impl(os, object));
+        let phys = SpaceMapPhys {
+            object: 0, // on-disk space map object
+            objsize: 0, // size of the object
+            alloc: 0, // space allocated from the map
+        };
+        let block_size = 0;
 
         let mut space_map =
             SpaceMap {
@@ -77,7 +87,7 @@ impl SpaceMap {
                     tree: &mut avl::Tree<Segment, u64>,
                     bytes: &[u8],
                     map_type: MapType) -> Result<(), String> {
-        for i in 0..space_map.size {
+        for i in 0..(self.size as usize) {
             let entry = Entry::from_bytes(&bytes[i*mem::size_of::<Entry>()..]).unwrap();
             let entry_map_type =
                 match entry.map_type() {
@@ -88,7 +98,7 @@ impl SpaceMap {
                 };
             if entry.debug() != 1 && entry_map_type == map_type {
                 // it's not a debug entry and it's the right map type, add it to the tree
-                tree.insert(entry);
+                tree.insert(Segment::from_entry(&entry));
             }
         }
         tree.in_order(|node| {
@@ -172,7 +182,17 @@ impl fmt::Debug for Entry {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#[derive(Debug)]
 pub struct Segment {
-    start: u64,
-    size: u64,
+    pub start: u64,
+    pub size: u64,
+}
+
+impl Segment {
+    fn from_entry(entry: &Entry) -> Self {
+        Segment {
+            start: entry.offset(),
+            size: entry.size(),
+        }
+    }
 }

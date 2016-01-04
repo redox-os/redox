@@ -1,9 +1,13 @@
 use std::{Box, String, ToString, Vec};
 use std::cmp;
+use std::rc::Rc;
 
 use super::avl;
+use super::dmu_objset::ObjectSet;
 use super::dsl_pool;
+use super::metaslab::{self, MetaslabClass};
 use super::nvpair::{NvList, NvValue};
+use super::taskq::Taskq;
 use super::txg;
 use super::uberblock::Uberblock;
 use super::vdev;
@@ -21,11 +25,12 @@ pub struct Spa {
     config: NvList,
     state: zfs::PoolState,
     load_state: zfs::SpaLoadState,
-    zio_taskq: [[SpaTaskqs; zio::NUM_TASKQ_TYPES]; zio::NUM_TYPES],
+    zio_taskq: Vec<Vec<SpaTaskqs>>,
     //dsl_pool: DslPool,
-    normal_class: MetaslabClass, // normal data class
-    log_class: MetaslabClass,    // intent log data class
+    normal_class: Rc<MetaslabClass>, // normal data class
+    log_class: Rc<MetaslabClass>,    // intent log data class
     first_txg: u64,
+    mos: ObjectSet,
     vdev_tree: vdev::Tree,
     root_vdev: vdev::TreeIndex,
     // ubsync: Uberblock, // Last synced uberblock
@@ -51,39 +56,42 @@ impl Spa {
         Ok(spa)
     }
 
-    // pub fn open(&mut self) -> zfs::Result<()> {
-    // let load_state = zfs::SpaLoadState::Open;
-    // if self.state == zfs::PoolState::Uninitialized {
-    // First time opening
-    //
-    // self.activate();
-    //
-    // try!(self.load(load_state, ImportType::Existing, false));
-    // }
-    //
-    // Ok(())
-    // }
+    /*pub fn open(&mut self) -> zfs::Result<()> {
+        let load_state = zfs::SpaLoadState::Open;
+        if self.state == zfs::PoolState::Uninitialized {
+            // First time opening
+            self.activate();
+            try!(self.load(load_state, ImportType::Existing, false));
+        }
+        
+        Ok(())
+    }*/
 
     fn new(name: String, config: NvList, vdev_alloc_type: vdev::AllocType) -> zfs::Result<Self> {
+        let metaslab_ops = Rc::new(metaslab::MetaslabOps {
+            alloc: metaslab::ff_alloc,
+        });
+        let normal_class = Rc::new(MetaslabClass::create(metaslab_ops.clone()));
+        let log_class = Rc::new(MetaslabClass::create(metaslab_ops));
+
         // Parse vdev tree
         let mut vdev_tree = vdev::Tree::new();
         let root_vdev = {
             let nvroot: &NvList = try!(config.get("vdev_tree").ok_or(zfs::Error::Invalid));
-            try!(vdev_tree.parse(nvroot, None, vdev_alloc_type))
+            try!(vdev_tree.parse(&normal_class, nvroot, None, vdev_alloc_type))
         };
-        
-        let normal_class = MetaslabClass::create(self, metaslab::zfs_metaslab_ops);
-        let log_class = MetaslabClass::create(self, metaslab::zfs_metaslab_ops);
 
         Ok(Spa {
             name: name,
             config: config,
             state: zfs::PoolState::Uninitialized,
             load_state: zfs::SpaLoadState::None,
+            zio_taskq: Vec::new(),
             //dsl_pool: blah,
             normal_class: normal_class,
             log_class: log_class,
             first_txg: 0,
+            mos: ObjectSet,
             vdev_tree: vdev_tree,
             root_vdev: root_vdev,
             did: 0,
@@ -136,34 +144,35 @@ impl Spa {
 
         // TODO: Try to open all vdevs, loading each label in the process.
 
+        // TODO
         // Find the best uberblock.
-        vdev_uberblock_load(rvd, ub, &label);
+        //vdev_uberblock_load(rvd, ub, &label);
 
         // If we weren't able to find a single valid uberblock, return failure.
-        if ub.txg == 0 {
+        /*if ub.txg == 0 {
             return spa_vdev_err(rvd, VDEV_AUX_CORRUPT_DATA, ENXIO);
-        }
+        }*/
 
         // Initialize internal structures
         spa.state = zfs::PoolState::Active;
-        spa.ubsync = spa.uberblock;
+        /*spa.ubsync = spa.uberblock;
         spa.verify_min_txg =
             if spa.extreme_rewind {
-                TXG_INITIAL - 1
+                txg::TXG_INITIAL - 1
             } else {
                 spa.last_synced_txg() - txg::DEFER_SIZE - 1;
             };
         spa.first_txg =
-            if spa.last_ubsync_txg { spa.last_ubsync_txg } else { spa.last_synced_txg() + 1 };
+            if spa.last_ubsync_txg { spa.last_ubsync_txg } else { spa.last_synced_txg() + 1 };*/
         //spa.claim_max_txg = spa.first_txg;
         //spa.prev_software_version = ub.software_version;
 
-        spa.dsl_pool = try!(dsl_pool::DslPool::init(&mut spa, spa.first_txg));
+        //spa.dsl_pool = try!(dsl_pool::DslPool::init(&mut spa, spa.first_txg));
         //if error { return spa_vdev_err(rvd, VDEV_AUX_CORRUPT_DATA, EIO); }
         //spa.meta_objset = spa.dsl_pool.meta_objset;
 
         // Load stuff for the top-level and leaf vdevs
-        spa.vdev_tree.load(spa.root_vdev);
+        spa.vdev_tree.load(&mut spa.mos, spa.root_vdev);
 
         Ok(spa)
     }
@@ -262,19 +271,21 @@ impl Spa {
     }
 
     fn last_synced_txg(&self) -> u64 {
-        spa.ubsync.ub_txg
+        // TODO
+        //self.ubsync.ub_txg
+        0
     }
 
     fn first_txg(&self) -> u64 {
-        spa.first_txg
+        self.first_txg
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct ZioTaskqInfo {
-    zti_mode: zti_modes_t,
-    zti_value: usize,
+    //mode: zti_modes_t,
+    value: usize,
     count: usize,
 }
  
@@ -292,7 +303,7 @@ pub struct SpaNamespace {
 
 impl SpaNamespace {
     pub fn new() -> Self {
-        SpaNamespace { avl: avl::Tree::new(Box::new(|x| x.name.clone())) }
+        SpaNamespace { avl: avl::Tree::new(Rc::new(|x| x.name.clone())) }
     }
 
     pub fn add(&mut self, spa: Spa) {

@@ -1,7 +1,9 @@
 use std::{Box, String, ToString, Vec, cmp, mem};
+use std::rc::Rc;
 
+use super::dmu_objset::ObjectSet;
 use super::from_bytes::FromBytes;
-use super::metaslab::{Metaslab, MetaslabGroup};
+use super::metaslab::{Metaslab, MetaslabClass, MetaslabGroup};
 use super::nvpair::{NvList, NvValue};
 use super::uberblock;
 use super::util;
@@ -102,12 +104,12 @@ pub enum State {
 
 // Stuff that only top level vdevs have
 pub struct Top {
-    ms_array: u64,            // object ID of metaslab array in MOS
-    ms_shift: u64,            // metaslab shift
-    ms_group: MetaslabGroup,  // metaslab group
-    metaslabs: Vec<Metaslab>, // in-memory metaslab array
-    is_hole: bool,
-    removing: bool,  // device is being removed?
+    pub ms_array: u64,            // object ID of metaslab array in MOS
+    pub ms_shift: u64,            // metaslab shift
+    pub ms_group: MetaslabGroup,  // metaslab group
+    pub metaslabs: Vec<Metaslab>, // in-memory metaslab array
+    pub is_hole: bool,
+    pub removing: bool,  // device is being removed?
 }
 
 impl Top {
@@ -146,7 +148,7 @@ pub struct Vdev {
     asize: u64, // allocatable device capacity
     min_asize: u64, // min acceptable asize
     max_asize: u64, // max acceptable asize
-    ashift: u64, // block alignment shift
+    pub ashift: u64, // block alignment shift
     state: State,
     prev_state: State,
     pub ops: VdevOps,
@@ -191,9 +193,11 @@ impl Vdev {
         }
     }
 
-    pub fn load(nv: &NvList,
+    pub fn load(normal_class: &Rc<MetaslabClass>,
+                nv: &NvList,
                 id: u64,
                 parent: Option<TreeIndex>,
+                vdev_tree: &Tree,
                 alloc_type: AllocType)
                 -> zfs::Result<Self> {
         let vdev_type = try!(nv.get::<&String>("type").ok_or(zfs::Error::Invalid)).clone();
@@ -226,22 +230,24 @@ impl Vdev {
 
         // If we're a top-level vdev, try to load the allocation parameters,
         // create the metaslab group, and create the vdev::Top
-        if parent && !parent.parent {
-            let mut ms_array = 0;
-            let mut ms_shift = 0;
-            if alloc_type == AllocType::Load || alloc_type == AllocType::Split {
-                ms_array = try!(nv.get("metaslab_array").ok_or(zfs::Error::Invalid));
-                ms_shift = try!(nv.get("metaslab_shift").ok_or(zfs::Error::Invalid));
-                let asize = try!(nv.get("asize").ok_or(zfs::Error::Invalid));
-                //let removing = try!(nv.get("removing").ok_or(zfs::Error::Invalid));
-            }
-            
-            if alloc_type != AllocType::Attach {
-                assert!(alloc_type == AllocType::Load || alloc_type == AllocType::Add ||
-                        alloc_type == AllocType::Split || alloc_type == AllocType::RootPool);
-                let ms_group = MetaslabGroup::create(spa.normal_class());
+        if let Some(parent) = parent {
+            if parent.get(vdev_tree).parent.is_none() {
+                let mut ms_array = 0;
+                let mut ms_shift = 0;
+                if alloc_type == AllocType::Load || alloc_type == AllocType::Split {
+                    ms_array = try!(nv.get("metaslab_array").ok_or(zfs::Error::Invalid));
+                    ms_shift = try!(nv.get("metaslab_shift").ok_or(zfs::Error::Invalid));
+                    //let asize = try!(nv.get("asize").ok_or(zfs::Error::Invalid));
+                    //let removing = try!(nv.get("removing").ok_or(zfs::Error::Invalid));
+                }
+                
+                if alloc_type != AllocType::Attach {
+                    assert!(alloc_type == AllocType::Load || alloc_type == AllocType::Add ||
+                            alloc_type == AllocType::Split || alloc_type == AllocType::RootPool);
+                    let ms_group = MetaslabGroup::create(normal_class.clone());
 
-                vdev_top = Some(Top::new(ms_array, ms_shift, ms_group));
+                    vdev_top = Some(Top::new(ms_array, ms_shift, ms_group));
+                }
             }
         }
 
@@ -255,15 +261,12 @@ impl Vdev {
         Ok(())
     }
 
-    fn metaslab_init(&mut self, txg: u64) -> zfs::Result<()> {
-        //spa_t *spa = self.spa;
-        //objset_t *mos = spa->spa_meta_objset;
-
+    fn metaslab_init(&mut self, mos: &mut ObjectSet, txg: u64) -> zfs::Result<()> {
         // We assume this is a top-level vdev
         let ref mut top = try!(self.top.as_mut().ok_or(zfs::Error::Invalid));
 
         let old_count = top.metaslabs.len();
-        let new_count = self.asize >> top.ms_shift;
+        let new_count = (self.asize >> top.ms_shift) as usize;
 
         //assert!(txg == 0 || spa_config_held(spa, SCL_ALLOC, RW_WRITER));
 
@@ -289,7 +292,8 @@ impl Vdev {
                               mem::size_of::<u64>(), &object, DMU_READ_PREFETCH));*/
             }
 
-            top.metaslabs.push(try!(Metaslab::init(&mut top.ms_group, m, object, txg)));
+            //let metaslab = try!(Metaslab::init(mos, self, m as u64, object, txg));
+            //top.metaslabs.push(metaslab);
         }
 
         //if (txg == 0)
@@ -357,7 +361,7 @@ impl Vdev {
     }*/
 
     pub fn uberblock_shift(&self) -> u64 {
-        cmp::min(cmp::max(self.top_vdev.ashift, uberblock::UBERBLOCK_SHIFT), MAX_UBERBLOCK_SHIFT)
+        cmp::min(cmp::max(self.ashift, uberblock::UBERBLOCK_SHIFT), MAX_UBERBLOCK_SHIFT)
     }
 
     pub fn uberblock_count(&self) -> u64 {
@@ -432,11 +436,12 @@ impl Tree {
     }
 
     pub fn parse(&mut self,
+                 normal_class: &Rc<MetaslabClass>,
                  nv: &NvList,
                  parent: Option<TreeIndex>,
                  alloc_type: AllocType)
                  -> zfs::Result<TreeIndex> {
-        let vdev = try!(Vdev::load(nv, 0, parent, alloc_type));
+        let vdev = try!(Vdev::load(normal_class, nv, 0, parent, self, alloc_type));
         let index = self.add(vdev);
 
         // Done parsing if this is a leaf
@@ -448,13 +453,13 @@ impl Tree {
         let children: &Vec<NvList> = try!(nv.get("children").ok_or(zfs::Error::Invalid));
 
         for child in children {
-            self.parse(child, Some(index), alloc_type);
+            self.parse(normal_class, child, Some(index), alloc_type);
         }
 
         Ok(index)
     }
 
-    pub fn load(&mut self, root: TreeIndex) {
+    pub fn load(&mut self, mos: &mut ObjectSet, root: TreeIndex) {
         // We use an iterative solution because of borrowing issues
         let mut queue = vec![root];
 
@@ -467,10 +472,13 @@ impl Tree {
             }
 
             // Load metaslabs for top-level vdevs
-            if vdev.top.is_some() && !vdev.is_hole {
-                if vdev.ashift == 0 || vdev.asize == 0 || vdev.metaslab_init(0).is_err() {
-                    // TODO: Set vdev state to error
-                }
+            //if let Some(ref top) = vdev.top {
+            if vdev.top.is_some() {
+                //if !top.is_hole {
+                    if vdev.ashift == 0 || vdev.asize == 0 || vdev.metaslab_init(mos, 0).is_err() {
+                        // TODO: Set vdev state to error
+                    }
+                //}
             }
 
             // TODO: Load DTL for leaf vdevs

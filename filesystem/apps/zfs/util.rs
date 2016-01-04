@@ -2,7 +2,7 @@
 // Compatibility macros/typedefs needed for Solaris -> Linux port
 pub fn p2_align(x: u64, align: u64) -> u64 { x & -align }
 
-fn p2_cross(x: u64, y: u64, align: u64) -> u64 {
+fn p2_cross(x: u64, y: u64, align: u64) -> bool {
     x^y > align-1
 }
 
@@ -10,8 +10,8 @@ fn p2_round_up(x: u64, align: u64) -> u64 {
     ((x - 1) | (align - 1)) + 1
 }
 
-fn p2_boundary(off: u64, len: u64, align: u64) -> u64 {
-    (off ^ (off + len - 1)) > align-1
+fn p2_boundary(off: u64, len: u64, align: u64) -> bool {
+    (off ^ (off + len - 1)) > (align-1)
 }
 
 fn p2_phase(x: u64, align: u64) -> u64 {
@@ -28,7 +28,7 @@ fn p2_nphase_typed(x: u64, align: u64) -> u64 {
 
 fn is_p2(x: u64) -> bool { x & (x - 1) == 0 }
 
-fn is_p2_aligned(v: u64, a: u64) { v & (a - 1) == 0 }
+fn is_p2_aligned(v: u64, a: u64) -> bool { v & (a - 1) == 0 }
 
 pub fn highbit64(u: u64) -> u32 {
     63 - u.leading_zeros()
