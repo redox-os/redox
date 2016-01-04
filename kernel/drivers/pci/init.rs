@@ -35,20 +35,22 @@ pub unsafe fn pci_device(env: &mut Environment,
                          interface_id: u8,
                          vendor_code: u16,
                          device_code: u16) {
-    if class_id == MASS_STORAGE {
-        if subclass_id == IDE {
+    match (class_id, subclass_id, interface_id) {
+        (MASS_STORAGE, IDE, _) => {
             if let Some(module) = FileScheme::new(Ide::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
-        } else if subclass_id == SATA && interface_id == AHCI {
+        }
+        (MASS_STORAGE, SATA, AHCI) => {
             if let Some(module) = FileScheme::new(Ahci::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
         }
-    } else if class_id == SERIAL_BUS && subclass_id == USB {
-        if interface_id == XHCI {
+        (SERIAL_BUS, USB, UHCI) => env.schemes.push(UnsafeCell::new(Uhci::new(pci))),
+        (SERIAL_BUS, USB, OHCI) => env.schemes.push(UnsafeCell::new(Ohci::new(pci))),
+        (SERIAL_BUS, USB, EHCI) => env.schemes.push(UnsafeCell::new(Ehci::new(pci))),
+        (SERIAL_BUS, USB, XHCI) => {
             let base = pci.read(0x10) as usize;
-
             let mut module = box Xhci {
                 pci: pci,
                 base: base & 0xFFFFFFF0,
@@ -57,33 +59,26 @@ pub unsafe fn pci_device(env: &mut Environment,
             };
             module.init();
             env.schemes.push(UnsafeCell::new(module));
-        } else if interface_id == EHCI {
-            env.schemes.push(UnsafeCell::new(Ehci::new(pci)));
-        } else if interface_id == OHCI {
-            env.schemes.push(UnsafeCell::new(Ohci::new(pci)));
-        } else if interface_id == UHCI {
-            env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
-        } else {
-            debug!("Unknown USB interface version {:X}\n", interface_id);
         }
-    } else {
-        match (vendor_code, device_code) {
-            (REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
-            (INTEL, GBE_82540EM) => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
-            (INTEL, AC97_82801AA) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-            (INTEL, AC97_ICH4) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-            (INTEL, INTELHDA_ICH6) => {
-                let base = pci.read(0x10) as usize;
-                let mut module = box IntelHDA {
-                    pci: pci,
-                    base: base & 0xFFFFFFF0,
-                    memory_mapped: base & 1 == 0,
-                    irq: pci.read(0x3C) as u8 & 0xF,
-                };
-                module.init();
-                env.schemes.push(UnsafeCell::new(module));
+        _ => {
+            match (vendor_code, device_code) {
+                (REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
+                (INTEL, GBE_82540EM) => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
+                (INTEL, AC97_82801AA) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                (INTEL, AC97_ICH4) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                (INTEL, INTELHDA_ICH6) => {
+                    let base = pci.read(0x10) as usize;
+                    let mut module = box IntelHDA {
+                        pci: pci,
+                        base: base & 0xFFFFFFF0,
+                        memory_mapped: base & 1 == 0,
+                        irq: pci.read(0x3C) as u8 & 0xF,
+                    };
+                    module.init();
+                    env.schemes.push(UnsafeCell::new(module));
+                }
+                _ => (),
             }
-            _ => (),
         }
     }
 }
