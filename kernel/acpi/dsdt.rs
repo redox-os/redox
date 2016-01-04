@@ -5,7 +5,6 @@ use super::SDTHeader;
 pub struct DSDT {
     pub header: &'static SDTHeader,
     pub data: &'static [u8]
-
 }
 
 impl DSDT {
