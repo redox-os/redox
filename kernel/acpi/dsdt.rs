@@ -10,10 +10,11 @@ pub struct DSDT {
 
 impl DSDT {
     pub fn new(header: *const SDTHeader) -> Option<Self> {
-        if unsafe { (*header).valid("DSDT") } {
+        let header = unsafe { *header };
+        if header.valid("DSDT") {
             Some(DSDT {
-                header: unsafe { *header },
-                data: unsafe { (*header).data() }
+                header: header,
+                data: header.data(),
             })
         } else {
             None
