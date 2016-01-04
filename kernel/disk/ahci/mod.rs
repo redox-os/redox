@@ -2,8 +2,6 @@ use alloc::boxed::Box;
 
 use collections::vec::Vec;
 
-use common::memory;
-
 use disk::Disk;
 
 use drivers::pci::config::PciConfig;

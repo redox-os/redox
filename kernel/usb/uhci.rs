@@ -1,10 +1,9 @@
 use alloc::boxed::Box;
 
-use collections::string::ToString;
 use collections::vec::Vec;
 
 use core::intrinsics::volatile_load;
-use core::{cmp, mem, ptr, slice};
+use core::mem;
 
 use scheduler::context::context_switch;
 use common::debug;
@@ -16,8 +15,7 @@ use drivers::pio::*;
 
 use schemes::KScheme;
 
-use super::hci::{UsbHci, UsbMsg};
-use super::setup::Setup;
+use super::{Hci, Packet, Pipe, Setup};
 
 pub struct Uhci {
     pub base: usize,
@@ -174,8 +172,8 @@ impl Uhci {
     }
 }
 
-impl UsbHci for Uhci {
-    fn msg(&mut self, address: u8, endpoint: u8, msgs: &[UsbMsg]) -> usize {
+impl Hci for Uhci {
+    fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
             let link_ptr = match tds.last() {
@@ -183,34 +181,27 @@ impl UsbHci for Uhci {
                 None => 1
             };
 
+            let ctrl_sts = match pipe {
+                Pipe::Isochronous => 1 << 25 | 1 << 23,
+                _ => 1 << 23
+            };
+
             match *msg {
-                UsbMsg::Setup(setup) => tds.push(Td {
+                Packet::Setup(setup) => tds.push(Td {
                     link_ptr: link_ptr,
-                    ctrl_sts: 1 << 23,
+                    ctrl_sts: ctrl_sts,
                     token: (mem::size_of::<Setup>() as u32 - 1) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x2D,
                     buffer: (&*setup as *const Setup) as u32,
                 }),
-                UsbMsg::In(ref data) => tds.push(Td {
+                Packet::In(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
-                    ctrl_sts: 1 << 23,
+                    ctrl_sts: ctrl_sts,
                     token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
                     buffer: data.as_ptr() as u32,
                 }),
-                UsbMsg::InIso(ref data) => tds.push(Td {
+                Packet::Out(ref data) => tds.push(Td {
                     link_ptr: link_ptr,
-                    ctrl_sts: 1 << 25 | 1 << 23,
-                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0x69,
-                    buffer: data.as_ptr() as u32,
-                }),
-                UsbMsg::Out(ref data) => tds.push(Td {
-                    link_ptr: link_ptr,
-                    ctrl_sts: 1 << 23,
-                    token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1,
-                    buffer: data.as_ptr() as u32,
-                }),
-                UsbMsg::OutIso(ref data) => tds.push(Td {
-                    link_ptr: link_ptr,
-                    ctrl_sts: 1 << 25 | 1 << 23,
+                    ctrl_sts: ctrl_sts,
                     token: ((data.len() as u32 - 1) & 0x7FF) << 21 | (endpoint as u32) << 15 | (address as u32) << 8 | 0xE1,
                     buffer: data.as_ptr() as u32,
                 })

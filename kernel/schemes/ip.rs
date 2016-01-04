@@ -183,7 +183,7 @@ impl KScheme for IpScheme {
                                         Err(_) => (),
                                     }
                                 },
-                                Err(err) => debug!("IP: ARP Write Failed\n"),
+                                Err(err) => debugln!("IP: ARP Write Failed: {}", err),
                             }
                         }
                     }

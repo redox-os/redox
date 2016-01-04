@@ -18,11 +18,11 @@ const ATA_CMD_WRITE_DMA_EXT: u8 = 0x35;
 const ATA_DEV_BUSY: u8 = 0x80;
 const ATA_DEV_DRQ: u8 = 0x08;
 
-const HBA_PxCMD_CR: u32 = 1 << 15;
-const HBA_PxCMD_FR: u32 = 1 << 14;
-const HBA_PxCMD_FRE: u32 = 1 << 4;
-const HBA_PxCMD_ST: u32 = 1;
-const HBA_PxIS_TFES: u32 = 1 << 30;
+const HBA_PORT_CMD_CR: u32 = 1 << 15;
+const HBA_PORT_CMD_FR: u32 = 1 << 14;
+const HBA_PORT_CMD_FRE: u32 = 1 << 4;
+const HBA_PORT_CMD_ST: u32 = 1;
+const HBA_PORT_IS_TFES: u32 = 1 << 30;
 const HBA_SSTS_PRESENT: u32 = 0x3;
 const HBA_SIG_ATA: u32 = 0x00000101;
 const HBA_SIG_ATAPI: u32 = 0xEB140101;
@@ -101,20 +101,20 @@ impl HbaPort {
     pub fn start(&mut self) {
         //debugln!("Starting port");
 
-        while self.cmd.readf(HBA_PxCMD_CR) {}
+        while self.cmd.readf(HBA_PORT_CMD_CR) {}
 
-        self.cmd.writef(HBA_PxCMD_FRE, true);
-        self.cmd.writef(HBA_PxCMD_ST, true);
+        self.cmd.writef(HBA_PORT_CMD_FRE, true);
+        self.cmd.writef(HBA_PORT_CMD_ST, true);
     }
 
     pub fn stop(&mut self) {
         //debugln!("Stopping port");
 
-        self.cmd.writef(HBA_PxCMD_ST, false);
+        self.cmd.writef(HBA_PORT_CMD_ST, false);
 
-        while self.cmd.readf(HBA_PxCMD_FR | HBA_PxCMD_CR) {}
+        while self.cmd.readf(HBA_PORT_CMD_FR | HBA_PORT_CMD_CR) {}
 
-        self.cmd.writef(HBA_PxCMD_FRE, false);
+        self.cmd.writef(HBA_PORT_CMD_FRE, false);
     }
 
     pub fn slot(&self) -> Option<u32> {
@@ -185,12 +185,12 @@ impl HbaPort {
 
                 //debugln!("Completion Wait");
                 while self.ci.readf(1 << slot) {
-                    if self.is.readf(HBA_PxIS_TFES) {
+                    if self.is.readf(HBA_PORT_IS_TFES) {
                         return Err(SysError::new(EIO));
                     }
                 }
 
-                if self.is.readf(HBA_PxIS_TFES) {
+                if self.is.readf(HBA_PORT_IS_TFES) {
                     return Err(SysError::new(EIO));
                 }
 

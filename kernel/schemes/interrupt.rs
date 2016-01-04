@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::String;
-
 use schemes::{Result, KScheme, Resource, Url, VecResource};
 
 pub struct InterruptScheme;
