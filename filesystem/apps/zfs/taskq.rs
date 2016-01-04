@@ -13,8 +13,8 @@ const TASKQ_DYNAMIC: u64 = 0x0004; // Use dynamic thread scheduling
 const TASKQ_THREADS_CPU_PCT: u64 = 0x0008; // Scale # threads by # cpus
 const TASKQ_DC_BATCH: u64 = 0x0010; // Mark threads as batch
 
-const TQ_SLEEP: u64 = KM_SLEEP; // Can block for memory
-const TQ_NOSLEEP: u64 = KM_NOSLEEP; // Cannot block for memory; may fail
+//const TQ_SLEEP: u64 = KM_SLEEP; // Can block for memory
+//const TQ_NOSLEEP: u64 = KM_NOSLEEP; // Cannot block for memory; may fail
 const TQ_NOQUEUE: u64 = 0x02; // Do not enqueue if can't dispatch
 const TQ_FRONT: u64 = 0x08; // Queue in front
 
@@ -30,7 +30,7 @@ pub struct Taskq {
     kcondvar_t wait_cv,*/
     //threads: Vec<Sender<Task>>,
     flags: u64,
-    active: u64,
+    active: u16,
     num_threads: u16,
     num_alloc: u64,
     min_alloc: u64,
@@ -163,7 +163,7 @@ impl Taskq {
 
     fn taskq_dispatch(&mut self, func: TaskFn, flags: u64) -> TaskId {
         //self.threads[0].send(Task { func: func, flags: flags });
-        index = self.next_task_id;
+        let index = self.next_task_id;
         self.next_task_id += 1;
         TaskId(index)
     }

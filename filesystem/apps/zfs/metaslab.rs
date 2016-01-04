@@ -1,11 +1,14 @@
 use std::cmp;
+use std::rc::Rc;
 
 use super::avl;
-use super::space_map;
+use super::dmu_objset::ObjectSet;
+use super::space_map::{self, Segment, SpaceMap};
 use super::taskq::{self, Taskq};
 use super::txg;
 use util;
 use super::vdev;
+use super::zfs;
 
 /*
  * A metaslab class encompasses a category of allocatable top-level vdevs.
@@ -24,10 +27,10 @@ use super::vdev;
  * final step in allocation. These allocators are pluggable allowing each class
  * to use a block allocator that best suits that class.
  */
-struct MetaslabClass {
+pub struct MetaslabClass {
     //spa: *Spa,
     //rotor: *MetaslabGroup,
-    ops: MetaslabOps,
+    ops: Rc<MetaslabOps>,
     aliquot: u64,
     alloc_groups: u64, // # of allocatable groups
     alloc: u64,        // total allocated space
@@ -36,6 +39,23 @@ struct MetaslabClass {
     dspace: u64,       // total deflated space
     //histogram: [u64, RANGE_TREE_HISTOGRAM_SIZE],
     //fastwrite_lock: kmutex_t,
+}
+
+impl MetaslabClass {
+    pub fn create(ops: Rc<MetaslabOps>) -> MetaslabClass {
+        //mutex_init(&mc->mc_fastwrite_lock, NULL, MUTEX_DEFAULT, NULL);
+
+        MetaslabClass {
+            //rotor: NULL,
+            ops: ops,
+            aliquot: 0,
+            alloc_groups: 0,
+            alloc: 0,
+            deferred: 0,
+            space: 0,
+            dspace: 0,
+        }
+    }
 }
 
 /*
@@ -47,28 +67,28 @@ struct MetaslabClass {
  * simply find the next metaslab group in the linked list and attempt
  * to allocate from that group instead.
  */
-struct MetaslabGroup {
+pub struct MetaslabGroup {
     //lock: kmutex_t,
-    metaslab_tree: avl::Tree<MetaslabAvlNode>,
+    metaslab_tree: avl::Tree<MetaslabAvlNode, (u64, u64)>,
     aliquot: u64,
     allocatable: bool,  // can we allocate?
     free_capacity: u64, // percentage free
     bias: i64,
     activation_count: i64,
-    ms_class: MetaslabClass,
+    ms_class: Rc<MetaslabClass>,
     //vdev: vdev::TreeIndex,
     taskq: Taskq,
     //prev: *MetaslabGroup,
     //next: *MetaslabGroup,
     fragmentation: u64,
-    histogram: [u64; RANGE_TREE_HISTOGRAM_SIZE],
+    //histogram: [u64; RANGE_TREE_HISTOGRAM_SIZE],
 }
 
 impl MetaslabGroup {
-    pub fn create(ms_class: MetaslabClass) -> Self {
-        let metaslab_key = Box::new(|ms| (ms.weight, ms.start));
-        let taskq = Taskq::new("metaslab_group_taskq".to_string(), metaslab_load_pct,
-                               maxclsyspri, 10, std::u64::MAX, TASKQ_THREADS_CPU_PCT | TASKQ_DYNAMIC);
+    pub fn create(ms_class: Rc<MetaslabClass>) -> Self {
+        let metaslab_key = Rc::new(|ms: &MetaslabAvlNode| (ms.weight, ms.start));
+        let taskq = Taskq::new("metaslab_group_taskq".to_string(), /*metaslab_load_pct*/4,
+                               10, /*std::u64::MAX*/-1u64, /*TASKQ_THREADS_CPU_PCT | TASKQ_DYNAMIC*/0);
 
         MetaslabGroup {
             //lock: kmutex_t,
@@ -83,8 +103,8 @@ impl MetaslabGroup {
             taskq: taskq,
             //prev: *MetaslabGroup,
             //next: *MetaslabGroup,
-            fragmentation: u64,
-            histogram: [u64; RANGE_TREE_HISTOGRAM_SIZE],
+            fragmentation: 0,
+            //histogram: [0; RANGE_TREE_HISTOGRAM_SIZE],
         }
     }
 
@@ -187,17 +207,17 @@ const MAX_LBAS: usize = 64;
 pub struct Metaslab {
     //lock: kmutex_t,
     //load_cv: kcondvar_t,
-    sm: Option<SpaceMap>,
-    ops: MetaslabOps,
+    space_map: Option<SpaceMap>,
+    ops: Rc<MetaslabOps>,
     id: u64,
     start: u64,
     size: u64,
     fragmentation: u64,
 
     // Sorted by start
-    alloc_tree: [avl::Tree<space_map::Segment, u64>; txg::SIZE],
-    free_tree:  [avl::Tree<space_map::Segment, u64>; txg::SIZE],
-    defer_tree: [avl::Tree<space_map::Segment, u64>; txg::DEFER_SIZE],
+    alloc_tree: Vec<avl::Tree<space_map::Segment, u64>>, // txg::TXG_SIZE
+    free_tree:  Vec<avl::Tree<space_map::Segment, u64>>, // txg::TXG_SIZE
+    defer_tree: Vec<avl::Tree<space_map::Segment, u64>>, // txg::DEFER_SIZE
     tree:       avl::Tree<space_map::Segment, u64>,
 
     condensing: bool,
@@ -222,10 +242,10 @@ pub struct Metaslab {
 }
 
 impl Metaslab {
-    pub fn new(ops: MetaslabOps, id: u64, start: u64, size: u64,
+    pub fn new(ops: Rc<MetaslabOps>, id: u64, start: u64, size: u64,
                space_map: Option<SpaceMap>) -> Self {
-        let seg_key_start = Box::new(|seg| seg.start);
-        let seg_key_size = Box::new(|seg| seg.size);
+        let seg_key_start = Rc::new(|seg: &Segment| seg.start);
+        let seg_key_size = Rc::new(|seg: &Segment| seg.size);
 
         Metaslab {
             //lock: kmutex_t,
@@ -237,9 +257,9 @@ impl Metaslab {
             size: size,
             fragmentation: 0,
 
-            alloc_tree: [avl::Tree::new(seg_key_start.clone()); TXG_SIZE],
-            free_tree:  [avl::Tree::new(seg_key_start.clone()); TXG_SIZE],
-            defer_tree: [avl::Tree::new(seg_key_start.clone()); TXG_DEFER_SIZE],
+            alloc_tree: (0..txg::TXG_SIZE).map(|x| avl::Tree::new(seg_key_start.clone())).collect(),
+            free_tree:  (0..txg::TXG_SIZE).map(|x| avl::Tree::new(seg_key_start.clone())).collect(),
+            defer_tree: (0..txg::DEFER_SIZE).map(|x| avl::Tree::new(seg_key_start.clone())).collect(),
             tree:       avl::Tree::new(seg_key_start),
 
             condensing: false,
@@ -247,7 +267,7 @@ impl Metaslab {
             loaded: false,
             loading: false,
 
-            deferspace: 0,
+            defer_space: 0,
             weight: 0,
             access_txg: 0,
 
@@ -260,9 +280,9 @@ impl Metaslab {
         }
     }
 
-    pub fn init(/*mos: &ObjectSet, */vdev: &mut Vdev, id: u64, object: u64, txg: u64) -> zfs::Result<Self> {
+    pub fn init(mos: &mut ObjectSet, vdev: &mut vdev::Vdev, id: u64, object: u64, txg: u64) -> zfs::Result<Self> {
         // We assume this is a top-level vdev
-        let ref vdev_top = try!(vdev.top.as_ref().ok_or(zfs::Error::Invalid));
+        let vdev_top = try!(vdev.top.as_mut().ok_or(zfs::Error::Invalid));
 
         //mutex_init(&ms.lock, NULL, MUTEX_DEFAULT, NULL);
         //cv_init(&ms->ms_load_cv, NULL, CV_DEFAULT, NULL);
@@ -273,14 +293,14 @@ impl Metaslab {
         // will be opened when we finally allocate an object for it.
         let space_map =
             if object != 0 {
-                Some(try!(SpaceMap::open(mos, object, start, size, vdev.ashift, &ms.lock)))
+                Some(try!(SpaceMap::open(mos, object, start, size, vdev.ashift as u8/*, &ms.lock*/)))
             } else {
                 None
             };
 
-        let mut metaslab = Self::new(vdev.ms_group.ms_class.ops, id, start, size, space_map);
+        let mut metaslab = Self::new(vdev_top.ms_group.ms_class.ops.clone(), id, start, size, space_map);
 
-        vdev.ms_group.add(index, &metaslab);
+        vdev_top.ms_group.add(id as usize, &metaslab);
 
         //metaslab.fragmentation = metaslab_fragmentation(metaslab);
 
@@ -288,7 +308,7 @@ impl Metaslab {
         // a new one (txg == TXG_INITIAL), all space is available now.
         // If we're adding space to an existing pool, the new space
         // does not become available until after this txg has synced.
-        if txg <= TXG_INITIAL {
+        if txg <= txg::TXG_INITIAL as u64 {
             //metaslab_sync_done(metaslab, 0);
         }
 
@@ -321,7 +341,7 @@ impl Metaslab {
         if let Some(ref mut space_map) = self.space_map {
             //result = space_map.load(&mut self.tree, space_map::AllocType::Free);
         } else {
-            self.tree.insert(self.tree, self.start, self.size);
+            self.tree.insert(Segment { start: self.start, size: self.size });
         }
 
         self.loaded = result.is_ok();
@@ -344,21 +364,22 @@ impl Metaslab {
     }
 
     fn activate(&mut self, activation_weight: u64) -> zfs::Result<()> {
-        assert!(MUTEX_HELD(&self.lock));
+        // TODO
+        /*assert!(MUTEX_HELD(&self.lock));
 
         if self.weight & METASLAB_ACTIVE_MASK == 0 {
             self.load_wait();
             if !self.loaded {
                 if let Err(e) = self.load() {
                     metaslab_group_sort(self.group, msp, 0);
-                    return e;
+                    return Err(e);
                 }
             }
 
             metaslab_group_sort(self.group, self, self.weight | activation_weight);
         }
         assert!(self.loaded);
-        assert!(self.weight & METASLAB_ACTIVE_MASK);
+        assert!(self.weight & METASLAB_ACTIVE_MASK);*/
 
         Ok(())
     }
@@ -366,31 +387,26 @@ impl Metaslab {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#[derive(Copy, Clone)]
-struct MetaslabOps {
-    alloc: fn(ms: &mut Metaslab, size: u64) -> u64,
+pub struct MetaslabOps {
+    pub alloc: fn(ms: &mut Metaslab, size: u64) -> u64,
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // The first-fit block allocator
-fn metaslab_ff_alloc(ms: &mut Metaslab, size: u64) -> u64 {
+pub fn ff_alloc(ms: &mut Metaslab, size: u64) -> u64 {
     // Find the largest power of 2 block size that evenly divides the
     // requested size. This is used to try to allocate blocks with similar
     // alignment from the same area of the metaslab (i.e. same cursor
     // bucket) but it does not guarantee that other allocations sizes
     // may exist in the same region.
     let align = size & -size;
-    let ref mut cursor = ms.lbas[util::highbit64(align) - 1];
+    let ref mut cursor = ms.lbas[(util::highbit64(align) - 1) as usize];
     let ref mut tree = ms.tree;
 
     //return metaslab_block_picker(tree, cursor, size, align);
     return 0;
 }
-
-static metaslab_ff_ops: MetaslabOps = MetaslabOps { alloc: metaslab_ff_alloc };
-
-static zfs_metaslab_ops: MetaslabOps = metaslab_ff_ops;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -459,7 +475,7 @@ const METASLAB_ACTIVE_MASK: u64 = METASLAB_WEIGHT_PRIMARY | METASLAB_WEIGHT_SECO
 // before moving on to the next one.
 static metaslab_aliquot: usize = 512 << 10;
 
-static metaslab_gang_bang: u64 = SPA_MAXBLOCKSIZE + 1;    /* force gang blocks */
+//static metaslab_gang_bang: u64 = SPA_MAXBLOCKSIZE + 1;    /* force gang blocks */
 
 // The in-core space map representation is more compact than its on-disk form.
 // The zfs_condense_pct determines how much more compact the in-core
@@ -516,7 +532,7 @@ static metaslab_debug_unload: isize = 0;
 // it's allocation strategy.  Once the space map cannot satisfy
 // an allocation of this size then it switches to using more
 // aggressive strategy (i.e search by size rather than offset).
-static metaslab_df_alloc_threshold: u64 = SPA_MAXBLOCKSIZE;
+//static metaslab_df_alloc_threshold: u64 = SPA_MAXBLOCKSIZE;
 
 // The minimum free space, in percent, which must be available
 // in a space map to continue allocations in a first-fit fashion.
@@ -530,10 +546,10 @@ static metaslab_load_pct: isize = 50;
 // Determines how many txgs a metaslab may remain loaded without having any
 // allocations from it. As long as a metaslab continues to be used we will
 // keep it loaded.
-static metaslab_unload_delay: isize = TXG_SIZE * 2;
+static metaslab_unload_delay: usize = txg::TXG_SIZE * 2;
 
 // Max number of metaslabs per group to preload.
-static metaslab_preload_limit: isize = SPA_DVAS_PER_BP;
+//static metaslab_preload_limit: isize = SPA_DVAS_PER_BP;
 
 // Enable/disable preloading of metaslab.
 static metaslab_preload_enabled: bool = true;

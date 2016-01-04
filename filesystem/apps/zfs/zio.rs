@@ -703,7 +703,7 @@ impl Zio {
 
         PipelineFlow::Continue
     }
-}
+}*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -732,19 +732,19 @@ struct ZbookmarkPhys {
 }
 
 const REQUEUE_IO_START_CUT_IN_LINE: bool = true;
-const NUM_CHILD_TYPES: usize = 4;
-const NUM_WAIT_TYPES: usize = 2;
-const NUM_TYPES: usize = 6;
-const NUM_TASKQ_TYPES: usize = 4;
+pub const NUM_CHILD_TYPES: usize = 4;
+pub const NUM_WAIT_TYPES: usize = 2;
+pub const NUM_TYPES: usize = 6;
+pub const NUM_TASKQ_TYPES: usize = 4;
 
 // Default Linux timeout for a sd device.
-const ZIO_DELAY_MAX = (30 * MILLISEC)
+//const ZIO_DELAY_MAX = (30 * MILLISEC);
 
-const ZIO_FAILURE_MODE_WAIT = 0;
-const ZIO_FAILURE_MODE_CONTINUE = 1;
-const ZIO_FAILURE_MODE_PANIC = 2;
+//const ZIO_FAILURE_MODE_WAIT = 0;
+//const ZIO_FAILURE_MODE_CONTINUE = 1;
+//const ZIO_FAILURE_MODE_PANIC = 2;
 
-pub enum TaskqType {
+/*pub enum TaskqType {
     Issue = 0,
     IssueHigh,
     Interrupt,
@@ -947,5 +947,4 @@ const CLAIM_PIPELINE = INTERLOCK_STAGES | STAGE_DVA_CLAIM;
 const IOCTL_PIPELINE = INTERLOCK_STAGES | STAGE_VDEV_IO_START | STAGE_VDEV_IO_ASSESS;
 
 const BLOCKING_STAGES = STAGE_DVA_ALLOCATE | STAGE_DVA_CLAIM | STAGE_VDEV_IO_START;
-
 */

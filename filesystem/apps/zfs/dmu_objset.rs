@@ -1,5 +1,8 @@
 use super::from_bytes::FromBytes;
 
+use super::dnode::DNodePhys;
+use super::zil_header::ZilHeader;
+
 #[repr(packed)]
 pub struct ObjectSetPhys {
     pub meta_dnode: DNodePhys,
@@ -12,7 +15,9 @@ impl FromBytes for ObjectSetPhys { }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/*struct ObjectSet {
+pub struct ObjectSet;
+
+/*pub struct ObjectSet {
     // Immutable
     dsl_dataset *os_dsl_dataset;
     spa_t *os_spa;

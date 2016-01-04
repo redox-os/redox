@@ -1,3 +1,5 @@
-const DEFER_SIZE: u64 = 2;
+pub const DEFER_SIZE: usize = 2;
 
-const TXG_SIZE: usize = 4;
+pub const TXG_SIZE: usize = 4;
+
+pub const TXG_INITIAL: usize = TXG_SIZE;

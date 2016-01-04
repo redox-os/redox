@@ -1,3 +1,4 @@
+use super::spa;
 use super::zfs;
 
 pub struct DslPool {
