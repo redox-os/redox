@@ -40,7 +40,7 @@ impl Acpi {
 
                     if let Some(fadt) = FADT::new(header) {
                         //Why does this hang? debugln!("{:#?}", fadt);
-                        if let Some(dsdt) = DSDT::new(fadt.dsdt as *const SDTHeader) {
+                        if let Some(dsdt) = DSDT::new(unsafe { &*(fadt.dsdt as *const SDTHeader) }) {
                             //debugln!("DSDT:");
                             //aml::parse(dsdt.data);
                             acpi.dsdt = Some(dsdt);
