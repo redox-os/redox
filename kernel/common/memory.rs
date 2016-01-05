@@ -241,6 +241,11 @@ impl Block {
     pub fn to_ptr(&self) -> usize {
         HEAP_START + self.pos() * MT_ATOM
     }
+
+    pub fn check_aligned(self, align: usize) -> Self {
+        debug_assert!(self.to_ptr() % align == 0, "Alignment check failed! {} not aligned {}", self.to_ptr(), align);
+        self
+    }
 }
 
 // #[derive(Clone, Copy)]
@@ -314,51 +319,61 @@ impl MemoryTree {
             }
         }
     }
-    
+
 
     /// Allocate of minimum size, size
     pub unsafe fn alloc_align(&self, mut size: usize, align: usize) -> Option<Block> {
-
-        // Disclaimer: I'll not pay for
-        // potential eye damage of the
-        // reader. Continue with caution.
-
-        // TODO Optimize so it does not
-        //      run in O(MFG).
-
 //         if size >= MT_ROOT {
 //             return None;
 //         }
+
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
-        let level = MT_DEPTH - order;
+        let level = MT_DEPTH - order - 1;
 
-        let mut ret = None;
-        for pos in 0..MT_BYTES {
-            let b = Block::from_pos(pos);
+        if align > 4096 {
+            return None; // Yup, aligns too big.
+        }
 
-            if b.to_ptr() % align == 0 && MemoryState::Free == self.tree.get(b) {
-                ret = Some(b);
+        size += size % align;
+
+        debug_assert!(align.is_power_of_two(), "alloc_align() : Align a power of two (size is {})", size);
+        debug_assert!(size.is_power_of_two(), "alloc_align() : Size allocated is not a power of two (size is {})", size);
+
+        let mut free = None;
+        for i in 0..1 << level {
+            if let MemoryState::Free = self.tree.get(Block {
+                level: level,
+                idx: i,
+            }) {
+                free = Some(i);
                 break;
             }
         }
 
-        let mut b = if let Some(b) = ret {
-            b
+        if let Some(n) = free {
+            self.tree.set(Block {
+                              level: level,
+                              idx: n,
+                          },
+                          MemoryState::Used);
+
+            Some(Block {
+                idx: n,
+                level: level,
+            }.check_aligned(align))
         } else {
-            return None;
-        };
-
-        let delta = b.level - level; //level as isize - block.level as isize;
-
-        for i in 0..delta {
-            b = self.split(b);
+            if level == 0 {
+                None
+            } else {
+                // Kernel panic on OOM
+                Some(if let Some(m) = self.alloc(size * 2) {
+                    self.split(m).check_aligned(align)
+                } else {
+                    return None;
+                })
+            }
         }
-
-        debug_assert!(b.size() >= size, "alloc_align() : Size allocated is smaller than size requested (requested {}, got {})", size, b.size());
-
-        Some(b)
-
     }
 
     /// Reallocate a block in an optimal way (by unifing it with its buddy)
