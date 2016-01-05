@@ -174,16 +174,16 @@ impl Uhci {
 
 impl Hci for Uhci {
     fn msg(&mut self, address: u8, endpoint: u8, pipe: Pipe, msgs: &[Packet]) -> usize {
+        let ctrl_sts = match pipe {
+            Pipe::Isochronous => 1 << 25 | 1 << 23,
+            _ => 1 << 23
+        };
+
         let mut tds = Vec::new();
         for msg in msgs.iter().rev() {
             let link_ptr = match tds.last() {
                 Some(td) => (td as *const Td) as u32 | 4,
                 None => 1
-            };
-
-            let ctrl_sts = match pipe {
-                Pipe::Isochronous => 1 << 25 | 1 << 23,
-                _ => 1 << 23
             };
 
             match *msg {
