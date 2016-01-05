@@ -4,7 +4,8 @@ use orbital::Color;
 
 use std::fs::File;
 use std::io::{Read, Write};
-use std::sync::{Arc, Mutex};
+use std::ops::Deref;
+use std::sync::Arc;
 use std::syscall::*;
 use std::thread;
 
@@ -62,16 +63,39 @@ pub fn main() {
         }
     };
 
-    let mut window = ConsoleWindow::new(-1, -1, 576, 400, "Terminal");
+    let window = Arc::new(ConsoleWindow::new(-1, -1, 576, 400, "Terminal"));
 
-    let mut from_shell = unsafe { File::from_fd(from_shell_fds[0]).unwrap() };
-    loop {
-        let mut output = String::new();
-        if let Ok(_) = from_shell.read_to_string(&mut output) {
-            window.print(&output, Color::rgb(255, 255, 255));
-            window.sync();
-        } else {
-            break;
+    let window_weak = Arc::downgrade(&window);
+    thread::spawn(move || {
+        let mut from_shell = unsafe { File::from_fd(from_shell_fds[0]).unwrap() };
+        loop {
+            let mut output = String::new();
+            if let Ok(_) = from_shell.read_to_string(&mut output) {
+                if let Some(window) = window_weak.upgrade() {
+                    let window_ptr = (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
+                    unsafe { &mut *window_ptr }.print(&output, Color::rgb(255, 255, 255));
+                    unsafe { &mut *window_ptr }.sync();
+                } else {
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+    });
+
+    {
+        let mut to_shell = unsafe { File::from_fd(to_shell_fds[1]).unwrap() };
+        let window_ptr = (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
+        while let Some(string) = unsafe { &mut *window_ptr }.read() {
+            if ! string.is_empty() {
+                println!("{}", string);
+                if let Ok(_) = to_shell.write(&string.into_bytes()) {
+
+                } else {
+                    break;
+                }
+            }
         }
     }
 }
