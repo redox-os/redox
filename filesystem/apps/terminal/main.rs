@@ -89,7 +89,6 @@ pub fn main() {
         let window_ptr = (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
         while let Some(string) = unsafe { &mut *window_ptr }.read() {
             if ! string.is_empty() {
-                println!("{}", string);
                 if let Ok(_) = to_shell.write(&string.into_bytes()) {
 
                 } else {
