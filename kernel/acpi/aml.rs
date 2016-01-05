@@ -444,9 +444,11 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                             let end = *i + parse_length(bytes, i);
 
                             let name = parse_name(bytes, i);
+                            /*
                             let id = parse_num::<u8>(bytes, i);
                             let blk = parse_num::<u32>(bytes, i);
                             let blklen = parse_num::<u8>(bytes, i);
+                            */
 
                             debugln!("    Processor ({})", name);
 
