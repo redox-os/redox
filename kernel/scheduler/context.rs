@@ -40,7 +40,7 @@ impl ContextManager {
         }
     }
 
-    pub fn current(&self) -> Option<& Box<Context>> {
+    pub fn current(&self) -> Option<&Box<Context>> {
         let i = self.i;
         self.get(i)
     }
@@ -58,7 +58,7 @@ impl ContextManager {
         self.inner.iter_mut()
     }
 
-    pub fn get(&self, i: usize) -> Option<& Box<Context>> {
+    pub fn get(&self, i: usize) -> Option<&Box<Context>> {
         if self.enabled {
             self.inner.get(i)
         } else{
@@ -108,6 +108,7 @@ impl ContextManager {
         }
     }
 }
+
 
 /// Switch context
 ///

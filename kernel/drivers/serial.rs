@@ -1,4 +1,5 @@
 use alloc::boxed::Box;
+use env;
 
 use common::event;
 
@@ -94,7 +95,7 @@ impl KScheme for Serial {
                     scancode: sc,
                     pressed: true,
                 };
-                ::env().events.lock().push_back(key_event.to_event());
+                env().events.lock().push_back(key_event.to_event());
             }
         }
     }
