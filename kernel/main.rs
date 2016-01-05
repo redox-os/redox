@@ -478,7 +478,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
             }
         }
         i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
-        0x80 => if ! syscall_handle(regs) {
+        0x80 => if !syscall_handle(regs) {
             exception!("Unknown Syscall");
         },
         0xFF => {
@@ -496,6 +496,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         0x6 => exception!("Invalid opcode exception"),
         0x7 => exception!("Device not available exception"),
         0x8 => exception_error!("Double fault"),
+        0x9 => exception!("Coprocessor Segment Overrun"), // legacy
         0xA => exception_error!("Invalid TSS exception"),
         0xB => exception_error!("Segment not present exception"),
         0xC => exception_error!("Stack-segment fault"),
