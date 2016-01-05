@@ -137,7 +137,7 @@ unsafe fn idle_loop() {
 
         let mut halt = true;
 
-        for i in env().contexts.lock().iter() {
+        for i in env().contexts.lock().iter().skip(1) {
             if i.interrupted {
                 halt = false;
                 break;
