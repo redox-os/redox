@@ -88,12 +88,10 @@ pub fn main() {
         let mut to_shell = unsafe { File::from_fd(to_shell_fds[1]).unwrap() };
         let window_ptr = (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
         while let Some(string) = unsafe { &mut *window_ptr }.read() {
-            if ! string.is_empty() {
-                if let Ok(_) = to_shell.write(&string.into_bytes()) {
+            if let Ok(_) = to_shell.write(&string.into_bytes()) {
 
-                } else {
-                    break;
-                }
+            } else {
+                break;
             }
         }
     }
