@@ -3,8 +3,6 @@ use super::Color;
 use std::fs::File;
 use std::io::Read;
 use std::ops::Deref;
-use std::String;
-use std::Vec;
 
 // TODO: Follow naming convention
 /// A bitmap
@@ -35,7 +33,7 @@ impl BmpFile {
     /// Load bitmap from given path
     pub fn from_path(path: &str) -> Self {
         let mut data: Vec<u8> = Vec::new();
-        if let Some(mut file) = File::open(path) {
+        if let Ok(mut file) = File::open(path) {
             file.read_to_end(&mut data);
         }
         Self::from_data(&data)

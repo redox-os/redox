@@ -3,7 +3,7 @@
 use core::cmp::{Ordering, PartialEq};
 use core::ops::{Add, Sub};
 
-use syscall::{sys_clock_gettime, sys_nanosleep};
+use syscall::sys_clock_gettime;
 use syscall::common::{CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
 
 pub const NANOS_PER_MICRO: i32 = 1_000;
@@ -57,23 +57,6 @@ impl Duration {
         unsafe { sys_clock_gettime(CLOCK_REALTIME, &mut tp) };
 
         Duration::new(tp.tv_sec, tp.tv_nsec)
-    }
-
-    /// Sleep the duration
-    pub fn sleep(&self) -> Duration {
-        let req = TimeSpec {
-            tv_sec: self.secs,
-            tv_nsec: self.nanos,
-        };
-
-        let mut rem = TimeSpec {
-            tv_sec: 0,
-            tv_nsec: 0,
-        };
-
-        unsafe { sys_nanosleep(&req, &mut rem) };
-
-        Duration::new(rem.tv_sec, rem.tv_nsec)
     }
 }
 

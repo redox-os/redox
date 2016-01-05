@@ -19,7 +19,6 @@
             issue = "27783")]
 #![feature(allocator)]
 #![feature(asm)]
-#![feature(no_std)]
 #![feature(staged_api)]
 
 

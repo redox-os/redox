@@ -1,12 +1,11 @@
-use core::usize;
-
-use io::{Read, Write, Seek, SeekFrom};
+use io::{Read, Result, Write, Seek, SeekFrom};
+use path::PathBuf;
 use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
-use syscall::common::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
+use syscall::{SysError, sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
+use syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END, EACCES};
 
 /// A Unix-style file
 pub struct File {
@@ -15,107 +14,96 @@ pub struct File {
 }
 
 impl File {
+    pub unsafe fn from_fd(fd_muxed: usize) -> Result<File> {
+        match SysError::demux(fd_muxed) {
+            Ok(fd) => Ok(File {
+                fd: fd
+            }),
+            Err(err) => Err(err)
+        }
+    }
+
     /// Open a new file using a path
-    pub fn open(path: &str) -> Option<File> {
+    pub fn open(path: &str) -> Result<File> {
+        let path_c = path.to_string() + "\0";
         unsafe {
-            let fd = sys_open((path.to_string() + "\0").as_ptr(), O_RDWR, 0);
-            if fd == usize::MAX {
-                None
-            } else {
-                Some(File { fd: fd })
-            }
+            File::from_fd(sys_open(path_c.as_ptr(), O_RDWR, 0))
         }
     }
 
     /// Create a new file using a path
-    pub fn create(path: &str) -> Option<File> {
+    pub fn create(path: &str) -> Result<File> {
+        let path_c = path.to_string() + "\0";
         unsafe {
-            let fd = sys_open((path.to_string() + "\0").as_ptr(),
-                              O_CREAT | O_RDWR | O_TRUNC,
-                              0);
-            if fd == usize::MAX {
-                None
-            } else {
-                Some(File { fd: fd })
-            }
+            File::from_fd(sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0))
         }
     }
 
     /// Duplicate the file
-    pub fn dup(&self) -> Option<File> {
+    pub fn dup(&self) -> Result<File> {
         unsafe {
-            let new_fd = sys_dup(self.fd);
-            if new_fd == usize::MAX {
-                None
-            } else {
-                Some(File { fd: new_fd })
-            }
+            File::from_fd(sys_dup(self.fd))
         }
     }
 
     /// Get the canonical path of the file
-    pub fn path(&self) -> Option<String> {
-        unsafe {
-            let mut buf: [u8; 4096] = [0; 4096];
-            let count = sys_fpath(self.fd, buf.as_mut_ptr(), buf.len());
-            if count == usize::MAX {
-                None
-            } else {
-                Some(String::from_utf8_unchecked(Vec::from(&buf[0..count])))
-            }
+    pub fn path(&self) -> Result<PathBuf> {
+        let mut buf: [u8; 4096] = [0; 4096];
+        match SysError::demux(unsafe { sys_fpath(self.fd, buf.as_mut_ptr(), buf.len()) }) {
+            Ok(count) => Ok(PathBuf::from(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) })),
+            Err(err) => Err(err)
         }
     }
 
-    /// Flush the io
-    pub fn sync(&mut self) -> bool {
-        unsafe { sys_fsync(self.fd) == 0 }
+    /// Flush the file data and metadata
+    pub fn sync_all(&mut self) -> Result<()> {
+        match SysError::demux(unsafe { sys_fsync(self.fd) }) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 
-    pub fn set_len(&mut self, size: usize) -> bool {
-        unsafe { sys_ftruncate(self.fd, size) == 0 }
+    /// Flush the file data
+    pub fn sync_data(&mut self) -> Result<()> {
+        match SysError::demux(unsafe { sys_fsync(self.fd) }) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
+    }
+
+    /// Truncates the file
+    pub fn set_len(&mut self, size: usize) -> Result<()> {
+        match SysError::demux(unsafe { sys_ftruncate(self.fd, size) }) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 }
 
 impl Read for File {
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        unsafe {
-            let count = sys_read(self.fd, buf.as_mut_ptr(), buf.len());
-            if count == usize::MAX {
-                None
-            } else {
-                Some(count)
-            }
-        }
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        SysError::demux(unsafe { sys_read(self.fd, buf.as_mut_ptr(), buf.len()) })
     }
 }
 
 impl Write for File {
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        unsafe {
-            let count = sys_write(self.fd, buf.as_ptr(), buf.len());
-            if count == usize::MAX {
-                None
-            } else {
-                Some(count)
-            }
-        }
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        SysError::demux(unsafe { sys_write(self.fd, buf.as_ptr(), buf.len()) })
     }
 }
 
 impl Seek for File {
     /// Seek a given position
-    fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
+    fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         let (whence, offset) = match pos {
             SeekFrom::Start(offset) => (SEEK_SET, offset as isize),
-            SeekFrom::Current(offset) => (SEEK_CUR, offset),
-            SeekFrom::End(offset) => (SEEK_END, offset),
+            SeekFrom::Current(offset) => (SEEK_CUR, offset as isize),
+            SeekFrom::End(offset) => (SEEK_END, offset as isize),
         };
 
-        let position = unsafe { sys_lseek(self.fd, offset, whence) };
-        if position == usize::MAX {
-            None
-        } else {
-            Some(position)
+        match SysError::demux(unsafe { sys_lseek(self.fd, offset, whence) }) {
+            Ok(position) => Ok(position as u64),
+            Err(err) => Err(err)
         }
     }
 }
@@ -128,28 +116,42 @@ impl Drop for File {
     }
 }
 
+pub struct FileType {
+    dir: bool,
+    file: bool,
+}
+
+impl FileType {
+    pub fn is_dir(&self) -> bool {
+        self.dir
+    }
+
+    pub fn is_file(&self) -> bool {
+        self.file
+    }
+}
+
 pub struct DirEntry {
-    path: String,
+    path: PathBuf,
+    dir: bool,
+    file: bool,
 }
 
 impl DirEntry {
-    pub fn path(&self) -> &str {
+    pub fn file_name(&self) -> &PathBuf {
         &self.path
     }
 
-    /// Create a new directory, using a path
-    /// The default mode of the directory is 744
-    pub fn create(path: &str) -> Option<DirEntry> {
-        unsafe {
-            let dir = sys_mkdir((path.to_string() + "\0").as_ptr(), 744);
-            if dir == usize::MAX {
-                None
-            } else {
-                Some(DirEntry { path: path.to_string() })
-            }
-        }
+    pub fn file_type(&self) -> Result<FileType> {
+        Ok(FileType {
+            dir: self.dir,
+            file: self.file
+        })
     }
 
+    pub fn path(&self) -> &PathBuf {
+        &self.path
+    }
 }
 
 pub struct ReadDir {
@@ -157,50 +159,72 @@ pub struct ReadDir {
 }
 
 impl Iterator for ReadDir {
-    type Item = DirEntry;
-    fn next(&mut self) -> Option<DirEntry> {
+    type Item = Result<DirEntry>;
+    fn next(&mut self) -> Option<Result<DirEntry>> {
         let mut path = String::new();
         let mut buf: [u8; 1] = [0; 1];
         loop {
             match self.file.read(&mut buf) {
-                Some(0) => break,
-                Some(count) => {
+                Ok(0) => break,
+                Ok(count) => {
                     if buf[0] == 10 {
                         break;
                     } else {
                         path.push_str(unsafe { str::from_utf8_unchecked(&buf[..count]) });
                     }
-                }
-                None => break,
+                },
+                Err(err) => break
             }
         }
         if path.is_empty() {
             None
         } else {
-            Some(DirEntry { path: path })
+            let dir = path.ends_with('/');
+            if dir {
+                path.pop();
+            }
+            Some(Ok(DirEntry {
+                path: PathBuf::from(path),
+                dir: dir,
+                file: ! dir,
+            }))
         }
     }
 }
 
-pub fn read_dir(path: &str) -> Option<ReadDir> {
-    let file_option = if path.is_empty() || path.ends_with('/') {
+/// Create a new directory, using a path
+/// The default mode of the directory is 744
+pub fn create_dir(path: &str) -> Result<()> {
+    let path_c = path.to_string() + "\0";
+    match SysError::demux(unsafe { sys_mkdir(path_c.as_ptr(), 755) }) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err)
+    }
+}
+
+pub fn read_dir(path: &str) -> Result<ReadDir> {
+    let file_result = if path.is_empty() || path.ends_with('/') {
         File::open(path)
     } else {
         File::open(&(path.to_string() + "/"))
     };
 
-    if let Some(file) = file_option {
-        Some(ReadDir { file: file })
-    } else {
-        None
+    match file_result {
+        Ok(file) => Ok(ReadDir{
+            file: file
+        }),
+        Err(err) => Err(err)
     }
 }
 
-pub fn remove_file(path: &str) -> Result<(), ()> {
+pub fn remove_dir(path: &str) -> Result<()> {
+    Err(SysError::new(EACCES))
+}
+
+pub fn remove_file(path: &str) -> Result<()> {
     let path_c = path.to_string() + "\0";
-    if unsafe { sys_unlink(path_c.as_ptr()) == 0 } {
-        Ok(())
-    } else {
-        Err(())
+    match SysError::demux(unsafe { sys_unlink(path_c.as_ptr()) }) {
+        Ok(_) => Ok(()),
+        Err(err) => Err(err)
     }
 }

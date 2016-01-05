@@ -8,6 +8,12 @@ pub struct Intex<T: ?Sized> {
     value: UnsafeCell<T>,
 }
 
+impl Intex<()> {
+    pub fn static_lock() -> StaticIntexGuard {
+        StaticIntexGuard
+    }
+}
+
 impl<T> Intex<T> {
     /// Create a new Intex with value `value`.
     pub fn new(value: T) -> Self {
@@ -18,11 +24,7 @@ impl<T> Intex<T> {
 impl<T: ?Sized> Intex<T> {
     /// Lock the Intex
     pub fn lock(&self) -> IntexGuard<T> {
-        unsafe {
-            asm!("cli");
-            intex_count += 1;
-            IntexGuard::new(&self.value)
-        }
+        IntexGuard::new(&self.value)
     }
 }
 
@@ -32,12 +34,14 @@ unsafe impl<T: ?Sized + Send> Sync for Intex<T> { }
 
 /// A Intex guard (returned by .lock())
 pub struct IntexGuard<'a, T: ?Sized + 'a> {
+    inner: StaticIntexGuard,
     data: &'a UnsafeCell<T>,
 }
 
 impl<'intex, T: ?Sized> IntexGuard<'intex, T> {
     fn new(data: &'intex UnsafeCell<T>) -> Self {
         IntexGuard {
+            inner: StaticIntexGuard::new(),
             data: data,
         }
     }
@@ -57,12 +61,25 @@ impl<'intex, T: ?Sized> DerefMut for IntexGuard<'intex, T> {
     }
 }
 
-impl<'a, T: ?Sized> Drop for IntexGuard<'a, T> {
+/// A Static Intex guard (returned by .static_lock())
+pub struct StaticIntexGuard;
+
+impl StaticIntexGuard {
+    fn new() -> Self {
+        unsafe {
+            asm!("cli");
+            intex_count += 1;
+        }
+        StaticIntexGuard
+    }
+}
+
+impl Drop for StaticIntexGuard {
     fn drop(&mut self) {
         unsafe {
             intex_count -= 1;
             if intex_count == 0 {
-                asm!("sti");
+                //asm!("sti");
             }
         }
     }

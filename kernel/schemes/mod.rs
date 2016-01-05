@@ -8,7 +8,7 @@ use collections::vec::Vec;
 
 use core::cmp::{min, max};
 
-use syscall::common::{O_CREAT, O_RDWR, O_TRUNC};
+use syscall::{SysError, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
 
 /// ARP scheme
 pub mod arp;
@@ -24,10 +24,16 @@ pub mod ethernet;
 pub mod file;
 /// ICMP scheme
 pub mod icmp;
+/// Interrupt scheme
+pub mod interrupt;
 /// IP scheme
 pub mod ip;
 /// Memory scheme
 pub mod memory;
+/// Pipes
+pub mod pipe;
+
+pub type Result<T> = ::core::result::Result<T, SysError>;
 
 #[allow(unused_variables)]
 pub trait KScheme {
@@ -48,12 +54,12 @@ pub trait KScheme {
 
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
-        None
+    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
+        Err(SysError::new(ENOENT))
     }
 
-    fn unlink(&mut self, url: &Url) -> bool {
-        false
+    fn unlink(&mut self, url: &Url) -> Result<()> {
+        Err(SysError::new(ENOENT))
     }
 }
 
@@ -71,42 +77,42 @@ pub enum ResourceSeek {
 #[allow(unused_variables)]
 pub trait Resource {
     /// Duplicate the resource
-    fn dup(&self) -> Option<Box<Resource>> {
-        None
+    fn dup(&self) -> Result<Box<Resource>> {
+        Err(SysError::new(EBADF))
     }
     /// Return the url of this resource
     fn url(&self) -> Url;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
-        None
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
     /// Write to resource
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
-        None
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
     /// Seek
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
-        None
+    fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
     /// Sync the resource
-    fn sync(&mut self) -> bool {
-        false
+    fn sync(&mut self) -> Result<()> {
+        Err(SysError::new(EBADF))
     }
 
-    fn truncate(&mut self, len: usize) -> bool {
-        false
+    fn truncate(&mut self, len: usize) -> Result<()> {
+        Err(SysError::new(EBADF))
     }
 
     // Helper functions
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
         let mut read = 0;
         loop {
             let mut bytes = [0; 1024];
             match self.read(&mut bytes) {
-                Some(0) => return Some(read),
-                None => return None,
-                Some(count) => {
+                Ok(0) => return Ok(read),
+                Err(err) => return Err(err),
+                Ok(count) => {
                     vec.push_all(bytes.get_slice(None, Some(count)));
                     read += count;
                 }
@@ -147,12 +153,12 @@ impl Url {
     }
 
     /// Open this URL (returns a resource)
-    pub fn open(&self) -> Option<Box<Resource>> {
+    pub fn open(&self) -> Result<Box<Resource>> {
         ::env().open(&self, O_RDWR)
     }
 
     /// Create this URL (returns a resource)
-    pub fn create(&self) -> Option<Box<Resource>> {
+    pub fn create(&self) -> Result<Box<Resource>> {
         ::env().open(&self, O_CREAT | O_RDWR | O_TRUNC)
     }
 
@@ -196,8 +202,8 @@ impl VecResource {
 }
 
 impl Resource for VecResource {
-    fn dup(&self) -> Option<Box<Resource>> {
-        Some(box VecResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box VecResource {
             url: self.url.clone(),
             vec: self.vec.clone(),
             seek: self.seek,
@@ -208,7 +214,7 @@ impl Resource for VecResource {
         return self.url.clone();
     }
 
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             match self.vec.get(self.seek) {
@@ -218,10 +224,10 @@ impl Resource for VecResource {
             self.seek += 1;
             i += 1;
         }
-        return Some(i);
+        return Ok(i);
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let mut i = 0;
         while i < buf.len() && self.seek < self.vec.len() {
             self.vec[self.seek] = buf[i];
@@ -233,10 +239,10 @@ impl Resource for VecResource {
             self.seek += 1;
             i += 1;
         }
-        return Some(i);
+        return Ok(i);
     }
 
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
         match pos {
             ResourceSeek::Start(offset) => self.seek = min(self.vec.len(), offset),
             ResourceSeek::Current(offset) =>
@@ -247,19 +253,19 @@ impl Resource for VecResource {
                                     self.vec.len() as isize +
                                     offset)) as usize,
         }
-        return Some(self.seek);
+        return Ok(self.seek);
     }
 
-    fn sync(&mut self) -> bool {
-        return true;
+    fn sync(&mut self) -> Result<()> {
+        Ok(())
     }
 
-    fn truncate(&mut self, len: usize) -> bool {
+    fn truncate(&mut self, len: usize) -> Result<()> {
         while len > self.vec.len() {
             self.vec.push(0);
         }
         self.vec.truncate(len);
         self.seek = min(self.seek, self.vec.len());
-        true
+        Ok(())
     }
 }

@@ -12,9 +12,9 @@ use scheme::{Resource, Scheme};
 #[path="SCHEME_PATH"]
 pub mod scheme;
 
-use std::Box;
 use std::io::{Read, Write, Seek, SeekFrom};
-use std::{ptr, slice, str, usize};
+use std::{ptr, slice, str};
+use std::syscall::{SysError, EINVAL};
 
 #[no_mangle]
 pub fn main(){
@@ -38,7 +38,7 @@ pub unsafe extern "C" fn _stop(scheme: *mut Scheme) {
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usize) -> *mut Resource {
+pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usize) -> usize {
     let mut len = 0;
     for i in 0..4096 {
         len = i as usize;
@@ -47,65 +47,69 @@ pub unsafe extern "C" fn _open(scheme: *mut Scheme, path: *const u8, flags: usiz
         }
     }
 
-    match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len)), flags) {
-        Some(resource) => return Box::into_raw(resource),
-        None => return usize::MAX as *mut Resource
-    }
+    SysError::mux(
+        match (*scheme).open(str::from_utf8_unchecked(slice::from_raw_parts(path, len)), flags) {
+            Ok(resource) => Ok(Box::into_raw(resource) as usize),
+            Err(err) => Err(err)
+        }
+    )
 }
 
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
-pub unsafe extern "C" fn _dup(resource: *mut Resource) -> *mut Resource {
-    match (*resource).dup() {
-        Some(resource) => return Box::into_raw(resource),
-        None => return usize::MAX as *mut Resource
-    }
+pub unsafe extern "C" fn _dup(resource: *mut Resource) -> usize {
+    SysError::mux(
+        match (*resource).dup() {
+            Ok(resource) => Ok(Box::into_raw(resource) as usize),
+            Err(err) => Err(err)
+        }
+    )
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fpath(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
-    match (*resource).path() {
-        Some(string) => {
-            let mut buf = slice::from_raw_parts_mut(buf, len);
+    SysError::mux(
+        match (*resource).path() {
+            Ok(string) => {
+                let mut buf = slice::from_raw_parts_mut(buf, len);
 
-            let mut i = 0;
-            for b in string.bytes() {
-                if i < buf.len() {
-                    buf[i] = b;
-                    i += 1;
-                } else {
-                    break;
+                let mut i = 0;
+                for b in string.bytes() {
+                    if i < buf.len() {
+                        buf[i] = b;
+                        i += 1;
+                    } else {
+                        break;
+                    }
                 }
-            }
 
-            return i;
-        },
-        None => return usize::MAX
-    }
+                Ok(i)
+            },
+            Err(err) => Err(err)
+        }
+    )
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _read(resource: *mut Resource, buf: *mut u8, len: usize) -> usize {
-    match (*resource).read(slice::from_raw_parts_mut(buf, len)) {
-        Some(bytes) => return bytes,
-        None => return usize::MAX
-    }
+    SysError::mux(
+        (*resource).read(slice::from_raw_parts_mut(buf, len))
+    )
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _write(resource: *mut Resource, buf: *const u8, len: usize) -> usize {
-    match (*resource).write(slice::from_raw_parts(buf, len)) {
-        Some(bytes) => return bytes,
-        None => return usize::MAX
-    }
+    SysError::mux(
+        (*resource).write(slice::from_raw_parts(buf, len))
+    )
 }
 
 const SEEK_SET: isize = 0;
@@ -115,32 +119,34 @@ const SEEK_END: isize = 2;
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _lseek(resource: *mut Resource, offset: isize, whence: isize) -> usize {
-    if whence == SEEK_SET {
-        if let Some(bytes) = (*resource).seek(SeekFrom::Start(offset as usize)) {
-            return bytes;
-        }
+    let result = if whence == SEEK_SET {
+        (*resource).seek(SeekFrom::Start(offset as u64))
     } else if whence == SEEK_CUR {
-        if let Some(bytes) = (*resource).seek(SeekFrom::Current(offset)) {
-            return bytes;
-        }
+        (*resource).seek(SeekFrom::Current(offset as i64))
     } else if whence == SEEK_END {
-        if let Some(bytes) = (*resource).seek(SeekFrom::End(offset)) {
-            return bytes;
-        }
-    }
+        (*resource).seek(SeekFrom::End(offset as i64))
+    } else {
+        Err(SysError::new(EINVAL))
+    };
 
-    usize::MAX
+    SysError::mux(
+        match result {
+            Ok(len) => Ok(len as usize),
+            Err(err) => Err(err)
+        }
+    )
 }
 
 #[cold]
 #[inline(never)]
 #[no_mangle]
 pub unsafe extern "C" fn _fsync(resource: *mut Resource) -> usize {
-    if (*resource).sync() {
-        0
-    } else {
-        usize::MAX
-    }
+    SysError::mux(
+        match (*resource).sync() {
+            Ok(_) => Ok(0),
+            Err(err) => Err(err)
+        }
+    )
 }
 
 #[cold]

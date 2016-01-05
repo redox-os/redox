@@ -1,15 +1,14 @@
-use std::Box;
 use std::fs::File;
-use std::io::{Read, Write, SeekFrom};
+use std::io::{Result, Read, Write, SeekFrom};
 use std::mem;
 use std::net::*;
 use std::ptr;
 use std::rand;
 use std::slice;
-use std::{String, ToString};
+use std::syscall::SysError;
+use std::syscall::{ENOENT, ESPIPE};
 use std::to_num::*;
-use std::Vec;
-use std::Url;
+use std::url::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -62,27 +61,27 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Self>> {
+    pub fn dup(&self) -> Result<Box<Self>> {
         match self.ip.dup() {
-            Some(ip) => Some(box Resource {
+            Ok(ip) => Ok(box Resource {
                 ip: ip,
                 data: self.data.clone(),
                 peer_addr: self.peer_addr,
                 peer_port: self.peer_port,
                 host_port: self.host_port,
             }),
-            None => None,
+            Err(err) => Err(err),
         }
     }
 
-    pub fn path(&self) -> Option<String> {
-        Some(format!("udp://{}:{}/{}",
-                     self.peer_addr.to_string(),
-                     self.peer_port,
-                     self.host_port))
+    pub fn path(&self) -> Result<String> {
+        Ok(format!("udp://{}:{}/{}",
+                   self.peer_addr.to_string(),
+                   self.peer_port,
+                   self.host_port))
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         if !self.data.is_empty() {
             let mut bytes: Vec<u8> = Vec::new();
             mem::swap(&mut self.data, &mut bytes);
@@ -92,13 +91,13 @@ impl Resource {
             while i < buf.len() && i < bytes.len() {
                 buf[i] = bytes[i];
             }
-            return Some(i);
+            return Ok(i);
         }
 
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.ip.read_to_end(&mut bytes) {
-                Some(_) => {
+                Ok(_) => {
                     if let Some(datagram) = Udp::from_bytes(bytes) {
                         if datagram.header.dst.get() == self.host_port &&
                            datagram.header.src.get() == self.peer_port {
@@ -107,18 +106,16 @@ impl Resource {
                             while i < buf.len() && i < datagram.data.len() {
                                 buf[i] = datagram.data[i];
                             }
-                            return Some(i);
+                            return Ok(i);
                         }
                     }
                 }
-                None => break,
+                Err(err) => return Err(err),
             }
         }
-
-        None
     }
 
-    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let udp_data = Vec::from(buf);
 
         let mut udp = Udp {
@@ -149,17 +146,17 @@ impl Resource {
         }
 
         match self.ip.write(&udp.to_bytes()) {
-            Some(_) => Some(buf.len()),
-            None => None,
+            Ok(_) => Ok(buf.len()),
+            Err(err) => Err(err),
         }
     }
 
-    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
-        None
+    pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
+        Err(SysError::new(ESPIPE))
     }
 
-    pub fn sync(&mut self) -> bool {
-        self.ip.sync()
+    pub fn sync(&mut self) -> Result<()> {
+        self.ip.sync_all()
     }
 }
 
@@ -171,22 +168,22 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
         // Check host and port vs path
         if !url.path().is_empty() {
             let host_port = url.port().to_num();
             if host_port > 0 && host_port < 65536 {
-                if let Some(mut ip) = File::open("ip:///11") {
+                if let Ok(mut ip) = File::open("ip:///11") {
                     let mut bytes: Vec<u8> = Vec::new();
-                    if ip.read_to_end(&mut bytes).is_some() {
+                    if let Ok(_) = ip.read_to_end(&mut bytes) {
                         if let Some(datagram) = Udp::from_bytes(bytes) {
-                            if datagram.header.dst.get() as usize == host_port {
-                                if let Some(path) = ip.path() {
-                                    let url = Url::from_string(path);
+                            if datagram.header.dst.get() as u32 == host_port {
+                                if let Ok(path) = ip.path() {
+                                    let url = Url::from_string(path.to_string());
 
-                                    return Some(box Resource {
+                                    return Ok(box Resource {
                                         ip: ip,
                                         data: datagram.data,
                                         peer_addr: IPv4Addr::from_string(&url.host()),
@@ -204,8 +201,8 @@ impl Scheme {
             if peer_port > 0 && peer_port < 65536 {
                 let host_port = (rand() % 32768 + 32768) as u16;
 
-                if let Some(ip) = File::open(&format!("ip://{}/11", url.host())) {
-                    return Some(box Resource {
+                if let Ok(ip) = File::open(&format!("ip://{}/11", url.host())) {
+                    return Ok(box Resource {
                         ip: ip,
                         data: Vec::new(),
                         peer_addr: IPv4Addr::from_string(&url.host()),
@@ -216,6 +213,6 @@ impl Scheme {
             }
         }
 
-        None
+        Err(SysError::new(ENOENT))
     }
 }

@@ -8,22 +8,83 @@ use collections::vec_deque::VecDeque;
 use core::ptr;
 
 use common::{debug, memory};
-use schemes::{Resource, Url};
-use scheduler;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 use drivers::pio::*;
 
 use network::common::*;
 use network::scheme::*;
 
-use schemes::KScheme;
+use schemes::{Result, KScheme, Resource, Url};
+
+use sync::Intex;
+
+const RTL8139_TSR_OWN: u32 = 1 << 13;
+
+const RTL8139_CR_RST: u8 = 1 << 4;
+const RTL8139_CR_RE: u8 = 1 << 3;
+const RTL8139_CR_TE: u8 = 1 << 2;
+const RTL8139_CR_BUFE: u8 = 1 << 0;
+
+const RTL8139_ISR_SERR: u16 = 1 << 15;
+const RTL8139_ISR_TIMEOUT: u16 = 1 << 14;
+const RTL8139_ISR_LENCHG: u16 = 1 << 13;
+const RTL8139_ISR_FOVW: u16 = 1 << 6;
+const RTL8139_ISR_PUN_LINKCHG: u16 = 1 << 5;
+const RTL8139_ISR_RXOVW: u16 = 1 << 4;
+const RTL8139_ISR_TER: u16 = 1 << 3;
+const RTL8139_ISR_TOK: u16 = 1 << 2;
+const RTL8139_ISR_RER: u16 = 1 << 1;
+const RTL8139_ISR_ROK: u16 = 1 << 0;
+
+const RTL8139_TCR_IFG: u32 = 0b11 << 24;
+
+const RTL8139_RCR_WRAP: u32 = 1 << 7;
+const RTL8139_RCR_AR: u32 = 1 << 4;
+const RTL8139_RCR_AB: u32 = 1 << 3;
+const RTL8139_RCR_AM: u32 = 1 << 2;
+const RTL8139_RCR_APM: u32 = 1 << 1;
 
 #[repr(packed)]
 struct Txd {
-    pub address_port: u16,
-    pub status_port: u16,
+    pub address_port: Pio32,
+    pub status_port: Pio32,
     pub buffer: usize,
+}
+
+pub struct Rtl8139Port {
+    pub idr: [Pio8; 6],
+    pub rbstart: Pio32,
+    pub cr: Pio8,
+    pub capr: Pio16,
+    pub cbr: Pio16,
+    pub imr: Pio16,
+    pub isr: Pio16,
+    pub tcr: Pio32,
+    pub rcr: Pio32,
+    pub config1: Pio8,
+}
+
+impl Rtl8139Port {
+    pub fn new(base: u16) -> Self {
+        return Rtl8139Port {
+            idr: [Pio8::new(base + 0x00),
+                  Pio8::new(base + 0x01),
+                  Pio8::new(base + 0x02),
+                  Pio8::new(base + 0x03),
+                  Pio8::new(base + 0x04),
+                  Pio8::new(base + 0x05)],
+            rbstart: Pio32::new(base + 0x30),
+            cr: Pio8::new(base + 0x37),
+            capr: Pio16::new(base + 0x38),
+            cbr: Pio16::new(base + 0x3A),
+            imr: Pio16::new(base + 0x3C),
+            isr: Pio16::new(base + 0x3E),
+            tcr: Pio32::new(base + 0x40),
+            rcr: Pio32::new(base + 0x44),
+            config1: Pio8::new(base + 0x52),
+        };
+    }
 }
 
 pub struct Rtl8139 {
@@ -31,15 +92,22 @@ pub struct Rtl8139 {
     base: usize,
     memory_mapped: bool,
     irq: u8,
-    resources: Vec<*mut NetworkResource>,
+    resources: Intex<Vec<*mut NetworkResource>>,
     inbound: VecDeque<Vec<u8>>,
     outbound: VecDeque<Vec<u8>>,
     txds: Vec<Txd>,
     txd_i: usize,
+    port: Rtl8139Port,
 }
 
 impl Rtl8139 {
     pub fn new(mut pci: PciConfig) -> Box<Self> {
+        let pci_id = unsafe { pci.read(0x00) };
+        let revision = (unsafe { pci.read(0x08) } & 0xFF) as u8;
+        if pci_id == 0x813910EC && revision < 0x20 {
+            debug::d("Not an 8139C+ compatible chip")
+        }
+
         let base = unsafe { pci.read(0x10) as usize };
         let irq = unsafe { pci.read(0x3C) as u8 & 0xF };
 
@@ -48,11 +116,12 @@ impl Rtl8139 {
             base: base & 0xFFFFFFF0,
             memory_mapped: base & 1 == 0,
             irq: irq,
-            resources: Vec::new(),
+            resources: Intex::new(Vec::new()),
             inbound: VecDeque::new(),
             outbound: VecDeque::new(),
             txds: Vec::new(),
             txd_i: 0,
+            port: Rtl8139Port::new((base & 0xFFFFFFF0) as u16),
         };
 
         unsafe { module.init() };
@@ -75,51 +144,48 @@ impl Rtl8139 {
 
         let base = self.base as u16;
 
-        outb(base + 0x52, 0);
-
-        outb(base + 0x37, 0x10);
-        while inb(base + 0x37) & 0x10 != 0 {}
+        self.port.config1.write(0);
+        self.port.cr.write(RTL8139_CR_RST);
+        while self.port.cr.read() & RTL8139_CR_RST != 0 {}
 
         debug::d(" MAC: ");
-        let mac_low = ind(base);
-        let mac_high = ind(base + 4);
         MAC_ADDR = MacAddr {
-            bytes: [mac_low as u8,
-                    (mac_low >> 8) as u8,
-                    (mac_low >> 16) as u8,
-                    (mac_low >> 24) as u8,
-                    mac_high as u8,
-                    (mac_high >> 8) as u8],
+            bytes: [self.port.idr[0].read(),
+                    self.port.idr[1].read(),
+                    self.port.idr[2].read(),
+                    self.port.idr[3].read(),
+                    self.port.idr[4].read(),
+                    self.port.idr[5].read()],
         };
         debug::d(&MAC_ADDR.to_string());
 
         let receive_buffer = memory::alloc(10240);
-        outd(base + 0x30, receive_buffer as u32);
+        self.port.rbstart.write(receive_buffer as u32);
 
         for i in 0..4 {
             self.txds.push(Txd {
-                address_port: base + 0x20 + (i as u16) * 4,
-                status_port: base + 0x10 + (i as u16) * 4,
+                address_port: Pio32::new(base + 0x20 + (i as u16) * 4),
+                status_port: Pio32::new(base + 0x10 + (i as u16) * 4),
                 buffer: memory::alloc(4096),
             });
         }
 
-        outw(base + 0x3C, 5);
+        self.port.imr.write(RTL8139_ISR_TOK | RTL8139_ISR_ROK);
         debug::d(" IMR: ");
-        debug::dh(inw(base + 0x3C) as usize);
+        debug::dh(self.port.imr.read() as usize);
 
-        outb(base + 0x37, 0xC);
+        self.port.cr.write(RTL8139_CR_RE | RTL8139_CR_TE);
         debug::d(" CMD: ");
-        debug::dbh(inb(base + 0x37));
+        debug::dbh(self.port.cr.read());
 
-        outd(base + 0x44,
-             (1 << 7) | (1 << 4) | (1 << 3) | (1 << 2) | (1 << 1));
+        self.port.rcr.write(RTL8139_RCR_WRAP | RTL8139_RCR_AR | RTL8139_RCR_AB | RTL8139_RCR_AM |
+                            RTL8139_RCR_APM);
         debug::d(" RCR: ");
-        debug::dh(ind(base + 0x44) as usize);
+        debug::dh(self.port.rcr.read() as usize);
 
-        outd(base + 0x40, (0b11 << 24));
+        self.port.tcr.writef(RTL8139_TCR_IFG, true);
         debug::d(" TCR: ");
-        debug::dh(ind(base + 0x40) as usize);
+        debug::dh(self.port.tcr.read() as usize);
 
         debug::dl();
     }
@@ -127,9 +193,9 @@ impl Rtl8139 {
     unsafe fn receive_inbound(&mut self) {
         let base = self.base as u16;
 
-        let receive_buffer = ind(base + 0x30) as usize;
-        let mut capr = (inw(base + 0x38) + 16) as usize;
-        let cbr = inw(base + 0x3A) as usize;
+        let receive_buffer = self.port.rbstart.read() as usize;
+        let mut capr = (self.port.capr.read() + 16) as usize;
+        let cbr = self.port.cbr.read() as usize;
 
         while capr != cbr {
             let frame_addr = receive_buffer + capr + 4;
@@ -156,26 +222,20 @@ impl Rtl8139 {
                 capr -= 8192
             }
 
-            outw(base + 0x38, (capr as u16) - 16);
+            self.port.capr.write((capr as u16) - 16);
         }
     }
 
     unsafe fn send_outbound(&mut self) {
         while let Some(bytes) = self.outbound.pop_front() {
-            if let Some(txd) = self.txds.get(self.txd_i) {
+            if let Some(ref mut txd) = self.txds.get_mut(self.txd_i) {
                 if bytes.len() < 4096 {
-                    let mut tx_status;
-                    loop {
-                        tx_status = ind(txd.status_port);
-                        if tx_status & (1 << 13) == (1 << 13) {
-                            break;
-                        }
-                    }
+                    while !txd.status_port.readf(RTL8139_TSR_OWN) {}
 
                     debug::d("Send ");
-                    debug::dh(txd.status_port as usize);
+                    debug::dh(self.txd_i as usize);
                     debug::d(" ");
-                    debug::dh(tx_status as usize);
+                    debug::dh(txd.status_port.read() as usize);
                     debug::d(" ");
                     debug::dh(txd.buffer);
                     debug::d(" ");
@@ -184,8 +244,8 @@ impl Rtl8139 {
 
                     ::memcpy(txd.buffer as *mut u8, bytes.as_ptr(), bytes.len());
 
-                    outd(txd.address_port, txd.buffer as u32);
-                    outd(txd.status_port, bytes.len() as u32 & 0xFFF);
+                    txd.address_port.write(txd.buffer as u32);
+                    txd.status_port.write(bytes.len() as u32 & 0xFFF);
 
                     self.txd_i = (self.txd_i + 1) % 4;
                 } else {
@@ -207,17 +267,15 @@ impl KScheme for Rtl8139 {
         "network"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(NetworkResource::new(self))
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
             unsafe {
-                let base = self.base as u16;
-
-                let isr = inw(base + 0x3E);
-                outw(base + 0x3E, isr);
+                let isr = self.port.isr.read();
+                self.port.isr.write(isr);
 
                 // dh(isr as usize);
                 // dl();
@@ -234,44 +292,40 @@ impl KScheme for Rtl8139 {
 
 impl NetworkScheme for Rtl8139 {
     fn add(&mut self, resource: *mut NetworkResource) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.resources.push(resource);
-            scheduler::end_no_ints(reenable);
-        }
+        self.resources.lock().push(resource);
     }
 
     fn remove(&mut self, resource: *mut NetworkResource) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            let mut i = 0;
-            while i < self.resources.len() {
-                let mut remove = false;
+        let mut resources = self.resources.lock();
 
-                match self.resources.get(i) {
-                    Some(ptr) => if *ptr == resource {
-                        remove = true;
-                    } else {
-                        i += 1;
-                    },
-                    None => break,
-                }
+        let mut i = 0;
+        while i < resources.len() {
+            let mut remove = false;
 
-                if remove {
-                    self.resources.remove(i);
-                }
+            match resources.get(i) {
+                Some(ptr) => if *ptr == resource {
+                    remove = true;
+                } else {
+                    i += 1;
+                },
+                None => break,
             }
-            scheduler::end_no_ints(reenable);
+
+            if remove {
+                resources.remove(i);
+            }
         }
     }
 
     fn sync(&mut self) {
         unsafe {
-            let reenable = scheduler::start_no_ints();
+            {
+                let resources = self.resources.lock();
 
-            for resource in self.resources.iter() {
-                while let Some(bytes) = (**resource).outbound.pop_front() {
-                    self.outbound.push_back(bytes);
+                for resource in resources.iter() {
+                    while let Some(bytes) = (**resource).outbound.lock().pop_front() {
+                        self.outbound.push_back(bytes);
+                    }
                 }
             }
 
@@ -279,13 +333,15 @@ impl NetworkScheme for Rtl8139 {
 
             self.receive_inbound();
 
-            while let Some(bytes) = self.inbound.pop_front() {
-                for resource in self.resources.iter() {
-                    (**resource).inbound.push_back(bytes.clone());
+            {
+                let resources = self.resources.lock();
+
+                while let Some(bytes) = self.inbound.pop_front() {
+                    for resource in resources.iter() {
+                        (**resource).inbound.lock().push_back(bytes.clone());
+                    }
                 }
             }
-
-            scheduler::end_no_ints(reenable);
         }
     }
 }

@@ -1,7 +1,15 @@
-use syscall::common::*;
+use error::Error;
+
+pub use self::common::*;
 
 #[path="../../kernel/syscall/common.rs"]
 pub mod common;
+
+impl Error for SysError {
+    fn description(&self) -> &str {
+        self.text()
+    }
+}
 
 #[cold]
 #[inline(never)]
@@ -105,6 +113,10 @@ pub unsafe fn sys_nanosleep(req: *const TimeSpec, rem: *mut TimeSpec) -> usize {
 
 pub unsafe fn sys_open(path: *const u8, flags: usize, mode: usize) -> usize {
     syscall(SYS_OPEN, path as usize, flags, mode)
+}
+
+pub unsafe fn sys_pipe2(fds: *mut usize, flags: usize) -> usize {
+    syscall(SYS_PIPE2, fds as usize, flags, 0)
 }
 
 pub unsafe fn sys_read(fd: usize, buf: *mut u8, count: usize) -> usize {

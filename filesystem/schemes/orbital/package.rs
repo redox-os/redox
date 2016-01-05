@@ -1,4 +1,5 @@
-use std::{Box, GetSlice, String, ToString, Vec, Url};
+use std::get_slice::GetSlice;
+use std::url::Url;
 use std::fs::File;
 use std::io::Read;
 
@@ -47,7 +48,7 @@ impl Package {
 
         let mut info = String::new();
 
-        if let Some(mut file) = File::open(&(url.to_string() + "_REDOX")) {
+        if let Ok(mut file) = File::open(&(url.to_string() + "_REDOX")) {
             file.read_to_string(&mut info);
         }
 

@@ -26,14 +26,16 @@ pub struct Ps2 {
     caps_lock: bool,
     /// Caps lock toggle
     caps_lock_toggle: bool,
+    /// AltGr?
+    altgr: bool,
     /// The mouse packet
     mouse_packet: [u8; 4],
     /// Mouse packet index
     mouse_i: usize,
     /// Mouse point x
-    mouse_x: isize,
+    mouse_x: i32,
     /// Mouse point y
-    mouse_y: isize,
+    mouse_y: i32,
     /// Layout for keyboard
     /// Default: English
     layout: layouts::Layout,
@@ -49,11 +51,12 @@ impl Ps2 {
             rshift: false,
             caps_lock: false,
             caps_lock_toggle: false,
+            altgr: false,
             mouse_packet: [0; 4],
             mouse_i: 0,
             mouse_x: 0,
             mouse_y: 0,
-            layout: layouts::Layout::ENGLISH,
+            layout: layouts::Layout::English,
         };
 
         unsafe {
@@ -117,7 +120,7 @@ impl Ps2 {
 
     /// Keyboard interrupt
     pub fn keyboard_interrupt(&mut self) -> Option<KeyEvent> {
-        let scancode = unsafe { self.data.read() };
+        let mut scancode = unsafe { self.data.read() };
 
         if scancode == 0 {
             return None;
@@ -140,17 +143,21 @@ impl Ps2 {
             if self.caps_lock && !self.caps_lock_toggle {
                 self.caps_lock = false;
             }
+        } else if scancode == 0xE0 {
+            let scancode_byte_2 = unsafe { self.data.read() };
+            if scancode_byte_2 == 0x38 {
+                self.altgr = true;
+            } else if scancode_byte_2 == 0xB8 {
+                self.altgr = false;
+            } else {
+                scancode = scancode_byte_2;
+            }
         }
 
-        let shift;
-        if self.caps_lock {
-            shift = !(self.lshift || self.rshift);
-        } else {
-            shift = self.lshift || self.rshift;
-        }
+        let shift = self.caps_lock != (self.lshift || self.rshift);
 
         return Some(KeyEvent {
-            character: layouts::char_for_scancode(scancode & 0x7F, shift, &self.layout),
+            character: layouts::char_for_scancode(scancode & 0x7F, shift, self.altgr, &self.layout),
             scancode: scancode & 0x7F,
             pressed: scancode < 0x80,
         });
@@ -209,16 +216,16 @@ impl Ps2 {
 
             let x;
             if (self.mouse_packet[0] & 0x40) != 0x40 && self.mouse_packet[1] != 0 {
-                x = self.mouse_packet[1] as isize -
-                    (((self.mouse_packet[0] as isize) << 4) & 0x100);
+                x = (self.mouse_packet[1] as isize -
+                    (((self.mouse_packet[0] as isize) << 4) & 0x100)) as i32;
             } else {
                 x = 0;
             }
 
             let y;
             if (self.mouse_packet[0] & 0x80) != 0x80 && self.mouse_packet[2] != 0 {
-                y = (((self.mouse_packet[0] as isize) << 3) & 0x100) -
-                    self.mouse_packet[2] as isize;
+                y = ((((self.mouse_packet[0] as isize) << 3) & 0x100) -
+                    self.mouse_packet[2] as isize) as i32;
             } else {
                 y = 0;
             }
@@ -226,9 +233,9 @@ impl Ps2 {
             unsafe {
                 let mode_info = &*VBEMODEINFO;
                 self.mouse_x = cmp::max(0,
-                                        cmp::min(mode_info.xresolution as isize, self.mouse_x + x));
+                                        cmp::min(mode_info.xresolution as i32, self.mouse_x + x));
                 self.mouse_y = cmp::max(0,
-                                        cmp::min(mode_info.yresolution as isize, self.mouse_y + y));
+                                        cmp::min(mode_info.yresolution as i32, self.mouse_y + y));
             }
 
             self.mouse_i = 0;
@@ -248,9 +255,10 @@ impl Ps2 {
     /// Function to change the layout of the keyboard
     pub fn change_layout(&mut self, layout: usize) {
         self.layout = match layout {
-            0 => layouts::Layout::ENGLISH,
-            1 => layouts::Layout::FRENCH,
-            _ => layouts::Layout::ENGLISH,
+            0 => layouts::Layout::English,
+            1 => layouts::Layout::French,
+            2 => layouts::Layout::German,
+            _ => layouts::Layout::English,
         }
     }
 }

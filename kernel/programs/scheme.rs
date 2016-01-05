@@ -14,12 +14,15 @@ use common::get_slice::GetSlice;
 use common::memory;
 
 use scheduler::context::{context_switch, Context, ContextMemory};
-use scheduler::{start_no_ints, end_no_ints};
 
-use schemes::{KScheme, Resource, ResourceSeek, Url};
+use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
+use sync::Intex;
+
+use syscall::SysError;
 use syscall::handle::*;
 
+#[derive(Copy, Clone, Debug)]
 pub enum Msg {
     Start,
     Stop,
@@ -81,82 +84,64 @@ pub struct SchemeResource {
 }
 
 impl SchemeResource {
-    pub fn send(&self, msg: Msg) -> usize {
+    pub fn send(&self, msg: Msg) -> Result<usize> {
         unsafe { (*self.parent).send(msg) }
     }
 }
 
 impl Resource for SchemeResource {
     /// Duplicate the resource
-    fn dup(&self) -> Option<Box<Resource>> {
-        let fd = self.send(Msg::Dup(self.handle));
-        if fd != usize::MAX {
-            // TODO: Count number of handles, don't allow drop until 0
-            return Some(box SchemeResource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        match self.send(Msg::Dup(self.handle)) {
+            Ok(fd) => Ok(box SchemeResource {
                 parent: self.parent,
                 handle: fd,
-            });
+            }),
+            Err(err) => Err(err)
         }
-
-        None
     }
 
     /// Return the url of this resource
     fn url(&self) -> Url {
         let mut buf: [u8; 4096] = [0; 4096];
-        let result = self.send(Msg::Path(self.handle, buf.as_mut_ptr(), buf.len()));
-        if result != usize::MAX {
-            return Url::from_string(unsafe {
+        match self.send(Msg::Path(self.handle, buf.as_mut_ptr(), buf.len())) {
+            Ok(result) => Url::from_string(unsafe {
                 String::from_utf8_unchecked(Vec::from(buf.get_slice(None, Some(result))))
-            });
+            }),
+            Err(_) => Url::new()
         }
-        Url::new()
     }
 
     /// Read data to buffer
-    fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         let mut ptr = buf.as_mut_ptr();
 
-        unsafe {
-            let reenable = start_no_ints();
-            if let Some(context) = Context::current() {
-                if let Some(translated) = context.translate(ptr as usize) {
-                    ptr = translated as *mut u8;
-                }
+        let contexts = ::env().contexts.lock();
+        if let Some(current) = contexts.current() {
+            if let Some(translated) = unsafe { current.translate(ptr as usize) } {
+                ptr = translated as *mut u8;
             }
-            end_no_ints(reenable);
         }
 
-        let result = self.send(Msg::Read(self.handle, ptr, buf.len()));
-        if result != usize::MAX {
-            return Some(result);
-        }
-        None
+        self.send(Msg::Read(self.handle, ptr, buf.len()))
     }
 
     /// Write to resource
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let mut ptr = buf.as_ptr();
 
-        unsafe {
-            let reenable = start_no_ints();
-            if let Some(context) = Context::current() {
-                if let Some(translated) = context.translate(ptr as usize) {
-                    ptr = translated as *const u8;
-                }
+        let contexts = ::env().contexts.lock();
+        if let Some(current) = contexts.current() {
+            if let Some(translated) = unsafe { current.translate(ptr as usize) } {
+                ptr = translated as *const u8;
             }
-            end_no_ints(reenable);
         }
 
-        let result = self.send(Msg::Write(self.handle, ptr, buf.len()));
-        if result != usize::MAX {
-            return Some(result);
-        }
-        None
+        self.send(Msg::Write(self.handle, ptr, buf.len()))
     }
 
     /// Seek
-    fn seek(&mut self, pos: ResourceSeek) -> Option<usize> {
+    fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
         let offset;
         let whence;
         match pos {
@@ -174,26 +159,28 @@ impl Resource for SchemeResource {
             }
         }
 
-        let result = self.send(Msg::Seek(self.handle, offset, whence));
-        if result != usize::MAX {
-            return Some(result);
-        }
-        None
+        self.send(Msg::Seek(self.handle, offset, whence))
     }
 
     /// Sync the resource
-    fn sync(&mut self) -> bool {
-        self.send(Msg::Sync(self.handle)) == 0
+    fn sync(&mut self) -> Result<()> {
+        match self.send(Msg::Sync(self.handle)) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 
-    fn truncate(&mut self, len: usize) -> bool {
-        self.send(Msg::Truncate(self.handle, len)) == 0
+    fn truncate(&mut self, len: usize) -> Result<()> {
+        match self.send(Msg::Truncate(self.handle, len)) {
+            Ok(_) => Ok(()),
+            Err(err) => Err(err)
+        }
     }
 }
 
 impl Drop for SchemeResource {
     fn drop(&mut self) {
-        self.send(Msg::Close(self.handle));
+        let _ = self.send(Msg::Close(self.handle));
     }
 }
 
@@ -206,7 +193,7 @@ pub struct SchemeItem {
     /// The binary for the scheme
     binary: Url,
     /// Messages to be responded to
-    responses: VecDeque<*mut Response>,
+    responses: Intex<VecDeque<*mut Response>>,
     /// The handle
     handle: usize,
     _start: usize,
@@ -230,7 +217,7 @@ impl SchemeItem {
             url: url.clone(),
             scheme: String::new(),
             binary: Url::from_string(url.to_string() + "main.bin"),
-            responses: VecDeque::new(),
+            responses: Intex::new(VecDeque::new()),
             handle: 0,
             _start: 0,
             _stop: 0,
@@ -254,9 +241,9 @@ impl SchemeItem {
         }
 
         let mut memory = Vec::new();
-        if let Some(mut resource) = scheme_item.binary.open() {
+        if let Ok(mut resource) = scheme_item.binary.open() {
             let mut vec: Vec<u8> = Vec::new();
-            resource.read_to_end(&mut vec);
+            let _ = resource.read_to_end(&mut vec);
 
             unsafe {
                 let executable = Elf::from_data(vec.as_ptr() as usize);
@@ -277,23 +264,29 @@ impl SchemeItem {
                 for segment in executable.load_segment().iter() {
                     let virtual_address = segment.vaddr as usize;
                     let virtual_size = segment.mem_len as usize;
-                    let physical_address = memory::alloc(virtual_size);
+
+                    //TODO: Warning: Investigate this hack!
+                    let hack = virtual_address % 4096;
+
+                    let physical_address = memory::alloc(virtual_size + hack);
 
                     if physical_address > 0 {
                         // Copy progbits
-                        ::memcpy(physical_address as *mut u8,
+                        ::memcpy((physical_address + hack) as *mut u8,
                                  (executable.data + segment.off as usize) as *const u8,
                                  segment.file_len as usize);
                         // Zero bss
-                        ::memset((physical_address + segment.file_len as usize) as *mut u8,
-                                 0,
-                                 segment.mem_len as usize - segment.file_len as usize);
+                        if segment.mem_len > segment.file_len {
+                            ::memset((physical_address + hack + segment.file_len as usize) as *mut u8,
+                                    0,
+                                    segment.mem_len as usize - segment.file_len as usize);
+                        }
 
                         memory.push(ContextMemory {
                             physical_address: physical_address,
-                            virtual_address: virtual_address,
-                            virtual_size: virtual_size,
-                            writeable: segment.flags & 2 == 2,
+                            virtual_address: virtual_address - hack,
+                            virtual_size: virtual_size + hack,
+                            writeable: segment.flags & 2 == 2
                         });
                     }
                 }
@@ -305,27 +298,31 @@ impl SchemeItem {
         Context::spawn(scheme_item.binary.to_string(),
                        box move || {
                            unsafe {
-                               let wd_c = wd + "\0";
-                               do_sys_chdir(wd_c.as_ptr());
+                               {
+                                   let wd_c = wd + "\0";
+                                   do_sys_chdir(wd_c.as_ptr());
 
-                               let stdio_c = "debug:\0";
-                               do_sys_open(stdio_c.as_ptr(), 0);
-                               do_sys_open(stdio_c.as_ptr(), 0);
-                               do_sys_open(stdio_c.as_ptr(), 0);
+                                   let stdio_c = "debug:\0";
+                                   do_sys_open(stdio_c.as_ptr(), 0);
+                                   do_sys_open(stdio_c.as_ptr(), 0);
+                                   do_sys_open(stdio_c.as_ptr(), 0);
 
-                               let reenable = start_no_ints();
-                               if let Some(mut context) = Context::current_mut() {
-                                   context.unmap();
-                                   (*context.memory.get()) = memory;
-                                   context.map();
+                                   let mut contexts = ::env().contexts.lock();
+                                   if let Some(mut current) = contexts.current_mut() {
+                                       current.unmap();
+                                       (*current.memory.get()) = memory;
+                                       current.map();
+                                   }
                                }
-                               end_no_ints(reenable);
 
                                (*scheme_item_ptr).run();
                            }
                        });
 
-        scheme_item.handle = scheme_item.send(Msg::Start);
+        scheme_item.handle = match scheme_item.send(Msg::Start) {
+            Ok(handle) => handle,
+            Err(_) => 0
+        };
 
         scheme_item
     }
@@ -338,21 +335,18 @@ impl KScheme for SchemeItem {
 
     // TODO: Hack for orbital
     fn event(&mut self, event: &Event) {
-        self.send(Msg::Event(event));
+        let _ = self.send(Msg::Event(event));
     }
 
-    fn open(&mut self, url: &Url, flags: usize) -> Option<Box<Resource>> {
+    fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let c_str = url.to_string() + "\0";
-        let fd = self.send(Msg::Open(c_str.as_ptr(), flags));
-        if fd != usize::MAX {
-            // TODO: Count number of handles, don't allow drop until 0
-            return Some(box SchemeResource {
+        match self.send(Msg::Open(c_str.as_ptr(), flags)) {
+            Ok(fd) => Ok(box SchemeResource {
                 parent: self,
                 handle: fd,
-            });
+            }),
+            Err(err) => Err(err)
         }
-
-        None
     }
 }
 
@@ -363,16 +357,12 @@ impl Drop for SchemeItem {
 }
 
 impl SchemeItem {
-    pub fn send(&mut self, msg: Msg) -> usize {
+    pub fn send(&mut self, msg: Msg) -> Result<usize> {
         let mut response = Response::new(msg);
 
-        unsafe {
-            let reenable = start_no_ints();
-            self.responses.push_back(response.deref_mut());
-            end_no_ints(reenable);
-        }
+        self.responses.lock().push_back(response.deref_mut());
 
-        response.get()
+        SysError::demux(response.get())
     }
 
     // TODO: More advanced check
@@ -380,99 +370,97 @@ impl SchemeItem {
         call > 0
     }
 
-    pub unsafe fn run(&mut self) {
+    pub fn run(&mut self) {
         let mut running = true;
         while running {
-            let reenable = start_no_ints();
-            let response_option = self.responses.pop_front();
-            end_no_ints(reenable);
+            let response_option = self.responses.lock().pop_front();
 
             if let Some(response_ptr) = response_option {
-                let ret = match (*response_ptr).msg {
+                let ret = match unsafe { (*response_ptr).msg } {
                     Msg::Start => if self.valid(self._start) {
                         let fn_ptr: *const usize = &self._start;
-                        (*(fn_ptr as *const extern "C" fn() -> usize))()
+                        unsafe { (*(fn_ptr as *const extern "C" fn() -> usize))() }
                     } else {
                         0
                     },
                     Msg::Stop => if self.valid(self._stop) {
                         running = false;
                         let fn_ptr: *const usize = &self._stop;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(self.handle) }
                     } else {
                         usize::MAX
                     },
                     Msg::Open(path, flags) => if self.valid(self._open) {
                         let fn_ptr: *const usize = &self._open;
-                        (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, path, flags)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(self.handle, path, flags) }
                     } else {
                         usize::MAX
                     },
                     Msg::Event(event_ptr) => if self.valid(self._event) {
                         let fn_ptr: *const usize = &self._event;
-                        (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle, event_ptr as usize)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(self.handle, event_ptr as usize) }
                     } else {
                         usize::MAX
                     },
                     Msg::Dup(fd) => if self.valid(self._dup) {
                         let fn_ptr: *const usize = &self._dup;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd) }
                     } else {
                         usize::MAX
                     },
                     Msg::Path(fd, ptr, len) => if self.valid(self._fpath) {
                         let fn_ptr: *const usize = &self._fpath;
-                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
-                                                                                            ptr,
-                                                                                            len)
+                        unsafe {
+                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd, ptr, len)
+                        }
                     } else {
                         usize::MAX
                     },
                     Msg::Read(fd, ptr, len) => if self.valid(self._read) {
                         let fn_ptr: *const usize = &self._read;
-                        (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd,
-                                                                                            ptr,
-                                                                                            len)
+                        unsafe {
+                            (*(fn_ptr as *const extern "C" fn(usize, *mut u8, usize) -> usize))(fd, ptr, len)
+                        }
                     } else {
                         usize::MAX
                     },
                     Msg::Write(fd, ptr, len) =>
                         if self.valid(self._write) {
                             let fn_ptr: *const usize = &self._write;
-                            (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(fd, ptr, len)
+                            unsafe { (*(fn_ptr as *const extern "C" fn(usize, *const u8, usize) -> usize))(fd, ptr, len) }
                         } else {
                             usize::MAX
                         },
                     Msg::Seek(fd, offset, whence) =>
                         if self.valid(self._lseek) {
                             let fn_ptr: *const usize = &self._lseek;
-                            (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(fd, offset, whence)
+                            unsafe { (*(fn_ptr as *const extern "C" fn(usize, isize, isize) -> usize))(fd, offset, whence) }
                         } else {
                             usize::MAX
                         },
                     Msg::Sync(fd) => if self.valid(self._fsync) {
                         let fn_ptr: *const usize = &self._fsync;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd) }
                     } else {
                         usize::MAX
                     },
                     Msg::Truncate(fd, len) => if self.valid(self._ftruncate) {
                         let fn_ptr: *const usize = &self._ftruncate;
-                        (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(fd, len)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize, usize) -> usize))(fd, len) }
                     } else {
                         usize::MAX
                     },
                     Msg::Close(fd) => if self.valid(self._close) {
                         let fn_ptr: *const usize = &self._close;
-                        (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd)
+                        unsafe { (*(fn_ptr as *const extern "C" fn(usize) -> usize))(fd) }
                     } else {
                         usize::MAX
                     },
                 };
 
-                (*response_ptr).set(ret);
+                unsafe { (*response_ptr).set(ret); }
             } else {
-                context_switch(false);
+                unsafe { context_switch(false); }
             }
         }
     }

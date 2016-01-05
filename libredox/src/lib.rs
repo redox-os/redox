@@ -14,10 +14,8 @@
 #![feature(box_syntax)]
 #![feature(collections)]
 #![feature(collections_bound)]
-#![feature(core)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
-#![feature(core_simd)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
@@ -29,9 +27,6 @@
 #![feature(unsafe_no_drop_flag)]
 #![feature(box_patterns)]
 #![feature(vec_push_all)]
-#![feature(wrapping)]
-#![feature(zero_one)]
-#![feature(no_std)]
 #![feature(prelude_import)]
 #![no_std]
 
@@ -70,8 +65,6 @@
     pub use core::ops;
     pub use core::ptr;
     pub use core::raw;
-    #[allow(deprecated)]
-    pub use core::simd;
     pub use core::result;
     pub use core::option;
     pub mod error;
@@ -100,8 +93,6 @@ pub mod macros;
     #[prelude_import]
     pub mod prelude;
 
-
-
     /* Primitive types */
 
 // NB: slice and str are primitive types too, but their module docs + primitive
@@ -120,17 +111,15 @@ pub use core::u16;
 pub use core::u32;
 pub use core::u64;
 
-// TODO: Add methods to f64
-pub use core::num;
-
-// TODO #[path = "num/f32.rs"]   pub mod f32;
-// TODO #[path = "num/f64.rs"]   pub mod f64;
+    pub use core::num;
+    //#[path = "num/f32.rs"]   pub mod f32;
+    //#[path = "num/f64.rs"]   pub mod f64;
 
 pub mod ascii;
 
 // Common traits
 
-pub mod floating_num;
+    //pub mod num;
 
 // Runtime and platform support
 
@@ -145,7 +134,7 @@ pub mod floating_num;
     pub mod io;
     pub mod net;
     // TODO pub mod os;
-    // TODO pub mod path;
+    pub mod path;
     pub mod process;
     pub mod sync;
     pub mod time;
@@ -171,32 +160,19 @@ pub mod floating_num;
     // but it may be stabilized long-term. As a result we're exposing a hidden,
     // unstable module so we can get our build working.
     #[doc(hidden)]
-// TODO #[unstable(feature = "rand", issue = "0")]
-pub mod rand {
-    pub use core_rand::Rng;
-}
-// } STD COPY
+    //TODO #[unstable(feature = "rand", issue = "0")]
+    pub mod rand {
+        pub use core_rand::{/*thread_rng, ThreadRng,*/ Rng};
+    }
+/* } STD COPY */
 
-// Additional Stuff {
-pub use boxed::Box;
-pub use env::*;
-pub use fs::*;
-pub use io::*;
-pub use rand_old::*;
-pub use string::*;
-pub use vec::Vec;
+    pub use rand_old::*;
 
-pub use url::*;
-pub use get_slice::*;
-pub use to_num::*;
+    pub mod alloc_system;
 
-pub mod alloc_system;
-
-/// A module for necessary C and assembly constructs
+    /// A module for necessary C and assembly constructs
     #[path="../../kernel/externs.rs"]
 pub mod externs;
-
-    pub mod start;
 
     /// A module for system calls
     pub mod syscall;

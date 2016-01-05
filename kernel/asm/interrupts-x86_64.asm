@@ -4,9 +4,9 @@ struc IDTEntry
 	.zero1 resb 1
 	.attribute resb 1
 		.present equ 1 << 7
-		.ring.1	equ 1 << 5
-		.ring.2 equ 1 << 6
-		.ring.3 equ 1 << 5 | 1 << 6
+		.ring1	equ 1 << 5
+		.ring2 equ 1 << 6
+		.ring3 equ 1 << 5 | 1 << 6
 		.task32 equ 0x5
 		.interrupt16 equ 0x6
 		.trap16 equ 0x7
@@ -95,7 +95,35 @@ idtr:
 
 idt:
 %assign i 0
-%rep 256	;fill in overrideable functions
+
+;Below syscall
+%rep 128
+	istruc IDTEntry
+		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+		at IDTEntry.selector, dw 0x08
+		at IDTEntry.zero1, db 0
+		at IDTEntry.attribute, db IDTEntry.present | IDTEntry.interrupt32
+		at IDTEntry.offsetm, dw 0
+		at IDTEntry.offseth, dd 0
+		at IDTEntry.zero2, dd 0
+	iend
+%assign i i+1
+%endrep
+
+;Syscall
+istruc IDTEntry
+	at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
+	at IDTEntry.selector, dw 0x08
+	at IDTEntry.zero1, db 0
+	at IDTEntry.attribute, db IDTEntry.ring3 | IDTEntry.present | IDTEntry.interrupt32
+	at IDTEntry.offsetm, dw 0
+	at IDTEntry.offseth, dd 0
+	at IDTEntry.zero2, dd 0
+iend
+%assign i i+1
+
+;Above syscall
+%rep 127
 	istruc IDTEntry
 		at IDTEntry.offsetl, dw interrupts+(interrupts.second-interrupts.first)*i
 		at IDTEntry.selector, dw 0x08

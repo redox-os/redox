@@ -1,7 +1,9 @@
-use std::fmt;
+use std::{fmt, mem};
 
 use super::avl;
+use super::dmu_objset::ObjectSet;
 use super::from_bytes::FromBytes;
+use super::zfs;
 
 const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
 
@@ -20,16 +22,94 @@ const SPACE_MAP_HISTOGRAM_SIZE: usize = 32;
 pub struct SpaceMapPhys {
     object: u64, // on-disk space map object
     objsize: u64, // size of the object
-    alloc: u64, /* space allocated from the map
-                 * pad: [u64; 5], // reserved
-                 * histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE], */
+    alloc: u64, // space allocated from the map
+    //pad: [u64; 5], // reserved
+    //histogram: [u64; SPACE_MAP_HISTOGRAM_SIZE],
 }
 
 impl FromBytes for SpaceMapPhys { }
 
 pub struct SpaceMap {
-    pub size: usize,
+    start: u64,   // start of map
+    size: u64,    // size of map
+    shift: u8,   // unit shift
+    length: u64,  // synced length
+    alloc: u64,   // synced space allocated
+    //os: *ObjectSet,     // objset for this map
+    object: u64,  // object id for this map
+    blksz: u32,   // block size for space map
+    //dbuf: *dmu_dbuf_t,   // space_map_phys_t dbuf
+    phys: SpaceMapPhys,  // on-disk space map
 }
+
+impl SpaceMap {
+    /// Returns SpaceMapPhys, Dbuf, and block size
+    // TODO
+    /*fn open_impl(os: &mut ObjectSet, object: u64) -> zfs::Result<(SpaceMapPhys, dmu::Dbuf, u64)> {
+        let dbuf = try!(dmu_bonus_hold(os, object, sm));
+
+        let (block_size, num_blocks) = dmu_object_size_from_db(dbuf);
+        let phys = SpaceMapPhys::from_bytes(dbuf.data);
+
+        Ok((phys, dbuf, block_size))
+    }*/
+
+    pub fn open(os: &mut ObjectSet, object: u64, start: u64, size: u64, shift: u8) -> zfs::Result<Self> {
+        assert!(object != 0);
+
+        // TODO
+        //let (phys, dbuf, block_size) = try!(Self::open_impl(os, object));
+        let phys = SpaceMapPhys {
+            object: 0, // on-disk space map object
+            objsize: 0, // size of the object
+            alloc: 0, // space allocated from the map
+        };
+        let block_size = 0;
+
+        let mut space_map =
+            SpaceMap {
+                start: start,
+                size: size,
+                shift: shift,
+                //os: os,
+                object: object,
+                length: 0,
+                alloc: 0,
+                blksz: block_size,
+                //dbuf: dbuf,
+                phys: phys,
+            };
+
+        Ok(space_map)
+    }
+
+    pub fn load_avl(&self,
+                    tree: &mut avl::Tree<Segment, u64>,
+                    bytes: &[u8],
+                    map_type: MapType) -> Result<(), String> {
+        for i in 0..(self.size as usize) {
+            let entry = Entry::from_bytes(&bytes[i*mem::size_of::<Entry>()..]).unwrap();
+            let entry_map_type =
+                match entry.map_type() {
+                    Some(map_type) => {
+                        map_type
+                    },
+                    None => { return Err("Invalid map type".to_string()); },
+                };
+            if entry.debug() != 1 && entry_map_type == map_type {
+                // it's not a debug entry and it's the right map type, add it to the tree
+                tree.insert(Segment::from_entry(&entry));
+            }
+        }
+        tree.in_order(|node| {
+            println!("{:?}", node.value());
+        });
+
+        Ok(())
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum MapType {
@@ -89,45 +169,30 @@ impl Entry {
 impl fmt::Debug for Entry {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.debug() == 1 {
-            try!(write!(f,
-                        "DEBUG: action:0x{:X}  sync_pass:0x{:X}  txg:0x{:X}",
-                        self.action(),
-                        self.sync_pass(),
-                        self.txg()));
+            try!(write!(f, "DEBUG: action:0x{:X}  sync_pass:{:X}  txg:0x{:X}",
+                        self.action(), self.sync_pass(), self.txg()));
         } else {
-            try!(write!(f,
-                        "ENTRY: size:0x{:X}  map_type:0x{:?}  offset:0x{:X}",
-                        self.size(),
-                        self.map_type(),
-                        self.offset()));
+            try!(write!(f, "ENTRY: size:0x{:X}  map_type:{:?}  offset:0x{:X}",
+                        self.size(), self.map_type(), self.offset()));
         }
         Ok(())
     }
 }
 
-pub fn load_space_map_avl(sm: &SpaceMap,
-                          tree: &mut avl::Tree<Entry, u64>,
-                          bytes: &[u8],
-                          map_type: MapType)
-                          -> Result<(), String> {
-    for i in 0..sm.size {
-        let entry = Entry::from_bytes(&bytes[i * 8..]).unwrap();
-        let entry_map_type = match entry.map_type() {
-            Some(map_type) => {
-                map_type
-            }
-            None => {
-                return Err("Invalid map type".to_string());
-            }
-        };
-        if entry.debug() != 1 && entry_map_type == map_type {
-            // it's not a debug entry and it's the right map type, add it to the tree
-            tree.insert(entry);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#[derive(Debug)]
+pub struct Segment {
+    pub start: u64,
+    pub size: u64,
+}
+
+impl Segment {
+    fn from_entry(entry: &Entry) -> Self {
+        Segment {
+            start: entry.offset(),
+            size: entry.size(),
         }
     }
-    tree.in_order(|node| {
-        println!("{:?}", node.value());
-    });
-
-    Ok(())
 }

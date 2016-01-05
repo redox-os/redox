@@ -4,6 +4,8 @@ ARCH?=i386
 
 BUILD=build/$(ARCH)
 
+QEMU?=qemu-system-$(ARCH)
+
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
@@ -76,7 +78,7 @@ endif
 
 .PHONY: help all docs apps schemes tests clean \
 	bochs \
-	qemu qemu_bare qemu_no_kvm qemu_tap \
+	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -104,7 +106,7 @@ help:
 	@echo "    make qemu"
 	@echo "        Build Redox and run it inside KVM machine."
 	@echo
-	@echo "    make qemu_no_kvm"
+	@echo "    make qemu kvm=no"
 	@echo "        Build Redox and run it inside Qemu machine without KVM support."
 	@echo
 	@echo "    make apps"
@@ -132,6 +134,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/login/main.bin \
+	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \
 	  filesystem/apps/shell/main.bin \
 	  filesystem/apps/sodium/main.bin \
@@ -142,17 +145,12 @@ apps: filesystem/apps/editor/main.bin \
 
 schemes: filesystem/schemes/orbital/main.bin \
   	  	 filesystem/schemes/tcp/main.bin \
-         filesystem/schemes/terminal/main.bin \
-	  	 filesystem/schemes/udp/main.bin \
-		 filesystem/schemes/zfs/main.bin
+	  	 filesystem/schemes/udp/main.bin
 
 tests: tests/success tests/failure
 
 clean:
 	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
-
-osmium:
-	$(RM) -f build/i386/osmium*; make qemu; $(MAKE) --no-print-directory build/$(ARCH)/osmium.rlib
 
 FORCE:
 
@@ -161,9 +159,6 @@ tests/%: FORCE
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
-
-$(BUILD)/osmium.rlib: crates/os/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
@@ -187,7 +182,13 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+$(BUILD)/liborbtk.rlib: liborbtk/src/lib.rs liborbtk/src/*.rs liborbtk/src/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-name orbtk -o $@ $<
+
+$(BUILD)/osmium.rlib: crates/os/lib.rs crates/os/*.rs $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
 
 $(BUILD)/kernel.bin: $(BUILD)/kernel.rlib kernel/kernel.ld
@@ -209,11 +210,19 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/apps_$*.rlib $<
+filesystem/apps/shell/main.bin: crates/ion/src/main.rs crates/ion/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
 	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
-filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+	$(RUSTC) $(RUSTCFLAGS) --cfg "feature = \"orbital\"" -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
+	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
+
+filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
+	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
+	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
+
+filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
 	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/schemes_$*.rlib
@@ -253,7 +262,7 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 64
+	$(VBM) modifyvm Redox --vram 16
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --nictrace1 on
@@ -261,99 +270,79 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --mouse usbtablet
+	#$(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	#$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
-	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
+	#PATA
+	$(VBM) storagectl Redox --name ATA --add ide --controller PIIX4 --bootable on
+	#SATA
+	#$(VBM) storagectl Redox --name ATA --add sata --controller IntelAHCI --bootable on --portcount 1
+	$(VBM) storageattach Redox --storagectl ATA --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
 	echo "Run VM"
 	$(VB) --startvm Redox --dbg
 
 bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)
 
+QFLAGS := -serial mon:stdio -m 1024 -d guest_errors
+ifneq ($(kvm),no)
+	QFLAGS += -enable-kvm
+endif
+
+ifeq ($(vga),no)
+	QFLAGS += -vga none -nographic
+else
+	QFLAGS += -vga std
+endif
+
+ifneq ($(usb),no)
+	QFLAGS += -usb
+
+	ifeq ($(usb),ohci)
+		QFLAGS += -device pci-ohci,id=ohci
+   		QFLAGS += -device usb-tablet,bus=ohci.0
+	else ifeq ($(usb),ehci)
+		QFLAGS += -device usb-ehci,id=ehci
+   		QFLAGS += -device usb-tablet,bus=ehci.0
+	else ifeq ($(usb),xhci)
+		QFLAGS += -device nec-usb-xhci,id=xhci
+		QFLAGS += -device usb-tablet,bus=xhci.0
+	else
+		QFLAGS += -device usb-tablet
+	endif
+endif
+
+ifeq ($(storage),ahci)
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-hd,drive=disk,bus=ahci.0
+else ifeq ($(storage),usb)
+	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+else
+	QFLAGS += -hda $(BUILD)/harddrive.bin
+endif
+
+ifeq ($(net),no)
+	QFLAGS += -net none
+else ifeq ($(net),tap)
+	QFLAGS += -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap
+else
+	QFLAGS += -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap
+endif
+
 qemu: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_bare: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net none -vga std -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_bare_no_vga: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net none -vga none -nographic -serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_no_kvm: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -hda $<
-
-qemu_no_vga: $(BUILD)/harddrive.bin
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net user -net dump,file=$(BUILD)/network.pcap \
-			-vga none -nographic \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-
-qemu_tap: $(BUILD)/harddrive.bin
-	sudo tunctl -t tap_redox -u "${USER}"
-	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-$(ARCH) -net nic,model=rtl8139 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-	sudo ifconfig tap_redox down
-	sudo tunctl -d tap_redox
-
-qemu_tap_8254x: $(BUILD)/harddrive.bin
-	sudo tunctl -t tap_redox -u "${USER}"
-	sudo ifconfig tap_redox 10.85.85.1 up
-	-qemu-system-$(ARCH) -net nic,model=e1000 -net tap,ifname=tap_redox,script=no,downscript=no -net dump,file=$(BUILD)/network.pcap \
-			-usb -device usb-tablet \
-			-device usb-ehci,id=ehci -device nec-usb-xhci,id=xhci \
-			-soundhw ac97 -vga std \
-			-serial mon:stdio -m 1024 -d guest_errors -enable-kvm -hda $<
-	sudo ifconfig tap_redox down
-	sudo tunctl -d tap_redox
-
-virtualbox_tap: $(BUILD)/harddrive.bin
-	echo "Delete VM"
-	-$(VBM) unregistervm Redox --delete; $(VBM_CLEANUP)
-	echo "Delete Disk"
-	-$(RM) harddrive.vdi
-	echo "Create VM"
-	$(VBM) createvm --name Redox --register
-	echo "Create Bridge"
-	sudo tunctl -t tap_redox -u "${USER}"
-	sudo ifconfig tap_redox 10.85.85.1 up
-	echo "Set Configuration"
-	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 64
-	$(VBM) modifyvm Redox --nic1 bridged
-	$(VBM) modifyvm Redox --nictype1 82540EM
-	$(VBM) modifyvm Redox --nictrace1 on
-	$(VBM) modifyvm Redox --nictracefile1 network.pcap
-	$(VBM) modifyvm Redox --bridgeadapter1 tap_redox
-	$(VBM) modifyvm Redox --uart1 0x3F8 4
-	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
-	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
-	echo "Create Disk"
-	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
-	echo "Attach Disk"
-	$(VBM) storagectl Redox --name IDE --add ide --controller PIIX4 --bootable on
-	$(VBM) storageattach Redox --storagectl IDE --port 0 --device 0 --type hdd --medium $(BUILD)/harddrive.vdi
-	echo "Run VM"
-	-$(VB) --startvm Redox --dbg
-	echo "Delete Bridge"
-	sudo ifconfig tap_redox down
-	sudo tunctl -d tap_redox
+	@if [ "$(net)" = "tap" ]; \
+	then \
+		sudo tunctl -t tap_redox -u "${USER}"; \
+		sudo ifconfig tap_redox 10.85.85.1 up; \
+	fi
+	-$(QEMU) $(QFLAGS)
+	@if [ "$(net)" = "tap" ]; \
+	then \
+		sudo ifconfig tap_redox down; \
+		sudo tunctl -d tap_redox; \
+	fi
 
 arping:
 	arping -I tap_redox 10.85.85.2

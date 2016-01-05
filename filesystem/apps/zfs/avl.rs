@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 pub struct Node<T> {
     value: T,
     left: Option<usize>, // ID for left node
@@ -83,11 +85,11 @@ pub struct Tree<T, K> {
     root: Option<usize>, // Index of the root node
     nodes: Vec<Slot<T>>,
     free_list: Vec<usize>,
-    key: Box<Fn(&T) -> K>,
+    key: Rc<Fn(&T) -> K>,
 }
 
 impl<T, K: PartialOrd> Tree<T, K> {
-    pub fn new(key: Box<Fn(&T) -> K>) -> Self {
+    pub fn new(key: Rc<Fn(&T) -> K>) -> Self {
         Tree {
             root: None,
             nodes: Vec::new(),

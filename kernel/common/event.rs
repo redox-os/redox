@@ -6,7 +6,7 @@ pub const EVENT_KEY: i64 = 2;
 pub const EVENT_QUIT: i64 = 3;
 
 /// An optional event
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum EventOption {
     /// A mouse event
     Mouse(MouseEvent),
@@ -21,7 +21,7 @@ pub enum EventOption {
 }
 
 /// An event
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 #[repr(packed)]
 pub struct Event {
     pub code: i64,
@@ -55,12 +55,12 @@ impl Event {
 }
 
 /// A event related to the mouse
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct MouseEvent {
     /// The x coordinate of the mouse
-    pub x: isize,
+    pub x: i32,
     /// The y coordinate of the mouse
-    pub y: isize,
+    pub y: i32,
     /// Was the left button pressed?
     pub left_button: bool,
     /// Was the middle button pressed?
@@ -84,8 +84,8 @@ impl MouseEvent {
     /// Convert an `Event` to a `MouseEvent`
     pub fn from_event(event: Event) -> MouseEvent {
         MouseEvent {
-            x: event.a as isize,
-            y: event.b as isize,
+            x: event.a as i32,
+            y: event.b as i32,
             left_button: event.c & 1 == 1,
             middle_button: event.c & 2 == 2,
             right_button: event.c & 4 == 4,
@@ -151,7 +151,7 @@ pub const K_LEFT_SHIFT: u8 = 0x2A;
 pub const K_RIGHT_SHIFT: u8 = 0x36;
 
 /// A key event (such as a pressed key)
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct KeyEvent {
     /// The charecter of the key
     pub character: char,
@@ -182,7 +182,7 @@ impl KeyEvent {
     }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct QuitEvent;
 
 impl QuitEvent {

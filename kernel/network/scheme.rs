@@ -7,9 +7,12 @@ use core::ops::DerefMut;
 
 use scheduler::context::context_switch;
 use common::debug;
-use scheduler;
 
-use schemes::{Resource, ResourceSeek, Url};
+use schemes::{Result, Resource, ResourceSeek, Url};
+
+use syscall::{SysError, EBADF};
+
+use sync::Intex;
 
 pub trait NetworkScheme {
     fn add(&mut self, resource: *mut NetworkResource);
@@ -20,8 +23,8 @@ pub trait NetworkScheme {
 pub struct NetworkResource {
     pub nic: *mut NetworkScheme,
     pub ptr: *mut NetworkResource,
-    pub inbound: VecDeque<Vec<u8>>,
-    pub outbound: VecDeque<Vec<u8>>,
+    pub inbound: Intex<VecDeque<Vec<u8>>>,
+    pub outbound: Intex<VecDeque<Vec<u8>>>,
 }
 
 impl NetworkResource {
@@ -29,8 +32,8 @@ impl NetworkResource {
         let mut ret = box NetworkResource {
             nic: nic,
             ptr: 0 as *mut NetworkResource,
-            inbound: VecDeque::new(),
-            outbound: VecDeque::new(),
+            inbound: Intex::new(VecDeque::new()),
+            outbound: Intex::new(VecDeque::new()),
         };
 
         unsafe {
@@ -44,12 +47,12 @@ impl NetworkResource {
 }
 
 impl Resource for NetworkResource {
-    fn dup(&self) -> Option<Box<Resource>> {
+    fn dup(&self) -> Result<Box<Resource>> {
         let mut ret = box NetworkResource {
             nic: self.nic,
             ptr: 0 as *mut NetworkResource,
-            inbound: self.inbound.clone(),
-            outbound: self.outbound.clone(),
+            inbound: Intex::new(self.inbound.lock().clone()),
+            outbound: Intex::new(self.outbound.lock().clone()),
         };
 
         unsafe {
@@ -58,30 +61,30 @@ impl Resource for NetworkResource {
             (*ret.nic).add(ret.ptr);
         }
 
-        Some(ret)
+        Ok(ret)
     }
 
     fn url(&self) -> Url {
         Url::from_str("network:")
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
+    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
         debug::d("TODO: Implement read for RTL8139\n");
-        None
+        Err(SysError::new(EBADF))
     }
 
-    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Option<usize> {
+    fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
         loop {
             unsafe {
-                (*self.nic).sync();
+                {
+                    (*self.nic).sync();
 
-                let reenable = scheduler::start_no_ints();
-                let option = (*self.ptr).inbound.pop_front();
-                scheduler::end_no_ints(reenable);
+                    let option = (*self.ptr).inbound.lock().pop_front();
 
-                if let Some(bytes) = option {
-                    vec.push_all(&bytes);
-                    return Some(bytes.len());
+                    if let Some(bytes) = option {
+                        vec.push_all(&bytes);
+                        return Ok(bytes.len());
+                    }
                 }
 
                 context_switch(false);
@@ -89,24 +92,25 @@ impl Resource for NetworkResource {
         }
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         unsafe {
-            let reenable = scheduler::start_no_ints();
-            (*self.ptr).outbound.push_back(Vec::from(buf));
-            scheduler::end_no_ints(reenable);
+            (*self.ptr).outbound.lock().push_back(Vec::from(buf));
 
             (*self.nic).sync();
         }
 
-        Some(buf.len())
+        Ok(buf.len())
     }
 
-    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
-        None
+    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
 
-    fn sync(&mut self) -> bool {
-        false
+    fn sync(&mut self) -> Result<()> {
+        unsafe {
+            (*self.nic).sync();
+        }
+        Ok(())
     }
 }
 

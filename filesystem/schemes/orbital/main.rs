@@ -1,9 +1,11 @@
-use std::{Box, String, Url};
+use std::url::Url;
 use std::{cmp, mem, ptr};
 use std::get_slice::GetSlice;
 use std::io::*;
 use std::process::Command;
 use std::ops::DerefMut;
+use std::syscall::SysError;
+use std::syscall::ENOENT;
 use std::to_num::ToNum;
 
 use orbital::event::Event;
@@ -16,7 +18,6 @@ use self::window::Window;
 
 pub mod display;
 pub mod package;
-pub mod scheduler;
 pub mod session;
 pub mod window;
 
@@ -31,8 +32,8 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Resource>> {
-        Some(box Resource {
+    pub fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box Resource {
             window: Window::new(self.window.point,
                                 self.window.size,
                                 self.window.title.clone()),
@@ -41,17 +42,17 @@ impl Resource {
     }
 
     /// Return the url of this resource
-    pub fn path(&self) -> Option<String> {
-        Some(format!("orbital:///{}/{}/{}/{}/{}",
-                     self.window.point.x,
-                     self.window.point.y,
-                     self.window.size.width,
-                     self.window.size.height,
-                     self.window.title))
+    pub fn path(&self) -> Result<String> {
+        Ok(format!("orbital:///{}/{}/{}/{}/{}",
+                   self.window.point.x,
+                   self.window.point.y,
+                   self.window.size.width,
+                   self.window.size.height,
+                   self.window.title))
     }
 
     /// Read data to buffer
-    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         // Read events from window
         let mut i = 0;
         while buf.len() - i >= mem::size_of::<Event>() {
@@ -64,11 +65,11 @@ impl Resource {
             }
         }
 
-        Some(i)
+        Ok(i)
     }
 
     /// Write to resource
-    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let content = &mut self.window.content;
 
         let size = cmp::min(content.size - self.seek, buf.len());
@@ -77,27 +78,28 @@ impl Resource {
         }
         self.seek += size;
 
-        return Some(size);
+        Ok(size)
     }
 
     /// Seek
-    pub fn seek(&mut self, pos: SeekFrom) -> Option<usize> {
+    pub fn seek(&mut self, pos: SeekFrom) -> Result<u64> {
         let end = self.window.content.size;
 
         self.seek = match pos {
-            SeekFrom::Start(offset) => cmp::min(end, cmp::max(0, offset)),
+            SeekFrom::Start(offset) => cmp::min(end as u64, cmp::max(0, offset)) as usize,
             SeekFrom::Current(offset) =>
-                cmp::min(end, cmp::max(0, self.seek as isize + offset) as usize),
-            SeekFrom::End(offset) => cmp::min(end, cmp::max(0, end as isize + offset) as usize),
+                cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
+            SeekFrom::End(offset) =>
+                cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
         };
 
-        return Some(self.seek);
+        Ok(self.seek as u64)
     }
 
     /// Sync the resource, should flip
-    pub fn sync(&mut self) -> bool {
+    pub fn sync(&mut self) -> Result<()> {
         self.window.redraw();
-        true
+        Ok(())
     }
 }
 
@@ -122,7 +124,7 @@ impl Scheme {
         ret
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
         // window://host/path/path/path is the path type we're working with.
         let url = Url::from_str(url_str);
 
@@ -161,16 +163,16 @@ impl Scheme {
                     self.next_x = 0;
                 }
                 self.next_x += 32;
-                pointx = self.next_x;
+                pointx = self.next_x as i32;
 
                 if self.next_y > self.session.display.height as isize - size_height as isize {
                     self.next_y = 0;
                 }
                 self.next_y += 32;
-                pointy = self.next_y;
+                pointy = self.next_y as i32;
             }
 
-            Some(box Resource {
+            Ok(box Resource {
                 window: Window::new(Point::new(pointx, pointy),
                                     Size::new(size_width, size_height),
                                     title),
@@ -179,47 +181,35 @@ impl Scheme {
         } else if host == "launch" {
             let path = url.path();
 
-            unsafe {
-                let reenable = scheduler::start_no_ints();
-
-                for package in self.session.packages.iter() {
-                    let mut accepted = false;
-                    for accept in package.accepts.iter() {
-                        if (accept.starts_with('*') &&
-                            path.ends_with(&accept.get_slice(Some(1), None))) ||
-                           (accept.ends_with('*') &&
-                            path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
-                            accepted = true;
-                            break;
-                        }
-                    }
-                    if accepted {
-                        if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                            println!("{}: Failed to launch", package.binary);
-                        }
+            for package in self.session.packages.iter() {
+                let mut accepted = false;
+                for accept in package.accepts.iter() {
+                    if (accept.starts_with('*') &&
+                        path.ends_with(&accept.get_slice(Some(1), None))) ||
+                       (accept.ends_with('*') &&
+                        path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
+                        accepted = true;
                         break;
                     }
                 }
-
-                scheduler::end_no_ints(reenable);
+                if accepted {
+                    if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
+                        println!("{}: Failed to launch", package.binary);
+                    }
+                    break;
+                }
             }
 
-            None
+            Err(SysError::new(ENOENT))
         } else {
-            None
+            Err(SysError::new(ENOENT))
         }
     }
 
     pub fn event(&mut self, event: &Event) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
+        self.session.event(event);
 
-            self.session.event(event);
-
-            scheduler::end_no_ints(reenable);
-
-            self.session.redraw();
-        }
+        unsafe { self.session.redraw() };
     }
 }
 

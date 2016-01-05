@@ -11,12 +11,11 @@ use common::time::Duration;
 
 use core::cell::UnsafeCell;
 
-use scheduler::context::Context;
+use scheduler::context::ContextManager;
 
-use schemes::KScheme;
-use schemes::Resource;
-use schemes::VecResource;
-use schemes::Url;
+use schemes::{Result, KScheme, Resource, VecResource, Url};
+
+use syscall::{SysError, ENOENT};
 
 use self::console::Console;
 
@@ -26,12 +25,12 @@ pub mod console;
 /// The kernel environment
 pub struct Environment {
     /// Contexts
-    pub contexts: Intex<Vec<Box<Context>>>,
+    pub contexts: Intex<ContextManager>,
 
     /// Clock realtime (default)
-    pub clock_realtime: Duration,
+    pub clock_realtime: Intex<Duration>,
     /// Monotonic clock
-    pub clock_monotonic: Duration,
+    pub clock_monotonic: Intex<Duration>,
 
     /// Default console
     pub console: Intex<Console>,
@@ -39,19 +38,24 @@ pub struct Environment {
     pub events: Mutex<VecDeque<Event>>,
     /// Schemes
     pub schemes: Vec<UnsafeCell<Box<KScheme>>>,
+
+    /// Interrupt stats
+    pub interrupts: Intex<[u64; 256]>
 }
 
 impl Environment {
     pub fn new() -> Box<Environment> {
         box Environment {
-            contexts: Intex::new(Vec::new()),
+            contexts: Intex::new(ContextManager::new()),
 
-            clock_realtime: Duration::new(0, 0),
-            clock_monotonic: Duration::new(0, 0),
+            clock_realtime: Intex::new(Duration::new(0, 0)),
+            clock_monotonic: Intex::new(Duration::new(0, 0)),
 
             console: Intex::new(Console::new()),
             events: Mutex::new(VecDeque::new()),
             schemes: Vec::new(),
+
+            interrupts: Intex::new([0; 256])
         }
     }
 
@@ -68,7 +72,7 @@ impl Environment {
     }
 
     /// Open a new resource
-    pub fn open(&self, url: &Url, flags: usize) -> Option<Box<Resource>> {
+    pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
             let mut list = String::new();
@@ -84,7 +88,7 @@ impl Environment {
                 }
             }
 
-            Some(box VecResource::new(Url::new(), list.into_bytes()))
+            Ok(box VecResource::new(Url::new(), list.into_bytes()))
         } else {
             for scheme in self.schemes.iter() {
                 let scheme_str = unsafe { (*scheme.get()).scheme() };
@@ -92,12 +96,12 @@ impl Environment {
                     return unsafe { (*scheme.get()).open(url, flags) };
                 }
             }
-            None
+            Err(SysError::new(ENOENT))
         }
     }
 
     /// Unlink a resource
-    pub fn unlink(&self, url: &Url) -> bool {
+    pub fn unlink(&self, url: &Url) -> Result<()> {
         let url_scheme = url.scheme();
         if !url_scheme.is_empty() {
             for scheme in self.schemes.iter() {
@@ -107,6 +111,6 @@ impl Environment {
                 }
             }
         }
-        false
+        Err(SysError::new(ENOENT))
     }
 }

@@ -1,12 +1,8 @@
-// TODO: Doc the rest
-
 pub use common::heap::Memory;
 
 use core::ops::{Index, IndexMut};
 use core::{cmp, intrinsics, mem, ptr};
 
-
-use scheduler;
 
 use common::paging::PAGE_END;
 
@@ -457,7 +453,9 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
     let ret;
 
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
+
+    let mut size = 0;
 
 
     unsafe {
@@ -491,7 +489,7 @@ pub unsafe fn alloc_size(ptr: usize) -> usize {
 /// Deallocate
 pub unsafe fn dealloc(ptr: usize) {
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
 
     let b = Block::from_ptr(ptr);
     MT.dealloc(b);
@@ -514,7 +512,9 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
     let ret;
 
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
+
+    let mut ret = 0;
 
     if let Some(mut b) = MT.realloc(Block::from_ptr(ptr), size) {
         ret = b.to_ptr();
@@ -545,12 +545,16 @@ pub unsafe fn realloc_inplace(ptr: usize, size: usize) -> usize {
 }
 
 pub fn memory_used() -> usize {
+    // Memory allocation must be atomic
+    let _intex = Intex::static_lock();
+
     let mut ret = 0;
     unsafe {
         // TODO
 
         // Memory allocation must be atomic
     }
+
     ret
 }
 
@@ -562,5 +566,6 @@ pub fn memory_free() -> usize {
 
         // Memory allocation must be atomic
     }
+
     ret
 }

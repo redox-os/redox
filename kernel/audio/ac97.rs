@@ -6,10 +6,12 @@ use common::memory;
 use schemes::{Resource, ResourceSeek, Url};
 use common::time::{self, Duration};
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 use drivers::pio::*;
 
-use schemes::KScheme;
+use schemes::{Result, KScheme};
+
+use syscall::{SysError, EBADF};
 
 #[repr(packed)]
 struct BD {
@@ -23,8 +25,8 @@ struct AC97Resource {
 }
 
 impl Resource for AC97Resource {
-    fn dup(&self) -> Option<Box<Resource>> {
-        Some(box AC97Resource {
+    fn dup(&self) -> Result<Box<Resource>> {
+        Ok(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
         })
@@ -34,11 +36,11 @@ impl Resource for AC97Resource {
         Url::from_str("audio:")
     }
 
-    fn read(&mut self, _: &mut [u8]) -> Option<usize> {
-        None
+    fn read(&mut self, _: &mut [u8]) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
 
-    fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    fn write(&mut self, buf: &[u8]) -> Result<usize> {
         unsafe {
             let audio = self.audio as u16;
 
@@ -150,15 +152,15 @@ impl Resource for AC97Resource {
             debug!("Finished {} / {}\n", po_civ.read(), lvi);
         }
 
-        Some(buf.len())
+        Ok(buf.len())
     }
 
-    fn seek(&mut self, _: ResourceSeek) -> Option<usize> {
-        None
+    fn seek(&mut self, _: ResourceSeek) -> Result<usize> {
+        Err(SysError::new(EBADF))
     }
 
-    fn sync(&mut self) -> bool {
-        false
+    fn sync(&mut self) -> Result<()> {
+        Err(SysError::new(EBADF))
     }
 }
 
@@ -173,8 +175,8 @@ impl KScheme for AC97 {
         "audio"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(box AC97Resource {
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(box AC97Resource {
             audio: self.audio,
             bus_master: self.bus_master,
         })

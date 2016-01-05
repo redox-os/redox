@@ -7,14 +7,15 @@ use collections::vec_deque::VecDeque;
 use core::ptr;
 
 use common::{debug, memory};
-use scheduler;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 
 use network::common::*;
 use network::scheme::*;
 
-use schemes::{KScheme, Resource, Url};
+use schemes::{Result, KScheme, Resource, Url};
+
+use sync::Intex;
 
 const CTRL: u32 = 0x00;
 const CTRL_LRST: u32 = 1 << 3;
@@ -105,7 +106,7 @@ pub struct Intel8254x {
     pub base: usize,
     pub memory_mapped: bool,
     pub irq: u8,
-    pub resources: Vec<*mut NetworkResource>,
+    pub resources: Intex<Vec<*mut NetworkResource>>,
     pub inbound: VecDeque<Vec<u8>>,
     pub outbound: VecDeque<Vec<u8>>,
 }
@@ -115,16 +116,13 @@ impl KScheme for Intel8254x {
         "network"
     }
 
-    fn open(&mut self, _: &Url, _: usize) -> Option<Box<Resource>> {
-        Some(NetworkResource::new(self))
+    fn open(&mut self, _: &Url, _: usize) -> Result<Box<Resource>> {
+        Ok(NetworkResource::new(self))
     }
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            unsafe {
-                debug::dh(self.read(ICR) as usize);
-                debug::dl();
-            }
+            unsafe { self.read(ICR) };
 
             self.sync();
         }
@@ -137,44 +135,40 @@ impl KScheme for Intel8254x {
 
 impl NetworkScheme for Intel8254x {
     fn add(&mut self, resource: *mut NetworkResource) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            self.resources.push(resource);
-            scheduler::end_no_ints(reenable);
-        }
+        self.resources.lock().push(resource);
     }
 
     fn remove(&mut self, resource: *mut NetworkResource) {
-        unsafe {
-            let reenable = scheduler::start_no_ints();
-            let mut i = 0;
-            while i < self.resources.len() {
-                let mut remove = false;
+        let mut resources = self.resources.lock();
 
-                match self.resources.get(i) {
-                    Some(ptr) => if *ptr == resource {
-                        remove = true;
-                    } else {
-                        i += 1;
-                    },
-                    None => break,
-                }
+        let mut i = 0;
+        while i < resources.len() {
+            let mut remove = false;
 
-                if remove {
-                    self.resources.remove(i);
-                }
+            match resources.get(i) {
+                Some(ptr) => if *ptr == resource {
+                    remove = true;
+                } else {
+                    i += 1;
+                },
+                None => break,
             }
-            scheduler::end_no_ints(reenable);
+
+            if remove {
+                resources.remove(i);
+            }
         }
     }
 
     fn sync(&mut self) {
         unsafe {
-            let reenable = scheduler::start_no_ints();
+            {
+                let resources = self.resources.lock();
 
-            for resource in self.resources.iter() {
-                while let Some(bytes) = (**resource).outbound.pop_front() {
-                    self.outbound.push_back(bytes);
+                for resource in resources.iter() {
+                    while let Some(bytes) = (**resource).outbound.lock().pop_front() {
+                        self.outbound.push_back(bytes);
+                    }
                 }
             }
 
@@ -182,18 +176,38 @@ impl NetworkScheme for Intel8254x {
 
             self.receive_inbound();
 
-            while let Some(bytes) = self.inbound.pop_front() {
-                for resource in self.resources.iter() {
-                    (**resource).inbound.push_back(bytes.clone());
+            {
+                let resources = self.resources.lock();
+
+                while let Some(bytes) = self.inbound.pop_front() {
+                    for resource in resources.iter() {
+                        (**resource).inbound.lock().push_back(bytes.clone());
+                    }
                 }
             }
-
-            scheduler::end_no_ints(reenable);
         }
     }
 }
 
 impl Intel8254x {
+    pub unsafe fn new(mut pci: PciConfig) -> Box<Self> {
+        let base = pci.read(0x10) as usize;
+
+        let mut module = box Intel8254x {
+            pci: pci,
+            base: base & 0xFFFFFFF0,
+            memory_mapped: base & 1 == 0,
+            irq: pci.read(0x3C) as u8 & 0xF,
+            resources: Intex::new(Vec::new()),
+            inbound: VecDeque::new(),
+            outbound: VecDeque::new(),
+        };
+
+        module.init();
+
+        module
+    }
+
     pub unsafe fn receive_inbound(&mut self) {
         let receive_ring = self.read(RDBAL) as *mut Rd;
         let length = self.read(RDLEN);

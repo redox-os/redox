@@ -1,14 +1,16 @@
 use std::boxed::Box;
 use std::fs::File;
-use std::io::{Read, Write, SeekFrom};
+use std::io::{Result, Read, Write, SeekFrom};
 use std::mem;
 use std::net::*;
 use std::rand;
 use std::slice;
 use std::string::{String, ToString};
+use std::syscall::SysError;
+use std::syscall::{ENOENT, EPIPE, ESPIPE};
 use std::to_num::*;
 use std::vec::Vec;
-use std::Url;
+use std::url::Url;
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -77,9 +79,9 @@ pub struct Resource {
 }
 
 impl Resource {
-    pub fn dup(&self) -> Option<Box<Resource>> {
+    pub fn dup(&self) -> Result<Box<Resource>> {
         match self.ip.dup() {
-            Some(ip) => Some(box Resource {
+            Ok(ip) => Ok(box Resource {
                 ip: ip,
                 peer_addr: self.peer_addr,
                 peer_port: self.peer_port,
@@ -87,22 +89,22 @@ impl Resource {
                 sequence: self.sequence,
                 acknowledge: self.acknowledge,
             }),
-            None => None,
+            Err(err) => Err(err),
         }
     }
 
-    pub fn path(&self) -> Option<String> {
-        Some(format!("tcp://{}:{}/{}",
-                     self.peer_addr.to_string(),
-                     self.peer_port,
-                     self.host_port as usize))
+    pub fn path(&self) -> Result<String> {
+        Ok(format!("tcp://{}:{}/{}",
+                   self.peer_addr.to_string(),
+                   self.peer_port,
+                   self.host_port as usize))
     }
 
-    pub fn read(&mut self, buf: &mut [u8]) -> Option<usize> {
+    pub fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
         loop {
             let mut bytes: Vec<u8> = Vec::new();
             match self.ip.read_to_end(&mut bytes) {
-                Some(_) => {
+                Ok(_) => {
                     if let Some(segment) = Tcp::from_bytes(bytes) {
                         if (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                            (TCP_PSH | TCP_ACK) &&
@@ -151,16 +153,16 @@ impl Resource {
                                 buf[i] = segment.data[i];
                                 i += 1;
                             }
-                            return Some(i);
+                            return Ok(i);
                         }
                     }
                 }
-                None => return None,
+                Err(err) => return Err(err),
             }
         }
     }
 
-    pub fn write(&mut self, buf: &[u8]) -> Option<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> Result<usize> {
         let tcp_data = Vec::from(buf);
 
         let mut tcp = Tcp {
@@ -198,11 +200,11 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Some(size) => loop {
+            Ok(size) => loop {
                 // Wait for ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
-                    Some(_) => {
+                    Ok(_) => {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
@@ -211,26 +213,26 @@ impl Resource {
                                           TCP_ACK {
                                     self.sequence = segment.header.ack_num.get();
                                     self.acknowledge = segment.header.sequence.get();
-                                    Some(size)
+                                    Ok(size)
                                 } else {
-                                    None
+                                    Err(SysError::new(EPIPE))
                                 };
                             }
                         }
                     }
-                    None => return None,
+                    Err(err) => return Err(err),
                 }
             },
-            None => None,
+            Err(err) => Err(err),
         }
     }
 
-    pub fn seek(&mut self, _: SeekFrom) -> Option<usize> {
-        None
+    pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
+        Err(SysError::new(ESPIPE))
     }
 
-    pub fn sync(&mut self) -> bool {
-        self.ip.sync()
+    pub fn sync(&mut self) -> Result<()> {
+        self.ip.sync_all()
     }
 
     /// Etablish client
@@ -272,11 +274,11 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Some(_) => loop {
+            Ok(_) => loop {
                 // Wait for SYN-ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
-                    Some(_) => {
+                    Ok(_) => {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
@@ -327,10 +329,10 @@ impl Resource {
                             }
                         }
                     }
-                    None => return false,
+                    Err(_) => return false,
                 }
             },
-            None => false,
+            Err(_) => false,
         }
     }
 
@@ -375,11 +377,11 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Some(_) => loop {
+            Ok(_) => loop {
                 // Wait for ACK
                 let mut bytes: Vec<u8> = Vec::new();
                 match self.ip.read_to_end(&mut bytes) {
-                    Some(_) => {
+                    Ok(_) => {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == self.host_port &&
                                segment.header.src.get() == self.peer_port {
@@ -395,10 +397,10 @@ impl Resource {
                             }
                         }
                     }
-                    None => return false,
+                    Err(_) => return false,
                 }
             },
-            None => false,
+            Err(_) => false,
         }
     }
 }
@@ -454,7 +456,7 @@ impl Scheme {
         box Scheme
     }
 
-    pub fn open(&mut self, url_str: &str, _: usize) -> Option<Box<Resource>> {
+    pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
         let url = Url::from_str(&url_str);
 
         if !url.host().is_empty() && !url.port().is_empty() {
@@ -462,33 +464,36 @@ impl Scheme {
             let peer_port = url.port().to_num() as u16;
             let host_port = (rand() % 32768 + 32768) as u16;
 
-            if let Some(ip) = File::open(&("ip://".to_string() + &peer_addr.to_string() + "/6")) {
-                let mut ret = box Resource {
-                    ip: ip,
-                    peer_addr: peer_addr,
-                    peer_port: peer_port,
-                    host_port: host_port,
-                    sequence: rand() as u32,
-                    acknowledge: 0,
-                };
+            match File::open(&("ip://".to_string() + &peer_addr.to_string() + "/6")) {
+                Ok(ip) => {
+                    let mut ret = box Resource {
+                        ip: ip,
+                        peer_addr: peer_addr,
+                        peer_port: peer_port,
+                        host_port: host_port,
+                        sequence: rand() as u32,
+                        acknowledge: 0,
+                    };
 
-                if ret.client_establish() {
-                    return Some(ret);
+                    if ret.client_establish() {
+                        return Ok(ret);
+                    }
                 }
+                Err(err) => return Err(err),
             }
         } else if !url.path().is_empty() {
             let host_port = url.path().to_num() as u16;
 
-            while let Some(mut ip) = File::open("ip:///6") {
+            while let Ok(mut ip) = File::open("ip:///6") {
                 let mut bytes: Vec<u8> = Vec::new();
                 match ip.read_to_end(&mut bytes) {
-                    Some(_) => {
+                    Ok(_) => {
                         if let Some(segment) = Tcp::from_bytes(bytes) {
                             if segment.header.dst.get() == host_port &&
                                (segment.header.flags.get() & (TCP_PSH | TCP_SYN | TCP_ACK)) ==
                                TCP_SYN {
-                                if let Some(path) = ip.path() {
-                                    let url = Url::from_string(path);
+                                if let Ok(path) = ip.path() {
+                                    let url = Url::from_string(path.to_string());
 
                                     let peer_addr = IPv4Addr::from_string(&url.host());
 
@@ -502,17 +507,17 @@ impl Scheme {
                                     };
 
                                     if ret.server_establish(segment) {
-                                        return Some(ret);
+                                        return Ok(ret);
                                     }
                                 }
                             }
                         }
                     }
-                    None => break,
+                    Err(err) => return Err(err),
                 }
             }
         }
 
-        None
+        Err(SysError::new(ENOENT))
     }
 }

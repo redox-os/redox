@@ -1,8 +1,15 @@
+#![feature(negate_unsigned)]
+
 //To use this, please install zfs-fuse
-use std::{mem, str, File, Read, ToNum};
+use std::{mem, str};
+use std::to_num::ToNum;
+use std::fs::File;
+use std::io::Read;
+use std::rc::Rc;
 
 use self::arcache::ArCache;
-use self::dnode::{DNodePhys, ObjectSetPhys, ObjectType};
+use self::dnode::{DNodePhys, ObjectType};
+use self::dmu_objset::ObjectSetPhys;
 use self::block_ptr::BlockPtr;
 use self::dsl_dataset::DslDatasetPhys;
 use self::dsl_dir::DslDirPhys;
@@ -15,9 +22,9 @@ use self::vdev::VdevLabel;
 macro_rules! readln {
     () => ({
         let mut buffer = String::new();
-        match std::io::stdin().read_to_string(&mut buffer) {
-            Some(_) => Some(buffer),
-            None => None
+        match std::io::stdin().read_line(&mut buffer) {
+            Ok(_) => Some(buffer),
+            Err(_) => None
         }
     });
 }
@@ -25,9 +32,11 @@ macro_rules! readln {
 pub mod arcache;
 pub mod avl;
 pub mod block_ptr;
+pub mod dmu_objset;
 pub mod dnode;
 pub mod dsl_dataset;
 pub mod dsl_dir;
+pub mod dsl_pool;
 pub mod dvaddr;
 pub mod from_bytes;
 pub mod lzjb;
@@ -36,7 +45,10 @@ pub mod nvpair;
 pub mod nvstream;
 pub mod spa;
 pub mod space_map;
+pub mod taskq;
+pub mod txg;
 pub mod uberblock;
+pub mod util;
 pub mod vdev;
 pub mod vdev_file;
 pub mod xdr;
@@ -429,7 +441,7 @@ pub fn main() {
                         println!("ROOTBP[1] {:?}", uberblock.rootbp.dvas[1]);
                         println!("ROOTBP[2] {:?}", uberblock.rootbp.dvas[2]);
                     } else if command == "spa_import" {
-                        let mut nvpairs_buffer = zfs.reader.zio.read(32, 256 * 224);
+                        let mut nvpairs_buffer = zfs.reader.zio.read(32, 224);
                         let mut xdr = xdr::MemOps::new(&mut nvpairs_buffer);
                         let nv_list = nvstream::decode_nv_list(&mut xdr).unwrap();
                         let name = nv_list.get::<&String>("name").unwrap().clone();
@@ -489,13 +501,12 @@ pub fn main() {
                                                              space_map_phys);
                                                     // println!("got space map: {:?}", &space_map.unwrap()[0..64]);
 
-                                                    let mut range_tree: avl::Tree<space_map::Entry,
-                                                                                  u64> =
-                                                        avl::Tree::new(Box::new(|x| x.offset()));
-                                                    space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
+                                                    let mut range_tree: avl::Tree<space_map::Entry, u64> =
+                                                        avl::Tree::new(Rc::new(|x| x.offset()));
+                                                    /*space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
                                                                                   &mut range_tree,
                                                                                   &space_map.unwrap(),
-                                                                                  space_map::MapType::Alloc).unwrap();
+                                                                                  space_map::MapType::Alloc).unwrap();*/
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue \
                                                               type. Expected Uint64.");
@@ -550,7 +561,7 @@ pub fn main() {
                                 let sector = arg.to_num();
                                 println!("Dump sector: {}", sector);
 
-                                let data = zfs.reader.zio.read(sector, 1);
+                                let data = zfs.reader.zio.read(sector as usize, 1);
                                 for i in 0..data.len() {
                                     if i % 32 == 0 {
                                         print!("\n{:X}:", i);
@@ -577,7 +588,7 @@ pub fn main() {
                         match args.get(1) {
                             Some(arg) => {
                                 match File::open(arg) {
-                                    Some(file) => {
+                                    Ok(file) => {
                                         let zfs = Zfs::new(file);
                                         if let Err(ref e) = zfs {
                                             println!("Error: {:?}", e);
@@ -586,7 +597,7 @@ pub fn main() {
                                         }
                                         zfs_option = zfs.ok();
                                     }
-                                    None => println!("File not found!"),
+                                    Err(err) => println!("Failed to open {}: {}", arg, err),
                                 }
                             }
                             None => println!("No file specified!"),
