@@ -65,7 +65,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
 ### <a name="gh-issues"> GitHub Issues </a>
 
-A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
+A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
 
 ### <a name="prs"> Pull Requests </a>
 
