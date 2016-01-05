@@ -455,6 +455,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
     }
 
     match interrupt {
+        i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
         0x20 => {
             {
                 let mut clock_monotonic = env().clock_monotonic.lock();
@@ -480,7 +481,6 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 unsafe { context_switch(true) };
             }
         }
-        i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
         0x80 => if !syscall_handle(regs) {
             exception!("Unknown Syscall");
         },
