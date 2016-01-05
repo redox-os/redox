@@ -122,6 +122,8 @@ impl StateArray {
         let b = ptr::read(ptr);
 
         ptr::write(ptr, ((val as u8) << bit) ^ (!(0b11 << bit) & b));
+
+        debug_assert!(self.get(n) == val, "StateArray::set() : Value not set");
     }
 }
 
@@ -135,11 +137,10 @@ impl StateTree {
     /// Get the position of a given node in the tree
     #[inline]
     pub fn pos(&self, idx: usize, level: usize) -> usize {
-        (Block {
+        Block {
             idx: idx,
             level: level,
-        })
-        .pos()
+        }.pos()
     }
 
     /// Set the value of a node
@@ -199,6 +200,7 @@ impl Block {
     /// The parrent of this block
     #[inline]
     pub fn parrent(&self) -> Block {
+        debug_assert!(self.level != 0, "parrent() : Requested parrent of root block");
         Block {
             idx: self.idx / 2,
             level: self.level - 1,
@@ -216,11 +218,17 @@ impl Block {
 
         let idx = (pos + 1 - (1 << (level + 1))) >> (MT_DEPTH - level);
 
+        debug_assert!(idx < 1 << level, "from_pos() : The index (idx) is out of bound (expected lower than 2 ^ level, found {})", idx);
 
-        Block {
+
+        let res = Block {
             level: level,
             idx: idx,
-        }
+        };
+
+        debug_assert!(res.pos() == pos, "from_pos() : The reverse calculation does not match");
+
+        res
     }
 
     /// Convert a pointer to a block
@@ -254,6 +262,8 @@ impl MemoryTree {
         self.tree.set(res, MemoryState::Used);
         self.tree.set(res.get_buddy(), MemoryState::Free);
 
+        debug_assert!(res.size() == block.size() / 2, "split() : Block not splitted probably, new block is not half size (size: {}, expected {})", res.size(), block.size());
+
         res
     }
 
@@ -266,6 +276,8 @@ impl MemoryTree {
         let order = ceil_log2(size / MT_ATOM);
         size = (1 << order) * MT_ATOM;
         let level = MT_DEPTH - order - 1;
+
+        debug_assert!(size.is_power_of_two(), "alloc() : Size allocated is not a power of two (size is {})", size);
 
         let mut free = None;
         for i in 0..1 << level {
@@ -343,6 +355,8 @@ impl MemoryTree {
             b = self.split(b);
         }
 
+        debug_assert!(b.size() >= size, "alloc_align() : Size allocated is smaller than size requested (requested {}, got {})", size, b.size());
+
         Some(b)
 
     }
@@ -406,6 +420,8 @@ impl MemoryTree {
                 self.dealloc(block.parrent());
             }
         }
+
+        debug_assert!(self.tree.get(block) == MemoryState::Free, "dealloc() : Block not freed!");
     }
 
 }
