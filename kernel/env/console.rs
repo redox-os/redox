@@ -140,6 +140,8 @@ impl Console {
         } else if c == '\n' {
             self.point.x = 0;
             self.point.y += 16;
+        } else if c == '\t' {
+            self.point.x = ((self.point.x / 64) + 1) * 64;
         } else if c == '\x08' {
             self.point.x -= 8;
             if self.point.x < 0 {

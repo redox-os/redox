@@ -3,6 +3,7 @@ use schemes::{Result, KScheme, Resource, Url};
 use syscall::{SysError, O_CREAT, ENOENT};
 pub use self::dsdt::DSDT;
 pub use self::fadt::FADT;
+pub use self::madt::MADT;
 pub use self::rsdt::RSDT;
 pub use self::sdt::SDTHeader;
 pub use self::ssdt::SSDT;
@@ -10,6 +11,7 @@ pub use self::ssdt::SSDT;
 pub mod aml;
 pub mod dsdt;
 pub mod fadt;
+pub mod madt;
 pub mod rsdt;
 pub mod sdt;
 pub mod ssdt;
@@ -20,6 +22,7 @@ pub struct Acpi {
     fadt: Option<FADT>,
     dsdt: Option<DSDT>,
     ssdt: Option<SSDT>,
+    madt: Option<MADT>,
 }
 
 impl Acpi {
@@ -33,14 +36,21 @@ impl Acpi {
                     fadt: None,
                     dsdt: None,
                     ssdt: None,
+                    madt: None,
                 };
 
                 for addr in acpi.rsdt.addrs.iter() {
-                    let header = *addr as *const SDTHeader;
+                    let header = unsafe { &*(*addr as *const SDTHeader) };
+
+                    debug!("ACPI Table: ");
+                    for b in header.signature.iter() {
+                        debug!("{}", *b as char);
+                    }
+                    debugln!("");
 
                     if let Some(fadt) = FADT::new(header) {
                         //Why does this hang? debugln!("{:#?}", fadt);
-                        if let Some(dsdt) = DSDT::new(fadt.dsdt as *const SDTHeader) {
+                        if let Some(dsdt) = DSDT::new(unsafe { &*(fadt.dsdt as *const SDTHeader) }) {
                             //debugln!("DSDT:");
                             //aml::parse(dsdt.data);
                             acpi.dsdt = Some(dsdt);
@@ -50,8 +60,10 @@ impl Acpi {
                         //debugln!("SSDT:");
                         //aml::parse(ssdt.data);
                         acpi.ssdt = Some(ssdt);
+                    } else if let Some(madt) = MADT::new(header) {
+                        acpi.madt = Some(madt);
                     } else {
-                        //debugln!("{:X}: {:#?}", addr, unsafe { *header });
+                        debugln!("    Unknown Table");
                     }
                 }
 
