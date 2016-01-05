@@ -21,6 +21,7 @@ pub struct FADT {
     // field used in ACPI 1.0; no longer in use, for compatibility only
     Reserved: u8,
 
+    // TODO Proper naming after the conventions
     pub PreferredPowerManagementProfile: u8,
     pub SCI_Interrupt: u16,
     pub SMI_CommandPort: u32,

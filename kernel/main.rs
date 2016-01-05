@@ -131,29 +131,23 @@ static PIT_DURATION: Duration = Duration {
 };
 
 /// Idle loop (active while idle)
-unsafe fn idle_loop() -> ! {
+unsafe fn idle_loop() {
     loop {
         asm!("cli" : : : : "intel", "volatile");
 
         let mut halt = true;
 
-        {
-            let contexts = ::env().contexts.lock();
-            for i in 1..contexts.len() {
-                if let Some(context) = contexts.get(i) {
-                    if context.interrupted {
-                        halt = false;
-                        break;
-                    }
-                }
+        for i in env().contexts.lock().iter() {
+            if i.interrupted {
+                halt = false;
+                break;
             }
         }
 
+        asm!("sti" : : : : "intel", "volatile");
+
         if halt {
-            asm!("sti" : : : : "intel", "volatile");
             asm!("hlt" : : : : "intel", "volatile");
-        } else {
-            asm!("sti" : : : : "intel", "volatile");
         }
 
         context_switch(false);
@@ -161,7 +155,7 @@ unsafe fn idle_loop() -> ! {
 }
 
 /// Event poll loop
-fn poll_loop() -> ! {
+fn poll_loop() {
     loop {
         env().on_poll();
 
@@ -170,7 +164,7 @@ fn poll_loop() -> ! {
 }
 
 /// Event loop
-fn event_loop() -> ! {
+fn event_loop() {
     {
         let mut console = env().console.lock();
         console.instant = false;
@@ -251,7 +245,7 @@ static BSS_TEST_NONZERO: usize = usize::MAX;
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
-    //Zero BSS, this initializes statics that are set to 0
+    // Zero BSS, this initializes statics that are set to 0
     {
         extern {
             static mut __bss_start: u8;
@@ -270,7 +264,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
         assert_eq!(BSS_TEST_NONZERO, usize::MAX);
     }
 
-    //Setup paging, this allows for memory allocation
+    // Setup paging, this allows for memory allocation
     Page::init();
     memory::cluster_init();
     // Unmap first page to catch null pointer errors (after reading memory map)
@@ -483,21 +477,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
                 unsafe { context_switch(true) };
             }
         }
-        0x21 => env().on_irq(0x1), // keyboard
-        0x22 => env().on_irq(0x2), // cascade
-        0x23 => env().on_irq(0x3), // serial 2 and 4
-        0x24 => env().on_irq(0x4), // serial 1 and 3
-        0x25 => env().on_irq(0x5), //parallel 2
-        0x26 => env().on_irq(0x6), //floppy
-        0x27 => env().on_irq(0x7), //parallel 1 or spurious
-        0x28 => env().on_irq(0x8), //RTC
-        0x29 => env().on_irq(0x9), //pci
-        0x2A => env().on_irq(0xA), //pci
-        0x2B => env().on_irq(0xB), //pci
-        0x2C => env().on_irq(0xC), //mouse
-        0x2D => env().on_irq(0xD), //coprocessor
-        0x2E => env().on_irq(0xE), //disk
-        0x2F => env().on_irq(0xF), //disk
+        i @ 0x21 ... 0x2F => env().on_irq(i as u8 - 0x20),
         0x80 => if ! syscall_handle(regs) {
             exception!("Unknown Syscall");
         },

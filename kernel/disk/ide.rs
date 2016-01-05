@@ -18,7 +18,6 @@ use schemes::Result;
 
 use syscall::{SysError, EIO};
 
-use sync::Intex;
 
 /// An disk extent
 #[derive(Copy, Clone)]

@@ -12,6 +12,6 @@ pub struct Header {
 
 impl Header {
     pub fn valid(&self) -> bool {
-        self.signature == "REDOXFS\0".as_bytes() && self.version == 1
+        self.signature == b"REDOXFS\0" && self.version == 1
     }
 }
