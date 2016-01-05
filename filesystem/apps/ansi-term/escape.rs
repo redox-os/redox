@@ -10,12 +10,12 @@ pub enum OutputEscapeCode {
     GotoColumn(u16), // CHA : CSI n G
     Goto(u16, u16), // CUP : CSI n ; m H | CSI n ; m f
     GotoStart, // CUP : CSI H | CSI f
-    EraseAfter(u16, u16), // ED0 : CSI 0 J | CSI J
-    EraseBefore(u16, u16), // ED1 : CSI 1 J
-    EraseAll(u16, u16), // ED2 : CSI 2 J
-    EraseLineAfter(u16, u16), // EL0 : CSI 0 J | CSI J
-    EraseLineBefore(u16, u16), // EL1 : CSI 1 J
-    EraseLine(u16, u16), // EL2 : CSI 2 J
+    EraseAfter, // ED0 : CSI 0 J | CSI J
+    EraseBefore, // ED1 : CSI 1 J
+    EraseAll, // ED2 : CSI 2 J
+    EraseLineAfter, // EL0 : CSI 0 J | CSI J
+    EraseLineBefore, // EL1 : CSI 1 J
+    EraseLine, // EL2 : CSI 2 J
     ScrollUp(u16), // SU : CSI n S
     ScrollDown(u16), // SD : CSI n T
     Rendition(u16), // SGR : CSI n m
