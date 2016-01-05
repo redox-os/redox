@@ -135,11 +135,15 @@ impl Console {
 
     pub fn character(&mut self, c: char) {
         self.display.rect(self.point, Size::new(8, 16), self.background);
-        if c == '\x1B' {
+        if c == '\x00' {
+            //Ignore null character
+        } else if c == '\x1B' {
             self.escape = true;
         } else if c == '\n' {
             self.point.x = 0;
             self.point.y += 16;
+        } else if c == '\t' {
+            self.point.x = ((self.point.x / 64) + 1) * 64;
         } else if c == '\x08' {
             self.point.x -= 8;
             if self.point.x < 0 {

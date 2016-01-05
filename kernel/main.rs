@@ -43,7 +43,7 @@ use common::memory;
 use common::paging::Page;
 use common::time::Duration;
 
-use drivers::pci::*;
+use drivers::pci;
 use drivers::pio::*;
 use drivers::ps2::*;
 use drivers::rtc::*;
@@ -290,7 +290,7 @@ unsafe fn init(font_data: usize, tss_data: usize) {
             env.schemes.push(UnsafeCell::new(Ps2::new()));
             env.schemes.push(UnsafeCell::new(Serial::new(0x3F8, 0x4)));
 
-            pci_init(env);
+            pci::pci_init(env);
 
             env.schemes.push(UnsafeCell::new(DebugScheme::new()));
             env.schemes.push(UnsafeCell::new(box ContextScheme));

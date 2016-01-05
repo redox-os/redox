@@ -2,8 +2,6 @@
 pub mod mmio;
 /// PCI
 pub mod pci;
-/// PCI configuration
-pub mod pciconfig;
 /// PIO
 pub mod pio;
 /// PS2

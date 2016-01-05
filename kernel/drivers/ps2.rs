@@ -120,7 +120,7 @@ impl Ps2 {
 
     /// Keyboard interrupt
     pub fn keyboard_interrupt(&mut self) -> Option<KeyEvent> {
-        let scancode = unsafe { self.data.read() };
+        let mut scancode = unsafe { self.data.read() };
 
         if scancode == 0 {
             return None;
@@ -149,6 +149,8 @@ impl Ps2 {
                 self.altgr = true;
             } else if scancode_byte_2 == 0xB8 {
                 self.altgr = false;
+            } else {
+                scancode = scancode_byte_2;
             }
         }
 

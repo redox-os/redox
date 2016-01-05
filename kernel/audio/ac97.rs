@@ -6,7 +6,7 @@ use common::memory;
 use schemes::{Resource, ResourceSeek, Url};
 use common::time::{self, Duration};
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 use drivers::pio::*;
 
 use schemes::{Result, KScheme};

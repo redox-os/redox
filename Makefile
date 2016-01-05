@@ -78,7 +78,7 @@ endif
 
 .PHONY: help all docs apps schemes tests clean \
 	bochs \
-	qemu qemu_bare qemu_no_kvm qemu_tap \
+	qemu qemu_bare qemu_tap \
 	virtualbox virtualbox_tap \
 	arping ping wireshark
 
@@ -106,7 +106,7 @@ help:
 	@echo "    make qemu"
 	@echo "        Build Redox and run it inside KVM machine."
 	@echo
-	@echo "    make qemu_no_kvm"
+	@echo "    make qemu kvm=no"
 	@echo "        Build Redox and run it inside Qemu machine without KVM support."
 	@echo
 	@echo "    make apps"
@@ -262,7 +262,7 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) createvm --name Redox --register
 	echo "Set Configuration"
 	$(VBM) modifyvm Redox --memory 1024
-	$(VBM) modifyvm Redox --vram 64
+	$(VBM) modifyvm Redox --vram 16
 	$(VBM) modifyvm Redox --nic1 nat
 	$(VBM) modifyvm Redox --nictype1 82540EM
 	$(VBM) modifyvm Redox --nictrace1 on
@@ -270,8 +270,9 @@ virtualbox: $(BUILD)/harddrive.bin
 	$(VBM) modifyvm Redox --uart1 0x3F8 4
 	$(VBM) modifyvm Redox --uartmode1 file $(BUILD)/serial.log
 	$(VBM) modifyvm Redox --usb on
-	$(VBM) modifyvm Redox --audio $(VB_AUDIO)
-	$(VBM) modifyvm Redox --audiocontroller ac97
+	$(VBM) modifyvm Redox --mouse usbtablet
+	#$(VBM) modifyvm Redox --audio $(VB_AUDIO)
+	#$(VBM) modifyvm Redox --audiocontroller ac97
 	echo "Create Disk"
 	$(VBM) convertfromraw $< $(BUILD)/harddrive.vdi
 	echo "Attach Disk"
@@ -317,7 +318,7 @@ endif
 ifeq ($(storage),ahci)
 	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-hd,drive=disk,bus=ahci.0
 else ifeq ($(storage),usb)
-	QFLAGS += -device nec-usb-xhci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 else
 	QFLAGS += -hda $(BUILD)/harddrive.bin
 endif
@@ -351,4 +352,3 @@ ping:
 
 wireshark:
 	wireshark $(BUILD)/network.pcap
-
