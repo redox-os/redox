@@ -83,12 +83,3 @@ impl fmt::Debug for DNodePhys {
         Ok(())
     }
 }
-
-#[repr(packed)]
-pub struct ObjectSetPhys {
-    pub meta_dnode: DNodePhys,
-    pub zil_header: ZilHeader,
-    pub os_type: u64, // pad: [u8; 360],
-}
-
-impl FromBytes for ObjectSetPhys { }
