@@ -217,13 +217,21 @@ impl Hci for Ehci {
                     next: link_ptr,
                     next_alt: 1,
                     token: ((data.len() as u32) & 0x7FFF) << 16 | 0b01 << 8 | 1 << 7,
-                    buffers: [data.as_ptr() as u32, 0, 0, 0, 0]
+                    buffers: [if data.is_empty() {
+                        0
+                    } else {
+                        data.as_ptr() as u32
+                    }, 0, 0, 0, 0]
                 }),
                 Packet::Out(ref data) => tds.push(Qtd {
                     next: link_ptr,
                     next_alt: 1,
                     token: ((data.len() as u32) & 0x7FFF) << 16 | 0b00 << 8 | 1 << 7,
-                    buffers: [data.as_ptr() as u32, 0, 0, 0, 0]
+                    buffers: [if data.is_empty() {
+                        0
+                    } else {
+                        data.as_ptr() as u32
+                    }, 0, 0, 0, 0]
                 })
             }
         }
@@ -241,7 +249,7 @@ impl Hci for Ehci {
 
                 let queuehead = box QueueHead {
                     next: 1,
-                    characteristics: 1024 << 16 | 1 << 15 | 1 << 14 | 0b10 << 12 | (endpoint as u32) << 8 | address as u32,
+                    characteristics: 64 << 16 | 1 << 15 | 1 << 14 | 0b10 << 12 | (endpoint as u32) << 8 | address as u32,
                     capabilities: 0b01 << 30,
                     qtd_ptr: (tds.last().unwrap() as *const Qtd) as u32,
                     qtd: *tds.last().unwrap()
