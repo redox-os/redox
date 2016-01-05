@@ -176,7 +176,7 @@ pub trait Hci {
                 i += length as isize;
             }
 
-            memory::unalloc(desc_cfg_buf as usize);
+            memory::dealloc(desc_cfg_buf as usize);
         }
     }
 }

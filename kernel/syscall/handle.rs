@@ -729,7 +729,7 @@ pub fn do_sys_realloc_inplace(ptr: usize, size: usize) -> usize {
     ret
 }
 
-pub fn do_sys_unalloc(ptr: usize) {
+pub fn do_sys_dealloc(ptr: usize) {
     let mut contexts = ::env().contexts.lock();
     if let Some(mut current) = contexts.current_mut() {
         unsafe {

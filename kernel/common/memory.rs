@@ -3,6 +3,8 @@ pub use common::heap::Memory;
 use core::ops::{Index, IndexMut};
 use core::{cmp, intrinsics, mem, ptr};
 
+use sync::Intex;
+
 
 use common::paging::PAGE_END;
 
@@ -427,7 +429,7 @@ pub unsafe fn alloc(size: usize) -> usize {
     let ret;
 
     // Memory allocation must be atomic
-    let reenable = scheduler::start_no_ints();
+    let _intex = Intex::static_lock();
 
 
     unsafe {
@@ -440,8 +442,6 @@ pub unsafe fn alloc(size: usize) -> usize {
         }
     }
 
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
 
     // debugln!("Following block allocated: {}", ret);
     ret
@@ -468,8 +468,6 @@ pub unsafe fn alloc_aligned(size: usize, align: usize) -> usize {
         }
     }
 
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
 
     // debugln!("Following block allocated (align): {}", ret);
 
@@ -499,8 +497,6 @@ pub unsafe fn dealloc(ptr: usize) {
 
     // debugln!("Following block deallocated: {}", ptr);
 
-    // Memory allocation must be atomic
-    scheduler::end_no_ints(reenable);
 }
 
 /// Reallocate
@@ -509,7 +505,7 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
 //         return 0;
 //     }
 
-    let ret;
+    let ret: usize;
 
     // Memory allocation must be atomic
     let _intex = Intex::static_lock();
@@ -528,8 +524,6 @@ pub unsafe fn realloc(ptr: usize, size: usize) -> usize {
     }
 
 
-    scheduler::end_no_ints(reenable);
-    // debugln!("Following block reallocated: {}", ptr);
 
     ret
 }
