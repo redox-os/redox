@@ -1,23 +1,19 @@
-use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::vec::Vec;
-use collections::vec_deque::VecDeque;
 
 use core::ptr;
-use core::sync::atomic::{AtomicBool, Ordering};
 
 use common::memory::Memory;
 
 use disk::Disk;
 
-use drivers::pciconfig::PciConfig;
+use drivers::pci::config::PciConfig;
 use drivers::pio::*;
 
 use schemes::Result;
 
 use syscall::{SysError, EIO};
-
 
 /// An disk extent
 #[derive(Copy, Clone)]
@@ -170,6 +166,7 @@ impl Ide {
         if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, true) {
             ret.push(box disk);
         }
+        debugln!("");
 
         debug!("Primary Slave:");
         if let Some(disk) = IdeDisk::new(busmaster, 0x1F0, 0x3F4, 0xE, false) {

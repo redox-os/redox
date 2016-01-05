@@ -3,6 +3,9 @@ use std::{mem, ptr};
 use super::from_bytes::FromBytes;
 use super::block_ptr::BlockPtr;
 
+const UBERBLOCK_MAGIC: u64 = 0x00bab10c; // oo-ba-bloc!
+pub const UBERBLOCK_SHIFT: u64 = 10;         // up to 1K
+
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
 pub struct Uberblock {

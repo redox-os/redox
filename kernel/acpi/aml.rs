@@ -55,7 +55,6 @@ pub fn parse_num<T: BitOrAssign + From<u8> + ShlAssign<usize> + Zero>(bytes: &[u
         let mut b = T::from(bytes[*i]);
         b <<= shift;
         num |= b;
-
         shift += 8;
         *i += 1;
     }
@@ -143,7 +142,6 @@ pub fn parse_name(bytes: &[u8], i: &mut usize) -> String {
         }
 
         let end = *i + 4;
-
         let mut leading = true;
         while *i < bytes.len() && *i < end {
             let c = bytes[*i];

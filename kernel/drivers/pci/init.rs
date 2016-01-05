@@ -8,8 +8,6 @@ use common::debug;
 use disk::ahci::Ahci;
 use disk::ide::Ide;
 
-use drivers::pciconfig::PciConfig;
-
 use env::Environment;
 
 use network::intel8254x::Intel8254x;
@@ -22,28 +20,37 @@ use usb::ohci::Ohci;
 use usb::uhci::Uhci;
 use usb::xhci::Xhci;
 
+use super::config::PciConfig;
+use super::common::class::*;
+use super::common::subclass::*;
+use super::common::programming_interface::*;
+use super::common::vendorid::*;
+use super::common::deviceid::*;
+
 /// PCI device
 pub unsafe fn pci_device(env: &mut Environment,
                          mut pci: PciConfig,
-                         class_id: u32,
-                         subclass_id: u32,
-                         interface_id: u32,
-                         vendor_code: u32,
-                         device_code: u32) {
-    if class_id == 0x01 {
-        if subclass_id == 0x01 {
+                         class_id: u8,
+                         subclass_id: u8,
+                         interface_id: u8,
+                         vendor_code: u16,
+                         device_code: u16) {
+    match (class_id, subclass_id, interface_id) {
+        (MASS_STORAGE, IDE, _) => {
             if let Some(module) = FileScheme::new(Ide::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
-        } else if subclass_id == 0x06 {
+        }
+        (MASS_STORAGE, SATA, AHCI) => {
             if let Some(module) = FileScheme::new(Ahci::disks(pci)) {
                 env.schemes.push(UnsafeCell::new(module));
             }
         }
-    } else if class_id == 0x0C && subclass_id == 0x03 {
-        if interface_id == 0x30 {
+        (SERIAL_BUS, USB, UHCI) => env.schemes.push(UnsafeCell::new(Uhci::new(pci))),
+        (SERIAL_BUS, USB, OHCI) => env.schemes.push(UnsafeCell::new(Ohci::new(pci))),
+        (SERIAL_BUS, USB, EHCI) => env.schemes.push(UnsafeCell::new(Ehci::new(pci))),
+        (SERIAL_BUS, USB, XHCI) => {
             let base = pci.read(0x10) as usize;
-
             let mut module = box Xhci {
                 pci: pci,
                 base: base & 0xFFFFFFF0,
@@ -52,35 +59,14 @@ pub unsafe fn pci_device(env: &mut Environment,
             };
             module.init();
             env.schemes.push(UnsafeCell::new(module));
-        } else if interface_id == 0x20 {
-            let base = pci.read(0x10) as usize;
-
-            let mut module = box Ehci {
-                pci: pci,
-                base: base & 0xFFFFFFF0,
-                memory_mapped: base & 1 == 0,
-                irq: pci.read(0x3C) as u8 & 0xF,
-            };
-            module.init();
-            env.schemes.push(UnsafeCell::new(module));
-        } else if interface_id == 0x10 {
-            env.schemes.push(UnsafeCell::new(Ohci::new(pci)));
-        } else if interface_id == 0x00 {
-            env.schemes.push(UnsafeCell::new(Uhci::new(pci)));
-        } else {
-            debug!("Unknown USB interface version {:X}\n", interface_id);
         }
-    } else {
-        match vendor_code {
-            0x10EC => match device_code { // REALTEK
-                0x8139 => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
-                _ => (),
-            },
-            0x8086 => match device_code { // INTEL
-                0x100E => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
-                0x2415 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x24C5 => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                0x2668 => {
+        _ => {
+            match (vendor_code, device_code) {
+                (REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
+                (INTEL, GBE_82540EM) => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
+                (INTEL, AC97_82801AA) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                (INTEL, AC97_ICH4) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                (INTEL, INTELHDA_ICH6) => {
                     let base = pci.read(0x10) as usize;
                     let mut module = box IntelHDA {
                         pci: pci,
@@ -92,8 +78,7 @@ pub unsafe fn pci_device(env: &mut Environment,
                     env.schemes.push(UnsafeCell::new(module));
                 }
                 _ => (),
-            },
-            _ => (),
+            }
         }
     }
 }
@@ -135,11 +120,11 @@ pub unsafe fn pci_init(env: &mut Environment) {
 
                     pci_device(env,
                                pci,
-                               (class_id >> 24) & 0xFF,
-                               (class_id >> 16) & 0xFF,
-                               (class_id >> 8) & 0xFF,
-                               id & 0xFFFF,
-                               (id >> 16) & 0xFFFF);
+                               ((class_id >> 24) & 0xFF) as u8,
+                               ((class_id >> 16) & 0xFF) as u8,
+                               ((class_id >> 8) & 0xFF) as u8,
+                               (id & 0xFFFF) as u16,
+                               ((id >> 16) & 0xFFFF) as u16);
                 }
             }
         }

@@ -1,28 +1,22 @@
 use common::get_slice::GetSlice;
 
-use alloc::arc::Arc;
 use alloc::boxed::Box;
 
 use collections::slice;
 use collections::string::{String, ToString};
 use collections::vec::Vec;
 
-use core::{cmp, mem};
-use core::sync::atomic::{AtomicBool, Ordering};
+use core::cmp;
 
 use disk::Disk;
 use disk::ide::Extent;
 
-use drivers::pciconfig::PciConfig;
-
-use fs::redoxfs::{FileSystem, Header, Node, NodeData};
+use fs::redoxfs::{FileSystem, Node, NodeData};
 
 use common::debug;
 use common::memory::Memory;
 
 use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
-
-use scheduler::context::context_switch;
 
 use sync::Intex;
 
@@ -170,7 +164,7 @@ impl Resource for FileResource {
                         if let Some(mut node_data) = Memory::<NodeData>::new(1) {
                             node_data.write(0, self.node.data());
 
-                            let mut buffer = unsafe { slice::from_raw_parts(node_data.address() as *mut u8, 512) };
+                            let mut buffer = slice::from_raw_parts(node_data.address() as *mut u8, 512);
                             (*self.scheme).fs.disk.write(self.node.block, &mut buffer);
 
                             debug::d("Renode\n");
@@ -216,7 +210,7 @@ impl Resource for FileResource {
 
 impl Drop for FileResource {
     fn drop(&mut self) {
-        self.sync();
+        let _ = self.sync();
     }
 }
 
