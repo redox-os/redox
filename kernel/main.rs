@@ -144,11 +144,14 @@ unsafe fn idle_loop() {
             }
         }
 
-        asm!("sti" : : : : "intel", "volatile");
 
         if halt {
+            asm!("sti" : : : : "intel", "volatile");
             asm!("hlt" : : : : "intel", "volatile");
+        } else {
+            asm!("sti" : : : : "intel", "volatile");
         }
+
 
         context_switch(false);
     }
