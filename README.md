@@ -58,9 +58,6 @@ $ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh 
 # Build Redox
 $ make all
 
-# Launch using VirtualBox
-$ make virtualbox
-
 # Launch using QEMU
 $ make qemu
 # Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
@@ -91,9 +88,6 @@ $ multirust override nightly
 
 # Build Redox
 $ make all
-
-# Launch using VirtualBox
-$ make virtualbox
 
 # Launch using QEMU
 $ make qemu
