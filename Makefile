@@ -288,6 +288,11 @@ bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)
 
 QFLAGS := -serial mon:stdio -m 1024 -d guest_errors
+
+ifeq ($(machine),q35)
+	QFLAGS += -machine q35
+endif
+
 ifneq ($(kvm),no)
 	QFLAGS += -enable-kvm
 endif
@@ -316,11 +321,11 @@ ifneq ($(usb),no)
 endif
 
 ifeq ($(storage),ahci)
-	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,if=none -device ide-hd,drive=disk,bus=ahci.0
+	QFLAGS += -device ahci,id=ahci -drive id=disk,file=$(BUILD)/harddrive.bin,format=raw,if=none -device ide-hd,drive=disk,bus=ahci.0
 else ifeq ($(storage),usb)
-	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
+	QFLAGS += -device usb-ehci,id=flash_bus -drive id=flash_drive,file=$(BUILD)/harddrive.bin,format=raw,if=none -device usb-storage,drive=flash_drive,bus=flash_bus.0
 else
-	QFLAGS += -hda $(BUILD)/harddrive.bin
+	QFLAGS += -drive file=$(BUILD)/harddrive.bin,format=raw,index=0,media=disk
 endif
 
 ifeq ($(net),no)
