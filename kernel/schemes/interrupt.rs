@@ -19,7 +19,7 @@ impl KScheme for InterruptScheme {
 
                 if count > 0 {
                     let description = match interrupt {
-                        0x20 => "Programmable Interrupt Timer",
+                        0x20 => "Programmable Interval Timer",
                         0x21 => "Keyboard",
                         0x22 => "Cascade",
                         0x23 => "Serial 2 and 4",

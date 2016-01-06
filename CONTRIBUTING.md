@@ -65,7 +65,7 @@ You can find Redox on Reddit in [/r/rust/](https://www.reddit.com/r/rust) and [/
 
 ### <a name="gh-issues"> GitHub Issues </a>
 
-A bit more formal way of communication with fellow Redox devs, but a little less quick and convienent like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
+A bit more formal way of communication with fellow Redox devs, but a little less quick and convenient like the Slack chat (unless of course you aren't in it yet, which if you're going to be involved in this project really at all, it is recommended that you request to join). These are for more specific topics.
 
 ### <a name="prs"> Pull Requests </a>
 
@@ -84,7 +84,7 @@ It's completely fine to just submit a small pull request without first making an
  * SSH:`git remote add origin git@github.com:your-username/redox.git --origin upstream --recursive`
 4. Alternatively, if you already have a fork and copy of the repo, you can simply check to make sure you're up-to-date
  * Fetch the upstream:`git fetch upstream master`
- * Rebase with local commits:`git rebase upstream master`
+ * Rebase with local commits:`git rebase upstream/master`
  * Update the submodules:`git submodule update --init`
 5. Optionally create a separate branch (recommended if you're making multiple changes simultaneously) (`git checkout -b my-branch`)
 6. Make changes

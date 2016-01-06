@@ -19,17 +19,17 @@ Please make sure you use the **latest nightly** of `rustc` before building (for 
  * [Manual Setup](#manual-setup)
 
 
-## <a name="what-it-looks-like" /> What it looks like
+## <a name="what-it-looks-like"> What it looks like </a>
 
-<img alt="Redox" height="150" src="img/screenshots/Desktop.png">
-<img alt="Redox" height="150" src="img/screenshots/Fancy_opacity.png">
-<img alt="Redox" height="150" src="img/screenshots/File_manager.png">
+<img alt="Redox" height="150" src="https://raw.githubusercontent.com/redox-os/redox/master/img/screenshots/Desktop.png">
+<img alt="Redox" height="150" src="https://raw.githubusercontent.com/redox-os/redox/master/img/screenshots/Fancy_opacity.png">
+<img alt="Redox" height="150" src="https://raw.githubusercontent.com/redox-os/redox/master/img/screenshots/File_manager.png">
 
-<img alt="Redox" height="150" src="img/screenshots/Sodium_v1.png">
-<img alt="Redox" height="150" src="img/screenshots/Boot.png">
-<img alt="Redox" height="150" src="img/screenshots/start.png">
+<img alt="Redox" height="150" src="https://raw.githubusercontent.com/redox-os/redox/master/img/screenshots/Sodium_v1.png">
+<img alt="Redox" height="150" src="https://raw.githubusercontent.com/redox-os/redox/master/img/screenshots/Boot.png">
+<img alt="Redox" height="150" src="https://raw.githubusercontent.com/redox-os/redox/master/img/screenshots/start.png">
 
-## <a name="compile-help" /> Help! Redox won't compile!
+## <a name="compile-help"> Help! Redox won't compile! </a>
 
 Sometimes things go wrong when compiling. Try the following before opening an issue:
 
@@ -41,13 +41,13 @@ Sometimes things go wrong when compiling. Try the following before opening an is
 
 and then rebuild!
 
-## <a name="contributing" /> Contributing to Redox
+## <a name="contributing"> Contributing to Redox </a>
 
 If you're interested in this project, and you'd like to help us out, [here](CONTRIBUTING.md) is a list of ways you can do just that.
 
-## <a name="cloning-building-running" /> Cloning, Building, and Running
+## <a name="cloning-building-running"> Cloning, Building, and Running </a>
 
-### <a name="quick-setup" /> Quick Setup
+### <a name="quick-setup" /> Quick Setup </a>
 
 ```bash
 $ cd path/to/your/projects/folder/
@@ -67,7 +67,7 @@ $ make qemu
 $ make qemu kvm=no
 ```
 
-### <a name="manual-setup" /> Manual Setup
+### <a name="manual-setup"> Manual Setup </a>
 
 To manually clone, build and run Redox using a Linux host, run the following commands (with exceptions, be sure to read the comments):
 ```bash
