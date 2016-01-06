@@ -33,7 +33,7 @@ There are many ways to help us out and we appreciate all of them.
 
 ### <a name="chat"> Chat </a>
 
-The quickest and most open way to communicate with the Redox team is on our [](https://
+The quickest and most open way to communicate with the Redox team is on our [chat server](http://chat.redox-os.org)
 
 ### <a name="reddit"> Reddit </a>
 
