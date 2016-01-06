@@ -81,7 +81,7 @@ $ git clone git@github.com:redox-os/redox.git --origin upstream --recursive
 $ cd redox/
 
 # Install/update dependencies
-$ sudo <your package manager> install llvm make nasm virtualbox virtualbox-dkms qemu qemu-kvm
+$ sudo <your package manager> install make nasm virtualbox qemu
 
 # Install multirust
 $ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh
