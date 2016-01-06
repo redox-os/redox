@@ -288,6 +288,11 @@ bochs: $(BUILD)/harddrive.bin
 	-bochs -f bochs.$(ARCH)
 
 QFLAGS := -serial mon:stdio -m 1024 -d guest_errors
+
+ifeq ($(machine),q35)
+	QFLAGS += -machine q35
+endif
+
 ifneq ($(kvm),no)
 	QFLAGS += -enable-kvm
 endif
