@@ -6,7 +6,7 @@ There are many ways to help us out and we appreciate all of them.
 ## Index
 
 * [Communication](#communication)
- * [Slack Chat](#slack)
+ * [Chat](#chat)
  * [Reddit](#reddit)
 * [Direct Contributing](#direct-contributing)
  * [Low-Hanging Fruit - Easy Targets for Newbies](#easy-targets)
@@ -31,9 +31,9 @@ There are many ways to help us out and we appreciate all of them.
 
 ## <a name="communication"> Communication </a>
 
-### <a name="slack"> Slack Chat </a>
+### <a name="chat"> Chat </a>
 
-The quickest and most open way to communicate with the Redox team is with [Slack](https://slack.com). Currently, the only way to join our slack team is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
+The quickest and most open way to communicate with the Redox team is on our [chat server](https://chat.redox-os.org). Currently, the only way to join our slack team is by sending an email to [info@redox-os.org](mailto:info@redox-os.org), which might take a little while, since it's not automated. We're currently working on an easier way to do this, but this is the most convenient way right now.
 
 ### <a name="reddit"> Reddit </a>
 
@@ -150,7 +150,7 @@ Since Rust is a relatively small and new language compared to others like C, the
 
 ### <a name="git-style-guidelines"> Git </a>
 
-* Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`". This makes more sense because of the way Git works, and it's also generally just more consistent and conventional.
+* Commit messages should describe their changes in present-tense, e.g. "`Add stuff to file.ext`" instead of "`added stuff to file.ext`".
 * Try to remove useless duplicate/merge commits from PRs as these clutter up history, and may make it hard to read.
 * Usually, when syncing your local copy with the master branch, you will want to rebase instead of merge. This is because it will create duplicate commits that don't actually do anything when merged into the master branch.
 * When you start to make changes, you will want to create a separate branch, and keep the `master` branch of your fork identical to the main repository, so that you can compare your changes with the main branch and test out a more stable build if you need to.
@@ -160,4 +160,4 @@ Since Rust is a relatively small and new language compared to others like C, the
 
 ### <a name="graphic-design"> Graphic Design </a>
 
-If you're a good designer, you can help with logos, UI design, app icons, other graphics (e.g. stock desktop backgrounds), etc. More information to come on this, for now just join the [Slack](#slack) chat and ask about graphic design.
+If you're a good designer, you can help with logos, UI design, app icons, other graphics (e.g. stock desktop backgrounds), etc. More information to come on this, for now just join [the chat](#chat) and ask about graphic design.
