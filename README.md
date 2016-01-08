@@ -58,9 +58,6 @@ $ curl -sf https://raw.githubusercontent.com/redox-os/redox/master/bootstrap.sh 
 # Build Redox
 $ make all
 
-# Launch using VirtualBox
-$ make virtualbox
-
 # Launch using QEMU
 $ make qemu
 # Launch using QEMU without using KVM (Kernel Virtual Machine). Try if QEMU gives an error.
@@ -81,7 +78,7 @@ $ git clone git@github.com:redox-os/redox.git --origin upstream --recursive
 $ cd redox/
 
 # Install/update dependencies
-$ sudo <your package manager> install llvm make nasm virtualbox virtualbox-dkms qemu qemu-kvm
+$ sudo <your package manager> install make nasm qemu
 
 # Install multirust
 $ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh | sh
@@ -91,9 +88,6 @@ $ multirust override nightly
 
 # Build Redox
 $ make all
-
-# Launch using VirtualBox
-$ make virtualbox
 
 # Launch using QEMU
 $ make qemu
