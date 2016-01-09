@@ -181,7 +181,6 @@ impl Resource for IntelHDAResource {
 
             debug::d("Finished\n");
             stream.interrupt = 0;
-            //
             // stream.control = 0;
             // stream.status = 0;
             // stream.cbl = 0;
@@ -226,8 +225,7 @@ impl KScheme for IntelHDA {
         }
     }
 
-    fn on_poll(&mut self) {
-    }
+    fn on_poll(&mut self) {}
 }
 
 impl IntelHDA {
@@ -244,8 +242,6 @@ impl IntelHDA {
         debug::dl();
 
         return;
-        //
-        //
         // let pci = &mut self.pci;
         //
         // pci.flag(4, 4, true); // Bus mastering

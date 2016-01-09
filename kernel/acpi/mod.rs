@@ -29,7 +29,7 @@ impl Acpi {
     pub fn new() -> Option<Box<Self>> {
         match RSDT::new() {
             Ok(rsdt) => {
-                //debugln!("{:#?}", rsdt);
+                // debugln!("{:#?}", rsdt);
 
                 let mut acpi = box Acpi {
                     rsdt: rsdt,
@@ -49,16 +49,18 @@ impl Acpi {
                     debugln!("");
 
                     if let Some(fadt) = FADT::new(header) {
-                        //Why does this hang? debugln!("{:#?}", fadt);
-                        if let Some(dsdt) = DSDT::new(unsafe { &*(fadt.dsdt as *const SDTHeader) }) {
-                            //debugln!("DSDT:");
-                            //aml::parse(dsdt.data);
+                        // Why does this hang? debugln!("{:#?}", fadt);
+                        if let Some(dsdt) = DSDT::new(unsafe {
+                            &*(fadt.dsdt as *const SDTHeader)
+                        }) {
+                            // debugln!("DSDT:");
+                            // aml::parse(dsdt.data);
                             acpi.dsdt = Some(dsdt);
                         }
                         acpi.fadt = Some(fadt);
                     } else if let Some(ssdt) = SSDT::new(header) {
-                        //debugln!("SSDT:");
-                        //aml::parse(ssdt.data);
+                        // debugln!("SSDT:");
+                        // aml::parse(ssdt.data);
                         acpi.ssdt = Some(ssdt);
                     } else if let Some(madt) = MADT::new(header) {
                         acpi.madt = Some(madt);
@@ -68,7 +70,7 @@ impl Acpi {
                 }
 
                 Some(acpi)
-            },
+            }
             Err(e) => {
                 debugln!("{}", e);
                 None
@@ -87,8 +89,10 @@ impl KScheme for Acpi {
             match self.fadt {
                 Some(fadt) => {
                     debugln!("Powering Off");
-                    unsafe { asm!("out dx, ax" : : "{edx}"(fadt.pm1a_control_block), "{ax}"(0 | 1 << 13) : : "intel", "volatile") };
-                },
+                    unsafe {
+                        asm!("out dx, ax" : : "{edx}"(fadt.pm1a_control_block), "{ax}"(0 | 1 << 13) : : "intel", "volatile")
+                    };
+                }
                 None => {
                     debugln!("Unable to power off: No FADT");
                 }

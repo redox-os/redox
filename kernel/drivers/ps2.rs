@@ -217,7 +217,7 @@ impl Ps2 {
             let x;
             if (self.mouse_packet[0] & 0x40) != 0x40 && self.mouse_packet[1] != 0 {
                 x = (self.mouse_packet[1] as isize -
-                    (((self.mouse_packet[0] as isize) << 4) & 0x100)) as i32;
+                     (((self.mouse_packet[0] as isize) << 4) & 0x100)) as i32;
             } else {
                 x = 0;
             }
@@ -225,7 +225,7 @@ impl Ps2 {
             let y;
             if (self.mouse_packet[0] & 0x80) != 0x80 && self.mouse_packet[2] != 0 {
                 y = ((((self.mouse_packet[0] as isize) << 3) & 0x100) -
-                    self.mouse_packet[2] as isize) as i32;
+                     self.mouse_packet[2] as isize) as i32;
             } else {
                 y = 0;
             }

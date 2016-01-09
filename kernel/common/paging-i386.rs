@@ -1,6 +1,5 @@
 use core::ptr;
 
-//
 // PAGE_DIRECTORY:
 // 1024 dwords pointing to page tables
 // PAGE_TABLES:
