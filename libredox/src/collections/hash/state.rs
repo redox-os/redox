@@ -44,13 +44,19 @@ pub struct DefaultState<H>(marker::PhantomData<H>);
 
 impl<H: Default + hash::Hasher> HashState for DefaultState<H> {
     type Hasher = H;
-    fn hasher(&self) -> H { Default::default() }
+    fn hasher(&self) -> H {
+        Default::default()
+    }
 }
 
 impl<H> Clone for DefaultState<H> {
-    fn clone(&self) -> DefaultState<H> { DefaultState(marker::PhantomData) }
+    fn clone(&self) -> DefaultState<H> {
+        DefaultState(marker::PhantomData)
+    }
 }
 
 impl<H> Default for DefaultState<H> {
-    fn default() -> DefaultState<H> { DefaultState(marker::PhantomData) }
+    fn default() -> DefaultState<H> {
+        DefaultState(marker::PhantomData)
+    }
 }

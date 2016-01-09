@@ -1,4 +1,4 @@
-//TODO: Cleanup and make correct and safe
+// TODO: Cleanup and make correct and safe
 
 static mut NEXT: u64 = 0;
 

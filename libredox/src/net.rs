@@ -94,7 +94,13 @@ impl MACAddr {
     }
 
     pub fn to_string(&self) -> String {
-        format!("{:X}:{:X}:{:X}:{:X}:{:X}:{:X}", self.bytes[0], self.bytes[1], self.bytes[2], self.bytes[3], self.bytes[4], self.bytes[5])
+        format!("{:X}:{:X}:{:X}:{:X}:{:X}:{:X}",
+                self.bytes[0],
+                self.bytes[1],
+                self.bytes[2],
+                self.bytes[3],
+                self.bytes[4],
+                self.bytes[5])
     }
 }
 
@@ -137,7 +143,11 @@ impl IPv4Addr {
     }
 
     pub fn to_string(&self) -> String {
-        format!("{}.{}.{}.{}", self.bytes[0], self.bytes[1], self.bytes[2], self.bytes[3])
+        format!("{}.{}.{}.{}",
+                self.bytes[0],
+                self.bytes[1],
+                self.bytes[2],
+                self.bytes[3])
     }
 }
 
