@@ -4,7 +4,8 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{SysError, sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read, sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
+use syscall::{SysError, sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
+              sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
 use syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END, EACCES};
 
 /// A Unix-style file
@@ -16,42 +17,36 @@ pub struct File {
 impl File {
     pub unsafe fn from_fd(fd_muxed: usize) -> Result<File> {
         match SysError::demux(fd_muxed) {
-            Ok(fd) => Ok(File {
-                fd: fd
-            }),
-            Err(err) => Err(err)
+            Ok(fd) => Ok(File { fd: fd }),
+            Err(err) => Err(err),
         }
     }
 
     /// Open a new file using a path
     pub fn open(path: &str) -> Result<File> {
         let path_c = path.to_string() + "\0";
-        unsafe {
-            File::from_fd(sys_open(path_c.as_ptr(), O_RDWR, 0))
-        }
+        unsafe { File::from_fd(sys_open(path_c.as_ptr(), O_RDWR, 0)) }
     }
 
     /// Create a new file using a path
     pub fn create(path: &str) -> Result<File> {
         let path_c = path.to_string() + "\0";
-        unsafe {
-            File::from_fd(sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0))
-        }
+        unsafe { File::from_fd(sys_open(path_c.as_ptr(), O_CREAT | O_RDWR | O_TRUNC, 0)) }
     }
 
     /// Duplicate the file
     pub fn dup(&self) -> Result<File> {
-        unsafe {
-            File::from_fd(sys_dup(self.fd))
-        }
+        unsafe { File::from_fd(sys_dup(self.fd)) }
     }
 
     /// Get the canonical path of the file
     pub fn path(&self) -> Result<PathBuf> {
         let mut buf: [u8; 4096] = [0; 4096];
         match SysError::demux(unsafe { sys_fpath(self.fd, buf.as_mut_ptr(), buf.len()) }) {
-            Ok(count) => Ok(PathBuf::from(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) })),
-            Err(err) => Err(err)
+            Ok(count) => {
+                Ok(PathBuf::from(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) }))
+            }
+            Err(err) => Err(err),
         }
     }
 
@@ -59,7 +54,7 @@ impl File {
     pub fn sync_all(&mut self) -> Result<()> {
         match SysError::demux(unsafe { sys_fsync(self.fd) }) {
             Ok(_) => Ok(()),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 
@@ -67,7 +62,7 @@ impl File {
     pub fn sync_data(&mut self) -> Result<()> {
         match SysError::demux(unsafe { sys_fsync(self.fd) }) {
             Ok(_) => Ok(()),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 
@@ -75,7 +70,7 @@ impl File {
     pub fn set_len(&mut self, size: usize) -> Result<()> {
         match SysError::demux(unsafe { sys_ftruncate(self.fd, size) }) {
             Ok(_) => Ok(()),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 }
@@ -103,7 +98,7 @@ impl Seek for File {
 
         match SysError::demux(unsafe { sys_lseek(self.fd, offset, whence) }) {
             Ok(position) => Ok(position as u64),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 }
@@ -145,7 +140,7 @@ impl DirEntry {
     pub fn file_type(&self) -> Result<FileType> {
         Ok(FileType {
             dir: self.dir,
-            file: self.file
+            file: self.file,
         })
     }
 
@@ -155,7 +150,7 @@ impl DirEntry {
 }
 
 pub struct ReadDir {
-    file: File
+    file: File,
 }
 
 impl Iterator for ReadDir {
@@ -170,15 +165,15 @@ impl Iterator for ReadDir {
                     if buf[0] == 10 {
                         break;
                     } else {
-                        path.push_str(unsafe { str::from_utf8_unchecked(&buf[.. count]) });
+                        path.push_str(unsafe { str::from_utf8_unchecked(&buf[..count]) });
                     }
-                },
-                Err(err) => break
+                }
+                Err(err) => break,
             }
         }
         if path.is_empty() {
             None
-        }else {
+        } else {
             let dir = path.ends_with('/');
             if dir {
                 path.pop();
@@ -186,7 +181,7 @@ impl Iterator for ReadDir {
             Some(Ok(DirEntry {
                 path: PathBuf::from(path),
                 dir: dir,
-                file: ! dir,
+                file: !dir,
             }))
         }
     }
@@ -198,7 +193,7 @@ pub fn create_dir(path: &str) -> Result<()> {
     let path_c = path.to_string() + "\0";
     match SysError::demux(unsafe { sys_mkdir(path_c.as_ptr(), 755) }) {
         Ok(_) => Ok(()),
-        Err(err) => Err(err)
+        Err(err) => Err(err),
     }
 }
 
@@ -210,10 +205,8 @@ pub fn read_dir(path: &str) -> Result<ReadDir> {
     };
 
     match file_result {
-        Ok(file) => Ok(ReadDir{
-            file: file
-        }),
-        Err(err) => Err(err)
+        Ok(file) => Ok(ReadDir { file: file }),
+        Err(err) => Err(err),
     }
 }
 
@@ -225,6 +218,6 @@ pub fn remove_file(path: &str) -> Result<()> {
     let path_c = path.to_string() + "\0";
     match SysError::demux(unsafe { sys_unlink(path_c.as_ptr()) }) {
         Ok(_) => Ok(()),
-        Err(err) => Err(err)
+        Err(err) => Err(err),
     }
 }

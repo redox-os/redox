@@ -8,7 +8,7 @@ use syscall::common::{CLOCK_REALTIME, CLOCK_MONOTONIC, TimeSpec};
 
 pub const NANOS_PER_MICRO: i32 = 1_000;
 pub const NANOS_PER_MILLI: i32 = 1_000_000;
-pub const NANOS_PER_SEC:   i32 = 1_000_000_000;
+pub const NANOS_PER_SEC: i32 = 1_000_000_000;
 
 #[derive(Copy, Clone)]
 pub struct Duration {
