@@ -34,4 +34,4 @@ pub struct DslDirPhys {
     pub pad: [u64; 13], // pad out to 256 bytes for good measure
 }
 
-impl FromBytes for DslDirPhys { }
+impl FromBytes for DslDirPhys {}

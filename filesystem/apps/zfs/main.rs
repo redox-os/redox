@@ -1,6 +1,6 @@
 #![feature(negate_unsigned)]
 
-//To use this, please install zfs-fuse
+// To use this, please install zfs-fuse
 use std::{mem, str};
 use std::to_num::ToNum;
 use std::fs::File;
@@ -242,7 +242,8 @@ impl Zfs {
                        usize,
                        &mut DNodePhys,
                        &BlockPtr,
-                       &mut Option<T>) -> Option<ZfsTraverse>
+                       &mut Option<T>)
+                       -> Option<ZfsTraverse>
     {
         // Given the fs_objset and the object id of the root directory, we can traverse the
         // directory tree.
@@ -320,43 +321,42 @@ impl Zfs {
         let mut folder_iter = path.split('/');
         let mut folder = folder_iter.next();
 
-        let file_contents =
-            self.traverse(|zfs, name, node_id, node, indirect, result| {
-                let mut this_dir = false;
-                if let Some(folder) = folder {
-                    if name == folder {
-                        *node = zfs.reader
-                                   .read_type_array(indirect, node_id as usize)
-                                   .unwrap();
-                        if name == path_end {
-                            if node.object_type != ObjectType::PlainFileContents {
-                                // Not a file
-                                return Some(ZfsTraverse::Done);
-                            }
-                            // Found the file
-                            let file_contents = zfs.reader
-                                                   .read_block(node.get_blockptr(0))
-                                                   .unwrap();
-                            // TODO: Read file size from ZPL rather than look for terminating 0
-                            let file_contents: Vec<u8> = file_contents.into_iter()
-                                                                      .take_while(|c| *c != 0)
-                                                                      .collect();
-                            *result = Some(file_contents);
+        let file_contents = self.traverse(|zfs, name, node_id, node, indirect, result| {
+            let mut this_dir = false;
+            if let Some(folder) = folder {
+                if name == folder {
+                    *node = zfs.reader
+                               .read_type_array(indirect, node_id as usize)
+                               .unwrap();
+                    if name == path_end {
+                        if node.object_type != ObjectType::PlainFileContents {
+                            // Not a file
                             return Some(ZfsTraverse::Done);
                         }
-                        this_dir = true;
-                    }
-                }
-                if this_dir {
-                    if node.object_type != ObjectType::DirectoryContents {
-                        // Not a folder
+                        // Found the file
+                        let file_contents = zfs.reader
+                                               .read_block(node.get_blockptr(0))
+                                               .unwrap();
+                        // TODO: Read file size from ZPL rather than look for terminating 0
+                        let file_contents: Vec<u8> = file_contents.into_iter()
+                                                                  .take_while(|c| *c != 0)
+                                                                  .collect();
+                        *result = Some(file_contents);
                         return Some(ZfsTraverse::Done);
                     }
-                    folder = folder_iter.next();
-                    return Some(ZfsTraverse::ThisDir);
+                    this_dir = true;
                 }
-                None
-            });
+            }
+            if this_dir {
+                if node.object_type != ObjectType::DirectoryContents {
+                    // Not a folder
+                    return Some(ZfsTraverse::Done);
+                }
+                folder = folder_iter.next();
+                return Some(ZfsTraverse::ThisDir);
+            }
+            None
+        });
 
         file_contents
     }
@@ -501,12 +501,13 @@ pub fn main() {
                                                              space_map_phys);
                                                     // println!("got space map: {:?}", &space_map.unwrap()[0..64]);
 
-                                                    let mut range_tree: avl::Tree<space_map::Entry, u64> =
+                                                    let mut range_tree: avl::Tree<space_map::Entry,
+                                                                                  u64> =
                                                         avl::Tree::new(Rc::new(|x| x.offset()));
-                                                    /*space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
-                                                                                  &mut range_tree,
-                                                                                  &space_map.unwrap(),
-                                                                                  space_map::MapType::Alloc).unwrap();*/
+                                                    // space_map::load_space_map_avl(&space_map::SpaceMap { size: 30 },
+                                                    // &mut range_tree,
+                                                    // &space_map.unwrap(),
+                                                    // space_map::MapType::Alloc).unwrap();
                                                 } else {
                                                     println!("Invalid metaslab_array NvValue \
                                                               type. Expected Uint64.");

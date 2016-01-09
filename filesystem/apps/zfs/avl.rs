@@ -188,9 +188,7 @@ impl<T, K: PartialOrd> Tree<T, K> {
                     Some(&mut self.node_mut(n).value)
                 }
             }
-            None => {
-                None
-            }
+            None => None,
         }
     }
 
@@ -284,9 +282,7 @@ impl<T, K: PartialOrd> Tree<T, K> {
                     right_height + 1
                 }
             }
-            None => {
-                -1
-            }
+            None => -1,
         }
     }
 
