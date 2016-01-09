@@ -12,7 +12,6 @@ pub struct BmpFile {
     /// The bitmap height
     h: usize,
     /// The data of the bitmap
-    //data: Vec<[u8; 4]>,
     data: Vec<Color>,
 }
 
@@ -63,9 +62,9 @@ impl BmpFile {
         let mut ret: BmpFile;
 
         if gets(0, 2) == "BM" {
-            //let file_size = getd(2);
+            // let file_size = getd(2);
             let offset = getd(0xA);
-            //let header_size = getd(0xE);
+            // let header_size = getd(0xE);
             let width = getd(0x12);
             let height = getd(0x16);
             let depth = getw(0x1C) as u32;
@@ -116,9 +115,9 @@ impl BmpFile {
                     let blue = ((pixel_data & blue_mask) >> blue_shift) as u8;
                     let alpha = ((pixel_data & alpha_mask) >> alpha_shift) as u8;
                     if bytes == 3 {
-                        ret.data.push(Color::rgb(red,green,blue));
+                        ret.data.push(Color::rgb(red, green, blue));
                     } else if bytes == 4 {
-                        ret.data.push(Color::rgba(red,green,blue,alpha));
+                        ret.data.push(Color::rgba(red, green, blue, alpha));
                     }
                 }
             }
