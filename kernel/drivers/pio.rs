@@ -32,7 +32,7 @@ impl Pio8 {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u8::MAX - flags);
             self.write(value);
         }
@@ -81,7 +81,7 @@ impl Pio16 {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u16::MAX - flags);
             self.write(value);
         }
@@ -130,7 +130,7 @@ impl Pio32 {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u32::MAX - flags);
             self.write(value);
         }

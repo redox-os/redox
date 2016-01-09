@@ -22,7 +22,7 @@ const EXT_OP_PREFIX: u8 = 0x5B;
 const ROOT_PREFIX: u8 = 0x5C;
 const PARENT_PREFIX: u8 = 0x5E;
 
-//EXT
+// EXT
 const MUTEX_OP: u8 = 0x01;
 const OP_REGION_OP: u8 = 0x80;
 const FIELD_OP: u8 = 0x81;
@@ -34,7 +34,8 @@ pub fn parse_string(bytes: &[u8], i: &mut usize) -> String {
 
     while *i < bytes.len() {
         let c = bytes[*i];
-        if (c >= 0x30 && c <= 0x39) || (c >= 0x41 && c <= 0x5A) || c == 0x5F || c == ROOT_PREFIX || c == PARENT_PREFIX {
+        if (c >= 0x30 && c <= 0x39) || (c >= 0x41 && c <= 0x5A) || c == 0x5F ||
+           c == ROOT_PREFIX || c == PARENT_PREFIX {
             string.push(c as char);
         } else {
             break;
@@ -46,8 +47,10 @@ pub fn parse_string(bytes: &[u8], i: &mut usize) -> String {
     string
 }
 
-//This one function required three different unstable features and four trait requirements. Why is generic math so hard?
-pub fn parse_num<T: BitOrAssign + From<u8> + ShlAssign<usize> + Zero>(bytes: &[u8], i: &mut usize) -> T {
+// This one function required three different unstable features and four trait requirements. Why is generic math so hard?
+pub fn parse_num<T: BitOrAssign + From<u8> + ShlAssign<usize> + Zero>(bytes: &[u8],
+                                                                      i: &mut usize)
+                                                                      -> T {
     let mut num: T = T::zero();
 
     let mut shift = 0;
@@ -102,13 +105,13 @@ pub fn parse_name(bytes: &[u8], i: &mut usize) -> String {
 
                 count = 0;
                 break;
-            },
-            DUAL_NAME_PREFIX  => {
+            }
+            DUAL_NAME_PREFIX => {
                 *i += 1;
 
                 count = 2;
                 break;
-            },
+            }
             MULTI_NAME_PREFIX => {
                 *i += 1;
 
@@ -118,17 +121,17 @@ pub fn parse_name(bytes: &[u8], i: &mut usize) -> String {
                 }
 
                 break;
-            },
+            }
             ROOT_PREFIX => {
                 *i += 1;
 
                 name.push('\\');
-            },
+            }
             PARENT_PREFIX => {
                 *i += 1;
 
                 name.push('^');
-            },
+            }
             _ => {
                 count = 1;
                 break;
@@ -137,7 +140,7 @@ pub fn parse_name(bytes: &[u8], i: &mut usize) -> String {
     }
 
     while count > 0 {
-        if ! name.is_empty() {
+        if !name.is_empty() {
             name.push('.');
         }
 
@@ -152,7 +155,7 @@ pub fn parse_name(bytes: &[u8], i: &mut usize) -> String {
                 if leading {
                     name.push('_');
                 }
-            }else {
+            } else {
                 debugln!("parse_name: unknown: {:02X}", c);
                 break;
             }
@@ -169,7 +172,7 @@ pub fn parse_name(bytes: &[u8], i: &mut usize) -> String {
 }
 
 
-pub fn parse_int(bytes: &[u8], i: &mut usize) -> u64{
+pub fn parse_int(bytes: &[u8], i: &mut usize) -> u64 {
     if *i < bytes.len() {
         let b = bytes[*i];
         *i += 1;
@@ -190,47 +193,47 @@ pub fn parse_int(bytes: &[u8], i: &mut usize) -> u64{
 
 pub fn parse_package(bytes: &[u8], i: &mut usize) {
 
-        let end = *i + parse_length(bytes, i);
-        let elements = parse_num::<u8>(bytes, i);
+    let end = *i + parse_length(bytes, i);
+    let elements = parse_num::<u8>(bytes, i);
 
-        debugln!("    Package ({})", elements);
-        debugln!("    {{");
-        while *i < bytes.len() && *i < end {
-            let op = bytes[*i];
-            *i += 1;
+    debugln!("    Package ({})", elements);
+    debugln!("    {{");
+    while *i < bytes.len() && *i < end {
+        let op = bytes[*i];
+        *i += 1;
 
-            match op {
-                ZERO_OP => {
-                    debugln!("        Zero");
-                },
-                ONE_OP => {
-                    debugln!("        One");
-                },
-                BYTE_PREFIX => {
-                    debugln!("        {:02X}", parse_num::<u8>(bytes, i));
-                },
-                WORD_PREFIX => {
-                    debugln!("        {:04X}", parse_num::<u16>(bytes, i));
-                },
-                DWORD_PREFIX => {
-                    debugln!("        {:08X}", parse_num::<u32>(bytes, i));
-                },
-                QWORD_PREFIX => {
-                    debugln!("        {:016X}", parse_num::<u64>(bytes, i));
-                },
-                PACKAGE_OP => {
-                    parse_package(bytes, i);
-                },
-                _ => {
-                    *i -= 1;
-                    debugln!("        {}", parse_name(bytes, i));
-                    //debugln!("        parse_package: unknown: {:02X}", op);
-                }
+        match op {
+            ZERO_OP => {
+                debugln!("        Zero");
+            }
+            ONE_OP => {
+                debugln!("        One");
+            }
+            BYTE_PREFIX => {
+                debugln!("        {:02X}", parse_num::<u8>(bytes, i));
+            }
+            WORD_PREFIX => {
+                debugln!("        {:04X}", parse_num::<u16>(bytes, i));
+            }
+            DWORD_PREFIX => {
+                debugln!("        {:08X}", parse_num::<u32>(bytes, i));
+            }
+            QWORD_PREFIX => {
+                debugln!("        {:016X}", parse_num::<u64>(bytes, i));
+            }
+            PACKAGE_OP => {
+                parse_package(bytes, i);
+            }
+            _ => {
+                *i -= 1;
+                debugln!("        {}", parse_name(bytes, i));
+                // debugln!("        parse_package: unknown: {:02X}", op);
             }
         }
-        debugln!("    }}");
+    }
+    debugln!("    }}");
 
-        *i = end;
+    *i = end;
 }
 
 pub fn parse_device(bytes: &[u8], i: &mut usize) {
@@ -246,28 +249,28 @@ pub fn parse_device(bytes: &[u8], i: &mut usize) {
         match op {
             ZERO_OP => {
                 debugln!("        Zero");
-            },
+            }
             ONE_OP => {
                 debugln!("        One");
-            },
+            }
             BYTE_PREFIX => {
                 debugln!("        {:02X}", parse_num::<u8>(bytes, i));
-            },
+            }
             WORD_PREFIX => {
                 debugln!("        {:04X}", parse_num::<u16>(bytes, i));
-            },
+            }
             DWORD_PREFIX => {
                 debugln!("        {:08X}", parse_num::<u32>(bytes, i));
-            },
+            }
             STRING_PREFIX => {
                 debugln!("        {}", parse_string(bytes, i));
-            },
+            }
             QWORD_PREFIX => {
                 debugln!("        {:016X}", parse_num::<u64>(bytes, i));
-            },
+            }
             NAME_OP => {
                 debugln!("        Name({})", parse_string(bytes, i));
-            },
+            }
             METHOD_OP => {
                 let end = *i + parse_length(bytes, i);
                 let name = parse_name(bytes, i);
@@ -278,7 +281,7 @@ pub fn parse_device(bytes: &[u8], i: &mut usize) {
                 debugln!("        }}");
 
                 *i = end;
-            },
+            }
             BUFFER_OP => {
                 let end = *i + parse_length(bytes, i);
 
@@ -287,10 +290,10 @@ pub fn parse_device(bytes: &[u8], i: &mut usize) {
                 debugln!("        Buffer ({})", count);
 
                 *i = end;
-            },
+            }
             PACKAGE_OP => {
                 parse_package(bytes, i);
-            },
+            }
             EXT_OP_PREFIX => {
                 if *i < bytes.len() {
                     let ext_op = bytes[*i];
@@ -303,8 +306,12 @@ pub fn parse_device(bytes: &[u8], i: &mut usize) {
                             let offset = parse_int(bytes, i);
                             let size = parse_int(bytes, i);
 
-                            debugln!("        OperationRegion ({}, {}, {}, {})", name, space, offset, size);
-                        },
+                            debugln!("        OperationRegion ({}, {}, {}, {})",
+                                     name,
+                                     space,
+                                     offset,
+                                     size);
+                        }
                         FIELD_OP => {
                             let end = *i + parse_length(bytes, i);
 
@@ -322,11 +329,11 @@ pub fn parse_device(bytes: &[u8], i: &mut usize) {
                             debugln!("        }}");
 
                             *i = end;
-                        },
-                        _ => debugln!("        Unknown EXT: {:02X}", ext_op)
+                        }
+                        _ => debugln!("        Unknown EXT: {:02X}", ext_op),
                     }
                 }
-            },
+            }
             _ => {
                 debugln!("        parse_device: unknown: {:02X}", op);
                 break;
@@ -351,31 +358,31 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
         match op {
             ZERO_OP => {
                 debugln!("    Zero");
-            },
+            }
             ONE_OP => {
                 debugln!("    One");
-            },
+            }
             BYTE_PREFIX => {
                 debugln!("    {:02X}", parse_num::<u8>(bytes, i));
-            },
+            }
             WORD_PREFIX => {
                 debugln!("    {:04X}", parse_num::<u16>(bytes, i));
-            },
+            }
             DWORD_PREFIX => {
                 debugln!("    {:08X}", parse_num::<u32>(bytes, i));
-            },
+            }
             STRING_PREFIX => {
                 debugln!("    {}", parse_string(bytes, i));
             }
             QWORD_PREFIX => {
                 debugln!("    {:016X}", parse_num::<u64>(bytes, i));
-            },
+            }
             SCOPE_OP => {
                 parse_scope(bytes, i);
-            },
+            }
             NAME_OP => {
                 debugln!("    Name({})", parse_string(bytes, i));
-            },
+            }
             METHOD_OP => {
                 let end = *i + parse_length(bytes, i);
                 let name = parse_name(bytes, i);
@@ -386,7 +393,7 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                 debugln!("    }}");
 
                 *i = end;
-            },
+            }
             BUFFER_OP => {
                 let end = *i + parse_length(bytes, i);
 
@@ -395,10 +402,10 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                 debugln!("    Buffer ({})", count);
 
                 *i = end;
-            },
+            }
             PACKAGE_OP => {
                 parse_package(bytes, i);
-            },
+            }
             EXT_OP_PREFIX => {
                 if *i < bytes.len() {
                     let ext_op = bytes[*i];
@@ -410,15 +417,19 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                             let flags = parse_num::<u8>(bytes, i);
 
                             debugln!("    Mutex ({}, {})", name, flags);
-                        },
+                        }
                         OP_REGION_OP => {
                             let name = parse_name(bytes, i);
                             let space = parse_num::<u8>(bytes, i);
                             let offset = parse_int(bytes, i);
                             let size = parse_int(bytes, i);
 
-                            debugln!("    OperationRegion ({}, {}, {}, {})", name, space, offset, size);
-                        },
+                            debugln!("    OperationRegion ({}, {}, {}, {})",
+                                     name,
+                                     space,
+                                     offset,
+                                     size);
+                        }
                         FIELD_OP => {
                             let end = *i + parse_length(bytes, i);
 
@@ -436,28 +447,27 @@ pub fn parse_scope(bytes: &[u8], i: &mut usize) {
                             debugln!("    }}");
 
                             *i = end;
-                        },
+                        }
                         DEVICE_OP => {
                             parse_device(bytes, i);
-                        },
+                        }
                         PROCESSOR_OP => {
                             let end = *i + parse_length(bytes, i);
 
                             let name = parse_name(bytes, i);
-                            /*
-                            let id = parse_num::<u8>(bytes, i);
-                            let blk = parse_num::<u32>(bytes, i);
-                            let blklen = parse_num::<u8>(bytes, i);
-                            */
+                            // let id = parse_num::<u8>(bytes, i);
+                            // let blk = parse_num::<u32>(bytes, i);
+                            // let blklen = parse_num::<u8>(bytes, i);
+                            //
 
                             debugln!("    Processor ({})", name);
 
                             *i = end;
-                        },
-                        _ => debugln!("    Unknown EXT: {:02X}", ext_op)
+                        }
+                        _ => debugln!("    Unknown EXT: {:02X}", ext_op),
                     }
                 }
-            },
+            }
             _ => {
                 debugln!("    parse_scope: unknown: {:02X}", op);
                 break;
@@ -478,7 +488,7 @@ pub fn parse(bytes: &[u8]) {
         match op {
             SCOPE_OP => {
                 parse_scope(bytes, &mut i);
-            },
+            }
             _ => {
                 debugln!("parse: unknown: {:02X}", op);
                 break;
