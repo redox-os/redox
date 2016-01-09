@@ -73,39 +73,39 @@ impl Buffer {
                     self.cursor.y += 1;
                     self.cursor.goto_x(0);
                 }
-            },
+            }
             Action::CursorUp(n) => self.cursor.x = self.cursor.x.saturating_sub(n),
             Action::NextLine(n) => {
                 self.cursor.goto_x(0);
                 self.cursor.y += n;
-            },
+            }
             Action::PreviousLine(n) => {
                 self.cursor.y = self.cursor.y.saturating_sub(n);
                 self.cursor.x = 0;
-            },
+            }
             Action::GotoColumn(x) => self.cursor.goto_x(x),
             Action::Goto(x, y) => self.cursor.goto(x, y),
             Action::GotoStart => self.cursor.goto(0, 0),
             Action::EraseAfter => {
                 self.grid[self.cursor.y].take(self.cursor.x..);
                 self.grid.take(self.cursor.y + 1..);
-            },
+            }
             Action::EraseBefore => {
                 self.grid[self.cursor.y].take(..self.cursor.x - 1);
                 self.grid.take(..self.cursor.y);
-            },
+            }
             Action::EraseAll => {
                 self.grid = Grid::new();
-            },
+            }
             Action::EraseLineAfter => {
                 self.grid.take(self.cursor.y..);
-            },
+            }
             Action::EraseLineBefore => {
                 self.grid.take(..self.cursor.y);
-            },
+            }
             Action::EraseLine => {
                 self.grid[self.cursor.y] = UnboundedVec::new();
-            },
+            }
             Action::ScrollUp(n) => self.cursor.y = self.cursor.y.saturating_sub(1),
             Action::ScrollDown(n) => self.cursor.y += 1,
             Action::Rendition(_) => unimplemented!(), // TODO

@@ -25,7 +25,6 @@ impl Uberblock {
     pub fn magic_big() -> u64 {
         return 0x00bab10c;
     }
-
 }
 
 impl FromBytes for Uberblock {

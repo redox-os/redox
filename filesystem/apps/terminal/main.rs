@@ -72,7 +72,8 @@ pub fn main() {
             let mut output = String::new();
             if let Ok(_) = from_shell.read_to_string(&mut output) {
                 if let Some(window) = window_weak.upgrade() {
-                    let window_ptr = (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
+                    let window_ptr =
+                        (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
                     unsafe { &mut *window_ptr }.print(&output, Color::rgb(255, 255, 255));
                     unsafe { &mut *window_ptr }.sync();
                 } else {
