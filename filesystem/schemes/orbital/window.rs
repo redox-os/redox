@@ -118,8 +118,8 @@ impl Window {
 
             unsafe {
                 display.image(self.point,
-                          self.content.onscreen as *const Color,
-                          Size::new(self.content.width as u32, self.content.height as u32));
+                              self.content.onscreen as *const Color,
+                              Size::new(self.content.width as u32, self.content.height as u32));
             }
         }
     }

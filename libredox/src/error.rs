@@ -68,11 +68,15 @@ pub trait Error: Debug + Display + Reflect {
     fn description(&self) -> &str;
 
     /// The lower-level cause of this error, if any.
-    fn cause(&self) -> Option<&Error> { None }
+    fn cause(&self) -> Option<&Error> {
+        None
+    }
 
     /// Get the `TypeId` of `self`
     #[doc(hidden)]
-    fn type_id(&self) -> TypeId where Self: 'static {
+    fn type_id(&self) -> TypeId
+        where Self: 'static
+    {
         TypeId::of::<Self>()
     }
 }
@@ -95,7 +99,9 @@ impl From<String> for Box<Error + Send + Sync> {
         struct StringError(String);
 
         impl Error for StringError {
-            fn description(&self) -> &str { &self.0 }
+            fn description(&self) -> &str {
+                &self.0
+            }
         }
 
         impl Display for StringError {
@@ -248,8 +254,7 @@ impl Error {
             unsafe {
                 // Get the raw representation of the trait object
                 let raw = Box::into_raw(self);
-                let to: TraitObject =
-                    transmute::<*mut Error, TraitObject>(raw);
+                let to: TraitObject = transmute::<*mut Error, TraitObject>(raw);
 
                 // Extract the data pointer
                 Ok(Box::from_raw(to.data as *mut T))
@@ -263,8 +268,7 @@ impl Error {
 impl Error + Send {
     #[inline]
     /// Attempt to downcast the box to a concrete type.
-    pub fn downcast<T: Error + 'static>(self: Box<Self>)
-                                        -> Result<Box<T>, Box<Error + Send>> {
+    pub fn downcast<T: Error + 'static>(self: Box<Self>) -> Result<Box<T>, Box<Error + Send>> {
         let err: Box<Error> = self;
         <Error>::downcast(err).map_err(|s| unsafe {
             // reapply the Send marker
@@ -276,8 +280,7 @@ impl Error + Send {
 impl Error + Send + Sync {
     #[inline]
     /// Attempt to downcast the box to a concrete type.
-    pub fn downcast<T: Error + 'static>(self: Box<Self>)
-                                        -> Result<Box<T>, Box<Self>> {
+    pub fn downcast<T: Error + 'static>(self: Box<Self>) -> Result<Box<T>, Box<Self>> {
         let err: Box<Error> = self;
         <Error>::downcast(err).map_err(|s| unsafe {
             // reapply the Send+Sync marker
@@ -309,10 +312,14 @@ mod tests {
     }
 
     impl Error for A {
-        fn description(&self) -> &str { "A-desc" }
+        fn description(&self) -> &str {
+            "A-desc"
+        }
     }
     impl Error for B {
-        fn description(&self) -> &str { "A-desc" }
+        fn description(&self) -> &str {
+            "A-desc"
+        }
     }
 
     #[test]

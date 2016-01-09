@@ -2,10 +2,11 @@ use io::Result;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{SysError, sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, CLONE_VM, CLONE_VFORK};
+use syscall::{SysError, sys_clone, sys_execve, sys_spawnve, sys_exit, sys_waitpid, CLONE_VM,
+              CLONE_VFORK};
 
 pub struct ExitStatus {
-    status: usize
+    status: usize,
 }
 
 impl ExitStatus {
@@ -19,7 +20,7 @@ impl ExitStatus {
 }
 
 pub struct Child {
-    pid: isize
+    pid: isize,
 }
 
 impl Child {
@@ -31,9 +32,7 @@ impl Child {
         let mut status: usize = 0;
         let result = unsafe { sys_waitpid(self.pid, &mut status, 0) } as isize;
         if result >= 0 {
-            Ok(ExitStatus {
-                status: status
-            })
+            Ok(ExitStatus { status: status })
         } else {
             Err(SysError::new(-result))
         }
@@ -42,14 +41,14 @@ impl Child {
 
 pub struct Command {
     pub path: String,
-    pub args: Vec<String>
+    pub args: Vec<String>,
 }
 
 impl Command {
     pub fn new(path: &str) -> Command {
         Command {
             path: path.to_string(),
-            args: Vec::new()
+            args: Vec::new(),
         }
     }
 
@@ -81,9 +80,7 @@ impl Command {
                 }
             }
         } else if pid > 0 {
-            Ok(Child {
-                pid: pid
-            })
+            Ok(Child { pid: pid })
         } else {
             Err(SysError::new(-pid))
         }
@@ -105,9 +102,7 @@ impl Command {
 
         let pid = unsafe { sys_spawnve(path_c.as_ptr(), args_c.as_ptr()) } as isize;
         if pid > 0 {
-            Some(Child {
-                pid: pid
-            })
+            Some(Child { pid: pid })
         } else {
             None
         }

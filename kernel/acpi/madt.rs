@@ -79,28 +79,39 @@ impl MADT {
                 let entry_length = data[i + 1] as usize;
                 if i + entry_length <= data.len() {
                     match entry_type {
-                        ENTRY_LOCAL_APIC => if entry_length == size_of::<LocalApic>() {
-                            madt.local_apics.push(unsafe {
-                                ptr::read(data.as_ptr().offset(i as isize) as *const LocalApic)
-                            });
-                        } else {
-                            debugln!("MADT: Unknown LocalApic length: {}", entry_length);
-                        },
-                        ENTRY_IO_APIC => if entry_length == size_of::<IoApic>() {
-                            madt.io_apics.push(unsafe {
-                                ptr::read(data.as_ptr().offset(i as isize) as *const IoApic)
-                            });
-                        } else {
-                            debugln!("MADT: Unknown IoApic length: {}", entry_length);
-                        },
-                        ENTRY_INT_SOURCE_OVERRIDE => if entry_length == size_of::<IntSourceOverride>() {
-                            madt.int_source_overrides.push(unsafe {
+                        ENTRY_LOCAL_APIC => {
+                            if entry_length == size_of::<LocalApic>() {
+                                madt.local_apics.push(unsafe {
+                                    ptr::read(data.as_ptr().offset(i as isize) as *const LocalApic)
+                                });
+                            } else {
+                                debugln!("MADT: Unknown LocalApic length: {}", entry_length);
+                            }
+                        }
+                        ENTRY_IO_APIC => {
+                            if entry_length == size_of::<IoApic>() {
+                                madt.io_apics.push(unsafe {
+                                    ptr::read(data.as_ptr().offset(i as isize) as *const IoApic)
+                                });
+                            } else {
+                                debugln!("MADT: Unknown IoApic length: {}", entry_length);
+                            }
+                        }
+                        ENTRY_INT_SOURCE_OVERRIDE => {
+                            if entry_length == size_of::<IntSourceOverride>() {
+                                madt.int_source_overrides.push(unsafe {
                                 ptr::read(data.as_ptr().offset(i as isize) as *const IntSourceOverride)
                             });
-                        } else {
-                            debugln!("MADT: Unknown IntSourceOverride length: {}", entry_length);
-                        },
-                        _ => debugln!("MADT: Unknown entry type: {}, length {}", entry_type, entry_length)
+                            } else {
+                                debugln!("MADT: Unknown IntSourceOverride length: {}",
+                                         entry_length);
+                            }
+                        }
+                        _ => {
+                            debugln!("MADT: Unknown entry type: {}, length {}",
+                                     entry_type,
+                                     entry_length)
+                        }
                     }
                 }
                 i += entry_length;
