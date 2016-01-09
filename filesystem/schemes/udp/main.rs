@@ -63,13 +63,15 @@ pub struct Resource {
 impl Resource {
     pub fn dup(&self) -> Result<Box<Self>> {
         match self.ip.dup() {
-            Ok(ip) => Ok(box Resource {
-                ip: ip,
-                data: self.data.clone(),
-                peer_addr: self.peer_addr,
-                peer_port: self.peer_port,
-                host_port: self.host_port,
-            }),
+            Ok(ip) => {
+                Ok(box Resource {
+                    ip: ip,
+                    data: self.data.clone(),
+                    peer_addr: self.peer_addr,
+                    peer_port: self.peer_port,
+                    host_port: self.host_port,
+                })
+            }
             Err(err) => Err(err),
         }
     }

@@ -81,14 +81,16 @@ pub struct Resource {
 impl Resource {
     pub fn dup(&self) -> Result<Box<Resource>> {
         match self.ip.dup() {
-            Ok(ip) => Ok(box Resource {
-                ip: ip,
-                peer_addr: self.peer_addr,
-                peer_port: self.peer_port,
-                host_port: self.host_port,
-                sequence: self.sequence,
-                acknowledge: self.acknowledge,
-            }),
+            Ok(ip) => {
+                Ok(box Resource {
+                    ip: ip,
+                    peer_addr: self.peer_addr,
+                    peer_port: self.peer_port,
+                    host_port: self.host_port,
+                    sequence: self.sequence,
+                    acknowledge: self.acknowledge,
+                })
+            }
             Err(err) => Err(err),
         }
     }
@@ -200,29 +202,31 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Ok(size) => loop {
-                // Wait for ACK
-                let mut bytes: Vec<u8> = Vec::new();
-                match self.ip.read_to_end(&mut bytes) {
-                    Ok(_) => {
-                        if let Some(segment) = Tcp::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port &&
-                               segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() &
-                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                          TCP_ACK {
-                                    self.sequence = segment.header.ack_num.get();
-                                    self.acknowledge = segment.header.sequence.get();
-                                    Ok(size)
-                                } else {
-                                    Err(SysError::new(EPIPE))
-                                };
+            Ok(size) => {
+                loop {
+                    // Wait for ACK
+                    let mut bytes: Vec<u8> = Vec::new();
+                    match self.ip.read_to_end(&mut bytes) {
+                        Ok(_) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                                if segment.header.dst.get() == self.host_port &&
+                                   segment.header.src.get() == self.peer_port {
+                                    return if (segment.header.flags.get() &
+                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                              TCP_ACK {
+                                        self.sequence = segment.header.ack_num.get();
+                                        self.acknowledge = segment.header.sequence.get();
+                                        Ok(size)
+                                    } else {
+                                        Err(SysError::new(EPIPE))
+                                    };
+                                }
                             }
                         }
+                        Err(err) => return Err(err),
                     }
-                    Err(err) => return Err(err),
                 }
-            },
+            }
             Err(err) => Err(err),
         }
     }
@@ -274,22 +278,23 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Ok(_) => loop {
-                // Wait for SYN-ACK
-                let mut bytes: Vec<u8> = Vec::new();
-                match self.ip.read_to_end(&mut bytes) {
-                    Ok(_) => {
-                        if let Some(segment) = Tcp::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port &&
-                               segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() &
-                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                          (TCP_SYN | TCP_ACK) {
-                                    self.sequence = segment.header.ack_num.get();
-                                    self.acknowledge = segment.header.sequence.get();
+            Ok(_) => {
+                loop {
+                    // Wait for SYN-ACK
+                    let mut bytes: Vec<u8> = Vec::new();
+                    match self.ip.read_to_end(&mut bytes) {
+                        Ok(_) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                                if segment.header.dst.get() == self.host_port &&
+                                   segment.header.src.get() == self.peer_port {
+                                    return if (segment.header.flags.get() &
+                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                              (TCP_SYN | TCP_ACK) {
+                                        self.sequence = segment.header.ack_num.get();
+                                        self.acknowledge = segment.header.sequence.get();
 
-                                    self.acknowledge += 1;
-                                    tcp = Tcp {
+                                        self.acknowledge += 1;
+                                        tcp = Tcp {
                                                 header: TcpHeader {
                                                     src: n16::new(self.host_port),
                                                     dst: n16::new(self.peer_port),
@@ -306,10 +311,10 @@ impl Resource {
                                                 data: Vec::new()
                                             };
 
-                                    unsafe {
-                                        let proto = n16::new(0x06);
-                                        let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
-                                        tcp.header.checksum.data = Checksum::compile(
+                                        unsafe {
+                                            let proto = n16::new(0x06);
+                                            let segment_len = n16::new((mem::size_of::<TcpHeader>() + tcp.options.len() + tcp.data.len()) as u16);
+                                            tcp.header.checksum.data = Checksum::compile(
                                                     Checksum::sum((&IP_ADDR as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
                                                     Checksum::sum((&self.peer_addr as *const IPv4Addr) as usize, mem::size_of::<IPv4Addr>()) +
                                                     Checksum::sum((&proto as *const n16) as usize, mem::size_of::<n16>()) +
@@ -318,20 +323,21 @@ impl Resource {
                                                     Checksum::sum(tcp.options.as_ptr() as usize, tcp.options.len()) +
                                                     Checksum::sum(tcp.data.as_ptr() as usize, tcp.data.len())
                                                     );
-                                    }
+                                        }
 
-                                    self.ip.write(&tcp.to_bytes());
+                                        self.ip.write(&tcp.to_bytes());
 
-                                    true
-                                } else {
-                                    false
-                                };
+                                        true
+                                    } else {
+                                        false
+                                    };
+                                }
                             }
                         }
+                        Err(_) => return false,
                     }
-                    Err(_) => return false,
                 }
-            },
+            }
             Err(_) => false,
         }
     }
@@ -377,29 +383,31 @@ impl Resource {
         }
 
         match self.ip.write(&tcp.to_bytes()) {
-            Ok(_) => loop {
-                // Wait for ACK
-                let mut bytes: Vec<u8> = Vec::new();
-                match self.ip.read_to_end(&mut bytes) {
-                    Ok(_) => {
-                        if let Some(segment) = Tcp::from_bytes(bytes) {
-                            if segment.header.dst.get() == self.host_port &&
-                               segment.header.src.get() == self.peer_port {
-                                return if (segment.header.flags.get() &
-                                           (TCP_PSH | TCP_SYN | TCP_ACK)) ==
-                                          TCP_ACK {
-                                    self.sequence = segment.header.ack_num.get();
-                                    self.acknowledge = segment.header.sequence.get();
-                                    true
-                                } else {
-                                    false
-                                };
+            Ok(_) => {
+                loop {
+                    // Wait for ACK
+                    let mut bytes: Vec<u8> = Vec::new();
+                    match self.ip.read_to_end(&mut bytes) {
+                        Ok(_) => {
+                            if let Some(segment) = Tcp::from_bytes(bytes) {
+                                if segment.header.dst.get() == self.host_port &&
+                                   segment.header.src.get() == self.peer_port {
+                                    return if (segment.header.flags.get() &
+                                               (TCP_PSH | TCP_SYN | TCP_ACK)) ==
+                                              TCP_ACK {
+                                        self.sequence = segment.header.ack_num.get();
+                                        self.acknowledge = segment.header.sequence.get();
+                                        true
+                                    } else {
+                                        false
+                                    };
+                                }
                             }
                         }
+                        Err(_) => return false,
                     }
-                    Err(_) => return false,
                 }
-            },
+            }
             Err(_) => false,
         }
     }
