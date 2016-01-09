@@ -175,9 +175,7 @@ impl fmt::Debug for NvValue {
                 }
                 write!(f, "])")
             }
-            NvValue::String(ref v) => {
-                write!(f, "String({})", v)
-            }
+            NvValue::String(ref v) => write!(f, "String({})", v),
             _ => write!(f, "{:?}", self),
         }
     }

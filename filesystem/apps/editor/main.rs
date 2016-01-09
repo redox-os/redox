@@ -45,7 +45,6 @@ impl Editor {
 
     fn save(&mut self, _: &Window) {
         if self.file.is_none() {
-            //
             // let mut save_window = {
             // const WIDTH: usize = 400;
             // const HEIGHT: usize = 200;
@@ -176,15 +175,19 @@ impl Editor {
                 if key_event.pressed {
                     match key_event.scancode {
                         K_ESC => break,
-                        K_BKSP => if self.offset > 0 {
-                            self.string = self.string[0..self.offset - 1].to_string() +
-                                          &self.string[self.offset..self.string.len()];
-                            self.offset -= 1;
-                        },
-                        K_DEL => if (self.offset) < self.string.len() {
-                            self.string = self.string[0..self.offset].to_string() +
-                                          &self.string[self.offset + 1..self.string.len() - 1];
-                        },
+                        K_BKSP => {
+                            if self.offset > 0 {
+                                self.string = self.string[0..self.offset - 1].to_string() +
+                                              &self.string[self.offset..self.string.len()];
+                                self.offset -= 1;
+                            }
+                        }
+                        K_DEL => {
+                            if (self.offset) < self.string.len() {
+                                self.string = self.string[0..self.offset].to_string() +
+                                              &self.string[self.offset + 1..self.string.len() - 1];
+                            }
+                        }
                         K_F5 => self.reload(),
                         K_F6 => self.save(&window),
                         K_HOME => self.offset = 0,
@@ -202,12 +205,16 @@ impl Editor {
                             }
                             self.offset = new_offset;
                         }
-                        K_LEFT => if self.offset > 0 {
-                            self.offset -= 1;
-                        },
-                        K_RIGHT => if (self.offset) < self.string.len() {
-                            self.offset += 1;
-                        },
+                        K_LEFT => {
+                            if self.offset > 0 {
+                                self.offset -= 1;
+                            }
+                        }
+                        K_RIGHT => {
+                            if (self.offset) < self.string.len() {
+                                self.offset += 1;
+                            }
+                        }
                         K_END => self.offset = self.string.len(),
                         K_DOWN => {
                             let mut new_offset = self.string.len();
@@ -223,15 +230,17 @@ impl Editor {
                             }
                             self.offset = new_offset;
                         }
-                        _ => match key_event.character {
-                            '\0' => (),
-                            _ => {
-                                self.string = self.string[0..self.offset].to_string() +
-                                              &key_event.character.to_string() +
-                                              &self.string[self.offset..self.string.len()];
-                                self.offset += 1;
+                        _ => {
+                            match key_event.character {
+                                '\0' => (),
+                                _ => {
+                                    self.string = self.string[0..self.offset].to_string() +
+                                                  &key_event.character.to_string() +
+                                                  &self.string[self.offset..self.string.len()];
+                                    self.offset += 1;
+                                }
                             }
-                        },
+                        }
                     }
 
                     self.draw_content(&mut window);

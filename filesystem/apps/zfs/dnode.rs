@@ -68,7 +68,7 @@ impl DNodePhys {
     }
 }
 
-impl FromBytes for DNodePhys { }
+impl FromBytes for DNodePhys {}
 
 impl fmt::Debug for DNodePhys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

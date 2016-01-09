@@ -25,7 +25,6 @@ impl FileType {
             icon: load_icon(icon),
         }
     }
-
 }
 
 struct FileTypesInfo {
@@ -293,8 +292,8 @@ impl FileManager {
                             } else {
                                 path_str.to_string()
                             }
-                        },
-                        None => "Failed to convert path to string".to_string()
+                        }
+                        None => "Failed to convert path to string".to_string(),
                     };
 
                     self.files.push(entry_path.clone());
@@ -303,20 +302,22 @@ impl FileManager {
                         FileManager::get_num_entries(&(path.to_string() + &entry_path))
                     } else {
                         match File::open(&entry_path) {
-                            Ok(mut file) => match file.seek(SeekFrom::End(0)) {
-                                Ok(size) => {
-                                    if size >= 1_000_000_000 {
-                                        format!("{:.1} GB", (size as f64) / 1_000_000_000.0)
-                                    } else if size >= 1_000_000 {
-                                        format!("{:.1} MB", (size as f64) / 1_000_000.0)
-                                    } else if size >= 1_000 {
-                                        format!("{:.1} KB", (size as f64) / 1_000.0)
-                                    } else {
-                                        format!("{:.1} bytes", size)
+                            Ok(mut file) => {
+                                match file.seek(SeekFrom::End(0)) {
+                                    Ok(size) => {
+                                        if size >= 1_000_000_000 {
+                                            format!("{:.1} GB", (size as f64) / 1_000_000_000.0)
+                                        } else if size >= 1_000_000 {
+                                            format!("{:.1} MB", (size as f64) / 1_000_000.0)
+                                        } else if size >= 1_000 {
+                                            format!("{:.1} KB", (size as f64) / 1_000.0)
+                                        } else {
+                                            format!("{:.1} bytes", size)
+                                        }
                                     }
+                                    Err(err) => format!("Failed to seek: {}", err),
                                 }
-                                Err(err) => format!("Failed to seek: {}", err),
-                            },
+                            }
                             Err(err) => format!("Failed to open: {}", err),
                         }
                     });
@@ -354,43 +355,49 @@ impl FileManager {
                         match key_event.scancode {
                             event::K_ESC => return Some(FileManagerCommand::Quit),
                             event::K_HOME => self.selected = 0,
-                            event::K_UP => if self.selected > 0 {
-                                self.selected -= 1;
-                                redraw = true;
-                            },
+                            event::K_UP => {
+                                if self.selected > 0 {
+                                    self.selected -= 1;
+                                    redraw = true;
+                                }
+                            }
                             event::K_END => self.selected = self.files.len() as isize - 1,
-                            event::K_DOWN => if self.selected < self.files.len() as isize - 1 {
-                                self.selected += 1;
-                                redraw = true;
-                            },
-                            _ => match key_event.character {
-                                '\0' => (),
-                                '\n' => {
-                                    if self.selected >= 0 &&
-                                       self.selected < self.files.len() as isize {
-                                        match self.files.get(self.selected as usize) {
-                                            Some(file) => {
-                                                if file.ends_with('/') {
-                                                    command = Some(FileManagerCommand::ChangeDir(file.clone()));
-                                                } else {
-                                                    command = Some(FileManagerCommand::Execute(file.clone()));
+                            event::K_DOWN => {
+                                if self.selected < self.files.len() as isize - 1 {
+                                    self.selected += 1;
+                                    redraw = true;
+                                }
+                            }
+                            _ => {
+                                match key_event.character {
+                                    '\0' => (),
+                                    '\n' => {
+                                        if self.selected >= 0 &&
+                                           self.selected < self.files.len() as isize {
+                                            match self.files.get(self.selected as usize) {
+                                                Some(file) => {
+                                                    if file.ends_with('/') {
+                                                        command = Some(FileManagerCommand::ChangeDir(file.clone()));
+                                                    } else {
+                                                        command = Some(FileManagerCommand::Execute(file.clone()));
+                                                    }
                                                 }
+                                                None => (),
                                             }
-                                            None => (),
+                                        }
+                                    }
+                                    _ => {
+                                        let mut i = 0;
+                                        for file in self.files.iter() {
+                                            if file.starts_with(key_event.character) {
+                                                self.selected = i;
+                                                break;
+                                            }
+                                            i += 1;
                                         }
                                     }
                                 }
-                                _ => {
-                                    let mut i = 0;
-                                    for file in self.files.iter() {
-                                        if file.starts_with(key_event.character) {
-                                            self.selected = i;
-                                            break;
-                                        }
-                                        i += 1;
-                                    }
-                                }
-                            },
+                            }
                         }
                         if command.is_none() && redraw {
                             command = Some(FileManagerCommand::Redraw);

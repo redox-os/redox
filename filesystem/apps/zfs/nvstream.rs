@@ -160,36 +160,16 @@ fn decode_nv_value(xdr: &mut xdr::Xdr,
                    num_elements: usize)
                    -> xdr::XdrResult<NvValue> {
     match data_type {
-        DataType::Unknown => {
-            Ok(NvValue::Unknown)
-        }
-        DataType::Boolean => {
-            Ok(NvValue::Boolean)
-        }
-        DataType::Byte => {
-            Ok(NvValue::Byte(try!(xdr.decode_u8())))
-        }
-        DataType::Int16 => {
-            Ok(NvValue::Int16(try!(xdr.decode_i16())))
-        }
-        DataType::Uint16 => {
-            Ok(NvValue::Uint16(try!(xdr.decode_u16())))
-        }
-        DataType::Int32 => {
-            Ok(NvValue::Int32(try!(xdr.decode_i32())))
-        }
-        DataType::Uint32 => {
-            Ok(NvValue::Uint32(try!(xdr.decode_u32())))
-        }
-        DataType::Int64 => {
-            Ok(NvValue::Int64(try!(xdr.decode_i64())))
-        }
-        DataType::Uint64 => {
-            Ok(NvValue::Uint64(try!(xdr.decode_u64())))
-        }
-        DataType::String => {
-            Ok(NvValue::String(try!(xdr.decode_string())))
-        }
+        DataType::Unknown => Ok(NvValue::Unknown),
+        DataType::Boolean => Ok(NvValue::Boolean),
+        DataType::Byte => Ok(NvValue::Byte(try!(xdr.decode_u8()))),
+        DataType::Int16 => Ok(NvValue::Int16(try!(xdr.decode_i16()))),
+        DataType::Uint16 => Ok(NvValue::Uint16(try!(xdr.decode_u16()))),
+        DataType::Int32 => Ok(NvValue::Int32(try!(xdr.decode_i32()))),
+        DataType::Uint32 => Ok(NvValue::Uint32(try!(xdr.decode_u32()))),
+        DataType::Int64 => Ok(NvValue::Int64(try!(xdr.decode_i64()))),
+        DataType::Uint64 => Ok(NvValue::Uint64(try!(xdr.decode_u64()))),
+        DataType::String => Ok(NvValue::String(try!(xdr.decode_string()))),
         DataType::ByteArray => {
             let mut v = vec![0; num_elements];
             for v in &mut v {
@@ -246,9 +226,7 @@ fn decode_nv_value(xdr: &mut xdr::Xdr,
             }
             Ok(NvValue::Uint64Array(v))
         }
-        DataType::HrTime => {
-            Ok(NvValue::HrTime(try!(xdr.decode_i64())))
-        }
+        DataType::HrTime => Ok(NvValue::HrTime(try!(xdr.decode_i64()))),
         DataType::NvList => {
             let nv_list = try!(decode_nv_list_embedded(xdr));
             Ok(NvValue::NvList(nv_list))
@@ -260,15 +238,9 @@ fn decode_nv_value(xdr: &mut xdr::Xdr,
             }
             Ok(NvValue::NvListArray(v))
         }
-        DataType::BooleanValue => {
-            Ok(NvValue::BooleanValue(try!(xdr.decode_bool())))
-        }
-        DataType::Int8 => {
-            Ok(NvValue::Int8(try!(xdr.decode_i8())))
-        }
-        DataType::Uint8 => {
-            Ok(NvValue::Uint8(try!(xdr.decode_u8())))
-        }
+        DataType::BooleanValue => Ok(NvValue::BooleanValue(try!(xdr.decode_bool()))),
+        DataType::Int8 => Ok(NvValue::Int8(try!(xdr.decode_i8()))),
+        DataType::Uint8 => Ok(NvValue::Uint8(try!(xdr.decode_u8()))),
         DataType::BooleanArray => {
             let mut v = vec![false; num_elements];
             for v in &mut v {
