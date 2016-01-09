@@ -81,7 +81,7 @@ pub unsafe fn sys_fpath(fd: usize, buf: *mut u8, len: usize) -> usize {
     syscall(SYS_FPATH, fd, buf as usize, len)
 }
 
-//TODO: FSTAT
+// TODO: FSTAT
 
 pub unsafe fn sys_fsync(fd: usize) -> usize {
     syscall(SYS_FSYNC, fd, 0, 0)
