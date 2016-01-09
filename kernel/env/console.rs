@@ -136,7 +136,7 @@ impl Console {
     pub fn character(&mut self, c: char) {
         self.display.rect(self.point, Size::new(8, 16), self.background);
         if c == '\x00' {
-            //Ignore null character
+            // Ignore null character
         } else if c == '\x1B' {
             self.escape = true;
         } else if c == '\n' {

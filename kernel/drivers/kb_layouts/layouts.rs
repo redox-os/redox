@@ -27,14 +27,14 @@ pub fn get_scancode_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
 }
 
 fn get_special_keys_from_layout(layout: &Layout, scancode: u8) -> [char; 3] {
-    let keys : &[(u8, [char; 3])] = match *layout {
+    let keys: &[(u8, [char; 3])] = match *layout {
         Layout::English => SCANCODES_EXTRA_EN,
         Layout::French => SCANCODES_EXTRA_FR,
         Layout::German => SCANCODES_EXTRA_DE,
     };
     match keys.iter().filter(|&&(code, _)| code == scancode).next() {
         Some(&(_, keys)) => keys,
-        None => ['\0', '\0', '\0']
+        None => ['\0', '\0', '\0'],
     }
 }
 
@@ -121,7 +121,7 @@ static SCANCODES_EN: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         [' ', ' ', ' ']];
 
 /// Special keys, not present on every keyboard
-static SCANCODES_EXTRA_EN: &'static[(u8, [char; 3])] = &[];
+static SCANCODES_EXTRA_EN: &'static [(u8, [char; 3])] = &[];
 
 /// Scancodes for French keyboards
 static SCANCODES_FR: [[char; 3]; 58] = [['\0', '\0', '\0'],
@@ -184,7 +184,7 @@ static SCANCODES_FR: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         [' ', ' ', ' ']];
 
 /// Special keys, not present on every keyboard
-static SCANCODES_EXTRA_FR: &'static[(u8, [char; 3])] = &[];
+static SCANCODES_EXTRA_FR: &'static [(u8, [char; 3])] = &[];
 
 /// Scancodes for German keyboards
 static SCANCODES_DE: [[char; 3]; 58] = [['\0', '\0', '\0'],
@@ -247,5 +247,4 @@ static SCANCODES_DE: [[char; 3]; 58] = [['\0', '\0', '\0'],
                                         [' ', ' ', ' ']];
 
 /// Special keys, not present on every keyboard
-static SCANCODES_EXTRA_DE: &'static[(u8, [char; 3])] = &[(0x56, ['<', '>', '|'])];
-
+static SCANCODES_EXTRA_DE: &'static [(u8, [char; 3])] = &[(0x56, ['<', '>', '|'])];

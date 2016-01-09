@@ -41,23 +41,23 @@ pub enum HbaPortType {
 
 #[repr(packed)]
 pub struct HbaPort {
-    pub clb: Mmio<u64>,   // 0x00, command list base address, 1K-byte aligned
-    pub fb: Mmio<u64>,    // 0x08, FIS base address, 256-byte aligned
-    pub is: Mmio<u32>,    // 0x10, interrupt status
-    pub ie: Mmio<u32>,    // 0x14, interrupt enable
-    pub cmd: Mmio<u32>,   // 0x18, command and status
-    pub rsv0: Mmio<u32>,  // 0x1C, Reserved
-    pub tfd: Mmio<u32>,   // 0x20, task file data
-    pub sig: Mmio<u32>,   // 0x24, signature
-    pub ssts: Mmio<u32>,  // 0x28, SATA status (SCR0:SStatus)
-    pub sctl: Mmio<u32>,  // 0x2C, SATA control (SCR2:SControl)
-    pub serr: Mmio<u32>,  // 0x30, SATA error (SCR1:SError)
-    pub sact: Mmio<u32>,  // 0x34, SATA active (SCR3:SActive)
-    pub ci: Mmio<u32>,    // 0x38, command issue
-    pub sntf: Mmio<u32>,  // 0x3C, SATA notification (SCR4:SNotification)
-    pub fbs: Mmio<u32>,   // 0x40, FIS-based switch control
-    pub rsv1: [Mmio<u32>; 11],    // 0x44 ~ 0x6F, Reserved
-    pub vendor: [Mmio<u32>; 4]    // 0x70 ~ 0x7F, vendor specific
+    pub clb: Mmio<u64>, // 0x00, command list base address, 1K-byte aligned
+    pub fb: Mmio<u64>, // 0x08, FIS base address, 256-byte aligned
+    pub is: Mmio<u32>, // 0x10, interrupt status
+    pub ie: Mmio<u32>, // 0x14, interrupt enable
+    pub cmd: Mmio<u32>, // 0x18, command and status
+    pub rsv0: Mmio<u32>, // 0x1C, Reserved
+    pub tfd: Mmio<u32>, // 0x20, task file data
+    pub sig: Mmio<u32>, // 0x24, signature
+    pub ssts: Mmio<u32>, // 0x28, SATA status (SCR0:SStatus)
+    pub sctl: Mmio<u32>, // 0x2C, SATA control (SCR2:SControl)
+    pub serr: Mmio<u32>, // 0x30, SATA error (SCR1:SError)
+    pub sact: Mmio<u32>, // 0x34, SATA active (SCR3:SActive)
+    pub ci: Mmio<u32>, // 0x38, command issue
+    pub sntf: Mmio<u32>, // 0x3C, SATA notification (SCR4:SNotification)
+    pub fbs: Mmio<u32>, // 0x40, FIS-based switch control
+    pub rsv1: [Mmio<u32>; 11], // 0x44 ~ 0x6F, Reserved
+    pub vendor: [Mmio<u32>; 4], // 0x70 ~ 0x7F, vendor specific
 }
 
 impl HbaPort {
@@ -69,7 +69,7 @@ impl HbaPort {
                 HBA_SIG_ATAPI => HbaPortType::SATAPI,
                 HBA_SIG_PM => HbaPortType::PM,
                 HBA_SIG_SEMB => HbaPortType::SEMB,
-                _ => HbaPortType::Unknown(sig)
+                _ => HbaPortType::Unknown(sig),
             }
         } else {
             HbaPortType::None
@@ -79,17 +79,17 @@ impl HbaPort {
     pub fn init(&mut self) {
         self.stop();
 
-        //debugln!("Port Command List");
+        // debugln!("Port Command List");
         let clb = unsafe { memory::alloc_aligned(size_of::<HbaCmdHeader>(), 1024) };
         self.clb.write(clb as u64);
 
-        //debugln!("Port FIS");
+        // debugln!("Port FIS");
         let fb = unsafe { memory::alloc_aligned(256, 256) };
         self.fb.write(fb as u64);
 
         for i in 0..32 {
-            //debugln!("Port Command Table {}", i);
-            let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(i) };
+            // debugln!("Port Command Table {}", i);
+            let cmdheader = unsafe { &mut *(clb as *mut HbaCmdHeader).offset(i) };
             let ctba = unsafe { memory::alloc_aligned(size_of::<HbaCmdTable>(), 256) };
             cmdheader.ctba.write(ctba as u64);
             cmdheader.prdtl.write(0);
@@ -99,7 +99,7 @@ impl HbaPort {
     }
 
     pub fn start(&mut self) {
-        //debugln!("Starting port");
+        // debugln!("Starting port");
 
         while self.cmd.readf(HBA_PORT_CMD_CR) {}
 
@@ -108,7 +108,7 @@ impl HbaPort {
     }
 
     pub fn stop(&mut self) {
-        //debugln!("Stopping port");
+        // debugln!("Stopping port");
 
         self.cmd.writef(HBA_PORT_CMD_ST, false);
 
@@ -127,35 +127,40 @@ impl HbaPort {
         None
     }
 
-    pub fn ata_dma(&mut self, block: u64, sectors: usize, buf: usize, write: bool) -> Result<usize> {
-        //debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
+    pub fn ata_dma(&mut self,
+                   block: u64,
+                   sectors: usize,
+                   buf: usize,
+                   write: bool)
+                   -> Result<usize> {
+        // debugln!("AHCI {:X} DMA BLOCK: {:X} SECTORS: {} BUF: {:X} WRITE: {}", (self as *mut HbaPort) as usize, block, sectors, buf, write);
 
-        //TODO: PRDTL for files larger than 4MB
+        // TODO: PRDTL for files larger than 4MB
         let entries = 1;
 
         if buf > 0 && sectors > 0 {
             self.is.write(u32::MAX);
 
             if let Some(slot) = self.slot() {
-                //debugln!("Slot {}", slot);
+                // debugln!("Slot {}", slot);
 
                 let clb = self.clb.read() as usize;
-                let cmdheader = unsafe { &mut * (clb as *mut HbaCmdHeader).offset(slot as isize) };
+                let cmdheader = unsafe { &mut *(clb as *mut HbaCmdHeader).offset(slot as isize) };
 
-                cmdheader.cfl.write(((size_of::<FisRegH2D>()/size_of::<u32>()) as u8));
+                cmdheader.cfl.write(((size_of::<FisRegH2D>() / size_of::<u32>()) as u8));
                 cmdheader.cfl.writef(1 << 6, write);
 
                 cmdheader.prdtl.write(entries);
 
                 let ctba = cmdheader.ctba.read() as usize;
                 unsafe { ::memset(ctba as *mut u8, 0, size_of::<HbaCmdTable>()) };
-                let cmdtbl = unsafe { &mut * (ctba as *mut HbaCmdTable) };
+                let cmdtbl = unsafe { &mut *(ctba as *mut HbaCmdTable) };
 
                 let prdt_entry = &mut cmdtbl.prdt_entry[0];
                 prdt_entry.dba.write(buf as u64);
                 prdt_entry.dbc.write(((sectors * 512) as u32) | 1);
 
-                let cmdfis = unsafe { &mut * (cmdtbl.cfis.as_ptr() as *mut FisRegH2D) };
+                let cmdfis = unsafe { &mut *(cmdtbl.cfis.as_ptr() as *mut FisRegH2D) };
 
                 cmdfis.fis_type.write(FIS_TYPE_REG_H2D);
                 cmdfis.pm.write(1 << 7);
@@ -178,12 +183,12 @@ impl HbaPort {
                 cmdfis.countl.write(sectors as u8);
                 cmdfis.counth.write((sectors >> 8) as u8);
 
-                //debugln!("Busy Wait");
+                // debugln!("Busy Wait");
                 while self.tfd.readf((ATA_DEV_BUSY | ATA_DEV_DRQ) as u32) {}
 
                 self.ci.writef(1 << slot, true);
 
-                //debugln!("Completion Wait");
+                // debugln!("Completion Wait");
                 while self.ci.readf(1 << slot) {
                     if self.is.readf(HBA_PORT_IS_TFES) {
                         return Err(SysError::new(EIO));
@@ -208,27 +213,27 @@ impl HbaPort {
 
 #[repr(packed)]
 pub struct HbaMem {
-    pub cap: Mmio<u32>,         // 0x00, Host capability
-    pub ghc: Mmio<u32>,         // 0x04, Global host control
-    pub is: Mmio<u32>,          // 0x08, Interrupt status
-    pub pi: Mmio<u32>,          // 0x0C, Port implemented
-    pub vs: Mmio<u32>,          // 0x10, Version
-    pub ccc_ctl: Mmio<u32>,     // 0x14, Command completion coalescing control
-    pub ccc_pts: Mmio<u32>,     // 0x18, Command completion coalescing ports
-    pub em_loc: Mmio<u32>,      // 0x1C, Enclosure management location
-    pub em_ctl: Mmio<u32>,      // 0x20, Enclosure management control
-    pub cap2: Mmio<u32>,        // 0x24, Host capabilities extended
-    pub bohc: Mmio<u32>,        // 0x28, BIOS/OS handoff control and status
-    pub rsv: [Mmio<u8>; 116],   // 0x2C - 0x9F, Reserved
+    pub cap: Mmio<u32>, // 0x00, Host capability
+    pub ghc: Mmio<u32>, // 0x04, Global host control
+    pub is: Mmio<u32>, // 0x08, Interrupt status
+    pub pi: Mmio<u32>, // 0x0C, Port implemented
+    pub vs: Mmio<u32>, // 0x10, Version
+    pub ccc_ctl: Mmio<u32>, // 0x14, Command completion coalescing control
+    pub ccc_pts: Mmio<u32>, // 0x18, Command completion coalescing ports
+    pub em_loc: Mmio<u32>, // 0x1C, Enclosure management location
+    pub em_ctl: Mmio<u32>, // 0x20, Enclosure management control
+    pub cap2: Mmio<u32>, // 0x24, Host capabilities extended
+    pub bohc: Mmio<u32>, // 0x28, BIOS/OS handoff control and status
+    pub rsv: [Mmio<u8>; 116], // 0x2C - 0x9F, Reserved
     pub vendor: [Mmio<u8>; 96], // 0xA0 - 0xFF, Vendor specific registers
-    pub ports: [HbaPort; 32]    // 0x100 - 0x10FF, Port control registers
+    pub ports: [HbaPort; 32], // 0x100 - 0x10FF, Port control registers
 }
 
 #[repr(packed)]
 struct HbaPrdtEntry {
-   dba: Mmio<u64>,  // Data base address
-   rsv0: Mmio<u32>, // Reserved
-   dbc: Mmio<u32>,  // Byte count, 4M max, interrupt = 1
+    dba: Mmio<u64>, // Data base address
+    rsv0: Mmio<u32>, // Reserved
+    dbc: Mmio<u32>, // Byte count, 4M max, interrupt = 1
 }
 
 #[repr(packed)]
@@ -249,8 +254,8 @@ struct HbaCmdTable {
 #[repr(packed)]
 struct HbaCmdHeader {
     // DW0
-    cfl: Mmio<u8>, // Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1
-    pm: Mmio<u8>,  // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier
+    cfl: Mmio<u8>, /* Command FIS length in DWORDS, 2 ~ 16, atapi: 4, write - host to device: 2, prefetchable: 1 */
+    pm: Mmio<u8>, // Reset - 0x80, bist: 0x40, clear busy on ok: 0x20, port multiplier
 
     prdtl: Mmio<u16>, // Physical region descriptor table length in entries
 
