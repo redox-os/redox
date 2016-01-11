@@ -5,6 +5,9 @@ banner() {
 	echo "|------------------------------------------|"
 }
 
+# Fix failure on certain system
+export PATH=$PATH:/usr/local/sbin:/usr/sbin:/sbin
+
 osx()
 {
 	echo "Detected OSX!"
