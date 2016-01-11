@@ -35,11 +35,13 @@ pub unsafe fn args_destroy() {
 pub fn current_dir() -> Result<PathBuf> {
     // Return the current path
     match File::open("./") {
-        Ok(file) => match file.path() {
-            Ok(path) => Ok(path),
-            Err(err) => Err(err)
-        },
-        Err(err) => Err(err)
+        Ok(file) => {
+            match file.path() {
+                Ok(path) => Ok(path),
+                Err(err) => Err(err),
+            }
+        }
+        Err(err) => Err(err),
     }
 }
 
@@ -52,20 +54,22 @@ pub fn set_current_dir(path: &str) -> Result<()> {
     };
 
     match file_result {
-        Ok(file) => match file.path() {
-            Ok(path) => {
-                if let Some(path_str) = path.to_str() {
-                    let path_c = path_str.to_string() + "\0";
-                    match SysError::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
-                        Ok(_) => Ok(()),
-                        Err(err) => Err(err)
+        Ok(file) => {
+            match file.path() {
+                Ok(path) => {
+                    if let Some(path_str) = path.to_str() {
+                        let path_c = path_str.to_string() + "\0";
+                        match SysError::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
+                            Ok(_) => Ok(()),
+                            Err(err) => Err(err),
+                        }
+                    } else {
+                        Err(SysError::new(ENOENT))
                     }
-                } else {
-                    Err(SysError::new(ENOENT))
                 }
-            },
-            Err(err) => Err(err)
-        },
-        Err(err) => Err(err)
+                Err(err) => Err(err),
+            }
+        }
+        Err(err) => Err(err),
     }
 }

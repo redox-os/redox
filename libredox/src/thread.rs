@@ -1,10 +1,11 @@
 use alloc::boxed::Box;
 
-use syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, CLONE_VM, CLONE_FS, CLONE_FILES, TimeSpec};
+use syscall::{sys_clone, sys_exit, sys_yield, sys_nanosleep, CLONE_VM, CLONE_FS, CLONE_FILES,
+              TimeSpec};
 
 use time::Duration;
 
-//TODO: Mutex the result
+// TODO: Mutex the result
 pub struct JoinHandle<T> {
     result_ptr: *mut Option<T>,
 }
@@ -16,7 +17,7 @@ impl<T> JoinHandle<T> {
                 sys_yield();
             }
 
-            * Box::from_raw(self.result_ptr)
+            *Box::from_raw(self.result_ptr)
         }
     }
 }
@@ -30,12 +31,12 @@ pub fn sleep(duration: Duration) {
 
     let mut rem = TimeSpec {
         tv_sec: 0,
-        tv_nsec: 0
+        tv_nsec: 0,
     };
 
     unsafe { sys_nanosleep(&req, &mut rem) };
 
-    //Duration::new(rem.tv_sec, rem.tv_nsec)
+    // Duration::new(rem.tv_sec, rem.tv_nsec)
 }
 
 // Sleep for a number of milliseconds
@@ -45,8 +46,12 @@ pub fn sleep_ms(ms: u32) {
     sleep(Duration::new(secs, nanos))
 }
 
-//TODO: Catch panic
-pub fn spawn<F, T>(f: F) -> JoinHandle<T> where F: FnOnce() -> T, F: Send + 'static, T: Send + 'static {
+// TODO: Catch panic
+pub fn spawn<F, T>(f: F) -> JoinHandle<T>
+    where F: FnOnce() -> T,
+          F: Send + 'static,
+          T: Send + 'static
+{
     unsafe {
         let result_ptr: *mut Option<T> = Box::into_raw(box None);
 
@@ -55,8 +60,6 @@ pub fn spawn<F, T>(f: F) -> JoinHandle<T> where F: FnOnce() -> T, F: Send + 'sta
             sys_exit(0);
         }
 
-        JoinHandle {
-            result_ptr: result_ptr
-        }
+        JoinHandle { result_ptr: result_ptr }
     }
 }
