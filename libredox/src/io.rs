@@ -65,7 +65,7 @@ pub trait Write {
     fn write_fmt(&mut self, args: fmt::Arguments) -> Result<()> {
         match self.write(fmt::format(args).as_bytes()) {
             Ok(_) => Ok(()),
-            Err(err) => Err(err)
+            Err(err) => Err(err),
         }
     }
 

@@ -17,17 +17,17 @@ use self::test::Bencher;
 use iter::range_inclusive;
 
 #[bench]
-fn new_drop(b : &mut Bencher) {
+fn new_drop(b: &mut Bencher) {
     use super::map::HashMap;
 
     b.iter(|| {
-        let m : HashMap<i32, i32> = HashMap::new();
+        let m: HashMap<i32, i32> = HashMap::new();
         assert_eq!(m.len(), 0);
     })
 }
 
 #[bench]
-fn new_insert_drop(b : &mut Bencher) {
+fn new_insert_drop(b: &mut Bencher) {
     use super::map::HashMap;
 
     b.iter(|| {

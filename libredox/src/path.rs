@@ -2,14 +2,12 @@ use string::String;
 
 #[derive(Debug)]
 pub struct PathBuf {
-    pub inner: String
+    pub inner: String,
 }
 
 impl From<String> for PathBuf {
     fn from(inner: String) -> PathBuf {
-        PathBuf {
-            inner: inner
-        }
+        PathBuf { inner: inner }
     }
 }
 
