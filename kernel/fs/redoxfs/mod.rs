@@ -43,14 +43,15 @@ impl FileSystem {
                         let size = cmp::min(extent.length as usize, max_size);
 
                         if let Some(data) = Memory::<u8>::new(max_size) {
-                            let mut buffer = unsafe { slice::from_raw_parts_mut(data.ptr, max_size) };
+                            let mut buffer = unsafe {
+                                slice::from_raw_parts_mut(data.ptr, max_size)
+                            };
                             disk.read(extent.block, &mut buffer);
 
-                            for i in 0..size/512 {
-                                nodes.push(Node::new(
-                                    extent.block + i as u64,
-                                    unsafe { &*(data.ptr.offset(i as isize * 512) as *const NodeData) }
-                                ));
+                            for i in 0..size / 512 {
+                                nodes.push(Node::new(extent.block + i as u64, unsafe {
+                                    &*(data.ptr.offset(i as isize * 512) as *const NodeData)
+                                }));
                             }
                         }
                     }

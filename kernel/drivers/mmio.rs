@@ -3,10 +3,10 @@ use core::{u8, u16, u32, u64};
 
 #[repr(packed)]
 pub struct Mmio<T> {
-    value: T
+    value: T,
 }
 
-impl <T> Mmio <T> {
+impl<T> Mmio<T> {
     pub fn read(&self) -> T {
         unsafe { volatile_load(&self.value) }
     }
@@ -16,7 +16,7 @@ impl <T> Mmio <T> {
     }
 }
 
-impl Mmio <u8> {
+impl Mmio<u8> {
     pub fn readf(&self, flags: u8) -> bool {
         self.read() & flags == flags
     }
@@ -25,14 +25,14 @@ impl Mmio <u8> {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u8::MAX - flags);
             self.write(value);
         }
     }
 }
 
-impl Mmio <u16> {
+impl Mmio<u16> {
     pub fn readf(&self, flags: u16) -> bool {
         self.read() & flags == flags
     }
@@ -41,14 +41,14 @@ impl Mmio <u16> {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u16::MAX - flags);
             self.write(value);
         }
     }
 }
 
-impl Mmio <u32> {
+impl Mmio<u32> {
     pub fn readf(&self, flags: u32) -> bool {
         self.read() & flags == flags
     }
@@ -57,14 +57,14 @@ impl Mmio <u32> {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u32::MAX - flags);
             self.write(value);
         }
     }
 }
 
-impl Mmio <u64> {
+impl Mmio<u64> {
     pub fn readf(&self, flags: u64) -> bool {
         self.read() & flags == flags
     }
@@ -73,7 +73,7 @@ impl Mmio <u64> {
         if value {
             let value = self.read() | flags;
             self.write(value);
-        } else{
+        } else {
             let value = self.read() & (u64::MAX - flags);
             self.write(value);
         }
