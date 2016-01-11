@@ -4,7 +4,7 @@ use super::SDTHeader;
 #[derive(Clone, Copy, Debug)]
 pub struct DSDT {
     pub header: &'static SDTHeader,
-    pub data: &'static [u8]
+    pub data: &'static [u8],
 }
 
 impl DSDT {

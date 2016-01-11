@@ -188,8 +188,7 @@ impl KScheme for AC97 {
         }
     }
 
-    fn on_poll(&mut self) {
-    }
+    fn on_poll(&mut self) {}
 }
 
 impl AC97 {

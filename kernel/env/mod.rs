@@ -40,7 +40,7 @@ pub struct Environment {
     pub schemes: Vec<UnsafeCell<Box<KScheme>>>,
 
     /// Interrupt stats
-    pub interrupts: Intex<[u64; 256]>
+    pub interrupts: Intex<[u64; 256]>,
 }
 
 impl Environment {
@@ -55,7 +55,7 @@ impl Environment {
             events: Mutex::new(VecDeque::new()),
             schemes: Vec::new(),
 
-            interrupts: Intex::new([0; 256])
+            interrupts: Intex::new([0; 256]),
         }
     }
 

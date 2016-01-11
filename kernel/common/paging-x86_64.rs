@@ -1,6 +1,5 @@
 use core::ptr;
 
-//
 // PAGE_LEVEL_4:
 // 512 qwords pointing to page directory pointers
 // PAGE_DIR_PTRS:

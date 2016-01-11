@@ -111,7 +111,6 @@ impl Display {
     // Optimized {
     pub unsafe fn set_run(data: u32, dst: usize, len: usize) {
         let mut i = 0;
-        //
         // Only use 16 byte transfer if possible
         // if len - (dst + i) % 16 >= mem::size_of::<u32x4>() {
         // Align 16
@@ -136,7 +135,6 @@ impl Display {
 
     pub unsafe fn copy_run(src: usize, dst: usize, len: usize) {
         let mut i = 0;
-        //
         // Only use 16 byte transfer if possible
         // if (src + i) % 16 == (dst + i) % 16 {
         // Align 16
