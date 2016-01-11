@@ -38,7 +38,7 @@ impl BlockPtr {
     }
 }
 
-impl FromBytes for BlockPtr { }
+impl FromBytes for BlockPtr {}
 
 #[derive(Copy, Clone, Debug)]
 #[repr(packed)]
