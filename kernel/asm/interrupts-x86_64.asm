@@ -55,6 +55,7 @@ interrupts:
 
 	mov rdi, qword [0x100000]
 	mov rsi, rsp
+	
 		;Stack Align
 		mov rbp, rsp
 		and rsp, 0xFFFFFFFFFFFFFFF0
@@ -85,6 +86,7 @@ interrupts:
 	pop r14
 	pop r15
 	pop rbp
+
     iretq
 
 .handler: dq 0

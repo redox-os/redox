@@ -1,6 +1,6 @@
-ata0-master: type=disk, path="build/x86_64/harddrive.bin", mode=flat
+ata0-master: type=disk, path="build/x86_64-unknown-redox/debug/harddrive.bin", mode=flat
 boot: disk
-com1: enabled=1, mode=file, dev=build/x86_64/serial.log
+com1: enabled=1, mode=file, dev=build/x86_64-unknown-redox/debug/serial.log
 megs: 1024
 
 magic_break: enabled=1
