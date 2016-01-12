@@ -7,4 +7,4 @@ install:
   - git submodule update --init --recursive
 
 build_script:
-  - cmd: windows\make all
+  - cmd: make all
