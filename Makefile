@@ -67,10 +67,9 @@ ifeq ($(OS),Windows_NT)
 else
 	UNAME := $(shell uname)
 	ifeq ($(UNAME),Darwin)
-		AR=$(ARCH)-elf-ar
 		LD=$(ARCH)-elf-ld
 		OBJDUMP=$(ARCH)-elf-objdump
-		RUSTCFLAGS += -C ar=$(AR) -C linker=$(LD)
+		RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-cc
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 		VB_AUDIO="coreaudio"
 		VBM="/Applications/VirtualBox.app/Contents/MacOS/VBoxManage"
