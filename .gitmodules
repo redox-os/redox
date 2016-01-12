@@ -10,3 +10,6 @@
 [submodule "crates/orbtk"]
 	path = crates/orbtk
 	url = https://github.com/redox-os/orbtk
+[submodule "crates/coreutils"]
+	path = crates/coreutils
+	url = https://github.com/redox-os/coreutils.git
