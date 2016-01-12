@@ -2,10 +2,16 @@
 ARCH?=i386
 #ARCH?=x86_64
 
-BUILD=build/$(ARCH)
+BUILD=build/$(ARCH)-unknown-redox/debug
 
 QEMU?=qemu-system-$(ARCH)
 
+CARGO=CARGO_TARGET_DIR=build cargo rustc
+CARGOFLAGS=--target=$(ARCH)-unknown-redox.json -- \
+	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
+	-Z no-landing-pads \
+	-A dead_code -A deprecated \
+	-L $(BUILD)
 RUSTC=RUST_BACKTRACE=1 rustc
 RUSTCFLAGS=--target=$(ARCH)-unknown-redox.json \
 	-C no-prepopulate-passes -C no-stack-check -C opt-level=2 \
@@ -182,11 +188,8 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs crates/orbtk/src/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-name orbtk -o $@ $<
-
-$(BUILD)/osmium.rlib: crates/os/lib.rs crates/os/*.rs $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+$(BUILD)/liborbtk.rlib: FORCE
+	$(CARGO) --manifest-path crates/orbtk/Cargo.toml --lib $(CARGOFLAGS)
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ $<
@@ -211,17 +214,23 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-filesystem/apps/shell/main.bin: crates/ion/src/main.rs crates/ion/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
+$(BUILD)/ion-shell.bin: FORCE
+	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
-filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
-	$(RUSTC) $(RUSTCFLAGS) --crate-type bin --cfg "feature = \"orbital\"" -o $@ $<
+$(BUILD)/sodium.bin: FORCE
+	$(CARGO) --manifest-path filesystem/apps/sodium/Cargo.toml --bin sodium --features orbital $(CARGOFLAGS)
+
+filesystem/apps/shell/main.bin: $(BUILD)/ion-shell.bin
+	cp $< $@
+
+filesystem/apps/sodium/main.bin: $(BUILD)/sodium.bin
+	cp $< $@
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
-	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
+	$(SED) "s|SCHEME_PATH|../../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $(BUILD)/schemes_$*.rlib $(BUILD)/schemes_$*.gen
 	$(LD) $(LDARGS) -o $@ -T kernel/scheme.ld $(BUILD)/schemes_$*.rlib
 
