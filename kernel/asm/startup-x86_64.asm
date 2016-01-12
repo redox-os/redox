@@ -71,6 +71,7 @@ startup:
 
 long_mode:
     use64
+
     ; load all the other segments with 32 bit data segments
     mov rax, 0x10
     mov ds, rax
@@ -78,18 +79,10 @@ long_mode:
     mov fs, rax
     mov gs, rax
     mov ss, rax
-    ; set up stack
+
     mov rsp, 0x200000 - 128
 
-    mov rax, gdt.tss
-    ltr ax
-
-    ;rust init
-    xor rax, rax
-    mov [0x100000], rax
-    mov eax, [kernel_file + 0x18]
-    mov [interrupts.handler], rax
-
+    ;move kernel image
     mov rdi, kernel_file
     mov rsi, rdi
     add rsi, 0xB000
@@ -102,9 +95,16 @@ long_mode:
     xor rax, rax
     std
     rep stosb
-
     cld
 
+    mov rax, gdt.tss
+    ltr ax
+
+    ;rust init
+    xor rax, rax
+    mov [0x100000], rax
+    mov eax, [kernel_file + 0x18]
+    mov [interrupts.handler], rax
     mov rax, kernel_file.font
     mov rbx, tss
     int 255
