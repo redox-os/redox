@@ -182,7 +182,7 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/orbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs crates/orbtk/src/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
+$(BUILD)/liborbtk.rlib: crates/orbtk/src/lib.rs crates/orbtk/src/*.rs crates/orbtk/src/*/*.rs $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbtk -o $@ $<
 
 $(BUILD)/osmium.rlib: crates/os/lib.rs crates/os/*.rs $(BUILD)/libstd.rlib
