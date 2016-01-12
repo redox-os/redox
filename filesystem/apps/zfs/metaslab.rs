@@ -88,8 +88,7 @@ impl MetaslabGroup {
                                // metaslab_load_pct
                                4,
                                10,
-                               // std::u64::MAX
-                               -1u64,
+                               -1i64 as u64,
                                // TASKQ_THREADS_CPU_PCT | TASKQ_DYNAMIC
                                0);
 
@@ -423,7 +422,7 @@ pub fn ff_alloc(ms: &mut Metaslab, size: u64) -> u64 {
     // alignment from the same area of the metaslab (i.e. same cursor
     // bucket) but it does not guarantee that other allocations sizes
     // may exist in the same region.
-    let align = size & -size;
+    let align = size & -(size as i64) as u64;
     let ref mut cursor = ms.lbas[(util::highbit64(align) - 1) as usize];
     let ref mut tree = ms.tree;
 

@@ -18,8 +18,7 @@ macro_rules! readln {
     });
 }
 
-#[no_mangle]
-pub fn main() {
+fn main() {
     println!("Type help for a command list");
     loop {
         print!("# ");
