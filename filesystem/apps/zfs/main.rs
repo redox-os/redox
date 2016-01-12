@@ -1,5 +1,3 @@
-#![feature(negate_unsigned)]
-
 // To use this, please install zfs-fuse
 use std::{mem, str};
 use std::to_num::ToNum;
