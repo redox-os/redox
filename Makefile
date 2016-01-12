@@ -204,6 +204,7 @@ $(BUILD)/kernel.ir: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib 
 	$(RUSTC) $(RUSTCFLAGS) -C lto -o $@ --emit llvm-ir $<
 
 $(BUILD)/crt0.o: kernel/program-$(ARCH).asm
+	$(MKDIR) -p $(BUILD)
 ifeq ($(ARCH),x86_64)
 	$(AS) -f elf64 -o $@ $<
 else
@@ -211,15 +212,14 @@ else
 endif
 
 filesystem/apps/shell/main.bin: crates/ion/src/main.rs crates/ion/src/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib
-	$(RUSTC) $(RUSTCFLAGS) -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
-	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/apps/sodium/main.bin: filesystem/apps/sodium/src/main.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(RUSTC) $(RUSTCFLAGS) --cfg "feature = \"orbital\"" -C lto --crate-type staticlib -o $(BUILD)/apps_$*.rlib $<
 	$(LD) $(LDARGS) -o $@ $(BUILD)/crt0.o $(BUILD)/apps_$*.rlib
 
 filesystem/apps/%/main.bin: filesystem/apps/%/main.rs filesystem/apps/%/*.rs $(BUILD)/crt0.o $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
-	$(RUSTC) -v -Z verbose -Z print-link-args --sysroot $(BUILD) $(RUSTCFLAGS) -C lto --crate-type bin -o $@ $<
+	$(RUSTC) $(RUSTCFLAGS) --crate-type bin -o $@ $<
 
 filesystem/schemes/%/main.bin: filesystem/schemes/%/main.rs filesystem/schemes/%/*.rs kernel/scheme.rs kernel/scheme.ld $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib $(BUILD)/liborbtk.rlib
 	$(SED) "s|SCHEME_PATH|../../$<|" kernel/scheme.rs > $(BUILD)/schemes_$*.gen
