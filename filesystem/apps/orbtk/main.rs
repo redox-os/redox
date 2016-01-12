@@ -1,6 +1,5 @@
 extern crate orbtk;
 
-#[no_mangle]
-pub fn main() {
+fn main() {
     orbtk::example();
 }

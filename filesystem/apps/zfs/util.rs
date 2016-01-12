@@ -1,7 +1,7 @@
 
 // Compatibility macros/typedefs needed for Solaris -> Linux port
 pub fn p2_align(x: u64, align: u64) -> u64 {
-    x & -align
+    x & -(align as i64) as u64
 }
 
 fn p2_cross(x: u64, y: u64, align: u64) -> bool {
@@ -21,11 +21,11 @@ fn p2_phase(x: u64, align: u64) -> u64 {
 }
 
 fn p2_nphase(x: u64, align: u64) -> u64 {
-    -x & (align - 1)
+    -(x as i64) as u64 & (align - 1)
 }
 
 fn p2_nphase_typed(x: u64, align: u64) -> u64 {
-    -x & (align - 1)
+    -(x as i64) as u64 & (align - 1)
 }
 
 fn is_p2(x: u64) -> bool {

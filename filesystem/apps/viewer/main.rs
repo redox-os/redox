@@ -6,8 +6,7 @@ use std::*;
 
 use orbital::*;
 
-#[no_mangle]
-pub fn main() {
+fn main() {
     let url = match env::args().nth(1) {
         Some(arg) => arg.clone(),
         None => "none:",
