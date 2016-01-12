@@ -29,8 +29,7 @@ pub fn pipe() -> [usize; 2] {
     fds
 }
 
-#[no_mangle]
-pub fn main() {
+fn main() {
     let to_shell_fds = pipe();
     let from_shell_fds = pipe();
 

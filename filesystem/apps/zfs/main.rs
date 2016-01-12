@@ -411,8 +411,7 @@ impl Zfs {
 }
 
 // TODO: Find a way to remove all the to_string's
-#[no_mangle]
-pub fn main() {
+fn main() {
     println!("Type open zfs.img to open the image file");
 
     let mut zfs_option: Option<Zfs> = None;
