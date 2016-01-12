@@ -73,7 +73,7 @@ impl ConsoleWindow {
 
     /// Read input
     pub fn read(&mut self) -> Option<String> {
-        if let Some(event) = self.poll() {
+        while let Some(event) = self.poll() {
             match event.to_option() {
                 EventOption::Key(key_event) => {
                     if key_event.pressed {
@@ -153,11 +153,9 @@ impl ConsoleWindow {
                 EventOption::Quit(_quit_event) => return None,
                 _ => (),
             }
-        } else {
-            return None;
         }
 
-        Some(String::new())
+        None
     }
 
     /// Redraw the window

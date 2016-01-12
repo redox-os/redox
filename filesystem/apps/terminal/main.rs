@@ -87,7 +87,8 @@ fn main() {
     {
         let mut to_shell = unsafe { File::from_fd(to_shell_fds[1]).unwrap() };
         let window_ptr = (window.deref() as *const Box<ConsoleWindow>) as *mut Box<ConsoleWindow>;
-        while let Some(string) = unsafe { &mut *window_ptr }.read() {
+        while let Some(mut string) = unsafe { &mut *window_ptr }.read() {
+            string.push('\n');
             if let Ok(_) = to_shell.write(&string.into_bytes()) {
 
             } else {
