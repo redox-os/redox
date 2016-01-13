@@ -105,117 +105,129 @@ impl Resource {
 
 /// A window scheme
 pub struct Scheme {
-    pub session: Box<Session>,
+    pub session: Option<Box<Session>>,
     pub next_x: isize,
     pub next_y: isize,
 }
 
 impl Scheme {
     pub fn new() -> Box<Scheme> {
-        println!("- Starting Orbital");
-        println!("    Console: Press F1");
-        println!("    Desktop: Press F2");
         let mut ret = box Scheme {
-            session: Session::new(),
+            session: None,
             next_x: 0,
             next_y: 0,
         };
-        unsafe { session_ptr = ret.session.deref_mut() };
+        if let Some(mut session) = Session::new() {
+            println!("- Orbital: Found Display {}x{}", session.display.width, session.display.height);
+            println!("    Console: Press F1");
+            println!("    Desktop: Press F2");
+
+            unsafe { session_ptr = session.deref_mut() };
+            ret.session = Some(session);
+        } else {
+            println!("- Orbital: No Display Found");
+        }
         ret
     }
 
     pub fn open(&mut self, url_str: &str, _: usize) -> Result<Box<Resource>> {
-        // window://host/path/path/path is the path type we're working with.
-        let url = Url::from_str(url_str);
+        if let Some(ref session) = self.session {
+            // window://host/path/path/path is the path type we're working with.
+            let url = Url::from_str(url_str);
 
-        let host = url.host();
-        if host.is_empty() {
-            let path = url.path_parts();
-            let mut pointx = match path.get(0) {
-                Some(x) => x.to_num_signed(),
-                None => 0,
-            };
-            let mut pointy = match path.get(1) {
-                Some(y) => y.to_num_signed(),
-                None => 0,
-            };
-            let size_width = match path.get(2) {
-                Some(w) => w.to_num(),
-                None => 100,
-            };
-            let size_height = match path.get(3) {
-                Some(h) => h.to_num(),
-                None => 100,
-            };
+            let host = url.host();
+            if host.is_empty() {
+                let path = url.path_parts();
+                let mut pointx = match path.get(0) {
+                    Some(x) => x.to_num_signed(),
+                    None => 0,
+                };
+                let mut pointy = match path.get(1) {
+                    Some(y) => y.to_num_signed(),
+                    None => 0,
+                };
+                let size_width = match path.get(2) {
+                    Some(w) => w.to_num(),
+                    None => 100,
+                };
+                let size_height = match path.get(3) {
+                    Some(h) => h.to_num(),
+                    None => 100,
+                };
 
-            let mut title = match path.get(4) {
-                Some(t) => t.clone(),
-                None => String::new(),
-            };
-            for i in 5..path.len() {
-                if let Some(t) = path.get(i) {
-                    title = title + "/" + t;
+                let mut title = match path.get(4) {
+                    Some(t) => t.clone(),
+                    None => String::new(),
+                };
+                for i in 5..path.len() {
+                    if let Some(t) = path.get(i) {
+                        title = title + "/" + t;
+                    }
                 }
-            }
 
-            if pointx <= 0 || pointy <= 0 {
-                if self.next_x > self.session.display.width as isize - size_width as isize {
-                    self.next_x = 0;
+                if pointx <= 0 || pointy <= 0 {
+                    if self.next_x > session.display.width as isize - size_width as isize {
+                        self.next_x = 0;
+                    }
+                    self.next_x += 32;
+                    pointx = self.next_x as i32;
+
+                    if self.next_y > session.display.height as isize - size_height as isize {
+                        self.next_y = 0;
+                    }
+                    self.next_y += 32;
+                    pointy = self.next_y as i32;
                 }
-                self.next_x += 32;
-                pointx = self.next_x as i32;
 
-                if self.next_y > self.session.display.height as isize - size_height as isize {
-                    self.next_y = 0;
-                }
-                self.next_y += 32;
-                pointy = self.next_y as i32;
-            }
+                Ok(box Resource {
+                    window: Window::new(Point::new(pointx, pointy),
+                                        Size::new(size_width, size_height),
+                                        title),
+                    seek: 0,
+                })
+            } else if host == "launch" {
+                let path = url.path();
 
-            Ok(box Resource {
-                window: Window::new(Point::new(pointx, pointy),
-                                    Size::new(size_width, size_height),
-                                    title),
-                seek: 0,
-            })
-        } else if host == "launch" {
-            let path = url.path();
-
-            if path.ends_with(".bin") {
-                if Command::new(&path).spawn_scheme().is_none() {
-                    println!("{}: Failed to launch", path);
-                }
-            } else {
-                for package in self.session.packages.iter() {
-                    let mut accepted = false;
-                    for accept in package.accepts.iter() {
-                        if (accept.starts_with('*') &&
-                            path.ends_with(&accept.get_slice(Some(1), None))) ||
-                           (accept.ends_with('*') &&
-                            path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
-                            accepted = true;
+                if path.ends_with(".bin") {
+                    if Command::new(&path).spawn_scheme().is_none() {
+                        println!("{}: Failed to launch", path);
+                    }
+                } else {
+                    for package in session.packages.iter() {
+                        let mut accepted = false;
+                        for accept in package.accepts.iter() {
+                            if (accept.starts_with('*') &&
+                                path.ends_with(&accept.get_slice(Some(1), None))) ||
+                               (accept.ends_with('*') &&
+                                path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
+                                accepted = true;
+                                break;
+                            }
+                        }
+                        if accepted {
+                            if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
+                                println!("{}: Failed to launch", package.binary);
+                            }
                             break;
                         }
                     }
-                    if accepted {
-                        if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                            println!("{}: Failed to launch", package.binary);
-                        }
-                        break;
-                    }
                 }
-            }
 
-            Err(SysError::new(ENOENT))
-        } else {
+                Err(SysError::new(ENOENT))
+            } else {
+                Err(SysError::new(ENOENT))
+            }
+        }else{
             Err(SysError::new(ENOENT))
         }
     }
 
     pub fn event(&mut self, event: &Event) {
-        self.session.event(event);
+        if let Some(ref mut session) = self.session {
+            session.event(event);
 
-        unsafe { self.session.redraw() };
+            unsafe { session.redraw() };
+        }
     }
 }
 

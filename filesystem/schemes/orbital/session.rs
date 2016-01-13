@@ -37,67 +37,71 @@ pub struct Session {
 
 impl Session {
     /// Create new session
-    pub fn new() -> Box<Self> {
-        let mut ret = box Session {
-            display: unsafe { Display::root() },
-            font: Vec::new(),
-            cursor: BmpFile::default(),
-            shutdown: BmpFile::default(),
-            background: BmpFile::default(),
-            last_mouse_event: MouseEvent {
-                x: 0,
-                y: 0,
-                left_button: false,
-                middle_button: false,
-                right_button: false,
-            },
-            packages: Vec::new(),
-            windows: Vec::new(),
-            windows_ordered: Vec::new(),
-            redraw: true,
-        };
+    pub fn new() -> Option<Box<Self>> {
+        if let Some(display) = unsafe { Display::root() } {
+            let mut ret = box Session {
+                display: display,
+                font: Vec::new(),
+                cursor: BmpFile::default(),
+                shutdown: BmpFile::default(),
+                background: BmpFile::default(),
+                last_mouse_event: MouseEvent {
+                    x: 0,
+                    y: 0,
+                    left_button: false,
+                    middle_button: false,
+                    right_button: false,
+                },
+                packages: Vec::new(),
+                windows: Vec::new(),
+                windows_ordered: Vec::new(),
+                redraw: true,
+            };
 
-        match File::open("file:/ui/unifont.font") {
-            Ok(mut file) => {
-                let mut vec = Vec::new();
-                file.read_to_end(&mut vec);
-                ret.font = vec;
+            match File::open("file:/ui/unifont.font") {
+                Ok(mut file) => {
+                    let mut vec = Vec::new();
+                    file.read_to_end(&mut vec);
+                    ret.font = vec;
+                }
+                Err(err) => println!("Failed to open font: {}", err),
             }
-            Err(err) => println!("Failed to open font: {}", err),
-        }
 
-        ret.cursor = BmpFile::from_path("file:/ui/cursor.bmp");
-        if !ret.cursor.has_data() {
-            println!("Failed to read cursor");
-        }
+            ret.cursor = BmpFile::from_path("file:/ui/cursor.bmp");
+            if !ret.cursor.has_data() {
+                println!("Failed to read cursor");
+            }
 
-        ret.shutdown = BmpFile::from_path("file:/ui/actions/system-shutdown.bmp");
-        if !ret.shutdown.has_data() {
-            println!("Failed to read shutdown icon");
-        }
+            ret.shutdown = BmpFile::from_path("file:/ui/actions/system-shutdown.bmp");
+            if !ret.shutdown.has_data() {
+                println!("Failed to read shutdown icon");
+            }
 
-        ret.background = BmpFile::from_path("file:/ui/background.bmp");
-        if !ret.background.has_data() {
-            println!("Failed to read background");
-        }
+            ret.background = BmpFile::from_path("file:/ui/background.bmp");
+            if !ret.background.has_data() {
+                println!("Failed to read background");
+            }
 
-        match File::open("file:/apps/") {
-            Ok(mut file) => {
-                let mut string = String::new();
-                file.read_to_string(&mut string);
+            match File::open("file:/apps/") {
+                Ok(mut file) => {
+                    let mut string = String::new();
+                    file.read_to_string(&mut string);
 
-                for folder in string.lines() {
-                    if folder.ends_with('/') {
-                        ret.packages
-                           .push(Package::from_url(&Url::from_string("file:/apps/".to_string() +
-                                                                     &folder)));
+                    for folder in string.lines() {
+                        if folder.ends_with('/') {
+                            ret.packages
+                               .push(Package::from_url(&Url::from_string("file:/apps/".to_string() +
+                                                                         &folder)));
+                        }
                     }
                 }
+                Err(err) => println!("Failed to open apps: {}", err),
             }
-            Err(err) => println!("Failed to open apps: {}", err),
-        }
 
-        ret
+            Some(ret)
+        } else {
+            None
+        }
     }
 
     pub unsafe fn add_window(&mut self, add_window_ptr: *mut Window) {
