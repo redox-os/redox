@@ -75,6 +75,7 @@ else
 	ifeq ($(UNAME),Darwin)
 		LD=$(ARCH)-elf-ld
 		OBJDUMP=$(ARCH)-elf-objdump
+		CARGOFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
 		RUSTCFLAGS += -C ar=$(ARCH)-elf-ar -C linker=$(ARCH)-elf-gcc
 		VB="/Applications/VirtualBox.app/Contents/MacOS/VirtualBox"
 		VB_AUDIO="coreaudio"
