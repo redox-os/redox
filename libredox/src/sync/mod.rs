@@ -5,3 +5,4 @@ pub use self::rwlock::{RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 mod mutex;
 mod rwlock;
+mod mpsc;
