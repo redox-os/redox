@@ -17,7 +17,6 @@ use self::session::Session;
 use self::window::Window;
 
 pub mod display;
-pub mod package;
 pub mod session;
 pub mod window;
 
@@ -185,35 +184,6 @@ impl Scheme {
                                         title),
                     seek: 0,
                 })
-            } else if host == "launch" {
-                let path = url.path();
-
-                if path.ends_with(".bin") {
-                    if Command::new(&path).spawn_scheme().is_none() {
-                        println!("{}: Failed to launch", path);
-                    }
-                } else {
-                    for package in session.packages.iter() {
-                        let mut accepted = false;
-                        for accept in package.accepts.iter() {
-                            if (accept.starts_with('*') &&
-                                path.ends_with(&accept.get_slice(Some(1), None))) ||
-                               (accept.ends_with('*') &&
-                                path.starts_with(&accept.get_slice(None, Some(accept.len() - 1)))) {
-                                accepted = true;
-                                break;
-                            }
-                        }
-                        if accepted {
-                            if Command::new(&package.binary).arg(&path).spawn_scheme().is_none() {
-                                println!("{}: Failed to launch", package.binary);
-                            }
-                            break;
-                        }
-                    }
-                }
-
-                Err(SysError::new(ENOENT))
             } else {
                 Err(SysError::new(ENOENT))
             }
