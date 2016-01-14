@@ -8,7 +8,6 @@ use std::process::Command;
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
 use super::display::Display;
-use super::package::*;
 use super::window::Window;
 
 /// A session
@@ -19,14 +18,10 @@ pub struct Session {
     pub font: Vec<u8>,
     /// The cursor icon
     pub cursor: BmpFile,
-    /// The shutdown icon
-    pub shutdown: BmpFile,
     /// The background image
     pub background: BmpFile,
     /// The last mouse event
     pub last_mouse_event: MouseEvent,
-    /// The packages (applications)
-    pub packages: Vec<Box<Package>>,
     /// Open windows
     pub windows: Vec<*mut Window>,
     /// Ordered windows
@@ -43,7 +38,6 @@ impl Session {
                 display: display,
                 font: Vec::new(),
                 cursor: BmpFile::default(),
-                shutdown: BmpFile::default(),
                 background: BmpFile::default(),
                 last_mouse_event: MouseEvent {
                     x: 0,
@@ -52,7 +46,6 @@ impl Session {
                     middle_button: false,
                     right_button: false,
                 },
-                packages: Vec::new(),
                 windows: Vec::new(),
                 windows_ordered: Vec::new(),
                 redraw: true,
@@ -72,30 +65,9 @@ impl Session {
                 println!("Failed to read cursor");
             }
 
-            ret.shutdown = BmpFile::from_path("file:/ui/actions/system-shutdown.bmp");
-            if !ret.shutdown.has_data() {
-                println!("Failed to read shutdown icon");
-            }
-
             ret.background = BmpFile::from_path("file:/ui/background.bmp");
             if !ret.background.has_data() {
                 println!("Failed to read background");
-            }
-
-            match File::open("file:/apps/") {
-                Ok(mut file) => {
-                    let mut string = String::new();
-                    file.read_to_string(&mut string);
-
-                    for folder in string.lines() {
-                        if folder.ends_with('/') {
-                            ret.packages
-                               .push(Package::from_url(&Url::from_string("file:/apps/".to_string() +
-                                                                         &folder)));
-                        }
-                    }
-                }
-                Err(err) => println!("Failed to open apps: {}", err),
             }
 
             Some(ret)
@@ -171,16 +143,6 @@ impl Session {
         if mouse_event.y >= self.display.height as i32 - 32 {
             if !mouse_event.left_button && self.last_mouse_event.left_button {
                 let mut x = 0;
-                for package in self.packages.iter() {
-                    if !(&package.icon).is_empty() {
-                        if mouse_event.x >= x && mouse_event.x < x + package.icon.width() as i32 {
-                            if Command::new(&package.binary).spawn_scheme().is_none() {
-                                println!("{}: Failed to launch", package.binary);
-                            }
-                        }
-                        x = x + package.icon.width() as i32;
-                    }
-                }
 
                 let mut chars = 32;
                 while chars > 4 &&
@@ -213,16 +175,6 @@ impl Session {
                         break;
                     }
                     x += w as i32;
-                }
-
-
-                if self.shutdown.has_data() {
-                    x = self.display.width as i32 - self.shutdown.width() as i32;
-                    let y = self.display.height as isize - self.shutdown.height() as isize;
-                    if mouse_event.y >= y as i32 && mouse_event.x >= x &&
-                       mouse_event.x < x + self.shutdown.width() as i32 {
-                           File::create("acpi:off");
-                    }
                 }
             }
         } else {
@@ -288,38 +240,6 @@ impl Session {
                               Color::rgba(0, 0, 0, 128));
 
             let mut x = 0;
-            for package in self.packages.iter() {
-                if !(&package.icon).is_empty() {
-                    let y = self.display.height as isize - package.icon.height() as isize;
-                    if mouse_point.y >= y as i32 && mouse_point.x >= x &&
-                       mouse_point.x < x + package.icon.width() as i32 {
-                        self.display.rect(Point::new(x as i32, y as i32),
-                                          Size::new(package.icon.width() as u32,
-                                                    package.icon.height() as u32),
-                                          Color::rgba(128, 128, 128, 128));
-
-                        self.display.rect(Point::new(x as i32, y as i32 - 16),
-                                          Size::new(package.name.len() as u32 * 8, 16),
-                                          Color::rgba(0, 0, 0, 128));
-
-                        let mut c_x = x;
-                        for c in package.name.chars() {
-                            self.display
-                                .char(Point::new(c_x as i32, y as i32 - 16),
-                                      c,
-                                      Color::rgb(255, 255, 255),
-                                      self.font.as_ptr() as usize);
-                            c_x += 8;
-                        }
-                    }
-
-                    self.display.image_alpha(Point::new(x as i32, y as i32),
-                                             (&package.icon).as_ptr(),
-                                             Size::new(package.icon.width() as u32,
-                                                       package.icon.height() as u32));
-                    x = x + package.icon.width() as i32;
-                }
-            }
 
             let mut chars = 32;
             while chars > 4 &&
@@ -355,23 +275,6 @@ impl Session {
                     i += 1;
                 }
                 x += 8;
-            }
-
-            if self.shutdown.has_data() {
-                x = self.display.width as i32 - self.shutdown.width() as i32;
-                let y = self.display.height as isize - self.shutdown.height() as isize;
-                if mouse_point.y >= y as i32 && mouse_point.x >= x &&
-                   mouse_point.x < x + self.shutdown.width() as i32 {
-                    self.display.rect(Point::new(x as i32, y as i32),
-                                      Size::new(self.shutdown.width() as u32, self.shutdown.height() as u32),
-                                      Color::rgba(128, 128, 128, 128));
-                }
-
-                self.display.image_alpha(Point::new(x as i32, y as i32),
-                                         (&self.shutdown).as_ptr(),
-                                         Size::new(self.shutdown.width() as u32,
-                                                   self.shutdown.height() as u32));
-                x = x + self.shutdown.width() as i32;
             }
 
             if self.cursor.has_data() {

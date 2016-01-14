@@ -140,6 +140,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 
 apps: filesystem/apps/editor/main.bin \
 	  filesystem/apps/file_manager/main.bin \
+	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/login/main.bin \
 	  filesystem/apps/orbtk/main.bin \
 	  filesystem/apps/player/main.bin \

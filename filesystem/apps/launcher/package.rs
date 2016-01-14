@@ -1,5 +1,4 @@
 use std::get_slice::GetSlice;
-use std::url::Url;
 use std::fs::File;
 use std::io::Read;
 
@@ -8,7 +7,7 @@ use orbital::BmpFile;
 /// A package (_REDOX content serialized)
 pub struct Package {
     /// The URL
-    pub url: Url,
+    pub url: String,
     /// The ID of the package
     pub id: String,
     /// The name of the package
@@ -27,9 +26,9 @@ pub struct Package {
 
 impl Package {
     /// Create package from URL
-    pub fn from_url(url: &Url) -> Box<Self> {
-        let mut package = box Package {
-            url: url.clone(),
+    pub fn from_path(url: &str) -> Box<Self> {
+        let mut package = Box::new(Package {
+            url: url.to_string(),
             id: String::new(),
             name: String::new(),
             binary: url.to_string() + "main.bin",
@@ -37,9 +36,9 @@ impl Package {
             accepts: Vec::new(),
             authors: Vec::new(),
             descriptions: Vec::new(),
-        };
+        });
 
-        for part in url.to_string().rsplit('/') {
+        for part in url.rsplit('/') {
             if !part.is_empty() {
                 package.id = part.to_string();
                 break;

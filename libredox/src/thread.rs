@@ -63,3 +63,7 @@ pub fn spawn<F, T>(f: F) -> JoinHandle<T>
         JoinHandle { result_ptr: result_ptr }
     }
 }
+
+pub fn yield_now() {
+    unsafe { sys_yield() };
+}
