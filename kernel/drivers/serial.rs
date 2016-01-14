@@ -26,16 +26,14 @@ pub struct Serial {
 impl Serial {
     /// Create new
     pub fn new(port: u16, irq: u8) -> Box<Self> {
-        unsafe {
-            Pio::<u8>::new(port + 1).write(0x00);
-            Pio::<u8>::new(port + 3).write(0x80);
-            Pio::<u8>::new(port + 0).write(0x03);
-            Pio::<u8>::new(port + 1).write(0x00);
-            Pio::<u8>::new(port + 3).write(0x03);
-            Pio::<u8>::new(port + 2).write(0xC7);
-            Pio::<u8>::new(port + 4).write(0x0B);
-            Pio::<u8>::new(port + 1).write(0x01);
-        }
+        Pio::<u8>::new(port + 1).write(0x00);
+        Pio::<u8>::new(port + 3).write(0x80);
+        Pio::<u8>::new(port + 0).write(0x03);
+        Pio::<u8>::new(port + 1).write(0x00);
+        Pio::<u8>::new(port + 3).write(0x03);
+        Pio::<u8>::new(port + 2).write(0xC7);
+        Pio::<u8>::new(port + 4).write(0x0B);
+        Pio::<u8>::new(port + 1).write(0x01);
 
         box Serial {
             data: Pio::<u8>::new(port),
@@ -50,11 +48,11 @@ impl Serial {
 impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while unsafe { self.status.read() } & 1 == 0 {
+            while self.status.read() & 1 == 0 {
                 break;
             }
 
-            let mut c = unsafe { self.data.read() } as char;
+            let mut c = self.data.read() as char;
             let mut sc = 0;
 
             if self.escape {

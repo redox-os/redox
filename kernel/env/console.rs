@@ -179,17 +179,15 @@ impl Console {
                 self.character(c);
             }
 
-            unsafe {
+            while !serial_status.readf(0x20) {}
+            serial_data.write(*byte);
+
+            if *byte == 8 {
                 while !serial_status.readf(0x20) {}
-                serial_data.write(*byte);
+                serial_data.write(0x20);
 
-                if *byte == 8 {
-                    while !serial_status.readf(0x20) {}
-                    serial_data.write(0x20);
-
-                    while !serial_status.readf(0x20) {}
-                    serial_data.write(8);
-                }
+                while !serial_status.readf(0x20) {}
+                serial_data.write(8);
             }
         }
         // If contexts disabled, probably booting up
