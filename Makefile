@@ -190,7 +190,7 @@ $(BUILD)/libstd.rlib: libredox/src/lib.rs libredox/src/*.rs libredox/src/*/*.rs 
 $(BUILD)/liborbital.rlib: liborbital/lib.rs liborbital/*.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) --crate-name orbital -o $@ $<
 
-$(BUILD)/liborbtk.rlib: FORCE
+$(BUILD)/liborbtk.rlib: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(CARGO) --manifest-path crates/orbtk/Cargo.toml --lib $(CARGOFLAGS)
 
 $(BUILD)/kernel.rlib: kernel/main.rs kernel/*.rs kernel/*/*.rs kernel/*/*/*.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
@@ -216,10 +216,10 @@ else
 	$(AS) -f elf -o $@ $<
 endif
 
-$(BUILD)/ion-shell.bin: FORCE
+$(BUILD)/ion-shell.bin: FORCE $(BUILD)/libstd.rlib
 	$(CARGO) --manifest-path crates/ion/Cargo.toml --bin ion-shell $(CARGOFLAGS)
 
-$(BUILD)/sodium.bin: FORCE
+$(BUILD)/sodium.bin: FORCE $(BUILD)/libstd.rlib $(BUILD)/liborbital.rlib
 	$(CARGO) --manifest-path filesystem/apps/sodium/Cargo.toml --bin sodium --features orbital $(CARGOFLAGS)
 
 filesystem/apps/shell/main.bin: $(BUILD)/ion-shell.bin
