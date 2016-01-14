@@ -6,8 +6,8 @@ pub struct PciConfig {
     bus: u8,
     slot: u8,
     func: u8,
-    addr: Pio32,
-    data: Pio32,
+    addr: Pio<u32>,
+    data: Pio<u32>,
 }
 
 impl PciConfig {
@@ -17,8 +17,8 @@ impl PciConfig {
             bus: bus,
             slot: slot,
             func: func,
-            addr: Pio32::new(0xCF8),
-            data: Pio32::new(0xCFC),
+            addr: Pio::<u32>::new(0xCF8),
+            data: Pio::<u32>::new(0xCFC),
         }
     }
 

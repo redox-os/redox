@@ -222,7 +222,7 @@ impl Hci for Uhci {
                 (&*queue_head as *const Qh) as u32 | 2
             };
 
-            let frnum = Pio16::new(self.base as u16 + 6);
+            let frnum = Pio::<u16>::new(self.base as u16 + 6);
             let frame = (unsafe { frnum.read() } + 1) & 0x3FF;
             unsafe { self.frame_list.write(frame as usize, frame_ptr) };
 

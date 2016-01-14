@@ -57,8 +57,8 @@ pub fn do_sys_debug(ptr: *const u8, len: usize) {
     if unsafe { ::ENV_PTR.is_some() } {
         ::env().console.lock().write(bytes);
     } else {
-        let serial_status = Pio8::new(0x3F8 + 5);
-        let mut serial_data = Pio8::new(0x3F8);
+        let serial_status = Pio::<u8>::new(0x3F8 + 5);
+        let mut serial_data = Pio::<u8>::new(0x3F8);
 
         for byte in bytes.iter() {
             while unsafe { serial_status.read() } & 0x20 == 0 {}

@@ -53,13 +53,13 @@ struct Prd {
 }
 
 struct Prdt {
-    reg: Pio32,
+    reg: Pio<u32>,
     mem: Memory<Prd>,
 }
 
 impl Prdt {
     fn new(port: u16) -> Self {
-        let mut reg = Pio32::new(port);
+        let mut reg = Pio::<u32>::new(port);
         unsafe { reg.write(0) };
 
         Prdt {
@@ -192,8 +192,8 @@ impl Ide {
 
 /// A disk (data storage)
 pub struct IdeDisk {
-    cmd: Pio8,
-    sts: Pio8,
+    cmd: Pio<u8>,
+    sts: Pio<u8>,
     prdt: Prdt,
     base: u16,
     ctrl: u16,
@@ -204,8 +204,8 @@ pub struct IdeDisk {
 impl IdeDisk {
     pub fn new(busmaster: u16, base: u16, ctrl: u16, irq: u8, master: bool) -> Option<Self> {
         let ret = IdeDisk {
-            cmd: Pio8::new(busmaster),
-            sts: Pio8::new(busmaster + 2),
+            cmd: Pio::<u8>::new(busmaster),
+            sts: Pio::<u8>::new(busmaster + 2),
             prdt: Prdt::new(busmaster + 4),
             base: base,
             ctrl: ctrl,
@@ -309,7 +309,7 @@ impl IdeDisk {
             return false;
         }
 
-        let data = Pio16::new(self.base + ATA_REG_DATA);
+        let data = Pio::<u16>::new(self.base + ATA_REG_DATA);
         let mut destination = Memory::<u16>::new(256).unwrap();
         for word in 0..256 {
             destination.write(word, data.read());
