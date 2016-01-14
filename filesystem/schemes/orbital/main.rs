@@ -1,8 +1,6 @@
 use std::url::Url;
 use std::{cmp, mem, ptr};
-use std::get_slice::GetSlice;
 use std::io::*;
-use std::process::Command;
 use std::ops::DerefMut;
 use std::syscall::SysError;
 use std::syscall::ENOENT;
