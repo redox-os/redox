@@ -138,12 +138,12 @@ impl Pio8 {
 
 // TODO: Remove
 pub unsafe fn inb(port: u16) -> u8 {
-    return Pio8::new(port).read();
+    Pio::<u8>::new(port).read()
 }
 
 // TODO: Remove
 pub unsafe fn outb(port: u16, value: u8) {
-    Pio8::new(port).write(value);
+    Pio::<u8>::new(port).write(value);
 }
 
 /// PIO16
@@ -187,12 +187,12 @@ impl Pio16 {
 
 // TODO: Remove
 pub unsafe fn inw(port: u16) -> u16 {
-    return Pio16::new(port).read();
+    Pio::<u16>::new(port).read()
 }
 
 // TODO: Remove
 pub unsafe fn outw(port: u16, value: u16) {
-    Pio16::new(port).write(value);
+    Pio::<u16>::new(port).write(value);
 }
 
 /// PIO32
@@ -236,10 +236,10 @@ impl Pio32 {
 
 // TODO: Remove
 pub unsafe fn ind(port: u16) -> u32 {
-    return Pio32::new(port).read();
+    Pio::<u32>::new(port).read()
 }
 
 // TODO: Remove
 pub unsafe fn outd(port: u16, value: u32) {
-    Pio32::new(port).write(value);
+    Pio::<u32>::new(port).write(value);
 }
