@@ -15,9 +15,9 @@ use drivers::kb_layouts::layouts;
 /// PS2
 pub struct Ps2 {
     /// The data
-    data: Pio8,
+    data: Pio<u8>,
     /// The command
-    cmd: Pio8,
+    cmd: Pio<u8>,
     /// Left shift?
     lshift: bool,
     /// Right shift?
@@ -45,8 +45,8 @@ impl Ps2 {
     /// Create new PS2 data
     pub fn new() -> Box<Self> {
         let mut module = box Ps2 {
-            data: Pio8::new(0x60),
-            cmd: Pio8::new(0x64),
+            data: Pio::<u8>::new(0x60),
+            cmd: Pio::<u8>::new(0x64),
             lshift: false,
             rshift: false,
             caps_lock: false,

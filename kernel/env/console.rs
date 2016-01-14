@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::Vec;
 
-use drivers::pio::Pio8;
+use drivers::pio::{Pio,ReadWrite};
 
 use graphics::color::Color;
 use graphics::display::Display;
@@ -167,8 +167,8 @@ impl Console {
     }
 
     pub fn write(&mut self, bytes: &[u8]) {
-        let serial_status = Pio8::new(0x3F8 + 5);
-        let mut serial_data = Pio8::new(0x3F8);
+        let serial_status = Pio::<u8>::new(0x3F8 + 5);
+        let mut serial_data = Pio::<u8>::new(0x3F8);
 
         for byte in bytes.iter() {
             let c = *byte as char;
@@ -180,14 +180,14 @@ impl Console {
             }
 
             unsafe {
-                while serial_status.read() & 0x20 == 0 {}
+                while !serial_status.readf(0x20) {}
                 serial_data.write(*byte);
 
                 if *byte == 8 {
-                    while serial_status.read() & 0x20 == 0 {}
+                    while !serial_status.readf(0x20) {}
                     serial_data.write(0x20);
 
-                    while serial_status.read() & 0x20 == 0 {}
+                    while !serial_status.readf(0x20) {}
                     serial_data.write(8);
                 }
             }

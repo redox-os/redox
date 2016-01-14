@@ -443,10 +443,10 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
 
     if interrupt >= 0x20 && interrupt < 0x30 {
         if interrupt >= 0x28 {
-            unsafe { Pio8::new(0xA0).write(0x20) };
+            unsafe { Pio::<u8>::new(0xA0).write(0x20) };
         }
 
-        unsafe { Pio8::new(0x20).write(0x20) };
+        unsafe { Pio::<u8>::new(0x20).write(0x20) };
     }
 
     //Do not catch init interrupt
