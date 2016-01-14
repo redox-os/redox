@@ -1,9 +1,7 @@
 // TODO Calm down on those `as` integer converts (especially the lossy ones).
 
-use std::url::Url;
 use std::fs::File;
 use std::io::Read;
-use std::process::Command;
 
 use orbital::{BmpFile, Color, Point, Size, Event, EventOption, KeyEvent, MouseEvent};
 
