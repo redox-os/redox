@@ -5,6 +5,8 @@ use string::String;
 use vec::{IntoIter, Vec};
 use syscall::{SysError, sys_read, sys_write};
 
+pub mod prelude;
+
 pub type Error = SysError;
 
 pub type Result<T> = ::core::result::Result<T, Error>;
