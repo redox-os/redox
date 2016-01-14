@@ -158,6 +158,9 @@ schemes: filesystem/schemes/orbital/main.bin \
 
 tests: tests/success tests/failure
 
+test: kernel/main.rs rust/src/libtest/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+	$(RUSTC) $(RUSTCFLAGS) --test $<
+
 clean:
 	$(RM) -rf build filesystem/*.bin filesystem/*.list filesystem/apps/*/*.bin filesystem/apps/*/*.list filesystem/schemes/*/*.bin filesystem/schemes/*/*.list
 
@@ -168,6 +171,18 @@ tests/%: FORCE
 
 $(BUILD)/libcore.rlib: rust/src/libcore/lib.rs
 	$(MKDIR) -p $(BUILD)
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libtest.rlib: rust/src/libtest/lib.rs $(BUILD)/libstd.rlib $(BUILD)/libgetopts.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libgetopts.rlib: rust/src/libgetopts/lib.rs $(BUILD)/libserialize.rlib $(BUILD)/liblog.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/libserialize.rlib: rust/src/libserialize/lib.rs $(BUILD)/liblog.rlib
+	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
+
+$(BUILD)/liblog.rlib: rust/src/liblog/lib.rs $(BUILD)/libstd.rlib
 	$(RUSTC) $(RUSTCFLAGS) -o $@ $<
 
 $(BUILD)/liballoc_system.rlib: liballoc_system/lib.rs $(BUILD)/libcore.rlib
