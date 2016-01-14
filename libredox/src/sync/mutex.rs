@@ -1,6 +1,3 @@
-pub use alloc::arc::{Arc, Weak};
-pub use core::sync::atomic;
-
 use core::cell::UnsafeCell;
 use core::ops::{Deref, DerefMut, Drop};
 use core::sync::atomic::{AtomicBool, Ordering};
