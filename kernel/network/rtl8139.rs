@@ -273,13 +273,11 @@ impl KScheme for Rtl8139 {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            unsafe {
-                let isr = self.port.isr.read();
-                self.port.isr.write(isr);
+            let isr = self.port.isr.read();
+            self.port.isr.write(isr);
 
-                // dh(isr as usize);
-                // dl();
-            }
+            // dh(isr as usize);
+            // dl();
 
             self.sync();
         }

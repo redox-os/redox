@@ -60,7 +60,7 @@ struct Prdt {
 impl Prdt {
     fn new(port: u16) -> Self {
         let mut reg = Pio::<u32>::new(port);
-        unsafe { reg.write(0) };
+        reg.write(0);
 
         Prdt {
             reg: reg,
@@ -71,7 +71,7 @@ impl Prdt {
 
 impl Drop for Prdt {
     fn drop(&mut self) {
-        unsafe { self.reg.write(0) };
+        self.reg.write(0);
     }
 }
 

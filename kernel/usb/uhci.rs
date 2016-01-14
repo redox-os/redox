@@ -223,7 +223,7 @@ impl Hci for Uhci {
             };
 
             let frnum = Pio::<u16>::new(self.base as u16 + 6);
-            let frame = (unsafe { frnum.read() } + 1) & 0x3FF;
+            let frame = (frnum.read() + 1) & 0x3FF;
             unsafe { self.frame_list.write(frame as usize, frame_ptr) };
 
             for td in tds.iter().rev() {
