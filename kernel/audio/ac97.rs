@@ -44,18 +44,18 @@ impl Resource for AC97Resource {
         unsafe {
             let audio = self.audio as u16;
 
-            let mut master_volume = Pio16::new(audio + 2);
-            let mut pcm_volume = Pio16::new(audio + 0x18);
+            let mut master_volume = Pio::<u16>::new(audio + 2);
+            let mut pcm_volume = Pio::<u16>::new(audio + 0x18);
 
             master_volume.write(0x808);
             pcm_volume.write(0x808);
 
             let bus_master = self.bus_master as u16;
 
-            let mut po_bdbar = Pio32::new(bus_master + 0x10);
-            let po_civ = Pio8::new(bus_master + 0x14);
-            let mut po_lvi = Pio8::new(bus_master + 0x15);
-            let mut po_cr = Pio8::new(bus_master + 0x1B);
+            let mut po_bdbar = Pio::<u32>::new(bus_master + 0x10);
+            let po_civ = Pio::<u8>::new(bus_master + 0x14);
+            let mut po_lvi = Pio::<u8>::new(bus_master + 0x15);
+            let mut po_cr = Pio::<u8>::new(bus_master + 0x1B);
 
             loop {
                 if po_cr.read() & 1 == 0 {

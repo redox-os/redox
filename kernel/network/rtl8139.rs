@@ -47,42 +47,42 @@ const RTL8139_RCR_APM: u32 = 1 << 1;
 
 #[repr(packed)]
 struct Txd {
-    pub address_port: Pio32,
-    pub status_port: Pio32,
+    pub address_port: Pio<u32>,
+    pub status_port: Pio<u32>,
     pub buffer: usize,
 }
 
 pub struct Rtl8139Port {
-    pub idr: [Pio8; 6],
-    pub rbstart: Pio32,
-    pub cr: Pio8,
-    pub capr: Pio16,
-    pub cbr: Pio16,
-    pub imr: Pio16,
-    pub isr: Pio16,
-    pub tcr: Pio32,
-    pub rcr: Pio32,
-    pub config1: Pio8,
+    pub idr: [Pio<u8>; 6],
+    pub rbstart: Pio<u32>,
+    pub cr: Pio<u8>,
+    pub capr: Pio<u16>,
+    pub cbr: Pio<u16>,
+    pub imr: Pio<u16>,
+    pub isr: Pio<u16>,
+    pub tcr: Pio<u32>,
+    pub rcr: Pio<u32>,
+    pub config1: Pio<u8>,
 }
 
 impl Rtl8139Port {
     pub fn new(base: u16) -> Self {
         return Rtl8139Port {
-            idr: [Pio8::new(base + 0x00),
-                  Pio8::new(base + 0x01),
-                  Pio8::new(base + 0x02),
-                  Pio8::new(base + 0x03),
-                  Pio8::new(base + 0x04),
-                  Pio8::new(base + 0x05)],
-            rbstart: Pio32::new(base + 0x30),
-            cr: Pio8::new(base + 0x37),
-            capr: Pio16::new(base + 0x38),
-            cbr: Pio16::new(base + 0x3A),
-            imr: Pio16::new(base + 0x3C),
-            isr: Pio16::new(base + 0x3E),
-            tcr: Pio32::new(base + 0x40),
-            rcr: Pio32::new(base + 0x44),
-            config1: Pio8::new(base + 0x52),
+            idr: [Pio::<u8>::new(base + 0x00),
+                  Pio::<u8>::new(base + 0x01),
+                  Pio::<u8>::new(base + 0x02),
+                  Pio::<u8>::new(base + 0x03),
+                  Pio::<u8>::new(base + 0x04),
+                  Pio::<u8>::new(base + 0x05)],
+            rbstart: Pio::<u32>::new(base + 0x30),
+            cr: Pio::<u8>::new(base + 0x37),
+            capr: Pio::<u16>::new(base + 0x38),
+            cbr: Pio::<u16>::new(base + 0x3A),
+            imr: Pio::<u16>::new(base + 0x3C),
+            isr: Pio::<u16>::new(base + 0x3E),
+            tcr: Pio::<u32>::new(base + 0x40),
+            rcr: Pio::<u32>::new(base + 0x44),
+            config1: Pio::<u8>::new(base + 0x52),
         };
     }
 }
@@ -164,8 +164,8 @@ impl Rtl8139 {
 
         for i in 0..4 {
             self.txds.push(Txd {
-                address_port: Pio32::new(base + 0x20 + (i as u16) * 4),
-                status_port: Pio32::new(base + 0x10 + (i as u16) * 4),
+                address_port: Pio::<u32>::new(base + 0x20 + (i as u16) * 4),
+                status_port: Pio::<u32>::new(base + 0x10 + (i as u16) * 4),
                 buffer: memory::alloc(4096),
             });
         }
@@ -273,13 +273,11 @@ impl KScheme for Rtl8139 {
 
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            unsafe {
-                let isr = self.port.isr.read();
-                self.port.isr.write(isr);
+            let isr = self.port.isr.read();
+            self.port.isr.write(isr);
 
-                // dh(isr as usize);
-                // dl();
-            }
+            // dh(isr as usize);
+            // dl();
 
             self.sync();
         }
