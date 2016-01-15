@@ -23,7 +23,7 @@ impl ReadWrite<u8> for Pio<u8> {
         unsafe {
             asm!("in $0, $1" : "={al}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
         }
-        return value;
+        value
     }
 
     /// Write
@@ -42,7 +42,7 @@ impl ReadWrite<u16> for Pio<u16> {
         unsafe {
             asm!("in $0, $1" : "={ax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
         }
-        return value;
+        value
     }
 
     /// Write
@@ -61,7 +61,7 @@ impl ReadWrite<u32> for Pio<u32> {
         unsafe {
             asm!("in $0, $1" : "={eax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
         }
-        return value;
+        value
     }
 
     /// Write
@@ -78,10 +78,10 @@ impl<T> Pio<T>
 {
     /// Create a PIO from a given port
     pub fn new(port: u16) -> Self {
-        return Pio::<T> {
+        Pio::<T> {
             port: port,
             value: PhantomData,
-        };
+        }
     }
 
     pub fn readf(&self, flags: T) -> bool {
