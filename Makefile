@@ -139,6 +139,7 @@ docs: kernel/main.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib
 	rustdoc --target=$(ARCH)-unknown-redox.json -L$(BUILD) $<
 
 apps: filesystem/apps/editor/main.bin \
+	  filesystem/apps/example/main.bin \
 	  filesystem/apps/file_manager/main.bin \
 	  filesystem/apps/launcher/main.bin \
 	  filesystem/apps/login/main.bin \

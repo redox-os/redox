@@ -6,7 +6,6 @@ use collections::vec_deque::VecDeque;
 
 use common::event::Event;
 use sync::Intex;
-use sync::Mutex;
 use common::time::Duration;
 
 use core::cell::UnsafeCell;
@@ -21,6 +20,8 @@ use self::console::Console;
 
 /// The Kernel Console
 pub mod console;
+/// New scheme module
+pub mod scheme;
 
 /// The kernel environment
 pub struct Environment {
@@ -35,7 +36,7 @@ pub struct Environment {
     /// Default console
     pub console: Intex<Console>,
     /// Pending events
-    pub events: Mutex<VecDeque<Event>>,
+    pub events: Intex<VecDeque<Event>>,
     /// Schemes
     pub schemes: Vec<UnsafeCell<Box<KScheme>>>,
 
@@ -52,7 +53,7 @@ impl Environment {
             clock_monotonic: Intex::new(Duration::new(0, 0)),
 
             console: Intex::new(Console::new()),
-            events: Mutex::new(VecDeque::new()),
+            events: Intex::new(VecDeque::new()),
             schemes: Vec::new(),
 
             interrupts: Intex::new([0; 256]),
@@ -75,20 +76,25 @@ impl Environment {
     pub fn open(&self, url: &Url, flags: usize) -> Result<Box<Resource>> {
         let url_scheme = url.scheme();
         if url_scheme.is_empty() {
-            let mut list = String::new();
+            let url_path = url.reference();
+            if url_path.is_empty() {
+                let mut list = String::new();
 
-            for scheme in self.schemes.iter() {
-                let scheme_str = unsafe { (*scheme.get()).scheme() };
-                if !scheme_str.is_empty() {
-                    if !list.is_empty() {
-                        list = list + "\n" + scheme_str;
-                    } else {
-                        list = scheme_str.to_string();
+                for scheme in self.schemes.iter() {
+                    let scheme_str = unsafe { (*scheme.get()).scheme() };
+                    if !scheme_str.is_empty() {
+                        if !list.is_empty() {
+                            list = list + "\n" + scheme_str;
+                        } else {
+                            list = scheme_str.to_string();
+                        }
                     }
                 }
-            }
 
-            Ok(box VecResource::new(Url::new(), list.into_bytes()))
+                Ok(box VecResource::new(Url::new(), list.into_bytes()))
+            } else{
+                Err(SysError::new(ENOENT))
+            }
         } else {
             for scheme in self.schemes.iter() {
                 let scheme_str = unsafe { (*scheme.get()).scheme() };
