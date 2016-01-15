@@ -4,9 +4,9 @@ use collections::BTreeMap;
 use scheduler::context::context_switch;
 
 pub struct Scheme {
-    next_id: i64,
-    todo: BTreeMap<i64, (i64, i64, i64, i64)>,
-    done: BTreeMap<i64, (i64, i64, i64, i64)>,
+    next_id: usize,
+    todo: BTreeMap<usize, (usize, usize, usize, usize)>,
+    done: BTreeMap<usize, (usize, usize, usize, usize)>,
 }
 
 impl Scheme {
@@ -18,7 +18,7 @@ impl Scheme {
         }
     }
 
-    fn call(&mut self, regs: &mut (i64, i64, i64, i64)) {
+    fn call(&mut self, regs: &mut (usize, usize, usize, usize)) {
         let id = self.next_id;
 
         //TODO: What should be done about collisions in self.todo or self.done?
