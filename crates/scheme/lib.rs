@@ -48,31 +48,29 @@ impl DerefMut for Packet {
     }
 }
 
-pub trait Resource {
-    #[allow(unused_variables)]
-    fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
-    }
-
-    #[allow(unused_variables)]
-    fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
-    }
-
-    #[allow(unused_variables)]
-    fn seek(&mut self, pos: SeekFrom) -> Result<usize> {
-        Err(SysError::new(EBADF))
-    }
-}
-
 pub trait Scheme {
     fn handle(&mut self, packet: &mut Packet) {
         packet.a = SysError::mux(match packet.a {
             SYS_OPEN => self.open(c_string_to_str(packet.b as *const u8), packet.c, packet.d),
-            SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)),
+            SYS_UNLINK => self.unlink(c_string_to_str(packet.b as *const u8)).and(Ok(0)),
+            SYS_MKDIR => self.mkdir(c_string_to_str(packet.b as *const u8), packet.c).and(Ok(0)),
+
+            SYS_READ => self.read(packet.b, unsafe { slice::from_raw_parts_mut(packet.c as *mut u8, packet.d) }),
+            SYS_WRITE => self.write(packet.b, unsafe { slice::from_raw_parts(packet.c as *const u8, packet.d) }),
+            SYS_LSEEK => match packet.d {
+                SEEK_SET => self.seek(packet.b, SeekFrom::Start(packet.c as u64)),
+                SEEK_CUR => self.seek(packet.b, SeekFrom::Current(packet.c as i64)),
+                SEEK_END => self.seek(packet.b, SeekFrom::End(packet.c as i64)),
+                _ => Err(SysError::new(EINVAL))
+            },
+            SYS_FSYNC => self.sync(packet.b).and(Ok(0)),
+            SYS_FTRUNCATE => self.truncate(packet.b, packet.c).and(Ok(0)),
+
             _ => Err(SysError::new(ENOSYS))
         });
     }
+
+    /* Scheme operations */
 
     #[allow(unused_variables)]
     fn open(&mut self, path: &str, flags: usize, mode: usize) -> Result<usize> {
@@ -80,12 +78,39 @@ pub trait Scheme {
     }
 
     #[allow(unused_variables)]
-    fn unlink(&mut self, path: &str) -> Result<usize> {
+    fn unlink(&mut self, path: &str) -> Result<()> {
         Err(SysError::new(ENOENT))
     }
 
     #[allow(unused_variables)]
-    fn mkdir(&mut self, path: &str, mode: usize) -> Result<usize> {
+    fn mkdir(&mut self, path: &str, mode: usize) -> Result<()> {
         Err(SysError::new(ENOENT))
+    }
+
+    /* Resource operations */
+
+    #[allow(unused_variables)]
+    fn read(&mut self, id: usize, buf: &mut [u8]) -> Result<usize> {
+        Err(SysError::new(EBADF))
+    }
+
+    #[allow(unused_variables)]
+    fn write(&mut self, id: usize, buf: &[u8]) -> Result<usize> {
+        Err(SysError::new(EBADF))
+    }
+
+    #[allow(unused_variables)]
+    fn seek(&mut self, id: usize, pos: SeekFrom) -> Result<usize> {
+        Err(SysError::new(EBADF))
+    }
+
+    #[allow(unused_variables)]
+    fn sync(&mut self, id: usize) -> Result<()> {
+        Err(SysError::new(EBADF))
+    }
+
+    #[allow(unused_variables)]
+    fn truncate(&mut self, id: usize, len: usize) -> Result<()> {
+        Err(SysError::new(EBADF))
     }
 }
