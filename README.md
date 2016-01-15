@@ -89,6 +89,9 @@ $ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh 
 # Set override toolchain to nightly build
 $ multirust override nightly
 
+# Update git submodules
+$ git submodule update --init
+
 # Build Redox
 $ make all
 
