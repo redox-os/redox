@@ -87,10 +87,12 @@ impl Resource {
 
         self.seek = match pos {
             SeekFrom::Start(offset) => cmp::min(end as u64, cmp::max(0, offset)) as usize,
-            SeekFrom::Current(offset) =>
-                cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize,
-            SeekFrom::End(offset) =>
-                cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize,
+            SeekFrom::Current(offset) => {
+                cmp::min(end as i64, cmp::max(0, self.seek as i64 + offset)) as usize
+            }
+            SeekFrom::End(offset) => {
+                cmp::min(end as i64, cmp::max(0, end as i64 + offset)) as usize
+            }
         };
 
         Ok(self.seek as u64)
