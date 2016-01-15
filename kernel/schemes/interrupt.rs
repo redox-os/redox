@@ -4,7 +4,7 @@ use schemes::{Result, KScheme, Resource, Url, VecResource};
 
 pub struct InterruptScheme;
 
-static IRQ_NAME: [&'static str; 15] = [
+static IRQ_NAME: [&'static str; 16] = [
     "Programmable Interval Timer",
     "Keyboard",
     "Cascade",
