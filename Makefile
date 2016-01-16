@@ -158,7 +158,12 @@ schemes: filesystem/schemes/orbital/main.bin \
 
 tests: tests/success tests/failure
 
-test: kernel/main.rs rust/src/libtest/lib.rs $(BUILD)/libcore.rlib $(BUILD)/liballoc.rlib $(BUILD)/libcollections.rlib
+test: kernel/main.rs \
+	  rust/src/libtest/lib.rs \
+	  $(BUILD)/libcore.rlib \
+	  $(BUILD)/liballoc.rlib \
+	  $(BUILD)/libcollections.rlib \
+	  $(BUILD)/libtest.rlib
 	$(RUSTC) $(RUSTCFLAGS) --test $<
 
 clean:
