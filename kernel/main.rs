@@ -77,6 +77,8 @@ use syscall::handle::*;
 /// Common std-like functionality
 #[macro_use]
 pub mod common;
+#[macro_use]
+pub mod macros;
 /// ACPI
 pub mod acpi;
 /// Allocation
@@ -248,6 +250,10 @@ static BSS_TEST_NONZERO: usize = usize::MAX;
 
 /// Initialize kernel
 unsafe fn init(font_data: usize, tss_data: usize) {
+
+    // Test
+    assume!(true);
+
     // Zero BSS, this initializes statics that are set to 0
     {
         extern {
