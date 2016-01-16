@@ -33,7 +33,7 @@ impl<T: ?Sized> RwLock<T> {
     pub fn read(&self) -> RwLockReadGuard<T> {
         loop {
             {
-                let mut inner = self.inner.lock();
+                let mut inner = self.inner.lock().unwrap();
                 if inner.writer == false {
                     inner.readers += 1;
                     break;
@@ -48,7 +48,7 @@ impl<T: ?Sized> RwLock<T> {
     pub fn write(&self) -> RwLockWriteGuard<T> {
         loop {
             {
-                let mut inner = self.inner.lock();
+                let mut inner = self.inner.lock().unwrap();
                 if inner.writer == false && inner.readers == 0 {
                     inner.writer = true;
                     break;
@@ -89,7 +89,7 @@ impl<'rwlock, T: ?Sized> Deref for RwLockReadGuard<'rwlock, T> {
 
 impl<'a, T: ?Sized> Drop for RwLockReadGuard<'a, T> {
     fn drop(&mut self) {
-        let mut inner = self.inner.lock();
+        let mut inner = self.inner.lock().unwrap();
         inner.readers -= 1;
     }
 }
@@ -126,7 +126,7 @@ impl<'rwlock, T: ?Sized> DerefMut for RwLockWriteGuard<'rwlock, T> {
 
 impl<'a, T: ?Sized> Drop for RwLockWriteGuard<'a, T> {
     fn drop(&mut self) {
-        let mut inner = self.inner.lock();
+        let mut inner = self.inner.lock().unwrap();
         inner.writer = false;
     }
 }

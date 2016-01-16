@@ -70,10 +70,8 @@ impl<T> Queue<T> {
                 let _: Box<Node<T>> = Box::from_raw(tail);
                 let ret             = (*next).val.take().unwrap();
 
-                return Data(ret);
-            }
-
-            if self.head.load(Ordering::Acquire) == tail {
+                Data(ret)
+            } else if self.head.load(Ordering::Acquire) == tail {
                 Empty
             } else {
                 Invalid
