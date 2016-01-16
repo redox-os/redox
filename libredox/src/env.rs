@@ -6,7 +6,7 @@ use fs::File;
 use path::PathBuf;
 use io::Result;
 use slice::Iter;
-use string::ToString;
+use string::{String, ToString};
 use vec::Vec;
 
 use syscall::{SysError, sys_chdir, ENOENT};
@@ -72,4 +72,9 @@ pub fn set_current_dir(path: &str) -> Result<()> {
         }
         Err(err) => Err(err),
     }
+}
+
+// TODO: Fully implement `env::var()`
+pub fn var(key: &str) -> Result<String> {
+    Ok("This is code filler".to_string())
 }
