@@ -16,6 +16,7 @@
 #![feature(collections_bound)]
 #![feature(core_intrinsics)]
 #![feature(core_panic)]
+#![feature(const_fn)]
 #![feature(int_error_internals)]
 #![feature(lang_items)]
 #![feature(macro_reexport)]
