@@ -204,7 +204,7 @@ endMessage()
 	echo "		make virtualbox or qemu"
 	echo
 	echo "If make qemu fails complaining about kvm"
-	echo "run \'make qemu_no_kvm\'"
+	echo "run \'make qemu kvm=no\'"
 	echo
 	echo "      Good luck!"
 
