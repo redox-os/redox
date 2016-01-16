@@ -40,7 +40,7 @@ pub struct StaticMutex {
 
 impl StaticMutex {
     /// Create a new mutex with value `value`.
-    pub fn new() -> Self {
+    pub const fn new() -> Self {
         StaticMutex {
             lock: AtomicBool::new(false),
         }
