@@ -22,11 +22,42 @@ impl<T> Mutex<T> {
 
 impl<T: ?Sized> Mutex<T> {
     /// Lock the mutex
-    pub fn lock(&self) -> MutexGuard<T> {
+    pub fn lock(&self) -> Result<MutexGuard<T>, ()> {
         while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
             unsafe { sys_yield() };
         }
-        MutexGuard::new(&self.lock, &self.value)
+        Ok(MutexGuard::new(&self.lock, &self.value))
+    }
+}
+
+struct Dummy(UnsafeCell<()>);
+unsafe impl Sync for Dummy {}
+static DUMMY: Dummy = Dummy(UnsafeCell::new(()));
+
+pub struct StaticMutex {
+    lock: AtomicBool,
+}
+
+impl StaticMutex {
+    /// Create a new mutex with value `value`.
+    pub fn new() -> Self {
+        StaticMutex {
+            lock: AtomicBool::new(false),
+        }
+    }
+
+    /// Lock the mutex
+    pub fn lock(&'static self) -> Result<MutexGuard<()>, ()> {
+        while self.lock.compare_and_swap(false, true, Ordering::SeqCst) {
+            unsafe { sys_yield() };
+        }
+        Ok(MutexGuard::new(&self.lock, &DUMMY.0)) // TODO catch panics
+    }
+
+    pub unsafe fn destroy(&'static self) {
+        if !self.lock.compare_and_swap(true, false, Ordering::SeqCst) {
+            // Mutex was already unlocked!
+        }
     }
 }
 
