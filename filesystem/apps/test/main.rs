@@ -1,4 +1,5 @@
 #![feature(asm)]
+#![feature(rand)]
 #![feature(slice_concat_ext)]
 
 use std::rand;
