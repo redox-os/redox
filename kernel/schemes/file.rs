@@ -20,7 +20,7 @@ use schemes::{Result, KScheme, Resource, ResourceSeek, Url, VecResource};
 
 use sync::Intex;
 
-use syscall::{SysError, O_CREAT, ENOENT, EIO};
+use syscall::{Error, O_CREAT, ENOENT, EIO};
 
 /// A file resource
 pub struct FileResource {
@@ -191,7 +191,7 @@ impl Resource for FileResource {
                 debug::d("Need to defragment file, extra: ");
                 debug::ds(remaining);
                 debug::dl();
-                return Err(SysError::new(EIO));
+                return Err(Error::new(EIO));
             }
         }
         Ok(())
@@ -289,7 +289,7 @@ impl KScheme for FileScheme {
             if list.len() > 0 {
                 Ok(box VecResource::new(url.clone(), list.into_bytes()))
             } else {
-                Err(SysError::new(ENOENT))
+                Err(Error::new(ENOENT))
             }
         } else {
             match self.fs.node(path) {
@@ -351,7 +351,7 @@ impl KScheme for FileScheme {
                             dirty: false,
                         })
                     } else {
-                        Err(SysError::new(ENOENT))
+                        Err(Error::new(ENOENT))
                     }
                 }
             }
@@ -359,7 +359,7 @@ impl KScheme for FileScheme {
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
-        let mut ret = Err(SysError::new(ENOENT));
+        let mut ret = Err(Error::new(ENOENT));
 
         let mut path = url.reference();
         while path.starts_with('/') {

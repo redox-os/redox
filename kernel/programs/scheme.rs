@@ -19,7 +19,7 @@ use schemes::{Result, KScheme, Resource, ResourceSeek, Url};
 
 use sync::Intex;
 
-use syscall::SysError;
+use syscall::Error;
 use syscall::handle::*;
 
 #[derive(Copy, Clone, Debug)]
@@ -362,7 +362,7 @@ impl SchemeItem {
 
         self.responses.lock().push_back(response.deref_mut());
 
-        SysError::demux(response.get())
+        Error::demux(response.get())
     }
 
     // TODO: More advanced check

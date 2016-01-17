@@ -8,7 +8,7 @@ use collections::vec::Vec;
 
 use core::cmp::{min, max};
 
-use syscall::{SysError, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
+use syscall::{Error, O_CREAT, O_RDWR, O_TRUNC, EBADF, ENOENT};
 
 /// ARP scheme
 pub mod arp;
@@ -33,7 +33,7 @@ pub mod memory;
 /// Pipes
 pub mod pipe;
 
-pub type Result<T> = ::core::result::Result<T, SysError>;
+pub type Result<T> = ::core::result::Result<T, Error>;
 
 #[allow(unused_variables)]
 pub trait KScheme {
@@ -55,11 +55,11 @@ pub trait KScheme {
     }
 
     fn open(&mut self, url: &Url, flags: usize) -> Result<Box<Resource>> {
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 
     fn unlink(&mut self, url: &Url) -> Result<()> {
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }
 
@@ -78,30 +78,30 @@ pub enum ResourceSeek {
 pub trait Resource {
     /// Duplicate the resource
     fn dup(&self) -> Result<Box<Resource>> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Return the url of this resource
     fn url(&self) -> Url;
     // TODO: Make use of Write and Read trait
     /// Read data to buffer
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Write to resource
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Seek
     fn seek(&mut self, pos: ResourceSeek) -> Result<usize> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
     /// Sync the resource
     fn sync(&mut self) -> Result<()> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn truncate(&mut self, len: usize) -> Result<()> {
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     // Helper functions

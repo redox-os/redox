@@ -3,11 +3,10 @@
 use {fmt, str};
 use string::String;
 use vec::{IntoIter, Vec};
-use syscall::{SysError, sys_read, sys_write};
+pub use system::error::Error;
+use system::syscall::{sys_read, sys_write};
 
 pub mod prelude;
-
-pub type Error = SysError;
 
 pub type Result<T> = ::core::result::Result<T, Error>;
 
@@ -118,7 +117,7 @@ impl Stdin {
 /// Read implementation for standard input
 impl Read for Stdin {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        SysError::demux(unsafe { sys_read(0, buf.as_mut_ptr(), buf.len()) })
+        Error::demux(unsafe { sys_read(0, buf.as_mut_ptr(), buf.len()) })
     }
 }
 
@@ -133,7 +132,7 @@ pub fn stdout() -> Stdout {
 /// Write implementation for standard output
 impl Write for Stdout {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        SysError::demux(unsafe { sys_write(1, buf.as_ptr(), buf.len()) })
+        Error::demux(unsafe { sys_write(1, buf.as_ptr(), buf.len()) })
     }
 }
 
@@ -148,7 +147,7 @@ pub fn stderr() -> Stderr {
 /// Write implementation for standard error
 impl Write for Stderr {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        SysError::demux(unsafe { sys_write(2, buf.as_ptr(), buf.len()) })
+        Error::demux(unsafe { sys_write(2, buf.as_ptr(), buf.len()) })
     }
 }
 

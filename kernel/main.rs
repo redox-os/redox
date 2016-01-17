@@ -27,6 +27,8 @@ extern crate alloc;
 #[macro_use]
 extern crate collections;
 
+extern crate system;
+
 use acpi::Acpi;
 
 use alloc::boxed::Box;
@@ -51,8 +53,6 @@ use drivers::serial::*;
 
 use env::Environment;
 
-pub use externs::*;
-
 use graphics::display;
 
 use programs::executor::execute;
@@ -74,6 +74,8 @@ use schemes::memory::*;
 
 use syscall::handle::*;
 
+pub use system::externs::*;
+
 /// Common std-like functionality
 #[macro_use]
 pub mod common;
@@ -91,8 +93,6 @@ pub mod disk;
 pub mod drivers;
 /// Environment
 pub mod env;
-/// Externs
-pub mod externs;
 /// Filesystems
 pub mod fs;
 /// Various graphical methods

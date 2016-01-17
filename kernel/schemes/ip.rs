@@ -14,7 +14,7 @@ use common::to_num::ToNum;
 use schemes::arp::{Arp, ArpHeader};
 use schemes::{Result, KScheme, Resource, Url};
 
-use syscall::{SysError, EBADF, ENOENT};
+use syscall::{Error, EBADF, ENOENT};
 
 /// A IP (internet protocole) resource
 pub struct IpResource {
@@ -45,7 +45,7 @@ impl Resource for IpResource {
 
     fn read(&mut self, _: &mut [u8]) -> Result<usize> {
         debug::d("TODO: Implement read for ip:\n");
-        Err(SysError::new(EBADF))
+        Err(Error::new(EBADF))
     }
 
     fn read_to_end(&mut self, vec: &mut Vec<u8>) -> Result<usize> {
@@ -229,6 +229,6 @@ impl KScheme for IpScheme {
             debug::d("IP: No host provided\n");
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

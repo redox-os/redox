@@ -1,12 +1,15 @@
 #![feature(asm)]
 #![feature(slice_concat_ext)]
 
+extern crate system;
+
 use std::rand;
 use std::ptr;
 use std::slice::SliceConcatExt;
 use std::string::*;
-use std::syscall::sys_exit;
 use std::thread;
+
+use system::syscall::sys_exit;
 
 macro_rules! readln {
     () => ({
