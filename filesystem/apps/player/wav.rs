@@ -1,6 +1,3 @@
-use string::String;
-use vec::Vec;
-
 /// A WAV file
 // TODO: Follow naming conventions
 pub struct WavFile {

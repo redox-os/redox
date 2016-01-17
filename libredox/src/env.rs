@@ -9,7 +9,8 @@ use slice::Iter;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{SysError, sys_chdir, ENOENT};
+use system::error::{Error, ENOENT};
+use system::syscall::sys_chdir;
 
 static mut _args: *mut Vec<&'static str> = 0 as *mut Vec<&'static str>;
 
@@ -59,12 +60,12 @@ pub fn set_current_dir(path: &str) -> Result<()> {
                 Ok(path) => {
                     if let Some(path_str) = path.to_str() {
                         let path_c = path_str.to_string() + "\0";
-                        match SysError::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
+                        match Error::demux(unsafe { sys_chdir(path_c.as_ptr()) }) {
                             Ok(_) => Ok(()),
                             Err(err) => Err(err),
                         }
                     } else {
-                        Err(SysError::new(ENOENT))
+                        Err(Error::new(ENOENT))
                     }
                 }
                 Err(err) => Err(err),

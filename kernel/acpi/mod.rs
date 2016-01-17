@@ -1,6 +1,6 @@
 use alloc::boxed::Box;
 use schemes::{Result, KScheme, Resource, Url};
-use syscall::{SysError, O_CREAT, ENOENT};
+use syscall::{Error, O_CREAT, ENOENT};
 pub use self::dsdt::DSDT;
 pub use self::fadt::FADT;
 pub use self::madt::MADT;
@@ -99,6 +99,6 @@ impl KScheme for Acpi {
             }
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

@@ -4,9 +4,10 @@ use str;
 use string::{String, ToString};
 use vec::Vec;
 
-use syscall::{SysError, sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
+use system::error::{Error, EACCES};
+use system::syscall::{sys_open, sys_dup, sys_close, sys_fpath, sys_ftruncate, sys_read,
               sys_write, sys_lseek, sys_fsync, sys_mkdir, sys_unlink};
-use syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END, EACCES};
+use system::syscall::{O_RDWR, O_CREAT, O_TRUNC, SEEK_SET, SEEK_CUR, SEEK_END};
 
 /// A Unix-style file
 pub struct File {
@@ -16,7 +17,7 @@ pub struct File {
 
 impl File {
     pub unsafe fn from_fd(fd_muxed: usize) -> Result<File> {
-        match SysError::demux(fd_muxed) {
+        match Error::demux(fd_muxed) {
             Ok(fd) => Ok(File { fd: fd }),
             Err(err) => Err(err),
         }
@@ -42,7 +43,7 @@ impl File {
     /// Get the canonical path of the file
     pub fn path(&self) -> Result<PathBuf> {
         let mut buf: [u8; 4096] = [0; 4096];
-        match SysError::demux(unsafe { sys_fpath(self.fd, buf.as_mut_ptr(), buf.len()) }) {
+        match Error::demux(unsafe { sys_fpath(self.fd, buf.as_mut_ptr(), buf.len()) }) {
             Ok(count) => {
                 Ok(PathBuf::from(unsafe { String::from_utf8_unchecked(Vec::from(&buf[0..count])) }))
             }
@@ -52,7 +53,7 @@ impl File {
 
     /// Flush the file data and metadata
     pub fn sync_all(&mut self) -> Result<()> {
-        match SysError::demux(unsafe { sys_fsync(self.fd) }) {
+        match Error::demux(unsafe { sys_fsync(self.fd) }) {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
         }
@@ -60,7 +61,7 @@ impl File {
 
     /// Flush the file data
     pub fn sync_data(&mut self) -> Result<()> {
-        match SysError::demux(unsafe { sys_fsync(self.fd) }) {
+        match Error::demux(unsafe { sys_fsync(self.fd) }) {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
         }
@@ -68,7 +69,7 @@ impl File {
 
     /// Truncates the file
     pub fn set_len(&mut self, size: usize) -> Result<()> {
-        match SysError::demux(unsafe { sys_ftruncate(self.fd, size) }) {
+        match Error::demux(unsafe { sys_ftruncate(self.fd, size) }) {
             Ok(_) => Ok(()),
             Err(err) => Err(err),
         }
@@ -77,13 +78,13 @@ impl File {
 
 impl Read for File {
     fn read(&mut self, buf: &mut [u8]) -> Result<usize> {
-        SysError::demux(unsafe { sys_read(self.fd, buf.as_mut_ptr(), buf.len()) })
+        Error::demux(unsafe { sys_read(self.fd, buf.as_mut_ptr(), buf.len()) })
     }
 }
 
 impl Write for File {
     fn write(&mut self, buf: &[u8]) -> Result<usize> {
-        SysError::demux(unsafe { sys_write(self.fd, buf.as_ptr(), buf.len()) })
+        Error::demux(unsafe { sys_write(self.fd, buf.as_ptr(), buf.len()) })
     }
 }
 
@@ -96,7 +97,7 @@ impl Seek for File {
             SeekFrom::End(offset) => (SEEK_END, offset as isize),
         };
 
-        match SysError::demux(unsafe { sys_lseek(self.fd, offset, whence) }) {
+        match Error::demux(unsafe { sys_lseek(self.fd, offset, whence) }) {
             Ok(position) => Ok(position as u64),
             Err(err) => Err(err),
         }
@@ -191,7 +192,7 @@ impl Iterator for ReadDir {
 /// The default mode of the directory is 744
 pub fn create_dir(path: &str) -> Result<()> {
     let path_c = path.to_string() + "\0";
-    match SysError::demux(unsafe { sys_mkdir(path_c.as_ptr(), 755) }) {
+    match Error::demux(unsafe { sys_mkdir(path_c.as_ptr(), 755) }) {
         Ok(_) => Ok(()),
         Err(err) => Err(err),
     }
@@ -211,12 +212,12 @@ pub fn read_dir(path: &str) -> Result<ReadDir> {
 }
 
 pub fn remove_dir(path: &str) -> Result<()> {
-    Err(SysError::new(EACCES))
+    Err(Error::new(EACCES))
 }
 
 pub fn remove_file(path: &str) -> Result<()> {
     let path_c = path.to_string() + "\0";
-    match SysError::demux(unsafe { sys_unlink(path_c.as_ptr()) }) {
+    match Error::demux(unsafe { sys_unlink(path_c.as_ptr()) }) {
         Ok(_) => Ok(()),
         Err(err) => Err(err),
     }

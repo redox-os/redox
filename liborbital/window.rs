@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::*;
 use std::mem;
 use std::slice;
-use std::syscall::sys_yield;
+use std::thread;
 use std::to_num::ToNum;
 
 use super::Event;
@@ -181,7 +181,7 @@ impl Window {
             match self.file.read(&mut unsafe {
                 slice::from_raw_parts_mut(event_ptr as *mut u8, mem::size_of::<Event>())
             }) {
-                Ok(0) => unsafe { sys_yield() },
+                Ok(0) => thread::yield_now(),
                 Ok(_) => return Some(event),
                 Err(_) => return None,
             }

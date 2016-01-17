@@ -51,6 +51,8 @@ extern crate alloc;
 extern crate rustc_unicode;
 // TODO extern crate libc;
 
+extern crate system;
+
 // NB: These reexports are in the order they should be listed in rustdoc
 
 pub use core::any;
@@ -171,16 +173,6 @@ pub mod rand {
 pub use rand_old::*;
 
 pub mod alloc_system;
-
-/// A module for necessary C and assembly constructs
-    #[path="../../kernel/externs.rs"]
-pub mod externs;
-
-/// A module for system calls
-pub mod syscall;
-
-/// A module for audio
-pub mod audio;
 
 pub mod panic;
 

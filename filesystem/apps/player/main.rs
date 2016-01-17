@@ -1,11 +1,14 @@
 extern crate orbital;
 
-use std::audio::*;
 use std::fs::File;
 use std::env;
 use std::io::{Read, Write};
 
+use wav::WavFile;
+
 use orbital::*;
+
+mod wav;
 
 fn main() {
     let url = match env::args().nth(1) {

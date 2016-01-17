@@ -1,3 +1,5 @@
+extern crate system;
+
 use std::boxed::Box;
 use std::fs::File;
 use std::io::{Result, Read, Write, SeekFrom};
@@ -6,11 +8,11 @@ use std::net::*;
 use std::rand;
 use std::slice;
 use std::string::{String, ToString};
-use std::syscall::SysError;
-use std::syscall::{ENOENT, EPIPE, ESPIPE};
 use std::to_num::*;
 use std::vec::Vec;
 use std::url::Url;
+
+use system::error::{Error, ENOENT, EPIPE, ESPIPE};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -215,7 +217,7 @@ impl Resource {
                                     self.acknowledge = segment.header.sequence.get();
                                     Ok(size)
                                 } else {
-                                    Err(SysError::new(EPIPE))
+                                    Err(Error::new(EPIPE))
                                 };
                             }
                         }
@@ -228,7 +230,7 @@ impl Resource {
     }
 
     pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
-        Err(SysError::new(ESPIPE))
+        Err(Error::new(ESPIPE))
     }
 
     pub fn sync(&mut self) -> Result<()> {
@@ -518,6 +520,6 @@ impl Scheme {
             }
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

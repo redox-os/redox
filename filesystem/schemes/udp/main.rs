@@ -5,10 +5,10 @@ use std::net::*;
 use std::ptr;
 use std::rand;
 use std::slice;
-use std::syscall::SysError;
-use std::syscall::{ENOENT, ESPIPE};
 use std::to_num::*;
 use std::url::Url;
+
+use system::error::{Error, ENOENT, ESPIPE};
 
 #[derive(Copy, Clone)]
 #[repr(packed)]
@@ -152,7 +152,7 @@ impl Resource {
     }
 
     pub fn seek(&mut self, _: SeekFrom) -> Result<u64> {
-        Err(SysError::new(ESPIPE))
+        Err(Error::new(ESPIPE))
     }
 
     pub fn sync(&mut self) -> Result<()> {
@@ -213,6 +213,6 @@ impl Scheme {
             }
         }
 
-        Err(SysError::new(ENOENT))
+        Err(Error::new(ENOENT))
     }
 }

@@ -1,10 +1,12 @@
+extern crate system;
+
 use std::url::Url;
 use std::{cmp, mem, ptr};
-use std::io::*;
+use std::io::{Result, Read, Write, Seek, SeekFrom};
 use std::ops::DerefMut;
-use std::syscall::SysError;
-use std::syscall::ENOENT;
 use std::to_num::ToNum;
+
+use system::error::{Error, ENOENT};
 
 use orbital::event::Event;
 use orbital::Point;
@@ -183,10 +185,10 @@ impl Scheme {
                     seek: 0,
                 })
             } else {
-                Err(SysError::new(ENOENT))
+                Err(Error::new(ENOENT))
             }
         }else{
-            Err(SysError::new(ENOENT))
+            Err(Error::new(ENOENT))
         }
     }
 
