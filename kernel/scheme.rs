@@ -1,5 +1,6 @@
 #![crate_type="staticlib"]
 #![allow(unused_features)]
+#![feature(rand)]
 #![feature(asm)]
 #![feature(box_syntax)]
 #![feature(vec_push_all)]
