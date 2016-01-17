@@ -1,8 +1,9 @@
 [package]
-name = "redox_std"
+name = "redox_kernel"
 version = "0.1.0"
 authors = ["Jeremy Soller <jackpot51@gmail.com>"]
 
 [lib]
-name = "std"
-path = "src/lib.rs"
+name = "kernel"
+path = "main.rs"
+crate-type = ["staticlib"]
