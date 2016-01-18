@@ -1,3 +1,8 @@
+#![crate_type="lib"]
+#![feature(asm)]
+#![feature(core_intrinsics)]
+#![no_std]
+
 use core::cmp::PartialEq;
 use core::ops::{BitAnd, BitOr, Not};
 
