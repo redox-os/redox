@@ -7,6 +7,7 @@ use common::memory;
 
 use sync::Intex;
 
+use super::FONT;
 use super::color::Color;
 use super::point::Point;
 use super::size::Size;
@@ -50,8 +51,6 @@ pub struct VBEModeInfo {
 }
 
 pub const VBEMODEINFO: *const VBEModeInfo = 0x5200 as *const VBEModeInfo;
-
-pub static font: &'static [u8] = include_bytes!("../../filesystem/ui/unifont.font");
 
 /// A display
 pub struct Display {
@@ -289,7 +288,7 @@ impl Display {
         unsafe {
             let font_i = 16 * (character as usize);
             for row in 0..16 {
-                let row_data = font[font_i + row];
+                let row_data = FONT[font_i + row];
                 for col in 0..8 {
                     let pixel = (row_data >> (7 - col)) & 1;
                     if pixel > 0 {

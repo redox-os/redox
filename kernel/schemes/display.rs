@@ -1,7 +1,5 @@
 use alloc::boxed::Box;
 
-use collections::string::ToString;
-
 use core::cmp;
 
 use graphics::display::Display;
