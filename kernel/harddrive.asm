@@ -30,10 +30,6 @@ times (0xC000-0x1000)-0x7C00-($-$$) db 0
 kernel_file:
   incbin "kernel.bin"
   align 512, db 0
-
-.font:
-  incbin "ui/unifont.font"
-  align 512, db 0
 .end:
 
 fs_root_node_list:

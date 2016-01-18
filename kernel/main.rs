@@ -229,7 +229,7 @@ static BSS_TEST_ZERO: usize = 0;
 static BSS_TEST_NONZERO: usize = usize::MAX;
 
 /// Initialize kernel
-unsafe fn init(font_data: usize, tss_data: usize) {
+unsafe fn init(tss_data: usize) {
 
     // Test
     assume!(true);
@@ -259,7 +259,6 @@ unsafe fn init(font_data: usize, tss_data: usize) {
     // Unmap first page to catch null pointer errors (after reading memory map)
     Page::new(0).unmap();
 
-    display::fonts = font_data;
     TSS_PTR = Some(&mut *(tss_data as *mut TSS));
     ENV_PTR = Some(&mut *Box::into_raw(Environment::new()));
 
@@ -440,7 +439,7 @@ pub extern "cdecl" fn kernel(interrupt: usize, mut regs: &mut Regs) {
         },
         0xFF => {
             unsafe {
-                init(regs.ax, regs.bx);
+                init(regs.ax);
                 idle_loop();
             }
         },

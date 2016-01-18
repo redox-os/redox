@@ -105,8 +105,7 @@ long_mode:
     mov [0x100000], rax
     mov eax, [kernel_file + 0x18]
     mov [interrupts.handler], rax
-    mov rax, kernel_file.font
-    mov rbx, tss
+    mov rax, tss
     int 255
 .lp:
     sti
