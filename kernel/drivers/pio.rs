@@ -1,148 +1,128 @@
-use core::{u8, u16, u32};
+use core::cmp::PartialEq;
+use core::ops::{BitAnd, BitOr, Not};
+use core::marker::PhantomData;
 
-/// PIO8
-#[derive(Copy, Clone)]
-pub struct Pio8 {
-    port: u16,
+pub trait ReadWrite<T>
+{
+    fn read(&self) -> T;
+    fn write(&self, value: T);
 }
 
-impl Pio8 {
-    /// Create a PIO8 from a given port
-    pub fn new(port: u16) -> Self {
-        return Pio8 { port: port };
-    }
+/// Generic PIO
+#[derive(Copy, Clone)]
+pub struct Pio<T> {
+    port: u16,
+    value: PhantomData<T>,
+}
 
+/// Read/Write for byte PIO
+impl ReadWrite<u8> for Pio<u8> {
     /// Read
-    pub unsafe fn read(&self) -> u8 {
+    fn read(&self) -> u8 {
         let value: u8;
-        asm!("in $0, $1" : "={al}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
-        return value;
+        unsafe {
+            asm!("in $0, $1" : "={al}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+        value
     }
 
     /// Write
-    pub unsafe fn write(&mut self, value: u8) {
-        asm!("out $1, $0" : : "{al}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
-    }
-
-    pub unsafe fn readf(&self, flags: u8) -> bool {
-        self.read() & flags == flags
-    }
-
-    pub unsafe fn writef(&mut self, flags: u8, value: bool) {
-        if value {
-            let value = self.read() | flags;
-            self.write(value);
-        } else {
-            let value = self.read() & (u8::MAX - flags);
-            self.write(value);
+    fn write(&self, value: u8) {
+        unsafe {
+            asm!("out $1, $0" : : "{al}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
         }
+    }
+}
+
+/// Read/Write for word PIO
+impl ReadWrite<u16> for Pio<u16> {
+    /// Read
+    fn read(&self) -> u16 {
+        let value: u16;
+        unsafe {
+            asm!("in $0, $1" : "={ax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+        value
+    }
+
+    /// Write
+    fn write(&self, value: u16) {
+        unsafe {
+            asm!("out $1, $0" : : "{ax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+    }
+}
+
+/// Read/Write for doubleword PIO
+impl ReadWrite<u32> for Pio<u32> {
+    /// Read
+    fn read(&self) -> u32 {
+        let value: u32;
+        unsafe {
+            asm!("in $0, $1" : "={eax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+        value
+    }
+
+    /// Write
+    fn write(&self, value: u32) {
+        unsafe {
+            asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
+        }
+    }
+}
+
+impl<T> Pio<T>
+    where Pio<T>: ReadWrite<T>,
+          T: BitAnd<Output = T> + BitOr<Output = T> + PartialEq<T> + Not<Output = T> + Copy
+{
+    /// Create a PIO from a given port
+    pub fn new(port: u16) -> Self {
+        Pio::<T> {
+            port: port,
+            value: PhantomData,
+        }
+    }
+
+    pub fn readf(&self, flags: T) -> bool {
+        (self.read() & flags) as T == flags
+    }
+
+    pub fn writef(&mut self, flags: T, value: bool) {
+        let tmp: T = match value {
+            true => self.read() | flags,
+            false => self.read() & !flags,
+        };
+        self.write(tmp);
     }
 }
 
 // TODO: Remove
 pub unsafe fn inb(port: u16) -> u8 {
-    return Pio8::new(port).read();
+    Pio::<u8>::new(port).read()
 }
 
 // TODO: Remove
 pub unsafe fn outb(port: u16, value: u8) {
-    Pio8::new(port).write(value);
-}
-
-/// PIO16
-#[derive(Copy, Clone)]
-pub struct Pio16 {
-    port: u16,
-}
-
-impl Pio16 {
-    /// Create a new PIO16 from a given port
-    pub fn new(port: u16) -> Self {
-        return Pio16 { port: port };
-    }
-
-    /// Read
-    pub unsafe fn read(&self) -> u16 {
-        let value: u16;
-        asm!("in $0, $1" : "={ax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
-        return value;
-    }
-
-    /// Write
-    pub unsafe fn write(&mut self, value: u16) {
-        asm!("out $1, $0" : : "{ax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
-    }
-
-    pub unsafe fn readf(&self, flags: u16) -> bool {
-        self.read() & flags == flags
-    }
-
-    pub unsafe fn writef(&mut self, flags: u16, value: bool) {
-        if value {
-            let value = self.read() | flags;
-            self.write(value);
-        } else {
-            let value = self.read() & (u16::MAX - flags);
-            self.write(value);
-        }
-    }
+    Pio::<u8>::new(port).write(value);
 }
 
 // TODO: Remove
 pub unsafe fn inw(port: u16) -> u16 {
-    return Pio16::new(port).read();
+    Pio::<u16>::new(port).read()
 }
 
 // TODO: Remove
 pub unsafe fn outw(port: u16, value: u16) {
-    Pio16::new(port).write(value);
-}
-
-/// PIO32
-#[derive(Copy, Clone)]
-pub struct Pio32 {
-    port: u16,
-}
-
-impl Pio32 {
-    /// Create a new PIO32 from a port
-    pub fn new(port: u16) -> Self {
-        return Pio32 { port: port };
-    }
-
-    /// Read
-    pub unsafe fn read(&self) -> u32 {
-        let value: u32;
-        asm!("in $0, $1" : "={eax}"(value) : "{dx}"(self.port) : "memory" : "intel", "volatile");
-        return value;
-    }
-
-    /// Write
-    pub unsafe fn write(&mut self, value: u32) {
-        asm!("out $1, $0" : : "{eax}"(value), "{dx}"(self.port) : "memory" : "intel", "volatile");
-    }
-
-    pub unsafe fn readf(&self, flags: u32) -> bool {
-        self.read() & flags == flags
-    }
-
-    pub unsafe fn writef(&mut self, flags: u32, value: bool) {
-        if value {
-            let value = self.read() | flags;
-            self.write(value);
-        } else {
-            let value = self.read() & (u32::MAX - flags);
-            self.write(value);
-        }
-    }
+    Pio::<u16>::new(port).write(value);
 }
 
 // TODO: Remove
 pub unsafe fn ind(port: u16) -> u32 {
-    return Pio32::new(port).read();
+    Pio::<u32>::new(port).read()
 }
 
 // TODO: Remove
 pub unsafe fn outd(port: u16, value: u32) {
-    Pio32::new(port).write(value);
+    Pio::<u32>::new(port).write(value);
 }

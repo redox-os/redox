@@ -67,6 +67,10 @@ $ make qemu
 $ make qemu kvm=no
 ```
 
+#### QEMU with KVM
+
+To use QEMU with KVM (kernel-based virtual Machine), which is faster than without KVM, you need a CPU with Intel® Virtualization Technology (Intel® VT) or AMD Virtualization™ (AMD-V™) support. Most systems have this disabled in the BIOS by default, so you may need to reboot and enable the feature in the BIOS. 
+
 ### <a name="manual-setup"> Manual Setup </a>
 
 To manually clone, build and run Redox using a Linux host, run the following commands (with exceptions, be sure to read the comments):
@@ -88,6 +92,9 @@ $ curl -sf https://raw.githubusercontent.com/brson/multirust/master/blastoff.sh 
 
 # Set override toolchain to nightly build
 $ multirust override nightly
+
+# Update git submodules
+$ git submodule update --init
 
 # Build Redox
 $ make all

@@ -1,4 +1,5 @@
 #![feature(asm)]
+#![feature(rand)]
 #![feature(slice_concat_ext)]
 
 extern crate system;
@@ -85,16 +86,13 @@ fn main() {
                             Some(child_message) => println!("Parent after join: {}", child_message),
                             None => println!("Failed to join"),
                         }
-                    }
+                    },
                     command if command == console_commands[7] => {
                         let mut stack_it: Vec<Box<u8>> = Vec::new();
                         loop {
                             stack_it.push(Box::new(rand() as u8))
                         }
-                    }
-                    command if command == console_commands[8] => {
-                        ::std::hashmap::test();
-                    }
+                    },
                     command if command == console_commands[9] => unsafe {
                         asm!("int 3" : : : : "intel", "volatile");
                     },

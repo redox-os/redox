@@ -87,11 +87,13 @@ impl Session {
             let mut remove = false;
 
             match self.windows.get(i) {
-                Some(window_ptr) => if *window_ptr == remove_window_ptr {
-                    remove = true;
-                } else {
-                    i += 1;
-                },
+                Some(window_ptr) => {
+                    if *window_ptr == remove_window_ptr {
+                        remove = true;
+                    } else {
+                        i += 1;
+                    }
+                }
                 None => break,
             }
 
@@ -105,11 +107,13 @@ impl Session {
             let mut remove = false;
 
             match self.windows_ordered.get(i) {
-                Some(window_ptr) => if *window_ptr == remove_window_ptr {
-                    remove = true;
-                } else {
-                    i += 1;
-                },
+                Some(window_ptr) => {
+                    if *window_ptr == remove_window_ptr {
+                        remove = true;
+                    } else {
+                        i += 1;
+                    }
+                }
                 None => break,
             }
 
@@ -124,12 +128,10 @@ impl Session {
     fn on_key(&mut self, key_event: KeyEvent) {
         if !self.windows.is_empty() {
             match self.windows.get(self.windows.len() - 1) {
-                Some(window_ptr) => {
-                    unsafe {
-                        (**window_ptr).on_key(key_event);
-                        self.redraw = true;
-                    }
-                }
+                Some(window_ptr) => unsafe {
+                    (**window_ptr).on_key(key_event);
+                    self.redraw = true;
+                },
                 None => (),
             }
         }
@@ -144,8 +146,7 @@ impl Session {
 
                 let mut chars = 32;
                 while chars > 4 &&
-                      (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
-                      self.display.width {
+                      (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) > self.display.width {
                     chars -= 1;
                 }
 
@@ -155,17 +156,20 @@ impl Session {
                     if mouse_event.x >= x && mouse_event.x < x + w as i32 {
                         for j in 0..self.windows.len() {
                             match self.windows.get(j) {
-                                Some(catcher_window_ptr) => if catcher_window_ptr == window_ptr {
-                                    unsafe {
-                                        if j == self.windows.len() - 1 {
-                                            (**window_ptr).minimized = !(**window_ptr).minimized;
-                                        } else {
-                                            catcher = j as isize;
-                                            (**window_ptr).minimized = false;
+                                Some(catcher_window_ptr) => {
+                                    if catcher_window_ptr == window_ptr {
+                                        unsafe {
+                                            if j == self.windows.len() - 1 {
+                                                (**window_ptr).minimized = !(**window_ptr)
+                                                                                .minimized;
+                                            } else {
+                                                catcher = j as isize;
+                                                (**window_ptr).minimized = false;
+                                            }
                                         }
+                                        break;
                                     }
-                                    break;
-                                },
+                                }
                                 None => break,
                             }
                         }
@@ -241,8 +245,7 @@ impl Session {
 
             let mut chars = 32;
             while chars > 4 &&
-                  (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) >
-                  self.display.width {
+                  (x as usize + (chars * 8 + 3 * 4) * self.windows.len()) > self.display.width {
                 chars -= 1;
             }
 

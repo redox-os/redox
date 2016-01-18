@@ -16,8 +16,8 @@ const SERIALINFO: *const SerialInfo = 0x400 as *const SerialInfo;
 
 /// Serial
 pub struct Serial {
-    pub data: Pio8,
-    pub status: Pio8,
+    pub data: Pio<u8>,
+    pub status: Pio<u8>,
     pub irq: u8,
     pub escape: bool,
     pub cursor_control: bool,
@@ -26,20 +26,18 @@ pub struct Serial {
 impl Serial {
     /// Create new
     pub fn new(port: u16, irq: u8) -> Box<Self> {
-        unsafe {
-            Pio8::new(port + 1).write(0x00);
-            Pio8::new(port + 3).write(0x80);
-            Pio8::new(port + 0).write(0x03);
-            Pio8::new(port + 1).write(0x00);
-            Pio8::new(port + 3).write(0x03);
-            Pio8::new(port + 2).write(0xC7);
-            Pio8::new(port + 4).write(0x0B);
-            Pio8::new(port + 1).write(0x01);
-        }
+        Pio::<u8>::new(port + 1).write(0x00);
+        Pio::<u8>::new(port + 3).write(0x80);
+        Pio::<u8>::new(port + 0).write(0x03);
+        Pio::<u8>::new(port + 1).write(0x00);
+        Pio::<u8>::new(port + 3).write(0x03);
+        Pio::<u8>::new(port + 2).write(0xC7);
+        Pio::<u8>::new(port + 4).write(0x0B);
+        Pio::<u8>::new(port + 1).write(0x01);
 
         box Serial {
-            data: Pio8::new(port),
-            status: Pio8::new(port + 5),
+            data: Pio::<u8>::new(port),
+            status: Pio::<u8>::new(port + 5),
             irq: irq,
             escape: false,
             cursor_control: false,
@@ -50,11 +48,11 @@ impl Serial {
 impl KScheme for Serial {
     fn on_irq(&mut self, irq: u8) {
         if irq == self.irq {
-            while unsafe { self.status.read() } & 1 == 0 {
+            while self.status.read() & 1 == 0 {
                 break;
             }
 
-            let mut c = unsafe { self.data.read() } as char;
+            let mut c = self.data.read() as char;
             let mut sc = 0;
 
             if self.escape {
