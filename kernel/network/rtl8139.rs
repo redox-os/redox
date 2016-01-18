@@ -10,7 +10,7 @@ use core::ptr;
 use common::{debug, memory};
 
 use drivers::pci::config::PciConfig;
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 
 use network::common::*;
 use network::scheme::*;

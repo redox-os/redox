@@ -9,9 +9,7 @@ use core::{mem, ptr, slice, str, usize};
 use common::memory;
 use common::time::Duration;
 
-use drivers::pio::*;
-
-use programs::executor::execute;
+use drivers::io::{Io, Pio};
 
 use scheduler::Regs;
 use scheduler::context::{context_clone, context_switch, Context, ContextMemory, ContextFile,
@@ -23,6 +21,8 @@ use schemes::pipe::{PipeRead, PipeWrite};
 use sync::Intex;
 
 use syscall::*;
+
+use super::execute::execute;
 
 /// Helper function for handling C strings, please do not copy it or make it pub or change it
 fn c_string_to_slice<'a>(ptr: *const u8) -> &'a [u8] {

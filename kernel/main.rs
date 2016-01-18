@@ -46,7 +46,7 @@ use common::paging::Page;
 use common::time::Duration;
 
 use drivers::pci;
-use drivers::pio::*;
+use drivers::io::{Io, Pio};
 use drivers::ps2::*;
 use drivers::rtc::*;
 use drivers::serial::*;
@@ -54,9 +54,6 @@ use drivers::serial::*;
 use env::Environment;
 
 use graphics::display;
-
-use programs::executor::execute;
-use programs::scheme::*;
 
 use scheduler::{Context, Regs, TSS};
 use scheduler::context::context_switch;
@@ -72,6 +69,7 @@ use schemes::ip::*;
 use schemes::memory::*;
 // use schemes::display::*;
 
+use syscall::execute::execute;
 use syscall::handle::*;
 
 pub use system::externs::*;
@@ -101,8 +99,6 @@ pub mod graphics;
 pub mod network;
 /// Panic
 pub mod panic;
-/// Programs
-pub mod programs;
 /// Schemes
 pub mod schemes;
 /// Scheduling

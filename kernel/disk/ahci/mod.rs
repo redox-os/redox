@@ -4,6 +4,7 @@ use collections::vec::Vec;
 
 use disk::Disk;
 
+use drivers::io::Io;
 use drivers::pci::config::PciConfig;
 
 use schemes::Result;

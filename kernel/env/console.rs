@@ -3,7 +3,7 @@ use alloc::boxed::Box;
 use collections::String;
 use collections::Vec;
 
-use drivers::pio::{Pio,ReadWrite};
+use drivers::io::{Io, Pio};
 
 use graphics::color::Color;
 use graphics::display::Display;
