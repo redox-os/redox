@@ -1,6 +1,3 @@
-use audio::ac97::AC97;
-use audio::intelhda::IntelHDA;
-
 use core::cell::UnsafeCell;
 
 use common::debug;
@@ -9,9 +6,6 @@ use disk::ahci::Ahci;
 use disk::ide::Ide;
 
 use env::Environment;
-
-use network::intel8254x::Intel8254x;
-use network::rtl8139::Rtl8139;
 
 use schemes::file::FileScheme;
 
@@ -62,11 +56,11 @@ pub unsafe fn pci_device(env: &mut Environment,
         }
         _ => {
             match (vendor_code, device_code) {
-                (REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
-                (INTEL, GBE_82540EM) => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
-                (INTEL, AC97_82801AA) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                (INTEL, AC97_ICH4) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
-                (INTEL, INTELHDA_ICH6) => {
+                //(REALTEK, RTL8139) => env.schemes.push(UnsafeCell::new(Rtl8139::new(pci))),
+                //(INTEL, GBE_82540EM) => env.schemes.push(UnsafeCell::new(Intel8254x::new(pci))),
+                //(INTEL, AC97_82801AA) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                //(INTEL, AC97_ICH4) => env.schemes.push(UnsafeCell::new(AC97::new(pci))),
+                /*(INTEL, INTELHDA_ICH6) => {
                     let base = pci.read(0x10) as usize;
                     let mut module = box IntelHDA {
                         pci: pci,
@@ -76,7 +70,7 @@ pub unsafe fn pci_device(env: &mut Environment,
                     };
                     module.init();
                     env.schemes.push(UnsafeCell::new(module));
-                }
+                }*/
                 _ => (),
             }
         }
